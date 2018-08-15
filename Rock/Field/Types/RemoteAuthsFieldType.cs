@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -54,7 +54,7 @@ namespace Rock.Field.Types
 
                 foreach( Guid guid in selectedGuids)
                 {
-                    var entityType = CacheEntityType.Get( guid );
+                    var entityType = EntityTypeCache.Get( guid );
                     if ( entityType != null )
                     {
                         names.Add( entityType.FriendlyName );

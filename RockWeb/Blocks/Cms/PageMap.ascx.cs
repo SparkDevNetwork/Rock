@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Cms
 
             foreach ( var pageId in rootPageList )
             {
-                sb.Append( PageNode( CachePage.Get( pageId ), expandedPageIds, rockContext ) );
+                sb.Append( PageNode( PageCache.Get( pageId ), expandedPageIds, rockContext ) );
             }
 
             sb.AppendLine( "</ul>" );
@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="expandedPageIdList">The expanded page identifier list.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        protected string PageNode( CachePage page, List<int> expandedPageIdList, RockContext rockContext )
+        protected string PageNode( PageCache page, List<int> expandedPageIdList, RockContext rockContext )
         {
             var sb = new StringBuilder();
 

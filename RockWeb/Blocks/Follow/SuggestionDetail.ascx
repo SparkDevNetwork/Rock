@@ -34,7 +34,7 @@
 
                 <div id="pnlEditDetails" runat="server">
 
-                    <asp:ValidationSummary ID="valSuggestionDetail" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="valSuggestionDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                     <div class="row">
                         <div class="col-md-6">
@@ -56,7 +56,7 @@
                             <Rock:ComponentPicker ID="cpSuggestionType" runat="server" Label="Suggestion Type" Required="true" ContainerType="Rock.Follow.SuggestionContainer"
                                 AutoPostBack="true" OnSelectedIndexChanged="cpSuggestionType_SelectedIndexChanged" />
                             <Rock:RockTextBox ID="tbReasonNote" runat="server" Label="Reason Note" 
-                                Help="Short note to describe to the recipient why an following was suggested." />
+                                Help="Short note to describe to the recipient why an following was suggested."  Required="true"/>
                             <Rock:NumberBox ID="nbReminderDays" runat="server" Label="Reminded Days" 
                                 Help="The number of days to wait before notifying person of this suggestion again if they have not followed or ignored the suggestion. Leave blank if person should never be reminded." />
                         </div>

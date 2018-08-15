@@ -22,7 +22,7 @@ using System.Linq;
 
 using Rock.Extension;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Communication
 {
@@ -130,12 +130,12 @@ namespace Rock.Communication
             string value = content.ResolveMergeFields( mergeFields, person, enabledLavaCommands );
             value = value.ReplaceWordChars();
 
-            if ( themeRoot.IsNotNullOrWhitespace() )
+            if ( themeRoot.IsNotNullOrWhiteSpace() )
             {
                 value = value.Replace( "~~/", themeRoot );
             }
 
-            if ( appRoot.IsNotNullOrWhitespace() )
+            if ( appRoot.IsNotNullOrWhiteSpace() )
             {
                 value = value.Replace( "~/", appRoot );
                 value = value.Replace( @" src=""/", @" src=""" + appRoot );

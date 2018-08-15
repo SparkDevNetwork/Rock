@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -193,7 +193,7 @@ namespace RockWeb.Blocks.Fundraising
 
                 groupMember.LoadAttributes( rockContext );
                 groupMember.Group.LoadAttributes( rockContext );
-                var opportunityType = CacheDefinedValue.Get( groupMember.Group.GetAttributeValue( "OpportunityType" ).AsGuid() );
+                var opportunityType = DefinedValueCache.Get( groupMember.Group.GetAttributeValue( "OpportunityType" ).AsGuid() );
 
                 lProfileTitle.Text = string.Format(
                     "{0} Profile for {1}",
@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Fundraising
             // Person Attributes (the ones they picked in the Block Settings)
             phPersonAttributes.Controls.Clear();
 
-            var personAttributes = this.GetAttributeValue( "PersonAttributes" ).SplitDelimitedValues().AsGuidList().Select( a => CacheAttribute.Get( a ) );
+            var personAttributes = this.GetAttributeValue( "PersonAttributes" ).SplitDelimitedValues().AsGuidList().Select( a => AttributeCache.Get( a ) );
             if ( personAttributes.Any() )
             {
                 var person = groupMember.Person;
@@ -290,7 +290,7 @@ namespace RockWeb.Blocks.Fundraising
             Rock.Attribute.Helper.GetEditValues( phGroupMemberAttributes, groupMember );
 
             // Save selected Person Attributes (The ones picked in Block Settings)
-            var personAttributes = this.GetAttributeValue( "PersonAttributes" ).SplitDelimitedValues().AsGuidList().Select( a => CacheAttribute.Get( a ) );
+            var personAttributes = this.GetAttributeValue( "PersonAttributes" ).SplitDelimitedValues().AsGuidList().Select( a => AttributeCache.Get( a ) );
             if ( personAttributes.Any() )
             {
                 person.LoadAttributes( rockContext );
@@ -440,7 +440,7 @@ namespace RockWeb.Blocks.Fundraising
             btnContributionsTab.Visible = showContributions;
 
             // Progress
-            var entityTypeIdGroupMember = CacheEntityType.GetId<Rock.Model.GroupMember>();
+            var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
 
             var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
                         .Where( d => d.EntityTypeId == entityTypeIdGroupMember
@@ -464,7 +464,7 @@ namespace RockWeb.Blocks.Fundraising
             queryParams.Add( "GroupMemberId", hfGroupMemberId.Value );
             mergeFields.Add( "MakeDonationUrl", LinkedPageUrl( "DonationPage", queryParams ));
 
-            var opportunityType = CacheDefinedValue.Get( group.GetAttributeValue( "OpportunityType" ).AsGuid() );
+            var opportunityType = DefinedValueCache.Get( group.GetAttributeValue( "OpportunityType" ).AsGuid() );
 
             string makeDonationButtonText = null;
             if ( groupMember.PersonId == this.CurrentPersonId )
@@ -524,18 +524,16 @@ namespace RockWeb.Blocks.Fundraising
             BindContributionsGrid();
 
             // Tab:Comments
-            var noteType = CacheNoteType.Get( this.GetAttributeValue( "NoteType" ).AsGuid() );
+            var noteType = NoteTypeCache.Get( this.GetAttributeValue( "NoteType" ).AsGuid() );
             if ( noteType != null )
             {
-                notesCommentsTimeline.NoteTypes = new List<CacheNoteType> { noteType };
+                notesCommentsTimeline.NoteOptions.SetNoteTypes( new List<NoteTypeCache> { noteType } );
             }
 
-            notesCommentsTimeline.EntityId = groupMember.Id;
+            notesCommentsTimeline.NoteOptions.EntityId = groupMember.Id;
 
             // show the Add button on comments for any logged in person
             notesCommentsTimeline.AddAllowed = true;
-
-            notesCommentsTimeline.RebuildNotes( true );
 
             var enableCommenting = group.GetAttributeValue( "EnableCommenting" ).AsBoolean();
 
@@ -568,7 +566,7 @@ namespace RockWeb.Blocks.Fundraising
         protected void BindContributionsGrid()
         {
             var rockContext = new RockContext();
-            var entityTypeIdGroupMember = CacheEntityType.GetId<Rock.Model.GroupMember>();
+            var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
             int groupMemberId = hfGroupMemberId.Value.AsInteger();
 
             var financialTransactionQry = new FinancialTransactionService( rockContext ).Queryable();

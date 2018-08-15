@@ -22,7 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Administration
 
         private List<InteractionItem> _interactionChannelTypes = new List<InteractionItem>();
 
-        private List<CacheCampus> _campuses = new List<CacheCampus>();
+        private List<CampusCache> _campuses = new List<CampusCache>();
 
         #endregion
 
@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Administration
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            _campuses = CacheCampus.All();
+            _campuses = CampusCache.All();
         }
 
         /// <summary>
@@ -247,7 +247,7 @@ namespace RockWeb.Blocks.Administration
 
             ddlAttendanceOrGiving.BindToEnum<CampusCriteria>();
 
-            var knownRelGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+            var knownRelGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
             if ( knownRelGroupType != null )
             {
                 rpParentRelationship.GroupTypeId = knownRelGroupType.Id;
@@ -330,10 +330,10 @@ namespace RockWeb.Blocks.Administration
             nbPersonAttributes.Text = _reactivateSettings.PersonAttributesDays.ToStringSafe();
             rlbPersonAttributes.SetValues( _reactivateSettings.PersonAttributes ?? new List<int>() );
             cbIncludeDataView.Checked = _reactivateSettings.IsIncludeDataViewEnabled;
-            dvIncludeDataView.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Person ) ).Id;
+            dvIncludeDataView.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
             dvIncludeDataView.SetValue( _reactivateSettings.IncludeDataView );
             cbExcludeDataView.Checked = _reactivateSettings.IsExcludeDataViewEnabled;
-            dvExcludeDataView.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Person ) ).Id;
+            dvExcludeDataView.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
             dvExcludeDataView.SetValue( _reactivateSettings.ExcludeDataView );
             cbInteractions.Checked = _reactivateSettings.IsInteractionsEnabled;
 
@@ -374,9 +374,10 @@ namespace RockWeb.Blocks.Administration
             nbNoPersonAttributes.Text = _inactivateSettings.NoPersonAttributesDays.ToStringSafe();
             rlbNoPersonAttributes.SetValues( _inactivateSettings.PersonAttributes ?? new List<int>() );
             cbNotInDataView.Checked = _inactivateSettings.IsNotInDataviewEnabled;
-            dvNotInDataView.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Person ) ).Id;
+            dvNotInDataView.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
             dvNotInDataView.SetValue( _inactivateSettings.NotInDataview );
             cbNoInteractions.Checked = _inactivateSettings.IsNoInteractionsEnabled;
+            nbRecordsOlderThan.Text = _inactivateSettings.RecordsOlderThan.ToStringSafe();
 
             var inactivateChannelTypes = interactionChannels.Select( c => new InteractionItem( c.Guid, c.Name ) ).ToList();
             if ( _inactivateSettings.NoInteractions != null )
@@ -430,6 +431,7 @@ namespace RockWeb.Blocks.Administration
 
             // Adult Children
             cbAdultChildren.Checked = _adultChildrenSettings.IsEnabled;
+            cbisMoveGraduated.Checked = _adultChildrenSettings.IsOnlyMoveGraduated;
             pnlAdultChildren.Enabled = _adultChildrenSettings.IsEnabled;
             nbAdultAge.Text = _adultChildrenSettings.AdultAge.ToString();
             rpParentRelationship.GroupRoleId = _adultChildrenSettings.ParentRelationshipId;
@@ -442,7 +444,7 @@ namespace RockWeb.Blocks.Administration
             // Update Connection Status
             cbUpdatePersonConnectionStatus.Checked = _updatePersonConnectionStatus.IsEnabled;
             pnlUpdatePersonConnectionStatus.Enabled = _updatePersonConnectionStatus.IsEnabled;
-            var personConnectionStatusDataViewSettingsList = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
+            var personConnectionStatusDataViewSettingsList = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
                 .Select( a => new PersonConnectionStatusDataView
                 {
                     PersonConnectionStatusValue = a,
@@ -455,7 +457,7 @@ namespace RockWeb.Blocks.Administration
             // Update Family Status
             cbUpdateFamilyStatus.Checked = _updateFamilyStatus.IsEnabled;
             pnlUpdateFamilyStatus.Enabled = _updateFamilyStatus.IsEnabled;
-            var groupStatusDataViewSettingsList = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FAMILY_GROUP_STATUS.AsGuid() ).DefinedValues
+            var groupStatusDataViewSettingsList = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FAMILY_GROUP_STATUS.AsGuid() ).DefinedValues
                 .Select( a => new FamilyStatusDataView
                 {
                     GroupStatusValue = a,
@@ -551,6 +553,8 @@ namespace RockWeb.Blocks.Administration
 
             _inactivateSettings.IsNoInteractionsEnabled = cbNoInteractions.Checked;
 
+            _inactivateSettings.RecordsOlderThan = nbRecordsOlderThan.Text.AsInteger();
+
             foreach ( RepeaterItem rItem in rNoInteractions.Items )
             {
                 RockCheckBox isInterationTypeEnabled = rItem.FindControl( "cbInterationType" ) as RockCheckBox;
@@ -597,6 +601,7 @@ namespace RockWeb.Blocks.Administration
 
             // Adult Children
             _adultChildrenSettings.IsEnabled = cbAdultChildren.Checked;
+            _adultChildrenSettings.IsOnlyMoveGraduated = cbisMoveGraduated.Checked;
             _adultChildrenSettings.AdultAge = nbAdultAge.Text.AsIntegerOrNull() ?? 18;
             _adultChildrenSettings.ParentRelationshipId = rpParentRelationship.GroupRoleId;
             _adultChildrenSettings.SiblingRelationshipId = rpSiblingRelationship.GroupRoleId;
@@ -611,7 +616,7 @@ namespace RockWeb.Blocks.Administration
             foreach (var item in rptPersonConnectionStatusDataView.Items.OfType<RepeaterItem>())
             {
                 HiddenField hfPersonConnectionStatusValueId = item.FindControl( "hfPersonConnectionStatusValueId" ) as HiddenField;
-                DataViewPicker dvpPersonConnectionStatusDataView = item.FindControl( "dvpPersonConnectionStatusDataView" ) as DataViewPicker;
+                DataViewItemPicker dvpPersonConnectionStatusDataView = item.FindControl( "dvpPersonConnectionStatusDataView" ) as DataViewItemPicker;
                 _updatePersonConnectionStatus.ConnectionStatusValueIdDataviewIdMapping.AddOrReplace( hfPersonConnectionStatusValueId.Value.AsInteger(), dvpPersonConnectionStatusDataView.SelectedValueAsId() );
             }
 
@@ -621,7 +626,7 @@ namespace RockWeb.Blocks.Administration
             foreach ( var item in rptFamilyStatusDataView.Items.OfType<RepeaterItem>() )
             {
                 HiddenField hfGroupStatusValueId = item.FindControl( "hfGroupStatusValueId" ) as HiddenField;
-                DataViewPicker dvpGroupStatusDataView = item.FindControl( "dvpGroupStatusDataView" ) as DataViewPicker;
+                DataViewItemPicker dvpGroupStatusDataView = item.FindControl( "dvpGroupStatusDataView" ) as DataViewItemPicker;
                 _updateFamilyStatus.GroupStatusValueIdDataviewIdMapping.AddOrReplace( hfGroupStatusValueId.Value.AsInteger(), dvpGroupStatusDataView.SelectedValueAsId() );
             }
 
@@ -708,11 +713,11 @@ namespace RockWeb.Blocks.Administration
         {
             PersonConnectionStatusDataView personConnectionStatusDataView = e.Item.DataItem as PersonConnectionStatusDataView;
             HiddenField hfPersonConnectionStatusValueId = e.Item.FindControl( "hfPersonConnectionStatusValueId" ) as HiddenField;
-            DataViewPicker dvpPersonConnectionStatusDataView = e.Item.FindControl( "dvpPersonConnectionStatusDataView" ) as DataViewPicker;
+            DataViewItemPicker dvpPersonConnectionStatusDataView = e.Item.FindControl( "dvpPersonConnectionStatusDataView" ) as DataViewItemPicker;
             if ( personConnectionStatusDataView != null )
             {
                 hfPersonConnectionStatusValueId.Value = personConnectionStatusDataView.PersonConnectionStatusValue.Id.ToString();
-                dvpPersonConnectionStatusDataView.EntityTypeId = CacheEntityType.GetId<Rock.Model.Person>();
+                dvpPersonConnectionStatusDataView.EntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
                 dvpPersonConnectionStatusDataView.Label = personConnectionStatusDataView.PersonConnectionStatusValue.ToString();
                 dvpPersonConnectionStatusDataView.SetValue( personConnectionStatusDataView.DataViewId );
             }
@@ -729,7 +734,7 @@ namespace RockWeb.Blocks.Administration
             /// <value>
             /// The connection status value.
             /// </value>
-            public CacheDefinedValue PersonConnectionStatusValue { get; set; }
+            public DefinedValueCache PersonConnectionStatusValue { get; set; }
 
             /// <summary>
             /// Gets or sets the data view identifier.
@@ -753,11 +758,11 @@ namespace RockWeb.Blocks.Administration
         {
             FamilyStatusDataView groupStatusDataView = e.Item.DataItem as FamilyStatusDataView;
             HiddenField hfGroupStatusValueId = e.Item.FindControl( "hfGroupStatusValueId" ) as HiddenField;
-            DataViewPicker dvpGroupStatusDataView = e.Item.FindControl( "dvpGroupStatusDataView" ) as DataViewPicker;
+            DataViewItemPicker dvpGroupStatusDataView = e.Item.FindControl( "dvpGroupStatusDataView" ) as DataViewItemPicker;
             if ( groupStatusDataView != null )
             {
                 hfGroupStatusValueId.Value = groupStatusDataView.GroupStatusValue.Id.ToString();
-                dvpGroupStatusDataView.EntityTypeId = CacheEntityType.GetId<Rock.Model.Group>();
+                dvpGroupStatusDataView.EntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>();
                 dvpGroupStatusDataView.Label = groupStatusDataView.GroupStatusValue.ToString();
                 dvpGroupStatusDataView.SetValue( groupStatusDataView.DataViewId );
             }
@@ -774,7 +779,7 @@ namespace RockWeb.Blocks.Administration
             /// <value>
             /// The group status value.
             /// </value>
-            public CacheDefinedValue GroupStatusValue { get; set; }
+            public DefinedValueCache GroupStatusValue { get; set; }
 
             /// <summary>
             /// Gets or sets the data view identifier.

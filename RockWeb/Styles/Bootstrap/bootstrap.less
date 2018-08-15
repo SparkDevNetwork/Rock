@@ -4,12 +4,13 @@
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
  */
 
-/* 
+/*
   Summary of customizations for Rock:
   1. Comment out the glyphicons
   2. Add in the FontAwesome mixin
   3. Add reference to FontAwesome _rock-update_map-classes.less
   4. Add reference to _rock-fa-mixins.less
+  5. Add Flexbox Option, with default using grid
 */
 @import "../FontAwesome/_rock-fa-mixins.less";
 
@@ -28,7 +29,15 @@
 @import "scaffolding.less";
 @import "type.less";
 @import "code.less";
-@import "grid.less";
+
+// Enable Flexbox
+// DANGER: Do not enable globally
+@enable-flexbox: false;
+.imports(true) { @import "flexbox.less"; }
+.imports(false) { @import "grid.less"; }
+.imports(@enable-flexbox);
+
+// Core CSS Continued
 @import "tables.less";
 @import "forms.less";
 @import "buttons.less";

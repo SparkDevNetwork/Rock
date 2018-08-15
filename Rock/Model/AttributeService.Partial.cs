@@ -256,13 +256,23 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the system setting value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public string GetSystemSettingValue(string key)
+        {
+            return this.GetByEntityTypeQualifier( null, Attribute.SYSTEM_SETTING_QUALIFIER, string.Empty, true ).Where( t => t.Key == key ).Select( a => a.DefaultValue ).FirstOrDefault();
+        }
+
+        /// <summary>
         /// Gets the Guid for the Attribute that has the specified Id
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
         public override Guid? GetGuid( int id )
         {
-            var cacheItem = Rock.Cache.CacheAttribute.Get( id );
+            var cacheItem = Rock.Web.Cache.AttributeCache.Get( id );
             if ( cacheItem != null )
             {
                 return cacheItem.Guid;

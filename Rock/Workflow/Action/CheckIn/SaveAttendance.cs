@@ -51,7 +51,6 @@ namespace Rock.Workflow.Action.CheckIn
             if ( checkInState != null )
             {
                 AttendanceCode attendanceCode = null;
-                DateTime startDateTime = RockDateTime.Now;
 
                 bool reuseCodeForFamily = checkInState.CheckInType != null && checkInState.CheckInType.ReuseSameCode;
                 int securityCodeAlphaNumericLength = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeAlphaNumericLength : 3;
@@ -100,6 +99,8 @@ namespace Rock.Workflow.Action.CheckIn
                                 {
                                     foreach ( var schedule in location.GetSchedules( true ) )
                                     {
+                                        var startDateTime = schedule.CampusCurrentDateTime;
+
                                         // Only create one attendance record per day for each person/schedule/group/location
                                         var attendance = attendanceService.Get( startDateTime, location.Location.Id, schedule.Schedule.Id, group.Group.Id, person.Person.Id );
                                         if ( attendance == null )
@@ -119,11 +120,13 @@ namespace Rock.Workflow.Action.CheckIn
                                         attendance.DeviceId = checkInState.Kiosk.Device.Id;
                                         attendance.SearchTypeValueId = checkInState.CheckIn.SearchType.Id;
                                         attendance.SearchValue = checkInState.CheckIn.SearchValue;
+                                        attendance.CheckedInByPersonAliasId = checkInState.CheckIn.CheckedInByPersonAliasId;
                                         attendance.SearchResultGroupId = family.Group.Id;
                                         attendance.AttendanceCodeId = attendanceCode.Id;
                                         attendance.StartDateTime = startDateTime;
                                         attendance.EndDateTime = null;
                                         attendance.DidAttend = true;
+                                        attendance.Note = group.Notes;
 
                                         KioskLocationAttendance.AddAttendance( attendance );
                                     }

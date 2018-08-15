@@ -10,7 +10,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 
 public class PowerBiAuth : IHttpHandler, IReadOnlySessionState
@@ -43,7 +43,7 @@ public class PowerBiAuth : IHttpHandler, IReadOnlySessionState
                     biAccountValue = new DefinedValue();
                     definedValueService.Add( biAccountValue );
 
-                    var definedTypeId = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() ).Id;
+                    var definedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() ).Id;
 
                     // get account info from session
                     string accountName = context.Session["PowerBiAccountName"] != null ? context.Session["PowerBiAccountName"].ToString() : string.Empty;
@@ -94,6 +94,7 @@ public class PowerBiAuth : IHttpHandler, IReadOnlySessionState
             }
             else
             {
+                context.Response.Write( "Unable to retrieve Power BI account values from earlier. Your Rock session may have been reset." );
                 return;
             }
 
@@ -132,6 +133,10 @@ public class PowerBiAuth : IHttpHandler, IReadOnlySessionState
             {
                 context.Response.Write( string.Format( "An exception occurred: {0}", ex.Message ) );
             }
+        }
+        else
+        {
+                context.Response.Write( "If you were redirected here from Power BI something has gone wrong. Otherwise, this webhook is working." );
         }
     }
 

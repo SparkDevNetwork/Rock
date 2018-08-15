@@ -17,9 +17,9 @@
     <div class="checkin-header">
         <h1><asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
     </div>
-                
+
     <div class="checkin-body">
-        
+
         <div class="checkin-scroll-panel">
             <div class="scroller">
 
@@ -51,11 +51,11 @@
 
     </div>
 
-    <div class="checkin-footer">   
+    <div class="checkin-footer">
         <div class="checkin-actions">
-            <asp:LinkButton CssClass="btn btn-default" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
-            <asp:LinkButton CssClass="btn btn-default" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
-            <asp:LinkButton CssClass="btn btn-primary pull-right" ID="lbSelect" runat="server" OnClientClick="return GetPersonSelection();" OnClick="lbSelect_Click" Text="Next" />
+            <asp:LinkButton CssClass="btn btn-default btn-back" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
+            <asp:LinkButton CssClass="btn btn-default btn-cancel" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
+            <asp:LinkButton CssClass="btn btn-primary pull-right btn-next" ID="lbSelect" runat="server" OnClientClick="return GetPersonSelection();" OnClick="lbSelect_Click" Text="Next" />
         </div>
     </div>
 

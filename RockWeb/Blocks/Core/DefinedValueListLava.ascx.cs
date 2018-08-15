@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Text;
@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.Core
 
         protected void LoadContent()
         {
-            List<CacheDefinedValue> definedValues = new List<CacheDefinedValue>();
+            List<DefinedValueCache> definedValues = new List<DefinedValueCache>();
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             
             // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Core
             string selectedDefinedType = GetAttributeValue("DefinedType");
             
             if (! string.IsNullOrWhiteSpace(selectedDefinedType)) {
-                var dtItem = CacheDefinedType.Get( Guid.Parse(selectedDefinedType) );
+                var dtItem = DefinedTypeCache.Get( Guid.Parse(selectedDefinedType) );
 
                 foreach ( var item in dtItem.DefinedValues )
                 {

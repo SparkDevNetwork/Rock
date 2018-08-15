@@ -20,7 +20,7 @@ using System.Linq;
 using Quartz;
 
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Attribute;
 
 namespace Rock.Jobs
@@ -36,7 +36,7 @@ namespace Rock.Jobs
     {
         
         /// <summary> 
-        /// Empty constructor for job initilization
+        /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
         /// scheduler can instantiate the class whenever it needs.
@@ -59,9 +59,9 @@ namespace Rock.Jobs
             // get the job map
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            int maxRecords = Int32.Parse( dataMap.GetString( "MaxRecordsPerRun" ) );
-            int throttlePeriod = Int32.Parse( dataMap.GetString( "ThrottlePeriod" ) );
-            int retryPeriod = Int32.Parse( dataMap.GetString( "RetryPeriod" ) );
+            int maxRecords = dataMap.GetString( "MaxRecordsPerRun" ).AsIntegerOrNull() ?? 1000;
+            int throttlePeriod = dataMap.GetString( "ThrottlePeriod" ).AsIntegerOrNull() ?? 500;
+            int retryPeriod = dataMap.GetString( "RetryPeriod" ).AsIntegerOrNull() ?? 200;
 
             DateTime retryDate = DateTime.Now.Subtract(new TimeSpan(retryPeriod, 0, 0, 0));
 
@@ -93,7 +93,7 @@ namespace Rock.Jobs
                     successes++;
                 }
                 rockContext.SaveChanges();
-                System.Threading.Thread.Sleep( throttlePeriod );
+                System.Threading.Tasks.Task.Delay( throttlePeriod ).Wait();
             }
 
             context.Result = string.Format( "{0:N0} address verifications attempted; {1:N0} successfully verified", attempts, successes );

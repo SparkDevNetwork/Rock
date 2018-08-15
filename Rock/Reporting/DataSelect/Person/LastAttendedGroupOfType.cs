@@ -24,7 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
@@ -202,7 +202,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             if (groupTypeId > 0)
             {
-                var groupType = CacheGroupType.Get(groupTypeId);
+                var groupType = GroupTypeCache.Get(groupTypeId);
                 value1 = (groupType == null) ? string.Empty : groupType.Guid.ToString();
             }
 

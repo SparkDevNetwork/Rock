@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {
@@ -57,7 +57,7 @@ namespace Rock.CheckIn
         /// The type of the search.
         /// </value>
         [DataMember]
-        public CacheDefinedValue SearchType { get; set; }
+        public DefinedValueCache SearchType { get; set; }
 
         /// <summary>
         /// Gets or sets the search value that was scanned or entered by user
@@ -67,6 +67,15 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public string SearchValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person who was identified as the person doing the check-in.
+        /// </summary>
+        /// <value>
+        /// The person alias identifier of person doing check-in.
+        /// </value>
+        [DataMember]
+        public int? CheckedInByPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the families that match the search value

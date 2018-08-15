@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -56,7 +56,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEnumerable<TemplateDiscountReport> GetRegistrationInstanceDiscountCodeReport( int registrationInstanceId )
         {
-            string currencySymbol = CacheGlobalAttributes.Value( "CurrencySymbol" );
+            string currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
 
             string query = $@"
                 WITH
@@ -112,7 +112,8 @@ namespace Rock.Model
                 , [DiscountQualifiedCost]
                 , [TotalDiscount]
                 , ([TotalCost] - [TotalDiscount]) AS [RegistrationCost]
-            FROM cte2";
+            FROM cte2
+            WHERE [TotalDiscount] > 0";
 
             var param = new System.Data.SqlClient.SqlParameter( "@RegistrationInstanceId", registrationInstanceId );
 

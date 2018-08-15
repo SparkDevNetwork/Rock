@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -205,7 +205,7 @@ namespace Rock.Web.UI.Controls
         {
             set
             {
-                EntityTypeId = Rock.Cache.CacheEntityType.Get( value ).Id;
+                EntityTypeId = EntityTypeCache.Get( value ).Id;
             }
         }
 
@@ -282,7 +282,7 @@ namespace Rock.Web.UI.Controls
 
             if ( RootCategoryId.HasValue )
             {
-                var rootCategory = CacheCategory.Get( RootCategoryId.Value );
+                var rootCategory = CategoryCache.Get( RootCategoryId.Value );
                 if ( rootCategory.EntityTypeId == this.EntityTypeId )
                 {
                     parms += string.Format( "&rootCategoryId={0}", rootCategory.Id );

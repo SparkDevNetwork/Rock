@@ -32,7 +32,7 @@ using System.Xml.Linq;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Examples
 
                     if ( entityTypeId == null )
                     {
-                        var entityType = CacheEntityType.Get( PageParameter( "EntityType" ).AsGuid() );
+                        var entityType = EntityTypeCache.Get( PageParameter( "EntityType" ).AsGuid() );
 
                         if ( entityType != null )
                         {
@@ -236,14 +236,14 @@ namespace RockWeb.Blocks.Examples
                 }
             }
 
-            foreach ( var entity in CacheEntityType.All().Where( t => t.IsEntity ) )
+            foreach ( var entity in EntityTypeCache.All().Where( t => t.IsEntity ) )
             {
                 var type = entity.GetEntityType();
                 if ( type != null && type.InheritsOrImplements( typeof( Rock.Data.Entity<> ) ) )
                 {
                     string category = "Other";
                     var domainAttr = type.GetCustomAttribute<RockDomainAttribute>( false );
-                    if ( domainAttr != null && domainAttr.Name.IsNotNullOrWhitespace() )
+                    if ( domainAttr != null && domainAttr.Name.IsNotNullOrWhiteSpace() )
                     {
                         category = domainAttr.Name;
                     }
@@ -283,8 +283,8 @@ namespace RockWeb.Blocks.Examples
             pnlKey.Visible = false;
             lCategoryName.Text = string.Empty;
 
-            CacheEntityType entityType = null;
-            var entityTypeList = new List<CacheEntityType>();
+            EntityTypeCache entityType = null;
+            var entityTypeList = new List<EntityTypeCache>();
             if ( categoryGuid.HasValue )
             {
                 var category = EntityCategories.Where( c => c.Guid.Equals( categoryGuid ) ).FirstOrDefault();
@@ -293,7 +293,7 @@ namespace RockWeb.Blocks.Examples
                     lCategoryName.Text = category.Name + " Models";
                     pnlModels.Visible = true;
 
-                    entityTypeList = category.RockEntityIds.Select( a => CacheEntityType.Get( a ) ).Where( a => a != null ).ToList();
+                    entityTypeList = category.RockEntityIds.Select( a => EntityTypeCache.Get( a ) ).Where( a => a != null ).ToList();
                     if ( entityTypeId.HasValue )
                     {
                         entityType = entityTypeList.Where( t => t.Id == entityTypeId.Value ).FirstOrDefault();

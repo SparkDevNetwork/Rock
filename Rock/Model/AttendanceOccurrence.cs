@@ -68,7 +68,7 @@ namespace Rock.Model
         public int? ScheduleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the start date and time/check in time
+        /// Gets or sets the date of the Attendance
         /// </summary>
         /// <value>
         /// A <see cref="System.DateTime"/> representing the start date and time/check in date and time.
@@ -97,6 +97,24 @@ namespace Rock.Model
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [Column( TypeName = "Date" )]
         public DateTime SundayDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the notes.
+        /// </summary>
+        /// <value>
+        /// The notes.
+        /// </value>
+        [DataMember]
+        public string Notes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number anonymous attendance.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the number anonymous attendance.
+        /// </value>
+        [DataMember]
+        public int? AnonymousAttendanceCount { get; set; }
 
         #endregion
 

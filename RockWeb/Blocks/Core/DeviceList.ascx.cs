@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -129,7 +129,7 @@ namespace RockWeb.Blocks.Core
                     int definedValueId = 0;
                     if ( int.TryParse( e.Value, out definedValueId ) )
                     {
-                        var definedValue = CacheDefinedValue.Get( definedValueId );
+                        var definedValue = DefinedValueCache.Get( definedValueId );
                         if ( definedValue != null )
                         {
                             e.Value = definedValue.Value;
@@ -228,7 +228,7 @@ namespace RockWeb.Blocks.Core
             }
 
             // Add attribute columns
-            int entityTypeId = CacheEntityType.Get( typeof( Rock.Model.Device ) ).Id;
+            int entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Device ) ).Id;
             foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
@@ -247,7 +247,7 @@ namespace RockWeb.Blocks.Core
                     boundField.AttributeId = attribute.Id;
                     boundField.HeaderText = attribute.Name;
 
-                    var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                     if ( attributeCache != null )
                     {
                         boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -267,7 +267,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindFilter()
         {
-            ddlDeviceType.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ) );
+            ddlDeviceType.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ) );
             ddlDeviceType.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
             ddlPrintTo.BindToEnum<PrintTo>();
@@ -301,7 +301,7 @@ namespace RockWeb.Blocks.Core
         {
             var deviceService = new DeviceService( new RockContext() );
             var sortProperty = gDevice.SortProperty;
-            gDevice.EntityTypeId = CacheEntityType.Get<Device>().Id;
+            gDevice.EntityTypeId = EntityTypeCache.Get<Device>().Id;
 
             var queryable = deviceService.Queryable();
 
@@ -368,7 +368,7 @@ namespace RockWeb.Blocks.Core
                 gDevice.DataSource = gridList.OrderBy( d => d.Name ).ToList();
             }
 
-            gDevice.EntityTypeId = CacheEntityType.Get<Rock.Model.Device>().Id;
+            gDevice.EntityTypeId = EntityTypeCache.Get<Rock.Model.Device>().Id;
             gDevice.DataBind();
         }
 

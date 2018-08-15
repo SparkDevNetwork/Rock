@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.WorkFlow
@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         private List<WorkflowNavigationCategory> GetData()
         {
-            int entityTypeId = CacheEntityType.Get( typeof( Rock.Model.WorkflowType ) ).Id;
+            int entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.WorkflowType ) ).Id;
 
             var selectedCategories = new List<Guid>();
             GetAttributeValue( "Categories" ).SplitDelimitedValues().ToList().ForEach( c => selectedCategories.Add( c.AsGuid() ) );
@@ -415,9 +415,7 @@ namespace RockWeb.Blocks.WorkFlow
             CanManage = canManage;
             CanViewList = canViewList;
 
-            IsActive = workflowType.IsActive;
-        
-            
+            IsActive = workflowType.IsActive == true;
         }
     }
 }

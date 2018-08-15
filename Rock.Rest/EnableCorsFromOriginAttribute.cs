@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Cors;
 using System.Web.Http.Cors;
+using Rock.Web.Cache;
 
 namespace Rock.Rest
 {
@@ -61,7 +62,7 @@ namespace Rock.Rest
         {
             bool result = false;
 
-            var definedType = Rock.Cache.CacheDefinedType.Get( Rock.SystemGuid.DefinedType.REST_API_ALLOWED_DOMAINS.AsGuid() );
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.REST_API_ALLOWED_DOMAINS.AsGuid() );
             if (definedType != null)
             {
                 result = definedType.DefinedValues.Select( v => v.Value ).Contains( origin, StringComparer.OrdinalIgnoreCase );

@@ -19,7 +19,7 @@
             </div>
 
             <div class="panel-body">
-                <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div class="row">
 
@@ -89,7 +89,7 @@
                                 </asp:Panel>
                                 <div class="form-row">
                                     <div class="col-sm-3">
-                                        <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" Label="Marital Status" />
+                                        <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" Label="Marital Status" AutoPostBack="true" OnSelectedIndexChanged="ddlMaritalStatus_SelectedIndexChanged" />
                                     </div>
                                     <div class="col-sm-3">
                                         <Rock:DatePicker ID="dpAnniversaryDate" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="AnniversaryDate" StartView="decade" />
@@ -106,7 +106,7 @@
                                     <asp:Repeater ID="rContactInfo" runat="server">
                                         <ItemTemplate>
                                             <div class="form-group phonegroup clearfix">
-                                                <div class="control-label col-sm-1 phonegroup-label"><%# Rock.Cache.CacheDefinedValue.Get( (int)Eval("NumberTypeValueId")).Value  %></div>
+                                                <div class="control-label col-sm-1 phonegroup-label"><%# Rock.Web.Cache.DefinedValueCache.Get( (int)Eval("NumberTypeValueId")).Value  %></div>
                                                 <div class="controls col-sm-11 phonegroup-number">
                                                     <div class="form-row">
                                                         <div class="col-sm-7 col-lg-4">
@@ -127,7 +127,7 @@
 
                                 <div class="row">
                                     <div class="col-sm-6">
-                                        <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" autocomplete="off" />
+                                        <Rock:EmailBox ID="tbEmail" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
                                     </div>
                                     <div class="col-sm-3">
                                         <Rock:RockCheckBox ID="cbIsEmailActive" runat="server" Label="Email Status" Text="Is Active" />
@@ -148,6 +148,21 @@
                             </fieldset>
                         </div>
 
+                        <Rock:PanelWidget runat="server" ID="PanelWidget1" Title="Alternate Identifiers">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <Rock:RockControlWrapper ID="rcwAlternateIds" runat="server" Label="Alternate Identifiers" Help="Alternate Ids are used by things like check-in to allow easily checking in. This may include a barcode id or a fingerprint id for example.">
+                                        <Rock:Grid ID="gAlternateIds" runat="server" DisplayType="Light" DataKeyNames="Guid" RowItemText="Alternate Id" ShowConfirmDeleteDialog="false">
+                                            <Columns>
+                                                <Rock:RockBoundField DataField="SearchValue" HeaderText="Value"/>
+                                                <Rock:DeleteField OnClick="gAlternateIds_Delete" />
+                                            </Columns>
+                                        </Rock:Grid>
+                                    </Rock:RockControlWrapper>
+                                    <asp:CustomValidator ID="cvAlternateIds" runat="server" OnServerValidate="cvAlternateIds_ServerValidate" Display="None" />
+                                </div>
+                            </div>
+                        </Rock:PanelWidget>
 
                         <Rock:PanelWidget runat="server" ID="pwAdvanced" Title="Advanced Settings">
                             <div class="row">
@@ -160,7 +175,7 @@
                                             <asp:LinkButton ID="btnGenerateEnvelopeNumber" runat="server" Text="Generate Envelope #" CssClass="btn btn-default margin-l-sm" OnClick="btnGenerateEnvelopeNumber_Click" />
                                         </Rock:RockControlWrapper>
                                     </asp:Panel>
-                                    <Rock:RockCheckBox ID="cbLockAsChild" runat="server" Label="Lock as Child" Text="Yes" Help="By default individuals will be considered an adult with they are over 18 or are marked as an adult in a family. This setting will override this logic and lock the individual as a child."/>
+                                    <Rock:RockCheckBox ID="cbLockAsChild" runat="server" Label="Lock as Child" Text="Yes" Help="By default individuals will be considered an adult when they are over 18 or are marked as an adult in a family. This setting will override this logic and lock the individual as a child."/>
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockControlWrapper ID="rcwPreviousNames" runat="server" Label="Previous Last Names">
@@ -175,8 +190,8 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-12">
-                                    <Rock:RockControlWrapper ID="rcwSearchKeys" runat="server" Label="Search Keys" Help="Search keys provide alternate ways to search for an individuals.">
-                                        <Rock:Grid ID="gSearchKeys" runat="server" DisplayType="Light" DataKeyNames="Guid" ShowConfirmDeleteDialog="false">
+                                    <Rock:RockControlWrapper ID="rcwSearchKeys" runat="server" Label="Search Keys" Help="Search keys provide alternate ways to search for an individual.">
+                                        <Rock:Grid ID="gSearchKeys" runat="server" DisplayType="Light" DataKeyNames="Guid" RowItemText="Search Key" ShowConfirmDeleteDialog="false">
                                             <Columns>
                                                 <Rock:DefinedValueField DataField="SearchTypeValueId" HeaderText="Search Type" />
                                                 <Rock:RockBoundField DataField="SearchValue" HeaderText="Search Value" />
@@ -184,13 +199,19 @@
                                             </Columns>
                                         </Rock:Grid>
                                     </Rock:RockControlWrapper>
-                                    </div>
+                                </div>
                             </div>
                         </Rock:PanelWidget>
 
                         <Rock:ModalDialog runat="server" ID="mdPreviousName" Title="Add Previous Last Name" ValidationGroup="vgPreviousName" OnSaveClick="mdPreviousName_SaveClick">
                             <Content>
                                 <Rock:RockTextBox ID="tbPreviousLastName" runat="server" Required="true" ValidationGroup="vgPreviousName" autocomplete="off" />
+                            </Content>
+                        </Rock:ModalDialog>
+
+                        <Rock:ModalDialog runat="server" ID="mdAlternateId" Title="Add Alternate Identifier" ValidationGroup="vgAlternateId" OnSaveClick="mdAlternateId_SaveClick">
+                            <Content>
+                                <Rock:RockTextBox ID="tbAlternateId" runat="server" Label="Alternate Id" Required="true" ValidationGroup="vgAlternateId" autocomplete="off" />
                             </Content>
                         </Rock:ModalDialog>
 

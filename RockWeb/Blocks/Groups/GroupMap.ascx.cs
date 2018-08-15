@@ -26,7 +26,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Text;
@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Groups
                 var showChildGroups = this.GetBlockUserPreference( "ShowChildGroups" ).AsBoolean();
                 cbShowAllGroups.Checked = showChildGroups;
                 
-                var statuses = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
+                var statuses = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
                     .OrderBy( v => v.Order )
                     .ThenBy( v => v.Value )
                     .Select( v => new
@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.Groups
                 rptStatus.DataSource = statuses.Where( s => s.Color != "" ).ToList();
                 rptStatus.DataBind();
                 
-                cpCampuses.Campuses = CacheCampus.All();
+                cpCampuses.Campuses = CampusCache.All();
                 cpCampuses.Visible = this.GetAttributeValue( "ShowCampusesFilter" ).AsBoolean();
 
                 Map();
@@ -230,7 +230,7 @@ namespace RockWeb.Blocks.Groups
             string styleCode = "null";
             var markerColors = new List<string>();
 
-            CacheDefinedValue dvcMapStyle = CacheDefinedValue.Get( GetAttributeValue( "MapStyle" ).AsGuid() );
+            DefinedValueCache dvcMapStyle = DefinedValueCache.Get( GetAttributeValue( "MapStyle" ).AsGuid() );
             if ( dvcMapStyle != null )
             {
                 styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
@@ -261,7 +261,7 @@ namespace RockWeb.Blocks.Groups
             string latitude = "39.8282";
             string longitude = "-98.5795";
             string zoom = "4";
-            var orgLocation = CacheGlobalAttributes.Get().OrganizationLocation;
+            var orgLocation = GlobalAttributesCache.Get().OrganizationLocation;
             if (orgLocation != null && orgLocation.GeoPoint != null)
             {
                 latitude = orgLocation.GeoPoint.Latitude.ToString();
@@ -364,7 +364,7 @@ namespace RockWeb.Blocks.Groups
                 }}),
 
                 // Get Group Members
-                $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Members', function( mapItems ) {{
+                $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Members/{12}', function( mapItems ) {{
                     $.each(mapItems, function (i, mapItem) {{
                         var items = addMapItem(i, mapItem, '{5}');
                         for (var i = 0; i < items.length; i++) {{
@@ -643,7 +643,8 @@ namespace RockWeb.Blocks.Groups
                     longitude, // {8}
                     zoom, // {9}
                     cbShowAllGroups.Checked.ToTrueFalse(), // {10}
-                    gtpGroupType.SelectedGroupTypeIds.AsDelimited(",") // {11}
+                    gtpGroupType.SelectedGroupTypeIds.AsDelimited(","), // {11}
+                    GroupMemberStatus.Active // {12}
                 );
 
             ScriptManager.RegisterStartupScript( pnlMap, pnlMap.GetType(), "group-map-script", mapScript, false );

@@ -25,7 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.IO;
 using System.ComponentModel;
 using Rock.Security;
@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Crm
 
                     if ( errors.Any() )
                     {
-                        nbError.Text = "Please Correct the Following<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
+                        nbError.Text = "Please correct the following:<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
                         nbError.Visible = true;
                         return;
                     }
@@ -316,13 +316,13 @@ namespace RockWeb.Blocks.Crm
             ddlSite.Items.Clear();
             using ( var rockContext = new RockContext() )
             {
-                foreach ( CacheSite site in new SiteService( rockContext )
+                foreach ( SiteCache site in new SiteService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( s => s.EnabledForShortening )
                     .OrderBy( s => s.Name )
                     .Select( a => a.Id )
                     .ToList()
-                    .Select( a => CacheSite.Get( a ) ) )
+                    .Select( a => SiteCache.Get( a ) ) )
                 {
                     ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
                 }

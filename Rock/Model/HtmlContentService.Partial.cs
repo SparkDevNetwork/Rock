@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -85,6 +85,30 @@ namespace Rock.Model
 
             // return the most recently approved item
             return content.OrderByDescending( c => c.Version );
+        }
+
+        /// <summary>
+        /// Returns the latest version of <see cref="Rock.Model.HtmlContent"/> for a specific <see cref="Rock.Model.Block"/> and/or EntityContext.
+        /// </summary>
+        /// <param name="blockId">A <see cref="System.Int32"/> representing the Id of a <see cref="Rock.Model.Block"/>.</param>
+        /// <param name="entityValue">A <see cref="System.String"/> representing the EntityValue. This value is nullable.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.HtmlContent"/> for all versions of the specified <see cref="Rock.Model.Block"/> and/or EntityContext. </returns>
+        public HtmlContent GetLatestVersion( int blockId, string entityValue )
+        {
+            var content = Queryable( "ModifiedByPersonAlias.Person" );
+
+            // If an entity value is specified, then return content specific to that context, 
+            // otherwise return content for the current block instance
+            if ( !string.IsNullOrEmpty( entityValue ) )
+            {
+                content = content.Where( c => c.EntityValue == entityValue );
+            }
+            else
+            {
+                content = content.Where( c => c.BlockId == blockId );
+            }
+
+            return content.OrderByDescending( c => c.Version ).FirstOrDefault();
         }
 
         /// <summary>
@@ -165,6 +189,20 @@ namespace Rock.Model
         {
             var expiration = RockDateTime.Now.AddSeconds( cacheDuration );
             RockCache.AddOrUpdate( HtmlContentCacheKey( blockId, entityValue ), string.Empty, html, expiration );
+        }
+
+        /// <summary>
+        /// Adds the cached HTML for a specific blockId or, if specified, a specific entityValue (Entity Context)
+        /// </summary>
+        /// <param name="blockId">The block identifier.</param>
+        /// <param name="entityValue">The entity value.</param>
+        /// <param name="html">The HTML.</param>
+        /// <param name="cacheDuration">Duration of the cache.</param>
+        /// <param name="cacheTags">The cache tags.</param>
+        public static void AddCachedContent( int blockId, string entityValue, string html, int cacheDuration, string cacheTags )
+        {
+            var expiration = RockDateTime.Now.AddSeconds( cacheDuration );
+            RockCache.AddOrUpdate( HtmlContentCacheKey( blockId, entityValue ), string.Empty, html, expiration, cacheTags );
         }
 
         /// <summary>

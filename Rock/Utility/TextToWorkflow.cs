@@ -21,7 +21,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 using Rock;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
@@ -45,7 +45,7 @@ namespace Rock.Utility
             response = "The keyword you provided was not recognized as a valid keyword.";
 
             // get TextToWorkflow defined types for this number
-            var definedType = CacheDefinedType.Get( SystemGuid.DefinedType.TEXT_TO_WORKFLOW.AsGuid() );
+            var definedType = DefinedTypeCache.Get( SystemGuid.DefinedType.TEXT_TO_WORKFLOW.AsGuid() );
 
             // If there are not any defined values, then return with the invalid keyword response
             if ( definedType == null || definedType.DefinedValues == null || !definedType.DefinedValues.Any() ) return;
@@ -55,7 +55,7 @@ namespace Rock.Utility
                 .OrderBy( v => v.Order ).ToList();
 
             // Iterate through workflows looking for a keyword match (Only the first match will be processed)
-            foreach ( CacheDefinedValue dvWorkflow in smsWorkflows )
+            foreach ( DefinedValueCache dvWorkflow in smsWorkflows )
             {
                 // Get the Keyword expression attribute and see if it matches the message that was recieved
                 string keywordExpression = dvWorkflow.GetAttributeValue( "KeywordExpression" );
@@ -86,7 +86,7 @@ namespace Rock.Utility
                 if ( !workflowTypeGuid.HasValue ) return;
 
                 // Get the configured workflow type, if it is not valid return with invalid keyword response
-                var workflowType = CacheWorkflowType.Get( workflowTypeGuid.Value );
+                var workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
                 if ( workflowType == null ) return;
 
                 // Get the list of workflow attributes to set
@@ -155,7 +155,7 @@ namespace Rock.Utility
 
                     // Set the workflow name
                     var name = nameTemplate.ResolveMergeFields( mergeValues );
-                    if ( name.IsNotNullOrWhitespace() )
+                    if ( name.IsNotNullOrWhiteSpace() )
                     {
                         workflow.Name = name;
                     }
@@ -193,7 +193,7 @@ namespace Rock.Utility
             var phoneNumber = fromPhone.Replace( "+", "" );
 
             // Get the person ids for people who's Mobile number matches the recieved From number
-            var mobilePhoneType = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+            var mobilePhoneType = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
             var peopleWithMobileNumber = phoneNumberService
                 .Queryable().AsNoTracking()
                 .Where( n => ( n.CountryCode ?? "" ) + ( n.Number ?? "" ) == phoneNumber )

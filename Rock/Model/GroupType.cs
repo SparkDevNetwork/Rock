@@ -24,7 +24,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Security;
@@ -39,7 +39,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupType" )]
     [DataContract]
-    public partial class GroupType : Model<GroupType>, IOrdered
+    public partial class GroupType : Model<GroupType>, IOrdered, ICacheable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupType"/> class.
@@ -401,7 +401,9 @@ namespace Rock.Model
 	
 	
 	
-<p class='description'>{{ Group.Description }}</p>
+{% if Group.Description != '' -%}
+    <p class='description'>{{ Group.Description }}</p>
+{% endif -%}
 
 <div class=""row"">
    <div class=""col-md-6"">
@@ -914,7 +916,7 @@ namespace Rock.Model
             rockContext = rockContext ?? new RockContext();
 
             //
-            // Can't use CacheGroupType here since it loads attributes and could
+            // Can't use GroupTypeCache here since it loads attributes and could
             // result in a recursive stack overflow situation when we are called
             // from a GetInheritedAttributes() method.
             //
@@ -952,17 +954,17 @@ namespace Rock.Model
         /// <param name="entityTypeId">The Entity Type Id for which Attributes to load.</param>
         /// <param name="entityTypeQualifierColumn">The EntityTypeQualifierColumn value to match against.</param>
         /// <returns>A list of attributes defined in the inheritence tree.</returns>
-        public List<Cache.CacheAttribute> GetInheritedAttributesForQualifier( Rock.Data.RockContext rockContext, int entityTypeId, string entityTypeQualifierColumn )
+        public List<AttributeCache> GetInheritedAttributesForQualifier( Rock.Data.RockContext rockContext, int entityTypeId, string entityTypeQualifierColumn )
         {
             var groupTypeIds = GetInheritedGroupTypeIds( rockContext );
 
-            var inheritedAttributes = new Dictionary<int, List<Cache.CacheAttribute>>();
-            groupTypeIds.ForEach( g => inheritedAttributes.Add( g, new List<Cache.CacheAttribute>() ) );
+            var inheritedAttributes = new Dictionary<int, List<AttributeCache>>();
+            groupTypeIds.ForEach( g => inheritedAttributes.Add( g, new List<AttributeCache>() ) );
 
             //
             // Walk each group type and generate a list of matching attributes.
             //
-            foreach ( var entityAttributes in CacheAttribute.GetByEntity( entityTypeId ) )
+            foreach ( var entityAttributes in AttributeCache.GetByEntity( entityTypeId ) )
             {
                 // group type ids exist and qualifier is for a group type id
                 if ( string.Compare( entityAttributes.EntityTypeQualifierColumn, entityTypeQualifierColumn, true ) == 0 )
@@ -972,7 +974,7 @@ namespace Rock.Model
                     {
                         foreach ( int attributeId in entityAttributes.AttributeIds )
                         {
-                            inheritedAttributes[groupTypeIdValue].Add( CacheAttribute.Get( attributeId ) );
+                            inheritedAttributes[groupTypeIdValue].Add( AttributeCache.Get( attributeId ) );
                         }
                     }
                 }
@@ -982,7 +984,7 @@ namespace Rock.Model
             // Walk the generated list of attribute groups and put them, ordered, into a list
             // of inherited attributes.
             //
-            var attributes = new List<Cache.CacheAttribute>();
+            var attributes = new List<AttributeCache>();
             foreach ( var attributeGroup in inheritedAttributes )
             {
                 foreach ( var attribute in attributeGroup.Value.OrderBy( a => a.Order ) )
@@ -997,8 +999,8 @@ namespace Rock.Model
         /// <summary>
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
-        /// <returns>A list of all inherited CacheAttribute objects.</returns>
-        public override List<Cache.CacheAttribute> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        /// <returns>A list of all inherited AttributeCache objects.</returns>
+        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
             return GetInheritedAttributesForQualifier( rockContext, TypeId, "Id" );
         }
@@ -1056,6 +1058,38 @@ namespace Rock.Model
 
             IndexContainer.IndexDocuments( indexableGroups );
         }
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return GroupTypeCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            var parentGroupTypes = GroupTypeCache.Get( this.Id, dbContext as RockContext )?.ParentGroupTypes;
+            if ( parentGroupTypes?.Any() == true )
+            {
+                foreach ( var parentGroupType in parentGroupTypes )
+                {
+                    GroupTypeCache.UpdateCachedEntity( parentGroupType.Id, EntityState.Detached );
+                }
+            }
+
+            GroupTypeCache.UpdateCachedEntity( this.Id, entityState );
+        }
+
         #endregion
     }
 

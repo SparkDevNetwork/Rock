@@ -99,7 +99,7 @@ namespace Rock.UniversalSearch.Crawler
             _cookieContainer = new CookieContainer();
 
             // If a loginId and password were included, get an authentication cookie
-            if ( loginId.IsNotNullOrWhitespace() && password.IsNotNullOrWhitespace() )
+            if ( loginId.IsNotNullOrWhiteSpace() && password.IsNotNullOrWhiteSpace() )
             {
                 var loginParam = new LoginParameters();
                 loginParam.Username = loginId;
@@ -181,7 +181,10 @@ namespace Rock.UniversalSearch.Crawler
                                 }
 
                                 IndexContainer.IndexDocument( sitePage );
+                            }
 
+                            if ( metaRobot == null || metaRobot.Attributes["content"] == null || !metaRobot.Attributes["content"].Value.Contains( "nofollow" ) )
+                            {
                                 // crawl all the links found on the page.
                                 var links = ParseLinks( htmlDoc );
 
@@ -212,6 +215,12 @@ namespace Rock.UniversalSearch.Crawler
                 {
                     HtmlAttribute hrefAttribute = link.Attributes["href"];
                     string anchorLink = hrefAttribute.Value;
+
+                    // Skip links that have been flagged to not be followed.
+                    if ( link.Attributes.Contains( "rel" ) && link.Attributes["rel"].Value.Contains( "nofollow" ) )
+                    {
+                        continue;
+                    }
 
                     // check for links that aren't pages (javascript:, mailto:)
                     if ( IsValidLink( anchorLink ) )

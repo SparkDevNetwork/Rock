@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -25,6 +24,7 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Model;
 using Rock.Workflow.Action;
+using Rock.Web.Cache;
 
 public class Mailgun : IHttpHandler
 {
@@ -56,7 +56,7 @@ public class Mailgun : IHttpHandler
         using ( var rockContext = new Rock.Data.RockContext() )
         {
             // We need to get the transport type now that there are two
-            var emailMediumEntity = Rock.Cache.CacheEntityType.Get( "Rock.Communication.Medium.Email" );
+            var emailMediumEntity = EntityTypeCache.Get( "Rock.Communication.Medium.Email" );
 
             var emailMediumAttribute = new AttributeService( rockContext )
                     .Queryable()
@@ -68,7 +68,7 @@ public class Mailgun : IHttpHandler
                     .Where( v => v.AttributeId == emailMediumAttribute.Id )
                     .FirstOrDefault();
 
-            var mailgunEntity = Rock.Cache.CacheEntityType.Get( emailMediumAttributeValue.Value.AsGuid(), rockContext );
+            var mailgunEntity = EntityTypeCache.Get( emailMediumAttributeValue.Value.AsGuid(), rockContext );
 
             if ( mailgunEntity != null )
             {
@@ -105,7 +105,7 @@ public class Mailgun : IHttpHandler
             {
                 // for http sent email, mailgun puts the info as URL encoded JSON into the form key "X-Mailgun-Variables"
                 string mailgunVariables = HttpContext.Current.Server.UrlDecode( request.Form["X-Mailgun-Variables"] );
-                if ( mailgunVariables.IsNotNullOrWhitespace() )
+                if ( mailgunVariables.IsNotNullOrWhiteSpace() )
                 {
                     var mailgunVarDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>( mailgunVariables );
                     actionGuid = mailgunVarDictionary.ContainsKey( "workflow_action_guid" ) ? mailgunVarDictionary["workflow_action_guid"].AsGuidOrNull() : null;

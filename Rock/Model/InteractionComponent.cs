@@ -19,6 +19,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using Rock.Web.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -30,7 +31,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "InteractionComponent" )]
     [DataContract]
-    public partial class InteractionComponent : Model<InteractionComponent>
+    public partial class InteractionComponent : Model<InteractionComponent>, ICacheable
     {
 
         #region Entity Properties
@@ -64,7 +65,7 @@ namespace Rock.Model
         public string ComponentSummary { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the entity that this interaction component is related to.
+        /// Gets or sets the Id of the entity that this interaction component is related to (determined by Channel.ComponentEntityType)
         /// For example:
         ///  if this is a Page View:
         ///     InteractionComponent.EntityId is the SiteId of the page that was viewed
@@ -124,12 +125,10 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            Cache.CacheInteractionComponent.Remove( this.Id );
-
             if ( this.SaveState == System.Data.Entity.EntityState.Added ||
                 this.SaveState == System.Data.Entity.EntityState.Deleted )
             {
-                var channel = Cache.CacheInteractionChannel.Get( this.ChannelId );
+                var channel = InteractionChannelCache.Get( this.ChannelId );
                 if ( channel != null )
                 {
                     if ( this.SaveState == System.Data.Entity.EntityState.Added )
@@ -144,6 +143,29 @@ namespace Rock.Model
             }
 
             base.PostSaveChanges( dbContext );
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return InteractionComponentCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            InteractionComponentCache.UpdateCachedEntity( this.Id, this.SaveState );
         }
 
         #endregion

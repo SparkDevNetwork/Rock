@@ -12,7 +12,7 @@
                         </div>
                         <div class="panel-body">
 
-                            <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                            <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                             <div class="row">
                                 <div class="col-md-6">
@@ -32,7 +32,7 @@
                                 <div class="col-md-6">
                                     <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" EntityTypeName="Rock.Model.Report" Label="Category" />
                                     <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Applies To" Required="true" AutoPostBack="true" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged" EnhanceForLongLists="true" />
-                                    <Rock:DataViewPicker ID="ddlDataView" runat="server" Label="Data View" Required="false" EnhanceForLongLists="true" />
+                                    <Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Data View" Required="false" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:KeyValueList ID="kvSortFields" runat="server" Label="Sorting" />

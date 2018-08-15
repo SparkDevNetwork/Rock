@@ -28,7 +28,7 @@ using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter
@@ -203,12 +203,12 @@ namespace Rock.Reporting.DataFilter
         /// </summary>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public string GetSelectedFieldName( string selection )
+        public virtual string GetSelectedFieldName( string selection )
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
-                var values = JsonConvert.DeserializeObject<List<string>>( selection );
-                if ( values.Count > 0 )
+                List<string> values = selection.FromJsonOrNull<List<string>>();
+                if ( values?.Count > 0 )
                 {
                     return values[0];
                 }
@@ -223,7 +223,7 @@ namespace Rock.Reporting.DataFilter
         /// <param name="selection">The selection.</param>
         /// <param name="rockBlock">The rock block.</param>
         /// <returns></returns>
-        public string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock )
+        public virtual string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock )
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
@@ -332,7 +332,7 @@ namespace Rock.Reporting.DataFilter
 
             if ( entityField.AttributeGuid.HasValue )
             {
-                var attributeCache = CacheAttribute.Get( entityField.AttributeGuid.Value );
+                var attributeCache = AttributeCache.Get( entityField.AttributeGuid.Value );
                 var attributeId = attributeCache != null ? attributeCache.Id : 0;
 
                 attributeValues = attributeValues.Where( v => v.AttributeId == attributeId );

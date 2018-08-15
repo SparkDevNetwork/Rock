@@ -67,8 +67,7 @@ namespace RockWeb.Webhooks
 
                 if ( !Rock.Checkr.Checkr.SaveWebhookResults( postedData ) )
                 {
-                    response.Write( "Invalid Data." );
-                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.StatusCode = (int)HttpStatusCode.OK; //If it is not ok, the website will re-direct to the error screen
                     return;
                 }
 

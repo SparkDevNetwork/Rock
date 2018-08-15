@@ -23,7 +23,7 @@ using Quartz;
 
 using Rock.Model;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -35,7 +35,7 @@ namespace Rock.Jobs
     public class ProcessWorkflows : IJob
     {
         /// <summary> 
-        /// Empty constructor for job initilization
+        /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
         /// scheduler can instantiate the class whenever it needs.
@@ -79,7 +79,7 @@ namespace Rock.Jobs
                     var workflow = workflowService.Queryable().FirstOrDefault( a => a.Id == workflowId );
                     if ( workflow != null )
                     {
-                        var workflowType = workflow.CacheWorkflowType;
+                        var workflowType = workflow.WorkflowTypeCache;
                         if ( workflowType != null )
                         {
                             try

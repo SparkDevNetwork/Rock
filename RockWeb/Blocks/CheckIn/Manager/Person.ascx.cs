@@ -121,18 +121,29 @@ namespace RockWeb.Blocks.CheckIn.Manager
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
                 var attendanceInfo = e.Row.DataItem as AttendanceInfo;
-                if ( attendanceInfo != null && attendanceInfo.IsActive )
-                {
-                    e.Row.AddCssClass( "success" );
-                    Literal lActive = (Literal)e.Row.FindControl( "lActive" );
-                    lActive.Text = "<span class='label label-success'>Current</span>";
-                }
-                else
+                if ( attendanceInfo == null)
                 {
                     var cell = ( e.Row.Cells[_deleteFieldIndex] as DataControlFieldCell ).Controls[0];
                     if ( cell != null )
                     {
                         cell.Visible = false;
+                    }
+                    
+                }
+                else
+                {
+                    Literal lActive = ( Literal ) e.Row.FindControl( "lActive" );
+                    if ( attendanceInfo.IsActive && lActive != null )
+                    {
+                        e.Row.AddCssClass( "success" );
+                        lActive.Text = "<span class='label label-success'>Current</span>";
+                    }
+
+                    Literal lWhoCheckedIn = ( Literal ) e.Row.FindControl( "lWhoCheckedIn" );
+                    if ( lWhoCheckedIn != null && attendanceInfo.CheckInByPersonGuid.HasValue )
+                    {
+                        string url = String.Format( "{0}{1}{2}{3}?Person={4}", Request.Url.Scheme, Uri.SchemeDelimiter, Request.Url.Authority, Request.Url.AbsolutePath, attendanceInfo.CheckInByPersonGuid );
+                        lWhoCheckedIn.Text = string.Format( "<br /><a href=\"{0}\">By {1}</a>", url, attendanceInfo.CheckInByPersonName );
                     }
                 }
             }
@@ -328,22 +339,15 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         .Queryable().AsNoTracking()
                         .Where( s => s.CheckInStartOffsetMinutes.HasValue )
                         .ToList();
-                    
+
                     var scheduleIds = schedules.Select( s => s.Id ).ToList();
 
-                    var activeScheduleIds = new List<int>();
-                    foreach ( var schedule in schedules )
-                    {
-                        if ( schedule.IsScheduleOrCheckInActive )
-                        {
-                            activeScheduleIds.Add( schedule.Id );
-                        }
-                    }
-
                     int? personAliasId = person.PrimaryAliasId;
+
+                    PersonAliasService personAliasService = new PersonAliasService( rockContext );
                     if ( !personAliasId.HasValue )
                     {
-                        personAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( person.Id );
+                        personAliasId = personAliasService.GetPrimaryAliasId( person.Id );
                     }
 
                     var attendances = new AttendanceService( rockContext )
@@ -362,20 +366,27 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         .ToList()                                                             // Run query to get recent most 20 checkins
                         .OrderByDescending( a => a.Occurrence.OccurrenceDate )                // Then sort again by startdatetime and schedule start (which is not avail to sql query )
                         .ThenByDescending( a => a.Occurrence.Schedule.StartTimeOfDay )
-                        .Select( a => new AttendanceInfo
-                        {
-                            Id = a.Id,
-                            Date = a.StartDateTime,
-                            GroupId = a.Occurrence.Group.Id,
-                            Group = a.Occurrence.Group.Name,
-                            LocationId = a.Occurrence.LocationId.Value,
-                            Location = a.Occurrence.Location.Name,
-                            Schedule = a.Occurrence.Schedule.Name,
-                            IsActive =
-                                a.StartDateTime > DateTime.Today &&
-                                activeScheduleIds.Contains( a.Occurrence.ScheduleId.Value ),
-                            Code = a.AttendanceCode != null ? a.AttendanceCode.Code : ""
-                        } ).ToList();
+                        .ToList()
+                        .Select( a =>
+                            {
+                                var checkedInByPerson = a.CheckedInByPersonAliasId.HasValue ? personAliasService.GetPerson( a.CheckedInByPersonAliasId.Value ): null;
+
+                                return new AttendanceInfo
+                                {
+                                    Id = a.Id,
+                                    Date = a.StartDateTime,
+                                    GroupId = a.Occurrence.Group.Id,
+                                    Group = a.Occurrence.Group.Name,
+                                    LocationId = a.Occurrence.LocationId.Value,
+                                    Location = a.Occurrence.Location.Name,
+                                    Schedule = a.Occurrence.Schedule.Name,
+                                    IsActive = a.IsCurrentlyCheckedIn,
+                                    Code = a.AttendanceCode != null ? a.AttendanceCode.Code : "",
+                                    CheckInByPersonName = checkedInByPerson != null ? checkedInByPerson.FullName: string.Empty,
+                                    CheckInByPersonGuid = checkedInByPerson != null ? checkedInByPerson.Guid : ( Guid? ) null
+                                };
+                            }
+                        ).ToList();
 
                     // Set active locations to be a link to the room in manager page
                     var qryParam = new Dictionary<string, string>();
@@ -416,6 +427,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public string Schedule { get; set; }
             public bool IsActive { get; set; }
             public string Code { get; set; }
+            public string CheckInByPersonName { get; set; }
+            public Guid? CheckInByPersonGuid { get; set; }
         }
 
         #endregion

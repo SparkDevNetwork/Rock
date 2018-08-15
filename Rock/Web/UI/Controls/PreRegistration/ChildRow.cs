@@ -24,7 +24,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -277,16 +277,16 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The attribute list.
         /// </value>
-        public List<CacheAttribute> AttributeList
+        public List<AttributeCache> AttributeList
         {
             get
             {
                 if ( _attributeList == null )
                 {
-                    _attributeList = ViewState["AttributeList"] as List<CacheAttribute>;
+                    _attributeList = ViewState["AttributeList"] as List<AttributeCache>;
                     if ( _attributeList == null )
                     {
-                        _attributeList = new List<CacheAttribute>();
+                        _attributeList = new List<AttributeCache>();
                     }
                 }
                 return _attributeList;
@@ -298,7 +298,7 @@ namespace Rock.Web.UI.Controls
                 RecreateChildControls();
             }
         }
-        private List<CacheAttribute> _attributeList = null;
+        private List<AttributeCache> _attributeList = null;
 
         /// <summary>
         /// Gets or sets the person identifier.
@@ -618,7 +618,7 @@ namespace Rock.Web.UI.Controls
             _ddlSuffix.Label = "Suffix";
             string suffixValue = _ddlSuffix.SelectedValue;
             _ddlSuffix.Items.Clear();
-            _ddlSuffix.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ), true );
+            _ddlSuffix.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ), true );
             if ( !string.IsNullOrEmpty( suffixValue ) )
             {
                 _ddlSuffix.SelectedValue = suffixValue;
@@ -665,7 +665,7 @@ namespace Rock.Web.UI.Controls
                 attribute.AddControl( _phAttributes.Controls, "", this.ValidationGroup, false, true, attribute.IsRequired );
             }
 
-            _lbDelete.CssClass = "btn btn-xs btn-danger pull-right";
+            _lbDelete.CssClass = "btn btn-xs btn-square btn-danger pull-right";
             _lbDelete.Click += lbDelete_Click;
             _lbDelete.CausesValidation = false;
             _lbDelete.Text = "<i class='fa fa-times'></i>";
@@ -848,7 +848,7 @@ namespace Rock.Web.UI.Controls
     /// Helper Class for serializing child data in viewstate
     /// </summary>
     [Serializable]
-    public class PreRegistrationChild 
+    public class PreRegistrationChild
     {
         /// <summary>
         /// Gets or sets the identifier.

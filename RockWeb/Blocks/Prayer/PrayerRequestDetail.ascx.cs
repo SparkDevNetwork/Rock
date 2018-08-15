@@ -27,7 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Require Last Name", "Require that a last name be entered", true, "", 3 )]
     [BooleanField( "Default To Public", "If enabled, all prayers will be set to public by default", false, "", 4)]
     [BooleanField( "Default Allow Comments Checked", "If true, the Allow Comments checkbox will be pre-checked for all new requests by default.", true, order: 5 )]
-
+    [BooleanField("Require Campus", "Require that a campus be selected", false, "", 6 )]
     public partial class PrayerRequestDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -126,8 +126,8 @@ namespace RockWeb.Blocks.Prayer
             ScriptManager.RegisterStartupScript( pnlStatus, pnlStatus.GetType(), "status-script-" + this.BlockId.ToString(), script, true );
 
             tbLastName.Required = GetAttributeValue( "RequireLastName" ).AsBooleanOrNull() ?? true;
-
-            cpCampus.Campuses = CacheCampus.All( false );
+            cpCampus.Required = GetAttributeValue("RequireCampus").AsBooleanOrNull() ?? false;
+            cpCampus.Campuses = CampusCache.All( false );
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Prayer
         {
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "prayerRequestId" ).AsInteger() );
+                ShowDetail( PageParameter( "PrayerRequestId" ).AsInteger() );
             }
             else
             {
@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.Prayer
                 {
                     var rockContext = new RockContext();
                     PrayerRequest prayerRequest;
-                    int? prayerRequestId = PageParameter( "prayerRequestId" ).AsIntegerOrNull();
+                    int? prayerRequestId = PageParameter( "PrayerRequestId" ).AsIntegerOrNull();
                     if ( prayerRequestId.HasValue && prayerRequestId.Value > 0 )
                     {
                         prayerRequest = new PrayerRequestService( rockContext ).Get( prayerRequestId.Value );

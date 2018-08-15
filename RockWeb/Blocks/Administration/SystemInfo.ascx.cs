@@ -28,7 +28,7 @@ using System.Web;
 using System.Web.UI;
 
 using Rock;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
@@ -317,7 +317,7 @@ namespace RockWeb.Blocks.Administration
                 try
                 {
                     // get database size
-                    reader = DbService.GetDataReader( "sp_helpdb " + catalog, System.Data.CommandType.Text, null );
+                    reader = DbService.GetDataReader( "sp_helpdb '" + catalog.ToStringSafe().Replace("'", "''") + "'", System.Data.CommandType.Text, null );
                     if ( reader != null )
                     {
                         // get second data table

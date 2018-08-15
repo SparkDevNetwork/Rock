@@ -468,7 +468,7 @@ namespace RockWeb.Blocks.Core
             DescriptionList descriptionList = new DescriptionList()
                 .Add( "Description", schedule.Description ?? string.Empty )
                 .Add( "Schedule", friendlyText )
-                .Add( "Next Occurrence", schedule.NextStartDateTime )
+                .Add( "Next Occurrence", schedule.GetNextStartDateTime( RockDateTime.Now ) )
                 .Add( "Category", schedule.Category != null ? schedule.Category.Name : string.Empty );
 
             if ( schedule.CheckInStartOffsetMinutes.HasValue )

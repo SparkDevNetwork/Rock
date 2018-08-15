@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
+using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
 
 namespace Rock.Data
@@ -180,12 +181,12 @@ namespace Rock.Data
         /// Gets the model with the id value into the selected form
         /// </summary>
         /// <typeparam name="TResult">The type of the result.</typeparam>
-        /// <param name="Id">The identifier.</param>
+        /// <param name="id">The identifier.</param>
         /// <param name="selector">The selector.</param>
         /// <returns></returns>
-        public TResult GetSelect<TResult>( int Id, System.Linq.Expressions.Expression<Func<T, TResult>> selector )
+        public TResult GetSelect<TResult>( int id, System.Linq.Expressions.Expression<Func<T, TResult>> selector )
         {
-            return AsNoFilter().Where( a => a.Id == Id ).Select( selector ).FirstOrDefault();
+            return AsNoFilter().Where( a => a.Id == id ).Select( selector ).FirstOrDefault();
         }
 
         /// <summary>
@@ -490,6 +491,9 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool DeleteRange( IEnumerable<T> items )
         {
+            if ( items == null )
+                return false;
+
             _objectSet.RemoveRange( items );
             return true;
         }
@@ -507,7 +511,7 @@ namespace Rock.Data
         {
             var rockContext = this.Context as RockContext;
 
-            var entityType = Rock.Cache.CacheEntityType.Get( typeof( T ), false, rockContext );
+            var entityType = EntityTypeCache.Get( typeof( T ), false, rockContext );
             if ( entityType != null )
             {
                 var followerPersonIds = new Rock.Model.FollowingService( rockContext )
@@ -534,7 +538,7 @@ namespace Rock.Data
         {
             var rockContext = this.Context as RockContext;
 
-            var entityType = Rock.Cache.CacheEntityType.Get( typeof( T ), false, rockContext );
+            var entityType = EntityTypeCache.Get( typeof( T ), false, rockContext );
             if ( entityType != null )
             {
                 var ids = new Rock.Model.FollowingService( rockContext )

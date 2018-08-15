@@ -47,7 +47,7 @@ using Rock.Model;
 using Rock.Plugin;
 using Rock.Transactions;
 using Rock.Utility;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb
@@ -97,7 +97,7 @@ namespace RockWeb
             {
                 if ( siteId.HasValue )
                 {
-                    var site = CacheSite.Get( siteId.Value );
+                    var site = SiteCache.Get( siteId.Value );
                     if ( site != null && ! String.IsNullOrWhiteSpace( site.AllowedFrameDomains ) )
                     {
                         useFrameDomains = true;
@@ -140,11 +140,12 @@ namespace RockWeb
 
                 // Indicate to always log to file during initialization.
                 ExceptionLogService.AlwaysLogToFile = true;
-
-                // Clear all cache
-                RockCache.ClearAllCachedItems();
-
-                var runMigrationFile = new FileInfo( Server.MapPath( "~/App_Data/Run.Migration" ) );
+                
+                if ( !File.Exists( Server.MapPath( "~/App_Data/Run.Migration" ) ) )
+                {
+                    // Clear all cache
+                    RockCache.ClearAllCachedItems( false );
+                }
 
                 // Get a db context
                 using ( var rockContext = new RockContext() )
@@ -429,7 +430,7 @@ namespace RockWeb
                         if ( httpEx != null )
                         {
                             int statusCode = httpEx.GetHttpCode();
-                            if ( ( statusCode == 404 ) && !CacheGlobalAttributes.Get().GetValue( "Log404AsException" ).AsBoolean())
+                            if ( ( statusCode == 404 ) && !GlobalAttributesCache.Get().GetValue( "Log404AsException" ).AsBoolean())
                             {
                                 context.ClearError();
                                 context.Response.StatusCode = 404;
@@ -762,7 +763,7 @@ namespace RockWeb
                     if ( attribute == null )
                     {
                         attribute = new Rock.Model.Attribute();
-                        attribute.FieldTypeId = CacheFieldType.Get( new Guid( Rock.SystemGuid.FieldType.TEXT ) ).Id;
+                        attribute.FieldTypeId = FieldTypeCache.Get( new Guid( Rock.SystemGuid.FieldType.TEXT ) ).Id;
                         attribute.EntityTypeQualifierColumn = attributeValueConfig.EntityTypeQualifierColumm;
                         attribute.EntityTypeQualifierValue = attributeValueConfig.EntityTypeQualifierValue;
                         attribute.Key = attributeValueConfig.AttributeKey;
@@ -850,19 +851,22 @@ namespace RockWeb
         /// </summary>
         private void LoadCacheObjects( RockContext rockContext )
         {
+            // Flush the EntityAttributesCache just in case Migrations added attributes thru SQL
+            EntityAttributesCache.Remove();
+
             // Cache all the entity types
             foreach ( var entityType in new Rock.Model.EntityTypeService( rockContext ).Queryable().AsNoTracking() )
             {
-                CacheEntityType.Get( entityType );
+                EntityTypeCache.Get( entityType );
             }
 
             // Cache all the Field Types
             foreach ( var fieldType in new Rock.Model.FieldTypeService( rockContext ).Queryable().AsNoTracking() )
             {
-                Rock.Cache.CacheFieldType.Get( fieldType );
+                FieldTypeCache.Get( fieldType );
             }
 
-            var all = Rock.Cache.CacheFieldType.All();
+            var all = FieldTypeCache.All();
 
             // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
             var qualifiers = new Dictionary<int, Dictionary<string, string>>();
@@ -886,7 +890,7 @@ namespace RockWeb
             // Cache all the attributes, except for user preferences
             
             var attributeQuery = new Rock.Model.AttributeService( rockContext ).Queryable( "Categories" );
-            int? personUserValueEntityTypeId = Rock.Cache.CacheEntityType.GetId( Person.USER_VALUE_ENTITY );
+            int? personUserValueEntityTypeId = EntityTypeCache.GetId( Person.USER_VALUE_ENTITY );
             if (personUserValueEntityTypeId.HasValue)
             {
                 attributeQuery = attributeQuery.Where(a => !a.EntityTypeId.HasValue || a.EntityTypeId.Value != personUserValueEntityTypeId);
@@ -895,15 +899,15 @@ namespace RockWeb
             foreach ( var attribute in attributeQuery.AsNoTracking().ToList() )
             {
                 if ( qualifiers.ContainsKey( attribute.Id ) )
-                    Rock.Cache.CacheAttribute.Get( attribute, qualifiers[attribute.Id] );
+                    Rock.Web.Cache.AttributeCache.Get( attribute, qualifiers[attribute.Id] );
                 else
-                    Rock.Cache.CacheAttribute.Get( attribute, new Dictionary<string, string>() );
+                    Rock.Web.Cache.AttributeCache.Get( attribute, new Dictionary<string, string>() );
             }
 
             // cache all the Country Defined Values since those can be loaded in just a few millisecond here, but take around 1-2 seconds if first loaded when formatting an address
             foreach ( var definedValue in new Rock.Model.DefinedValueService( rockContext ).GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() ).AsNoTracking() )
             {
-                CacheDefinedValue.Get( definedValue );
+                DefinedValueCache.Get( definedValue );
             }
         }
 
@@ -960,7 +964,7 @@ namespace RockWeb
             {
                 bool sendNotification = true;
 
-                var globalAttributesCache = CacheGlobalAttributes.Get();
+                var globalAttributesCache = GlobalAttributesCache.Get();
 
                 string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
                 if ( !string.IsNullOrWhiteSpace( filterSettings ) )
@@ -1041,7 +1045,7 @@ namespace RockWeb
                             string siteName = "Rock";
                             if ( siteId.HasValue )
                             {
-                                var site = CacheSite.Get( siteId.Value );
+                                var site = SiteCache.Get( siteId.Value );
                                 if ( site != null )
                                 {
                                     siteName = site.Name;
@@ -1278,10 +1282,10 @@ namespace RockWeb
         /// <returns></returns>
         private static string GetKeepAliveUrl()
         {
-            var keepAliveUrl = CacheGlobalAttributes.Value( "KeepAliveUrl" );
+            var keepAliveUrl = GlobalAttributesCache.Value( "KeepAliveUrl" );
             if ( string.IsNullOrWhiteSpace( keepAliveUrl ) )
             {
-                keepAliveUrl = CacheGlobalAttributes.Value( "InternalApplicationRoot" ) ?? string.Empty;
+                keepAliveUrl = GlobalAttributesCache.Value( "InternalApplicationRoot" ) ?? string.Empty;
                 keepAliveUrl = keepAliveUrl.EnsureTrailingForwardslash() + "KeepAlive.aspx";
             }
 

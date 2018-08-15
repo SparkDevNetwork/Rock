@@ -23,7 +23,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Security
                         qry = qry.OrderByDescending( q => q.LastViewedDate );
                     }
 
-                    gViewed.EntityTypeId = CacheEntityType.Get<PersonViewed>().Id;
+                    gViewed.EntityTypeId = EntityTypeCache.Get<PersonViewed>().Id;
                     gViewed.DataSource = qry.ToList();
                     gViewed.DataBind();
                 }
@@ -238,7 +238,7 @@ namespace RockWeb.Blocks.Security
                         qry = qry.OrderByDescending( q => q.LastViewedDate );
                     }
 
-                    gViewedBy.EntityTypeId = CacheEntityType.Get<Person>().Id;
+                    gViewedBy.EntityTypeId = EntityTypeCache.Get<Person>().Id;
                     gViewedBy.DataSource = qry.ToList();
                     gViewedBy.DataBind();
                 }

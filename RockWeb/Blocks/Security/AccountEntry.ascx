@@ -6,8 +6,8 @@
         var availabilityMessageRow = $('#availabilityMessageRow');
         var usernameUnavailable = $('#availabilityMessage');
         var usernameTextbox = $('#<%= tbUserName.ClientID %>');
-        var usernameRegExp = new RegExp("<%= Rock.Cache.CacheGlobalAttributes.Get().GetValue( "core.ValidUsernameRegularExpression" ) %>");
-        var usernameValidCaption = "<%= Rock.Cache.CacheGlobalAttributes.Get().GetValue( "core.ValidUsernameCaption" ) %>";
+        var usernameRegExp = new RegExp("<%= Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" ) %>");
+        var usernameValidCaption = "<%= Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" ) %>";
 
         availabilityMessageRow.hide();
 
@@ -60,7 +60,7 @@
 <ContentTemplate>
 
     <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-validation"/>
-    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation"/>
+    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation"/>
 
     <asp:PlaceHolder ID="phUserInfo" runat="server" Visible="true">
 

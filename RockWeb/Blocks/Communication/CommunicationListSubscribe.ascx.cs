@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Web.UI;
@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Communication
                         var groupMember = new GroupMember();
                         groupMember.PersonId = this.CurrentPersonId.Value;
                         groupMember.GroupId = group.Id;
-                        int? defaultGroupRoleId = CacheGroupType.Get( group.GroupTypeId ).DefaultGroupRoleId;
+                        int? defaultGroupRoleId = GroupTypeCache.Get( group.GroupTypeId ).DefaultGroupRoleId;
                         if ( defaultGroupRoleId.HasValue )
                         {
                             groupMember.GroupRoleId = defaultGroupRoleId.Value;
@@ -256,11 +256,6 @@ namespace RockWeb.Blocks.Communication
                             groupMemberService.Add( groupMember );
                             rockContext.SaveChanges();
                             groupMember.SaveAttributeValue( "PreferredCommunicationMedium", rockContext );
-
-                            if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-                            {
-                                CacheRole.Remove( group.Id );
-                            }
                         }
                         else
                         {
@@ -291,8 +286,8 @@ namespace RockWeb.Blocks.Communication
             var groupService = new GroupService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
             var categoryService = new CategoryService( rockContext );
-            int communicationListGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
-            int? communicationListGroupTypeDefaultRoleId = CacheGroupType.Get( communicationListGroupTypeId ).DefaultGroupRoleId;
+            int communicationListGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
+            int? communicationListGroupTypeDefaultRoleId = GroupTypeCache.Get( communicationListGroupTypeId ).DefaultGroupRoleId;
 
             // Get a list of syncs for the communication list groups where the default role is sync'd
             var groupSyncService = new GroupSyncService( rockContext );

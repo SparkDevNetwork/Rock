@@ -219,7 +219,7 @@ namespace Rock.Web.UI.Controls
 
                 writer.Write( "<header>" );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-link btn-xs" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, visible ? "btn btn-link btn-xs is-open" : "btn btn-link btn-xs" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Button );
                 writer.Write( "Filter Options" );
 
@@ -246,7 +246,7 @@ namespace Rock.Web.UI.Controls
                 AdditionalFilterDisplay.ToList().ForEach( d => filterDisplay.Add( d.Key, d.Value ) );
 
                 List<UserPreference> userPreferencesForFilter;
-                if ( this.UserPreferenceKeyPrefix.IsNotNullOrWhitespace() )
+                if ( this.UserPreferenceKeyPrefix.IsNotNullOrWhiteSpace() )
                 {
                     userPreferencesForFilter = _userPreferences.Where( a => a.Key.StartsWith( this.UserPreferenceKeyPrefix ) ).ToList();
                 }

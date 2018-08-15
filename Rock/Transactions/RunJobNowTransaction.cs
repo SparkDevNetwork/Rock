@@ -17,7 +17,6 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Threading;
 
 using Quartz;
 using Quartz.Impl;
@@ -95,7 +94,7 @@ namespace Rock.Transactions
                         sched.Start();
 
                         // Wait 10secs to give job chance to start
-                        Thread.Sleep( new TimeSpan( 0, 0, 10 ) );
+                        System.Threading.Tasks.Task.Delay( new TimeSpan( 0, 0, 10 ) ).Wait();
 
                         // stop the scheduler when done with job
                         sched.Shutdown( true );

@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Fundraising
 
             groupMembersQuery = groupMembersQuery.Sort( gGroupMembers.SortProperty ?? new SortProperty { Property = "Person.LastName, Person.NickName" } );
 
-            var entityTypeIdGroupMember = CacheEntityType.GetId<Rock.Model.GroupMember>();
+            var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
 
             var groupMemberList = groupMembersQuery.ToList().Select( a =>
             {

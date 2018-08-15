@@ -32,7 +32,7 @@ using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -373,7 +373,7 @@ namespace RockWeb.Blocks.Event
                                 t.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
                                 t.AttributeId.HasValue ) ) )
                     {
-                        var attribute = CacheAttribute.Get( field.AttributeId.Value );
+                        var attribute = AttributeCache.Get( field.AttributeId.Value );
                         if ( attribute != null )
                         {
                             string originalValue = registrant.GetAttributeValue( attribute.Key );
@@ -436,11 +436,11 @@ namespace RockWeb.Blocks.Event
                                 if ( groupMember == null )
                                 {
                                     groupMember = new GroupMember();
-                                    groupMemberService.Add( groupMember );
                                     groupMember.GroupId = reloadedRegistrant.Registration.Group.Id;
                                     groupMember.PersonId = ppPerson.PersonId.Value;
                                     groupMember.GroupRoleId = groupRoleId.Value;
                                     groupMember.GroupMemberStatus = TemplateState.GroupMemberStatus;
+                                    groupMemberService.Add( groupMember );
 
                                     newRockContext.SaveChanges();
 
@@ -452,12 +452,15 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 // Record this to the Person's and Registrants Notes and History...
-                                reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.PersonAlias.Person, this.CurrentPersonAliasId, previousRegistrantPersonIds );
 
                                 reloadedRegistrant.GroupMemberId = groupMember.Id;
-                                newRockContext.SaveChanges();
                             }
                         }
+                        if (reloadedRegistrant.Registration.FirstName.IsNotNullOrWhiteSpace() && reloadedRegistrant.Registration.LastName.IsNotNullOrWhiteSpace())
+                        {
+                            reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.FirstName, reloadedRegistrant.Registration.LastName, this.CurrentPersonAliasId, previousRegistrantPersonIds );
+                        }
+                        newRockContext.SaveChanges();
                     }
                 }
 
@@ -493,7 +496,7 @@ namespace RockWeb.Blocks.Event
         protected void lbWizardTemplate_Click( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
-            var pageCache = CachePage.Get( RockPage.PageId );
+            var pageCache = PageCache.Get( RockPage.PageId );
             if ( pageCache != null && 
                 pageCache.ParentPage != null && 
                 pageCache.ParentPage.ParentPage != null &&
@@ -512,7 +515,7 @@ namespace RockWeb.Blocks.Event
         protected void lbWizardInstance_Click( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
-            var pageCache = CachePage.Get( RockPage.PageId );
+            var pageCache = PageCache.Get( RockPage.PageId );
             if ( pageCache != null &&
                 pageCache.ParentPage != null &&
                 pageCache.ParentPage.ParentPage != null )
@@ -735,7 +738,7 @@ namespace RockWeb.Blocks.Event
 
                                 if ( field.AttributeId.HasValue )
                                 {
-                                    var attribute = CacheAttribute.Get( field.AttributeId.Value );
+                                    var attribute = AttributeCache.Get( field.AttributeId.Value );
                                     string value = string.Empty;
                                     if ( setValues && fieldValue != null )
                                     {
@@ -1006,7 +1009,7 @@ namespace RockWeb.Blocks.Event
 
                                 if ( field.AttributeId.HasValue )
                                 {
-                                    var attribute = CacheAttribute.Get( field.AttributeId.Value );
+                                    var attribute = AttributeCache.Get( field.AttributeId.Value );
                                     string fieldId = "attribute_field_" + attribute.Id.ToString();
 
                                     Control control = phFields.FindControl( fieldId );

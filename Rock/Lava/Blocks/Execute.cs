@@ -30,7 +30,7 @@ using Microsoft.CSharp;
 namespace Rock.Lava.Blocks
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="DotLiquid.Block" />
     public class Execute : RockLavaBlockBase
@@ -171,12 +171,11 @@ namespace Rock.Lava.Blocks
         /// </summary>
         /// <param name="markup">The markup.</param>
         /// <returns></returns>
-        /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
         private Dictionary<string, string> ParseMarkup( string markup )
         {
             var parms = new Dictionary<string, string>();
 
-            var markupItems = Regex.Matches( markup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( markup, "(.*?:'[^']*')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

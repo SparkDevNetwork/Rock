@@ -28,7 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Core
             base.OnInit( e );
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Location.FriendlyTypeName );
-            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Location ) ).Id;
+            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Location ) ).Id;
 
             ddlPrinter.Items.Clear();
             ddlPrinter.DataSource = new DeviceService( new RockContext() )
@@ -172,7 +172,6 @@ namespace RockWeb.Blocks.Core
                 locationService.Delete( location );
                 rockContext.SaveChanges();
 
-                FlushCampus( locationId );
                 Rock.CheckIn.KioskDevice.Clear();
             }
 
@@ -207,7 +206,6 @@ namespace RockWeb.Blocks.Core
             if ( locationId != 0 )
             {
                 location = locationService.Get( locationId );
-                FlushCampus( locationId );
             }
 
             if ( location == null )
@@ -544,7 +542,7 @@ namespace RockWeb.Blocks.Core
             var locationService = new LocationService( rockContext );
             var attributeService = new AttributeService( rockContext );
 
-            ddlLocationType.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.LOCATION_TYPE.AsGuid() ), true );
+            ddlLocationType.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_TYPE.AsGuid() ), true );
 
             gpParentLocation.Location = location.ParentLocation ?? locationService.Get( location.ParentLocationId ?? 0 );
 
@@ -647,12 +645,12 @@ namespace RockWeb.Blocks.Core
             Rock.Attribute.Helper.AddDisplayControls( location, phAttributes );
 
             phMaps.Controls.Clear();
-            var mapStyleValue = CacheDefinedValue.Get( GetAttributeValue( "MapStyle" ) );
-            var googleAPIKey = CacheGlobalAttributes.Get().GetValue( "GoogleAPIKey" );
+            var mapStyleValue = DefinedValueCache.Get( GetAttributeValue( "MapStyle" ) );
+            var googleAPIKey = GlobalAttributesCache.Get().GetValue( "GoogleAPIKey" );
 
             if ( mapStyleValue == null )
             {
-                mapStyleValue = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK );
+                mapStyleValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK );
             }
 
             if ( mapStyleValue != null && ! string.IsNullOrWhiteSpace( googleAPIKey ) )
@@ -697,16 +695,6 @@ namespace RockWeb.Blocks.Core
             fieldsetViewDetails.Visible = !editable;
 
             this.HideSecondaryBlocks( editable );
-        }
-
-        // Flush any cached campus that uses location
-        private void FlushCampus( int locationId )
-        {
-            foreach ( var campus in CacheCampus.All()
-                .Where( c => c.LocationId == locationId ) )
-            {
-                CacheCampus.Remove( campus.Id );
-            }
         }
             
         #endregion

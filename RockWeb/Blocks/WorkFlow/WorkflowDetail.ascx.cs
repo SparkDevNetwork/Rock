@@ -29,7 +29,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            if ( new List<string> { "Summary", "Notes", "Log" }.Contains( hfActiveTab.Value ) )
+            if ( new List<string> { "Summary", "Notes", "Log", string.Empty }.Contains( hfActiveTab.Value ) )
             {
                 hfActiveTab.Value = "Details";
             }
@@ -610,7 +610,7 @@ namespace RockWeb.Blocks.WorkFlow
             int? activityTypeId = ddlActivateNewActivity.SelectedValueAsId();
             if (activityTypeId.HasValue)
             {
-                var activityType = CacheWorkflowActivityType.Get(activityTypeId.Value);
+                var activityType = WorkflowActivityTypeCache.Get(activityTypeId.Value);
                 if (activityType != null)
                 {
                     var activity = WorkflowActivity.Activate( activityType, Workflow );

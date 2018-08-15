@@ -17,11 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
+using System.Runtime.Serialization;
+
+using Rock.Web.Cache;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
 
 namespace Rock.Web
 {
@@ -29,6 +30,7 @@ namespace Rock.Web
     /// System Settings can be used to persist a key/value 
     /// </summary>
     [Serializable]
+    [DataContract]
     public class SystemSettings
     {
         #region Constructors
@@ -39,7 +41,8 @@ namespace Rock.Web
 
         #region Properties
 
-        private List<CacheAttribute> Attributes { get; set; }
+        [DataMember]
+        private List<AttributeCache> Attributes { get; set; }
 
         #endregion
 
@@ -101,19 +104,17 @@ namespace Rock.Web
             var rockContext = new Rock.Data.RockContext();
             var attributeService = new AttributeService( rockContext );
             var attribute = attributeService.GetSystemSetting( key );
-
-            bool isNew = false;
+            
             if ( attribute == null )
             {
                 attribute = new Rock.Model.Attribute();
-                attribute.FieldTypeId = CacheFieldType.Get( new Guid( SystemGuid.FieldType.TEXT ) ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( new Guid( SystemGuid.FieldType.TEXT ) ).Id;
                 attribute.EntityTypeQualifierColumn = Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER;
                 attribute.EntityTypeQualifierValue = string.Empty;
                 attribute.Key = key;
                 attribute.Name = key.SplitCase();
                 attribute.DefaultValue = value;
                 attributeService.Add( attribute );
-                isNew = true;
             }
             else
             {
@@ -122,12 +123,6 @@ namespace Rock.Web
 
             rockContext.SaveChanges();
 
-            CacheAttribute.Remove( attribute.Id );
-            if ( isNew )
-            {
-                CacheAttribute.RemoveEntityAttributes();
-            }
-
             var settings = Get();
             var attributeCache = settings.Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
             if ( attributeCache != null )
@@ -135,9 +130,82 @@ namespace Rock.Web
                 settings.Attributes.Remove( attributeCache );
             }
 
-            settings.Attributes.Add( CacheAttribute.Get( attribute.Id ) );
+            settings.Attributes.Add( AttributeCache.Get( attribute.Id ) );
 
             RockCache.AddOrUpdate( CacheKey, settings );
+        }
+
+        /// <summary>
+        /// Gets the value from web configuration.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public static string GetValueFromWebConfig( string key )
+        {
+            return System.Configuration.ConfigurationManager.AppSettings[key] ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Sets the value to web configuration.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public static void SetValueToWebConfig( string key, string value )
+        {
+            try
+            {
+                if ( System.Configuration.ConfigurationManager.AppSettings[key] != null )
+                {
+                    System.Configuration.Configuration rockWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration( "~" );
+                    rockWebConfig.AppSettings.Settings[key].Value = value;
+                    rockWebConfig.Save();
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
+        }
+
+        /// <summary>
+        /// Sets values to web configuration.
+        /// Use this when saving multiple keys so a save is not called for each key.
+        /// </summary>
+        /// <param name="settings">The settings.</param>
+        public static void SetValueToWebConfig( Dictionary<string,string> settings )
+        {
+            bool changed = false;
+            System.Configuration.Configuration rockWebConfig = null;
+
+            try
+            {
+                rockWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration( "~" );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
+
+            foreach ( var setting in settings )
+            {
+                if ( System.Configuration.ConfigurationManager.AppSettings[setting.Key] != null )
+                {
+                    rockWebConfig.AppSettings.Settings[setting.Key].Value = setting.Value;
+                    changed = true;
+                }
+            }
+
+            try
+            {
+                if ( changed )
+                {
+                    rockWebConfig.Save();
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
         }
 
         /// <summary>
@@ -148,14 +216,14 @@ namespace Rock.Web
         private static SystemSettings LoadSettings()
         {
             var systemSettings = new SystemSettings();
-            systemSettings.Attributes = new List<CacheAttribute>();
+            systemSettings.Attributes = new List<AttributeCache>();
 
             var rockContext = new RockContext();
             var attributeService = new Rock.Model.AttributeService( rockContext );
 
             foreach ( Rock.Model.Attribute attribute in attributeService.GetSystemSettings() )
             {
-                var attributeCache = CacheAttribute.Get( attribute );
+                var attributeCache = AttributeCache.Get( attribute );
                 systemSettings.Attributes.Add( attributeCache );
             }
 
@@ -165,7 +233,7 @@ namespace Rock.Web
         /// <summary>
         /// Flushes this instance.
         /// </summary>
-        [Obsolete( "Use Remove() method instead")]
+        [Obsolete( "Use Remove() method instead" )]
         public static void Flush()
         {
             Remove();

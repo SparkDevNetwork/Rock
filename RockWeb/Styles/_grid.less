@@ -194,10 +194,10 @@ td.wrap-contents {
   border-color: @grid-column-header-border-color;
 
   > a:not(.btn) {
-    display: block;
+    display: inline;
     color: @grid-column-header-text-color;
     &::after{
-      display: inline-block;
+      display: inline;
       width: 15px;
       padding-left: 5px;
       font-family: @fa-font-face;
@@ -481,6 +481,7 @@ tr.row-highlight {
   }
 
   &:hover td {
+    color: @grid-column-header-bold-color !important;
     background-color: lighten(@grid-column-header-bold-bg, 10%);
   }
 }

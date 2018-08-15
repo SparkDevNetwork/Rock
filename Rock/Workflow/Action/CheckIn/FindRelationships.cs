@@ -25,7 +25,7 @@ using System.Runtime.Caching;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -87,13 +87,13 @@ namespace Rock.Workflow.Action.CheckIn
                 if ( family != null )
                 {
                     bool preventInactive = ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeople );
-                    var dvInactive = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+                    var dvInactive = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
 
                     var groupMemberService = new GroupMemberService( rockContext );
 
                     var familyMemberIds = family.People.Select( p => p.Person.Id ).ToList();
 
-                    var knownRelationshipGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+                    var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
                     if ( knownRelationshipGroupType != null )
                     {
                         var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() );

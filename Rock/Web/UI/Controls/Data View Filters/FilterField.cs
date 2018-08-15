@@ -23,7 +23,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Reporting;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
 
 namespace Rock.Web.UI.Controls
@@ -156,7 +156,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                var entityTypeCache = CacheEntityType.Get( FilteredEntityTypeName );
+                var entityTypeCache = EntityTypeCache.Get( FilteredEntityTypeName );
                 if ( entityTypeCache != null )
                 {
                     return entityTypeCache.GetEntityType();
@@ -487,7 +487,7 @@ namespace Rock.Web.UI.Controls
             lbDelete = new LinkButton();
             Controls.Add( lbDelete );
             lbDelete.ID = this.ID + "_lbDelete";
-            lbDelete.CssClass = "btn btn-xs btn-danger ";
+            lbDelete.CssClass = "btn btn-xs btn-square btn-danger";
             lbDelete.Click += lbDelete_Click;
             lbDelete.CausesValidation = false;
 
@@ -606,10 +606,10 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( "class", "col-md-12" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            
+
             if ( ShowCheckbox )
             {
-                //// EntityFieldFilter renders the checkbox itself (see EntityFieldFilter.cs), 
+                //// EntityFieldFilter renders the checkbox itself (see EntityFieldFilter.cs),
                 //// so only render the checkbox if we are hiding filter criteria and it isn't an entity field filter
                 if ( !( component is Rock.Reporting.DataFilter.EntityFieldFilter ) || HideFilterCriteria)
                 {

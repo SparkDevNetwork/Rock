@@ -28,7 +28,7 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -154,7 +154,7 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             group.LoadAttributes( rockContext );
-            var opportunityType = CacheDefinedValue.Get( group.GetAttributeValue( "OpportunityType" ).AsGuid() );
+            var opportunityType = DefinedValueCache.Get( group.GetAttributeValue( "OpportunityType" ).AsGuid() );
 
             if ( this.GetAttributeValue( "SetPageTitletoOpportunityTitle" ).AsBoolean() )
             {
@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-            mergeFields.Add( "Block", this.CacheBlock );
+            mergeFields.Add( "Block", this.BlockCache );
             mergeFields.Add( "Group", group );
 
             // Left Sidebar
@@ -253,7 +253,7 @@ namespace RockWeb.Blocks.Fundraising
             // Progress
             if ( groupMember != null && pnlParticipantActions.Visible )
             {
-                var entityTypeIdGroupMember = CacheEntityType.GetId<Rock.Model.GroupMember>();
+                var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
 
                 var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
                             .Where( d => d.EntityTypeId == entityTypeIdGroupMember
@@ -318,18 +318,16 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             // Tab:Comments
-            var noteType = CacheNoteType.Get( this.GetAttributeValue( "NoteType" ).AsGuid() );
+            var noteType = NoteTypeCache.Get( this.GetAttributeValue( "NoteType" ).AsGuid() );
             if ( noteType != null )
             {
-                notesCommentsTimeline.NoteTypes = new List<CacheNoteType> { noteType };
+                notesCommentsTimeline.NoteOptions.SetNoteTypes( new List<NoteTypeCache> { noteType } );
             }
 
-            notesCommentsTimeline.EntityId = groupId;
+            notesCommentsTimeline.NoteOptions.EntityId = groupId;
 
             // show the Add button on comments for any logged in person
             notesCommentsTimeline.AddAllowed = true;
-
-            notesCommentsTimeline.RebuildNotes( true );
 
             var enableCommenting = group.GetAttributeValue( "EnableCommenting" ).AsBoolean();
             btnCommentsTab.Text = string.Format( "Comments ({0})", notesCommentsTimeline.NoteCount );

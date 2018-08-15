@@ -51,6 +51,8 @@ namespace Rock.Model
         public bool CanDelete( Note item, out string errorMessage )
         {
             errorMessage = string.Empty;
+            
+            // ignoring Note,ParentNoteId 
             return true;
         }
     }
@@ -88,7 +90,13 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Note target, Note source )
         {
             target.Id = source.Id;
+            target.ApprovalsSent = source.ApprovalsSent;
+            target.ApprovalStatus = source.ApprovalStatus;
+            target.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
+            target.ApprovedDateTime = source.ApprovedDateTime;
             target.Caption = source.Caption;
+            target.EditedByPersonAliasId = source.EditedByPersonAliasId;
+            target.EditedDateTime = source.EditedDateTime;
             target.EntityId = source.EntityId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
@@ -96,6 +104,9 @@ namespace Rock.Model
             target.IsPrivateNote = source.IsPrivateNote;
             target.IsSystem = source.IsSystem;
             target.NoteTypeId = source.NoteTypeId;
+            target.NoteUrl = source.NoteUrl;
+            target.NotificationsSent = source.NotificationsSent;
+            target.ParentNoteId = source.ParentNoteId;
             target.Text = source.Text;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

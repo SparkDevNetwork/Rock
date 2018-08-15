@@ -48,7 +48,7 @@ Sys.Application.add_load(function () {
             <div id="main-controls" class="col-md-9 col-lg-7">
                 <asp:Panel ID="pnlDetails" runat="server">
 
-                    <asp:ValidationSummary ID="valExample" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="valExample" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                     <h1 runat="server">General Information</h1>
 
@@ -88,7 +88,7 @@ Sys.Application.add_load(function () {
                     </div>
 
                     <h2 runat="server">Horizontal Forms</h2>
-                    <p>While Rock uses a similar approach to Bootstrap, we've made horizontal forms a bit easier to help facilitate their use when creating forms in workflows and event
+                    <p>While Rock uses a similar approach to Bootstrap, we’ve made horizontal forms a bit easier to help facilitate their use when creating forms in workflows and event
                         registrations. Below is the syntax for declaring a horizontal form.
                     </p>
                     <div runat="server" class="r-example">
@@ -218,9 +218,8 @@ Sys.Application.add_load(function () {
                         <Rock:StateDropDownList ID="statepExample" runat="server" Label="Rock:StateDropDownList" />
                     </div>
 
-                    <a id="StateDropDownList"></a>
-                    <h2>Button Drop Down List</h2>
                     <a id="ButtonDropDownList"></a>
+                    <h2>Button Drop Down List</h2>
                     <div runat="server" class="r-example">
                         <Rock:ButtonDropDownList ID="bddlExample" runat="server" Label="Rock:ButtonDropDownList" />
                     </div>
@@ -599,14 +598,19 @@ Sys.Application.add_load(function () {
 
                     <h2>Reporting</h2>
 
-                    <a id="DataViewPicker"></a>
+                    <a id="DataViewItemPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:DataViewPicker ID="dvpDataViewPicker" runat="server" Label="DataViewPicker for Person Dataviews" EntityTypeId="15" />
+                        <Rock:DataViewItemPicker ID="dvpDataViewPicker" runat="server" Label="DataViewItemPicker for Person Dataviews" EntityTypeId="15" />
                     </div>
 
                     <a id="DataViewsPicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:DataViewsPicker ID="dvpDataViewsPicker" runat="server" Label="Rock:DataViewsPicker for Person Dataviews" EntityTypeId="15"/>
+                    </div>
+
+                    <a id="ReportPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:ReportPicker ID="rpReports" runat="server" Label="ReportPicker for Person Reports" EntityTypeId="15" />
                     </div>
 
                     <a id="MetricCategoryPicker"></a>
@@ -684,7 +688,7 @@ Sys.Application.add_load(function () {
                     <a id="Notificationbox"></a>
                     <h2 runat="server">Rock:Notificationbox</h2>
                     <p>
-                        This creates a <a href="http://getbootstrap.com/components/#alerts">Bootstrap alert</a>.  We've added the ability to have Details that can be shown.
+                        This creates a <a href="http://getbootstrap.com/components/#alerts">Bootstrap alert</a>.  We’ve added the ability to have Details that can be shown.
                     </p>
 
                     <div runat="server" class="r-example">
@@ -716,7 +720,7 @@ Sys.Application.add_load(function () {
                     <h2 runat="server">Rock:HighlightLabel</h2>
                     <p>
                         This creates a <a href="http://getbootstrap.com/components/#labels">Bootstrap Label</a>
-                        but we've added a few additional custom <code>LabelType</code> options to control the color.
+                        but we’ve added a few additional custom <code>LabelType</code> options to control the color.
                     </p>
                     <div runat="server" class="r-example">
                         <Rock:HighlightLabel ID="hlblExample1" runat="server" LabelType="Default" Text="Default" ToolTip="More information is here." />
@@ -782,14 +786,6 @@ Sys.Application.add_load(function () {
                         <Rock:BootstrapButton ID="lbSave" runat="server" Text="Click Me" CssClass="btn btn-primary"
                             DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
                             CompletedText ="Done" CompletedDuration="3" CompletedMessage="&nbsp;Your Changes have been Saved!"/>
-                    </div>
-
-                    <a id="NoteControl"></a>
-                    <h2 runat="server">Rock:NoteControl</h2>
-                    <div id="Div3" runat="server" class="r-example">
-                        <section class="panel-note">
-                            <Rock:NoteControl ID="noteExample" runat="server" IsAlert="false" IsPrivate="false" Text="Here is some example note text." CanEdit="true" />
-                        </section>
                     </div>
 
                     <a id="AttributeEditor"></a>

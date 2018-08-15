@@ -20,7 +20,7 @@ using System.Web.UI;
 
 using Rock.Model;
 using Rock.Reporting;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
@@ -77,8 +77,8 @@ namespace RockWeb.Blocks.Reporting
                     pnlEntry.Visible = true;
                     pnlResponse.Visible = false;
 
-                    var globalAttributes = CacheGlobalAttributes.Get();
-                    var externalUrl = globalAttributes.GetValue( "PublicApplicationRoot" );
+                    var globalAttributes = GlobalAttributesCache.Get();
+                    var externalUrl = globalAttributes.GetValue( "InternalApplicationRoot" );
 
                     if ( !externalUrl.EndsWith( @"/" ) )
                     {

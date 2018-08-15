@@ -14,7 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Linq;
 using System.Web.UI;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -55,7 +57,7 @@ namespace Rock.Web.UI.Controls
                 this.Text = value;
             }
         }
-        
+
         /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
@@ -64,8 +66,11 @@ namespace Rock.Web.UI.Controls
         {
             this.AppendText = "<i></i>";
             this.AddCssClass( "rock-colorpicker-input input-width-lg" );
+            var definedValues = DefinedTypeCache.Get( SystemGuid.DefinedType.COLOR_PICKER_SWATCHES )?.DefinedValues.ToDictionary( a => a.Description, a=>a.Value );
 
-            string script = "$('.rock-colorpicker-input').colorpicker();";
+            string script = $@"$('.rock-colorpicker-input').colorpicker({{
+                colorSelectors: {definedValues.ToJson(Newtonsoft.Json.Formatting.Indented).Replace("\"","'")}
+            }});";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "rock-colorpicker", script, true );
             base.RenderControl( writer );
 

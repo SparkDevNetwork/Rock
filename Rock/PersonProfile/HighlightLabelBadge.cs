@@ -19,7 +19,7 @@ using System.Web.UI;
 
 using Rock.Extension;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -28,7 +28,7 @@ namespace Rock.PersonProfile
     /// <summary>
     /// Base class for person profile icon badges
     /// </summary>
-    public abstract class HighlightLabelBadge : BadgeComponentModern
+    public abstract class HighlightLabelBadge : BadgeComponent
     {
         /// <summary>
         /// Gets the badge label
@@ -45,7 +45,7 @@ namespace Rock.PersonProfile
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
             if ( Person != null )
             {

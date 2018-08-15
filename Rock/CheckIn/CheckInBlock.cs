@@ -22,7 +22,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace Rock.CheckIn
@@ -273,7 +273,7 @@ namespace Rock.CheckIn
                 {
                     var workflowService = new WorkflowService( rockContext );
 
-                    var workflowType = CacheWorkflowType.Get( guid.Value );
+                    var workflowType = WorkflowTypeCache.Get( guid.Value );
                     if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         if ( CurrentWorkflow == null )
@@ -607,7 +607,7 @@ namespace Rock.CheckIn
             var pageReference = new PageReference( GetAttributeValue( attributeKey ), queryParams );
             if ( pageReference.PageId > 0 )
             {
-                var page = CachePage.Get( pageReference.PageId );
+                var page = PageCache.Get( pageReference.PageId );
                 if ( page != null && page.PageTitle == "Welcome" )
                 {
                     if ( pageReference.Parameters == null )
@@ -666,7 +666,7 @@ namespace Rock.CheckIn
             var pageReference = new PageReference( GetAttributeValue( attributeKey ) );
             if ( pageReference.PageId > 0 )
             {
-                var page = Rock.Cache.CachePage.Get( pageReference.PageId );
+                var page = PageCache.Get( pageReference.PageId );
                 if ( page != null )
                 {
                     foreach ( var block in page.Blocks.OrderBy( b => b.Order ) )

@@ -18,7 +18,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -42,7 +42,7 @@ namespace Rock.Model
                 return null;
             }
 
-            CacheEntityType itemEntityType = CacheEntityType.Get( entitySet.EntityTypeId.Value );
+            EntityTypeCache itemEntityType = EntityTypeCache.Get( entitySet.EntityTypeId.Value );
 
             var rockContext = this.Context as RockContext;
             var entitySetItemsService = new EntitySetItemService( rockContext );

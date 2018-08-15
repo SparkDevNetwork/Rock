@@ -28,7 +28,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Slingshot.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Security.Cryptography;
 
 namespace Rock.Slingshot
@@ -104,7 +104,7 @@ namespace Rock.Slingshot
             RockContext rockContext = new RockContext();
             StringBuilder sbStats = new StringBuilder();
 
-            int groupTypeIdFamily = CacheGroupType.GetFamilyGroupType().Id;
+            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
             DateTime importDateTime = RockDateTime.Now;
 
             // Get all of the existing group ids that have been imported (excluding families)
@@ -416,7 +416,7 @@ namespace Rock.Slingshot
             }
 
             // Check Group as used as Family and non-Family
-            int groupTypeIdFamily = CacheGroupType.GetFamilyGroupType().Id;
+            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
             if ( new GroupService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId == groupTypeIdFamily ) )
             {
                 tableList.Add( "Family" );
@@ -721,7 +721,7 @@ namespace Rock.Slingshot
             RockContext rockContext = new RockContext();
             StringBuilder sbStats = new StringBuilder();
 
-            int groupTypeIdFamily = CacheGroupType.GetFamilyGroupType().Id;
+            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
 
             var groupsAlreadyExistLookupQry = new GroupService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId != groupTypeIdFamily ).Select( a => a.ForeignId.Value );
 
@@ -740,7 +740,7 @@ namespace Rock.Slingshot
 
             foreach ( var importedGroupTypeRoleName in importedGroupTypeRoleNames )
             {
-                var groupTypeCache = CacheGroupType.Get( importedGroupTypeRoleName.GroupTypeId, rockContext );
+                var groupTypeCache = GroupTypeCache.Get( importedGroupTypeRoleName.GroupTypeId, rockContext );
                 foreach ( var roleName in importedGroupTypeRoleName.RoleNames )
                 {
                     if ( !groupTypeCache.Roles.Any( a => a.Name.Equals( roleName, StringComparison.OrdinalIgnoreCase ) ) )
@@ -756,7 +756,7 @@ namespace Rock.Slingshot
             }
 
             var updatedGroupTypes = groupTypeRolesToInsert.Select( a => a.GroupTypeId.Value ).Distinct().ToList();
-            updatedGroupTypes.ForEach( id => CacheGroupType.Remove( id ) );
+            updatedGroupTypes.ForEach( id => GroupTypeCache.UpdateCachedEntity( id, EntityState.Detached ) );
 
             if ( groupTypeRolesToInsert.Any() )
             {
@@ -808,7 +808,7 @@ namespace Rock.Slingshot
             var groupMemberImports = newGroupImports.SelectMany( a => a.GroupMemberImports ).ToList();
             foreach ( var groupWithMembers in newGroupImports.Where( a => a.GroupMemberImports.Any() ) )
             {
-                var groupTypeRoleLookup = CacheGroupType.Get( groupWithMembers.GroupTypeId ).Roles.ToDictionary( k => k.Name, v => v.Id );
+                var groupTypeRoleLookup = GroupTypeCache.Get( groupWithMembers.GroupTypeId ).Roles.ToDictionary( k => k.Name, v => v.Id );
 
                 var groupId = groupTypeGroupLookup.GetValueOrNull( groupWithMembers.GroupTypeId )?.GetValueOrNull( groupWithMembers.GroupForeignId )?.Id;
 
@@ -910,7 +910,7 @@ WHERE gta.GroupTypeId IS NULL" );
             // make sure grouptype caches get updated in case 'allowed group types' changed
             foreach ( var groupTypeId in groupTypeGroupLookup.Keys )
             {
-                CacheGroupType.Remove( groupTypeId );
+                GroupTypeCache.UpdateCachedEntity( groupTypeId, EntityState.Detached );
             }
 
             stopwatchTotal.Stop();
@@ -1026,10 +1026,10 @@ WHERE gta.GroupTypeId IS NULL" );
             var groupMemberService = new GroupMemberService( rockContext );
             var locationService = new LocationService( rockContext );
 
-            var familyGroupType = CacheGroupType.GetFamilyGroupType();
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
             int familyGroupTypeId = familyGroupType.Id;
             int familyChildRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
-            _recordTypePersonId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            _recordTypePersonId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
 
             StringBuilder sbStats = new StringBuilder();
 
@@ -1049,11 +1049,11 @@ WHERE gta.GroupTypeId IS NULL" );
                 nextNewFamilyForeignId = Math.Max( nextNewFamilyForeignId, personImports.Where( a => a.FamilyForeignId.HasValue ).Max( a => a.FamilyForeignId.Value ) );
             }
 
-            // Just In Case, ensure Entity Attributes are flushed (they might be stale if they were added thru REST)
-            CacheAttribute.RemoveEntityAttributes();
+            // Just In Case, ensure Entity Attributes are flushed (they might be stale if they were added directly via SQL)
+            AttributeCache.RemoveEntityAttributes();
 
-            var entityTypeIdPerson = CacheEntityType.Get<Person>().Id;
-            Dictionary<int, List<CacheAttributeValue>> attributeValuesLookup = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.EntityTypeId == entityTypeIdPerson && a.EntityId.HasValue )
+            var entityTypeIdPerson = EntityTypeCache.Get<Person>().Id;
+            Dictionary<int, List<AttributeValueCache>> attributeValuesLookup = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.EntityTypeId == entityTypeIdPerson && a.EntityId.HasValue )
                 .Select( a => new
                 {
                     PersonId = a.EntityId.Value,
@@ -1063,7 +1063,7 @@ WHERE gta.GroupTypeId IS NULL" );
                 .GroupBy( a => a.PersonId )
                 .ToDictionary(
                     k => k.Key,
-                    v => v.Select( x => new CacheAttributeValue { AttributeId = x.AttributeId, EntityId = x.PersonId, Value = x.Value } ).ToList() );
+                    v => v.Select( x => new AttributeValueCache { AttributeId = x.AttributeId, EntityId = x.PersonId, Value = x.Value } ).ToList() );
 
             int personUpdatesCount = 0;
             long personUpdatesMS = 0;
@@ -1474,7 +1474,7 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
         /// <param name="foreignSystemKey">The foreign system key.</param>
         /// <param name="importDateTime">The import date time.</param>
         /// <returns></returns>
-        private bool UpdatePersonFromPersonImport( Person lookupPerson, PersonImport personImport, Dictionary<int, List<CacheAttributeValue>> attributeValuesLookup, Dictionary<int, Group> familiesLookup, string foreignSystemKey, DateTime importDateTime )
+        private bool UpdatePersonFromPersonImport( Person lookupPerson, PersonImport personImport, Dictionary<int, List<AttributeValueCache>> attributeValuesLookup, Dictionary<int, Group> familiesLookup, string foreignSystemKey, DateTime importDateTime )
         {
             using ( var rockContextForPersonUpdate = new RockContext() )
             {
@@ -1528,7 +1528,7 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
                                 person.LoadAttributes( rockContextForPersonUpdate );
                             }
 
-                            var attributeCache = CacheAttribute.Get( attributeValueImport.AttributeId );
+                            var attributeCache = AttributeCache.Get( attributeValueImport.AttributeId );
                             if ( person.AttributeValues[attributeCache.Key].Value != attributeValueImport.Value )
                             {
                                 person.SetAttributeValue( attributeCache.Key, attributeValueImport.Value );
@@ -1738,12 +1738,19 @@ WHERE b.ForeignKey LIKE 'PersonForeignId_{foreignSystemKey}_%'
 	AND p.PhotoId IS NULL" );
 
             // Update FamilyPhoto attribute for photos that were imported
-            var familyGroupType = CacheGroupType.GetFamilyGroupType();
-            var familyPhotoAttribute = familyGroupType.Attributes.GetValueOrNull( "FamilyPhoto" );
-            if ( familyPhotoAttribute != null )
+            int? familyPhotoAttributeId = null;
+            var groupEntityTypeId = EntityTypeCache.Get( SystemGuid.EntityType.GROUP.AsGuid() )?.Id;
+            var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType()?.Id;
+            if ( groupEntityTypeId.HasValue && familyGroupTypeId.HasValue )
+            {
+                familyPhotoAttributeId = new AttributeService( rockContext )
+                    .Get( groupEntityTypeId.Value, "GroupTypeId", familyGroupTypeId.Value.ToString(), "FamilyPhoto" )?.Id;
+            }
+
+            if ( familyPhotoAttributeId.HasValue )
             {
                 rockContext.Database.ExecuteSqlCommand( $@"
-DECLARE @AttributeId INT = {familyPhotoAttribute.Id}
+DECLARE @AttributeId INT = {familyPhotoAttributeId.Value}
 
 -- just in case the family photo was already saved but with No Photo
 DELETE
@@ -1769,7 +1776,7 @@ SELECT 0
 	,newid()
 FROM [Group] g
 INNER JOIN BinaryFile b ON g.ForeignId = Replace(b.ForeignKey, 'FamilyForeignId_{foreignSystemKey}_', '')
-WHERE g.GroupTypeId = {familyGroupType.Id}
+WHERE g.GroupTypeId = {familyGroupTypeId.Value}
 	AND b.ForeignKey LIKE 'FamilyForeignId_{foreignSystemKey}_%'
 	AND g.Id NOT IN (
 		SELECT EntityId
@@ -1825,7 +1832,7 @@ and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
             List<Schedule> schedulesToInsert = new List<Schedule>();
             var newScheduleImports = scheduleImports.Where( a => !scheduleAlreadyExistForeignIdHash.Contains( a.ScheduleForeignId ) ).ToList();
 
-            int entityTypeIdSchedule = CacheEntityType.GetId<Schedule>() ?? 0;
+            int entityTypeIdSchedule = EntityTypeCache.GetId<Schedule>() ?? 0;
             var categoryService = new CategoryService( rockContext );
             string categoryName = "Imported Schedules";
             var scheduleCategory = categoryService.Queryable().Where( a => a.EntityTypeId == entityTypeIdSchedule && a.Name == categoryName ).FirstOrDefault();
@@ -1897,7 +1904,7 @@ and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
                 .Select( a => new { a.Id, a.ForeignId } )
                 .ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
 
-            int groupTypeIdFamily = CacheGroupType.GetFamilyGroupType().Id;
+            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
             var familyGroupIdLookup = new GroupService( rockContext ).Queryable().Where( a => a.GroupTypeId == groupTypeIdFamily && a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
                 .Select( a => new { a.Id, a.ForeignId } )
                 .ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
@@ -1959,9 +1966,9 @@ and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
 
-            var entityTypeCache = CacheEntityType.Get( entityTypeId );
+            var entityTypeCache = EntityTypeCache.Get( entityTypeId );
             var entityFriendlyName = entityTypeCache.FriendlyName;
-            if ( entityTypeId == CacheEntityType.GetId<Rock.Model.Group>().Value )
+            if ( entityTypeId == EntityTypeCache.GetId<Rock.Model.Group>().Value )
             {
                 if ( groupEntityIsFamily.Value )
                 {
@@ -1970,7 +1977,7 @@ and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
             }
 
             // first check for invalid NoteType or NoteType.EntityType
-            var noteTypeList = noteImports.Select( a => a.NoteTypeId ).Distinct().ToList().Select( a => CacheNoteType.Get( a ) ).ToList();
+            var noteTypeList = noteImports.Select( a => a.NoteTypeId ).Distinct().ToList().Select( a => NoteTypeCache.Get( a ) ).ToList();
             if ( noteTypeList.Any( a => a == null ) )
             {
                 return "WARNING: Unable to determine NoteType for one or more notes. No Notes imported.";
@@ -1987,9 +1994,9 @@ and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
             var noteAlreadyExistForeignIdHash = new HashSet<int>( qryNotesWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
 
             Dictionary<int, int> entityIdLookup;
-            if ( entityTypeId == CacheEntityType.GetId<Rock.Model.Group>().Value )
+            if ( entityTypeId == EntityTypeCache.GetId<Rock.Model.Group>().Value )
             {
-                int groupTypeIdFamily = CacheGroupType.GetFamilyGroupType().Id;
+                int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
                 if ( groupEntityIsFamily.Value == true )
                 {
                     entityIdLookup = new GroupService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId == groupTypeIdFamily )

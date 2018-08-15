@@ -514,7 +514,7 @@ on kcu.COLUMN_NAME = cc.Name and kcu.TABLE_NAME = OBJECT_NAME([fk].[parent_objec
 where cc.object_id = fk.parent_object_id
 and [fk].[delete_referential_action_desc] != 'CASCADE'
 ) sub
-where [refTable] = '{0}'
+where [refTable] = @refTable
 order by [parentTable], [columnName] 
 ";
 
@@ -526,8 +526,8 @@ order by [parentTable], [columnName]
                 return string.Empty;
             }
 
-            sqlCommand.CommandText = string.Format( sql, tableAttribute.Name );
-
+            sqlCommand.CommandText = sql;
+            sqlCommand.Parameters.Add( new SqlParameter( "@refTable", tableAttribute.Name ) );
             var reader = sqlCommand.ExecuteReader();
 
             List<TableColumnInfo> parentTableColumnNameList = new List<TableColumnInfo>();
@@ -1285,7 +1285,7 @@ order by [parentTable], [columnName]
             }
 
             // if this is a IHasAttributes type, generate Attribute/AttributeValues since they can be fetched thru REST when ?loadAttributes is specified
-            if ( typeof( Rock.Data.IHasAttributes ).IsAssignableFrom( type ) )
+            if ( typeof( Rock.Attribute.IHasAttributes ).IsAssignableFrom( type ) )
             {
                 sb.AppendLine( "        /// <summary>" );
                 sb.AppendLine( "        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' " );

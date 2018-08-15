@@ -18,7 +18,7 @@ using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -38,13 +38,20 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override string FormatDataValue( object dataValue, bool encode )
         {
-            CacheDefinedValue definedValueCache = GetDefinedValue( dataValue );
+            DefinedValueCache definedValueCache = GetDefinedValue( dataValue );
 
             if ( definedValueCache != null )
             {
-                dataValue = definedValueCache.Value;
+                return base.FormatDataValue( definedValueCache.Value, encode );
             }
 
+            // If we did not find a defined value we might have a list of values
+            if ( dataValue is string && dataValue.ToString().Contains(",") )
+            {
+                return base.FormatDataValue( GetDefinedValues( dataValue.ToString() ), encode );
+            }
+
+            // If we didn't find any values return what was sent.
             return base.FormatDataValue( dataValue, encode );
         }
 
@@ -53,10 +60,11 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="dataValue">The data value.</param>
         /// <returns></returns>
-        public CacheDefinedValue GetDefinedValue( object dataValue )
+        public DefinedValueCache GetDefinedValue( object dataValue )
         {
             int? dataValueAsInt = null;
             Guid? dataValueAsGuid = null;
+
             if ( dataValue is int )
             {
                 dataValueAsInt = (int)dataValue;
@@ -71,14 +79,14 @@ namespace Rock.Web.UI.Controls
                 dataValueAsGuid = ( dataValue as string ).AsGuidOrNull();
             }
 
-            CacheDefinedValue definedValueCache = null;
+            DefinedValueCache definedValueCache = null;
             if ( dataValueAsInt.HasValue )
             {
-                definedValueCache = Rock.Cache.CacheDefinedValue.Get( dataValueAsInt.Value );
+                definedValueCache = DefinedValueCache.Get( dataValueAsInt.Value );
             }
             else if ( dataValueAsGuid.HasValue )
             {
-                definedValueCache = Rock.Cache.CacheDefinedValue.Get( dataValueAsGuid.Value );
+                definedValueCache = DefinedValueCache.Get( dataValueAsGuid.Value );
             }
 
             return definedValueCache;
@@ -93,6 +101,26 @@ namespace Rock.Web.UI.Controls
         {
             var dataValue = base.GetExportValue( row );
             return FormatDataValue( dataValue, false );
+        }
+
+        /// <summary>
+        /// For multiple select defined values the object passed to FormatDataValue will be a CSV of Guid or Ids.
+        /// Parses the list, gets the value for each Id/Guid and returns a CSV of DefinedValue.Values
+        /// </summary>
+        /// <param name="definedValueIdCsv">The defined value identifier CSV.</param>
+        /// <returns></returns>
+        private string GetDefinedValues( string definedValueIdCsv )
+        {
+            string[] definedValueIdList = definedValueIdCsv.ToString().Split( ',' );
+            string definedValues = string.Empty;
+
+            foreach ( string definedValueId in definedValueIdList )
+            {
+                definedValues += GetDefinedValue( definedValueId ) + ", ";
+            }
+
+            definedValues = definedValues.TrimEnd( ',', ' ' );
+            return definedValues;
         }
     }
 }

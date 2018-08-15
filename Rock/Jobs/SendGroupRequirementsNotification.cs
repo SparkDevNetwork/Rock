@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -203,6 +203,11 @@ namespace Rock.Jobs
                 foreach ( var recipientId in notificationRecipients )
                 {
                     var recipient = _notificationList.Where( n => n.Person.Id == recipientId.Key ).Select( n => n.Person ).FirstOrDefault();
+
+                    if ( !recipient.IsEmailActive || recipient.Email.IsNullOrWhiteSpace() || recipient.EmailPreference == EmailPreference.DoNotEmail )
+                    {
+                        continue;
+                    }
 
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                     mergeFields.Add( "Person", recipient );

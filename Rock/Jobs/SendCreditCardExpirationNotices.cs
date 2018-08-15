@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
 
 namespace Rock.Jobs
@@ -72,12 +72,12 @@ namespace Rock.Jobs
 
             // Fetch the configured Workflow once if one was set, we'll use it later.
             Guid? workflowGuid = dataMap.GetString( "Workflow" ).AsGuidOrNull();
-            CacheWorkflowType workflowType = null;
+            WorkflowTypeCache workflowType = null;
             var workflowService = new WorkflowService( rockContext );
 
             if ( workflowGuid != null )
             {
-                workflowType = CacheWorkflowType.Get( workflowGuid.Value );
+                workflowType = WorkflowTypeCache.Get( workflowGuid.Value );
             }
 
             var qry = new FinancialScheduledTransactionService( rockContext )
@@ -123,6 +123,12 @@ namespace Rock.Jobs
                         var recipients = new List<RecipientData>();
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                         var person = transaction.AuthorizedPersonAlias.Person;
+
+                        if ( !person.IsEmailActive || person.Email.IsNullOrWhiteSpace() || person.EmailPreference == EmailPreference.DoNotEmail )
+                        {
+                            continue;
+                        }
+
                         mergeFields.Add( "Person", person );
                         mergeFields.Add( "Card", acctNum );
                         mergeFields.Add( "Expiring", expirationDate );
@@ -157,7 +163,7 @@ namespace Rock.Jobs
         /// <param name="workflowType">Type of the workflow.</param>
         /// <param name="attributes">The attributes.</param>
         /// <param name="workflowNameSuffix">The workflow instance name suffix (the part that is tacked onto the end fo the name to distinguish one instance from another).</param>
-        protected void StartWorkflow( WorkflowService workflowService, CacheWorkflowType workflowType, Dictionary<string, string> attributes, string workflowNameSuffix )
+        protected void StartWorkflow( WorkflowService workflowService, WorkflowTypeCache workflowType, Dictionary<string, string> attributes, string workflowNameSuffix )
         {
             // launch workflow if configured
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )

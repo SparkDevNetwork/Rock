@@ -31,7 +31,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -741,7 +741,7 @@ namespace RockWeb.Blocks.Connection
                 GroupConfigsState.Add( groupConfig );
             }
 
-            var groupType = CacheGroupType.Get( ddlGroupType.SelectedValueAsInt() ?? 0 );
+            var groupType = GroupTypeCache.Get( ddlGroupType.SelectedValueAsInt() ?? 0 );
             if ( groupType != null )
             {
                 groupConfig.GroupTypeId = groupType.Id;
@@ -896,7 +896,7 @@ namespace RockWeb.Blocks.Connection
             connectorGroup.CampusId = cpCampus.SelectedCampusId;
             if ( connectorGroup.CampusId.HasValue )
             {
-                var campus = CacheCampus.Get( connectorGroup.CampusId.Value );
+                var campus = CampusCache.Get( connectorGroup.CampusId.Value );
                 if ( campus != null )
                 {
                     connectorGroup.CampusName = campus.Name;
@@ -967,7 +967,7 @@ namespace RockWeb.Blocks.Connection
             var groupStateObj = ConnectorGroupsState.FirstOrDefault( l => l.Guid.Equals( connectionOpportunityConnectorGroupsGuid ) );
             if ( groupStateObj != null )
             {
-                cpCampus.Campuses = CacheCampus.All();
+                cpCampus.Campuses = CampusCache.All();
                 hfConnectorGroupGuid.Value = connectionOpportunityConnectorGroupsGuid.ToString();
                 cpCampus.SetValue( groupStateObj.CampusId );
                 gpGroup.SetValue( groupStateObj.GroupId );
@@ -976,7 +976,7 @@ namespace RockWeb.Blocks.Connection
             {
                 hfConnectorGroupGuid.Value = string.Empty;
                 gpGroup.SetValue( null );
-                cpCampus.Campuses = CacheCampus.All();
+                cpCampus.Campuses = CampusCache.All();
             }
 
             ShowDialog( "ConnectorGroupDetails", true );
@@ -1011,7 +1011,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         var people = new GroupMemberService( rockContext )
                             .Queryable().AsNoTracking()
-                            .Where( m => 
+                            .Where( m =>
                                 groupIds.Contains( m.GroupId ) &&
                                 m.GroupMemberStatus == GroupMemberStatus.Active )
                             .Select( m => m.Person )
@@ -1020,7 +1020,7 @@ namespace RockWeb.Blocks.Connection
                         {
                             var defaultConnector = new DefaultConnector();
 
-                            var campus = CacheCampus.Get( campusId );
+                            var campus = CampusCache.Get( campusId );
                             defaultConnector.CampusId = campus.Id;
                             defaultConnector.CampusName = campus.Name;
                             defaultConnector.PersonAliasId = DefaultConnectors.ContainsKey( campusId ) ? DefaultConnectors[campusId] : (int?)null;
@@ -1251,7 +1251,7 @@ namespace RockWeb.Blocks.Connection
 
                 case ConnectionWorkflowTriggerType.StatusChanged:
                     {
-                        var statusList = new ConnectionStatusService( rockContext ).Queryable().Where( s => s.ConnectionTypeId == connectionTypeId || s.ConnectionTypeId == null ).ToList();
+                        var statusList = new ConnectionStatusService( rockContext ).Queryable().Where( s => s.ConnectionTypeId == connectionTypeId || s.ConnectionTypeId == null ).OrderBy( a => a.Name ).ToList();
                         ddlPrimaryQualifier.Label = "From";
                         ddlPrimaryQualifier.Visible = true;
                         ddlPrimaryQualifier.Items.Clear();
@@ -1276,6 +1276,7 @@ namespace RockWeb.Blocks.Connection
                         var activityList = new ConnectionActivityTypeService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( a => a.ConnectionTypeId == connectionTypeId )
+                            .OrderBy( a => a.Name )
                             .ToList();
                         ddlPrimaryQualifier.Label = "Activity Type";
                         ddlPrimaryQualifier.Visible = true;
@@ -1486,7 +1487,7 @@ namespace RockWeb.Blocks.Connection
 
             DefaultConnectors = new Dictionary<int, int>();
             foreach( var campus in connectionOpportunity.ConnectionOpportunityCampuses
-                .Where( c => 
+                .Where( c =>
                     c.DefaultConnectorPersonAlias != null &&
                     c.DefaultConnectorPersonAlias.Person != null ) )
             {
@@ -1591,7 +1592,7 @@ namespace RockWeb.Blocks.Connection
         private void LoadDropDowns( ConnectionOpportunity connectionOpportunity )
         {
             cblCampus.Items.Clear();
-            cblCampus.DataSource = CacheCampus.All();
+            cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
             cblCampus.SetValues( connectionOpportunity.ConnectionOpportunityCampuses.Select( c => c.CampusId ).ToList() );
         }

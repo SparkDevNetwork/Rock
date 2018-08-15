@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Rock.Web.Cache;
 
 namespace Rock.Attribute
 {
@@ -78,7 +79,7 @@ namespace Rock.Attribute
             Guid? guid = definedTypeGuid.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var definedType = Rock.Cache.CacheDefinedType.Get( guid.Value );
+                var definedType = DefinedTypeCache.Get( guid.Value );
                 if ( definedType != null )
                 {
                     var definedTypeConfigValue = new Field.ConfigurationValue( definedType.Id.ToString() );
