@@ -1,7 +1,7 @@
 # This script is run by AppVeyor's deploy agent after the deploy
 Import-Module WebAdministration
 
-$rootfolder = "c:\webdata\rock.ccvonline.com"
+$rootfolder = "c:\webdata\rock.ccv.church"
 $webroot = "$rootfolder\docs"
 
 Write-Output "Running post-deploy script"
@@ -11,7 +11,7 @@ Write-Output "Web root folder: $webroot"
 Write-Output "Running script as: $env:userdomain\$env:username"
  
 # ensure that the compilation debug is false
-(Get-Content "$webroot\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "$webroot\web.config"
+(Get-Content "$webroot\web.Compilation.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "$webroot\web.Compilation.config"
 
 # delete the content directory if it exists as it was added by the deploy
 If (Test-Path "$webroot\Content"){
@@ -19,12 +19,12 @@ If (Test-Path "$webroot\Content"){
 }
  
 # move content directory back from temp
-Write-Host "Moving Contents folder back from temp directory"
+Write-Host "Moving Content folder back from temp directory"
 Move-Item "$rootfolder\temp\Content" "$webroot"
 
-# move cache directory back from temp
-Write-Host "Moving Cache folder back from temp directory"
-Move-Item "$rootfolder\temp\Cache" "$webroot\App_Data"
+# move cache directory back from temp (exploring not retaining cache through deploys)
+#Write-Host "Moving Cache folder back from temp directory"
+#Move-Item "$rootfolder\temp\Cache" "$webroot\App_Data"
 
 # copy new connection string file
 Write-Host "Copying new web.ConnectionStrings.config to web dir"

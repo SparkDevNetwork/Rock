@@ -1,7 +1,7 @@
 # This script is run by AppVeyor's deploy agent before the deploy
 Import-Module WebAdministration
 
-$rootfolder = "c:\webdata\rock.ccvonline.com"
+$rootfolder = "c:\webdata\rock.ccv.church"
 $webroot = "$rootfolder\docs"
 
 Write-Output "Running pre-deploy script"
@@ -32,6 +32,6 @@ If (Test-Path "$rootfolder\temp\Cache"){
 	Remove-Item "$rootfolder\temp\Cache" -Force -Confirm:$False -Recurse
 }
 
-# move cache folder to temp
-Write-Host "Moving cache folder to temp directory"
-Move-Item "$webroot\App_Data\Cache" "$rootfolder\temp"
+# move cache folder to temp (exploring always starting with a fresh cache folder)
+#Write-Host "Moving cache folder to temp directory"
+#Move-Item "$webroot\App_Data\Cache" "$rootfolder\temp"
