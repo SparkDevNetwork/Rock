@@ -1,3 +1,71 @@
+Rock McKinley 8.1
+
++ Add SMS functionality to check in manager
++ Add TransactionCode field to TransactionMatching block.
++ Added a step to the RockCleanup job to assign US/CA to locations where country can be determined based on the state.
++ Added ability for Groups Lava filter to include inactive groups too.
++ Added block settings to the GroupRegistration block to make email and cell required fields.
++ Added Lava access to information about the browser in the HTML block.
++ Added Lava filters to get a person's alternate id and retrieve a person by alternate id.
++ Added new feature to allow filtering in Data Views by Social Media Account fields.
++ Added new integration tests project. See Rock.Tests.Integration README for details.
++ Added new utility block to allow the inspection of the ViewState contents.
++ Added registration attribute description as a tool tip help text. The appearance of the help text can be set as a block setting, the default is not to display.
++ Added setting to DataAutomation to prevent children being moved unless they have graduated.
++ Added the ability to enable timezones for specific campuses.
++ Added the attendance note column to the attendance list block with a block setting to show or hide.
++ Added type="tel" to telephone inputs.
++ Change DataAutomation job to record Source of Change in History
++ Enhanced Bulk Update block to report progress, not timeout and use multiple CPUs.
++ Enhanced SMS communications to allow for replies to come from non-Mobile numbers in Rock.
++ Fixed an issue with the editing of scheduled transactions not allocating amounts to funds correctly
++ Fixed Birth Date field not respecting the block setting in PreRegistration block.
++ Fixed broken sorting in Communication TemplateList block.
++ Fixed Check-in countdown timer displays time until as ~2.9M days.
++ Fixed check-in to display a location name correctly when the location also has an address
++ Fixed Dynamic Data block grid and not using checkboxes on Excel export and merge template actions.
++ Fixed Email Clicks not being displayed in analytics.
++ Fixed Event Item Occurrence List Lava not displaying info for all campuses. The Campuses block setting is now optional in "Event Item Occurrence List Lava", if campuses are not selected then it means "All".
++ Fixed Event Registration Templates issue where if the 'Group Leaders' notification checkbox is checked, all notifications fail to send.
++ Fixed exception when creating a Data View on Person Alias.
++ Fixed Family Pre-registration Adult 2 fields showing required when there isn't any info in Adult 2 first & last name.
++ Fixed grade picker to always hide when member is not a child.
++ Fixed HomePhone field not displaying anything in RegistrationInstanceDetail grids.
++ Fixed In Data View badge type to respect the required validation for data view picker.
++ Fixed issue where an Attribute Matrix doesn't enforce validation as an Event Registration Field if is it marked as Required.
++ Fixed issue where cached objects (for example DefinedValueCache) in a compiled V7 Plugin would return incorrect results for GetAttributeValue. Also fixed similar issue where SetAttributeValue on a cached object (in a compiled v7 plugin) wouldn't set the attribute value correctly.
++ Fixed issue where Data Filters on Attributes would return incorrect results when doing an 'Equal' or 'Not Equal' and the compare value is left blank. Now these will give the same results as doing an IsBlank or IsNotBlank. + Fixed issue where some Data Filters (Campus Filter and Defined Value Filter) would return incorrect results when no items were selected for the compare values. Now if an item isn't checked, there won't be any filtering done, which is consistent with how other data filters work when no options are selected.
++ Fixed issue where filtering on Attributes could have different results depending on if filtering on a Grid, DataView, or thru Lava. Also fixed issue where attribute filters would return incorrect results when searching for the attribute's default value. For example, if there was a Person attribute of Favorite Color and the default color is 'blue', filtering for people with a favorite color of 'blue' will now include people that don't have that attribute value explicitly saved yet.
++ Fixed issue where future communications to a communication list with segments would sent the email to the entire communication list instead of factoring in the segment filters.
++ Fixed issue where the Communication Queue might show recent communications that have already been sent if the communication was created prior to v8. It would also attempt to re-send those communications but then realize there are no pending recipients.
++ Fixed issue where the Migrate History Summary job would throw an exception if there is history on attributes that have an Attribute Name that is over 250 chars
++ Fixed issue with rapid attendance entry not saving the location, schedule, and campus that were selected.
++ Fixed label message in tags by letter block when tags are not found.
++ Fixed lava to allow empty attribute strings.
++ Fixed registrant email not updating in event registration
++ Fixed 'send email' workflow action to use the InternalApplicationRoot global setting to convert relative paths to fully qualified.
++ Fixed ValueList not allowing lava to be entered as a value.
++ Fixed Workflow cache not updating correctly when Action or Activity is modified or added
++ Prevent group capacity being set to value less than 0
++ Update CheckInManager Person Profile to Include a Link to the Person Who Checked Them In.
++ Update Data View detail block to allow creating a new report from the block.
++ Update FamilyAnalytics to record Source of Change in history as "eRA"
++ Update Personal Templates created from CommunicationDetail to give permissions to Communication and Rock Administrators
++ Updated add family block with ability to add alternate identifier for each member.
++ Updated Bulk Update block. Added Edit Record Status and Edit Connection Status Block Security settings. Following current conventions on the block users without access will not see the fields. Users that can administrate the block and users specified under the new settings will have access. Current edit users and the rock admin group will be added to the new settings via a migration.
++ Updated Chart.js to 2.7.2.
++ Updated Chosen to 1.8.7.
++ Updated Clipboard.js to 2.0.0.
++ Updated compilation debug property to best practice setting.
++ Updated MediaElement.js to 4.2.9.
++ Updated registration form entry. Added Middle Name and Anniversary Date to available Person Fields for Registration Template Forms. Also made the existing Connection Status Person Field viewable on the internal registration detail block.
++ Updated the Content Security Policy logic to not require security on static content elements
++ Updated the Family Analytics logic that determines who is giving. The new logic looks for transactions where the type is 'Contribution' instead of the previous logic that looked for transactions where the account was tax deductible. This allows for soft credits to be considered as contributions.
++ Updated the Group Member List and Detail blocks to respect a group member attribute's security when viewing and editing the group member
++ Updated the history records created by the data automation job to reference 'Data Automation' in the Who field.
++ Updated to FontAwesome 5.2.0
+
+
 Rock McKinley 8.0
 
 + Added a block setting to Communication Entry for simple mode to be non-bulk.

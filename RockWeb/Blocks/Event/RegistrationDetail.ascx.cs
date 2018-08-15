@@ -2680,7 +2680,6 @@ namespace RockWeb.Blocks.Event
                             break;
                             
                         case RegistrationPersonFieldType.MaritalStatus:
-
                             var maritalStatusDv = DefinedValueCache.Get( fieldValue.ToString().AsInteger() );
                             rlField.Text = maritalStatusDv != null ? maritalStatusDv.Value : string.Empty;
                             break;
