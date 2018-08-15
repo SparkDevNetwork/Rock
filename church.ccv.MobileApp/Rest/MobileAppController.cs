@@ -175,24 +175,52 @@ namespace church.ccv.MobileApp.Rest
 
             do
             {
-                RockContext rockContext = new RockContext( );
-
                 // require reg parameters
                 if( regAccountData == null ) break;
 
-                // make sure this person doesn't already exist. If they do, we need to deny
-                // this registration so we don't end up with duplicates (they can deal with this using the website)
-                PersonService personService = new PersonService( rockContext );
-                IEnumerable<Person> personList = personService.GetByMatch( regAccountData.FirstName, regAccountData.LastName, regAccountData.Email );
-                if( personList.Count( ) > 0 ) { statusCode = HttpStatusCode.Conflict; break; }
-
-                // since we know they don't exist, we can now make sure their username isn't already taken
-                // if it is, we'll call it a conflict so the mobile app knows
+                RockContext rockContext = new RockContext( );
                 UserLoginService userLoginService = new UserLoginService( rockContext );
+
+                // first, if the user name already exists, simply stop and tell them the username already exists.
                 UserLogin userLogin = userLoginService.GetByUserName( regAccountData.Username );
                 if( userLogin != null ) { statusCode = HttpStatusCode.Unauthorized; break; }
 
 
+
+                // since the username doesn't exist, make sure this person doesn't already exist. If they do, we need to deny
+                // this registration so we don't end up with duplicates
+                PersonService personService = new PersonService( rockContext );
+                IEnumerable<Person> personList = personService.GetByMatch( regAccountData.FirstName, regAccountData.LastName, regAccountData.Email );
+                if( personList.Count( ) > 0 )
+                {
+                    // to help the user, find out if the person they're trying to register as 
+                    // has a username attached or not.
+                    bool personHasUsername = false;
+                    foreach( var person in personList )
+                    {
+                        var loginList = userLoginService.GetByPersonId( person.Id );
+                        if ( loginList.Count( ) > 0 )
+                        {
+                            personHasUsername = true;
+                            break;
+                        }
+                    }
+
+                    // there IS a username attached, so return NotAcceptable (just arbitrary for the mobile app)
+                    if( personHasUsername == true )
+                    {
+                        statusCode = HttpStatusCode.NotAcceptable;
+                    }
+                    else
+                    {
+                        // otherwise use Conflict, meaning the person exists but there are no usernames
+                        statusCode = HttpStatusCode.Conflict;
+                    }
+
+                    break;
+                }
+
+                
                 // we know we can create the person. So first, begin tracking who made these changes, and then
                 // create the person with their login
                 System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
