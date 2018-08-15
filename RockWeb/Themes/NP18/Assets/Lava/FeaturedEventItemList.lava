@@ -1,0 +1,16 @@
+<h2 class="section-title text-center">Featured Events</h2>
+<div id="featuredevents" class="css-grid">
+{% for event in EventOccurrenceSummaries %}
+		<div class="css-grid-item {{event.Name | ToCssClass }}">
+			<div class="event-header"><a class="" href="{{ DetailsPage }}?EventOccurrenceId={{ event.EventItemOccurrence.Id }}" style="background-image:url('{{event.EventItem.Photo.Path}}')"></a></div>
+			<div class="event-content">
+				<h2>{{event.Name}}</h2>
+				{% if event.Summary != "" %}
+					<p class="event-summary">{{ event.Summary }}</p>
+				{% else %}
+					<p class="event-summary">{{ event.Description | StripHtml | TruncateWords:15 }}</p>
+				{% endif %}
+			</div>
+		</div>
+{% endfor %}
+</div>

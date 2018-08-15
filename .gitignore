@@ -34,3 +34,7 @@ Packages/*
 # javascript deps
 node_modules
 *.map
+
+# [NP] Ignore Binaries
+/org.newpointe.*/bin
+/org.newpointe.*/obj

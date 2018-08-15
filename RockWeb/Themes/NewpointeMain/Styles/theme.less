@@ -1,0 +1,1036 @@
+
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+@import "_print.less";
+
+
+/*
+    Rock Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overides
+    3. Theme Styling
+    4. Responsive Overrides
+*/
+
+// 0. GothamFonts
+//----------------
+
+// <FamilyName> <FileId> <FontWeight>
+@fonts: Gotham light 300, GothamBook book 400, GothamBold bold 600, GothamBlack black 700;
+
+
+.fontloop(@i) when (@i > 0) {
+    .fontloop((@i - 1)); // next iteration
+    @font: extract(@fonts, @i);
+    @file: extract(@font, 2);
+
+    @font-face {
+        font-family: extract(@font, 1);
+        src: url('../Assets/Fonts/Gotham/gotham-@{file}-webfont.eot');
+        src: url('../Assets/Fonts/Gotham/gotham-@{file}-webfont.eot?#iefix') format('embedded-opentype'), url('../Assets/Fonts/Gotham/gotham-@{file}-webfont.woff') format('woff'), url('../Assets/Fonts/Gotham/gotham-@{file}-webfont.ttf') format('truetype'), url('../Assets/Fonts/Gotham/gotham-@{file}-webfont.svg#webfont') format('svg');
+        font-weight: extract(@font, 3);
+        font-style: normal;
+    }
+}
+
+.fontloop(length(@fonts));
+
+
+
+
+// 1. HTML Overrides
+// -------------------------
+
+body {
+    min-width: 300px;
+}
+
+h1, h2, h3, h4, h5 {
+    text-transform: uppercase;
+    letter-spacing: -1px;
+}
+
+video {
+    max-width: 100%;
+}
+
+p, dd, li {
+    font-size: @font-size-large;
+}
+
+a {
+    transition: all 0.2s linear;
+    -moz-transition: all 0.2s linear;
+    -webkit-transition: all 0.2s linear;
+    text-decoration: none;
+
+    &.active, &:hover, &:focus {
+        text-decoration: none;
+    }
+}
+
+img {
+    .img-responsive();
+}
+
+
+// 2. Bootstrap Overrides
+// -------------------------
+
+
+
+////    Dropdowns    ////
+
+.dropdown-toggle {
+    transition: none;
+    -moz-transition: none;
+    -webkit-transition: none;
+}
+
+.dropdown-menu {
+    margin: 0px;
+    color: @secondary-text-color;
+}
+
+.dropdown-menu li {
+    font-size: 14px;
+}
+
+.dropdown-backdrop {
+       //background-color: rgba(0, 0, 0, 0.33);
+}
+
+.dropdown .dropdown-menu {
+    padding: 0px;
+    min-width: 100%;
+
+    & > li {
+        font-size: 18px;
+
+        & > a {
+            color: @brand-primary;
+            font-size: .8em;
+
+            &:focus {
+                background-color: inherit;
+            }
+        }
+
+        &:last-child > a {
+            padding-bottom: 12px;
+        }
+    }
+}
+
+.dropdown-menu > li > a,
+.dropdown-menu .dropdown-header {
+    padding: 5px 7px 5px 10px;
+}
+
+.datepicker.datepicker-dropdown:after {
+    border-bottom-color: @secondary-theme-color;
+}
+
+.datepicker.datepicker-dropdown.datepicker-orient-bottom:after {
+    border-top-color: @secondary-theme-color;
+}
+
+////    NavBars    ////
+
+.navbar,
+.navbar-inverse {
+    .navbar-collapse {
+        //border-color: @navbar-collapse-border;
+    }
+
+    .navbar-nav .open .dropdown-menu {
+
+        .divider {
+            background-color: @dropdown-divider-bg;
+            margin: 0px;
+        }
+
+        & > li > a {
+
+            &:hover {
+                background-color: @dropdown-link-hover-bg;
+            }
+        }
+    }
+}
+
+.navbar-nav .open .dropdown-menu > li > a,
+.navbar-nav .open .dropdown-menu .dropdown-header {
+    padding: 10px 15px 10px 25px;
+}
+
+
+
+
+
+@media (max-width: @grid-float-breakpoint-max) {
+    footer.container,
+    header.container {
+        width: 100%;
+        padding: 0px;
+        margin: 0px;
+    }
+}
+
+
+
+
+address {
+    margin: 0;
+}
+
+
+// 3. Theme Styling
+// -------------------------
+
+//    General    //
+
+
+.gsc-search-button {
+    display: none;
+}
+
+
+
+.loginstatus {
+    & > li {
+        min-width: 0px;
+    }
+}
+
+.embed-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    max-width: 100%;
+}
+
+.embed-container iframe, .embed-container object, .embed-container embed {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.resp-txt(@size, @alignment) {
+    .text-@{size}-@{alignment} {
+        text-align: @alignment;
+    }
+}
+
+.resp-txt-sz(@thesize) {
+    .resp-txt(@thesize, left);
+    .resp-txt(@thesize, right);
+    .resp-txt(@thesize, center);
+    .resp-txt(@thesize, justified);
+}
+
+.resp-txt-sz(xs);
+
+@media (min-width: @screen-sm-min) {
+    .resp-txt-sz(sm);
+}
+
+.divider, .spacer {
+    height: 20px;
+}
+
+.divider-sm, .spacer-sm {
+    height: 10px;
+}
+
+.bordered {
+    border: solid 1px #fff;
+    padding: 5px;
+    margin-bottom: 15px;
+
+    a {
+        color: @secondary-text-color !important;
+    }
+
+    a:hover {
+        color: @brand-primary !important;
+    }
+}
+
+img.img-center {
+    display: block;
+    margin: 0 auto;
+}
+
+.form-control {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+// Custom panel - grey
+.panel.panel-grey {
+    margin-bottom: 10px;
+
+    .panel-heading {
+        background-color: @secondary-theme-color;
+        color: @secondary-text-color;
+        text-align: center;
+        margin: 0;
+        padding: 3px;
+    }
+
+    .panel-title {
+        font-size: 24px;
+        margin: 0px;
+        padding: 0px;
+    }
+
+    .panel-body {
+        background-color: @grey-xlight;
+        padding: 10px 8px 0px;
+    }
+
+    .panel-footer {
+        background-color: @grey-light;
+        text-align: right;
+
+        a {
+            color: #a7a7a7;
+
+            &:hover, &:active {
+                color: #000;
+            }
+        }
+    }
+}
+
+// Custom panel - green
+.panel.panel-green {
+    margin-bottom: 10px;
+    border: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+
+    .panel-heading {
+        color: @secondary-text-color;
+        background-color: @primary-theme-color;
+        padding: 10px 15px;
+    }
+
+    .panel-title-lg {
+        font-size: 24px;
+        margin: 0px;
+        padding: 0px;
+        letter-spacing: 1px;
+    }
+
+    .panel-title {
+        font-size: 18px;
+        margin: 0px;
+        padding: 0px;
+    }
+
+    .panel-body {
+        padding: 10px;
+        background-color: #efefef;
+
+        ul {
+            list-style-type: none;
+
+            a {
+                color: #777;
+            }
+        }
+    }
+}
+
+/* hide block panels */
+.panel.panel-block {
+    border: 0;
+    box-shadow: none;
+
+    & > .panel-heading {
+        display: none;
+    }
+
+    & > .panel-body {
+        padding: 0;
+        background-color: #fff;
+
+        .grid.grid-panel {
+            margin: 0;
+        }
+    }
+}
+
+
+
+
+@color-green: #8bc540;
+@campus-cnt: @color-green; // Central
+@campus-dov: @color-green; // Dover Campus
+@campus-all: @color-green; // All Campuses
+@campus-any: @color-green; // Any Campus
+@category-all: @color-green; // All Categories
+@category-any: @color-green; // Any Category
+
+@color-blue: #2ca9e0;
+@campus-can: @color-blue; // Canton Campus
+@category-ya: @color-blue; // Young Adult Ministries (Colective)
+
+@color-red: #eb2227;
+@campus-mil: @color-red; // Millersburg Campus
+@category-g: @color-red; // Adult Ministry
+
+@color-yellow: #f4d61e;
+@campus-wst: @color-yellow; // Wooster Campus
+@category-ae: @color-yellow; // Everything Else Category
+
+@color-purple: #652D8E;
+@category-cm: @color-purple; // Children's Ministries (Rainforest)
+
+@color-orange1: #f15b26;
+@campus-cos: @color-orange1; // Coshocton Campus
+
+@color-orange2: #F6921E;
+@category-sm: @color-orange2; // Student Ministries (Velocity)
+
+
+.button-variant-np(@background, @colorfrom, @colorto) {
+    color: @colorfrom;
+    background-color: @background;
+
+    &:hover,
+    &:focus,
+    &:active,
+    &.active,
+    .open > .dropdown-toggle& {
+        color: @colorto;
+        background-color: @background;
+    }
+}
+// Buttons
+.btn {
+    font-family: @font-family-sans-serif-bold;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.btn-lg .larger {
+    font-size: 2em;
+}
+
+.btn-xs {
+    font-family: "Gotham", Helvetica, Arial, sans-serif;
+}
+
+.btn-primary, .btn-green, .btn-newpointe {
+    .button-variant-np(@btn-primary-bg, @btn-primary-color, @primary-text-color);
+}
+
+.btn-purple {
+    .button-variant-np(@color-purple, #fff, @primary-text-color);
+}
+
+.btn-orange {
+    .button-variant-np(@color-orange1, #fff, @primary-text-color);
+}
+
+.btn-blue {
+    .button-variant-np(@color-blue, #fff, @primary-text-color);
+}
+
+.btn-red {
+    .button-variant-np(@color-red, #fff, @primary-text-color);
+}
+
+.btn-yellow {
+    .button-variant-np(@color-yellow, #fff, @primary-text-color);
+}
+
+.btn-black {
+    color: #fff;
+    background-color: #000;
+
+    &:hover,
+    &:focus,
+    &:active,
+    &.active,
+    .open > .dropdown-toggle& {
+        color: #fff;
+        background-color: @grey-dark;
+    }
+}
+
+.btn-grey {
+    .button-variant-np(@btn-default-bg, @btn-default-color, @primary-text-color);
+}
+
+
+
+
+// Campus Colors
+
+.buildCampusColor(@CampusShortCode, @CampusColor: @color-dov) {
+    .campus-@{CampusShortCode}, .campus-@{CampusShortCode}-hover:hover, .campus-@{CampusShortCode}-hover:active, .campus-@{CampusShortCode}-hover.active {
+        background-color: @CampusColor;
+        color: #fff;
+    }
+}
+
+//.buildCampusColor(akr, @campus-akr);
+.buildCampusColor(can, @campus-can);
+.buildCampusColor(cos, @campus-cos);
+.buildCampusColor(dov, @campus-dov);
+.buildCampusColor(mil, @campus-mil);
+.buildCampusColor(wst, @campus-wst);
+.buildCampusColor(all, @btn-primary-bg);
+
+
+
+
+
+/*
+@camp-colors: akr @color-akr, can @color-can, cos @color-cos, dov @color-dov, mil @color-mil, wst @color-wst, ;
+
+.make-classes(campus, @camp-colors);
+
+// impl.:
+
+.make-classes(@prefix, @list) {
+    .iter(length(@list));
+    .iter(@i) when (@i > 0) {
+        .iter(@i - 1);
+        @pair:  extract(@list, @i); 
+        @key:   extract(@pair, 1);
+        @value: extract(@pair, 2); 
+        .@{prefix}-@{key} {
+            color: @value;  
+        }
+    }
+}
+    */
+
+
+
+
+// Category Colors
+
+.buildCategoryColor(@CategoryShortCode, @CategoryColor: @btn-primary-bg) {
+    .category-@{CategoryShortCode}, .category-@{CategoryShortCode}-hover:hover, .category-@{CategoryShortCode}-hover:active, .category-@{CategoryShortCode}-hover.active {
+        background-color: @CategoryColor;
+        color: #fff;
+    }
+
+    .category-@{CategoryShortCode}-border {
+        border: 3px solid @CategoryColor;
+    }
+}
+
+.buildCategoryColor(cm, @color-purple);
+.buildCategoryColor(sm, @color-blue);
+.buildCategoryColor(ya, @color-orange2);
+.buildCategoryColor(g, @color-red);
+.buildCategoryColor(ae, @color-yellow);
+.buildCategoryColor(all, @color-green);
+// Other Colors
+
+
+.well .well {
+    background-color: #E5E0EC;
+}
+
+//    Header    //
+// Logo
+.brand-logo {
+    overflow: hidden;
+    width: @logo-cutoff - @logo-gutter;
+    height: @logo-img-height - (@logo-gutter * 2);
+    margin-left: (@grid-gutter-width / 2) + 5px;
+    margin-top: 3px;
+}
+
+.brand-logo img {
+    max-width: none;
+    width: @logo-img-width;
+    margin-top: -@logo-gutter;
+    margin-left: -@logo-gutter;
+}
+
+// Navbar
+.navbar-toggle i {
+    color: @navbar-default-toggle-icon-bar-bg;
+    font-size: 1.5em;
+}
+
+.navbar-inverse .navbar-toggle i {
+    color: @navbar-inverse-toggle-icon-bar-bg;
+}
+
+#zone-navigation .dropdown > a {
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+#zone-navigation .dropdown-menu > li > a {
+    color: #ffffff;
+}
+
+#zone-login {
+    position: relative;
+    z-index: 1;
+}
+
+#FloatingMenu {
+    position: relative;
+    margin-left: -15px;
+
+    nav {
+        margin-top: -1px;
+        border-top: @primary-theme-color 1px solid;
+        border-bottom: @secondary-theme-color 1px solid;
+    }
+}
+
+header > nav .navbar-collapse.in {
+    min-height: 30px;
+}
+
+
+//    Footer    //
+
+.footer-box {
+    background-color: @secondary-theme-color;
+    color: @secondary-text-color;
+    padding: 15px 40px;
+}
+
+footer > .container {
+    padding: 0px;
+}
+
+.footer-box + .footer-box {
+    margin-top: 10px;
+}
+
+h2.give {
+    color: @brand-primary;
+    font-size: 90px;
+    margin: 0;
+    text-align: center;
+}
+
+
+.copyright {
+    font-size: 10px;
+    padding-bottom: 15px;
+}
+
+.social-circle {
+    width: 45px;
+    height: 45px;
+    background-color: #fff;
+    display: inline-block;
+    margin-right: 10px;
+    text-align: center;
+}
+
+.social-circle i {
+    font-size: 32px;
+    color: @secondary-theme-color;
+    line-height: 45px;
+    transition: all 0.2s linear;
+    -moz-transition: all 0.2s linear;
+    -webkit-transition: all 0.2s linear;
+}
+
+.social-circle i:hover {
+    color: @primary-theme-color;
+}
+
+
+#footer-tiny-logo {
+    background: url('../Assets/Images/NPCC_Small.png') no-repeat center;
+    background-color: #404040;
+    background-size: 18px;
+    width: 28px;
+    height: 28px;
+    position: absolute;
+    left: 50%;
+    margin-left: -16px;
+    margin-top: -14px;
+}
+
+
+
+// Logo
+#CustomMenuLogo {
+    height: 68px;
+    background-color: #8bc540;
+
+    .newpointe-logo {
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+// Hide menu logo when at top of page
+.affix-top #CustomMenuLogo {
+    display: none;
+}
+
+.npCustomMenu {
+    list-style-type: none;
+    padding: 23px 0 20px;
+    margin: 0px;
+
+    li {
+        display: inline-block;
+        position: relative;
+
+        a {
+            color: @primary-text-color;
+            font-family: @headings-font-family;
+            font-size: 23px;
+            letter-spacing: -1px;
+            line-height: 0;
+            margin: 0 26px;
+            text-transform: uppercase;
+
+            &.active,
+            &:hover {
+                color: @brand-primary;
+            }
+            // Active menu arrow pointer
+            &.active:after {
+                border-left: 25px solid transparent;
+                border-right: 25px solid transparent;
+                border-bottom: 15px solid #404040;
+                border-top: none;
+                content: "";
+                left: 50%;
+                top: 31px;
+                margin-left: -30px;
+                position: absolute;
+            }
+        }
+    }
+}
+
+#CustomMenuMenu {
+    background-color: @background-color;
+    float: left;
+    width: 100%;
+
+    .pop-over {
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        display: block;
+        padding: 30px 50px;
+        position: absolute;
+        background-color: @secondary-theme-color;
+        border: medium none;
+        border-radius: 0;
+        box-shadow: none;
+        color: #fff;
+        left: 0 !important;
+        top: 69px !important;
+        height: 325px;
+
+        .popover-border, .right-divider {
+            border-right: 1px solid #fff;
+            padding-right: 25px;
+        }
+
+        img {
+            border: 1px #fff solid;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 10px;
+        }
+
+        li {
+            font-size: 15px;
+            margin-bottom: 10px;
+
+            a:hover {
+                color: #fff;
+            }
+        }
+
+
+        h3 {
+            letter-spacing: 0;
+            margin-top: 0px;
+        }
+
+        p {
+            font-family: "GothamBook";
+            font-size: 14px;
+            line-height: 18px;
+        }
+    }
+}
+
+.main-feature {
+    margin-bottom: 10px;
+}
+
+header {
+    position: relative;
+    z-index: 300;
+}
+
+header + section {
+    position: relative;
+    z-index: 200;
+}
+
+section, main, footer {
+    //position: relative;
+    //z-index: 100;
+}
+
+.navbar-fixed-top, .navbar-fixed-bottom {
+    /*z-index: 900;*/
+}
+
+hr.np-hr-small {
+    margin: 15px 0px;
+}
+
+hr.np-hr-small:after {
+    content: "";
+    background: url(/Themes/NewPointeMain/Assets/Images/NPCC_Small.png) no-repeat center;
+    height: 28px;
+    background-color: #404040;
+    background-size: 18px;
+    position: relative;
+    display: block;
+    top: -15px;
+    width: 28px;
+    margin: auto;
+}
+
+// 4. Responsive Overrides
+// -------------------------
+// default styling should be for phones 767px or less
+
+// Mobile View
+@media (max-width: @grid-float-breakpoint-max) {
+    .desktop-only {
+        display: none;
+    }
+
+    .mobile-only {
+        display: block;
+    }
+
+    header {
+        /*height: 70px;*/
+    }
+
+    #PersonMenu {
+        .zone-content > *,
+        .nav.navbar-nav {
+            /*width: 100%;*/
+        }
+    }
+
+    body {
+        margin-top: 70px;
+    }
+
+    .navbar-switch-top {
+        top: 0;
+        border-width: 0 0 1px;
+        position: fixed;
+        right: 0;
+        left: 0;
+        z-index: 1050;
+        -webkit-transform: translate3d(0,0,0);
+        transform: translate3d(0,0,0);
+    }
+}
+
+
+
+
+
+// Desktop View
+@media (min-width: @grid-float-breakpoint) {
+
+    // Show the floating menu
+    #divCustomMenu {
+        display: block;
+    }
+
+    // Clear the header background color
+    .navbar,
+    .navbar-inverse {
+        background-color: transparent;
+    }
+
+    // Fix floating menu
+    header .navbar-fixed-top {
+        /*position: relative;*/
+    }
+
+    .affix-top {
+        position: absolute;
+    }
+
+    .desktop-only {
+        display: block;
+    }
+
+    .mobile-only {
+        display: none;
+    }
+
+    .navbar-switch-top {
+        z-index: 1051;
+        border-width: 0 0 1px;
+    }
+}
+
+// Small devices (tablets, 768px and up)
+@media (min-width: @screen-sm-min) {
+    header .brand-logo {
+        width: @logo-img-width - (@logo-gutter * 2);
+    }
+
+    .text-sm-left {
+        text-align: left;
+    }
+
+    .text-sm-right {
+        text-align: right;
+    }
+
+    .text-sm-center {
+        text-align: center;
+    }
+
+    .text-sm-justify {
+        text-align: justify;
+    }
+
+    .give-row > div {
+        position: relative;
+        top: 50%;
+        -webkit-transform: translateY(-50%);
+        transform: translateY(-50%);
+    }
+
+    hr.np-hr-small {
+        margin: 5px 0px;
+    }
+}
+
+// Medium devices (desktops, 992px and up)
+@media (min-width: @screen-md-min) {
+    .give-row {
+        height: 120px;
+    }
+
+    .md-border-right {
+        border-right: 1px solid @secondary-text-color;
+    }
+
+    #zone-navigation {
+        padding: 0px 80px;
+    }
+}
+
+// Large devices (large desktops, 1200px and up)
+@media (min-width: @screen-lg-min) {
+}
+
+
+/*#region // Small screens only */
+@media (min-width: @screen-sm-min) AND (max-width: @screen-sm-max) {
+
+    #zone-navigation {
+        padding: 0px 50px;
+    }
+
+    .give-row {
+        height: 220px;
+    }
+
+    .text-transform {
+        padding-top: 150px;
+        padding-right: 30px;
+
+        h2 {
+            -webkit-transform: rotate(-90deg);
+            -moz-transform: rotate(-90deg);
+            -ms-transform: rotate(-90deg);
+            -o-transform: rotate(-90deg);
+            font-size: 70px;
+        }
+    }
+}
+
+
+
+
+
+#zone-header {
+    width: auto;
+}
+
+#LoginCollapse .zone-instance {
+    min-width: 200px;
+    clear: both;
+
+    .zone-content > .block-instance {
+        float: right;
+
+        &.outline {
+            clear: none;
+            min-width: 200px;
+        }
+    }
+}
+
+#divCampusTimes {
+    h5 {
+        color: @primary-text-color;
+        font-family: "GothamBold";
+        text-transform: uppercase;
+        margin: 0px;
+        letter-spacing: .1px;
+    }
+}
+
+.modal-content.rock-modal .modal-header, .rock-modal .modal-content .modal-header {
+    background-color: @secondary-theme-color;
+}
+.panel-widget>.panel-heading {
+    background-color: @grey-light;
+    color: #000;
+}
+.panel-widget {
+    border-color: @grey-light;
+}
+.modal-content.rock-modal .modal-footer, .rock-modal .modal-content .modal-footer {
+    background-color: @grey-xlight;
+}
+
+.carousel-inner > .item > img,
+.carousel-inner > .item > a > img {
+    margin: auto;
+}

@@ -1,0 +1,27 @@
+﻿{% assign arraysize = Items | Size %}
+  {% for item in Items %}
+  <h3>{{item.Title}}</h3>
+  <p>
+    <strong>Date:</strong> {{item.StartDateTime | Date:'dddd MMMM d, yyyy'}} - {{item.ExpireDateTime | Date:'dddd MMMM d, yyyy'}}
+  </p>
+  <p>
+    <strong>Time:</strong> {{item.StartDateTime | Date:'h:mm tt'}} - {{item.ExpireDateTime | Date:'h:mm tt'}}
+  </p>
+  {% if item.Location != '' %}
+    <p>
+      <strong>Location:</strong> {{item.Location}}
+    </p>
+  {% endif %}
+  <p>{{item.Content}}</p>
+  {% if item.RegistrationLink != '' %}
+    <p>
+      <a href="{{ item.RegistrationLink | 'StripHtml' }}" class="btn btn-newpointe">REGISTER NOW</a>
+    </p>
+  {% endif %}
+{% endfor %}
+
+{% if arraysize == 0 %}
+  <p>
+    There are no upcoming Campus Groups at this time. <a href="/moreinfo/?topic=Campus Groups" class="btn btn-newpointe">REQUEST MORE INFO</a>
+  </p>
+{% endif %}

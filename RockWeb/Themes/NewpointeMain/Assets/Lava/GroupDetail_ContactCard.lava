@@ -1,0 +1,57 @@
+<div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
+
+	{% if LinkedPages.PersonDetailPage != '' %}
+	{% endif %}
+<div class="contactCard" >
+	<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" style="height:60px" class="margin-r-sm" />
+	<div>
+		<strong>{{ member.Person.FullName }}</strong>
+		<small>({{ member.GroupRole.Name}})</small><br>
+
+		<a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a><br />
+
+		{% for phone in member.Person.PhoneNumbers %}
+	    
+			{% if phone.IsUnlisted != true %}
+				<a href="tel:{{ phone.Number }}">
+					{% if phone.NumberFormatted and phone.NumberFormatted != empty and phone.NumberFormatted != '' %}
+						{{ phone.NumberFormatted }}
+					{% else %}
+						{{ phone.Number }}
+					{% endif %}
+				</a>
+			{% else %}
+			    Unlisted
+			{% endif %}
+        
+			<small>({{ phone.NumberTypeValue.Value }})</small>
+
+			<br />
+		{% endfor %}
+
+		<div class="clearfix"></div>
+
+		{% assign memberAddress =  member.Person | Address:'Home' %}
+		{% if memberAddress != '' %}
+			{{ memberAddress }}<br />
+		{% endif %}
+
+	</div>
+
+	{% if AllowedActions.Edit == true %}
+		<div class="contactCard_edit pull-left rollover-item">
+			<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
+				<i class="fa fa-times"></i>
+			</a>
+			<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
+			<i class="fa fa-pencil"></i>
+				</a>
+			</div>
+	{% endif %}
+</div>
+
+	{% if LinkedPages.PersonDetailPage != '' %}
+
+	{% endif %}
+
+</div>

@@ -1,0 +1,44 @@
+<div class="row staff-detail">
+<a href='{{ LinkedPages.DetailPage }}' title='Back to "Our Team"' class='backlink'><i class="np-icon np-close"></i></a>
+{% for item in Items %}
+	<div class="col-sm-5">
+	{% assign detailImageGuid = item | Attribute:'MemberPhoto','RawValue' %}
+	{% if detailImageGuid != '' %}
+	<div class="headshot">
+		<img alt="{{ item.Title }}" src="/GetImage.ashx?Guid={{ detailImageGuid }}" class="title-image img-responsive">
+	</div>
+	{% endif %}
+	</div>
+	<div class="col-sm-6">
+		<div class="member-info">
+		<h2>{{ item.Title }}</h2>
+		{% assign personId = item | Attribute:'LinkedPerson', 'Id' %}
+		{% assign jobTitle = item | Attribute:'JobTitle' %}
+		{% assign showEmail = item | Attribute:'DisplayEmailAddress' %}
+		
+		{% if personId %}
+			{% person id:'{{personId}}' %}		
+			{% if jobTitle != "" %}
+			<p class='member-title'>{{ jobTitle }}</p>
+			{% else if personId %}
+			<p class='member-title'>{{ person.Position }}</p>
+			{% endif %}
+			<p class='member-socials'>
+			{% if person.Email != "" and showEmail == "Yes" %}<a href="mailto:{{ person.Email }}">{{ person.Email }}</a>{% endif %}
+			{% assign personWebsite = person | Attribute:'Website', 'RawValue' | Remove:'https://' | Remove:'http://' | Remove:'www.' %}
+			{% if personWebsite != "" %}
+				<a target="_blank" href="{{ person | Attribute:'Website', 'RawValue' }}"> {{ personWebsite }}</a>
+			{% endif %}
+			{% assign personFB = person | Attribute:'Facebook', 'RawValue' | Remove:'https://www.facebook.com' | Remove:'http://www.facebook.com' | Remove:'https://facebook.com' | Remove:'http://facebook.com' %}
+			{% if personFB != "" %}
+				<a target="_blank" href="{{ person | Attribute:'Facebook', 'RawValue' }}"><i class="fa fa-facebook-square"></i> {{ personFB }}</a>
+			{% endif %}
+			</p>
+			</div>
+			{%- endperson %}
+		{% endif %}
+
+	{{ item.Content }}
+	</div>
+{% endfor -%}
+</div>

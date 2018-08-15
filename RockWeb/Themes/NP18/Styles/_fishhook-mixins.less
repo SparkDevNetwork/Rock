@@ -1,0 +1,277 @@
+.font(@size,@weight:normal,@style:normal) {
+	// @size should be px value AS DESIGNED AT 1920 for this to work
+	@media (min-width: @screen-sm) {
+		@pxValue: 	@size/(unit(@font-size-large)/unit(@font-size-base)); //px value needs to be calculated based on viewport size
+		@remValue: 	@size/unit(@font-size-large); //rem value is constant, because html base font size changes
+		font-size: 	~"@{pxValue}px"; 
+		font-size: 	~"@{remValue}rem";
+	}
+	@media (min-width: @screen-xl) {
+		@pxValue: 	@size; //px value from design at 1920
+		@remValue: 	@size/unit(@font-size-large); //rem value is constant, because html base font size changes
+		font-size: 	~"@{pxValue}px"; 
+		font-size: 	~"@{remValue}rem";
+	}
+	font-weight: @weight;
+	font-style: @style;
+}
+.box-shadow(){
+	box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+}
+.np-icon() {
+  // use !important to prevent issues with browser extensions that change fonts
+  font-family: 'Icons' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.no-gutter > [class*='col-'] {
+    padding-right:0;
+    padding-left:0;
+}
+//in .vc() and .hc() below, the +_ suffix lets you combine both mixins for one class, instead of the last one called overriding anything before: http://lesscss.org/features/#merge-feature
+.vc(){
+  top: 50%;
+  transform+_: translateY(-50%);
+}
+.hc(){
+  left: 50%;
+  transform+_: translateX(-50%);
+}
+.aspect-ratio(@width, @height) {
+  position: relative;
+  &:after {
+    display: block;
+    content: "";
+    width: 100%;
+    padding-top: (@height / @width) * 100%;
+  }
+  > div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+}
+.overlay(@color) {
+	content:"";
+	position: absolute;
+	top:0;
+	left:0;
+	right:0;
+	bottom:0;
+	background-color: @color;
+}
+// Button variants
+//
+// Easily pump out default styles, as well as :hover, :focus, :active,
+// and disabled options for all buttons
+.new-button-variant(@color; @background; @border; @hover-color; @hover-background; @hover-border:@hover-background) {
+  color: @color;
+  background-color: @background;
+  border-color: @border;
+  
+  &:focus,
+  &.focus {
+    color: @hover-color;
+    background-color: @hover-background;
+        border-color: @hover-border;
+  }
+  &:hover {
+    color: @hover-color;
+    background-color: @hover-background;
+        border-color: @hover-border;
+  }
+  &:active,
+  &.active,
+  .open > .dropdown-trigger& {
+    color: @hover-color;
+    background-color: @hover-background;
+        border-color: @hover-border;
+    &:hover,
+    &:focus,
+    &.focus {
+    color: @hover-color;
+    background-color: @hover-background;
+        border-color: @hover-border;
+    }
+  }
+  &:active,
+  &.active,
+  .open > .dropdown-trigger& {
+    background-image: none;
+  }
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    &:hover,
+    &:focus,
+    &.focus {
+	    color: @color;
+      background-color: @background;
+          border-color: @border;
+    }
+  }
+  .badge {
+    color: @background;
+    background-color: @color;
+  }
+}
+
+// Button sizes
+.button-size(@padding-vertical; @padding-horizontal; @font-size; @line-height; @border-radius) {
+  padding: @padding-vertical @padding-horizontal;
+  font-size: @font-size;
+  line-height: @line-height;
+  border-radius: @border-radius;
+}
+
+// # Block Grid
+//
+// Technique adapted from Foundation 5 for Bootstrap 3.0.3 to at least 3.3.1.
+// https://github.com/zurb/foundation/blob/f755d8704123f86c281ede0b171881e2672f150d/scss/foundation/components/_block-grid.scss
+//
+// # Example Usage
+//
+// To produce a grid of 2 items per row on an extra-small screen, and 3 items
+// per row on a small screen:
+//
+//     <div class="block-grid-xs-2 block-grid-sm-3">
+//         <div class="block-grid-item">
+//             ...
+//         </div>
+//     </div>
+.block-grid,
+[class*="block-grid-"] {
+  display: block;
+  margin: 0 -(@grid-gutter-width/2);
+  padding: 0;
+  .clearfix();
+  .block-grid-item {
+    display: inline;
+    margin: 0;
+    padding: 0 (@grid-gutter-width/2);
+    height: auto;
+    float: left;
+    width: 100%;
+    list-style: none;  // for those who like to use `li` elements as block-grid-items
+  }
+}
+
+.block-grid (@per-row) {
+  & > .block-grid-item {
+    width: (100%/@per-row);
+    @nth-equation: ~"@{per-row}n+1";
+    &:nth-of-type(n) { clear: none; }
+    &:nth-of-type(@{nth-equation}) { clear: both; }
+  }
+}
+
+// Recursive loop that produces rules for block grids of @per-row many items
+// per row down to 1 many items per row.
+.block-grids(@size, @per-row: @grid-columns) when (@per-row > 0) {
+  .block-grid-@{size}-@{per-row} { .block-grid(@per-row); }
+  .block-grids(@size, (@per-row - 1));
+}
+
+.block-grids(xs);
+@media (min-width: @screen-sm-min) { .block-grids(sm) }
+@media (min-width: @screen-md-min) { .block-grids(md) }
+@media (min-width: @screen-lg-min) { .block-grids(lg) }
+
+
+// --------------------------------------------------
+// Flexbox LESS mixins
+// The spec: http://www.w3.org/TR/css3-flexbox
+// --------------------------------------------------
+
+.flex() {
+//    display: -webkit-box; 
+//    display: -moz-box; 
+    display:-webkit-flex;
+    display: -ms-flexbox;
+    display:flex;
+}
+
+.flex-justify(@justifyStyle) {
+    .ms-flex-justify(@justifyStyle);
+    -webkit-justify-content: @justifyStyle;
+    justify-content: @justifyStyle;
+}
+
+.flex-direction(@direction) {
+  -ms-flex-direction:@direction;
+ -webkit-flex-direction:@direction;
+  flex-direction:@direction;
+}
+
+.flex-align-content(@alignStyle) {
+    -ms-flex-line-pack:@alignStyle;
+    -webkit-align-content:@alignStyle;
+     align-content: @alignStyle;   
+}
+
+.flex-align-items(@alignStyle) {
+    -ms-flex-align:@alignStyle;
+    -webkit-align-items:@alignStyle;
+     align-items: @alignStyle;   
+}
+
+.flex-align-self(@selfAlignStyle) {
+  .ms-flex-align-self(@selfAlignStyle);
+  -webkit-align-self:@selfAlignStyle;
+  align-self: @selfAlignStyle;
+}
+
+.flex-order(@order) {
+  -ms-flex-order:@order;
+  -webkit-order:@order;
+  order:@order; 
+}
+
+.flex-wrap(@wrap) {
+  -ms-flex-wrap:@wrap;
+  -webkit-flex-wrap:@wrap;
+   flex-wrap:@wrap; 
+}
+
+
+
+/* These are the conditional mixins for the different syntax for IE10 Flexbox*/
+.ms-flex-justify(@msJustify) when (@msJustify = space-between)  {
+    -ms-flex-pack:justify;
+}
+
+.ms-flex-justify(@msJustify) when (@msJustify = space-around) {
+    -ms-flex-pack:distribute;
+}
+
+.ms-flex-justify(@msJustify) when (@msJustify = flex-end) {
+    -ms-flex-pack:end;
+}
+
+.ms-flex-justify(@msJustify) when (@msJustify = flex-start) {
+    -ms-flex-pack:start;
+}
+
+.ms-flex-justify(@msJustify) when (@msJustify = center) {
+    -ms-flex-pack:center;
+}
+
+.ms-flex-align-self(@msSelfAlign) when (@msSelfAlign = flex-end) {
+    -ms-flex-item-align: end;
+}
+
+.ms-flex-align-self(@msSelfAlign) when (@msSelfAlign = flex-start) {
+    -ms-flex-item-align: start;
+}
+
+.ms-flex-align-self(@msSelfAlign) when (@msSelfAlign = auto), (@msSelfAlign = center),(@msSelfAlign = baseline), (@msSelfAlign = stretch) {
+    -ms-flex-item-align: @msSelfAlign;
+}

@@ -1,0 +1,101 @@
+﻿<div class="tab-content">
+	<div class="tab-pane vert-tab active" id="biblical-essentials">
+		<h4><strong>Biblical Essentials</strong>(BE)</h4>
+				<table>
+		  <thead>
+		    <tr>
+			  <th>Course</th>
+			  <th>Title</th>
+			  <th>Hours</th>
+			</tr>
+		  </thead>
+		  <tbody>
+		    {% for item in Items %}
+			  {% assign type = item | Attribute: 'CourseType' %}
+			  {% if type == 'Bibilical Essentials(BE)' %}
+			    <tr>
+				  <td>{{ item | Attribute:'Course'}}
+				  <td><a href="/page/1118#{{ item | Attribute: 'Course'}}">{{ item.Title }}</a></td>
+				  <td>{{ item | Attribute:'Hours'}} Hours</td>
+				</tr>
+			  {% endif %}
+			{% endfor %}
+		  </tbody>
+		</table>
+	</div>
+
+	<div class="tab-pane vert-tab" id="leadership-essentials">
+                    <h4><strong>Leadership Essentials</strong>(LE)</h4>
+				<table>
+		  <thead>
+		    <tr>
+			  <th>Course</th>
+			  <th>Title</th>
+			  <th>Hours</th>
+			</tr>
+		  </thead>
+		  <tbody>
+		    {% for item in Items %}
+			  {% assign type = item | Attribute: 'CourseType' %}
+			  {% if type == 'Leadership Essentials(LE)' %}
+			    <tr>
+				  <td>{{ item | Attribute:'Course'}}
+				  <td><a href="/page/1118#{{ item | Attribute: 'Course'}}">{{ item.Title }}</a></td>
+				  <td>{{ item | Attribute:'Hours'}} Hours</td>
+				</tr>
+			  {% endif %}
+			{% endfor %}
+		  </tbody>
+		</table>
+	</div>
+
+	<div class="tab-pane vert-tab" id="ministry-essentials">
+                    <h4><strong>Ministry Essentials</strong>(ME)</h4>
+				<table>
+		  <thead>
+		    <tr>
+			  <th>Course</th>
+			  <th>Title</th>
+			  <th>Hours</th>
+			</tr>
+		  </thead>
+		  <tbody>
+		    {% for item in Items %}
+			  {% assign type = item | Attribute: 'CourseType' %}
+			  {% if type == 'Ministry Essentials(ME)' %}
+			    <tr>
+				  <td>{{ item | Attribute:'Course'}}
+				  <td><a href="/page/1118#{{ item | Attribute: 'Course'}}">{{ item.Title }}</a></td>
+				  <td>{{ item | Attribute:'Hours'}} Hours</td>
+				</tr>
+			  {% endif %}
+			{% endfor %}
+		  </tbody>
+		</table>
+	</div>
+
+	<div class="tab-pane vert-tab" id="course-electives">
+                    <h4><strong>Course Electives</strong>(CE)</h4>
+				<table>
+		  <thead>
+		    <tr>
+			  <th>Course</th>
+			  <th>Title</th>
+			  <th>Hours</th>
+			</tr>
+		  </thead>
+		  <tbody>
+		    {% for item in Items %}
+			  {% assign type = item | Attribute: 'CourseType' %}
+			  {% if type == 'Course Electives(CE)' %}
+			    <tr>
+				  <td>{{ item | Attribute:'Course'}}
+				  <td><a href="/page/1118#{{ item | Attribute: 'Course'}}">{{ item.Title }}</a></td>
+				  <td>{{ item | Attribute:'Hours'}} Hours</td>
+				</tr>
+			  {% endif %}
+			{% endfor %}
+		  </tbody>
+		</table>
+	</div>
+</div>

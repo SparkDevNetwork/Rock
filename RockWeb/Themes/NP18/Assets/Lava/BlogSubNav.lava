@@ -1,0 +1,21 @@
+<div class="subnav blog-subnav">
+	<div class="container">
+		<div class="row">
+			<div class="col-xs-12">
+				{% comment %}
+				<div class="subnav-search search-blog-posts">
+					<input type="text" name="search" placeholder="Search for a specific post" />
+					<button type="submit"><i class="np-search"></i></button>
+				</div>
+				{% endcomment %}
+				<ul class="list-inline">
+					<li><a href="/blog">All</a></li>
+					<li><a href="/the-daily">The Daily</a></li>
+					<li><a href="/stories">Stories</a></li>
+					<li><a href="/dwights-blog">Dwight's Blog</a></li>
+					<li><a href="/missions-blog">Missions</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>

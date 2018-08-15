@@ -1,0 +1,25 @@
+﻿<div>
+  <h1>Recent Talk It Over Guides</h1>
+  <p>
+    Have you heard a great message at NewPointe and want to discuss it with someone else? 
+    Each week we post a discussion guide for our messages. Small Groups are encouraged to 
+    use these guides to bridge the gap between the message on Sunday and application during the week.
+    </p>
+  {% for item in Items %}
+  {% assign talkitover = item | Attribute:'TalkItOver','Url' %}
+  {% if talkitover != '' %}
+    <div class="row" style="background-color: #ccc; margin-left: 10px; margin: 5px; padding: 5px;">
+      <div class="col-md-2">
+        <h4>{{ item.Date }}</h4>
+      </div>
+      <div class="col-md-7">
+        <h4>{{ item.Title }}<br /><small>{{ item.SeriesTitle }}</small></h4>
+      </div>
+      <div class="col-md-2">
+        <a href="{{ talkitover }}" class="seriesButton btn btn-primary active" style="margin-top: 2px;">Download Now</a>
+      </div>
+    </div>
+  {% endif %}
+  {% endfor %}
+  <p><br />Older Talk It Over Guides are available with messages on the <a href="message-archive">Message Archive</a>.<br /><br /></p>
+</div>

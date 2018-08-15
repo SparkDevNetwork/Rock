@@ -1,0 +1,23 @@
+{
+  "name": "paroller.js",
+  "homepage": "https://github.com/tgomilar/paroller.js",
+  "authors": [
+    "tgomilar <tanja.gomilar@gmail.com>"
+  ],
+  "description": "parallax scrolling jQuery plugin",
+  "main": "dist/jquery.paroller.js",
+  "keywords": [
+    "paroller",
+    "parallax",
+    "scrolling",
+    "jquery"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

@@ -1,0 +1,205 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+<!--
+  _______       _____           _   ____         _______ _             _____ _
+ |__   __|     / ____|         | | |  _ \       |__   __| |           / ____| |
+    | | ___   | |  __  ___   __| | | |_) | ___     | |  | |__   ___  | |  __| | ___  _ __ _   _
+    | |/ _ \  | | |_ |/ _ \ / _` | |  _ < / _ \    | |  | '_ \ / _ \ | | |_ | |/ _ \| '__| | | |
+    | | (_) | | |__| | (_) | (_| | | |_) |  __/    | |  | | | |  __/ | |__| | | (_) | |  | |_| |
+    |_|\___/   \_____|\___/ \__,_| |____/ \___|    |_|  |_| |_|\___|  \_____|_|\___/|_|   \__, |
+                                                                                           __/ |
+                                                                                          |___/
+-->
+
+<script runat="server">
+
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+    }
+</script>
+
+<html class="no-js">
+<head runat="server">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true) %>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/HotJar.js", true) %>"></script>
+
+
+    <!-- Set the viewport width to device width for mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+    <!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>" />
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+    <!-- Android URL Bar Color -->
+    <meta name="theme-color" content="#8BC540">
+
+</head>
+<body>
+
+    <form id="form1" runat="server">
+
+        <!-- Page Header -->
+        <header class="container">
+
+            <!-- Brand Bar -->
+            <nav class="navbar navbar-inverse navbar-switch-top">
+                <div class="navbar-header">
+
+                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#NavigationCollapse"><i class="fa fa-bars"></i></button>
+
+                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#LoginCollapse"><i class="fa fa-user"></i></button>
+
+                    <button class="navbar-toggle" type="button" onclick="location.href='/GiveNow';"><i class="fa fa-usd"></i></button>
+
+                    <asp:PlaceHolder runat="server">
+                        <% if ( Rock.Web.Cache.GlobalAttributesCache.Value( "LiveService" ).ToLower() == "true" )
+                            { %>
+                        <button class="navbar-toggle" type="button" onclick="location.href='http://live.newpointe.org';"><i class="fa fa-video-camera"></i></button>
+                        <% } %>
+                    </asp:PlaceHolder>
+
+                    <%--<Rock:Zone Name="Header" runat="server" />--%>
+                    <div class="brand-logo pull-left">
+                        <a href="/home">
+                            <asp:Image ImageUrl="~/Assets/Images/NPCC_Logo_Full_green.svg" runat="server" />
+                        </a>
+                    </div>
+                </div>
+                <div id="LoginCollapse" class="navbar-collapse collapse">
+                    <!-- Main Navigation -->
+                    <div class="pull-right">
+                        <Rock:Zone Name="Login" runat="server" />
+                        <Rock:Zone Name="CustomLogin" runat="server" />
+                    </div>
+                </div>
+                <div id="NavigationCollapse" class="navbar-collapse collapse">
+                    <!-- Main Navigation -->
+                    <Rock:Zone Name="Navigation" runat="server" />
+                </div>
+            </nav>
+
+        </header>
+
+        <!-- Floating Menu for large devices -->
+        <section class="container">
+            <Rock:Zone Name="CustomMenu" runat="server" />
+        </section>
+
+        <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+        <footer class="container hidden-print">
+
+
+            <div class="footer-box">
+                <div class="row give-row">
+                    <div class="col-xs-12 col-sm-1 col-md-3 text-transform">
+                        <h2 class="give">GIVE</h2>
+                    </div>
+                    <div class="col-xs-12 col-sm-3 col-md-3 md-border-right">
+                        <div class="text-xs-justify text-sm-left">
+                            We give our time, talents, and money joyfully in response to Jesus’ generosity and to help more people meet Him.
+                                <div class="spacer-sm"></div>
+                            <div style="text-align: center;">
+                                <a href="/give" class="btn btn-newpointe btn-xs" style="line-height: 1.4;">MORE ON GENEROSITY <i class="fa fa-caret-right" style="font-size: 15px; padding-top: 3px; color: inherit;"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-sm-4 col-md-3">
+                        <a class="btn btn-newpointe btn-lg btn-block" href="https://newpointe.org/volunteer">
+                            <span class="larger">TIME</span><br>
+                            VOLUNTEER
+                        </a>
+                    </div>
+                    <div class="col-xs-12 col-sm-4 col-md-3">
+                        <a class="btn btn-newpointe btn-lg btn-block" href="https://newpointe.org/give">
+                            <span class="larger">MONEY</span><br>
+                            DONATE
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-box">
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:Zone Name="Footer" runat="server" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6 text-xs-center text-sm-left">
+                        <a href="https://www.facebook.com/newpointecommunitychurch">
+                            <div class="social-circle"><i class="fa fa-facebook"></i></div>
+                        </a>
+                        <a href="https://twitter.com/newpointechurch">
+                            <div class="social-circle"><i class="fa fa-twitter"></i></div>
+                        </a>
+                        <a href="http://instagram.com/newpointechurch">
+                            <div class="social-circle"><i class="fa fa-instagram"></i></div>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 text-xs-center text-sm-right">
+                        Central Operations:
+                            <address>3950 SR 39 NW | Dover, OH 44622</address>
+                        Tel: <a href="tel:3306025600">330.602.5600</a> | Fax: 330.602.5636
+                    </div>
+                </div>
+                <hr class="np-hr-small row">
+                <%--<div class="row" style="border-top: 1px solid #fff; height: 15px;">
+                        <div id="footer-tiny-logo"></div>
+                    </div>--%>
+                <div class="row">
+                    <div class="col-xs-12 col-sm-6 text-xs-center text-sm-left">
+                        <a href="https://newpointe.org/jobs">EMPLOYMENT</a> | <a href="https://newpointe.org/contact">CONTACT US</a>
+                    </div>
+                    <div class="col-xs-12 col-sm-6 text-xs-center text-sm-right">
+                        <div class="copyright">&copy; 2017 NewPointe Community Church | All Rights Reserved</div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server" />
+        <asp:UpdateProgress ID="updateProgress" runat="server">
+            <ProgressTemplate>
+                <div class="updateprogress-status">
+                    <div class="spinner">
+                        <div class="rect1"></div>
+                        <div class="rect2"></div>
+                        <div class="rect3"></div>
+                        <div class="rect4"></div>
+                        <div class="rect5"></div>
+                    </div>
+                </div>
+                <div class="updateprogress-bg modal-backdrop"></div>
+            </ProgressTemplate>
+        </asp:UpdateProgress>
+
+    </form>
+
+</body>
+
+</html>
+

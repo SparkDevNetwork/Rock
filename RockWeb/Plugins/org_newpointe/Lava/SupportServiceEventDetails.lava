@@ -1,0 +1,76 @@
+{% assign __EIO = SupportServiceEventDetails %}
+{% if __EIO == null %}{% assign __EIO = EventItemOccurrence %}{% endif %}
+{% if __EIO == null and Workflow != null %}{% assign __EIO = Workflow | Attribute:'EventItemOccurrence','Object' %}{% endif %}
+{% if __EIO == null %}
+    Error: <code>EventItemOccurrence</code> parameter is null.
+{% else %}
+
+    {% include '~/Plugins/org_newpointe/Lava/iCalParse' iCalendarContent:__EIO.Schedule.iCalendarContent %}
+
+    <a href="/page/2410?EventItemId={{ __EIO.EventItem.Id }}&EventItemOccurrenceId={{ __EIO.Id }}">
+        <h2 class="margin-t-sm">{{ __EIO.EventItem.Name }}</h2>
+    </a>
+
+    <div class="row">
+        <div class="col-md-6">
+
+            <dl>
+                <dt>Confirmation Number</dt>
+                <dd>{{ __EIO.Id }}</dd>
+
+                <dt>Location</dt>
+                <dd>
+                    {{ __EIO.Location | WithFallback:'<br />','' }}
+                    {{ __EIO | Attribute:'LocationCampus' | WithFallback:'<br />','' }}
+                    {{ __EIO | Attribute:'LocationAddress' | WithFallback:'<br />','' }}
+                </dd>
+
+                <dt>Date</dt>
+                <dd>{{ iCalParse_eventStart | Date:'MMMM d, yyyy' | Default:'N/A' }}</dd>
+
+                <dt>Time</dt>
+                <dd>
+                    {% if iCalParse_eventStart and iCalParse_eventEnd %}
+                        {{ iCalParse_eventStart | Date:'h:mm tt' }} - {{ iCalParse_eventEnd | Date:'h:mm tt' }} ({{ iCalParse_eventStart | HumanizeTimeSpan:iCalParse_eventEnd,5 }})
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </dd>
+
+            </dl>
+        </div>
+        <div class="col-md-6">
+            <dl>
+
+                {% assign __ServiceUId = __EIO | Attribute:'ServiceUId' %}
+                {% if __ServiceUId != '' %}
+                    <dt>ServiceU Confirmation Number</dt>
+                    <dd>{{ __ServiceUId }}</dd>
+                {% endif %}
+
+                {% if iCalParse_recurringDates %}
+                    <dt>Recurring Dates</dt>
+                    <dd>
+                        <ul>
+                            {% for __Date in iCalParse_recurringDates limit:5 %}
+                                <li>{{ __Date | Date:'MMMM d, yyyy' }}</li>
+                            {% endfor %}
+                            {% assign __RecurringDatesLength = iCalParse_recurringDates | Size %}
+                            {% if __RecurringDatesLength > 5 %}
+                                <li>
+                                    <a data-toggle="collapse" href="#moredates">View More...</a>
+                                    <ul class="collapse" id="moredates">
+                                        {% for __Date in iCalParse_recurringDates offset:5 %}
+                                            <li>{{ __Date | Date:'MMMM d, yyyy' }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </dd>
+                {% endif %}
+
+            </dl>
+        </div>
+    </div>
+{% endif %}

@@ -1,0 +1,25 @@
+{% for blogpost in Items %}
+	{% assign displayBlogTitle = blogpost.ContentChannel | Attribute:'DisplayBlogTitle' %}
+	{% assign blogPostHdrImg = blogpost | Attribute:'Image', 'Url' %}
+	{% assign blogHdrImg = blogpost.ContentChannel | Attribute:'BlogImage', 'Url' %}
+	{% if blogPostHdrImg != '' and blogpost.ContentChannel.Name != "Dwight Mason" %}
+		{% assign blogHdrBg = blogPostHdrImg %}
+	{% else %}
+		{% assign blogHdrBg = blogHdrImg %}
+	{% endif %}
+	<div class="headerImage" style="background-image:url({{ blogHdrBg }});">
+		<div>
+			{% if displayBlogTitle != "No" %}
+		  <div class="titleBlock">
+				<div class="container">
+					<div class="row">
+						<div class="col-xs-12">							
+				      <h1>{{ blogpost.ContentChannel.Name }}</h1>
+				    </div>
+					</div>
+				</div>
+			</div>
+			{% endif %}
+		</div>
+	</div>
+{% endfor %}

@@ -1,0 +1,152 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+
+<script runat="server">
+
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit(EventArgs e)
+    {
+        base.OnInit(e);
+    }
+
+</script>
+
+<html class="no-js">
+<head runat="server">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <meta charset="utf-8">
+    <title></title>
+
+    <%--<script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js" ) %>"></script>--%>
+    <script src="<%# ResolveRockUrl("~~/Scripts/vendors.js") %>"></script>
+    <script src="<%# ResolveRockUrl("~~/Scripts/syntaxhighlighter/shCore.js") %>"></script>
+    <script src="<%# ResolveRockUrl("~~/Scripts/syntaxhighlighter/shBrushXml.js") %>"></script>
+    <script src="<%# ResolveRockUrl("~~/Scripts/syntaxhighlighter/shBrushJScript.js") %>"></script>
+    <script src="<%# ResolveRockUrl("~~/Scripts/DropdownHover.js") %>"></script>
+    <script src="<%# ResolveRockUrl("~~/Scripts/app.js") %>"></script>
+    <script src="<%# ResolveRockUrl("~~/Scripts/holder.js") %>"></script>
+    <script src="<%# ResolveRockUrl("~~/Scripts/home_full.js") %>"></script>
+    <script src="<%# ResolveRockUrl("~~/Scripts/custom.js") %>"></script>
+
+    <!-- Set the viewport width to device width for mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+    <!-- Included CSS Files -->
+    <%--<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>--%>
+
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/vendors.css", true) %>" />
+
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/syntaxhighlighter/shCore.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/style-green4.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/width-full.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/preload.css", true) %>" />
+
+
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>"></script>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+    <!-- Icons -->
+    <link rel="shortcut icon" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/favicon.ico", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/touch-icon-ipad-retina.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/touch-icon-iphone-retina.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/touch-icon-ipad.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/touch-icon-iphone.png", true) %>">
+</head>
+
+<div id="preloader">
+    <div id="status">&nbsp;</div>
+</div>
+<body>
+
+    <form id="form1" runat="server">
+
+        <div class="sb-site-container" id="page-top">
+            <div class="boxed">
+
+
+                <!-- Page Header -->
+                <header id="header-full-top" class="hidden-xs header-full-light">
+                    <div class="container">
+                        <div class="header-full-title">
+                            <h1 class="animated fadeInRight"><a class="page-scroll" href="#page-top">Pointe<span>Blank</span></a></h1>
+                            <p class="animated fadeInRight">Tagline</p>
+                        </div>
+                    </div>
+                </header>
+                <header>
+
+                    <!-- Brand Bar -->
+                    <nav class="navbar navbar-default navbar-header-full navbar-dark yamm navbar-static-top" role="navigation" id="header">
+                        <div class="container">
+                            <div class="navbar-header">
+
+                                <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+                                    <span class="sr-only">Toggle navigation</span>
+                                    <i class="fa fa-bars"></i>
+                                </button>
+                                <a id="ar-brand" class="navbar-brand hidden-lg hidden-md hidden-sm navbar-dark" href="#">Pointe<span>Blank</span></a>
+
+                            </div>
+                            <div class="navbar-collapse collapse">
+                                <!-- Main Navigation -->
+                                <Rock:Zone Name="Navigation" runat="server" />
+                            </div>
+                        </div>
+                    </nav>
+
+                </header>
+
+
+                <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+                <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+                <footer>
+                    <div id="footer">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <p>&#169; 2017 NewPointe Community Church</p>
+                                    <Rock:Zone Name="Footer" runat="server" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server" />
+        <asp:UpdateProgress ID="updateProgress" runat="server" DisplayAfter="800">
+            <ProgressTemplate>
+                <div class="updateprogress-status">
+                    <div class="spinner">
+                        <div class="rect1"></div>
+                        <div class="rect2"></div>
+                        <div class="rect3"></div>
+                        <div class="rect4"></div>
+                        <div class="rect5"></div>
+                    </div>
+                </div>
+                <div class="updateprogress-bg modal-backdrop"></div>
+            </ProgressTemplate>
+        </asp:UpdateProgress>
+
+    </form>
+
+</body>
+
+</html>

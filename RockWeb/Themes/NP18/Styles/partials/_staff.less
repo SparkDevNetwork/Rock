@@ -1,0 +1,125 @@
+h2.group-title {
+	.font(60,900);
+	text-transform: uppercase;
+	border-bottom: solid 2px #AFAFAF;
+	padding-bottom: 15px;
+	margin-bottom: 40px;
+	@media (min-width: @screen-xl) {
+		padding-bottom: 30px;
+		margin-bottom: 60px;
+	}
+}
+#stafflist {
+	//margin: 0 -47px;
+	@media (min-width: @screen-sm) {
+		margin: 0 -32px;
+	}
+	@media (min-width: @screen-xl) {
+		margin: 0 -48px;
+	}
+	.block-grid-item {
+		//padding: 0 47px;
+		@media (min-width: @screen-sm) {
+			padding: 0 32px;
+		}
+		@media (min-width: @screen-xl) {
+			padding: 0 48px;
+		}
+	}
+	.staff-member {
+		text-align: center;
+		margin-bottom: 40px;
+		@media (min-width: @screen-md) {
+			margin-bottom: 60px;
+		}
+		a {
+			display: block;
+			position: relative;
+			img {
+				border-radius: 100%;
+			}
+			&:before {
+				opacity:0;
+				.np-icon();
+				content: @np-open;
+				color: @truewhite;
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				z-index: 10;
+				font-size: 65px;
+				transition: opacity 300ms ease-in-out;
+			}
+			&:after {
+				opacity:0;
+				.overlay(fade(@brand-primary,80%));
+				border-radius: 100%;
+				z-index: 5;
+				transition: opacity 300ms ease-in-out;
+			}
+			&:hover {
+				&:before, &:after {
+					opacity: 1;
+				}
+			}
+		}
+		.member-name {
+			.font(36,900);
+			margin: 30px 0 10px;
+			@media (min-width: @screen-xl) {
+				margin: 40px 0 15px;
+			}
+		}
+	}
+}
+.staff-detail {
+	margin-top: 40px;
+	.backlink {
+		font-size:30px;
+		@media (min-width: @screen-xl) {
+			font-size:40px;
+		}
+		position: absolute;
+		top:0;
+		right:0;
+		text-decoration: none;
+		&:hover {
+			color: @gray-dark;
+		}
+	}
+	.headshot {
+		@media (min-width: @screen-sm) {
+			margin: 0 6% 0 12%;
+		}				
+		.title-image {
+			border-radius: 100%;
+			margin: 0 0 20px;
+		}
+	}
+	h2 {
+		.font(60,900);
+		margin: 0 0 5px;
+	}
+	.member-title {
+		text-transform: uppercase;
+		margin:0 0 5px;
+		.font(36,600);
+	}
+	.member-info {
+		text-align: center;
+		@media (min-width: @screen-sm) {
+			text-align: left;
+		}		
+		.member-socials {
+			a {
+				&:before {
+					content:" | ";
+				}
+				&:first-child:before {
+					content:none;
+				}
+			}
+		}
+	}
+}

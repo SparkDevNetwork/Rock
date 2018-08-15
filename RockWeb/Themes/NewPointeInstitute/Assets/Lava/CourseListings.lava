@@ -1,0 +1,55 @@
+﻿<a name="BE"></a>
+<h3>Biblical Essentials</h3>
+<br/>
+{% for item in Items %}
+  {% assign type = item | Attribute: 'CourseType' %}
+  {% if type == 'Bibilical Essentials(BE)' %}
+    <a name="{{ item | Attribute:'Course'}}"></a>
+    <h4>{{ item | Attribute:'Course'}}</h4>
+    <h4>{{ item.Title }}</h4>
+    <h5>{{ item | Attribute:'Hours'}} Hours</h5>
+    <p>{{item.Content}}</p>
+  {% endif %}
+{% endfor %}
+
+<a name="LE"></a>
+<h3>Leadership Essentials</h3>
+<br/>
+{% for item in Items %}
+{% assign type = item | Attribute: 'CourseType' %}
+{% if type == 'Leadership Essentials(LE)' %}
+<a name="{{ item | Attribute:'Course'}}"></a>
+<h4>{{ item | Attribute:'Course'}}</h4>
+<h4>{{ item.Title }}</h4>
+<h5>{{ item | Attribute:'Hours'}} Hours</h5>
+<p>{{item.Content}}</p>
+{% endif %}
+{% endfor %}
+
+<a name="ME"></a>
+<h3>Ministry Essentials</h3>
+<br/>
+{% for item in Items %}
+{% assign type = item | Attribute: 'CourseType' %}
+{% if type == 'Ministry Essentials(ME)' %}
+<a name="{{ item | Attribute:'Course'}}"></a>
+<h4>{{ item | Attribute:'Course'}}</h4>
+<h4>{{ item.Title }}</h4>
+<h5>{{ item | Attribute:'Hours'}} Hours</h5>
+<p>{{item.Content}}</p>
+{% endif %}
+{% endfor %}
+
+<a name="CE"></a>
+<h3>Course Electives (CE)</h3>
+<br/>
+{% for item in Items %}
+{% assign type = item | Attribute: 'CourseType' %}
+{% if type == 'Course Electives(CE)' %}
+<a name="{{ item | Attribute:'Course'}}"></a>
+<h4>{{ item | Attribute:'Course'}}</h4>
+<h4>{{ item.Title }}</h4>
+<h5>{{ item | Attribute:'Hours'}} Hours</h5>
+<p>{{item.Content}}</p>
+{% endif %}
+{% endfor %}

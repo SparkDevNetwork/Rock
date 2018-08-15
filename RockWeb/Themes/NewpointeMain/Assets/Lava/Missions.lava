@@ -1,0 +1,40 @@
+﻿{% assign count = Items | Size %}
+{% if count > 0 %}
+ <div class="row employment-campus">
+  <div class="col-xs-12">
+    <h3>
+
+      {% assign campusName = Items | First %}
+      {{ campusName.Campus }}
+
+    </h3>
+  </div>
+</div>
+<div class="row">
+  {% for item in Items %}
+  
+ 
+    
+  
+    <div class="col-sm-6 col-md-4">
+        <div class="gray-bg">
+          <h4>
+            {{ item.Title}}</h4>
+            {{ item.Content }}
+        </div>
+    </div>
+      
+
+      {% assign mod2 = forloop.index | Modulo:2 %}
+      {% assign mod3 = forloop.index | Modulo:3 %}
+      
+      {% if mod3 == 0 %}
+        <div class="clearfix visible-md-block visible-lg-block"></div>
+      {% endif %}
+      {% if mod2 == 0 %}
+        <div class="clearfix visible-sm-block"></div>
+      {% endif %}
+
+  {% endfor %}
+</div>  
+{% endif %}

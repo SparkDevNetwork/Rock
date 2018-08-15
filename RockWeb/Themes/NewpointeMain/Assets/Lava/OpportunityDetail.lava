@@ -1,0 +1,38 @@
+<div class="col-md-12">
+  <h3>
+    <i class='{{Opportunity.IconCssClass}}'></i> {{ Opportunity.Name }}
+  </h3>
+  <br />
+  
+  <img src="{{ Opportunity | Attribute:'EnvironmentLogo','Url'  }}" class="center-block title-image img-responsive margin-b-md" width="300" />
+    
+  <div class="col-md-3">
+    <img src="{{Opportunity.PhotoUrl}}" class="title-image img-responsive margin-b-md" /> 
+</div>
+
+  <div class="col-md-9">
+    {{ Opportunity.Description }}
+
+    <br />
+
+    <h4>More Details:</h4>
+
+    <!-- <strong>Campuses: </strong>{{ Opportunity | Attribute:'Campuses' }} <br /> -->
+    <strong>Preference Area: </strong>{{ Opportunity | Attribute:'PreferenceArea' }} <br />
+    <strong>Role Type: </strong>{{ Opportunity | Attribute:'Role' }} <br />
+
+    <br /><br /><br />
+  </div>
+  
+</div>
+
+
+{% assign short = Opportunity | Attribute:'ShortName' %}
+{% if short != "" %}
+<h4>Get more info or sign up for this volunteer opportunity!</h4>
+
+{% else %}
+<h4>Get more info or sign up for this volunteer opportunity!</h4>
+
+{% endif %}
+

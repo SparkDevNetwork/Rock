@@ -1,0 +1,13 @@
+<div class="callstoaction">
+{% for item in Items %}
+	{% assign pfactor = forloop.rindex | Times:0.1 %}
+    <div class="cta paroller"
+	        data-paroller-factor="{{pfactor}}" 
+			    data-paroller-type="foreground" 
+			    data-paroller-direction="vertical"
+				>
+    <h2>{{ item.Title }}</h2>
+    {{ item.Content }}
+    </div>
+{% endfor %}
+</div>

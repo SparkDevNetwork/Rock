@@ -1,0 +1,23 @@
+<div class="alert alert-success">
+	<strong>Alright!</strong>
+  
+  {% assign short = Opportunity | Attribute:'ShortName' %}
+  {% if short != "" %}
+  Your request for the {{ short }} team has been submitted.
+
+  {% else %}
+  Your request for the {{Opportunity.PublicName}} team has been submitted.
+
+  {% endif %}
+  
+  <br /><br />
+    <strong>What's Next? </strong>We will be in touch with you in the next few days. 
+
+  <br /><br />
+  <strong>Interested in another team too? </strong><a href="1048">Click here</a> to return to the volunteer opportunities.
+  
+  <br />
+
+
+
+</div>

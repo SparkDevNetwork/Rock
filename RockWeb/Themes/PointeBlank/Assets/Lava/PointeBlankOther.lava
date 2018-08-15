@@ -1,0 +1,38 @@
+﻿{% assign arraysize = Items | Size %}
+<div class="col-md-12">
+  <h2 class="right-line">Other Episodes</h2>
+</div>
+  <div class="col-md-12"></div>
+{% if arraysize > 1 %}
+  {% for item in Items%}
+    {% if forloop.index > 1 %}
+        
+        <div class="col-md-6">
+          <div class="col-sm-4">
+            <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">{{item.VideoThumbnail}}</a>
+          </div>
+          <div class="col-sm-8">
+            <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">
+              <h3>{{item.Title}}</h3>
+            </a>
+            <p>{{item.Summary}}</p>
+          </div>
+        </div>
+
+  {% endif %}
+  {% endfor %}
+
+  {% else %}
+  <div class="row">
+  <p>No other episodes at this time</p>
+</div>
+  {% endif %}
+
+  <p class="text-center">
+    <a href="#">View Other Episodes</a>
+  </p>
+</div>
+
+
+
+ 

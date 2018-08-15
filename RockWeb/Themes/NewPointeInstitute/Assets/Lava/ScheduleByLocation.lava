@@ -1,0 +1,18 @@
+﻿{% assign arraysize = Items | Size %}
+	<ul class="square-list">
+		{% if arraysize != 0 %}
+
+			{% for item in Items %}
+				<li>
+					<strong>{{item.Title}}</strong><br/>{{item.Content | 'StripHtml'}}
+					{% assign fileurl = item | Attribute:'FileAttachment','Url' %}
+					{% if fileurl != '' %}
+						<br /><a href="{{ item | Attribute:'FileAttachment','Url' }}" target="_blank">
+						<i class="fa fa-file-text-o"></i> Download Course Description</a>
+					{% endif %}
+				</li><br />
+			{% endfor %}
+		{% else %}
+			<li>There are no courses at this time</li>
+		{% endif %}
+  </ul>

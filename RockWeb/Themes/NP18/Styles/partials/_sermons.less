@@ -1,0 +1,325 @@
+.messages-grid {
+  padding: 30px 0;
+  @media (min-width: @screen-md) {
+  	padding: 90px 0 70px;
+  }
+	.sermon {
+		&.col-sm-12 {
+			float: none !important;
+			@media (min-width: @screen-md) {
+				float: left !important;
+			}
+		}
+		&.open {
+			&:before {
+		  	position: absolute;
+		  	top: 100%;
+		  	left: 50%;
+		  	content:'';
+		  	width: 0; 
+		  	height: 0; 
+		  	border-left: 50px solid transparent;
+		  	border-right: 50px solid transparent;
+		  	border-bottom: 50px solid @gray-darker;
+		  	transform: translateX(-50%);
+			}			
+		}
+  	.sermon-holder {
+  		position: relative;
+			.box-shadow();
+  		.series-image {
+  			.aspect-ratio(1,1);
+  			background-size: cover;
+  			background-position: center center;
+  			background-repeat: no-repeat;
+  			margin-bottom: 30px;
+  		}
+  		a.series-link:hover {
+	  		.series-image:after {
+		  		background-color: fade(@gray-darker,30);
+	  		}
+  		}
+  	}
+  }
+}
+.sermondetail {
+	display: none;
+	background-color: @gray-darker;
+	position: relative;
+	padding-top: 40px;
+	@media (min-width: @screen-sm) {
+		margin-top: 35px;
+		margin-bottom: 57px;
+		padding-top: 60px;
+		padding-bottom: 60px;
+	}
+	@media (min-width: @screen-xl) {
+		padding-top: 90px;
+		padding-bottom: 90px;
+	}
+	.closer {
+		position: absolute;
+		right: 16px;
+		z-index: 250;
+		font-size: 24px;
+		.font(40);
+		color: @brand-primary;
+		cursor: pointer;
+		top: -40px;
+		@media (min-width: @screen-md) {
+			top: -50px;
+		}
+		&:hover {
+			text-decoration: none;
+			color: @truewhite;
+		}
+	}
+	.series-title {
+		color: @truewhite;
+	}
+	.series-summary {
+		
+	}
+	p {
+		color: @white;
+		&.readmore {
+			position: absolute;
+			top:-10px;
+			right:0;
+			@media (min-width: @screen-md) {
+				top:0;
+			}
+		}
+	}
+	ul.sermons-list {
+		list-style: none;
+		padding: 0;
+		margin-left: 0;
+		border-top: solid 3px @gray-light;
+		li {
+			margin-top: 35px;
+			padding-bottom: 35px;
+			border-bottom: solid 3px @gray-light;
+			position: relative;
+			h3 {
+				.font(48,bold);
+				margin-bottom: 10px;
+				@media (min-width: @screen-xl) {
+					margin-bottom: 20px;
+				}
+				margin-top: 0;
+			}
+			p {
+				margin-bottom: 0;
+				&.date {
+					color: @white;
+					.font(24,bold);
+					margin-bottom: 10px;
+					@media (min-width: @screen-xl) {
+						margin-bottom: 20px;
+					}
+				}
+				&.speaker {
+					color: @gray-lighter;
+					text-transform: uppercase;
+					.font(24);
+				}
+				&.readmore {
+					.btn:hover {
+						color: @gray-darker;
+					}
+				}
+			}
+		}
+	}
+	&.related {
+		display: block;
+		background-color: @truewhite;
+		.closer {
+			&:hover {
+				color: @header-text-color;
+			}			
+		}
+		ul.sermons-list {
+			border-top: solid 3px @gray-lighter;
+			li {
+				border-bottom: solid 3px @gray-lighter;
+				p {
+					color: @gray-light;
+					&.readmore {
+						.btn:hover {
+							color: @truewhite;
+						}
+					}
+				}
+			}
+		}
+		.text-center {
+			.backlink {
+				float: none;
+				@media (min-width: @screen-md) {
+					font-size: 28px;
+				}
+			}
+		}
+		ul {
+			li {
+				p.date, p.speaker {
+					color: @gray-light;
+				}
+			}
+		}
+	}
+}
+.message-detail {
+	.sermon-video {
+		@media (min-width: @screen-md) {
+			margin-top:-90px;
+		}
+	}
+	.addthis_toolbox {
+		margin: 5px 0;
+		float:right;
+		@media (min-width: @screen-md) {
+			margin: 5px 0 20px 0;
+			min-height: 48px;
+			float: none;
+		}
+	}
+	.message-action-items {
+		padding: 5px 0;
+		@media (min-width: @screen-md) {
+			padding: 20px 20% 20px 5%;
+		}
+		color: @brand-primary;
+		a {
+			color: @gray-dark;
+			&:hover {
+				text-decoration: none;
+				color: @brand-primary;
+			}
+			i {
+				vertical-align: middle;
+				margin-right: 3px;
+		    transform: translateY(-2px);
+		    display: inline-block;
+				font-size: 200%;
+				@media (min-width: @screen-sm) {
+					font-size: 150%;
+				}
+			}
+		}
+		ul {
+			margin:0;
+		}
+		li, dd {
+			font-family: @font-family-narrow;
+			.font(18,900);
+			text-transform: uppercase;
+		}
+	}
+	.talkitover {
+		//float: right;
+		margin:0;
+		color: @brand-primary;
+		padding-bottom: 10px;
+		@media (min-width: @screen-md) {
+			border-bottom: solid 2px @gray-lighter;
+		}
+		a {
+			color: @gray-dark;
+			display: inline-block;
+			&:hover {
+				text-decoration: none;
+				color: @brand-primary;
+			}
+			i {
+		    display: block;
+				font-size: 300%;
+				margin-bottom: 5px;
+				@media (min-width: @screen-sm) {
+					vertical-align: middle;
+					margin-right: 3px;
+					margin-bottom: 0;
+			    transform: translateY(-2px);
+			    display: inline-block;
+					font-size: 150%;
+				}
+			}
+		}
+		dt {
+	    padding-right: 5px;
+			.font(18,900);
+	    display: block;
+			padding-bottom: 6px;
+			border-bottom: solid 2px @gray-lighter;
+			margin-bottom: 12px;
+	    @media (min-width: @screen-md) {
+	    	display: inline-block;
+	    	border-bottom: none;
+				padding-bottom: 0;
+				margin-bottom: 0;
+	    }
+		}
+		dd {
+			font-family: @font-family-narrow;
+			font-size: 12px;
+			.font(18,900);
+			text-transform: uppercase;
+	    display: inline-block;
+	    width: 33%;
+	    padding-left: 5px;
+	    padding-right: 5px;
+	    text-align: center;
+	    vertical-align: top;
+	    @media (min-width: @screen-sm) {
+		    width: auto;
+		    float:none;
+		    padding-left: 5px;
+		    padding-right: 5px;
+		    text-align: left;
+	    }
+		}
+	}
+	.backlink {
+		font-size: 24px;
+		color: @gray-lighter;
+		border-color: @gray-lighter;
+		background: none;
+		float:right;
+		margin-top: 15px;
+		@media (min-width: @screen-md) {
+			float:none;
+			position: absolute;
+			top:0;
+			right: 16px;
+			margin-top: -10px;
+		}
+		&:hover {
+			color: @truewhite;
+		}
+	}
+	.message-details {
+		padding: 15px;
+		background-color: @truewhite;
+		.box-shadow();		
+		@media (min-width: @screen-md) {
+			margin-left: -25%;
+			padding: 15% 15% 15% 30%;			
+		}
+		.series-part {
+			text-transform: uppercase;
+			.font(24,900);
+			color: @gray-darker;
+			margin: 0;
+		}
+		.sermon-title {
+			color: @brand-primary;
+			.font(48, 900);
+			margin: 10px 0;
+		}
+		.speaker-date {
+			.font(24);
+		}
+	}
+}

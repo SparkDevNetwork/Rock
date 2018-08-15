@@ -1,0 +1,7 @@
+﻿
+
+  <div class="col-xs-12 col-md-8">
+    {% for item in Items %}
+    <strong>{{ item.Title }}</strong> {{item.Content}}
+    {% endfor -%}
+  </div>

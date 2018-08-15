@@ -1,0 +1,54 @@
+{% contentchannelitem id:'{{contentchannelitemid}}' %}
+{%- assign item = contentchannelitem -%}
+{%- assign backgroundImage = item | Attribute:'SectionBackgroundImage', 'Url'- %}
+{%- assign bgColor = item | Attribute:'SectionBackgroundColor', 'RawValue'- %}
+{%- assign overlayClass = item | Attribute:'SectionOverlayTint','RawValue' -%}
+{%- assign highlightClass = item | Attribute:'SectionHighlightColor','RawValue' -%}
+{%- assign calloutBlock = item | Attribute:'SectionCalloutBlock' -%}
+{%- assign buttonText = item | Attribute:'SectionButtonText' -%}
+{%- assign buttonLink = item | Attribute:'SectionLinkUrl' -%}
+{%- assign contentWidth = item | Attribute:'SectionContentWidth' -%}
+{%- if backgroundImage != '' -%}
+	{%- assign bgClass="hasbg" -%}
+	{%- assign bgImg = '' %}
+	{%- capture bgImg %} style="background-image:url('{{ backgroundImage }}')"{%- endcapture %}
+{% else %}
+	{%- assign bgClass="nobg" -%}
+{%- endif -%}
+{%- if calloutBlock != '' -%}{%- assign calloutClass="hascallout" -%}{%- endif -%}
+<div class="{{contentWidth}} section {{ calloutClass}} {{ bgClass }} {{ bgColor }} {{ overlayClass }} {{ highlightClass }}" {{ bgImg }}>
+    <div class="block-content">
+        <div class="content-block">
+        {%- if calloutBlock != '' -%}
+          <div class="left-content paroller"
+	        data-paroller-factor="0.2" 
+			    data-paroller-factor-sm="0" 
+			    data-paroller-factor-md="0" 
+			    data-paroller-factor-lg="0.2" 
+			    data-paroller-type="foreground" 
+			    data-paroller-direction="vertical"
+				>
+            <div class="main-content">
+                {{ item.Content }}
+            </div>
+            {%- if buttonText != '' and buttonLink != '' %}<p class="text-center"><a href="{{buttonLink}}" class="btn btn-outline-primary btn-lg">{{buttonText}}</a></p>{% endif -%}
+          </div>
+          <div class="right-content paroller"
+	        data-paroller-factor="0.1" 
+			    data-paroller-factor-sm="0" 
+			    data-paroller-factor-md="0" 
+			    data-paroller-factor-lg="0.1" 
+			    data-paroller-type="foreground" 
+			    data-paroller-direction="vertical"
+				>
+            <div class="callout-content">
+                {{ calloutBlock }}
+            </div>
+          </div>
+        {%- else -%}
+            {{ item.Content }}
+        {%- endif -%}
+        </div>
+    </div>
+</div>
+{% endcontentchannelitem %}

@@ -1,0 +1,100 @@
+ <div class="col-md-12">
+
+   {% assign theUrl = 'Global' | Page:'Url'  %}
+   {% if theUrl contains "pkey" -%}
+
+   {% else %}
+
+   {% if CurrentPerson == null %}
+   {% if theUrl contains "GiveNow" -%}
+   <div class="col-md-12 hidden-xs">
+     <p class="text-center">
+       <small>
+         Make giving even faster! <a id="give_Login" class="btn btn-primary" href="/login?returnurl=%252fGiveNow">LOG IN</a> or
+         <a id="give_CreateAccount" class="btn btn-primary" href="/NewAccount?returnurl=%2fGiveNow">CREATE AN ACCOUNT</a> or give without logging in below:
+       </small>
+     </p>
+   </div>
+
+   <div class="visible-xs-inline">
+     <p class="text-center">
+       <small>
+         Make giving even faster!<br /><a id="give_Login2" class="btn btn-primary" href="/login?returnurl=%252fGiveNow">LOG IN</a> or
+         <a id="give_CreateAccount2" class="btn btn-primary" href="/NewAccount?returnurl=%2fGiveNow">CREATE AN ACCOUNT</a><br />Or give without logging in below:
+       </small>
+     </p>
+   </div>
+
+   <script>
+     $('#give_Login').get()[0].href = "/login?returnurl=" + encodeURIComponent(window.location.pathname + window.location.search)
+     $('#give_Login2').get()[0].href = "/login?returnurl=" + encodeURIComponent(window.location.pathname + window.location.search)
+     $('#give_CreateAccount').get()[0].href = "/NewAccount?returnurl=" + encodeURIComponent(window.location.pathname + window.location.search)
+     $('#give_CreateAccount2').get()[0].href = "/NewAccount?returnurl=" + encodeURIComponent(window.location.pathname + window.location.search)
+   </script>
+  {% endif %}
+   {% else %}
+
+   <div class="row margin-b-md">
+
+    <div class="col-md-12 hidden-xs">
+
+      <div class="clearfix text-center" style="margin-top: -10px;">
+
+        {% if theUrl contains "GiveNow" -%}
+        <a class="btn btn-primary" style="margin-right: 5%" href="{{LinkedPages.TransactionEntryPage}}">Give Now</a>
+        {% else %}
+        <a class="btn btn-default" style="margin-right: 5%" href="{{LinkedPages.TransactionEntryPage}}">Give Now</a>
+        {% endif %}
+
+        {% if theUrl contains "MySchedules" -%}
+        <a class="btn btn-primary" style="margin-right: 5%" href="{{LinkedPages.ManageScheduledTransactionsPage}}">Manage Scheduled Giving</a>
+        {% else %}
+        <a class="btn btn-default" style="margin-right: 5%" href="{{LinkedPages.ManageScheduledTransactionsPage}}">Manage Scheduled Giving</a>
+        {% endif %}
+
+        {% if theUrl contains "MyHistory" -%}
+        <a class="btn btn-primary" style="" href="{{LinkedPages.TransactionHistoryPage}}">View History</a>
+        {% else %}
+        <a class="btn btn-default" style="" href="{{LinkedPages.TransactionHistoryPage}}">View History</a>
+        {% endif %}
+      </div>
+ 
+  
+     </div>
+
+
+      <div class="visible-xs-inline">
+
+        <div class="clearfix text-center" style="margin-top: 10px;">
+
+          {% if theUrl contains "GiveNow" -%}
+          <a class="btn btn-primary" style="margin-bottom: 1%" href="{{LinkedPages.TransactionEntryPage}}">Give Now</a>
+          {% else %}
+          <a class="btn btn-default" style="margin-bottom: 1%" href="{{LinkedPages.TransactionEntryPage}}">Give Now</a>
+          {% endif %}
+
+          {% if theUrl contains "MySchedules" -%}
+          <a class="btn btn-primary" style="margin-bottom: 1%" href="{{LinkedPages.ManageScheduledTransactionsPage}}">Manage Scheduled Giving</a>
+          {% else %}
+          <a class="btn btn-default" style="margin-bottom: 1%" href="{{LinkedPages.ManageScheduledTransactionsPage}}">Manage Scheduled Giving</a>
+          {% endif %}
+
+          {% if theUrl contains "MyHistory" -%}
+          <a class="btn btn-primary" style="margin-bottom: 1%" href="{{LinkedPages.TransactionHistoryPage}}">View History</a>
+          {% else %}
+          <a class="btn btn-default" style="margin-bottom: 1%" href="{{LinkedPages.TransactionHistoryPage}}">View History</a>
+          {% endif %}
+        </div>
+
+
+
+      </div>
+      
+      
+  </div>
+
+   {% endif %}
+   {% endif %}
+
+
+ </div>

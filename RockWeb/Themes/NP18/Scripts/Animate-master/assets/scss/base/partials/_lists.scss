@@ -1,0 +1,42 @@
+/**
+ * Name: Lists
+ * Purpose: Generic list styling
+ */
+
+ul,
+ol {
+    margin-top: 0;
+    margin-bottom: $guttering/2;
+    ul,
+    ol {
+        margin-bottom: 0;
+    }
+}
+
+.list-unstyled, %list-unstyled {
+    padding-left: 0;
+    margin-left: 0;
+    list-style: none;
+}
+
+.list-inline, %list-inline {
+    @extend %list-unstyled;
+    margin-top: -$guttering/2;
+    margin-bottom: 0;
+    > li {
+        display: inline-block;
+        margin-right: $guttering;
+        margin-top: $guttering/2;
+        margin-bottom: 0;
+        &:last-child { margin-right: 0; }
+    }
+}
+
+
+.list-blocked {
+    > li {
+        width: 100%;
+        margin-bottom: 5px;
+        &:last-child { margin-bottom: 0; }
+    }
+}

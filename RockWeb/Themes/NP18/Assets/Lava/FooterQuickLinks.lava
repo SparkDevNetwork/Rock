@@ -1,0 +1,6 @@
+<h5>Quick Links</h5>
+<ul id="footer-quick-links" class="list-unstyled">
+{% for each item in Items %}
+    <li><a href="{{ item | Attribute: 'LinkUrl','RawValue' }}" target="{{ item | Attribute: 'LinkTarget' }}" class="{{ item | Attribute: 'IconCSSClass' }}">{{ item.Title }}</a></li>
+{% endfor %}
+</ul>

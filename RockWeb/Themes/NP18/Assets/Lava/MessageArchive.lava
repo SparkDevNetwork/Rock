@@ -1,0 +1,80 @@
+﻿<style>
+    .message-tiles {
+        padding: 15px;
+    }
+    .message-tiles img {
+        width: 100%
+    }
+
+        .message-tiles .overlay {
+            position: relative;
+        }
+
+            .message-tiles .overlay:after {
+                position: absolute;
+                content: "";
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                opacity: 0;
+            }
+
+            .message-tiles .overlay:hover:after {
+                opacity: .8;
+                background-color: #8bc540;
+            }
+</style>
+
+
+
+<div class="col-xs-12">
+    {% if Pagination.CurrentPage == 1 %}
+    <h3>OTHER SERIES:</h3>
+    {% endif %}
+
+    {% for item in Items %}
+    <div class="col-xs-6 col-sm-6 col-md-3 message-tiles">
+        <a href="{{LinkedPages.DetailPage}}/series/{{item.Id}}">
+            <div class="overlay">
+              {{item.OptimizedSeriesArchiveImage}}
+            </div>
+        </a>
+    </div>
+    {% assign byFour = forloop.index | Modulo:4 %}
+    {% if byFour == 0 %}
+    <div class="clearfix visible-lg-block visible-md-block"></div>
+    {% endif %}
+    {% assign byTwo = forloop.index | Modulo:2 %}
+    {% if byTwo == 0 %}
+    <div class="clearfix visible-sm-block visible-xs-block"></div>
+    {% endif %}
+    {% endfor %}
+
+    <div class="clearfix"></div>
+
+    {% assign nextPageString = Pagination.NextPage | ToString %}
+    {% if {{Pagination.NextPage == -1 }} %}
+    <a class="btn btn-default pull-left disabled">
+        <i class="fa fa-chevron-left"></i> Older Series
+    </a>
+    {% else %}
+    <a class="btn btn-primary pull-left" href="{{Pagination.UrlTemplate | Replace:'PageNum',nextPageString}}">
+        <i class="fa fa-chevron-left"></i> Older Series
+    </a>
+    {% endif %}
+
+    {% assign prevPageString = Pagination.PreviousPage | ToString %}
+    {% if {{Pagination.PreviousPage == -1 }} %}
+    <a class="btn btn-default pull-right disabled">
+        Newer Series <i class="fa fa-chevron-right"></i>
+    </a>
+    {% else %}
+    <a class="btn btn-primary pull-right" href="{{Pagination.UrlTemplate | Replace:'PageNum',prevPageString}}">
+        Newer Series <i class="fa fa-chevron-right"></i>
+    </a>
+    {% endif %}
+
+</div>
+
+

@@ -1,0 +1,10 @@
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+    <ul class="nav navbar-nav">
+
+		{% for childPage in Page.Pages %}
+            <li{% if childPage.Current == 'true' %} class="active"{% endif%}>
+				<a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

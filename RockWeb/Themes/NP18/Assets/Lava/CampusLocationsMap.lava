@@ -1,0 +1,153 @@
+﻿<div id="campus-locations">
+	<div class="drop-shadow">
+		<div class="mission-statement"><span>One</span> <span>Church.</span> <span>Multiple</span> <span>Locations.</span></div>
+		<div class="campuslist">
+			<div class="panel-group accordion" id="clAccordion" role="tablist" aria-multiselectable="true">
+			{%- for campus in Campuses -%}
+	      {%- assign isActive = campus.IsActive -%}
+	    	{%- if isActive -%}
+		    {%- assign serviceDay = "" -%}
+	      <div class="panel panel-default">
+	        <div class="panel-heading" role="tab" id="heading{{campus.ShortCode}}">
+	          <h4 class="panel-title">
+	            <a role="button" data-toggle="collapse" data-parent="#clAccordion" href="#collapse{{campus.ShortCode}}" aria-expanded="true" aria-controls="collapse{{campus.ShortCode}}">{{ campus.Name }}</a>
+	          </h4>
+	        </div>
+	        <div id="collapse{{campus.ShortCode}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading{{campus.ShortCode}}">
+	          <div class="panel-body">
+							<p><strong>Service Times</strong><br />{%- for serviceTime in campus.ServiceTimes -%}{%- if serviceTime.Day != serviceDay -%}{{ serviceTime.Day | Pluralize}} at {% assign serviceDay = serviceTime.Day %}{% endif -%}{%- if forloop.length > 1 %}{% if forloop.last %} and {% elseif forloop.first != true -%}, {% endif %}{% endif %}{{ serviceTime.Time }}{%- endfor -%}</p>
+							<p><a target="_blank" href="https://www.google.com/maps/dir/?api=1&amp;destination={{campus.Location.Street1}}+{{campus.Location.City}}+{{campus.Location.State}}+{{campus.Location.PostalCode}}"><i class="np-location"></i> Map & Directions</a></p>
+	          </div>
+	        </div>
+	      </div>
+				{%- endif -%}
+			{%- endfor -%}		
+			</div>
+		</div>
+	</div>
+	<div id="campusmap"></div>
+</div>
+
+<link rel="stylesheet" href="/Themes/NP18/Styles/snazzy/snazzy-info-window.min.css">
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB0zg0PGBPK_afzqRMCTA0z9OdAdvMoyZo"></script>
+<script src="/Themes/NP18/Scripts/snazzy/snazzy-info-window.min.js"></script>
+
+<script type="text/javascript">
+    // When the window has finished loading create our google map below
+    google.maps.event.addDomListener(window, 'load', init);
+
+    function init() {
+        // Basic options for a simple Google Map
+        // For more options see: https://developers.google.com/maps/documentation/javascript/reference#MapOptions
+        var opts = {
+            // How zoomed in you want the map to start at (always required)
+            zoom: 9,
+
+            // The latitude and longitude to center the map (always required)
+            center: new google.maps.LatLng(40.579055, -82.28974), // Middle Ohio
+
+            // How you would like to style the map. 
+            // This is where you would paste any style found on Snazzy Maps.
+            
+            /*** Ultra Light with Labels: https://snazzymaps.com/style/151/ultra-light-with-labels ***/
+            styles: [{"featureType":"water","elementType":"geometry","stylers":[{"color":"#e9e9e9"},{"lightness":17}]},{"featureType":"landscape","elementType":"geometry","stylers":[{"color":"#f5f5f5"},{"lightness":20}]},{"featureType":"road.highway","elementType":"geometry.fill","stylers":[{"color":"#ffffff"},{"lightness":17}]},{"featureType":"road.highway","elementType":"geometry.stroke","stylers":[{"color":"#ffffff"},{"lightness":29},{"weight":0.2}]},{"featureType":"road.arterial","elementType":"geometry","stylers":[{"color":"#ffffff"},{"lightness":18}]},{"featureType":"road.local","elementType":"geometry","stylers":[{"color":"#ffffff"},{"lightness":16}]},{"featureType":"poi","elementType":"geometry","stylers":[{"color":"#f5f5f5"},{"lightness":21}]},{"featureType":"poi.park","elementType":"geometry","stylers":[{"color":"#dedede"},{"lightness":21}]},{"elementType":"labels.text.stroke","stylers":[{"visibility":"on"},{"color":"#ffffff"},{"lightness":16}]},{"elementType":"labels.text.fill","stylers":[{"saturation":36},{"color":"#333333"},{"lightness":40}]},{"elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"transit","elementType":"geometry","stylers":[{"color":"#f2f2f2"},{"lightness":19}]},{"featureType":"administrative","elementType":"geometry.fill","stylers":[{"color":"#fefefe"},{"lightness":20}]},{"featureType":"administrative","elementType":"geometry.stroke","stylers":[{"color":"#fefefe"},{"lightness":17},{"weight":1.2}]}]
+        };
+
+				opts.clickableIcons = false;
+				opts.disableDoubleClickZoom = false;
+				opts.draggable = true;
+				opts.keyboardShortcuts = true;
+				opts.scrollwheel = false;
+
+				var setControlOptions = function(key, enabled, position, style, mapTypeIds){
+					opts[key + 'Control'] = enabled;
+					opts[key + 'ControlOptions'] = {
+						position: google.maps.ControlPosition[position],
+						style: google.maps.MapTypeControlStyle[style],
+						mapTypeIds: mapTypeIds
+					};
+				};
+					
+				setControlOptions('fullscreen',false,'DEFAULT','',null);
+				setControlOptions('mapType',true,'TOP_RIGHT','DEFAULT',null);
+				setControlOptions('rotate',false,'DEFAULT','',null);
+				setControlOptions('scale',false,'','',null);
+				setControlOptions('streetView',false,'DEFAULT','',null);
+				setControlOptions('zoom',true,'DEFAULT','',null);
+				
+        // Get the HTML DOM element that will contain your map 
+        // We are using a div with id="map" seen below in the <body>
+        var mapElement = document.getElementById('campusmap');
+
+        // Create the Google Map using our element and options defined above
+        var map = new google.maps.Map(mapElement, opts);
+
+    {%- for campus in Campuses -%}
+      {%- assign isActive = campus.IsActive -%}
+    	{%- if isActive -%}
+	    {%- assign serviceDay = "" -%}
+	    
+        // Let's add campus markers
+				(function(){
+					var markerOptions = {
+						map: map,
+						position: {
+							lat: {{campus.Location.Latitude}},
+							lng: {{campus.Location.Longitude}},
+						}
+					};
+					
+					markerOptions.icon = {
+						url: "{{'Global' | Attribute:'PublicApplicationRoot'}}Themes/NP18/Assets/Images/favicon@2x.png",
+						scaledSize: new google.maps.Size(
+							40,
+							40),
+						size: new google.maps.Size(
+							40,
+							40),
+						anchor: new google.maps.Point(
+							40,
+							40)
+					};
+					markerOptions.options = {
+						optimized: true,
+					};
+					
+					var marker = new google.maps.Marker(markerOptions);
+					
+					var infoWindow = new SnazzyInfoWindow({
+						marker: marker,
+						wrapperClass: 'ql-snow',
+						placement: 'bottom',
+						backgroundColor: '#fff',
+						fontColor: '#000',
+						content: '<div class="infowindow"><h2>{{ campus.Name }}</h2><p><strong>Service Times</strong><br />{%- for serviceTime in campus.ServiceTimes -%}{%- if serviceTime.Day != serviceDay -%}{{ serviceTime.Day | Pluralize}} at {% assign serviceDay = serviceTime.Day %}{% endif %}{% if forloop.length > 1 %}{% if forloop.last %} and {% elseif forloop.first != true %}, {% endif %}{% endif %}{{ serviceTime.Time }}{%- endfor -%}</p><p><strong>Address</strong><br />{{campus.Location.Street1}}<br />{{campus.Location.City}}, {{campus.Location.State}} {{campus.Location.PostalCode}}</p><p><strong>P:</strong> {{ campus.PhoneNumber }}</p><p style="margin:20px 0 0"><a target="_blank" class="btn btn-primary btn-sm btn-block" href="https://www.google.com/maps/dir/?api=1&amp;destination={{campus.Location.Street1}}+{{campus.Location.City}}+{{campus.Location.State}}+{{campus.Location.PostalCode}}">Directions</a></p></div>',
+						maxWidth: undefined,
+						maxHeight: undefined,
+						padding: "35px",
+						borderRadius: "3px 3px",
+						offset: {
+							top: "10px",
+							left: "0px",
+							},
+						border: false,
+						pointer: "15px",
+						shadow: {"h":"0px","v":"2px","blur":"3px","spread":"2px","opacity":0.16,"color":"#000000"},
+						closeOnMapClick: true,
+						closeWhenOthersOpen: true,
+					});
+					
+					marker.addListener('click', function() {
+	          infoWindow.open(map, marker);
+	        });
+					marker.addListener('mouseover', function() {
+	          infoWindow.open(map, marker);
+	        });
+
+				})();
+
+		{%- endif -%}
+	{%- endfor -%}
+
+    }
+</script>

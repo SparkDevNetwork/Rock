@@ -1,0 +1,37 @@
+﻿<div class="container">
+  <div class="row">
+		<div class="col-sm-12 col-md-10 col-md-offset-1 sermondetail related">
+      <h2>Other Messages in this Series</h2>
+        
+	{% for item in Items %}
+  	{% assign parentSeries = item.ParentItems | First %}
+    {% assign seriesId = parentSeries.ContentChannelItemId %}
+        {% contentchannelitem id:'{{seriesId}}' %}
+					<ul class="sermons-list">
+            {% for item in contentchannelitemItems %}
+  						{% for message in item.ChildItems reversed %}
+  						{% assign startDate = message.ChildContentChannelItem.StartDateTime | Date:'yyyyMMdd' %}
+  						{% assign speaker = message.ChildContentChannelItem | Attribute:'Speaker' %}
+  						{% assign speaker = message.ChildContentChannelItem | Attribute:'Speaker' %}
+  						{% assign scripture = message.ChildContentChannelItem | Attribute:'ScripturePassage' %}
+  						{% assign dateNow = 'Now' | Date:'yyyyMMdd' %}
+  						{% if startDate <= dateNow %}
+  							<li>
+	  							<p class="date">{{ message.ChildContentChannelItem.StartDateTime | Date:'MMM d, yyyy' }}</p>
+	  							<h3><a href="{{ LinkedPages.DetailPage }}?Item={{ message.ChildContentChannelItem.Id }}">{{ message.ChildContentChannelItem.Title }}</a></h3>
+	  							<p class="speaker">{{ speaker }} {% if speakerTitle != "" %}| {{ speakerTitle }}{% endif %} {% if scripture != "" %}| {{ scripture }}{% endif %}</p>
+	  							<p class="readmore"><a class="btn btn-outline-primary" href="{{ LinkedPages.DetailPage }}?Item={{ message.ChildContentChannelItem.Id }}">Watch</a></p>
+  							</li>
+  						{% endif %}
+  						{% endfor %}
+						{% endfor %}
+					</ul>
+        {% endcontentchannelitem %}
+        
+	{% endfor %}
+	
+				<p class="text-center"><a class="backlink btn btn-outline-primary" href="/messages"><i class="np-icon np-caret"></i> Back to Messages</a></p>
+
+		</div>
+	</div>
+</div>

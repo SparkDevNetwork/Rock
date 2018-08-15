@@ -57,6 +57,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.StatementGenerator", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Security.Authentication.Auth0", "Rock.Security.Authentication.Auth0\Rock.Security.Authentication.Auth0.csproj", "{5055F482-72C7-4CC9-8ED0-A77090C777DB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "org.newpointe.ExtraActions", "org.newpointe.ExtraActions\org.newpointe.ExtraActions.csproj", "{89D22C1D-7A5D-4255-A2B5-3165FE85F168}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "org.newpointe.ExtraJobs", "org.newpointe.ExtraJobs\org.newpointe.ExtraJobs.csproj", "{C4F91120-FD92-49BE-81A5-6B10E870AAD9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "org.newpointe.ExtraSearch", "org.newpointe.ExtraSearch\org.newpointe.ExtraSearch.csproj", "{526C47B7-7B7E-453F-AE5B-EF14FF180B4D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "org.newpointe.Stars", "org.newpointe.Stars\org.newpointe.Stars.csproj", "{A3E1F519-DDC7-4A2A-BB76-3009D021B31B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "org.newpointe.NPEvents", "org.newpointe.NPEvents\org.newpointe.NPEvents.csproj", "{7D25797A-7103-4C74-BC09-4102DC17BBD7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -131,6 +141,26 @@ Global
 		{5055F482-72C7-4CC9-8ED0-A77090C777DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5055F482-72C7-4CC9-8ED0-A77090C777DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5055F482-72C7-4CC9-8ED0-A77090C777DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89D22C1D-7A5D-4255-A2B5-3165FE85F168}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89D22C1D-7A5D-4255-A2B5-3165FE85F168}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89D22C1D-7A5D-4255-A2B5-3165FE85F168}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89D22C1D-7A5D-4255-A2B5-3165FE85F168}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4F91120-FD92-49BE-81A5-6B10E870AAD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4F91120-FD92-49BE-81A5-6B10E870AAD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4F91120-FD92-49BE-81A5-6B10E870AAD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4F91120-FD92-49BE-81A5-6B10E870AAD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{526C47B7-7B7E-453F-AE5B-EF14FF180B4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{526C47B7-7B7E-453F-AE5B-EF14FF180B4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{526C47B7-7B7E-453F-AE5B-EF14FF180B4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{526C47B7-7B7E-453F-AE5B-EF14FF180B4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3E1F519-DDC7-4A2A-BB76-3009D021B31B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3E1F519-DDC7-4A2A-BB76-3009D021B31B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3E1F519-DDC7-4A2A-BB76-3009D021B31B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3E1F519-DDC7-4A2A-BB76-3009D021B31B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D25797A-7103-4C74-BC09-4102DC17BBD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D25797A-7103-4C74-BC09-4102DC17BBD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D25797A-7103-4C74-BC09-4102DC17BBD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D25797A-7103-4C74-BC09-4102DC17BBD7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

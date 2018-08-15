@@ -1,0 +1,5 @@
+<ul id="social-media-links" class="list-inline">
+{% for each item in Items %}
+    <li><a href="{{ item | Attribute: 'LinkUrl','RawValue' }}" target="_blank" class="{{ item | Attribute: 'IconCSSClass' }}">{{ item.Title }}</a></li>
+{% endfor %}
+</ul>

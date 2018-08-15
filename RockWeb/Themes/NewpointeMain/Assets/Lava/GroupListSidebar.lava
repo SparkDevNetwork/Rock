@@ -1,0 +1,32 @@
+<div class="panel panel-green">
+  <div class="panel-heading">
+    <h3 class="panel-title" data-toggle="collapse" data-target="#MyGroupsMenu" aria-expanded="true" aria-controls="MyGroupsMenu">
+      <i class="fa fa-minus-circle"></i> My Groups
+    </h3>
+  </div>
+  <div class="panel-body collapse in"  id="MyGroupsMenu">
+    {% assign groupCount = Groups | Size %}
+
+    {% if groupCount == 0 %}
+    <div class="margin-all-md"> No Groups Available To List</div>
+    {% endif %}
+    {% assign Groups = Groups | Sort:'GroupTypeId' %}
+    <ul class="resourceMenuList" style="list-style-type: initial;">
+      {% for group in Groups %}
+      {% if group.IsLeader %}{% assign isLeaderIcon = '*' %}{% endif %}
+      <li>
+        <a href="{{ LinkedPages.DetailPage }}?GroupId={{group.Group.Id}}" class="js-group-item" data-toggle="tooltip" data-placement="top" title="{{ group.GroupType }}">
+          {{ group.Group.Name }} <small>({{ group.Role }}{{ isLeaderIcon }})</small>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function ()
+    {
+        $('.js-group-item').tooltip();
+    });
+</script>

@@ -1,0 +1,518 @@
+
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+@import "_print.less";
+
+
+/*
+    Rock Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overides
+    3. Theme Styling
+    4. Responsive Overrides
+*/
+
+// 0. GothamFonts
+//----------------
+
+// <FamilyName> <FileId> <FontWeight>
+@fonts: Gotham light 300, GothamBook book 400, GothamBold bold 600, GothamBlack black 700;
+
+
+.fontloop(@i) when (@i > 0) {
+    .fontloop((@i - 1)); // next iteration
+    @font: extract(@fonts, @i);
+    @file: extract(@font, 2);
+
+    @font-face {
+        font-family: extract(@font, 1);
+        src: url('../Assets/Fonts/Gotham/gotham-@{file}-webfont.eot');
+        src: url('../Assets/Fonts/Gotham/gotham-@{file}-webfont.eot?#iefix') format('embedded-opentype'), url('../Assets/Fonts/Gotham/gotham-@{file}-webfont.woff') format('woff'), url('../Assets/Fonts/Gotham/gotham-@{file}-webfont.ttf') format('truetype'), url('../Assets/Fonts/Gotham/gotham-@{file}-webfont.svg#webfont') format('svg');
+        font-weight: extract(@font, 3);
+        font-style: normal;
+    }
+}
+
+.fontloop(length(@fonts));
+
+
+
+
+// 1. HTML Overrides
+// -------------------------
+
+body {
+    min-width: 300px;
+}
+
+h1, h2, h3, h4, h5 {
+    text-transform: uppercase;
+    letter-spacing: -1px;
+}
+
+video {
+    max-width: 100%;
+}
+
+p, dd, li {
+    font-size: @font-size-large;
+}
+
+a {
+    transition: all 0.2s linear;
+    -moz-transition: all 0.2s linear;
+    -webkit-transition: all 0.2s linear;
+    text-decoration: none;
+
+    &.active, &:hover, &:focus {
+        text-decoration: none;
+    }
+}
+
+a.a-unstyled { 
+    color: @text-color;
+    &:link { color: @text-color; }
+    &:visited { color: @text-color; }
+    &:hover { color: @text-color; }
+    &:active { color: @text-color; }
+}
+
+@media (max-width: @grid-float-breakpoint-max) {
+    footer.container,
+    header.container {
+        width: 100%;
+        padding: 0px;
+        margin: 0px;
+    }
+}
+
+
+address {
+    margin: 0;
+}
+
+article {
+    .margin-t-lg;
+    .margin-b-lg;
+}
+
+
+// 3. Theme Styling
+// -------------------------
+
+//    General    //
+
+.loginstatus {
+    & > li {
+        min-width: 0px;
+    }
+}
+
+.embed-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    max-width: 100%;
+}
+
+.embed-container iframe, .embed-container object, .embed-container embed {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.resp-txt(@size, @alignment) {
+    .text-@{size}-@{alignment} {
+        text-align: @alignment;
+    }
+}
+
+.resp-txt-sz(@thesize) {
+    .resp-txt(@thesize, left);
+    .resp-txt(@thesize, right);
+    .resp-txt(@thesize, center);
+    .resp-txt(@thesize, justified);
+}
+
+.resp-txt-sz(xs);
+
+@media (min-width: @screen-sm-min) {
+    .resp-txt-sz(sm);
+}
+
+.divider, .spacer {
+    height: 20px;
+}
+
+.divider-sm, .spacer-sm {
+    height: 10px;
+}
+
+.bordered {
+    border: solid 1px #fff;
+    padding: 5px;
+    margin-bottom: 15px;
+
+    a {
+        color: @secondary-text-color !important;
+    }
+
+    a:hover {
+        color: @brand-primary !important;
+    }
+}
+
+img.img-center {
+    display: block;
+    margin: 0 auto;
+}
+
+.form-control {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+
+@color-green: #8bc540;
+@campus-cnt: @color-green; // Central
+@campus-dov: @color-green; // Dover Campus
+@campus-all: @color-green; // All Campuses
+@campus-any: @color-green; // Any Campus
+@category-all: @color-green; // All Categories
+@category-any: @color-green; // Any Category
+
+@color-blue: #2ca9e0;
+@campus-can: @color-blue; // Canton Campus
+@category-ya: @color-blue; // Young Adult Ministries (Colective)
+
+@color-red: #eb2227;
+@campus-mil: @color-red; // Millersburg Campus
+@category-g: @color-red; // Adult Ministry
+
+@color-yellow: #f4d61e;
+@campus-wst: @color-yellow; // Wooster Campus
+@category-ae: @color-yellow; // Everything Else Category
+
+@color-purple: #652D8E;
+@category-cm: @color-purple; // Children's Ministries (Rainforest)
+
+@color-orange1: #f15b26;
+@campus-cos: @color-orange1; // Coshocton Campus
+
+@color-orange2: #F6921E;
+@category-sm: @color-orange2; // Student Ministries (Velocity)
+
+
+.button-variant-np(@background, @colorfrom, @colorto) {
+    color: @colorfrom;
+    background-color: @background;
+
+    &:hover,
+    &:focus,
+    &:active,
+    &.active,
+    .open > .dropdown-toggle& {
+        color: @colorto;
+        background-color: @background;
+    }
+}
+// Buttons
+.btn {
+    font-family: @font-family-sans-serif-bold;
+    text-transform: uppercase;
+}
+
+.btn-lg .larger {
+    font-size: 2em;
+}
+
+.btn-xs {
+    font-family: "Gotham", Helvetica, Arial, sans-serif;
+}
+
+.btn-primary, .btn-green, .btn-newpointe {
+    .button-variant-np(@btn-primary-bg, @btn-primary-color, @primary-text-color);
+}
+
+.btn-purple {
+    .button-variant-np(@color-purple, #fff, @primary-text-color);
+}
+
+.btn-orange {
+    .button-variant-np(@color-orange1, #fff, @primary-text-color);
+}
+
+.btn-blue {
+    .button-variant-np(@color-blue, #fff, @primary-text-color);
+}
+
+.btn-red {
+    .button-variant-np(@color-red, #fff, @primary-text-color);
+}
+
+.btn-yellow {
+    .button-variant-np(@color-yellow, #fff, @primary-text-color);
+}
+
+.btn-black {
+    color: #fff;
+    background-color: #000;
+
+    &:hover,
+    &:focus,
+    &:active,
+    &.active,
+    .open > .dropdown-toggle& {
+        color: #fff;
+        background-color: @grey-dark;
+    }
+}
+
+.btn-grey {
+    .button-variant-np(@btn-default-bg, @btn-default-color, @primary-text-color);
+}
+
+
+// Campus Colors
+
+.buildCampusColor(@CampusShortCode, @CampusColor: @color-dov) {
+    .campus-@{CampusShortCode}, .campus-@{CampusShortCode}-hover:hover, .campus-@{CampusShortCode}-hover:active, .campus-@{CampusShortCode}-hover.active {
+        background-color: @CampusColor;
+        color: #fff;
+    }
+}
+
+//.buildCampusColor(akr, @campus-akr);
+.buildCampusColor(can, @campus-can);
+.buildCampusColor(cos, @campus-cos);
+.buildCampusColor(dov, @campus-dov);
+.buildCampusColor(mil, @campus-mil);
+.buildCampusColor(wst, @campus-wst);
+.buildCampusColor(all, @btn-primary-bg);
+
+
+
+// Category Colors
+
+.buildCategoryColor(@CategoryShortCode, @CategoryColor: @btn-primary-bg) {
+    .category-@{CategoryShortCode}, .category-@{CategoryShortCode}-hover:hover, .category-@{CategoryShortCode}-hover:active, .category-@{CategoryShortCode}-hover.active {
+        background-color: @CategoryColor;
+        color: #fff;
+    }
+
+    .category-@{CategoryShortCode}-border {
+        border: 3px solid @CategoryColor;
+    }
+}
+
+.buildCategoryColor(cm, @color-purple);
+.buildCategoryColor(sm, @color-blue);
+.buildCategoryColor(ya, @color-orange2);
+.buildCategoryColor(g, @color-red);
+.buildCategoryColor(ae, @color-yellow);
+.buildCategoryColor(all, @color-green);
+// Other Colors
+
+
+.well .well {
+    background-color: #E5E0EC;
+}
+
+//    Header    //
+// Logo
+.brand-logo {
+    overflow: hidden;
+    width: @logo-cutoff - @logo-gutter;
+    height: @logo-img-height - (@logo-gutter * 2);
+    margin-left: (@grid-gutter-width / 2) + 5px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+.brand-logo img {
+    max-width: none;
+    width: @logo-img-width;
+    margin-top: -@logo-gutter;
+    margin-left: -@logo-gutter;
+}
+
+//    Footer    //
+
+.footer-box {
+    background-color: @secondary-theme-color;
+    color: @secondary-text-color;
+    padding: 15px 40px;
+    margin-top: 10px;
+}
+
+footer > .container {
+    padding: 0px;
+}
+
+.social-circle {
+    width: 45px;
+    height: 45px;
+    background-color: #fff;
+    display: inline-block;
+    margin-right: 10px;
+    text-align: center;
+}
+
+.social-circle i {
+    font-size: 32px;
+    color: @secondary-theme-color;
+    line-height: 45px;
+    transition: all 0.2s linear;
+    -moz-transition: all 0.2s linear;
+    -webkit-transition: all 0.2s linear;
+}
+
+.social-circle i:hover {
+    color: @primary-theme-color;
+}
+
+
+#footer-tiny-logo {
+    background: url('../Assets/Images/NPCC_Small.png') no-repeat center;
+    background-color: @secondary-theme-color;
+    background-size: 18px;
+    width: 28px;
+    height: 28px;
+    position: absolute;
+    left: 50%;
+    margin-left: -16px;
+    margin-top: -14px;
+}
+
+
+
+// Logo
+#CustomMenuLogo {
+    height: 68px;
+    background-color: #8bc540;
+
+    .newpointe-logo {
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+
+.main-feature {
+    margin-bottom: 10px;
+}
+
+header {
+    background-color: @secondary-theme-color;
+    position: relative;
+    z-index: 300;
+}
+
+header + section {
+    position: relative;
+    z-index: 200;
+}
+
+hr.np-hr-small {
+    margin: 15px 0px;
+}
+
+hr.np-hr-small:after {
+    content: "";
+    background: url(/Themes/NewPointeMain/Assets/Images/NPCC_Small.png) no-repeat center;
+    height: 28px;
+    background-color: @secondary-theme-color;
+    background-size: 18px;
+    position: relative;
+    display: block;
+    top: -15px;
+    width: 28px;
+    margin: auto;
+}
+
+// 4. Responsive Overrides
+// -------------------------
+// default styling should be for phones 767px or less
+
+// Mobile View
+@media (max-width: @grid-float-breakpoint-max) {
+    .desktop-only {
+        display: none;
+    }
+
+    .mobile-only {
+        display: block;
+    }
+}
+
+
+// Desktop View
+@media (min-width: @grid-float-breakpoint) {
+    .desktop-only {
+        display: block;
+    }
+
+    .mobile-only {
+        display: none;
+    }
+
+    header {
+        background-color: transparent;
+    }
+}
+
+// Small devices (tablets, 768px and up)
+@media (min-width: @screen-sm-min) {
+    .brand-logo {
+        width: @logo-img-width - (@logo-gutter * 2);
+    }
+
+    .text-sm-left {
+        text-align: left;
+    }
+
+    .text-sm-right {
+        text-align: right;
+    }
+
+    .text-sm-center {
+        text-align: center;
+    }
+
+    .text-sm-justify {
+        text-align: justify;
+    }
+
+    hr.np-hr-small {
+        margin: 5px 0px;
+    }
+}
+
+// Medium devices (desktops, 992px and up)
+@media (min-width: @screen-md-min) {
+    .md-border-right {
+        border-right: 1px solid @secondary-text-color;
+    }
+}
+
+// Large devices (large desktops, 1200px and up)
+@media (min-width: @screen-lg-min) {
+}
+
+/*#region // Small screens only */
+@media (min-width: @screen-sm-min) AND (max-width: @screen-sm-max) {
+}
+
+#zone-header {
+    width: auto;
+}

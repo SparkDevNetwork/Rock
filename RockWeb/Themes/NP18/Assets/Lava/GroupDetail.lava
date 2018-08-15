@@ -1,0 +1,73 @@
+{% if AllowedActions.View == true or AllowedActions.Edit == true or AllowedActions.ManageMembers == true or AllowedActions.Administrate == true %}
+
+<div id="group-details" class="section lightgray css-grid nopad">
+	<div class="css-grid-item">
+		<div class="infobox">
+		<h2 class="group-name">{{ Group.Name }}</h2>
+	
+    <p class="group-schedule">
+        {{ Group.Schedule.FriendlyScheduleText }}
+        {% assign PrimaryLocation = Group.GroupLocations | First | Property:'Location' %}
+        {% if PrimaryLocation != '' %} | {{ PrimaryLocation.City }}, {{ PrimaryLocation.State }}{% endif %}
+    </p>
+    <p class="group-description">{{ Group.Description }}</p>
+	
+		{% if Group.GroupType.GroupCapacityRule != 'None' and  Group.GroupCapacity != '' %}
+			{% assign warningLevel = 'warning' %}
+	
+			{% if Group.GroupType.GroupCapacityRule == 'Hard' %}
+				{% assign warningLevel = 'danger' %}
+			{% endif %}
+	
+			{% assign activeMemberCount = countActive | Plus:1 %} {% comment %}the counter is zero based{% endcomment %}
+			{% assign overageAmount = activeMemberCount | Minus:Group.GroupCapacity %}
+	
+			{% if overageAmount > 0 %}
+				<div class="alert alert-{{ warningLevel }} margin-t-sm">This group is over capacity by {{ overageAmount }} {{ 'individual' | PluralizeForQuantity:overageAmount }}.</div>
+			{% endif %}
+		{% endif %}
+	
+		<div class="row">
+			<div class="col-md-6">
+			<h4>Group Details:</h4>
+			{% for attribute in Group.AttributeValues %}
+				{% if attribute.Value and attribute.Value != "" %}
+				<strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+				{% endif %}
+			{% endfor %}
+			</div>
+	
+			<div class="col-md-6">
+			<h4>Leaders:</h4>
+			<ul class="list-unstyled">
+				{% for member in Group.Members %}
+	
+				{% if member.GroupRole.IsLeader %}
+				<li>
+				{{ member.Person.FullName }} <small>({{ member.GroupRole.Name }})</small>
+				</li>
+				{% endif %}
+				{% endfor %}
+			</ul>
+			</div>
+		</div>
+		</div>
+		<p><a class="btn btn-outline-default backlink" href="/groupfinder"><i class="np-icon np-caret"></i> Back</a></p>
+	</div>
+	{% for groupLocation in Group.GroupLocations %}
+		{% if groupLocation.Location.GeoPoint != '' %}
+
+		<div class="grouplocationmap-image css-grid-item"
+			 style="background-image: url('https://maps.googleapis.com/maps/api/staticmap?size=960x960&zoom=13&maptype=roadmap&markers={{ groupLocation.Location.GeoPoint }}&scale=2&key={{ 'Global' | Attribute:'GoogleAPIKey' }}');">
+		</div>
+
+		{% endif %}
+	{% endfor %}
+</div>
+</div>
+
+{% else %}
+	{% if Group.Id %}
+		<div class='alert alert-warning'>You do not have permission to view this group.</div>
+	{% endif %}
+{% endif %}

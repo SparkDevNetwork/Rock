@@ -1,0 +1,47 @@
+{% capture __ %}
+
+    {% comment %} Return Variables {% endcomment %}
+    {% assign iCalParse_rtn = '' %}
+    {% assign iCalParse_eventStart = null %}
+    {% assign iCalParse_eventEnd = null %}
+    {% assign iCalParse_recurringDates = null %}
+
+    {% comment %} Find Parameters {% endcomment %}
+    {% assign __iCalInput = iCalParse | Default:null %}
+    {% if __iCalInput == null %}{% assign __iCalInput = iCalendarContent | Default:null %}{% endif %}
+
+
+    {% if __iCalInput == null %}
+        {% assign iCalParse_rtn = 'Error: <code>iCalendarContent</code> parameter is null.' %}
+    {% else %}
+        {% assign __newline = '&#013;&#010;' | HtmlDecode %}
+        {% assign __foldingSequence = __newline | Append:' ' %}
+        {% assign __iCalUnfoldedSplit = __iCalInput | Replace:__foldingSequence,'' | Split:__newline %}
+        {% for __line in __iCalUnfoldedSplit %}
+            {% assign __propVal = __line | Split:':' %}
+            {% case __propVal[0] %}
+                {% when 'DTSTART' or 'DTEND' or 'RDATE' %}
+                    {% assign __lavaDates = '' %}
+                    {% assign __iCalDates = __propVal[1] | Split:',' %}
+                    {% for __iCalDate in __iCalDates %}
+                        {% assign __yyyy = __iCalDate | Slice:0,4 %}
+                        {% assign __M = __iCalDate | Slice:4,2 %}
+                        {% assign __d = __iCalDate | Slice:6,2 %}
+                        {% assign __H = __iCalDate | Slice:9,2 %}
+                        {% assign __m = __iCalDate | Slice:11,2 %}
+                        {% assign __s = __iCalDate | Slice:13,2 %}
+                        {% capture __lavaDates %}{{ __lavaDates }},{{ __yyyy }}-{{ __M }}-{{ __d }} {{ __H }}:{{ __m }}:{{ __s }}{% endcapture %}
+                    {% endfor %}
+                    {% assign __lavaDates = __lavaDates | Split:','%}
+                {% when 'DTSTART' %}{% assign __eventStart = __lavaDates[0] %}
+                {% when 'DTEND' %}{% assign __eventEnd = __lavaDates[0] %}
+                {% when 'RDATE' %}{% assign __recurringDates = __lavaDates %}
+            {% endcase %}
+        {% endfor %}
+
+        {% assign iCalParse_eventStart = __eventStart %}
+        {% assign iCalParse_eventEnd = __eventEnd %}
+        {% assign iCalParse_recurringDates = __recurringDates %}
+
+    {% endif %}
+{% endcapture %}{{ iCalParse_rtn }}

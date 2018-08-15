@@ -1,0 +1,67 @@
+﻿{% for campus in Campuses %}
+
+
+{% assign active = campus.IsActive %}
+
+{% if active%}
+
+{% if campus.Name contains "Central" %}
+{% elseif campus.Name contains "Online" %}
+
+{% else %}
+
+<a name="{{ campus.ShortCode }}"></a>
+<div class="row location-list">
+
+  <div class="col-md-4">
+    <img src="/content/central/{{ campus.Location.City }}_Color.png" />
+  </div>
+  <div class="col-md-4">
+
+    <h2>{{ campus.Name }}</h2>
+    <hr />
+
+
+    <h4>Service Times:</h4>
+    <p>
+      {% for serviceTime in campus.ServiceTimes %}
+      {{ serviceTime.Day }} {{ serviceTime.Time }}<br />
+      {% endfor %}
+    </p>
+
+
+    
+
+
+  </div>
+
+  <div class="col-md-4">
+    <h4>Address</h4>
+    <p>
+      {{ campus.Location.Street1 }}<br/>
+      {% if campus.Location.Street2 != "" %}
+      {{ campus.Location.Street2 }}<br/>
+      {% endif %}
+
+      {{ campus.Location.City }},
+      {{ campus.Location.State }}
+      {{ campus.Location.PostalCode }} <small>
+        (<a href="https://www.google.com/maps/place/{{ campus.Location.Street1 }}+{{ campus.Location.City }}+{{ campus.Location.State }}+{{ campus.Location.PostalCode }}"><i class="fa fa-map-marker"></i> map</a>)
+      </small>
+    </p>
+
+
+
+    <h4>Phone Number</h4>
+    <p>
+      {{ campus.PhoneNumber }}
+    </p>
+
+    <a href="#" class="seriesButton btn btn-primary">Contact the {{ campus.Name }}</a>
+    
+    
+  </div>
+</div>
+{% endif %}
+{% endif %}
+{% endfor %}

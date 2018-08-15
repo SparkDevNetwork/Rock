@@ -1,0 +1,207 @@
+
+// Theme Colors *show in editor*
+@primary-theme-color: #8BC540; //#color
+@secondary-theme-color: #404040; //#color
+//--
+@primary-text-color: #333333; //#color
+@secondary-text-color: #fff; //#color
+//--
+@background-color: #fff; //#color
+@secondary-background-color: #555; //#color
+@accent-background-color: #F5F5F5; //#color
+//--
+
+// Logo *show in editor*
+@logo-gutter: 15px;
+@logo-img-width: 240px;
+@logo-img-height: 86px;
+@logo-cutoff: 71px;
+
+
+//greys
+@gray-darker:            lighten(#000, 13.5%); // #222
+@gray-dark:              lighten(#000, 20%);   // #333
+@gray:                   lighten(#000, 33.5%); // #555
+@gray-light:             lighten(#000, 46.7%); // #777
+@gray-lighter:           lighten(#000, 93.5%); // #eee
+// misc
+@grey-xlight: #efefef;
+@grey-light: #e3e3e3;
+@grey-medium: #a7a7a7;
+@grey-dark: #404040;
+@grey-xdark: #272727;
+
+
+// Theme Colors
+@theme-1: #ff0000; //#color
+@theme-1-text: #FFF; //#color
+//--
+@theme-2: @secondary-theme-color; // #00ff00; //#color
+@theme-2-text: #FFF; //#color
+//--
+@theme-3: #0000ff; //#color
+@theme-3-text: #FFF; //#color
+//--
+@theme-4: @accent-background-color; // #ffff00; //#color
+@theme-4-text: #FFF; //#color
+//--
+@theme-5: #ff00ff; //#color
+@theme-5-text: #FFF; //#color
+//--
+@theme-6: @gray-lighter; //#color
+@theme-6-text: @gray-darker; //#color
+//--
+@theme-7: #ff0099; //#color
+@theme-7-text: #fff; //#color
+//--
+@theme-8: #9900ff; //#color
+@theme-8-text: #fff; //#color
+//--
+
+
+// [BS] Generic
+
+@body-bg: @background-color;
+
+@border-radius-base:             0px;
+@border-radius-large:            0px;
+@border-radius-small:            0px;
+
+// [BS] Navbar collapse
+//** Point at which the navbar becomes uncollapsed.
+@grid-float-breakpoint:     @screen-lg-min;
+//** Point at which the navbar begins collapsing.
+@grid-float-breakpoint-max: (@grid-float-breakpoint - 1);
+
+// [BS] Brand
+@brand-primary: @primary-theme-color;
+
+// [BS] Font
+@text-color:            @primary-text-color;
+
+@headings-font-family:    @font-family-sans-serif-bold;
+
+@font-weight-semibold:  @font-weight-bold;
+
+@font-family-sans-serif:  "Gotham", Helvetica, Arial, sans-serif;
+@font-family-sans-serif-bold:  "GothamBold", Helvetica, Arial, sans-serif;
+@font-family-serif:       "Times New Roman", Times, serif;
+@font-family-monospace:   Monaco, Menlo, Consolas, "Courier New", monospace;
+@font-family-base:        @font-family-sans-serif;
+
+// [BS] Navbar
+@navbar-default-toggle-icon-bar-bg: @primary-theme-color;
+@navbar-default-toggle-hover-bg:       transparent;
+@navbar-default-toggle-border-color:       transparent;
+
+@navbar-inverse-toggle-icon-bar-bg: @primary-theme-color;
+@navbar-inverse-toggle-hover-bg:            transparent;
+@navbar-inverse-toggle-border-color:        transparent;
+
+@navbar-default-link-active-bg:        @secondary-theme-color;
+@navbar-inverse-link-active-bg:        @secondary-theme-color;
+
+@navbar-height: 53px;
+@navbar-margin-bottom: 6px;
+
+@navbar-default-bg: @background-color;
+@navbar-inverse-bg: @secondary-theme-color;
+
+@navbar-default-border: @primary-theme-color;
+@navbar-inverse-border: @background-color;
+@navbar-collapse-border: @primary-theme-color;
+
+@navbar-default-link-color: @brand-primary;
+@navbar-default-link-hover-color: @brand-primary;
+@navbar-inverse-link-color: @brand-primary;
+@navbar-inverse-link-hover-color: @brand-primary;
+
+@navbar-default-link-hover-bg: transparent;
+@navbar-inverse-link-hover-bg: transparent;
+
+@zindex-navbar-fixed: 1050;
+
+@table-row-background-color: #efefef;
+
+// [BS] Buttons
+// -------------------------
+@btn-default-color: @secondary-text-color;
+@btn-default-bg: @grey-medium;
+@btn-primary-bg: @primary-theme-color;
+
+@padding-xs-vertical: 3px;
+@padding-xs-horizontal: 6px;
+
+@padding-large-vertical: 15px;
+@padding-large-horizontal: 15px;
+
+@line-height-large: 1;
+//@btn-action-bg: @secondary-theme-color;
+
+
+// No Borders on our buttons
+@btn-default-border:             transparent;
+@btn-primary-border:             transparent;
+@btn-success-border:             transparent;
+@btn-info-border:                transparent;
+@btn-warning-border:             transparent;
+@btn-danger-border:              transparent;
+
+
+// [BS] Panels
+// -------------------------
+
+//@panel-bg: #efefef;
+
+
+// [BS] Dropdowns
+// -------------------------
+
+@dropdown-bg:                    @secondary-theme-color;
+@dropdown-border:                none;
+@dropdown-fallback-border:       none;
+
+@dropdown-link-color:            @secondary-text-color;
+@dropdown-link-hover-color:      @brand-primary;
+@dropdown-link-hover-bg:         @secondary-background-color;
+
+//@dropdown-link-color:            @primary-text-color;
+//@dropdown-link-hover-color:      @brand-primary;
+//@dropdown-link-hover-bg:         @background-color;
+//@dropdown-bg:                    @background-color;
+//@dropdown-border:                @secondary-background-color;
+
+@dropdown-link-active-color:     @component-active-color;
+@dropdown-link-active-bg:        @component-active-bg;
+
+@dropdown-link-disabled-color:   @gray-light;
+
+@dropdown-header-color:          @gray-light;
+
+@dropdown-caret-color:           @link-color;
+
+@dropdown-divider-bg:   @primary-text-color;
+
+
+
+@input-bg:                       #efefef;
+@input-bg-disabled:              @gray-lighter;
+
+@input-color:                    #404040;
+@input-border:                   #EFEFEF;
+@input-border-focus:             #8BC540;
+
+@input-color-placeholder:        @gray-light;
+
+
+
+
+// [Rock] Date Picker
+@datepicker-highlight-bg: @primary-theme-color;
+@datepicker-highlight-color: @primary-text-color;
+
+// Grid Stuff
+@grid-footer-bg: @gray-light;
+@grid-footer-button-bg: @gray-light;
+@grid-filter-bg: @gray;
+@grid-filter-color: @gray-dark;

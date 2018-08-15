@@ -1,0 +1,46 @@
+{%- for campus in Campuses -%}
+  {%- assign isActive = campus.IsActive -%}
+	{%- if isActive -%}
+    {%- assign serviceDay = "" -%}
+      <div class="location">
+        <div class="locPhoto paroller"
+	        data-paroller-factor="0.2" 
+			    data-paroller-factor-sm="0" 
+			    data-paroller-factor-md="0" 
+			    data-paroller-factor-lg="0.1" 
+			    data-paroller-type="foreground" 
+			    data-paroller-direction="vertical"
+				>
+          <img src="{{ campus | Attribute:'CampusPhoto','Url' }}" alt="{{campus.Name}}" />
+        </div>
+        <div class="locInfo paroller"
+	        data-paroller-factor="0.1" 
+			    data-paroller-factor-sm="0" 
+			    data-paroller-factor-md="0" 
+			    data-paroller-factor-lg="0.1" 
+			    data-paroller-type="foreground" 
+			    data-paroller-direction="vertical"
+				>
+          <h2 class="locName">{{campus.Name}}</h2>
+					<p class="service-times"><strong>{%- for serviceTime in campus.ServiceTimes -%}{%- if serviceTime.Day != serviceDay -%}{{ serviceTime.Day | Pluralize}} at {% assign serviceDay = serviceTime.Day %}{% endif -%}{%- if forloop.length > 1 %}{% if forloop.last %} and {% elseif forloop.first != true -%}, {% endif %}{% endif %}{{ serviceTime.Time }}{%- endfor -%}</strong></p>
+					{[grid]}
+					  [[column]]
+						  <p>
+						    {{ campus.Location.Street1 }}<br />
+						    {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}
+						  </p>
+	            <p><a target="_blank" href="https://www.google.com/maps/dir/?api=1&amp;destination={{campus.Location.Street1}}+{{campus.Location.City}}+{{campus.Location.State}}+{{campus.Location.PostalCode}}"><i class="np-location"></i> Map & Directions</a></p>
+            [[endcolumn]]
+            [[column]]
+						  <p>
+						    <strong>p.</strong> {{ campus.PhoneNumber }}<br />
+						    {%comment%}<strong>e.</strong> {{ campus | Attribute:'CampusEmail' }}{%endcomment%}
+						  </p>
+						  {% assign campusFB = campus | Attribute:'CampusFacebookPage', 'RawValue' | Remove:'https://www.facebook.com' | Remove:'http://www.facebook.com' | Remove:'https://facebook.com' | Remove:'http://facebook.com' %}
+              {% if campusFB != "" %}<p><a target="_blank" href="{{ campus | Attribute:'CampusFacebookPage', 'RawValue' }}"><i class="fa fa-facebook-square"></i> {{ campusFB }}</a></p>{% endif %}
+            [[endcolumn]]
+          {[endgrid]}
+        </div>
+      </div>
+	{%- endif -%}
+{%- endfor -%}

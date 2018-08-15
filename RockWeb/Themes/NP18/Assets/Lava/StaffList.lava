@@ -1,0 +1,19 @@
+<div class='block-grid-sm-3 block-grid-md-4' id="stafflist">
+{% for member in Items %}
+	<div class='block-grid-item'>
+	    <div class='staff-member'>
+	        <a href='{{ LinkedPages.DetailPage }}?Item={{ member.Id }}' title='{{ member.Title }}'>{{ member | Attribute:'MemberPhoto' }}</a>
+	        <h2 class='member-name'>{{ member.Title }}</h2>
+	        {%- assign jobTitle = member | Attribute:'JobTitle' %}
+	        {%- if jobTitle != "" %}
+		        <p class='member-title'>{{ jobTitle }}</p>
+	        {%- else %}
+		        {%- assign personId = member | Attribute:'LinkedPerson', 'Id' %}
+		        {%- person id:'{{personId}}' %}
+		        <p class='member-title'>{{ person.Position }}</p>
+						{%- endperson %}
+	        {% endif %}
+	    </div>
+	</div>
+{% endfor %}
+</div>

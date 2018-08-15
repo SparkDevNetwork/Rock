@@ -1,0 +1,10 @@
+﻿
+{% for item in Items %}
+{% if Pagination.UrlTemplate contains item.EventID -%}
+<div class="col-xs-12">
+  {{item.EventImage}} <br/>
+  {{item.EventDetails}}
+</div>
+{% endif -%}
+{% endfor -%}
+

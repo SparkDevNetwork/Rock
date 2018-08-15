@@ -1,0 +1,34 @@
+$fix-mqs: false !default;
+
+@mixin respond-min($width) {
+    @if $fix-mqs {
+        @if $fix-mqs >= $width {
+            @content;   
+        }
+    }
+    @else {
+        @media screen and (min-width: $width) {
+            @content;
+        }
+    }
+}
+@mixin respond-max($width) {
+    @if $fix-mqs {
+        @if $fix-mqs <= $width {
+            @content;   
+        }
+    }
+    @else {
+        @media screen and (max-width: $width) {
+            @content;
+        }
+    }
+}
+
+$old-ie: false !default;
+
+@mixin old-ie {
+    @if $old-ie {
+        @content;
+    }
+}

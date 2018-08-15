@@ -1,0 +1,147 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+
+<script runat="server">
+    
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+    }    
+    
+</script>
+
+<html class="no-js">
+<head runat="server">
+
+    <meta charset="utf-8">
+    <title></title>
+    
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js" ) %>"></script>
+
+    <!-- Set the viewport width to device width for mobile -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+		<!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.min.css", true) %>"/>
+		<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.min.css", true) %>"/>
+		<link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Assets/Icons/style.css", false) %>"/>
+    <link href="<%# ResolveRockUrl("~~/bower_components/select2/dist/css/select2.min.css") %>" rel="stylesheet" />
+    
+		<script src="<%# ResolveRockUrl("~~/bower_components/select2/dist/js/select2.min.js") %>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+    <script src="<%# ResolveRockUrl("~~/Scripts/scripts.min.js" ) %>" ></script>
+
+		<!-- Go to www.addthis.com/dashboard to customize your tools -->
+		<script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5b2009499d65f890"></script>
+
+    <script src="<%# ResolveRockUrl("~~/Scripts/node_modules/animate.js/assets/js/dist/animate.js" ) %>" ></script>
+    
+</head>
+<body runat="server" id="body">
+
+    <form id="form1" runat="server">
+
+      <!-- Page Header -->
+      <header>        
+        <nav class="primary">
+          <Rock:Zone Name="Navigation" runat="server" />
+	        <div class="navbar-subheader">
+	        	<ul class="list-inline navbar-subnav">
+	        		<li>
+					      <a class="church-menu-opener" href="/locations" aria-expanded="false">
+					        <span class="sr-only">Toggle locations menu</span>
+					        <span class="np-location"></span>
+					      </a>
+					    </li>
+	        		<li>
+					      <a class="events-opener" href="/events">
+					        <span class="sr-only">Events</span>
+					        <span class="np-calendar"></span>
+					      </a>
+					    </li>
+	        		<li>
+					      <a class="give-opener" href="/give">
+					        <span class="sr-only">Give</span>
+					        <span class="np-give"></span>
+					      </a>
+					    </li>
+	        		<li>
+					      <a class="search-opener" href="#search">
+					        <span class="sr-only">Toggle search menu</span>
+					        <span class="np-search"></span>
+					      </a>
+					    </li>
+	        		<li>
+					      <a class="menu-opener" href="#menu" aria-expanded="false">
+					        <span class="sr-only">Toggle navigation</span>
+					        <span class="np-menu"></span>
+					      </a>
+					    </li>
+					  </ul>
+			    </div>
+        </nav>
+        <Rock:Zone Name="Header" runat="server" />
+      </header>
+	
+      <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+      <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+      
+      <div class="subfooter">
+			  <Rock:Zone Name="SubFooter" runat="server" />
+			</div>
+
+	    <footer>
+        <div class="container">
+          <div class="row">
+		        <div class="col-sm-3">
+			        <Rock:Zone Name="Footer Column 1" runat="server" />
+		        </div>
+		        <div class="col-sm-3  col-sm-offset-1 col-sm-push-4">
+			        <Rock:Zone Name="Footer Column 3" runat="server" />
+							<Rock:Zone Name="Login" runat="server" />
+		        </div>
+		        <div class="col-sm-3 col-sm-offset-1 col-sm-pull-4">
+			        <Rock:Zone Name="Footer Column 2" runat="server" />
+		        </div>
+	        </div>
+          <div class="row">
+		        <div class="col-sm-12">
+			        <Rock:Zone Name="Footer" runat="server" />
+		        </div>
+        </div>
+	    </footer>
+        
+      <%-- controls for scriptmanager and update panel --%>
+      <asp:ScriptManager ID="sManager" runat="server"/>
+      <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
+	        <ProgressTemplate>
+	            <div class="updateprogress-status">
+                      <div class="spinner">
+                        <div class="rect1"></div>
+                        <div class="rect2"></div>
+                        <div class="rect3"></div>
+                        <div class="rect4"></div>
+                        <div class="rect5"></div>
+                      </div>
+                  </div>
+                  <div class="updateprogress-bg modal-backdrop"></div>
+	        </ProgressTemplate>
+      </asp:UpdateProgress>
+		
+    </form>
+
+</body>
+
+</html>

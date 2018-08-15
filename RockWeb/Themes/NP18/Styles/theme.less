@@ -1,0 +1,93 @@
+﻿
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
+@import "../../../Styles/_rock-variables.less";
+
+@import "_colors.less";
+@import "_fishhook-mixins.less";
+
+@import "_variables.less";
+@import "_variable-overrides.less";
+@import "_print.less";
+
+/*
+    Rock Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overides
+    3. Theme Styling
+    4. Responsive Overrides
+
+*/
+
+// 1. HTML Overrides
+// -------------------------
+
+html {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  font-size: 100%;
+  //font-size: 0.75rem; //12px
+  @media (min-width: @screen-sm) {
+  	font-size: 1.1rem; //16px
+  }
+	@media (min-width: @screen-xl) {
+    font-size: 1.5rem; //24px
+  }
+}
+
+body {
+  font-size: 1em;
+  line-height: 1.5;
+}
+
+main {
+    display: block;
+}
+
+.container {
+  @media (min-width: @screen-xl-min) {
+    width: @container-xl;
+  }
+}
+.modal {
+	.navbar-nav.contextsetter {
+		float: none;
+	}
+	.modal-header {
+		.modal-title {
+			.font(36,bold);		
+		}
+	}
+	.modal-body {
+		.btn {
+			font-size: 16px !important;
+			font-weight: normal !important;
+			border-width: 1px !important;
+		}
+	}
+}
+.lava-debug {
+	.panel-lavadebug {
+		li {
+			display: block !important;
+			margin:0 !important;
+			text-transform: none !important;
+		}
+	}
+}
+#cms-admin-footer {
+	.btn {
+		padding: 7px 10px;
+	}
+}
+body.block-highlight,
+body.zone-highlight {
+	nav {
+		position: relative !important;
+	}
+}
+@import "_css-overrides.less";

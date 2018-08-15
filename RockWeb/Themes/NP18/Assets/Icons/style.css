@@ -1,0 +1,83 @@
+@font-face {
+  font-family: 'Icons';
+  src:  url('fonts/Icons.eot?yhztf9');
+  src:  url('fonts/Icons.eot?yhztf9#iefix') format('embedded-opentype'),
+    url('fonts/Icons.ttf?yhztf9') format('truetype'),
+    url('fonts/Icons.woff?yhztf9') format('woff'),
+    url('fonts/Icons.svg?yhztf9#Icons') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class^="np-"], [class*=" np-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'Icons' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.np-caret:before {
+  content: "\e911";
+}
+.np-logomark:before {
+  content: "\1f5f4";
+}
+.np-audio:before {
+  content: "\e900";
+}
+.np-writebox:before {
+  content: "\e901";
+}
+.np-videochat:before {
+  content: "\e902";
+}
+.np-chat:before {
+  content: "\e903";
+}
+.np-document:before {
+  content: "\e904";
+}
+.np-branch:before {
+  content: "\e905";
+}
+.np-lock:before {
+  content: "\e906";
+}
+.np-check:before {
+  content: "\e907";
+}
+.np-time:before {
+  content: "\e908";
+}
+.np-calendar:before {
+  content: "\e909";
+}
+.np-open:before {
+  content: "\e90a";
+}
+.np-close:before {
+  content: "\e90b";
+}
+.np-give:before {
+  content: "\e90c";
+}
+.np-menu:before {
+  content: "\e90d";
+}
+.np-location:before {
+  content: "\e90e";
+}
+.np-login:before {
+  content: "\e90f";
+}
+.np-search:before {
+  content: "\e910";
+}

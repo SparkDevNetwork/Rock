@@ -1,0 +1,20 @@
+﻿<div class="col-md-12">
+  <h2 class="right-line">All Episodes</h2>
+  {% for item in Items %}
+        
+          <div class="col-sm-4 text-center">
+            <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">{{item.VideoThumbnail}}</a>
+          </div>
+          <div class="col-sm-8">
+            <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">
+              <h3>{{item.Title}}</h3>
+            </a>
+            <p>{{item.Summary}}</p>
+          </div>
+
+  {% endfor %}
+</div>
+
+
+
+ 

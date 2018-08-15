@@ -1,0 +1,25 @@
+﻿{% assign CurrentDate = 'Now' | Date:'M/d/yyyy' %}
+
+{% for item in Items %}
+
+<div class="col-md-12">
+  {{ item.HeaderGraphic }}
+  {{ item.Content }}
+</div>
+
+{% if item.VimeoPromoVideo != ''%}
+<div class="col-xs-12 col-md-12">
+  <div class="embed-container">
+    <iframe src="https://player.vimeo.com/video/{{item.VimeoPromoVideo}}?wmode=transparent" frameborder="0" webkitallowfullscreen="" mozallowfullscreen="" allowfullscreen=""></iframe>
+  </div>
+</div>
+{% endif %}
+
+{% if item.StartDateTime < CurrentDate %}
+        <br /><br />
+<a class="btn btn-newpointe" href="/message-archive/series/{{item.Id}}">Watch Messages in this Series</a>
+<br /><br />
+{% endif %}
+
+
+{% endfor -%}

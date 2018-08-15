@@ -1,0 +1,179 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+
+<script runat="server">
+
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit(EventArgs e)
+    {
+        base.OnInit(e);
+    }
+
+</script>
+
+<html class="no-js">
+<head runat="server">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js" ) %>"></script>
+
+    <!-- Set the viewport width to device width for mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+    <!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>" />
+
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>"></script>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+    <!-- Icons -->
+    <link rel="shortcut icon" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/favicon.ico", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/touch-icon-ipad-retina.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/touch-icon-iphone-retina.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/touch-icon-ipad.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/touch-icon-iphone.png", true) %>">
+</head>
+<body>
+
+    <form id="form1" runat="server">
+
+        <!-- Page Header -->
+        <header>
+
+            <!-- Brand Bar -->
+            <nav class="navbar navbar-fixed-top affix">
+                <div class="container">
+
+                    <!-- Mobile Header and Logos -->
+                    <div class="marginfix-xs clearfix">
+
+                        <!-- Logos -->
+                        <div class="logo-container">
+                            <div class="newpointe-logo">
+                                <a href="/home">
+                                    <asp:Image ImageUrl="~/Assets/Images/NPCC_Logo_Full_green.svg" runat="server" />
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Mobile Header Buttons -->
+                        <div>
+                            <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".divMainMenu">
+                                <i class="fa fa-bars"></i>
+                            </button>
+
+                            <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".divLogin">
+                                <i class="fa fa-user"></i>
+                            </button>
+                            
+                            <button class="navbar-toggle" type="button" onclick="location.href='/GiveNow';">
+                                <i class="fa fa-usd"></i>
+                            </button>
+
+                        <asp:PlaceHolder runat="server">
+                            <% if(Rock.Web.Cache.GlobalAttributesCache.Value("LiveService").ToLower() == "true") { %>
+                                <button class="navbar-toggle" type="button" onclick="location.href='http://live.newpointe.org';">
+                                    <i class="fa fa-video-camera"></i>
+                                </button>
+                            <% } %>
+                        </asp:PlaceHolder>
+						
+                        </div>
+                    </div>
+
+                    <!-- Login Link and Menu -->
+                    <div class="divLogin right-stacked-lg navbar-collapse collapse">
+                        <Rock:Zone Name="CustomLogin" runat="server"></Rock:Zone>
+                    </div>
+
+                    <!-- Live Service Times Text -->
+                    <div class="right-stacked-lg hidden-xs hidden-sm hidden-md">
+                        <Rock:Zone Name="Login" runat="server" />
+                    </div>
+
+                    <!-- Mobile Nav Menu -->
+                    <div class="divMainMenu navbar-collapse collapse">
+                        <Rock:Zone Name="Navigation" runat="server" />
+                    </div>
+
+                </div>
+            </nav>
+
+        </header>
+
+        <!-- Floating Menu for large devices -->
+        <section class="custom-menu">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:Zone Name="CustomMenu" runat="server" />
+                    </div>
+                </div>
+            </div>
+        </section>
+        <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+        <footer>
+            <div class="footer-container">
+                <div class="container">
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:Zone Name="Footer" runat="server" />
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </footer>
+
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server" />
+        <asp:UpdateProgress ID="updateProgress" runat="server" DisplayAfter="800">
+            <ProgressTemplate>
+                <div class="updateprogress-status">
+                    <div class="spinner">
+                        <div class="rect1"></div>
+                        <div class="rect2"></div>
+                        <div class="rect3"></div>
+                        <div class="rect4"></div>
+                        <div class="rect5"></div>
+                    </div>
+                </div>
+                <div class="updateprogress-bg modal-backdrop"></div>
+            </ProgressTemplate>
+        </asp:UpdateProgress>
+
+    </form>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('.js-modal-block-move').nextUntil('#cms_admin_footer').hide();
+            $('#cms-admin-footer').show();
+
+        });
+    </script>
+
+</body>
+
+
+
+</html>

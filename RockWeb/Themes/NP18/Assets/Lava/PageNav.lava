@@ -1,0 +1,53 @@
+<div id="navbar-main">
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+	<a class="closer" href="#close">Close</a>
+  <ul id="quick-links">
+    {% for includePage in IncludePageList %}
+			{% assign parts = includePage | PropertyToKeyValue %}
+			<li id="ipl_{{ parts.Key | ToCssClass }}">
+				<a href="{{ parts.Value }}">{{ parts.Key }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+  <ul id="main-menu">
+  	<li id="home"><a href="/"><i class="np-logomark"></i> Home</a></li>
+		{% for childPage in Page.Pages %}
+			{% assign hasGrandchildren = "" %}
+			{% if childPage.DisplayChildPages == 'true' and childPage.Pages != empty %}
+				{% for grandChildPage in childPage.Pages %}
+						{% if grandChildPage.DisplayChildPages == 'true' and grandChildPage.Pages != empty %}
+							{% assign hasGrandchildren = "has-grandchildren" %}
+						{% endif %}
+				{% endfor %}
+			{% endif %}
+      <li id="menu_{{ childPage.Title | ToCssClass }}" class="{% if childPage.Current == 'true' %}active{% endif%}{% if childPage.DisplayChildPages == 'true' and childPage.Pages != empty %} has-children{% endif%} {{hasGrandchildren}}">
+			{% if childPage.DisplayChildPages == 'true' and childPage.Pages != empty %}
+				<a href="#" class="dropdown-trigger" role="button" aria-haspopup="true" aria-expanded="false">{{ childPage.Title }} <span class="caret"></span></a>
+			{% else %}
+				<a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+			{% endif %}
+			{% if childPage.DisplayChildPages == 'true' and childPage.Pages != empty %}
+		    <ul class="child-menu">
+				{% for grandChildPage in childPage.Pages %}
+          <li class="{% if grandChildPage.Current == 'true' %}active{% endif%}{% if grandChildPage.DisplayChildPages == 'true' and grandChildPage.Pages != empty %} has-children{% endif%}" id="menu_{{ childPage.Title | ToCssClass }}_{{ grandChildPage.Title | ToCssClass }}">
+						{% if grandChildPage.DisplayChildPages == 'true' and grandChildPage.Pages != empty %}
+							<a href="#">{{ grandChildPage.Title }}</a>
+					    <ul class="grandchild-menu">
+							{% for greatGrandChildPage in grandChildPage.Pages %}
+			          <li{% if greatGrandChildPage.Current == 'true' %} class="active"{% endif%} id="menu_{{ grandChildPage.Title | ToCssClass }}_{{ greatGrandChildPage.Title | ToCssClass }}">
+									<a href="{{ greatGrandChildPage.Url }}">{{ greatGrandChildPage.Title }}</a>
+			          </li>
+			        {% endfor %}
+					    </ul>
+					  {% else %}
+  						<a href="{{ grandChildPage.Url }}">{{ grandChildPage.Title }}</a>
+						{% endif %}
+          </li>
+        {% endfor %}
+		    </ul>
+			{% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+</div>

@@ -572,7 +572,8 @@ Response XML ({0}):
                         if ( xStatus != null )
                         {
                             resultFound = true;
-                            if ( xStatus.Value != "NO RECORD" )
+                            // [NP] Check for both NO RECORD and COMPLETE (https://github.com/SparkDevNetwork/Rock/issues/3147)
+                            if ( ! ( xStatus.Value.Equals("NO RECORD", StringComparison.OrdinalIgnoreCase) || xStatus.Value.Equals("COMPLETE", StringComparison.OrdinalIgnoreCase) ) )
                             {
                                 reportStatus = "Review";
                                 break;

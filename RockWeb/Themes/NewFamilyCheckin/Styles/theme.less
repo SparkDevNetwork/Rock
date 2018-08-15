@@ -1,0 +1,274 @@
+
+
+// ----------------------------
+// Master Styles
+// ----------------------------
+
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+
+
+// ----------------------------
+// Background
+// ----------------------------
+
+body {
+    background: #f78d1f url('../Assets/Images/background.jpg') top right no-repeat fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    overflow-x: hidden;
+}
+
+@media all and (-webkit-min-device-pixel-ratio: 1.5) {
+    body {
+        background-image: url('../Assets/Images/background@2x.jpg');
+        background-size: 1348px 1024px; // should be 1/2 of the actual
+    }
+}
+
+
+// ----------------------------
+// Flex Box
+// ----------------------------
+
+.flex {
+    display: flex;
+}
+
+.flex-stretched {
+    align-content: stretch;
+}
+
+.flex-vertical {
+    flex-direction: column;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.flex-start {
+    align-items: flex-start;
+}
+
+.flex-center {
+    align-items: center;
+}
+
+.flex-item-center {
+    align-self: center;
+}
+
+.flex-item-1 {
+    flex: 1;
+}
+
+.flex-item-2 {
+    flex: 2;
+}
+
+
+// ----------------------------
+// Tappable Checkboxes
+// ----------------------------
+
+.checkbox label,
+.radio label,
+.radio-inline {
+    padding: 10px 20px 10px 35px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+
+    &:active, &:focus {
+        background-color: #eee;
+    }
+}
+
+.checkbox label,
+.radio label {
+    display: block;
+    text-align: center;
+}
+
+
+// ----------------------------
+// Tappable Info Tiles
+// ----------------------------
+
+.info-tile {
+    margin-bottom: 10px;
+    margin-right: 10px;
+    border-radius: 4px;
+    padding: 8px;
+    display: block;
+    color: #000;
+    min-width: 200px;
+    border: 1px solid #ccc;
+
+    &:focus {
+        color: #000;
+    }
+
+    &:hover {
+        color: #000;
+        background-color: #ebebeb;
+        border-radius: 4px;
+        text-decoration: none;
+    }
+
+    .person-image {
+        -webkit-transition: all 0.6s ease;
+        transition: 0.5s;
+        border-color: #ccc;
+        border: 1px solid #92bce0;
+        float: left;
+        margin-right: 7.5px;
+        display: inline-block;
+        width: 60px;
+        height: 60px;
+    }
+
+    h3 {
+        font-size: 16px;
+        font-weight: 600;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        margin: 0;
+    }
+
+    h4 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+    }
+}
+
+.info-tile-fa {
+    text-align: center;
+    line-height: 2;
+    font-size: 30px;
+    min-width: 90px;
+    color: #ccc;
+
+    &:focus {
+        color: #ccc;
+    }
+
+    &:hover {
+        color: #aaa;
+    }
+}
+
+// ----------------------------
+// 
+// ----------------------------
+
+.title.name {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-weight: 300;
+    font-size: 36px;
+}
+.title .first-word {
+    font-weight: 700;
+}
+
+header, header small, footer {
+    color: #ffffff;
+}
+
+.btn-touch {
+    padding: 15px;
+    margin-right: 10px;
+    width: 200px;
+    height: 200px;
+    border-radius: 5px;
+}
+
+.btn-touch .fa {
+    font-size: 60px;
+    display: block;
+    line-height: 2;
+}
+
+body {
+    touch-action: manipulation;
+}
+
+.panel-block {
+    margin-top: 15px;
+
+    .panel-heading {
+        display: none;
+    }
+}
+
+a.back {
+    color: #ffffff;
+}
+
+a.back:hover,
+a.back:active,
+a.back:focus {
+    color: #dddddd;
+}
+
+.grid {
+    background-color: #fff;
+}
+
+
+
+.dropdown-menu li > a {
+    padding: 15px 30px;
+}
+
+.dropdown-backdrop {
+    //background-color: rgba(0,0,0,0.5);
+}
+
+.nav > li > a.btn-warning:focus, .nav > li > a.btn-warning:hover {
+    color: @btn-warning-color;
+    background-color: darken(@btn-warning-bg, 10%);
+}
+
+.photo {
+    padding: 5px 5px 5px 5px;
+    background-color: @gray-lighter;
+}
+
+h2.panel-title {
+    font-size: 26px;
+}
+
+h3.panel-title {
+    font-size: 22px;
+}
+
+
+// ----------------------------
+// Sticky Footer
+// ----------------------------
+@footer-height: 60px;
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: @footer-height;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: @footer-height;
+}

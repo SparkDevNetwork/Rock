@@ -1,0 +1,20 @@
+﻿@media print {
+  @page {
+    margin: .5in;
+  }
+
+  // default sidebar navs on most pages
+  .nav-sub {
+    display: none;
+  }
+
+  // admin bar on bottom right
+  #cms-admin-footer {
+    display: none;
+  }
+
+  // don't show URLs after links
+  a[href]:after {
+    content: '' !important;
+  }
+}

@@ -1,0 +1,31 @@
+
+
+
+<div class="row">
+    {% if Opportunity.PhotoId %}
+        <div class="col-md-4">
+            <img src="/GetImage.ashx?id={{ Opportunity.PhotoId }}" style="width: 100%;" />
+        </div>
+    {% endif %}
+    <div class="col-md-8">
+        <h2 class="margin-t-none"><i class='{{Opportunity.IconCssClass}}'></i> {{ Opportunity.Name }}</h2>
+        {{ Opportunity.Description }}
+
+        <h4>Opportunity Details:</h4>
+
+        {% for attribute in Opportunity.AttributeValues %}
+	        <strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+        {% endfor %}
+
+        <p class="margin-t-lg">
+	        {% if LinkedPages.SignupPage != '' %}
+		        <a href="{{ LinkedPages.SignupPage }}?OpportunityId={{ Opportunity.Id }}" class="btn btn-primary">Connect</a>
+	        {% endif %}
+        </p>
+
+    </div>
+</div>
+
+
+
+	

@@ -1,0 +1,18 @@
+﻿
+<div class="col-md-12">
+  <h2 class="right-line">Latest Episode</h2>
+  {% for item in Items %}
+    <div class="text-icon wow fadeInUp">
+      <div class="col-md-7">
+        <h3>{{item.Title}}</h3>
+        <p>{{item.Content}}</p>
+      </div>
+      <div class="col-md-12">
+        <div class="embed-responsive embed-responsive-16by9">
+          <iframe class="embed-responsive-item" src="{{item.VideoUrl}}"></iframe>
+        </div>
+      </div>
+    </div> 
+  {% endfor %}
+</div>
+    

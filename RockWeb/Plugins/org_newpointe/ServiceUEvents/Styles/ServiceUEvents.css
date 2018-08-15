@@ -1,0 +1,56 @@
+﻿.nopadding {
+    padding: 0 !important;
+}
+
+.col-spacer {
+    height: 135px;
+}
+
+div.events {
+    cursor: pointer;
+    border-bottom: solid 1px #808080;
+    margin: 2px 0 5px;
+    padding-left: 17px !important;
+    font-size: 16px;
+}
+
+    div.events strong {
+        color: #404040;
+    }
+
+    div.events i.fa {
+        margin-right: 3px;
+        margin-left: -18px;
+    }
+
+.event-description {
+    padding: 10px;
+}
+
+#event-date {
+    /*background-color: #404040;
+    color: #fff;*/
+    color: #404040;
+}
+
+.cal-month-day span {
+    width: calc(100% - 5px);
+    font-size: 1.4em !important;     
+    font-family: "GothamBold", Helvetica, Arial, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    margin: 5px 5px 20px 0;
+    text-align: right;
+    letter-spacing: 0px;
+    line-height: 40px !important;
+}
+
+.cal-row-head div.cal-cell1 {
+    font-size: 1.1em !important;
+     font-family: "GothamBold", Helvetica, Arial, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+}
+.top-cal{
+    z-index:1 !important;
+}

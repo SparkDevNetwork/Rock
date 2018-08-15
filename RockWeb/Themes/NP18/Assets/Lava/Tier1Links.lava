@@ -1,0 +1,17 @@
+﻿<div id="tier1links" class="clearfix">
+{% for item in Items %}
+    <div class="block-grid-item">
+        <a href="{{item | Attribute:'LinkUrl'}}" style="background-image:url({{item | Attribute:'ImageBlockBackgroundImage','Url'}})">
+	      		{% assign animDelay = forloop.index | Times:100 %}
+            <div class="link-title js-animate fadeInUp" data-animate data-animation-classes="animate" data-animation-delay="{{ animDelay }}">
+	            {% assign itemTitle = item | Attribute:'ImageBlockHtmlTitle' | StripHtml | StripNewlines | Trim %}
+	            {% if itemTitle != "" %}
+	            	{{ item | Attribute:'ImageBlockHtmlTitle' }}
+	            {% else %}
+                {{ item.Title }}
+              {% endif %}
+            </div>
+        </a>
+    </div>
+{% endfor %}
+</div>

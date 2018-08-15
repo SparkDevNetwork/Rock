@@ -1,0 +1,1 @@
+<a class="footerlogolink" href="/"><img src="~~/Assets/Images/logo.svg" alt="{{ 'Global' | Attribute:'OrganizationName' }}" /></a>

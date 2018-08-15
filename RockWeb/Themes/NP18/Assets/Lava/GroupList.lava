@@ -1,0 +1,21 @@
+<div class="section mediumgray" style="margin-bottom: 30px">
+	<div class="container">
+		<div class="row">
+  	  <div class="col-md-12">
+				<div id="groupslist" class="css-grid">
+			    {% for Group in Groups %}
+				    	<a href="{{ LinkedPages.GroupDetailPage }}/{{ Group.Id }}" class="css-grid-item group-item-link">
+				        <h3 class="group-name">{{ Group.Name }}</h3>
+				        <p class="group-schedule">
+				            {{ Group.Schedule.FriendlyScheduleText }}
+				            {% assign PrimaryLocation = Group.GroupLocations | First | Property:'Location' %}
+				            {% if PrimaryLocation != '' %} | {{ PrimaryLocation.City }}, {{ PrimaryLocation.State }}{% endif %}
+				        </p>
+				        <p class="group-description">{{ Group.Description | TruncateWords:25 }}</p>
+			        </a>
+			    {% endfor %}
+				</div>
+  	  </div>
+		</div>
+  </div>
+</div>

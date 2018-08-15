@@ -1,0 +1,31 @@
+﻿<div id="announcement-rotator" class="carousel slide" data-ride="carousel" data-interval="{{ 'Global' | Attribute:'FeatureDataIntervalTime' }}">
+  <!-- Wrapper for slides -->
+  <div class="carousel-inner">
+    {% for item in Items %}
+    {% if forloop.index == 1 -%}
+    <div class="item active">
+      {% else -%}
+      <div class="item">
+        {% endif -%}
+        
+        {% if item.CustomLink != '' -%}
+        <a href="{{item.CustomLink | 'StripHtml'}}">
+          {{ item | Attribute:'Image' }}
+        </a>
+        {% else -%}
+          {{ item | Attribute:'Image' }}
+        {% endif -%}
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Controls -->
+    <a class="left carousel-control" href="#announcement-rotator" data-slide="prev">
+      <span class="fa fa-chevron-left"></span>
+    </a>
+    <a class="right carousel-control" href="#announcement-rotator" data-slide="next">
+      <span class="fa fa-chevron-right"></span>
+    </a>
+
+  </div>
+</div>

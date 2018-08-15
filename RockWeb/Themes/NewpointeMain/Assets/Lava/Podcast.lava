@@ -1,0 +1,55 @@
+﻿<div class="container-fluid">
+
+
+
+  {% for item in Items %}
+
+  {% assign binaryFile = item| Attribute:'PodcastAudio','object' %}
+  <div class="row" style="padding-bottom:15px;">
+
+    <div class="hidden-xs col-sm-3 col-md-2">
+      <img src="{{ item | Attribute: 'PodcastImage', 'Url' }}" width="75" />
+
+    </div>
+    <div class="col-xs-6 col-sm-5 col-md-3">
+      <p>
+        <strong>{{item.Title}}</strong>
+      </p>
+      <p>
+        <small>{{item.SeriesTitle}}</small>
+      </p>
+    </div>
+    <div class="col-xs-6 col-sm-4 col-md-3">
+      <p class="small">
+        <strong>{{item.Date}}</strong>
+      </p>
+      <p>
+        <a href="https://itunes.apple.com/us/podcast/newpointe-community-church/id847759709">
+          <i class="fa fa-music fa-2x"></i>
+        </a>
+        <span style="padding-left: 10px;"></span>
+
+        <a href="{{ binaryFile.Path }}">
+          <i class="fa fa-cloud-download fa-2x"></i>
+        </a>
+
+      </p>
+    </div>
+    <div class="col-xs-12 col-sm-12 col-md-4">
+      {% if podcastaudio != '' %}
+      <h4>Audio:</h4>
+      <audio controls="">
+        <source src="{{ item | Attribute:'PodcastAudio','Url' }}" type="audio/mpeg" />
+      </audio>
+      {% elseif podcastlink != '' %}
+      <h4>Audio:</h4>
+      <audio controls="">
+        <source src="{{ podcastlink }}" type="audio/mpeg" />
+      </audio>
+      {% endif %}
+    </div>
+  </div>
+  <div class="divider-border"></div>
+  {% endfor %}
+
+</div>

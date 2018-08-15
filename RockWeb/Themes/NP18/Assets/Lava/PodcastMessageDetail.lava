@@ -1,0 +1,90 @@
+﻿{% assign item = Items | First %}
+{% if item  %}
+
+	{% assign Part = item | Attribute:'Part' %}
+	{% assign Speaker = item | Attribute:'Speaker' %}
+	{% assign SpeakerTitle = item | Attribute:'SpeakerTitle' %}
+	{% assign VideoId = item | Attribute:'VideoId' %}
+	{% assign PodcastImage = item | Attribute:'PodcastImage' %}
+	{% assign TalkItOverVideoId = item | Attribute:'TalkItOverVideoId' %}
+	{% assign TalkItOver = item | Attribute:'TalkItOver','Url' %}
+	{% assign PodcastLength = item | Attribute:'PodcastLength' %}
+	{% assign PodcastAudio = item | Attribute:'PodcastAudio','Url' %}
+	{% assign MessageNotes = item | Attribute:'MessageNotes','Url' %}
+	{% assign MessageNotesHTML = item | Attribute:'MessageNotesHTML' %}
+	{% assign ScriptureCard = item | Attribute:'ScriptureCard','Url' %}
+	
+	{% for parentItem in item.ParentItems | First %}
+		{% assign Series = parentItem.ContentChannelItem.Title %}
+	{% endfor %}
+	
+	<article class="message-detail">
+		<div class="row">
+			<div class="col-md-5 col-md-offset-7 z1">
+				<a class="backlink btn btn-gray hidden-xs hidden-sm" href="{{ LinkedPages.DetailPage }}"><i class="np-icon np-caret"></i> Back</a>
+				<div class="addthis_toolbox">
+					<a class="addthis_button_compact btn btn-gray btn-sm visible-xs-inline-block visible-sm-inline-block"><span>Share</span></a>
+				  <div class="custom_images hidden-xs hidden-sm">
+				    <a class="addthis_button_facebook" title="Share to Facebook">
+					    <span class="fa-stack">
+					    	<i class="fa fa-fw fa-facebook-square fa-lg"></i>
+					    </span>
+					  </a>
+				    <a class="addthis_button_twitter" title="Share to Twitter">
+					    <span class="fa-stack">
+					    	<i class="fa fa-fw fa-twitter fa-lg"></i>
+					    </span>
+					  </a>
+				    <a class="addthis_button_email" title="Share via Email">
+					    <span class="fa-stack">
+					    	<i class="fa fa-fw fa-envelope fa-lg"></i>
+					    </span>
+					  </a>
+				  </div>
+				</div>
+				<div class="message-action-items visible-xs-inline-block visible-sm-inline-block">
+					<ul class="list-inline">
+						{% if PodcastAudio != '' %}<li><a href="{{PodcastAudio}}" target="_blank"><i class="np-audio"></i> Listen</a></li>{% endif %}
+						{% if MessageNotes != '' %}<li><a href="{{MessageNotes}}" target="_blank"><i class="np-writebox"></i> Notes</a></li>{% endif %}
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-7 z10 sermon-video">
+				<div class="embed-responsive embed-responsive-16by9">		
+					{% if VideoId != '' %}
+			      <iframe src="https://player.vimeo.com/video/{{ VideoId }}?wmode=transparent" frameborder="0" webkitallowfullscreen="" mozallowfullscreen="" allowfullscreen=""></iframe>
+					{% endif %}
+				</div>
+				<div class="message-action-items hidden-xs hidden-sm">
+					<ul class="list-inline">
+						{% if PodcastAudio != '' %}<li><a href="{{PodcastAudio}}" target="_blank"><i class="np-audio"></i> Listen</a></li>{% endif %}
+						{% if MessageNotes != '' %}<li><a href="{{MessageNotes}}" target="_blank"><i class="np-writebox"></i> Notes</a></li>{% endif %}
+					</ul>
+				</div>
+			</div>
+			<div class="col-md-5 z1">
+				<div class="message-details">
+					<p class="series-part"><strong>{{ Series }}{% if Part != 0 %}, Part {{ Part }}{% endif %}</strong></p>
+					<h1 class="sermon-title">{{ item.Title }}</h1>
+					<p class="speaker-date">{{ item.StartDateTime | Date:'MMMM d, yyyy' }} | {{ item | Attribute:'Speaker' }}</p>
+				
+					{{ item.Content }}
+					
+					<dl class="talkitover list-inline">
+					  {% if TalkItOverVideoId != '' %}<dd><a href="https://vimeo.com/{{TalkItOverVideoId}}" target="_blank"><i class="np-videochat"></i> Video</a></dd>{% endif %}
+					  {% if TalkItOver != '' %}<dd><a href="{{TalkItOver}}" target="_blank"><i class="np-chat"></i> Talk It Over</a></dd>{% endif %}
+					  {% if ScriptureCard != '' %}<dd><a href="{{ScriptureCard}}" target="_blank"><i class="np-document"></i> Scripture Card</a></dd>{% endif %}
+					</dl>
+
+				</div>
+			</div>
+		</div>
+		<a class="backlink btn btn-gray visible-xs-inline-block visible-sm-inline-block" href="{{ LinkedPages.DetailPage }}"><i class="np-icon np-caret"></i> Back</a>
+	</article>
+	
+{% else %}
+	<h1>Could not find message.</h1>
+{% endif %}
+

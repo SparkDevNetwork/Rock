@@ -1,0 +1,210 @@
+.subfooter {
+	background-color: @gray;
+	p {
+		margin:0;
+	}
+	.app-link .block-content > div:last-child {
+		position: relative;
+		a {
+			position: relative;
+			top:0;
+			left:0;
+			width:100%;
+			display: block;
+			color: @truewhite;
+			padding: 15px;
+			font-size: 20px;
+			font-weight: 900;
+			text-transform: uppercase;
+			@media (min-width: @screen-sm) {
+				padding: 30px;
+				.font(36, bold);
+				letter-spacing: 2px;
+			}
+			@media (min-width: @screen-xl) {
+				padding: 45px;
+			}
+			span {
+				display: block;
+				@media (min-width: @screen-sm) {
+					display: inline;
+				}
+			}
+			&:hover, &:focus, &:active {
+				color: @truewhite;
+				text-decoration: none;
+				background-color: @brand-primary;
+			}
+		}
+	}
+}
+footer {
+	padding: 40px 0 20px;
+	background-color: @gray-darker;
+	color: @gray-lighter;
+	.font(18);
+	@media (min-width: @screen-sm) {
+		padding: 50px 0 25px;
+	}
+	@media (min-width: @screen-xl) {
+		padding: 70px 0 35px;
+	}
+	.footerlogo {
+		a.footerlogolink {
+			display: block;
+			width:68%;
+			margin: 0 auto 30px;			
+			@media (min-width: @screen-sm) {
+				width:100%;
+				margin: 0;			
+			}
+		}
+	}
+	h5 {
+		font-family: @font-family-narrow;
+		.font(28, bold);
+		margin-bottom: 0.75em;
+		color: @truewhite;
+		text-transform: uppercase;
+		display: none;
+		@media (min-width: @screen-sm) {
+			display: block;
+		}
+	}
+	.footer-quick-links {
+		text-align: center;
+		@media (min-width: @screen-sm) {
+			text-align: inherit;
+		}
+		ul {
+			li {
+				display: inline-block;
+				margin: 0 3px 10px;
+				font-family: @font-family-narrow;
+				.font(12,bold);
+				text-transform: uppercase;
+				@media (min-width: @screen-sm) {
+					display: block;
+					margin:0;
+					font-family: @font-family-base;
+					font-size: inherit;
+					font-weight: inherit;
+					text-transform: none;
+				}
+				a {
+					display: inline-block;
+					border: solid 1px @white;
+					color: @white;
+					padding: 8px 16px;
+					&:hover, &:focus {
+						background-color: @brand-primary;
+						border-color: @brand-primary;
+						text-decoration: none;
+						color: @truewhite;
+					}
+					@media (min-width: @screen-sm) {
+						border:none;
+						padding: 0;
+						color: @gray-lighter;
+						&:hover, &:focus {
+							background:none;
+							text-decoration: underline;
+							color: @brand-primary;
+						}
+					}
+				}
+			}
+		}
+	}
+	.contact-info {
+		text-align: center;
+		font-size: 13px;
+		color: @truewhite;
+		.font(18);
+		@media (min-width: @screen-sm) {
+			text-align: inherit;
+			color: @gray-lighter;
+		}
+		a {
+			color: @truewhite;
+			@media (min-width: @screen-sm) {
+				color: @gray-lighter;
+			}
+			&:hover {
+				color: @brand-primary;
+			}
+		}
+	}
+	.copyright-credits {
+		padding: 15px 0;
+		color: @gray-light;
+		font-size: 12px;
+		.font(12);
+		margin-top: 20px;
+		@media (min-width: @screen-sm) {
+			border-top: solid 1px @gray-light;
+			margin-top: 40px;
+		}
+		@media (min-width: @screen-xl) {
+			margin-top: 60px;
+		}
+		p {
+			margin:0;
+		}
+		a {
+			color: @gray-light;
+			&:hover {
+				color: @brand-primary;
+			}
+		}
+		.copyright {
+			float: none;
+			text-align: center;
+			@media (min-width: @screen-sm) {
+				float: left;
+				text-align: right;
+			}
+		}
+		.credits {
+			text-align: center;
+			@media (min-width: @screen-sm) {
+				text-align: right;
+			}
+		}
+	}
+	#social-media-links {
+		display: block;
+		text-align: center;
+		@media (min-width: @screen-sm) {
+			text-align: left;
+		}
+		margin: 0;
+		li {
+			padding:0;
+			a {
+				display: block;
+				text-indent: -9999em;
+				position: relative;
+				width: 1.5em;
+				height: 1.5em;
+				font-size: 1.5em;
+				color: @gray-lighter;
+				&:hover {
+					color: @brand-primary;
+					text-decoration: underline;
+				}
+				&:before {
+					text-indent: 0;
+					position: absolute;
+					top:0;
+					left:50%;
+					transform: translateX(-50%);
+					@media (min-width: @screen-sm) {
+						left:0;
+						transform: none;
+					}
+				}
+			}
+		}
+	}
+}

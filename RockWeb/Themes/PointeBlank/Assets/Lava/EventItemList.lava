@@ -1,0 +1,15 @@
+{% for eventOccurrenceSummary in EventOccurrenceSummaries %}
+  <div class="margin-b-lg">
+
+    {% if DetailsPage != empty %}
+      {% capture eventName %}<a href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.EventItemId }}">{{ eventOccurrenceSummary.Name }}</a>{% endcapture %}
+    {% else %}
+      {% assign eventName = eventOccurrenceSummary.Name %}
+    {% endif %}
+
+    <h4>{{ eventName }} <small>{{ eventOccurrenceSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'ddd, MMM d / h:mmtt' }}</small></h4>
+
+
+    <p>{{ eventOccurrenceSummary.Summary }}</p>
+  </div>
+{% endfor %}

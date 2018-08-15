@@ -1,0 +1,69 @@
+﻿<div class="col-sm-6">
+  <div class="purple-border">
+
+    <h2 class="text-center">RAINFOREST</h2>
+    <hr />
+    <p>
+      We work to teach every child 3 things – <strong>God made them, God loves them, and Jesus wants to be their friend forever.</strong>
+      We do this through a variety of engaging methods, including activities, large group worship, and even small group time.
+    </p>
+    <p class="text-center">
+      SMALL TALKS
+    </p>
+
+    <div class="col-sm-12">
+      {% for item in Items %}
+      {% if item.ResourceType == 'Small Talk' %}
+      {% assign fileurl = item | Attribute:'ResourceFile','Url' %}
+      <div class="col-sm-6 text-center">
+        <a href="{{ fileurl }}" target="_blank" class="btn btn-block  btn-purple">Week {{ item.WeekNumber }}</a>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="col-sm-6">
+  <div class="orange-border">
+
+    <h2 class="text-center">VELOCITY</h2>
+    <hr />
+    <p>
+      We want all Velocity aged kids to learn that they can trust God no matter what, that they need to make wise choices, 
+      and that they need to treat others the way they want to be treated – all before they reach middle school!
+    </p>
+    <p class="text-center">
+      GOD TIMES
+    </p>
+
+    <div class="col-sm-12">
+      {% for item in Items %}
+      {% if item.ResourceType == 'God Time' %}
+      {% assign fileurl = item | Attribute:'ResourceFile','Url' %}
+      <div class="col-sm-6 text-center">
+        <a href="{{ fileurl }}" target="_blank" class="btn btn-block  btn-orange">Week {{ item.WeekNumber }}</a>
+      </div>
+      {% endif %}
+      {% endfor %}
+      </div>
+      
+      <p class="text-center">
+      PARENT CUE
+      </p>
+    
+      <div class="col-sm-12">
+      {% for item in Items %}
+      {% if item.ResourceType == 'Parent Cue' %}
+      {% assign fileurl = item | Attribute:'ResourceFile','Url' %}
+      <div class="col-sm-6 text-center">
+        <a href="{{ fileurl }}" target="_blank" class="btn btn-block  btn-orange">MONTHLY</a>
+      </div>
+      {% endif %}
+      {% endfor %}
+      </div>
+  
+    </div>
+    </div>
+  </div>
+</div>
