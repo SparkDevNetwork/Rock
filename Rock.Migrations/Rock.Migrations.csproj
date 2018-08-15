@@ -66,10 +66,6 @@
     <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
     <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
     <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
-    <Compile Include="Migrations\201807200941565_Rollup_PreAlphaRelease_0719.cs" />
-    <Compile Include="Migrations\201807200941565_Rollup_PreAlphaRelease_0719.Designer.cs">
-      <DependentUpon>201807200941565_Rollup_PreAlphaRelease_0719.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\201807250211476_AddNoteAttachments.cs" />
     <Compile Include="Migrations\201807250211476_AddNoteAttachments.Designer.cs">
       <DependentUpon>201807250211476_AddNoteAttachments.cs</DependentUpon>
@@ -93,6 +89,10 @@
     <Compile Include="Migrations\CreateDatabase\201707311527250_AddMetaData.cs" />
     <Compile Include="Migrations\CreateDatabase\201707311527250_AddMetaData.designer.cs">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.1\201807200941565_Rollup_PreAlphaRelease_0719.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.1\201807200941565_Rollup_PreAlphaRelease_0719.Designer.cs">
+      <DependentUpon>201807200941565_Rollup_PreAlphaRelease_0719.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806251757250_BackgroundCheckWarnOfRecent.cs" />
     <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806251757250_BackgroundCheckWarnOfRecent.Designer.cs">
@@ -368,9 +368,6 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201807200941565_Rollup_PreAlphaRelease_0719.resx">
-      <DependentUpon>201807200941565_Rollup_PreAlphaRelease_0719.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201807250211476_AddNoteAttachments.resx">
       <DependentUpon>201807250211476_AddNoteAttachments.cs</DependentUpon>
     </EmbeddedResource>

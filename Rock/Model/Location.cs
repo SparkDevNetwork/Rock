@@ -512,26 +512,39 @@ namespace Rock.Model
         {
             get
             {
-                var campuses = CampusCache.All();
-
-                int? campusId = null;
-                Location loc = this;
-
-                while ( !campusId.HasValue && loc != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    var campus = campuses.Where( c => c.LocationId != null && c.LocationId == loc.Id ).FirstOrDefault();
-                    if ( campus != null )
-                    {
-                        campusId = campus.Id;
-                    }
-                    else
-                    {
-                        loc = loc.ParentLocation;
-                    }
+                    return GetCampusId( rockContext );
                 }
-
-                return campusId;
             }
+        }
+
+        /// <summary>
+        /// Gets the campus that is at this location, or one of this location's parent location
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private int? GetCampusId( RockContext rockContext )
+        {
+            var campuses = CampusCache.All( rockContext );
+
+            int? campusId = null;
+            Location loc = this;
+
+            while ( !campusId.HasValue && loc != null )
+            {
+                var campus = campuses.Where( c => c.LocationId != null && c.LocationId == loc.Id ).FirstOrDefault();
+                if ( campus != null )
+                {
+                    campusId = campus.Id;
+                }
+                else
+                {
+                    loc = loc.ParentLocation;
+                }
+            }
+
+            return campusId;
         }
 
         /// <summary>
@@ -806,6 +819,9 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
+            // Make sure CampusCache.All is cached using the dbContext (to avoid deadlock if snapshot isolation is disabled)
+            var campusId = this.GetCampusId( dbContext as RockContext );
+
             // CampusCache has a CampusLocation that could get stale when Location changes, so refresh the CampusCache for this location's Campus
             if ( this.CampusId.HasValue )
             {
@@ -813,8 +829,7 @@ namespace Rock.Model
             }
 
             // and also refresh the CampusCache for any Campus that uses this location
-            foreach ( var campus in CampusCache.All()
-                .Where( c => c.LocationId == this.Id ) )
+            foreach ( var campus in CampusCache.All( dbContext as RockContext ).Where( c => c.LocationId == this.Id ) )
             {
                 CampusCache.UpdateCachedEntity( campus.Id, EntityState.Detached );
             }
