@@ -295,6 +295,12 @@ namespace Rock.Security.ExternalAuthentication
         /// <returns></returns>
         public static string GetTwitterUser( dynamic twitterUser, string accessToken = "" )
         {
+            // accessToken is required
+            if ( accessToken.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
             string username = string.Empty;
             string twitterId = twitterUser.id_str;
             string twitterLink = "https://twitter.com/" + twitterUser.screen_name;

@@ -365,6 +365,12 @@ namespace Rock.Security.ExternalAuthentication
         /// <returns></returns>
         public static string GetGoogleUser( GoogleUser googleUser, string accessToken = "" )
         {
+            // accessToken is required
+            if ( accessToken.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
             string username = string.Empty;
             string googleId = googleUser.id;
             string googleLink = googleUser.link;

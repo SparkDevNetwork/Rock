@@ -33,17 +33,17 @@ namespace Rock.Rest.Controllers
         /// <param name="loginParameters">The login parameters.</param>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [HttpPost]
-        [System.Web.Http.Route("api/Auth/Login")]
+        [System.Web.Http.Route( "api/Auth/Login" )]
         public void Login( [FromBody]LoginParameters loginParameters )
         {
             bool valid = false;
 
             var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
             var userLogin = userLoginService.GetByUserName( loginParameters.Username );
-            if ( userLogin != null && userLogin.EntityType != null) 
+            if ( userLogin != null && userLogin.EntityType != null )
             {
-                var component = AuthenticationContainer.GetComponent(userLogin.EntityType.Name);
-                if ( component != null && component.IsActive)
+                var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
+                if ( component != null && component.IsActive )
                 {
                     if ( component.Authenticate( userLogin, loginParameters.Password ) )
                     {
@@ -58,7 +58,5 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( HttpStatusCode.Unauthorized );
             }
         }
-
     }
-
 }
