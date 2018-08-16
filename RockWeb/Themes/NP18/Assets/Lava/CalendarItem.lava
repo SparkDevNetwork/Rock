@@ -5,7 +5,9 @@
     <h3 class="startdatetime">{{ EventItemOccurrence.Schedule.NextStartDateTime | Date:'MMMM d, yyyy | h:mm tt' | Remove:':00' | Replace:'AM','a.m.' | Replace:'PM','p.m.' }}</h3>
     {% if EventItemOccurrence.Location != '' %}
       <h6 class="location">
-        {{ EventItemOccurrence.Location }}
+        {{ EventItemOccurrence.Location | WithFallback:'<br />','' }}
+        {{ EventItemOccurrence | Attribute:'LocationCampus' | WithFallback:'<br />','' }}
+        {{ EventItemOccurrence | Attribute:'LocationAddress' | WithFallback:'<br />','' }}
       </h6>
     {% endif %}
     
@@ -16,6 +18,7 @@
     {% endif %}
 
     <div class="event_summary">{{ Event.Description }}</div>
+    <div class="event_summary">{{ EventItemOccurrence.Note }}</div>
 
     {{ 'summary_large_image' | AddMetaTagToHead:'property','twitter:card' }}
     {{ Event.Name | AddMetaTagToHead:'property','twitter:title' }}
@@ -34,58 +37,47 @@
     {{ twitterPhoto.Url | AddMetaTagToHead:'property','twitter:image' }}
     {% endif %}
 
-    {% if EventItemOccurrence.Note != '' %}
-    <strong>Note</strong><br />
-    {{ EventItemOccurrence.Note }}
-    {% endif %}
-
 
   </div>
 	<div class="col-sm-4 col-sm-offset-1">
-
-      {% assign eventItemOccurrenceLinkages = EventItemOccurrence.Linkages %}
         
-      {% assign eventItemOccurrenceLinkagesCount = eventItemOccurrenceLinkages | Size %}
-      {% if eventItemOccurrenceLinkagesCount > 0 %}
-        {% for eventItemOccurrenceLinkage in eventItemOccurrenceLinkages %}
-            {% assign daysTillStartDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime,'m' %}
-            {% assign daysTillEndDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime,'m' %}
-            {% assign showRegistration = true %}
-            {% assign registrationMessage = '' %}
+        {% for eventItemOccurrenceLinkage in EventItemOccurrence.Linkages %}
 
-            {% if daysTillStartDate and daysTillStartDate > 0 %}
-                {% assign showRegistration = false %}
-                {% if eventItemOccurrenceLinkagesCount == 1 %}
-                  {% capture registrationMessage %}<p>Registration opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' | Remove:':00' | Replace:'AM','a.m.' | Replace:'PM','p.m.' }}</p>{% endcapture %}
-                {% else %}
-                  {% capture registrationMessage %}<p>Registration for {{ eventItemOccurrenceLinkage.PublicName }} opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' | Remove:':00' | Replace:'AM','a.m.' | Replace:'PM','p.m.' }}</p>{% endcapture %} 
-                {% endif %}
-            {% endif %}
+            {% assign RegistrationName = eventItemOccurrenceLinkage.RegistrationInstance.Name | Split:'//' | Last %}
+            {% assign StartDateTime = eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime %}
+            {% assign EndDateTime = eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime %}
+            {% assign ShowUntilDateTime = eventItemOccurrenceLinkage.PublicName %}
 
-            {% if daysTillEndDate and daysTillEndDate < 0 %}
-                {% assign showRegistration = false %}
-                {% if eventItemOccurrenceLinkagesCount == 1 %}
-                  {% capture registrationMessage %}<p>Registration closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' | Remove:':00' | Replace:'AM','a.m.' | Replace:'PM','p.m.'}}</p>{% endcapture %}
-                {% else %}
-                  {% capture registrationMessage %}<p>Registration for {{ eventItemOccurrenceLinkage.PublicName }} closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' | Remove:':00' | Replace:'AM','a.m.' | Replace:'PM','p.m.' }}</p>{% endcapture %}
+            {% assign daysTillStartDate = 'Now' | DateDiff:StartDateTime,'m' %}
+            {% assign daysTillEndDate = 'Now' | DateDiff:EndDateTime,'m' %}
+            {% assign daysTillHidden = 'Now' | DateDiff:ShowUntilDateTime,'m' %}
+
+            {% if StartDateTime and daysTillStartDate > 0 %}
+                
+                  <p>Registration {% if EventItemOccurrence.Linkages.size != 1 %}for {{ RegistrationName }} {% endif %}opens on {{ StartDateTime | Date:'dddd, MMMM d, yyyy' | Remove:':00' | Replace:'AM','a.m.' | Replace:'PM','p.m.' }}</p>
+                
+            {% elseif EndDateTime and daysTillEndDate < 0 %}
+                
+                {% if daysTillHidden > 0 %} 
+                  <p>Registration {% if EventItemOccurrence.Linkages.size != 1 %}for {{ RegistrationName }} {% endif %}is closed</p>
                 {% endif %}
-            {% endif %}
-              
-            {% if showRegistration == true %}
+                
+            {% else %}
                 {% assign statusLabel = RegistrationStatusLabels[eventItemOccurrenceLinkage.RegistrationInstanceId] %}
-                {% if eventItemOccurrenceLinkagesCount == 1 %}
+                {% if EventItemOccurrence.Linkages.size == 1 %}
                   {% assign registrationButtonText = statusLabel %} 
                 {% else %}
-                  {% assign registrationButtonText = statusLabel | Plus:' for ' | Plus:eventItemOccurrenceLinkage.PublicName %}
+                  {% assign registrationButtonText = statusLabel | Plus:' for ' | Plus:RegistrationName %}
                 {% endif %}
 
                 {% if statusLabel == 'Full' %}
-                    {% if eventItemOccurrenceLinkagesCount == 1 %}
-                      {% assign registrationButtonText = 'Registration Full' %}
-                    {% else %}
-                      {% assign registrationButtonText = eventItemOccurrenceLinkage.PublicName | Plus: ' (Registration Full) ' %}
-                    {% endif %}
-                    <div class='label label-default text-center margin-t-md' style='display: block; padding: 8px;'>{{ registrationButtonText }}</div>
+                    <div class='label label-default text-center margin-t-md' style='display: block; padding: 8px;'>
+                      {% if EventItemOccurrence.Linkages.size == 1 %}
+                        Registration Full
+                      {% else %}
+                        {{ RegistrationName }} (Registration Full)
+                      {% endif %}
+                    </div>
                 {% else %} 
                     {% if eventItemOccurrenceLinkage.UrlSlug != '' %}
                         <a href='{{ RegistrationPage }}?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&Slug={{eventItemOccurrenceLinkage.UrlSlug}}' class='btn btn-primary point-right margin-b-lg'>{{ registrationButtonText }}</a> 
@@ -93,11 +85,8 @@
                         <a href="{{ RegistrationPage }}?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&EventOccurrenceID={{ eventItemOccurrenceLinkage.EventItemOccurrenceId }}" class="btn btn-primary point-right margin-b-lg">{{ registrationButtonText }}</a>
                     {% endif %}
                 {% endif %}
-            {% else %}
-              <p>{{ registrationMessage }}</p>
             {% endif %}
         {% endfor %}
-      {% endif %}
 		
 		<script>function ics_click() { text = `{{ EventItemOccurrence.Schedule.iCalendarContent }}`.replace('END:VEVENT', 'SUMMARY: {{ Event.Name }}\r\nLOCATION: {{ EventItemOccurrence.Location }}\r\nEND:VEVENT'); var element = document.createElement('a'); element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text)); element.setAttribute('download', '{{ Event.Name }}.ics'); element.style.display = 'none'; document.body.appendChild(element); element.click(); document.body.removeChild(element); }</script>
 		<div class="addthis_toolbox">
