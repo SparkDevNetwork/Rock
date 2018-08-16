@@ -20,6 +20,7 @@
 				</script>
     	</div>
 		{% endif %}
+		{% if currentPage.PageDisplayTitle %}
 	  <div class="titleBlock">
 			<div class="container">
 				<div class="row">
@@ -29,9 +30,10 @@
 				</div>
 			</div>
 		</div>
+	  {% endif %}
 	</div>
 </div>
-{% else %}
+{% elseif currentPage.PageDisplayTitle %}
 <div class="pagetitle noheader">
 	<div class="container">
 		<div class="row">

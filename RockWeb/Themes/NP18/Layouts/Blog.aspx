@@ -20,8 +20,11 @@
 
         <Rock:Zone Name="Sub Feature" runat="server" />
 
+<div id="blogslist" class="css-grid-section">
+
         <Rock:Zone Name="Section A" runat="server" />
 
+</div>
         <Rock:Zone Name="Section B" runat="server" />
 
         <Rock:Zone Name="Section C" runat="server" />
