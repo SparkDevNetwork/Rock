@@ -1,6 +1,17 @@
 <h2 class="section-title text-center">Featured Events</h2>
 <div id="featuredevents" class="css-grid">
+
+{% assign ShownEventItemIds = ',' %}
+{% assign ShownEventItemCount = 0 %}
+
 {% for event in EventOccurrenceSummaries %}
+
+	{% assign EventItemLookup = ',' | Append:event.EventItemOccurrence.EventItemId | Append:',' %}
+	{% unless ShownEventItemIds contains EventItemLookup %}
+
+		{% assign ShownEventItemIds = ShownEventItemIds | Append:event.EventItemOccurrence.EventItemId | Append:',' %}
+		{% assign ShownEventItemCount = ShownEventItemCount | Plus:1 | AsInteger %}
+
 		<div class="css-grid-item {{event.Name | ToCssClass }}">
 			<div class="event-header"><a class="" href="{{ DetailsPage }}?EventOccurrenceId={{ event.EventItemOccurrence.Id }}" style="background-image:url('{{event.EventItem.Photo.Path}}')"></a></div>
 			<div class="event-content">
@@ -12,5 +23,13 @@
 				{% endif %}
 			</div>
 		</div>
+
+	{% endunless %}
+
+	{% if ShownEventItemCount >= 3 %}
+		{% break %}
+	{% endif %}
+
 {% endfor %}
+
 </div>
