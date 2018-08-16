@@ -123,7 +123,7 @@
 
                             <div class="row">
                                 <div class="col-md-4">
-                                    <Rock:NumberBox ID="nbNcoaMinMoveDistance" runat="server" AppendText="miles" CssClass="input-width-md" Label="Minimum Move Distance to Inactivate" NumberType="Double" Text="250" Help="Minimum move distance that a person moved before marking the person's account to inactivate" OnTextChanged="nbNcoaMinMoveDistance_TextChanged" AutoPostBack="true" />
+                                    <Rock:NumberBox ID="nbNcoaMinMoveDistance" runat="server" AppendText="miles" CssClass="input-width-md" Label="Minimum Move Distance to Inactivate" NumberType="Double" Text="250" Help="Minimum move distance that a person moved before marking the person's account to inactivate. Leaving the value blank disables this feature." OnTextChanged="nbNcoaMinMoveDistance_TextChanged" AutoPostBack="true" />
                                 </div>
                                 <div class="col-md-4">
                                     <Rock:RockCheckBox ID="cbNcoa48MonAsPrevious" runat="server" Label="Mark 48 Month Move as Previous Addresses" Help="Mark moves in the 19-48 month catagory as a previous address." OnCheckedChanged="cbNcoa48MonAsPrevious_CheckedChanged" AutoPostBack="true" />

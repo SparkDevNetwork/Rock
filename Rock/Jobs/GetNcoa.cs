@@ -74,9 +74,15 @@ namespace Rock.Jobs
 
                 switch ( sparkDataConfig.NcoaSettings.CurrentReportStatus )
                 {
-                    case "Start":
                     case "":
                     case null:
+                        if ( sparkDataConfig.NcoaSettings.RecurringEnabled )
+                        {
+                            StatusStart( sparkDataConfig );
+                        }
+
+                        break;
+                    case "Start":
                         StatusStart( sparkDataConfig );
                         break;
                     case "Failed":
