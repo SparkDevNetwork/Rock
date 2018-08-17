@@ -293,11 +293,18 @@ namespace RockWeb.Blocks.Connection
                             connectionRequestActivityService.Delete( connectionRequestActivity );
                         }
 
+                        rockContext.SaveChanges();
+                        string errorMessageConnectionOpportunity;
+                        if ( !connectionOpportunityService.CanDelete( connectionOpportunity, out errorMessageConnectionOpportunity ) )
+                        {
+                            mdDeleteWarning.Show( errorMessageConnectionOpportunity, ModalAlertType.Information );
+                            return;
+                        }
+
                         connectionOpportunityService.Delete( connectionOpportunity );
                     }
 
                     rockContext.SaveChanges();
-
                     string errorMessage;
                     if ( !connectionTypeService.CanDelete( connectionType, out errorMessage ) )
                     {
