@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Prayer
     // Category Selection
     [CategoryField( "Category Selection", "A top level category. This controls which categories the person can choose from when entering their prayer request.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Category Selection", 1, "GroupCategoryId" )]
     [CategoryField( "Default Category", "If categories are not being shown, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "Category Selection", 2, "DefaultCategory" )]
-    
+
     // Features
     [BooleanField( "Enable Auto Approve", "If enabled, prayer requests are automatically approved; otherwise they must be approved by an admin before they can be seen by the prayer team.", true, "Features", 3 )]
     [IntegerField( "Expires After (Days)", "Number of days until the request will expire (only applies when auto-approved is enabled).", false, 14, "Features", 4, "ExpireDays" )]
@@ -55,6 +55,7 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Require Last Name", "Require that a last name be entered", true, "Features", 11 )]
     [BooleanField( "Show Campus", "Show a campus picker", true, "Features", 12 )]
     [BooleanField( "Require Campus", "Require that a campus be selected", false, "Features", 13 )]
+    [BooleanField( "Enable Person Matching", "If enabled, requester detail will be matched with all existing person to see if it's already exists.", false, "Features", 14 )]
 
     // On Save Behavior
     [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 14 )]
@@ -68,7 +69,7 @@ namespace RockWeb.Blocks.Prayer
     {
         #region Properties
         public int? PrayerRequestEntityTypeId { get; private set; }
-        
+
         // note: the ascx uses these for rendering logic
         public bool EnableUrgentFlag { get; private set; }
         public bool EnableCommentsFlag { get; private set; }
@@ -115,7 +116,7 @@ namespace RockWeb.Blocks.Prayer
                 // set the default category
                 if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultCategory" ) ) )
                 {
-                    
+
                     Guid defaultCategoryGuid = GetAttributeValue( "DefaultCategory" ).AsGuid();
                     var defaultCategoryId = CategoryCache.Get( defaultCategoryGuid, rockContext ).Id;
 
@@ -182,11 +183,11 @@ namespace RockWeb.Blocks.Prayer
                     tbEmail.Text = CurrentPerson.Email;
                     cpCampus.SetValue( CurrentPerson.GetCampus() );
                 }
-                
+
                 dtbRequest.Text = PageParameter( "Request" );
                 cbAllowPublicDisplay.Checked = this.DefaultToPublic;
             }
-            
+
             var prayerRequest = new PrayerRequest { Id = 0 };
             prayerRequest.LoadAttributes();
             phAttributes.Controls.Clear();
@@ -217,6 +218,8 @@ namespace RockWeb.Blocks.Prayer
 
             bool isAutoApproved = GetAttributeValue( "EnableAutoApprove" ).AsBoolean();
             bool defaultAllowComments = GetAttributeValue( "DefaultAllowCommentsSetting" ).AsBoolean();
+            bool isPersonMatchingEnabled = GetAttributeValue( "EnablePersonMatching" ).AsBoolean();
+            bool isNoteCreated = false;
 
             PrayerRequest prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = isAutoApproved, AllowComments = defaultAllowComments };
 
@@ -254,10 +257,31 @@ namespace RockWeb.Blocks.Prayer
             var personContext = this.ContextEntity<Person>();
             if ( personContext == null )
             {
-                prayerRequest.RequestedByPersonAliasId = CurrentPersonAliasId;
-                prayerRequest.FirstName = tbFirstName.Text;
-                prayerRequest.LastName = tbLastName.Text;
-                prayerRequest.Email = tbEmail.Text;
+                Person person = null;
+                if ( isPersonMatchingEnabled )
+                {
+                    var personService = new PersonService( new RockContext() );
+                    person = personService.FindPerson( new PersonService.PersonMatchQuery( tbFirstName.Text, tbLastName.Text, tbEmail.Text, pnbPhone.Number ), false, true, false );
+                }
+
+                if ( person != null )
+                {
+                    prayerRequest.RequestedByPersonAliasId = person.PrimaryAliasId;
+                    prayerRequest.FirstName = string.IsNullOrEmpty( person.NickName ) ? person.FirstName : person.NickName;
+                    prayerRequest.LastName = person.LastName;
+                    prayerRequest.Email = person.Email;
+                }
+                else
+                {
+                    prayerRequest.RequestedByPersonAliasId = CurrentPersonAliasId;
+                    prayerRequest.FirstName = tbFirstName.Text;
+                    prayerRequest.LastName = tbLastName.Text;
+                    prayerRequest.Email = tbEmail.Text;
+                    if ( !string.IsNullOrEmpty( pnbPhone.Text ) )
+                    {
+                        isNoteCreated = true;
+                    }
+                }
             }
             else
             {
@@ -270,7 +294,7 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.CampusId = cpCampus.SelectedCampusId;
 
             prayerRequest.Text = dtbRequest.Text;
-            
+
             if ( this.EnableUrgentFlag )
             {
                 prayerRequest.IsUrgent = cbIsUrgent.Checked;
@@ -308,8 +332,27 @@ namespace RockWeb.Blocks.Prayer
                 return;
             }
 
-            rockContext.SaveChanges();
-            prayerRequest.SaveAttributeValues( rockContext );
+            rockContext.WrapTransaction( () =>
+            {
+                rockContext.SaveChanges();
+                prayerRequest.SaveAttributeValues( rockContext );
+
+                if ( isNoteCreated )
+                {
+                    var noteService = new NoteService( rockContext );
+                    var noteType = new NoteTypeService( rockContext ).Get( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() );
+                    var note = new Note()
+                    {
+                        Caption = "Mobile Phone",
+                        Text = pnbPhone.Text,
+                        EntityId = prayerRequest.Id,
+                        NoteTypeId = noteType.Id
+                    };
+                    noteService.Add( note );
+                    rockContext.SaveChanges();
+                }
+            } );
+
 
             StartWorkflow( prayerRequest, rockContext );
 
