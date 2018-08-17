@@ -550,6 +550,8 @@ namespace Rock.Client.Enums
         WorkPhone = 0xa,
         Grade = 0xb,
         ConnectionStatus = 0xc,
+        MiddleName = 0xd,
+        AnniversaryDate = 0xe,
     }
 
     /// <summary>
