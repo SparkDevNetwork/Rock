@@ -268,7 +268,6 @@ namespace Rock.Reporting.DataFilter.GroupMember
         /// Ensures that the controls that are created based on the GroupType have been created
         /// </summary>
         /// <param name="groupTypePicker">The group type picker.</param>
-        /// <param name="ddlProperty">The DDL property.</param>
         private void EnsureSelectedGroupTypeControls( GroupTypePicker groupTypePicker )
         {
             DynamicControlsPanel containerControl = groupTypePicker.Parent as DynamicControlsPanel;
