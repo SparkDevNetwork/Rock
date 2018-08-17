@@ -586,6 +586,9 @@
       <SubType>Designer</SubType>
       <LastGenOutput>RockMigrationSQL.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.1\201807200941565_Rollup_PreAlphaRelease_0719.resx">
+      <DependentUpon>201807200941565_Rollup_PreAlphaRelease_0719.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x64\msvcr100.dll">
