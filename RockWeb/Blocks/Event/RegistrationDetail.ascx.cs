@@ -984,7 +984,11 @@ namespace RockWeb.Blocks.Event
                                 .Select( r => r.PersonAlias.PersonId )
                                 .ToList();
 
-                    Registration.SavePersonNotesAndHistory( new PersonService( new RockContext() ).Get( ppPerson.PersonId ?? 0 ), CurrentPersonAliasId, previousRegistrantPersonIds );
+                    if ( Registration.PersonId.HasValue )
+                    {
+                        Registration.SavePersonNotesAndHistory( new PersonService( new RockContext() ).Get( Registration.PersonId.Value ), CurrentPersonAliasId, previousRegistrantPersonIds );
+                    }
+
                     AddRegistrantToGroup( registrantId.Value );
                 }
             }

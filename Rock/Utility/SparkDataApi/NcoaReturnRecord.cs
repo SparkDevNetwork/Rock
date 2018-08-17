@@ -861,7 +861,7 @@ namespace Rock.Utility.SparkDataApi
                 FamilyId = ( ids?[2] ).AsInteger(),
                 LocationId = ( ids?[3] ).AsInteger(),
                 AddressStatus = AddressStatus == "V" ? Model.AddressStatus.Valid : Model.AddressStatus.Invalid,
-                MoveDate = NcoaDateToDateTime( MoveApplied ),
+                MoveDate = NcoaDateToDateTime( MoveDate ),
                 MoveDistance = (decimal?)MoveDistance,
                 NcoaNote = DeliveryPointVerificationNotes,
                 NcoaRunDateTime = NcoaRunDateTime,

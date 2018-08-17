@@ -23,7 +23,6 @@ namespace Rock
     /// </summary>
     public static partial class ExtensionMethods
     {
-
         /// <summary>
         /// Returns a formated string of the memory size.
         /// </summary>
@@ -41,52 +40,52 @@ namespace Rock
         }
 
         /// <summary>
-        /// Units of measure for memory
+        /// Units of measure for memory from bytes to YottaBytes
         /// </summary>
         public enum MemorySizeUnit
         {
             /// <summary>
-            /// The bytes
+            /// Bytes
             /// </summary>
             Bytes,
 
             /// <summary>
-            /// The kb
+            /// KiloBytes
             /// </summary>
             KB,
 
             /// <summary>
-            /// The mb
+            /// MegaBytes
             /// </summary>
             MB,
 
             /// <summary>
-            /// The gb
+            /// GigaBytes
             /// </summary>
             GB,
 
             /// <summary>
-            /// The tb
+            /// TeraBytes
             /// </summary>
             TB,
 
             /// <summary>
-            /// The pb
+            /// PetaBytes
             /// </summary>
             PB,
 
             /// <summary>
-            /// The eb
+            /// ExaBytes
             /// </summary>
             EB,
 
             /// <summary>
-            /// The zb
+            /// ZettaBytes
             /// </summary>
             ZB,
 
             /// <summary>
-            /// The yb
+            /// YottaBytes
             /// </summary>
             YB
         }
@@ -97,7 +96,6 @@ namespace Rock
         /// <param name="value">The value.</param>
         /// <param name="decimalPlaces">The decimal places.</param>
         /// <returns></returns>
-        /// <exception cref="System.ArgumentOutOfRangeException">decimalPlaces</exception>
         public static string FormatAsMemorySize( this int value, int decimalPlaces = 0)
         {
             if ( decimalPlaces < 0 )

@@ -264,10 +264,10 @@ namespace Rock.Workflow.Action
             Guid? personAliasGuid = identifier.AsGuidOrNull();
             if ( personAliasGuid.HasValue )
             {
-                var personAlias = new PersonAliasService( rockContext ).Get( personAliasGuid.Value );
-                if ( personAlias != null )
+                personAliasId = new PersonAliasService( rockContext ).GetId( personAliasGuid.Value );
+                if ( personAliasId.HasValue )
                 {
-                    personAliasId = personAlias.Id;
+                    return personAliasId.Value;
                 }
             }
 
