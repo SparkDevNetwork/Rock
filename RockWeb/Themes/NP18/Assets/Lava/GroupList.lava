@@ -1,10 +1,11 @@
 <div class="section mediumgray" style="margin-bottom: 30px">
 	<div class="container">
 		<div class="row">
-  	  <div class="col-md-12">
+  	  		<div class="col-md-12">
 				<div id="groupslist" class="css-grid">
 			    {% for Group in Groups %}
-				    	<a href="{{ LinkedPages.GroupDetailPage }}/{{ Group.Id }}" class="css-grid-item group-item-link">
+						{% assign GroupId = Group.Id %}
+				    	<a href="{[ FormatLink url:'{{ LinkedPages.GroupDetailPage }}' keys:'GroupId' ]}" class="css-grid-item group-item-link">
 				        <h3 class="group-name">{{ Group.Name }}</h3>
 				        <p class="group-schedule">
 				            {{ Group.Schedule.FriendlyScheduleText }}
@@ -15,7 +16,7 @@
 			        </a>
 			    {% endfor %}
 				</div>
-  	  </div>
+	  	  	</div>
 		</div>
-  </div>
+ 	</div>
 </div>

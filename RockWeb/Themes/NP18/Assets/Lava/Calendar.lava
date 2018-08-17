@@ -1,8 +1,12 @@
 
 {% assign Filter = '' | PageParameter:'filter' %}
+{% assign CalendarFilter = '' | PageParameter:'calendar' | AsInteger %}
 
 {% if Filter != '' %}
-	<div class="text-center"> <b>Filtered by:</b> {{ Filter }} </div>
+	<div class="text-center"> <b>Filtered by:</b> {{ Filter }} <a href="/events#events_list"><i class="fas fa-times"></i></a></div>
+{% endif %}
+{% if CalendarFilter != null %}
+	<div class="text-center"> <b>Filtered by Calendar:</b> {{ CalendarFilter }} <a href="/events#events_list"><i class="fas fa-times"></i></a></div>
 {% endif %}
 
 <div class="row">
@@ -17,6 +21,9 @@
  				{% if eventItemDate >= currentDate %}
 
 				  {% if Filter == '' or eventItemOccurrence.Name contains Filter %}
+
+				  {% assign calendarIds = eventItemOccurrence.EventItemOccurrence.EventItem.EventCalendarItems | Select:'EventCalendarId' %}
+				  {% if CalendarFilter == null or calendarIds contains CalendarFilter %}
 
 	 					{% if eventItemOccurrence.Date != current_start_day %}
 							{% if current_start_day != null %}
@@ -61,6 +68,7 @@
 	
 						{% assign current_start_day = eventItemOccurrence.Date %}
 		    		
+					{% endif %}
 					{% endif %}
 
 				{% endif %}

@@ -30,9 +30,13 @@
 		<div class="row">
 			<div class="col-md-6">
 			<h4>Group Details:</h4>
-			{% for attribute in Group.AttributeValues %}
-				{% if attribute.Value and attribute.Value != "" %}
-				<strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+
+			{{ Group | Attribute:'' }}
+			{% assign Attributes = Group | Property:'Attributes.Values' | Sort:'Order' %}
+			{% for Attribute in Attributes %}
+				{% assign Value = Group | Attribute:Attribute.Key %}
+				{% if Value != "" %}
+					<strong>{{ Attribute.Name }}:</strong> {{ Value }} <br />
 				{% endif %}
 			{% endfor %}
 			</div>
