@@ -536,7 +536,7 @@ namespace RockWeb.Blocks.Cms
                             // Remove any blank numbers
                             var phoneNumberService = new PhoneNumberService( rockContext );
                             foreach ( var phoneNumber in person.PhoneNumbers
-                                .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
+                                .Where( n => !n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
                                 .ToList() )
                             {
                                 History.EvaluateChange(
