@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Core
                 // Get the existing attributes for this entity type and qualifier value
                 var attributeService = new AttributeService( rockContext );
                 var regFieldService = new RegistrationTemplateFormFieldService( rockContext );
-                var attributes = attributeService.Get( entityTypeIdAttributeMatrix, "AttributeMatrixTemplateId", attributeMatrixTemplate.Id.ToString() );
+                var attributes = attributeService.GetByEntityTypeQualifier( entityTypeIdAttributeMatrix, "AttributeMatrixTemplateId", attributeMatrixTemplate.Id.ToString(), true );
 
                 // Delete any of those attributes that were removed in the UI
                 var selectedAttributeGuids = AttributesState.Select( a => a.Guid );
@@ -191,7 +191,6 @@ namespace RockWeb.Blocks.Core
 
                     attributeService.Delete( attr );
                     rockContext.SaveChanges();
-                    Rock.Web.Cache.AttributeCache.Flush( attr.Id );
                 }
 
                 // Update the Attributes that were assigned in the UI
@@ -199,8 +198,6 @@ namespace RockWeb.Blocks.Core
                 {
                     Helper.SaveAttributeEdits( attributeState, entityTypeIdAttributeMatrix, "AttributeMatrixTemplateId", attributeMatrixTemplate.Id.ToString(), rockContext );
                 }
-
-                Rock.Web.Cache.AttributeCache.FlushEntityAttributes();
             } );
 
             NavigateToParentPage();
@@ -258,7 +255,7 @@ namespace RockWeb.Blocks.Core
             ceFormattedLava.Text = attributeMatrixTemplate.FormattedLava;
 
             var attributeService = new AttributeService( rockContext );
-            AttributesState = attributeService.Get( new AttributeMatrixItem().TypeId, "AttributeMatrixTemplateId", attributeMatrixTemplate.Id.ToString() ).AsQueryable()
+            AttributesState = attributeService.GetByEntityTypeQualifier( new AttributeMatrixItem().TypeId, "AttributeMatrixTemplateId", attributeMatrixTemplate.Id.ToString(), true ).AsQueryable()
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
                 .ToList();
@@ -325,7 +322,7 @@ namespace RockWeb.Blocks.Core
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtAttributes.ActionTitle = ActionTitle.Add( "attribute for matrix attributes that use matrix template " + tbName.Text );
             }
             else
@@ -338,7 +335,7 @@ namespace RockWeb.Blocks.Core
             AttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
             edtAttributes.ReservedKeyNames = reservedKeyNames.ToList();
 
-            edtAttributes.ExcludedFieldTypes = new FieldTypeCache[] { FieldTypeCache.Read<MatrixFieldType>() };
+            edtAttributes.ExcludedFieldTypes = new FieldTypeCache[] { FieldTypeCache.Get<MatrixFieldType>() };
             edtAttributes.SetAttributeProperties( attribute, typeof( AttributeMatrixTemplate ) );
 
             dlgAttribute.Show();

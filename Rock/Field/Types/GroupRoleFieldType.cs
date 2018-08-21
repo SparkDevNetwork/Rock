@@ -178,17 +178,20 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            GroupRolePicker groupRolePicker = control as GroupRolePicker;
-            if ( groupRolePicker != null )
+            var picker = control as GroupRolePicker;
+            if ( picker != null )
             {
-                if ( groupRolePicker.GroupRoleId.HasValue )
+                int? itemId = picker.GroupRoleId;
+                Guid? itemGuid = null;
+                if ( itemId.HasValue )
                 {
-                    var groupRole = new GroupTypeRoleService( new RockContext() ).Get( groupRolePicker.GroupRoleId.Value );
-                    if ( groupRole != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        return groupRole.Guid.ToString();
+                        itemGuid = new GroupTypeRoleService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
+
+                return itemGuid?.ToString();
             }
 
             return null;
@@ -202,21 +205,20 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            GroupRolePicker groupRolePicker = control as GroupRolePicker;
-            if ( groupRolePicker != null )
+            var picker = control as GroupRolePicker;
+            if ( picker != null )
             {
-                Guid guid = Guid.Empty;
-                if ( Guid.TryParse( value, out guid ) )
+                int? itemId = null;
+                Guid? itemGuid = value.AsGuidOrNull();
+                if ( itemGuid.HasValue )
                 {
-                    var groupRole = new GroupTypeRoleService( new RockContext() ).Get( guid );
-                    if ( groupRole != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        groupRolePicker.GroupRoleId = groupRole.Id;
-                        return;
+                        itemId = new GroupTypeRoleService( rockContext ).Queryable().Where( a => a.Guid == itemGuid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
                     }
                 }
 
-                groupRolePicker.GroupRoleId = null;
+                picker.GroupRoleId = itemId;
             }
         }
 

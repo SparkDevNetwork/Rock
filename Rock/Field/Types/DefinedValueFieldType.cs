@@ -29,8 +29,8 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a dropdown list of Defined Values for a specific Defined Type
-    /// Stored as either a single DefinedValue.Guid or a comma-delimited list of DefinedValue.Guids (if AllowMultiple)
+    /// Field Type used to display a dropdown list of Defined Values for a specific Defined Type.
+    /// Stored as either a single DefinedValue.Guid or a comma-delimited list of DefinedValue.Guids (if AllowMultiple).
     /// </summary>
     [Serializable]
     public class DefinedValueFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType
@@ -43,7 +43,7 @@ namespace Rock.Field.Types
         private const string ENHANCED_SELECTION_KEY = "enhancedselection";
 
         /// <summary>
-        /// Returns a list of the configuration keys
+        /// Returns a list of the configuration keys.
         /// </summary>
         /// <returns></returns>
         public override List<string> ConfigurationKeys()
@@ -236,7 +236,7 @@ namespace Rock.Field.Types
                 var names = new List<string>();
                 foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                 {
-                    var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                    var definedValue = DefinedValueCache.Get( guid );
                     if ( definedValue != null )
                     {
                         names.Add( useDescription ? definedValue.Description : definedValue.Value );
@@ -272,7 +272,7 @@ namespace Rock.Field.Types
 
                 // if there are multiple defined values, just pick the first one as the sort value
                 Guid guid = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList().FirstOrDefault();
-                var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                var definedValue = DefinedValueCache.Get( guid );
                 if ( definedValue != null )
                 {
                     // sort by Order then Description/Value (using a padded string)
@@ -305,7 +305,7 @@ namespace Rock.Field.Types
 
             if ( definedTypeId.HasValue )
             {
-                var definedType = DefinedTypeCache.Read( definedTypeId.Value );
+                var definedType = DefinedTypeCache.Get( definedTypeId.Value );
 
             }
             if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean() )
@@ -357,7 +357,7 @@ namespace Rock.Field.Types
 
             foreach ( int definedValueId in definedValueIdList )
             {
-                var definedValue = Rock.Web.Cache.DefinedValueCache.Read( definedValueId );
+                var definedValue = DefinedValueCache.Get( definedValueId );
                 if ( definedValue != null )
                 {
                     guids.Add( definedValue.Guid );
@@ -382,7 +382,7 @@ namespace Rock.Field.Types
                     var ids = new List<string>();
                     foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                     {
-                        var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                        var definedValue = DefinedValueCache.Get( guid );
                         if ( definedValue != null )
                         {
                             ids.Add( definedValue.Id.ToString() );
@@ -552,7 +552,7 @@ namespace Rock.Field.Types
             var values = new List<string>();
             foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
             {
-                var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                var definedValue = DefinedValueCache.Get( guid );
                 if ( definedValue != null )
                 {
                     values.Add( useDescription ? definedValue.Description : definedValue.Value );
@@ -620,7 +620,7 @@ namespace Rock.Field.Types
                     // if this is not for an attribute value, look up the id for the defined value
                     if ( propertyName != "Value" || propertyType != typeof( string ) )
                     {
-                        var dv = DefinedValueCache.Read( value.AsGuid() );
+                        var dv = DefinedValueCache.Get( value.AsGuid() );
                         tempValue = dv != null ? dv.Id.ToString() : string.Empty;
                     }
 
@@ -699,18 +699,36 @@ namespace Rock.Field.Types
                     }
                 }
 
-                return comparison;
+                if ( comparison == null )
+                {
+                    // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
+                    return new NoAttributeFilterExpression();
+                }
+                else
+                {
+                    return comparison;
+                }
             }
 
             selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-            if ( selectedValues.Any() )
+            int valueCount = selectedValues.Count();
+            MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+            if ( valueCount == 0 )
             {
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
+                return new NoAttributeFilterExpression();
+            }
+            else if ( valueCount == 1 )
+            {
+                // only one value, so do an Equal instead of Contains which might compile a little bit faster
+                ComparisonType comparisonType = ComparisonType.EqualTo;
+                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( selectedValues[0] ) );
+            }
+            else
+            {
                 ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
                 return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
             }
-
-            return null;
         }
 
         #endregion
@@ -726,7 +744,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = DefinedValueCache.Read( guid );
+            var item = DefinedValueCache.Get( guid );
             return item != null ? item.Id : (int?)null;
         }
 
@@ -741,7 +759,7 @@ namespace Rock.Field.Types
             DefinedValueCache item = null;
             if ( id.HasValue )
             {
-                item = DefinedValueCache.Read( id.Value );
+                item = DefinedValueCache.Get( id.Value );
             }
 
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;

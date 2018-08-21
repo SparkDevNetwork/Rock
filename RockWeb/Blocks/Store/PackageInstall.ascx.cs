@@ -309,7 +309,7 @@ namespace RockWeb.Blocks.Store
                             }
                             catch ( Exception ex )
                             {
-                                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Modifing Files</strong> An error occurred while modifing files. <br><em>Error: {0}</em></div>", ex.Message );
+                                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Modifying Files</strong> An error occurred while modifying files. <br><em>Error: {0}</em></div>", ex.Message );
                                 return;
                             }
                             
@@ -325,7 +325,7 @@ namespace RockWeb.Blocks.Store
                     InstalledPackageService.SaveInstall( purchaseResponse.PackageId, purchaseResponse.PackageName, installStep.VersionId, installStep.VersionLabel, purchaseResponse.VendorId, purchaseResponse.VendorName, purchaseResponse.InstalledBy );
                 
                     // Clear all cached items
-                    Rock.Web.Cache.RockMemoryCache.ClearAllCachedItems();
+                    RockCache.ClearAllCachedItems();
 
                     // show result message
                     lMessages.Text = string.Format( "<div class='alert alert-success margin-t-md'><strong>Package Installed</strong><p>{0}</p>", installStep.PostInstallInstructions );

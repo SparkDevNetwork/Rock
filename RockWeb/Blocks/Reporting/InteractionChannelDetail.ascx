@@ -34,7 +34,7 @@
 
                 <asp:Panel id="pnlEditDetails" runat="server" Visible="false">
 
-                    <asp:ValidationSummary ID="valChannel" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="valChannel" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                     <div class="row">
                         <div class="col-md-6">
@@ -43,6 +43,7 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:NumberBox ID="nbRetentionDuration" runat="server" Label="Retention Duration" NumberType="Integer" />
+                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
                         </div>
                     </div>
 

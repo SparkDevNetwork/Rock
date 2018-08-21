@@ -1,14 +1,11 @@
 /*
 <doc>
 	<summary>
- 		This view returns distinct attendance dates for a person and group type
+ 		This view returns attendance records in a pre-version 8 format 
+		(It is provided as a way for backward compatability so that scripts that were referencing the Attendance table
+		prior to adding AttendanceOccurrence, can be easily modified to use this view instead.
 	</summary>
 
-	<returns>
-		* GroupTypeId
-        * PersonId
-		* SundayDate
-	</returns>
 	<remarks>	
 	</remarks>
 	<code>
@@ -22,17 +19,18 @@ AS
 
 	SELECT DISTINCT
         A.[Id],
-        A.[GroupId],
-        A.[ScheduleId],
+        O.[GroupId],
+        O.[ScheduleId],
         A.[CampusId],
-        A.[LocationId],
+        O.[LocationId],
         G.[Name] AS [GroupName],
 		G.[GroupTypeId],		
 		PA.[PersonId],
 		A.[StartDateTime],
-		CONVERT( date, [StartDateTime] ) AS [StartDate],
-		DATEADD( day, ( 7 - ( ( DATEDIFF( day, CONVERT( datetime, '19000101', 112 ), [StartDateTime] ) % 7 ) + 1 ) ), CONVERT( date, [StartDateTime] ) ) AS [SundayDate]
+		O.[OccurrenceDate] AS [StartDate],
+		O.[SundayDate]
 	FROM [Attendance] A
+	INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 	INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
-	INNER JOIN [Group] G ON G.[Id] = A.[GroupId]
+	INNER JOIN [Group] G ON G.[Id] = O.[GroupId]
 	AND A.[DidAttend] = 1

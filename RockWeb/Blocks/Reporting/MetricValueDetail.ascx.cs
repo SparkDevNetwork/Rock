@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Reporting
                 {
                     if ( metricPartition.EntityTypeId.HasValue )
                     {
-                        var entityTypeCache = EntityTypeCache.Read( metricPartition.EntityTypeId.Value );
+                        var entityTypeCache = EntityTypeCache.Get( metricPartition.EntityTypeId.Value );
                         if ( entityTypeCache != null && entityTypeCache.SingleValueFieldType != null )
                         {
                             var fieldType = entityTypeCache.SingleValueFieldType;
@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.Reporting
             // Get EntityId from EntityType UI controls
             foreach ( var metricPartition in metricValue.Metric.MetricPartitions )
             {
-                var metricPartitionEntityType = EntityTypeCache.Read( metricPartition.EntityTypeId ?? 0 );
+                var metricPartitionEntityType = EntityTypeCache.Get( metricPartition.EntityTypeId ?? 0 );
                 var controlId = string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id );
                 Control entityTypeEditControl = phMetricValuePartitions.FindControl( controlId );
                 var metricValuePartition = metricValue.MetricValuePartitions.FirstOrDefault( a => a.MetricPartitionId == metricPartition.Id );

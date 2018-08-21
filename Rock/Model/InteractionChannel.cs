@@ -22,20 +22,20 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
+using Rock.Web.Cache;
 using Rock.Data;
 
 namespace Rock.Model
 {
 
     /// <summary>
-    /// Represents a Interation Channel.
+    /// Represents a Interaction Channel.
     /// </summary>
     [RockDomain( "Core" )]
     [NotAudited]
     [Table( "InteractionChannel" )]
     [DataContract]
-    public partial class InteractionChannel : Model<InteractionChannel>
+    public partial class InteractionChannel : Model<InteractionChannel>, IHasActiveFlag, ICacheable
     {
 
         #region Entity Properties
@@ -202,6 +202,22 @@ namespace Rock.Model
         [DataMember]
         public bool UsesSession { get; set; }
 
+        /// <summary>
+        /// Gets or sets a flag indicating if this is an active group. This value is required.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this group is active, otherwise <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        [Previewable]
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+
+        private bool _isActive = true;
 
         #endregion
 
@@ -244,9 +260,30 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            Web.Cache.InteractionChannelCache.Flush( this.Id );
-
             base.PostSaveChanges( dbContext );
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return InteractionChannelCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            InteractionChannelCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion

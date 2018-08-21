@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Connection
             gWorkflows.GridRebind += gWorkflows_GridRebind;
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the connection opportunities! Are you sure you wish to continue with the delete?');", ConnectionType.FriendlyTypeName );
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ConnectionType ) ).Id;
+            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ConnectionType ) ).Id;
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upConnectionType );
@@ -209,6 +209,26 @@ namespace RockWeb.Blocks.Connection
             return breadCrumbs;
         }
 
+        /// <summary>
+        /// Makes a duplicate of a Connection Type
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCopy_Click( object sender, EventArgs e )
+        {
+
+            int newConnectionTypeId = 0;
+
+            using ( RockContext rockContext = new RockContext() )
+            {
+                ConnectionTypeService connectionTypeService = new ConnectionTypeService( rockContext );
+
+                newConnectionTypeId = connectionTypeService.Copy( hfConnectionTypeId.Value.AsInteger() );
+            }
+
+            ConnectionWorkflowService.RemoveCachedTriggers();
+            modalCopy.Show();
+        }
         #endregion
 
         #region Events
@@ -262,7 +282,7 @@ namespace RockWeb.Blocks.Connection
                     connectionTypeService.Delete( connectionType );
                     rockContext.SaveChanges();
 
-                    ConnectionWorkflowService.FlushCachedTriggers();
+                    ConnectionWorkflowService.RemoveCachedTriggers();
                 }
             }
 
@@ -346,6 +366,7 @@ namespace RockWeb.Blocks.Connection
                     }
 
                     connectionType.Name = tbName.Text;
+                    connectionType.IsActive = cbActive.Checked;
                     connectionType.Description = tbDescription.Text;
                     connectionType.IconCssClass = tbIconCssClass.Text;
                     connectionType.DaysUntilRequestIdle = nbDaysUntilRequestIdle.Text.AsInteger();
@@ -409,7 +430,7 @@ namespace RockWeb.Blocks.Connection
 
                         /* Save Attributes */
                         string qualifierValue = connectionType.Id.ToString();
-                        SaveAttributes( new ConnectionOpportunity().TypeId, "ConnectionTypeId", qualifierValue, AttributesState, rockContext );
+                        Helper.SaveAttributeEdits( AttributesState, new ConnectionOpportunity().TypeId, "ConnectionTypeId", qualifierValue, rockContext );
 
                         connectionType = connectionTypeService.Get( connectionType.Id );
                         if ( connectionType != null )
@@ -431,7 +452,7 @@ namespace RockWeb.Blocks.Connection
                         }
                     } );
 
-                    ConnectionWorkflowService.FlushCachedTriggers();
+                    ConnectionWorkflowService.RemoveCachedTriggers();
 
                     var qryParams = new Dictionary<string, string>();
                     qryParams["ConnectionTypeId"] = connectionType.Id.ToString();
@@ -523,7 +544,7 @@ namespace RockWeb.Blocks.Connection
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
             }
             else
             {
@@ -533,7 +554,7 @@ namespace RockWeb.Blocks.Connection
             edtAttributes.ActionTitle = ActionTitle.Edit( "attribute for Opportunities of Connection type " + tbName.Text );
             var reservedKeyNames = new List<string>();
             AttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
-            edtAttributes.AllowSearchVisible = true; 
+            edtAttributes.AllowSearchVisible = true;
             edtAttributes.ReservedKeyNames = reservedKeyNames.ToList();
             edtAttributes.SetAttributeProperties( attribute, typeof( ConnectionType ) );
 
@@ -671,40 +692,6 @@ namespace RockWeb.Blocks.Connection
             attributeList = attributeList.OrderBy( a => a.Order ).ToList();
             int order = 0;
             attributeList.ForEach( a => a.Order = order++ );
-        }
-
-        /// <summary>
-        /// Saves the attributes.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="qualifierColumn">The qualifier column.</param>
-        /// <param name="qualifierValue">The qualifier value.</param>
-        /// <param name="viewStateAttributes">The view state attributes.</param>
-        /// <param name="attributeService">The attribute service.</param>
-        /// <param name="qualifierService">The qualifier service.</param>
-        /// <param name="categoryService">The category service.</param>
-        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<Attribute> viewStateAttributes, RockContext rockContext )
-        {
-            // Get the existing attributes for this entity type and qualifier value
-            var attributeService = new AttributeService( rockContext );
-            var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
-
-            // Delete any of those attributes that were removed in the UI
-            var selectedAttributeGuids = viewStateAttributes.Select( a => a.Guid );
-            foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
-            {
-                attributeService.Delete( attr );
-                rockContext.SaveChanges();
-                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
-            }
-
-            // Update the Attributes that were assigned in the UI
-            foreach ( var attributeState in viewStateAttributes )
-            {
-                var attribute = Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
-            }
-
-            AttributeCache.FlushEntityAttributes();
         }
 
         #endregion
@@ -1005,10 +992,10 @@ namespace RockWeb.Blocks.Connection
             }
             try
             {
-                connectionWorkflow.WorkflowType = new WorkflowTypeService( new RockContext() ).Get( ddlWorkflowType.SelectedValueAsId().Value );
+                connectionWorkflow.WorkflowType = new WorkflowTypeService( new RockContext() ).Get( wpWorkflowType.SelectedValueAsId().Value );
             }
             catch { }
-            connectionWorkflow.WorkflowTypeId = ddlWorkflowType.SelectedValueAsId().Value;
+            connectionWorkflow.WorkflowTypeId = wpWorkflowType.SelectedValueAsId().Value;
             connectionWorkflow.TriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
             connectionWorkflow.QualifierValue = String.Format( "|{0}|{1}|", ddlPrimaryQualifier.SelectedValue, ddlSecondaryQualifier.SelectedValue );
             connectionWorkflow.ConnectionTypeId = 0;
@@ -1069,45 +1056,14 @@ namespace RockWeb.Blocks.Connection
             ConnectionWorkflow connectionWorkflow = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( connectionWorkflowGuid ) );
             if ( connectionWorkflow != null )
             {
-                ddlWorkflowType.Items.Clear();
-                ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
-
-                foreach ( var workflowType in new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name ) )
-                {
-                    if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                    {
-                        ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
-                    }
-                }
-
-                if ( connectionWorkflow.WorkflowTypeId == null )
-                {
-                    ddlWorkflowType.SelectedValue = "0";
-                }
-                else
-                {
-                    ddlWorkflowType.SelectedValue = connectionWorkflow.WorkflowTypeId.ToString();
-                }
-
+                wpWorkflowType.SetValue( connectionWorkflow.WorkflowTypeId );
                 ddlTriggerType.SelectedValue = connectionWorkflow.TriggerType.ConvertToInt().ToString();
             }
-            else
-            {
-                ddlWorkflowType.Items.Clear();
-                ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
 
-                foreach ( var workflowType in new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name ) )
-                {
-                    if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                    {
-                        ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
-                    }
-                }
-            }
 
             hfAddConnectionWorkflowGuid.Value = connectionWorkflowGuid.ToString();
-            UpdateTriggerQualifiers();
             ShowDialog( "ConnectionWorkflows", true );
+            UpdateTriggerQualifiers();
         }
 
         /// <summary>
@@ -1366,6 +1322,7 @@ namespace RockWeb.Blocks.Connection
 
             // General
             tbName.Text = connectionType.Name;
+            cbActive.Checked = connectionType.IsActive;
             tbDescription.Text = connectionType.Description;
             tbIconCssClass.Text = connectionType.IconCssClass;
             nbDaysUntilRequestIdle.Text = connectionType.DaysUntilRequestIdle.ToString();
@@ -1478,7 +1435,7 @@ namespace RockWeb.Blocks.Connection
         {
             var attributeService = new AttributeService( rockContext );
             AttributesState = attributeService
-                .GetByEntityTypeId( new ConnectionOpportunity().TypeId ).AsQueryable()
+                .GetByEntityTypeId( new ConnectionOpportunity().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( connectionType.Id.ToString() ) )

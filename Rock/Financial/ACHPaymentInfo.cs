@@ -82,7 +82,7 @@ namespace Rock.Financial
         /// </summary>
         public override DefinedValueCache CurrencyTypeValue
         {
-            get { return DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ); }
+            get { return DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ); }
         }
 
     }

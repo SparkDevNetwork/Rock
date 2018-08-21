@@ -15,10 +15,9 @@
 // </copyright>
 //
 using System.Collections.Generic;
-
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Extension;
-using Rock.Web.Cache;
 
 namespace Rock.Security
 {
@@ -46,6 +45,14 @@ namespace Rock.Security
         public abstract bool SendRequest( RockContext rockContext, Rock.Model.Workflow workflow, 
             AttributeCache personAttribute, AttributeCache ssnAttribute, AttributeCache requestTypeAttribute, 
             AttributeCache billingCodeAttribute, out List<string> errorMessages );
+
+        /// <summary>
+        /// Gets the URL to the background check report.
+        /// Note: Also used by GetBackgroundCheck.ashx.cs, ProcessRequest( HttpContext context )
+        /// </summary>
+        /// <param name="reportKey">The report key.</param>
+        /// <returns></returns>
+        public abstract string GetReportUrl( string reportKey );
     }
 
 }

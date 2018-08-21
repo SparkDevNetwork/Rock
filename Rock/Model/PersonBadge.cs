@@ -20,7 +20,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.PersonProfile;
 
@@ -32,7 +32,7 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "PersonBadge" )]
     [DataContract]
-    public partial class PersonBadge : Model<PersonBadge>, IOrdered
+    public partial class PersonBadge : Model<PersonBadge>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -101,6 +101,29 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return PersonBadgeCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            PersonBadgeCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion

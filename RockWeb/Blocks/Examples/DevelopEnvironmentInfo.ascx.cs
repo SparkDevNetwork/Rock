@@ -121,13 +121,13 @@ Path: {2}",
             foreach( var blockType in new BlockTypeService(rockContext).Queryable().AsNoTracking().ToList())
             {
                 System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                var blockTypeCache = BlockTypeCache.Read( blockType.Guid );
+                var blockTypeCache = BlockTypeCache.Get( blockType.Guid );
                 if ( !blockTypeCache.IsInstancePropertiesVerified )
                 {
                     var blockControl = this.Page.LoadControl( blockTypeCache.Path ) as RockBlock;
-                    int? blockEntityTypeId = EntityTypeCache.Read( typeof( Block ) ).Id;
+                    int? blockEntityTypeId = EntityTypeCache.Get( typeof( Block ) ).Id;
                     Rock.Attribute.Helper.UpdateAttributes( blockControl.GetType(), blockEntityTypeId, "BlockTypeId", blockType.Id.ToString(), rockContext );
-                    blockTypeCache.IsInstancePropertiesVerified = true;
+                    blockTypeCache.MarkInstancePropertiesVerified( true );
                     System.Diagnostics.Debug.WriteLine( string.Format( "[{1}ms] BlockType {0}", blockTypeCache.Path, stopwatch.Elapsed.TotalMilliseconds ) );
                 }
 

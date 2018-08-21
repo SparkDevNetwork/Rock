@@ -266,7 +266,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            // add additional MergeFields for Properties of the dataitem that aren't already already a MergeField created from the ColumnHeaderText
+            // add additional MergeFields for Properties of the dataitem that aren't already a MergeField created from the ColumnHeaderText
             foreach ( var itemPropInfo in dataItemProperties )
             {
                 var mergeFieldName = itemPropInfo.Name;

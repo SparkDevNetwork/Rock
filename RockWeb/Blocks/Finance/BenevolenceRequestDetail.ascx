@@ -14,7 +14,7 @@
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
-                <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 
                 <div class="">
                     <div class="row">
@@ -116,8 +116,8 @@
                     </Rock:Grid>
                 </Rock:PanelWidget>
 
-                <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
-                <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
+                <asp:LinkButton ID="lbSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
+                <asp:LinkButton ID="lbCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                 <asp:LinkButton ID="lbPrint" runat="server" Text="<i class='fa fa-print'></i>" CssClass="btn btn-sm btn-default pull-right" OnClick="lbPrint_Click" />
             </div>
 
@@ -125,7 +125,7 @@
 
         <Rock:ModalDialog ID="mdAddResult" runat="server" ScrollbarEnabled="false" SaveButtonText="Add" OnSaveClick="btnAddResults_Click" Title="Benevolence Request Result" ValidationGroup="valResult">
             <Content>
-                <asp:ValidationSummary ID="valResultsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="valResult" />
+                <asp:ValidationSummary ID="valResultsSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="valResult" />
                 <asp:HiddenField ID="hfInfoGuid" runat="server" />
                 <div class="row">
                     <div class="col-md-6">

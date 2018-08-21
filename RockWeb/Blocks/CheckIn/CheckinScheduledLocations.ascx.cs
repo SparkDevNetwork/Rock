@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.CheckIn
             var scheduleQry = scheduleService.Queryable().Where( a => a.CheckInStartOffsetMinutes != null );
 
             // limit Schedules to the Category from the Filter
-            int scheduleCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid() ).Id;
+            int scheduleCategoryId = CategoryCache.Get( Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid() ).Id;
 
             scheduleQry = scheduleQry.Where( a => a.CategoryId == scheduleCategoryId );
 
@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.CheckIn
                 dataTable.Rows.Add( dataRow );
             }
 
-            gGroupLocationSchedule.EntityTypeId = EntityTypeCache.Read<GroupLocation>().Id;
+            gGroupLocationSchedule.EntityTypeId = EntityTypeCache.Get<GroupLocation>().Id;
             gGroupLocationSchedule.DataSource = dataTable;
             gGroupLocationSchedule.DataBind();
         }
@@ -319,7 +319,7 @@ namespace RockWeb.Blocks.CheckIn
 
                 if ( schedulesChanged )
                 {
-                    KioskDevice.FlushAll();
+                    KioskDevice.Clear();
                 }
             }
 

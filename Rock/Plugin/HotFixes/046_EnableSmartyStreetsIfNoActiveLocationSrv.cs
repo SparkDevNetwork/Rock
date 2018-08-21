@@ -34,60 +34,60 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            Sql( @"-- First see if any location services are enabled
-                DECLARE @EnabledLocationServicesCount INT =
-	                (SELECT COUNT(*)
-	                FROM [EntityType] t
-	                JOIN [Attribute] a on t.[Id] = a.[EntityTypeId]
-	                JOIN [AttributeValue] v on a.[Id] = v.[AttributeId]
-	                WHERE t.[Name] LIKE 'Rock.Address.%'
-		                AND a.[Key] = 'Active'
-		                AND v.[Value] = 'True')
+            //Sql( @"-- First see if any location services are enabled
+            //    DECLARE @EnabledLocationServicesCount INT =
+	           //     (SELECT COUNT(*)
+	           //     FROM [EntityType] t
+	           //     JOIN [Attribute] a on t.[Id] = a.[EntityTypeId]
+	           //     JOIN [AttributeValue] v on a.[Id] = v.[AttributeId]
+	           //     WHERE t.[Name] LIKE 'Rock.Address.%'
+		          //      AND a.[Key] = 'Active'
+		          //      AND v.[Value] = 'True')
 
-                -- If nothing is enabled then find the SmartyStreets AttributeValue and set it to True
-                IF (@EnabledLocationServicesCount = 0)
-                BEGIN
-	                DECLARE @SmartyStreetsAttributeValueId INT =
-		                (SELECT v.[Id]
-		                FROM [EntityType] t
-		                JOIN [Attribute] a ON t.[Id] = a.[EntityTypeId]
-		                JOIN [AttributeValue] v ON a.[Id] = v.[AttributeId]
-		                WHERE t.[Name] = 'Rock.Address.SmartyStreets'
-			                AND a.[Key] = 'Active')
+            //    -- If nothing is enabled then find the SmartyStreets AttributeValue and set it to True
+            //    IF (@EnabledLocationServicesCount = 0)
+            //    BEGIN
+	           //     DECLARE @SmartyStreetsAttributeValueId INT =
+		          //      (SELECT v.[Id]
+		          //      FROM [EntityType] t
+		          //      JOIN [Attribute] a ON t.[Id] = a.[EntityTypeId]
+		          //      JOIN [AttributeValue] v ON a.[Id] = v.[AttributeId]
+		          //      WHERE t.[Name] = 'Rock.Address.SmartyStreets'
+			         //       AND a.[Key] = 'Active')
 
-	                -- If an attibute value already exists then update
-	                IF (@SmartyStreetsAttributeValueId > 0)
-	                BEGIN
-		                UPDATE [AttributeValue]
-		                SET [Value] = 'True'
-		                WHERE [Id] = @SmartyStreetsAttributeValueId
-	                END
-	                ELSE
-	                BEGIN
-	                -- Otherwise insert
-		                DECLARE @SmartyStreetsEntityId INT =
-			                (SELECT [Id]
-			                FROM [EntityType]
-			                WHERE [Name] = 'Rock.Address.SmartyStreets')
+	           //     -- If an attibute value already exists then update
+	           //     IF (@SmartyStreetsAttributeValueId > 0)
+	           //     BEGIN
+		          //      UPDATE [AttributeValue]
+		          //      SET [Value] = 'True'
+		          //      WHERE [Id] = @SmartyStreetsAttributeValueId
+	           //     END
+	           //     ELSE
+	           //     BEGIN
+	           //     -- Otherwise insert
+		          //      DECLARE @SmartyStreetsEntityId INT =
+			         //       (SELECT [Id]
+			         //       FROM [EntityType]
+			         //       WHERE [Name] = 'Rock.Address.SmartyStreets')
 
-		                DECLARE @SmartyStreetsAttributeId INT =
-			                (SELECT [Id]
-			                FROM [Attribute]
-			                WHERE [EntityTypeId] = @SmartyStreetsEntityId
-					                AND [Key] = 'Active')
+		          //      DECLARE @SmartyStreetsAttributeId INT =
+			         //       (SELECT [Id]
+			         //       FROM [Attribute]
+			         //       WHERE [EntityTypeId] = @SmartyStreetsEntityId
+					       //         AND [Key] = 'Active')
 
-		                IF (@SmartyStreetsAttributeId > 0)
-		                BEGIN
-			                INSERT INTO [AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
-			                VALUES (
-				                0 --[IsSystem]
-				                , @SmartyStreetsAttributeId --[AttributeId]
-				                , 0 --[EntityId]
-				                , 'True' --[Value]
-				                , NEWID()) --[Guid]
-		                END
-	                END
-                END" );
+		          //      IF (@SmartyStreetsAttributeId > 0)
+		          //      BEGIN
+			         //       INSERT INTO [AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
+			         //       VALUES (
+				        //        0 --[IsSystem]
+				        //        , @SmartyStreetsAttributeId --[AttributeId]
+				        //        , 0 --[EntityId]
+				        //        , 'True' --[Value]
+				        //        , NEWID()) --[Guid]
+		          //      END
+	           //     END
+            //    END" );
         }
 
         /// <summary>

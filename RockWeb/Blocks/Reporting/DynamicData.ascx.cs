@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.Reporting
         {
             if ( _updatePage )
             {
-                var pageCache = PageCache.Read( RockPage.PageId );
+                var pageCache = PageCache.Get( RockPage.PageId );
                 if ( pageCache != null &&
                     ( pageCache.PageTitle != tbName.Text || pageCache.Description != tbDesc.Text ) )
                 {
@@ -212,9 +212,8 @@ namespace RockWeb.Blocks.Reporting
                     page.BrowserTitle = tbName.Text;
                     page.Description = tbDesc.Text;
                     rockContext.SaveChanges();
-
-                    Rock.Web.Cache.PageCache.Flush( page.Id );
-                    pageCache = PageCache.Read( RockPage.PageId );
+                    
+                    pageCache = PageCache.Get( RockPage.PageId );
 
                     var breadCrumb = RockPage.BreadCrumbs.Where( c => c.Url == RockPage.PageReference.BuildUrl() ).FirstOrDefault();
                     if ( breadCrumb != null )
@@ -380,7 +379,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( _updatePage )
             {
-                var pageCache = PageCache.Read( RockPage.PageId );
+                var pageCache = PageCache.Get( RockPage.PageId );
                 tbName.Text = pageCache != null ? pageCache.PageTitle : string.Empty;
                 tbDesc.Text = pageCache != null ? pageCache.Description : string.Empty;
             }
@@ -509,6 +508,14 @@ namespace RockWeb.Blocks.Reporting
                         else
                         {
                             dataSet = GetData( out errorMessage );
+                        }
+
+                        if (dataSet == null || dataSet.Tables == null)
+                        {
+
+                            nbError.Text = errorMessage;
+                            nbError.Visible = true;
+                            return;
                         }
                          
                         foreach ( DataTable dataTable in dataSet.Tables )

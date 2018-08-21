@@ -21,7 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
-
+using Rock.Web.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -35,7 +35,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "PageContext" )]
     [DataContract]
-    public partial class PageContext : Model<PageContext>
+    public partial class PageContext : Model<PageContext>, ICacheable
     {
 
         #region Entity Properties
@@ -100,6 +100,30 @@ namespace Rock.Model
         public virtual Page Page { get; set; }
 
         #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            // PageCache has PageContexts that could get stale if PageContext is modified
+            PageCache.UpdateCachedEntity( this.PageId, System.Data.Entity.EntityState.Detached );
+        }
+
+        #endregion ICacheable
 
         #region Methods
 

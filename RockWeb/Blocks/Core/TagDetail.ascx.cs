@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Core
             _canConfigure = IsUserAuthorized( Authorization.EDIT );
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Group.FriendlyTypeName );
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Tag ) ).Id;
+            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Tag ) ).Id;
         }
 
         /// <summary>

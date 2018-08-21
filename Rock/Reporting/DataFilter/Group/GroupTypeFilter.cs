@@ -23,6 +23,7 @@ using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Group
@@ -109,7 +110,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var groupType = Rock.Web.Cache.GroupTypeCache.Read( selectionValues[0].AsGuid() );
+                var groupType = GroupTypeCache.Get( selectionValues[0].AsGuid() );
 
                 if ( groupType != null )
                 {

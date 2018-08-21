@@ -242,7 +242,7 @@ namespace Rock.Reporting.DataSelect.Group
 
                 Guid groupTypeGuid = selectionValues[1].AsGuid();
 
-                var groupType = GroupTypeCache.Read( groupTypeGuid );
+                var groupType = GroupTypeCache.Get( groupTypeGuid );
                 if ( groupType != null )
                 {
                     groupTypeId = groupType.Id;
@@ -362,7 +362,7 @@ namespace Rock.Reporting.DataSelect.Group
         /// <param name="groupTypeId">The group type identifier.</param>
         private void PopulateGroupRolesCheckList( int groupTypeId )
         {
-            var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeId );
+            var groupType = GroupTypeCache.Get( groupTypeId );
             if ( groupType != null )
             {
                 cblRole.Items.Clear();
@@ -405,7 +405,7 @@ namespace Rock.Reporting.DataSelect.Group
 
             int groupTypeId = groupTypePicker.SelectedValueAsId() ?? 0;
             Guid? groupTypeGuid = null;
-            var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeId );
+            var groupType = GroupTypeCache.Get( groupTypeId );
             if ( groupType != null )
             {
                 groupTypeGuid = groupType.Guid;
@@ -499,7 +499,7 @@ namespace Rock.Reporting.DataSelect.Group
 
                     Guid groupTypeGuid = selectionValues[1].AsGuid();
 
-                    var groupType = GroupTypeCache.Read( groupTypeGuid );
+                    var groupType = GroupTypeCache.Get( groupTypeGuid );
                     if ( groupType != null )
                     {
                         groupTypeId = groupType.Id;

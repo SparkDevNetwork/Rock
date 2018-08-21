@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -27,7 +28,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override Guid? GetGuid( int id )
         {
-            var cacheItem = Rock.Web.Cache.CampusCache.Read( id );
+            var cacheItem = CampusCache.Get( id );
             if ( cacheItem != null )
             {
                 return cacheItem.Guid;

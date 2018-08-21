@@ -122,12 +122,12 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     if ( Request.Form["__EVENTARGUMENT"] == "Wedge_Entry" )
                     {
-                        var dv = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_SCANNED_ID );
+                        var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_SCANNED_ID );
                         DoFamilySearch( dv, hfSearchEntry.Value );
                     }
                     else if ( Request.Form["__EVENTARGUMENT"] == "Family_Id_Search" )
                     {
-                        var dv = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_FAMILY_ID );
+                        var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_FAMILY_ID );
                         DoFamilySearch( dv, hfSearchEntry.Value );
                     }
                 }
@@ -206,7 +206,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !CurrentCheckInState.CheckIn.Families.Any() )
                 {
-                    maWarning.Show( string.Format( "<p>{0}</p>", GetAttributeValue( "NoMatchText" ) ), Rock.Web.UI.Controls.ModalAlertType.Warning );
+                    maWarning.Show( string.Format( "<p>{0}</p>", GetAttributeValue( "NoOptionCaption" ) ), Rock.Web.UI.Controls.ModalAlertType.Warning );
                 }
                 else
                 {
@@ -258,8 +258,15 @@ namespace RockWeb.Blocks.CheckIn
             else if ( !CurrentCheckInState.Kiosk.HasLocations( CurrentCheckInState.ConfiguredGroupTypes ) )
             {
                 DateTime activeAt = CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentCheckInState.ConfiguredGroupTypes ).Select( g => g.NextActiveTime ).Min();
-                lblActiveWhen.Text = activeAt.ToString( "o" );
-                pnlNotActiveYet.Visible = true;
+                if ( activeAt == DateTime.MaxValue )
+                {
+                    pnlClosed.Visible = true;
+                }
+                else
+                {
+                    lblActiveWhen.Text = activeAt.ToString( "o" ).Left( 27 );   // strip the timezone offset off of the string, so that countdown is displayed relative to kiosk's local time.
+                    pnlNotActiveYet.Visible = true;
+                }
             }
             else if ( !CurrentCheckInState.Kiosk.HasActiveLocations( CurrentCheckInState.ConfiguredGroupTypes ) )
             {
@@ -329,7 +336,7 @@ namespace RockWeb.Blocks.CheckIn
                     if ( !locations.Contains( location.Location.Id ) )
                     {
                         locations.Add( location.Location.Id );
-                        var locationAttendance = KioskLocationAttendance.Read( location.Location.Id );
+                        var locationAttendance = KioskLocationAttendance.Get( location.Location.Id );
 
                         if ( locationAttendance != null )
                         {
@@ -406,7 +413,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( userLogin != null && userLogin.EntityTypeId.HasValue )
             {
                 // make sure this is a PIN auth user login
-                var userLoginEntityType = EntityTypeCache.Read( userLogin.EntityTypeId.Value );
+                var userLoginEntityType = EntityTypeCache.Get( userLogin.EntityTypeId.Value );
                 if ( userLoginEntityType != null && userLoginEntityType.Id == pinAuth.EntityType.Id )
                 {
                     if ( pinAuth != null && pinAuth.IsActive )
@@ -489,13 +496,13 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         location.IsActive = true;
                         rockContext.SaveChanges();
-                        KioskDevice.FlushAll();
+                        KioskDevice.Clear();
                     }
                     else if ( e.CommandName == "Close" && location.IsActive )
                     {
                         location.IsActive = false;
                         rockContext.SaveChanges();
-                        KioskDevice.FlushAll();
+                        KioskDevice.Clear();
                     }
                 }
 
@@ -536,7 +543,7 @@ namespace RockWeb.Blocks.CheckIn
                 lLocationName.Text = locationDataItem.GetPropertyValue( "Name" ) as string;
 
                 var lLocationCount = e.Item.FindControl( "lLocationCount" ) as Literal;
-                lLocationCount.Text = KioskLocationAttendance.Read( (int)locationDataItem.GetPropertyValue( "LocationId" ) ).CurrentCount.ToString();
+                lLocationCount.Text = KioskLocationAttendance.Get( (int)locationDataItem.GetPropertyValue( "LocationId" ) ).CurrentCount.ToString();
             }
         }
 

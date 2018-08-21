@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Core
             string selectedDefinedType = GetAttributeValue("DefinedType");
             
             if (! string.IsNullOrWhiteSpace(selectedDefinedType)) {
-                var dtItem = DefinedTypeCache.Read( Guid.Parse(selectedDefinedType) );
+                var dtItem = DefinedTypeCache.Get( Guid.Parse(selectedDefinedType) );
 
                 foreach ( var item in dtItem.DefinedValues )
                 {

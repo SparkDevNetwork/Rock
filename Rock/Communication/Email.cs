@@ -42,22 +42,29 @@ namespace Rock.Communication
         public static void ProcessBounce( string email, BounceType bounceType, string message, DateTime bouncedDateTime )
         {
             // currently only processing hard bounces
-            if ( bounceType == BounceType.HardBounce )
+            if ( bounceType != BounceType.HardBounce )
             {
-                string bounceMessage = message.IsNotNullOrWhitespace() ? $" ({message})" : "";
+                return;
+            }
 
-                // get people who have those emails
+            string bounceMessage = message.IsNotNullOrWhiteSpace() ? $" ({message})" : "";
+
+            // get people who have those emails
+            PersonService personService = new PersonService( new RockContext() );
+            var peopleWithEmail = personService.GetByEmail( email ).Select( p => p.Id ).ToList();
+
+            foreach ( int personId in peopleWithEmail )
+            {
                 RockContext rockContext = new RockContext();
-                PersonService personService = new PersonService( rockContext );
+                personService = new PersonService( rockContext );
+                Person person = personService.Get( personId );
 
-                var peopleWithEmail = personService.GetByEmail( email );
-
-                foreach ( var person in peopleWithEmail )
+                if ( person.IsEmailActive == true )
                 {
                     person.IsEmailActive = false;
-                    person.EmailNote = $"Email experienced a {bounceType.Humanize()} on {bouncedDateTime.ToShortDateString()}{bounceMessage}.";
                 }
 
+                person.EmailNote = $"Email experienced a {bounceType.Humanize()} on {bouncedDateTime.ToShortDateString()}{bounceMessage}.";
                 rockContext.SaveChanges();
             }
         }

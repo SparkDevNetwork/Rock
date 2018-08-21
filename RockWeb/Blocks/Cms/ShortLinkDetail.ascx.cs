@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Crm
 
                     if ( errors.Any() )
                     {
-                        nbError.Text = "Please Correct the Following<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
+                        nbError.Text = "Please correct the following:<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
                         nbError.Visible = true;
                         return;
                     }
@@ -322,7 +322,7 @@ namespace RockWeb.Blocks.Crm
                     .OrderBy( s => s.Name )
                     .Select( a => a.Id )
                     .ToList()
-                    .Select( a => SiteCache.Read( a ) ) )
+                    .Select( a => SiteCache.Get( a ) ) )
                 {
                     ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
                 }

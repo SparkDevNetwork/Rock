@@ -69,6 +69,15 @@ namespace Rock.CheckIn
         public string SearchValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the person who was identified as the person doing the check-in.
+        /// </summary>
+        /// <value>
+        /// The person alias identifier of person doing check-in.
+        /// </value>
+        [DataMember]
+        public int? CheckedInByPersonAliasId { get; set; }
+
+        /// <summary>
         /// Gets or sets the families that match the search value
         /// </summary>
         /// <value>

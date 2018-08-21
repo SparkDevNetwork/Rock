@@ -1,15 +1,25 @@
 ﻿<div id="announcement-rotator" class="carousel slide" data-ride="carousel">
   <!-- Wrapper for slides -->
   <div class="carousel-inner">
-    {% for item in Items %}
-    {% if forloop.index == 1 -%}
+    {%- for item in Items -%}
+      {%- assign itemPrimarySlug = item.PrimarySlug | Trim -%}
+      {%- if LinkedPages.DetailPage contains '{Slug}' and itemPrimarySlug != '' -%}
+        {%- assign itemLink = LinkedPages.DetailPage | Replace:'{Slug}',item.PrimarySlug | Prepend:'/' -%}
+      {%- else -%}
+        {%- if LinkedPages.DetailPage contains '{Slug}' -%}
+          {%- assign itemLink = LinkedPages.DetailPage | Replace:'{Slug}',item.Id | Prepend:'/' -%}
+        {%- else -%}
+          {%- capture itemLink -%}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{%- endcapture -%}
+        {%- endif -%}
+      {%- endif -%}
+    {%- if forloop.index == 1 -%}
     <div class="item active">
-      {% else -%}
+      {%- else -%}
       <div class="item">
-        {% endif -%}
-        <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">{{ item | Attribute:'Image' }}</a>
+        {%- endif -%}
+        <a href="{{ itemLink }}">{{ item | Attribute:'Image' }}</a>
       </div>
-      {% endfor %}
+      {%- endfor -%}
     </div>
 
     <!-- Controls -->

@@ -49,6 +49,16 @@ namespace Rock.SystemGuid
         public const string GLOBAL_DEFAULT_SHORT_LINK_SITE = "DD0E0757-2A01-47BB-A74A-F6E69B0399C8";
 
         /// <summary>
+        /// The Google reCaptcha site key
+        /// </summary>
+        public const string GLOBAL_GOOGLE_RECAPTCHA_SITE_KEY = "BF1FD484-50F3-4C7E-975C-5E1CEB1F8C72";
+
+        /// <summary>
+        /// The Google reCaptcha secret key
+        /// </summary>
+        public const string GLOBAL_GOOGLE_RECAPTCHA_SECRET_KEY = "D36E5760-05FF-479F-AD1D-C048AE2E99E9";
+
+        /// <summary>
         /// The Facebook link attribute
         /// </summary>
         public const string PERSON_FACEBOOK = "2B8A03D3-B7DC-4DA3-A31E-826D655435D5";
@@ -64,6 +74,11 @@ namespace Rock.SystemGuid
         public const string PERSON_INSTAGRAM = "8796567C-4047-43C1-AF32-2FDBE030BEAC";
 
         /// <summary>
+        /// The SnapChat link attribute
+        /// </summary>
+        public const string PERSON_SNAPCHAT = "61099377-9EB3-43EA-BA37-75E329E55866";
+
+        /// <summary>
         /// The allergy attribute
         /// </summary>
         public const string PERSON_ALLERGY = "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31";
@@ -76,6 +91,8 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The family attribute for storing a family's checkin identifiers
         /// </summary>
+        ///
+        [Obsolete( "Check-in identifiers are no longer stored as a family attribute. They are stored as a PersonSearchValue.")]
         public const string FAMILY_CHECKIN_IDENTIFIERS = "8F528431-A438-4488-8DC3-CA42E66C1B37";
 
         #region eRA Attributes
@@ -171,9 +188,18 @@ namespace Rock.SystemGuid
         #region Fundraising Attributes
 
         /// <summary>
-        /// The defined value attribute for storing a fundraising opporunity type's donation button text.
+        /// The defined value attribute for storing a fundraising opportunity type's donation button text.
         /// </summary>
         public const string DEFINED_VALUE_FUNDRAISING_DONATE_BUTTON_TEXT = "7ACD6580-0E5B-4407-BC8B-1BBBAF443B1E";
+
+        #endregion
+        
+        #region BIO Block
+
+        /// <summary>
+        /// The bio block's workflow action attribute Guid
+        /// </summary>
+        public const string BIO_WORKFLOWACTION = "7197A0FB-B330-43C4-8E62-F3C14F649813";
 
         #endregion
     }

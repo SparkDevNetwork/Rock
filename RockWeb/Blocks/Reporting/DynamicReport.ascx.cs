@@ -33,7 +33,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
 {
-    [DisplayName( "Report Data" )]
+    [DisplayName( "Dynamic Report" )]
     [Category( "Reporting" )]
     [Description( "Block to display a report with options to edit the filter" )]
     [BooleanField( "Show 'Merge Template' action on grid", "", defaultValue: true, key: "ShowGridMergeTemplateAction" )]
@@ -241,7 +241,7 @@ namespace RockWeb.Blocks.Reporting
         {
             try
             {
-                var filteredEntityTypeName = EntityTypeCache.Read( reportEntityType ).Name;
+                var filteredEntityTypeName = EntityTypeCache.Get( reportEntityType ).Name;
                 if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
                     var filterControl = new FilterField();
@@ -260,9 +260,9 @@ namespace RockWeb.Blocks.Reporting
                     bool filterIsConfigurable = _configurableDataFilterGuids.Contains( filter.Guid );
                     bool showCheckbox = _togglableDataFilterGuids.Contains( filter.Guid ) || !filterIsConfigurable;
                     var dataFilterPrePostHtmlConfig = _dataFiltersPrePostHtmlConfig.GetValueOrNull( filter.Guid ) ?? new DataFilterPrePostHtmlConfig();
-                    
+
                     filterControl.Visible = filterIsVisible;
-                    
+
                     parentControl.Controls.Add( filterControl );
 
                     filterControl.DataViewFilterGuid = filter.Guid;
@@ -273,7 +273,7 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( filter.EntityTypeId.HasValue )
                     {
-                        var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( filter.EntityTypeId.Value, rockContext );
+                        var entityTypeCache = EntityTypeCache.Get( filter.EntityTypeId.Value, rockContext );
                         if ( entityTypeCache != null )
                         {
                             filterControl.FilterEntityTypeName = entityTypeCache.Name;
@@ -284,10 +284,10 @@ namespace RockWeb.Blocks.Reporting
 
                     filterControl.ShowCheckbox = filterIsVisible && showCheckbox;
 
-                    var reportEntityTypeCache = EntityTypeCache.Read( reportEntityType );
+                    var reportEntityTypeCache = EntityTypeCache.Get( reportEntityType );
                     var reportEntityTypeModel = reportEntityTypeCache.GetEntityType();
 
-                    var filterEntityType = EntityTypeCache.Read( filter.EntityTypeId ?? 0 );
+                    var filterEntityType = EntityTypeCache.Get( filter.EntityTypeId ?? 0 );
                     var component = Rock.Reporting.DataFilterContainer.GetComponent( filterEntityType.Name );
                     if ( component != null )
                     {
@@ -353,6 +353,10 @@ namespace RockWeb.Blocks.Reporting
                         else if ( component is Rock.Reporting.DataFilter.PropertyFilter )
                         {
                             defaultFilterLabel = ( component as Rock.Reporting.DataFilter.PropertyFilter ).GetSelectionLabel( reportEntityTypeModel, filter.Selection );
+                        }
+                        else if ( component is Rock.Reporting.DataFilter.EntityFieldFilter )
+                        {
+                            defaultFilterLabel = ( component as Rock.Reporting.DataFilter.EntityFieldFilter ).GetSelectedFieldName( filter.Selection );
                         }
                         else
                         {
@@ -502,13 +506,19 @@ namespace RockWeb.Blocks.Reporting
                 nbConfigurationWarning.Text = string.Format( "The {0} report does not have a dataview", report );
                 pnlView.Visible = false;
             }
+            else if ( report.DataView.EntityTypeId != report.EntityTypeId )
+            {
+                nbConfigurationWarning.Visible = true;
+                nbConfigurationWarning.Text = string.Format( "The {0} report's EntityType doesn't match the dataview's EntityType", report );
+                pnlView.Visible = false;
+            }
             else
             {
                 nbConfigurationWarning.Visible = false;
 
                 string errorMessage;
 
-                DataViewFilterOverrides dataViewFilterOverrides = ReportingHelper.GetFilterOverridesFromControls( phFilters );
+                DataViewFilterOverrides dataViewFilterOverrides = ReportingHelper.GetFilterOverridesFromControls( report.DataView, phFilters );
 
                 ReportingHelper.BindGrid( report, gReport, this.CurrentPerson, dataViewFilterOverrides, null, isCommunication, out errorMessage );
 
@@ -544,8 +554,11 @@ namespace RockWeb.Blocks.Reporting
         protected override void ShowSettings()
         {
             pnlConfigure.Visible = true;
-            LoadDropDowns();
-            ddlReport.SetValue( this.GetAttributeValue( "Report" ).AsGuidOrNull() );
+
+            Guid? reportGuid = this.GetAttributeValue( "Report" ).AsGuidOrNull();
+            int? reportId = reportGuid != null ? new ReportService( new RockContext() ).GetId( reportGuid.Value ) : null;
+
+            rpReport.SetValue( reportId );
             txtResultsTitle.Text = this.GetAttributeValue( "ResultsTitle" );
             txtResultsIconCssClass.Text = this.GetAttributeValue( "ResultsIconCssClass" );
             txtFilterTitle.Text = this.GetAttributeValue( "FilterTitle" );
@@ -617,7 +630,9 @@ namespace RockWeb.Blocks.Reporting
             this.SetAttributeValue( "ResultsIconCssClass", txtResultsIconCssClass.Text );
             this.SetAttributeValue( "FilterTitle", txtFilterTitle.Text );
             this.SetAttributeValue( "FilterIconCssClass", txtFilterIconCssClass.Text );
-            this.SetAttributeValue( "Report", ddlReport.SelectedValue.AsGuidOrNull().ToString() );
+
+            Guid? reportGuid = rpReport.SelectedValueAsId().HasValue ? new ReportService( new RockContext() ).GetGuid( rpReport.SelectedValueAsId().Value ) : null;
+            this.SetAttributeValue( "Report", reportGuid.ToString() );
             this.SetAttributeValue( "PersonIdField", ddlPersonIdField.SelectedValue );
             SaveAttributeValues();
 
@@ -625,28 +640,11 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        protected void LoadDropDowns()
-        {
-            var rockContext = new RockContext();
-            var reportService = new ReportService( rockContext );
-            var reportQry = reportService.Queryable().OrderBy( a => a.Name );
-
-            ddlReport.Items.Clear();
-            ddlReport.Items.Add( new ListItem() );
-            foreach ( var report in reportQry.ToList() )
-            {
-                ddlReport.Items.Add( new ListItem( report.Name, report.Guid.ToString() ) );
-            }
-        }
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlReport control.
+        /// Handles the SelectItem event of the rpReport control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlReport_SelectedIndexChanged( object sender, EventArgs e )
+        protected void rpReport_SelectItem( object sender, EventArgs e )
         {
             // reset the configs since there is a new report selected
             _configurableDataFilterGuids = null;
@@ -664,19 +662,18 @@ namespace RockWeb.Blocks.Reporting
             var rockContext = new RockContext();
             var reportService = new ReportService( rockContext );
 
-            var reportGuid = ddlReport.SelectedValueAsGuid();
+            var reportId = rpReport.SelectedValueAsId();
             Report report = null;
-            if ( reportGuid.HasValue )
+            if ( reportId.HasValue )
             {
-                report = reportService.Get( reportGuid.Value );
+                report = reportService.Get( reportId.Value );
             }
 
             nbConfigurationWarning.Visible = false;
 
             if ( report != null && report.DataView != null && report.DataView.DataViewFilter != null )
             {
-                var filters = new List<FilterInfo>();
-                GetFilterListRecursive( filters, report.DataView.DataViewFilter, report.EntityType );
+                var filters = ReportingHelper.GetFilterInfoList( report.DataView );
 
                 // remove the top level group filter if it is just a GROUPALL
                 filters = filters.Where( a => a.ParentFilter != null || a.FilterExpressionType != FilterExpressionType.GroupAll ).ToList();
@@ -715,7 +712,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptDataFilters_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var filterInfo = e.Item.DataItem as FilterInfo;
+            var filterInfo = e.Item.DataItem as ReportingHelper.FilterInfo;
             if ( filterInfo != null )
             {
                 var showInputs = true;
@@ -794,287 +791,17 @@ namespace RockWeb.Blocks.Reporting
                 lFilterDetails.Text = new DescriptionList()
                     .Add( "Filter", filterInfo.TitlePath )
                     .Add( "Summary", filterInfo.Summary )
-                    .Add( "Parent DataView", filterInfo.FromOtherDataView )
+                    .Add( "Parent Data View", filterInfo.FromOtherDataView )
                     .Html;
             }
         }
 
         #endregion Configuration
 
-        #region FilterInfo Helpers
-
-        /// <summary>
-        /// private class just for this block used to show the configuration of which fields are shown and configurable
-        /// </summary>
-        private class FilterInfo
-        {
-            public FilterInfo( DataViewFilter dataViewFilter )
-            {
-                DataViewFilter = dataViewFilter;
-            }
-
-            private DataViewFilter DataViewFilter { get; set; }
-
-            /// <summary>
-            /// Gets or sets the unique identifier.
-            /// </summary>
-            /// <value>
-            /// The unique identifier.
-            /// </value>
-            public Guid Guid
-            {
-                get
-                {
-                    return this.DataViewFilter.Guid;
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the title.
-            /// </summary>
-            /// <value>
-            /// The title.
-            /// </value>
-            public string Title { get; set; }
-
-            /// <summary>
-            /// Gets the title including the parent filter titles
-            /// </summary>
-            /// <value>
-            /// The title path.
-            /// </value>
-            public string TitlePath
-            {
-                get
-                {
-                    string parentPath = this.Title;
-                    var parentFilter = this.ParentFilter;
-                    while ( parentFilter != null )
-                    {
-                        if ( parentFilter.ParentFilter == null )
-                        {
-                            // don't include the root group filter if it is just a 'Group All'
-                            if ( parentFilter.FilterExpressionType == FilterExpressionType.GroupAll )
-                            {
-                                break;
-                            }
-                        }
-
-                        parentPath = parentFilter.Title + " > " + parentPath;
-                        parentFilter = parentFilter.ParentFilter;
-                    }
-
-                    return parentPath;
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the summary.
-            /// </summary>
-            /// <value>
-            /// The summary.
-            /// </value>
-            public string Summary
-            {
-                get
-                {
-                    string result;
-                    if ( FilterExpressionType != FilterExpressionType.Filter )
-                    {
-                        var childFilters = this.FilterList.Where( a => a.ParentFilter == this ).ToList();
-                        var parentSummaries = childFilters.Select( a => a.Summary ?? string.Empty ).ToList().AsDelimited( ", ", this.FilterExpressionType == FilterExpressionType.GroupAny ? " OR " : " AND " );
-                        if ( childFilters.Count > 1 )
-                        {
-                            result = string.Format( "( {0} )", parentSummaries );
-                        }
-                        else
-                        {
-                            result = parentSummaries;
-                        }
-                    }
-                    else if ( this.Component != null )
-                    {
-                        result = this.Component.FormatSelection( this.ReportEntityTypeModel, this.Selection );
-                    }
-                    else
-                    {
-                        result = "-";
-                    }
-
-                    return result;
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the type of the filter expression.
-            /// </summary>
-            /// <value>
-            /// The type of the filter expression.
-            /// </value>
-            public FilterExpressionType FilterExpressionType
-            {
-                get
-                {
-                    return this.DataViewFilter.ExpressionType;
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the parent filter.
-            /// </summary>
-            /// <value>
-            /// The parent filter.
-            /// </value>
-            public FilterInfo ParentFilter
-            {
-                get
-                {
-                    return this.DataViewFilter.ParentId.HasValue ? this.FilterList.FirstOrDefault( a => a.Guid == this.DataViewFilter.Parent.Guid ) : null;
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the filter list.
-            /// </summary>
-            /// <value>
-            /// The filter list.
-            /// </value>
-            public List<FilterInfo> FilterList { get; internal set; }
-
-            /// <summary>
-            /// Gets or sets the component.
-            /// </summary>
-            /// <value>
-            /// The component.
-            /// </value>
-            public DataFilterComponent Component { get; internal set; }
-
-            /// <summary>
-            /// Gets or sets the report entity type model.
-            /// </summary>
-            /// <value>
-            /// The report entity type model.
-            /// </value>
-            public Type ReportEntityTypeModel { get; internal set; }
-
-            /// <summary>
-            /// Gets or sets from other data view.
-            /// </summary>
-            /// <value>
-            /// From other data view.
-            /// </value>
-            public string FromOtherDataView { get; set; }
-
-            /// <summary>
-            /// Gets or sets the selection.
-            /// </summary>
-            /// <value>
-            /// The selection.
-            /// </value>
-            public string Selection
-            {
-                get
-                {
-                    return this.DataViewFilter.Selection;
-                }
-            }
-
-            /// <summary>
-            /// Returns a <see cref="System.String" /> that represents this instance.
-            /// </summary>
-            /// <returns>
-            /// A <see cref="System.String" /> that represents this instance.
-            /// </returns>
-            public override string ToString()
-            {
-                return TitlePath;
-            }
-        }
-
-        /// <summary>
-        /// Gets the filter recursive.
-        /// </summary>
-        /// <param name="filterList">The filter list.</param>
-        /// <param name="filter">The filter.</param>
-        /// <param name="reportEntityType">Type of the report entity.</param>
-        private static void GetFilterListRecursive( List<FilterInfo> filterList, DataViewFilter filter, EntityType reportEntityType )
-        {
-            var result = new Dictionary<Guid, string>();
-
-            var entityType = EntityTypeCache.Read( filter.EntityTypeId ?? 0 );
-            var reportEntityTypeCache = EntityTypeCache.Read( reportEntityType );
-            var reportEntityTypeModel = reportEntityTypeCache.GetEntityType();
-
-            var filterInfo = new FilterInfo( filter );
-            filterInfo.FilterList = filterList;
-
-            if ( entityType != null )
-            {
-                var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
-                filterInfo.Component = component;
-                filterInfo.ReportEntityTypeModel = reportEntityTypeModel;
-
-                if ( component != null )
-                {
-                    if ( component is Rock.Reporting.DataFilter.EntityFieldFilter )
-                    {
-                        var entityFieldFilter = component as Rock.Reporting.DataFilter.EntityFieldFilter;
-                        var fieldName = entityFieldFilter.GetSelectedFieldName( filter.Selection );
-                        if ( !string.IsNullOrWhiteSpace( fieldName ) )
-                        {
-                            var entityFields = EntityHelper.GetEntityFields( reportEntityTypeModel );
-                            var entityField = entityFields.Where( a => a.Name == fieldName ).FirstOrDefault();
-                            if ( entityField != null )
-                            {
-                                filterInfo.Title = entityField.Title;
-                            }
-                            else
-                            {
-                                filterInfo.Title = fieldName;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        filterInfo.Title = component.GetTitle( reportEntityType.GetType() );
-                    }
-                }
-            }
-
-            filterList.Add( filterInfo );
-
-            if ( filterInfo.Component is Rock.Reporting.DataFilter.OtherDataViewFilter )
-            {
-                Rock.Reporting.DataFilter.OtherDataViewFilter otherDataViewFilter = filterInfo.Component as Rock.Reporting.DataFilter.OtherDataViewFilter;
-                var otherDataView = otherDataViewFilter.GetSelectedDataView( filterInfo.Selection );
-                if ( otherDataView != null )
-                {
-                    var otherDataViewFilterList = new List<FilterInfo>();
-                    GetFilterListRecursive( otherDataViewFilterList, otherDataView.DataViewFilter, reportEntityType );
-                    foreach ( var otherFilter in otherDataViewFilterList )
-                    {
-                        if ( otherFilter.FromOtherDataView == null )
-                        {
-                            otherFilter.FromOtherDataView = otherDataView.Name;
-                        }
-                    }
-
-                    filterList.AddRange( otherDataViewFilterList );
-                }
-            }
-
-            foreach ( var childFilter in filter.ChildFilters )
-            {
-                GetFilterListRecursive( filterList, childFilter, reportEntityType );
-            }
-        }
-
-        #endregion
-
         #region Configuration Classes
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class DataFilterPrePostHtmlConfig
         {
@@ -1104,5 +831,7 @@ namespace RockWeb.Blocks.Reporting
         }
 
         #endregion Configuration Classes
+
+
     }
 }

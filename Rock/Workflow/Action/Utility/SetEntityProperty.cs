@@ -60,7 +60,7 @@ namespace Rock.Workflow.Action
             var entityTypeGuid = GetAttributeValue( action, "EntityType" ).AsGuidOrNull();
             if ( entityTypeGuid.HasValue )
             {
-                entityType = EntityTypeCache.Read( entityTypeGuid.Value );
+                entityType = EntityTypeCache.Get( entityTypeGuid.Value );
             }
             if ( entityType == null )
             {

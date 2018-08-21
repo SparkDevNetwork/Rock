@@ -24,7 +24,7 @@
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
-                <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div id="pnlEditDetails" runat="server">
 
@@ -47,7 +47,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataDropDownList ID="ddlTheme" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Theme" Help="The theme that should be used for the site.  Themes contain specific layouts and css styling that controls how a site and it's pages will look" />
+                            <Rock:DataDropDownList ID="ddlTheme" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Theme" Help="The theme that should be used for the site.  Themes contain specific layouts and css styling that controls how a site and its pages will look" />
                             <Rock:PagePicker ID="ppDefaultPage" runat="server" Label="Default Page" PromptForPageRoute="true" Help="The page and route that will be used whenever a specific page or page route is not provided." />
                             <Rock:PagePicker ID="ppLoginPage" runat="server" Label="Login Page" Required="false" PromptForPageRoute="true" Help="The page that user will be redirected to when they request a page that requires them to login." />
                             <Rock:PagePicker ID="ppChangePasswordPage" runat="server" Label="Change Password Page" Required="false" PromptForPageRoute="true" Help="The page for changing a password for the site." />
@@ -61,7 +61,16 @@
                             <Rock:DataTextBox ID="tbGoogleAnalytics" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="GoogleAnalyticsCode" Help="Optional Google Analytics Code.  If specified, the Google Analytics script with this code will be added to every page rendered for this site." />
                             <Rock:RockCheckBox ID="cbRequireEncryption" runat="server" Label="Require Encryption" Help="Ensures that the site is loaded over SSL by redirecting to https." />
                             <Rock:RockCheckBox ID="cbEnableForShortening" runat="server" Label="Enabled for Shortening" Help="Should this site (and its first domain) be an available option when creating shortlinks?" />
-                            <Rock:ImageUploader ID="imgSiteIcon" runat="server" Help="Commonly called a 'favicon', this image is used as a browser and app icon for your site. Recommended image size is 192x192. Rock will automatically create all the sizes required by various devices." Label="Site Icon" />
+                            <div class="row">
+                                <div class="col-md-4 col-lg-3">
+                                    <Rock:ImageUploader ID="imgSiteIcon" runat="server" Help="Commonly called a 'favicon', this image is used as a browser and app icon for your site. Recommended image size is 192x192. Rock will automatically create all the sizes required by various devices." Label="Site Icon" />
+                                </div>
+                                <div class="col-md-4 col-lg-3">
+                                    <Rock:ImageUploader ID="imgSiteLogo" runat="server" Help="The site logo is used by certain themes to apply to the changes on the site. See the theme's documentation for information on sizing" 
+                                        Label="Site Logo" />
+                                </div>
+                            </div>
+                            
                         </div>
                     </div>
 

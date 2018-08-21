@@ -88,6 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this RegistrationTemplateDiscount target, RegistrationTemplateDiscount source )
         {
             target.Id = source.Id;
+            target.AutoApplyDiscount = source.AutoApplyDiscount;
             target.Code = source.Code;
             target.DiscountAmount = source.DiscountAmount;
             target.DiscountPercentage = source.DiscountPercentage;

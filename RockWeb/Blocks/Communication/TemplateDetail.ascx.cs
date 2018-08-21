@@ -299,7 +299,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( lavaFieldsNode != null )
             {
-                var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhitespace() ).ToList();
+                var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhiteSpace() ).ToList();
 
                 // dictionary of keys and values from the lava fields in the 'lava-fields' div
                 foreach ( var templateDocLavaFieldLine in templateDocLavaFieldLines )
@@ -335,6 +335,7 @@ namespace RockWeb.Blocks.Communication
                 if ( communicationTemplate != null )
                 {
                     lTitle.Text = communicationTemplate.Name.FormatAsHtmlTitle();
+                    pdAuditDetails.SetEntity( communicationTemplate, ResolveRockUrl( "~" ) );
                 }
             }
 
@@ -490,7 +491,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlSMSFrom.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ), true, true );
+            ddlSMSFrom.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ), true, true );
         }
 
         /// <summary>
@@ -605,7 +606,7 @@ namespace RockWeb.Blocks.Communication
             templateDoc.LoadHtml( ceEmailTemplate.Text );
 
             // only show the template logo uploader if there is a div with id='template-logo'
-            // then update the help-message on the loader based on the template-logo's data-instuctions attribute and width and height
+            // then update the help-message on the loader based on the template-logo's data-instructions attribute and width and height
             // this gets called when the codeeditor is done initializing and when the cursor blurs out of the template code editor
             var templateLogoNode = templateDoc.GetElementbyId( "template-logo" );
             if ( templateLogoNode != null )
@@ -633,7 +634,7 @@ namespace RockWeb.Blocks.Communication
                     helpHeight = templateLogoNode.Attributes["height"].Value;
                 }
 
-                if ( helpWidth.IsNotNullOrWhitespace() && helpHeight.IsNotNullOrWhitespace() )
+                if ( helpWidth.IsNotNullOrWhiteSpace() && helpHeight.IsNotNullOrWhiteSpace() )
                 {
                     helpText += string.Format( " (Image size: {0}px x {1}px)", helpWidth, helpHeight );
                 }
@@ -653,7 +654,7 @@ namespace RockWeb.Blocks.Communication
                 lavaFieldsNode.Attributes.Add( "style", "display:none" );
             }
 
-            var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhitespace() ).ToList();
+            var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhiteSpace() ).ToList();
 
             // dictionary of keys and default values from Lava Fields KeyValueList control
             var lavaFieldsDefaultDictionary = kvlMergeFields.Value.AsDictionary();

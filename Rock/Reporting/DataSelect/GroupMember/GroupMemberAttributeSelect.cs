@@ -108,7 +108,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
                                 continue;
                             }
 
-                            var attributeCache = AttributeCache.Read( attribute.Attribute );
+                            var attributeCache = AttributeCache.Get( attribute.Attribute );
 
                             var entityField = EntityHelper.GetEntityFieldForAttribute( attributeCache );
 
@@ -265,10 +265,35 @@ namespace Rock.Reporting.DataSelect.GroupMember
             // Add empty selection as first item.
             ddlProperty.Items.Add( new ListItem() );
 
+            var rockBlock = parentControl.RockBlock();
+
             foreach ( var entityField in GetGroupMemberAttributes() )
             {
-                // Add the field to the dropdown of available fields
-                ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.UniqueName ) );
+                bool includeField = true;
+                bool isAuthorized = true;
+
+                if ( entityField.FieldKind == FieldKind.Attribute  )
+                {
+                    var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
+
+                    // Don't include the attribute if it isn't active
+                    if ( attribute.IsActive == false )
+                    {
+                        includeField = false;
+                    }
+
+                    if ( includeField && attribute != null && rockBlock != null )
+                    {
+                        // only show the Attribute field in the drop down if they have VIEW Auth to it
+                        isAuthorized = attribute.IsAuthorized( Rock.Security.Authorization.VIEW, rockBlock.CurrentPerson );
+                    }
+                }
+
+                if ( isAuthorized && includeField )
+                {
+                    // Add the field to the dropdown of available fields
+                    ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.UniqueName ) );
+                }
             }
 
             return new Control[] { pnlGroupAttributeFilterControls };

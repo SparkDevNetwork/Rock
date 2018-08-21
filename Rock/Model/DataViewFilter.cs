@@ -26,8 +26,8 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Reporting;
-using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -191,9 +191,9 @@ namespace Rock.Model
             // and all the child models/components
             if ( authorized && string.Compare( action, Authorization.VIEW, true ) == 0 )
             {
-                if ( EntityType != null )
+                if ( EntityTypeId.HasValue )
                 {
-                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityType.Name );
+                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityTypeCache.Get( this.EntityTypeId.Value )?.Name );
                     if ( filterComponent != null )
                     {
                         authorized = filterComponent.IsAuthorized( action, person );
@@ -245,7 +245,7 @@ namespace Rock.Model
 
                     if ( this.EntityTypeId.HasValue )
                     {
-                        var entityType = Rock.Web.Cache.EntityTypeCache.Read( this.EntityTypeId.Value );
+                        var entityType = EntityTypeCache.Get( this.EntityTypeId.Value );
                         if ( entityType != null )
                         {
                             var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
@@ -365,7 +365,7 @@ namespace Rock.Model
             {
                 if ( EntityTypeId.HasValue )
                 {
-                    var entityType = EntityTypeCache.Read( EntityTypeId.Value );
+                    var entityType = EntityTypeCache.Get( EntityTypeId.Value );
                     var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
                     if ( component != null )
                     {
@@ -428,7 +428,7 @@ namespace Rock.Model
         {
             if ( this.ExpressionType == FilterExpressionType.Filter && this.EntityTypeId.HasValue )
             {
-                return this.ToString( EntityTypeCache.Read( this.EntityTypeId.Value ).GetEntityType() );
+                return this.ToString( EntityTypeCache.Get( this.EntityTypeId.Value ).GetEntityType() );
             }
             else 
             {
@@ -462,14 +462,17 @@ namespace Rock.Model
     #region Classes
 
     /// <summary>
-    /// A Dictionary of DataViewFilterOverride where the Key is the DataViewFilter.Guid
+    /// DataViewFilterOverrides with a Dictionary of Filter Overrides where the Key is the DataViewFilter.Guid
     /// </summary>
+    [System.Diagnostics.DebuggerDisplay( "{DebuggerDisplay}" )]
     public class DataViewFilterOverrides : Dictionary<Guid, DataViewFilterOverride>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DataViewFilterOverrides"/> class.
         /// </summary>
-        public DataViewFilterOverrides() : base() { }
+        public DataViewFilterOverrides() : base()
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DataViewFilterOverrides"/> class.
@@ -478,6 +481,14 @@ namespace Rock.Model
         public DataViewFilterOverrides( List<DataViewFilterOverride> list ) :
             base( list.ToDictionary( k => k.DataFilterGuid, v => v ) )
         { }
+
+        /// <summary>
+        /// List of DataViewIds that should not use Persisted Values
+        /// </summary>
+        /// <value>
+        /// The ignore data view persisted values.
+        /// </value>
+        public HashSet<int> IgnoreDataViewPersistedValues { get; set; } = new HashSet<int>();
 
         /// <summary>
         /// Gets the override.
@@ -493,6 +504,20 @@ namespace Rock.Model
             else
             {
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the debugger display.
+        /// </summary>
+        /// <value>
+        /// The debugger display.
+        /// </value>
+        private string DebuggerDisplay
+        {
+            get
+            {
+                return $@"IgnoreDataViewPersistedValues for DataViewIds: {IgnoreDataViewPersistedValues.ToList().AsDelimited( "," )},DataViewFilterOverrides.Count:{this.Count}";
             }
         }
     }

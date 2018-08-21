@@ -27,7 +27,7 @@ namespace DotLiquid
 	{
 		public static INamingConvention NamingConvention;
 		public static IFileSystem FileSystem { get; set; }
-		private static Dictionary<string, Type> Tags { get; set; }
+		public static Dictionary<string, Type> Tags { get; set; }
         private static Dictionary<string, Type> Shortcodes { get; set; }
         private static readonly Dictionary<Type, Func<object, object>> SafeTypeTransformers;
 		private static readonly Dictionary<Type, Func<object, object>> ValueTypeTransformers;

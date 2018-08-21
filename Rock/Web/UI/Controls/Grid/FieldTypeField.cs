@@ -57,11 +57,11 @@ namespace Rock.Web.UI.Controls
                 FieldTypeCache fieldTypeCache = null;
                 if ( dataValueAsInt.HasValue )
                 {
-                    fieldTypeCache = FieldTypeCache.Read( dataValueAsInt.Value );
+                    fieldTypeCache = FieldTypeCache.Get( dataValueAsInt.Value );
                 }
                 else if ( dataValueAsGuid.HasValue )
                 {
-                    fieldTypeCache = FieldTypeCache.Read( dataValueAsGuid.Value );
+                    fieldTypeCache = FieldTypeCache.Get( dataValueAsGuid.Value );
                 }
 
                 dataValue = fieldTypeCache != null ? fieldTypeCache.Name : null;

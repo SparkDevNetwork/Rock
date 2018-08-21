@@ -5,13 +5,13 @@
 		background-position: center center;
 		background-repeat: no-repeat;
 	}
-	
+
 	@media (min-width: 992px) {
 		.current-series {
 			height: 420px;
 		}
 	}
-	
+
 	.current-series h1 {
 		background-color: rgba(0, 0, 0, 0.3);
 		text-align: center;
@@ -21,37 +21,37 @@
 		margin: 0;
 		padding: 6px;
 	}
-	
+
 	.series {
 		border: 1px solid rgba(0, 0, 0, .3);
 		position: relative;
 	}
-		
+
 	.series h1 {
 		font-size: 20px;
 		font-weight: 600;
 		margin-top: 4px;
 		margin-bottom: 0;
 	}
-	
+
 	.series-dates {
 		opacity: .6;
 	}
-	
+
 	.series-body {
 		padding: 15px;
 		height: 172px;
 	}
-	
+
 	.series-summary {
 		height: 60px;
 		overflow: hidden;
 	}
-		
+
 	.series-link:hover {
 		text-decoration: none;
 	}
-	
+
 	.series-image {
 		height: 158px;
 		width: 100%;
@@ -59,7 +59,7 @@
 		background-position: center center;
 		background-repeat: no-repeat;
 	}
-	
+
 	.series-image:after {
 		content: '';
 		position: absolute;
@@ -69,7 +69,7 @@
 		bottom: 0;
 		transition: all .1s ease-in-out;
 	}
-	
+
 	.series-image:hover:after {
 		background: rgba(0,0,0,.2);
 	}
@@ -89,23 +89,23 @@
 <div class="row margin-t-lg">
 	{% for item in Items %}
 	{% assign seriesImageGuid = item | Attribute:'SeriesImage','RawValue' %}
-	
+
 	<div class="col-md-4 col-sm-6 margin-b-md">
 		<a class="series-link" href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">
 		<article class="series">
 			{% if detailImageGuid != '' %}
 				<div class="series-image" style="background-image: url('/GetImage.ashx?Guid={{ seriesImageGuid }}');" ></div>
 			{% endif %}
-			
+
 			<div class="series-body">
 				<h1 class="text-color">{{ item.Title }}</h1>
 				<p class="series-dates text-color">
-					{{ item.StartDateTime | Date:'M/d/yyyy' }} 
+					{{ item.StartDateTime | Date:'M/d/yyyy' }}
 						{% if item.StartDateTime != item.ExpireDateTime %}
 							- {{ item.ExpireDateTime | Date:'M/d/yyyy' }}
 						{% endif %}
 				</p>
-				
+
 				<p class="series-summary text-color">
 					{{ item | Attribute:'Summary' }}
 				</p>
@@ -113,7 +113,7 @@
 		</article>
 		</a>
 	</div>
-	
+
 {% endfor -%}
 </div>
 

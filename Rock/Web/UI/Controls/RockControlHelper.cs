@@ -21,7 +21,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Helper class to intialize and render rock controls with Bootstrap html elements
+    /// Helper class to initialize and render rock controls with Bootstrap html elements
     /// </summary>
     public static class RockControlHelper
     {

@@ -259,8 +259,8 @@ namespace RockWeb.Blocks.Finance
             GatewayEntityTypeId = gateway.EntityTypeId;
             if ( gateway.EntityTypeId.HasValue )
             {
-                var GatewayComponentEntityType = EntityTypeCache.Read( gateway.EntityTypeId.Value );
-                var GatewayEntityType = EntityTypeCache.Read( "Rock.Model.FinancialGateway " );
+                var GatewayComponentEntityType = EntityTypeCache.Get( gateway.EntityTypeId.Value );
+                var GatewayEntityType = EntityTypeCache.Get( "Rock.Model.FinancialGateway " );
                 if ( GatewayComponentEntityType != null && GatewayEntityType != null )
                 {
                     using ( var rockContext = new RockContext() )

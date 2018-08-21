@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -507,11 +507,11 @@ VALUES(0,'Under 35','A filter to help refine a communications recipient list to 
 END
 " );
 
-            // Job for Migrating Interaction Data
+            // Job for Migrating Interaction Data (schedule for 9pm to avoid conflict with AppPoolRecycle)
             Sql( @"
     INSERT INTO [dbo].[ServiceJob] ( [IsSystem], [IsActive], [Name], [Description], [Class], [CronExpression], [NotificationStatus] ,[Guid] )
     VALUES ( 0, 1, 'Convert communication medium data', 'Converts communication medium data to field values.', 
-        'Rock.Jobs.MigrateCommunicationMediumData', '0 0 3 1/1 * ? *', 3, 'E7C54AAB-451E-4E89-8083-CF398D37416E')" );
+        'Rock.Jobs.MigrateCommunicationMediumData', '0 0 21 1/1 * ? *', 3, 'E7C54AAB-451E-4E89-8083-CF398D37416E')" );
 
         }
 

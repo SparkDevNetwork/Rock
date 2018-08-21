@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Connection
                     Guid guid = badgeGuid.AsGuid();
                     if ( guid != Guid.Empty )
                     {
-                        var personBadge = PersonBadgeCache.Read( guid );
+                        var personBadge = PersonBadgeCache.Get( guid );
                         if ( personBadge != null )
                         {
                             blStatus.PersonBadges.Add( personBadge );
@@ -305,7 +305,7 @@ namespace RockWeb.Blocks.Connection
                     int connectionOpportunityId = hfConnectionOpportunityId.ValueAsInt();
 
                     // Check if this person already has a connection request for this opportunity.
-                    var connectionRequest = connectionRequestService.Queryable()
+                    var connectionRequest = connectionRequestService.Queryable().AsNoTracking()
                         .Where( r => r.PersonAliasId == ppRequestor.PersonAliasId.Value && r.ConnectionOpportunityId == connectionOpportunityId &&
                             ( r.ConnectionState == ConnectionState.Active || r.ConnectionState == ConnectionState.FutureFollowUp ) )
                         .FirstOrDefault();
@@ -386,7 +386,7 @@ namespace RockWeb.Blocks.Connection
                     connectionRequest.AssignedGroupMemberStatus = ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>();
                     connectionRequest.AssignedGroupMemberAttributeValues = GetGroupMemberAttributeValues();
 
-                    connectionRequest.Comments = tbComments.Text.ScrubHtmlAndConvertCrLfToBr();
+                    connectionRequest.Comments = tbComments.Text.SanitizeHtml();
                     connectionRequest.FollowupDate = dpFollowUp.SelectedDate;
 
                     if ( !Page.IsValid )
@@ -415,7 +415,7 @@ namespace RockWeb.Blocks.Connection
                     if ( newConnectorPersonAliasId.HasValue && !newConnectorPersonAliasId.Equals( oldConnectorPersonAliasId ) )
                     {
                         var guid = Rock.SystemGuid.ConnectionActivityType.ASSIGNED.AsGuid();
-                        var assignedActivityId = new ConnectionActivityTypeService( rockContext ).Queryable()
+                        var assignedActivityId = new ConnectionActivityTypeService( rockContext ).Queryable().AsNoTracking()
                             .Where( t => t.Guid == guid )
                             .Select( t => t.Id )
                             .FirstOrDefault();
@@ -530,7 +530,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         // ... but always record the connection activity and change the state to connected.
                         var guid = Rock.SystemGuid.ConnectionActivityType.CONNECTED.AsGuid();
-                        var connectedActivityId = connectionActivityTypeService.Queryable()
+                        var connectedActivityId = connectionActivityTypeService.Queryable().AsNoTracking()
                             .Where( t => t.Guid == guid )
                             .Select( t => t.Id )
                             .FirstOrDefault();
@@ -647,7 +647,7 @@ namespace RockWeb.Blocks.Connection
                         ddlTransferOpportunityConnector.Items.Add( new ListItem( c.Value.FullName, c.Key.ToString() ) ) );
             }
 
-            
+
             int? defaultConnectorPersonId = null;
             var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( hfConnectionRequestId.ValueAsInt() );
             if ( connectionRequest != null )
@@ -662,7 +662,7 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
             }
-            
+
             if ( rbTransferDefaultConnector.Checked && connectionOpportunity != null  )
             {
                 if ( defaultConnectorPersonId.HasValue)
@@ -946,56 +946,34 @@ namespace RockWeb.Blocks.Connection
                     connectionRequest.ConnectionOpportunity != null &&
                     connectionRequest.ConnectionOpportunity.ConnectionType != null )
                 {
-                    var qrySearch = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities.ToList();
+                    var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
+                    var connectionTypeId = connectionRequest.ConnectionOpportunity.ConnectionTypeId;
+
+                    var qrySearch = connectionOpportunityService.Queryable().Where( a => a.ConnectionTypeId == connectionTypeId && a.IsActive == true );
 
                     if ( !string.IsNullOrWhiteSpace( tbSearchName.Text ) )
                     {
                         var searchTerms = tbSearchName.Text.ToLower().SplitDelimitedValues( true );
-                        qrySearch = qrySearch.Where( o => searchTerms.Any( t => t.Contains( o.Name.ToLower() ) || o.Name.ToLower().Contains( t ) ) ).ToList();
+                        qrySearch = qrySearch.Where( o => searchTerms.Any( t => t.Contains( o.Name.ToLower() ) || o.Name.ToLower().Contains( t ) ) );
                     }
 
                     var searchCampuses = cblCampus.SelectedValuesAsInt;
                     if ( searchCampuses.Count > 0 )
                     {
-                        qrySearch = qrySearch.Where( o => o.ConnectionOpportunityCampuses.Any( c => searchCampuses.Contains( c.CampusId ) ) ).ToList();
+                        qrySearch = qrySearch.Where( o => o.ConnectionOpportunityCampuses.Any( c => searchCampuses.Contains( c.CampusId ) ) );
                     }
 
                     // Filter query by any configured attribute filters
                     if ( SearchAttributes != null && SearchAttributes.Any() )
                     {
-                        var attributeValueService = new AttributeValueService( rockContext );
-                        var parameterExpression = attributeValueService.ParameterExpression;
-
                         foreach ( var attribute in SearchAttributes )
                         {
                             var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                            if ( filterControl == null ) continue;
-
-                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                            var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                            var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                            if ( expression == null ) continue;
-
-                            var attributeValues = attributeValueService
-                                        .Queryable()
-                                        .Where( v => v.Attribute.Id == attribute.Id );
-
-                            var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                            if ( filterIsDefault )
-                            {
-                                qrySearch = qrySearch.Where( w =>
-                                     !attributeValues.Any( v => v.EntityId == w.Id ) ||
-                                     filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) ).ToList();
-                            }
-                            else
-                            {
-                                qrySearch = qrySearch.Where( w =>
-                                    filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) ).ToList();
-                            }
+                            qrySearch = attribute.FieldType.Field.ApplyAttributeQueryFilter( qrySearch, filterControl, attribute, connectionRequestService, Rock.Reporting.FilterMode.SimpleFilter );
                         }
                     }
-                    rptSearchResult.DataSource = qrySearch;
+
+                    rptSearchResult.DataSource = qrySearch.ToList();
                     rptSearchResult.DataBind();
                 }
             }
@@ -1042,16 +1020,16 @@ namespace RockWeb.Blocks.Connection
                     }
                     gConnectionRequestWorkflows.DataSource = authorizedWorkflows
                         .Select( c => new
-                            {
-                                c.Id,
-                                c.Guid,
-                                WorkflowType = c.Workflow.WorkflowType.Name,
-                                Trigger = c.TriggerType.ConvertToString(),
-                                CurrentActivity = c.Workflow.ActiveActivityNames,
-                                Date = c.Workflow.ActivatedDateTime.Value.ToShortDateString(),
-                                OrderByDate = c.Workflow.ActivatedDateTime.Value,
-                                Status = c.Workflow.Status == "Completed" ? "<span class='label label-success'>Complete</span>" : "<span class='label label-info'>Running</span>"
-                            } )
+                        {
+                            c.Id,
+                            c.Guid,
+                            WorkflowType = c.Workflow.WorkflowType.Name,
+                            Trigger = c.TriggerType.ConvertToString(),
+                            CurrentActivity = c.Workflow.ActiveActivityNames,
+                            Date = c.Workflow.ActivatedDateTime.Value.ToShortDateString(),
+                            OrderByDate = c.Workflow.ActivatedDateTime.Value,
+                            Status = c.Workflow.Status == "Completed" ? "<span class='label label-success'>Complete</span>" : "<span class='label label-info'>Running</span>"
+                        } )
                         .OrderByDescending( c => c.OrderByDate )
                         .ToList();
                     gConnectionRequestWorkflows.DataBind();
@@ -1253,6 +1231,7 @@ namespace RockWeb.Blocks.Connection
                 var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
                 var qry = connectionRequestActivityService
                     .Queryable( "ConnectionActivityType,ConnectionOpportunity,ConnectorPersonAlias.Person" )
+                    .AsNoTracking()
                     .Where( a =>
                         a.ConnectionRequest != null &&
                         a.ConnectionRequest.PersonAlias != null &&
@@ -1274,20 +1253,20 @@ namespace RockWeb.Blocks.Connection
 
                 gConnectionRequestActivities.DataSource = qry.ToList()
                     .Select( a => new
-                        {
-                            a.Id,
-                            a.Guid,
-                            CreatedDate = a.CreatedDateTime,
-                            Date = a.CreatedDateTime.HasValue ? a.CreatedDateTime.Value.ToShortDateString() : "",
-                            Activity = a.ConnectionActivityType.Name,
-                            Opportunity = a.ConnectionOpportunity.Name,
-                            OpportunityId = a.ConnectionOpportunityId,
-                            Connector = a.ConnectorPersonAlias != null && a.ConnectorPersonAlias.Person != null ? a.ConnectorPersonAlias.Person.FullName : "",
-                            Note = a.Note,
-                            CanEdit =
+                    {
+                        a.Id,
+                        a.Guid,
+                        CreatedDate = a.CreatedDateTime,
+                        Date = a.CreatedDateTime.HasValue ? a.CreatedDateTime.Value.ToShortDateString() : "",
+                        Activity = a.ConnectionActivityType.Name,
+                        Opportunity = a.ConnectionOpportunity.Name,
+                        OpportunityId = a.ConnectionOpportunityId,
+                        Connector = a.ConnectorPersonAlias != null && a.ConnectorPersonAlias.Person != null ? a.ConnectorPersonAlias.Person.FullName : "",
+                        Note = a.Note,
+                        CanEdit =
                                 ( a.CreatedByPersonAliasId.Equals( CurrentPersonAliasId ) || a.ConnectorPersonAliasId.Equals( CurrentPersonAliasId ) ) &&
                                 a.ConnectionActivityType.ConnectionTypeId.HasValue
-                        } )
+                    } )
                     .OrderByDescending( a => a.CreatedDate )
                     .ToList();
                 gConnectionRequestActivities.DataBind();
@@ -1356,6 +1335,7 @@ namespace RockWeb.Blocks.Connection
                 {
                     var connectionStatus = connectionStatusService
                         .Queryable()
+                        .AsNoTracking()
                         .Where( s =>
                             s.ConnectionTypeId == connectionOpportunity.ConnectionTypeId &&
                             s.IsDefault )
@@ -1412,7 +1392,7 @@ namespace RockWeb.Blocks.Connection
                 // Grants edit access to those in the opportunity's connector groups
                 if ( !editAllowed && CurrentPersonId.HasValue )
                 {
-                    var qryConnectionOpportunityConnectorGroups = new ConnectionOpportunityConnectorGroupService( rockContext ).Queryable()
+                    var qryConnectionOpportunityConnectorGroups = new ConnectionOpportunityConnectorGroupService( rockContext ).Queryable().AsNoTracking()
                         .Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id );
 
                     // Grant edit access to any of those in a non campus-specific connector group
@@ -1424,7 +1404,7 @@ namespace RockWeb.Blocks.Connection
 
                     if ( !editAllowed )
                     {
-                        //If this is a new request, grant edit access to any connector group. Otherwise, match the request's campus to the corresponding campus-specific connector group
+                        // If this is a new request, grant edit access to any connector group. Otherwise, match the request's campus to the corresponding campus-specific connector group
                         foreach ( var groupCampus in qryConnectionOpportunityConnectorGroups
                             .Where( g =>
                                 ( connectionRequest.Id == 0 || ( connectionRequest.CampusId.HasValue && g.CampusId == connectionRequest.CampusId.Value ) ) &&
@@ -1549,7 +1529,7 @@ namespace RockWeb.Blocks.Connection
                 lPortrait.Text = string.Empty; ;
             }
 
-            lComments.Text = connectionRequest != null && connectionRequest.Comments != null ? connectionRequest.Comments.ScrubHtmlAndConvertCrLfToBr() : string.Empty;
+            lComments.Text = connectionRequest != null && connectionRequest.Comments != null ? connectionRequest.Comments.ConvertMarkdownToHtml() : string.Empty;
             lRequestDate.Text = connectionRequest != null && connectionRequest.CreatedDateTime.HasValue ? connectionRequest.CreatedDateTime.Value.ToShortDateString() : string.Empty;
             if ( connectionRequest != null && connectionRequest.AssignedGroup != null )
             {
@@ -1603,8 +1583,17 @@ namespace RockWeb.Blocks.Connection
             {
                 hlState.Visible = true;
                 hlState.Text = connectionRequest.ConnectionState.ConvertToString();
-                hlState.LabelType = connectionRequest.ConnectionState == ConnectionState.Inactive ? LabelType.Danger :
-                ( connectionRequest.ConnectionState == ConnectionState.FutureFollowUp ? LabelType.Info : LabelType.Success );
+                // append future follow-up date if that date has occurred and set the label type to danger
+                if ( connectionRequest.ConnectionState == ConnectionState.FutureFollowUp && connectionRequest.FollowupDate.HasValue && connectionRequest.FollowupDate.Value <= RockDateTime.Today )
+                {
+                    hlState.Text += string.Format( " ({0})", connectionRequest.FollowupDate.Value.ToShortDateString() );
+                    hlState.LabelType = LabelType.Danger;
+                }
+                else
+                {
+                    hlState.LabelType = connectionRequest.ConnectionState == ConnectionState.Inactive ? LabelType.Danger :
+                    ( connectionRequest.ConnectionState == ConnectionState.FutureFollowUp ? LabelType.Info : LabelType.Success );
+                }
 
                 hlStatus.Visible = true;
                 hlStatus.Text = connectionRequest.ConnectionStatus.Name;
@@ -1626,7 +1615,7 @@ namespace RockWeb.Blocks.Connection
                     var authorizedWorkflows = new List<ConnectionWorkflow>();
                     foreach ( var manualWorkflow in manualWorkflows )
                     {
-                        if ( ( manualWorkflow.WorkflowType.IsActive ?? true ) && manualWorkflow.WorkflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        if ( manualWorkflow.WorkflowType.IsActive ?? true && manualWorkflow.WorkflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         {
                             authorizedWorkflows.Add( manualWorkflow );
                         }
@@ -1703,12 +1692,12 @@ namespace RockWeb.Blocks.Connection
                 }
             }
 
-            // Coments
-            tbComments.Text = connectionRequest.Comments.ScrubHtmlAndConvertCrLfToBr();
+            // Comments
+            tbComments.Text = connectionRequest.Comments;//.SanitizeHtml();
 
             // Status
             rblStatus.Items.Clear();
-            foreach ( var status in connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses )
+            foreach ( var status in connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.OrderBy( a => a.Name ) )
             {
                 rblStatus.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
             }
@@ -1990,7 +1979,7 @@ namespace RockWeb.Blocks.Connection
 
                         if ( requirementsResults != null && requirementsResults
                             .Any( r =>
-                            r.GroupRequirement.MustMeetRequirementToAddMember &&    
+                            r.GroupRequirement.MustMeetRequirementToAddMember &&
                             r.MeetsGroupRequirement == MeetsGroupRequirement.NotMet &&
                                 r.GroupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual )
                             )
@@ -2110,7 +2099,7 @@ namespace RockWeb.Blocks.Connection
                     var group = new GroupService( rockContext ).Get( connectionRequest.AssignedGroupId.Value );
                     if ( group != null )
                     {
-                        requirementsResults = group.PersonMeetsGroupRequirements( rockContext, 
+                        requirementsResults = group.PersonMeetsGroupRequirements( rockContext,
                             connectionRequest.PersonAlias.PersonId,
                             connectionRequest.AssignedGroupMemberRoleId );
 
@@ -2243,16 +2232,12 @@ namespace RockWeb.Blocks.Connection
                     SearchAttributes = new List<AttributeCache>();
 
                     int entityTypeId = new ConnectionOpportunity().TypeId;
-                    foreach ( var attributeModel in new AttributeService( rockContext ).Queryable()
-                        .Where( a =>
-                            a.EntityTypeId == entityTypeId &&
-                            a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                            a.EntityTypeQualifierValue.Equals( connectionRequest.ConnectionOpportunity.ConnectionTypeId.ToString() ) &&
-                            a.AllowSearch )
+                    foreach ( var attributeModel in new AttributeService( rockContext ).GetByEntityTypeQualifier( entityTypeId, "ConnectionTypeId", connectionRequest.ConnectionOpportunity.ConnectionTypeId.ToString(), false )
+                        .Where( a => a.AllowSearch )
                         .OrderBy( a => a.Order )
                         .ThenBy( a => a.Name ) )
                     {
-                        SearchAttributes.Add( AttributeCache.Read( attributeModel ) );
+                        SearchAttributes.Add( AttributeCache.Get( attributeModel ) );
                     }
                 }
             }
@@ -2508,11 +2493,5 @@ namespace RockWeb.Blocks.Connection
 
         #endregion
 
-
-
-
-
-
-        
     }
 }

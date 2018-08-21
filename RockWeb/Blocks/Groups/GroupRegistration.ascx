@@ -11,7 +11,7 @@
             <asp:Literal ID="lLavaOverview" runat="server" />
             <asp:Literal ID="lLavaOutputDebug" runat="server" />
 
-            <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
             <div class="row">
                 <asp:Panel id="pnlCol1" runat="server">
@@ -32,7 +32,7 @@
                             <Rock:RockCheckBox ID="cbSms"  runat="server" Label="&nbsp;" Text="Enable SMS" />
                         </div>
                     </asp:Panel>
-                    <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="true" ></Rock:EmailBox>
+                    <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" ></Rock:EmailBox>
                     <Rock:AddressControl ID="acAddress" runat="server" />
                 </asp:Panel>
 

@@ -198,6 +198,14 @@ namespace Rock.Field
         Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode );
 
         /// <summary>
+        /// Returns the ComparisonType options that the field supports
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        Rock.Model.ComparisonType FilterComparisonType { get; }
+
+        /// <summary>
         /// Determines whether this filter type has a FilterControl
         /// </summary>
         /// <returns></returns>
@@ -262,13 +270,25 @@ namespace Rock.Field
         Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType );
 
         /// <summary>
-        /// Gets a filter expression for an attribute value.
+        /// Gets a filter expression to be used as part of a AttributeValue Query or EntityAttributeQueryExpression
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="filterValues">The filter values.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <returns></returns>
         Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression );
+
+        /// <summary>
+        /// Applies the attribute query filter based on the values configured in the filterControl
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="qry">The qry.</param>
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        System.Linq.IQueryable<T> ApplyAttributeQueryFilter<T>( System.Linq.IQueryable<T> qry, Control filterControl, Rock.Web.Cache.AttributeCache attribute, Rock.Data.IService serviceInstance, Rock.Reporting.FilterMode filterMode ) where T : Rock.Data.Entity<T>, new();
 
         /// <summary>
         /// Determines whether the filter is an 'Equal To' comparison and the filtered value is equal to the specified value.

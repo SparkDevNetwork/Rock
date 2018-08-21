@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Reporting
 
     [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180, "", 0 )]
     [LinkedPage("Data View Page", "The page to edit data views", true, "", "", 1)]
+    [ReportField( "Report", "Select the report to present to the user.", false, "", "", order: 2 )]
     public partial class ReportDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -134,7 +135,7 @@ namespace RockWeb.Blocks.Reporting
 
             gReport.GridRebind += gReport_GridRebind;
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Report.FriendlyTypeName );
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Report ) ).Id;
+            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Report ) ).Id;
 
             //// set postback timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
             //// note: this only makes a difference on Postback, not on the initial page visit
@@ -159,10 +160,10 @@ namespace RockWeb.Blocks.Reporting
             {
                 this.ShowResults = GetUserPreference( _SettingKeyShowResults ).AsBoolean(true);
 
-                string itemId = PageParameter( "reportId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                var reportId = GetReportId();
+                if ( reportId.HasValue )
                 {
-                    ShowDetail( PageParameter( "reportId" ).AsInteger(), PageParameter( "ParentCategoryId" ).AsIntegerOrNull() );
+                    ShowDetail( reportId.Value, PageParameter( "ParentCategoryId" ).AsIntegerOrNull() );
                 }
                 else
                 {
@@ -384,18 +385,6 @@ namespace RockWeb.Blocks.Reporting
             this.ShowResults = !this.ShowResults;
         }
 
-        protected void lbDataView_Click( object sender, EventArgs e )
-        {
-            var rockContext = new RockContext();
-            var reportService = new ReportService( rockContext );
-            var report = reportService.Get( hfReportId.Value.AsInteger() );
-
-            if ( report != null && report.DataViewId.HasValue )
-            {
-                NavigateToLinkedPage( "DataViewPage", "DataViewId", report.DataViewId.Value );
-            }
-        }
-
         #region Edit Events
 
         /// <summary>
@@ -505,7 +494,7 @@ namespace RockWeb.Blocks.Reporting
             report.Description = tbDescription.Text;
             report.CategoryId = cpCategory.SelectedValueAsInt();
             report.EntityTypeId = etpEntityType.SelectedEntityTypeId;
-            report.DataViewId = ddlDataView.SelectedValueAsInt();
+            report.DataViewId = dvpDataView.SelectedValueAsInt();
             report.FetchTop = nbFetchTop.Text.AsIntegerOrNull();
             report.QueryHint = tbQueryHint.Text;
 
@@ -720,6 +709,26 @@ namespace RockWeb.Blocks.Reporting
         #region Methods
 
         /// <summary>
+        /// Get the report through query list or block setting.
+        /// </summary>
+        public int? GetReportId()
+        {
+            int? reportId = PageParameter( "reportId" ).AsIntegerOrNull();
+            var reportGuid = GetAttributeValue( "Report" ).AsGuidOrNull();
+
+            if ( reportGuid.HasValue )
+            {
+                var report = new ReportService( new RockContext() ).Get( reportGuid.Value );
+                if ( report != null )
+                {
+                    reportId = report.Id;
+                }
+            }
+
+            return reportId;
+        }
+
+        /// <summary>
         /// Sorts the panel widgets.
         /// </summary>
         /// <param name="eventParam">The event parameter.</param>
@@ -767,8 +776,8 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="entityTypeId">The entity type identifier.</param>
         private void UpdateControlsForEntityType( int? entityTypeId )
         {
-            ddlDataView.EntityTypeId = entityTypeId;
-            ddlDataView.Enabled = entityTypeId.HasValue;
+            dvpDataView.EntityTypeId = entityTypeId;
+            dvpDataView.Enabled = entityTypeId.HasValue;
             btnAddField.Enabled = entityTypeId.HasValue;
         }
 
@@ -783,7 +792,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( entityTypeId.HasValue )
             {
-                Type entityType = EntityTypeCache.Read( entityTypeId.Value, rockContext ).GetEntityType();
+                Type entityType = EntityTypeCache.Get( entityTypeId.Value, rockContext ).GetEntityType();
                 var entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType, true, false );
                 ddlFields.Items.Clear();
 
@@ -804,7 +813,7 @@ namespace RockWeb.Blocks.Reporting
                     {
                         if ( entityField.AttributeGuid.HasValue )
                         {
-                            var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
+                            var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
                             if (attribute != null )
                             {
                                 // only show the Attribute field in the drop down if they have VIEW Auth to it
@@ -830,7 +839,7 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( entityField.FieldKind == FieldKind.Attribute && entityField.AttributeGuid.HasValue )
                     {
-                        var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
+                        var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
                         if ( attribute != null )
                         {
                             listItem.Attributes.Add( "title", attribute.Description );
@@ -848,7 +857,7 @@ namespace RockWeb.Blocks.Reporting
                 {
                     if ( component.IsAuthorized( Authorization.VIEW, this.RockPage.CurrentPerson ) )
                     {
-                        var selectEntityType = EntityTypeCache.Read( component.TypeName, true, rockContext );
+                        var selectEntityType = EntityTypeCache.Get( component.TypeName, true, rockContext );
                         var listItem = new ListItem();
                         listItem.Text = component.GetTitle( selectEntityType.GetEntityType() );
                         listItem.Value = string.Format( "{0}|{1}", ReportFieldType.DataSelectComponent, component.TypeId );
@@ -1050,7 +1059,7 @@ namespace RockWeb.Blocks.Reporting
         {
             // Get the Type for the Data Select Component used in this column.
             // If the column refers to a Type that does not exist, ignore and continue.
-            var componentType = EntityTypeCache.Read( dataSelectComponentId, rockContext ).GetEntityType();
+            var componentType = EntityTypeCache.Get( dataSelectComponentId, rockContext ).GetEntityType();
 
             if ( componentType == null )
                 return null;
@@ -1083,14 +1092,33 @@ namespace RockWeb.Blocks.Reporting
             tbName.Text = report.Name;
             tbDescription.Text = report.Description;
             cpCategory.SetValue( report.CategoryId );
-            etpEntityType.SelectedEntityTypeId = report.EntityTypeId;
+
+            RockContext rockContext = new RockContext();
+
+            var dataViewId = report.DataViewId;
+            var entityTypeId = report.EntityTypeId;
+
+            if ( report.Id == default( int ) )
+            {
+                dataViewId = PageParameter( "dataViewId" ).AsIntegerOrNull();
+                if (dataViewId.HasValue)
+                {
+                    var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
+                    if ( dataView != null )
+                    {
+                        entityTypeId = dataView.EntityTypeId;
+                    }
+                }
+            }
+
+            etpEntityType.SelectedEntityTypeId = entityTypeId;
             UpdateControlsForEntityType( etpEntityType.SelectedEntityTypeId );
-            ddlDataView.SetValue( report.DataViewId );
+            dvpDataView.SetValue( dataViewId );
             nbFetchTop.Text = report.FetchTop.ToString();
             tbQueryHint.Text = report.QueryHint;
 
             ReportFieldsDictionary = new List<ReportFieldInfo>();
-            RockContext rockContext = new RockContext();
+            
 
             kvSortFields.CustomKeys = new Dictionary<string, string>();
             kvSortFields.CustomValues = new Dictionary<string, string>();
@@ -1140,6 +1168,11 @@ namespace RockWeb.Blocks.Reporting
             if ( report.DataView != null )
             {
                 lbDataView.Visible = UserCanEdit;
+
+                var queryParams = new Dictionary<string, string>();
+                queryParams.Add("DataViewId", report.DataViewId.ToString());
+                lbDataView.NavigateUrl = LinkedPageUrl("DataViewPage", queryParams);
+
                 lbDataView.ToolTip = report.DataView.Name;
             }
             else
@@ -1318,7 +1351,7 @@ namespace RockWeb.Blocks.Reporting
             switch ( reportFieldType )
             {
                 case ReportFieldType.Property:
-                    var entityType = EntityTypeCache.Read( entityTypeId, rockContext ).GetEntityType();
+                    var entityType = EntityTypeCache.Get( entityTypeId, rockContext ).GetEntityType();
                     var entityField = EntityHelper.GetEntityFields( entityType ).FirstOrDefault( a => a.Name == fieldSelection );
                     if ( entityField != null )
                     {
@@ -1329,7 +1362,7 @@ namespace RockWeb.Blocks.Reporting
                     break;
 
                 case ReportFieldType.Attribute:
-                    var attribute = AttributeCache.Read( fieldSelection.AsGuid(), rockContext );
+                    var attribute = AttributeCache.Get( fieldSelection.AsGuid(), rockContext );
                     if ( attribute != null )
                     {
                         defaultColumnHeaderText = attribute.Name;
@@ -1378,7 +1411,7 @@ namespace RockWeb.Blocks.Reporting
                 else
                 {
                     // if this EntityField is not available for the current person, but this reportField already has it configured, let them keep it
-                    var attribute = AttributeCache.Read( fieldSelection.AsGuid(), rockContext );
+                    var attribute = AttributeCache.Get( fieldSelection.AsGuid(), rockContext );
                     ddlFields.Items.Add( new ListItem( attribute.Name, selectedValue ) );
                     ddlFields.SelectedValue = selectedValue;
                 }

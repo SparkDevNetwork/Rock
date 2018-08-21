@@ -91,7 +91,7 @@ namespace Rock.PersonProfile.Badge
                 string personalityType = Person.GetAttributeValue( "PersonalityType" );
                 if ( !string.IsNullOrEmpty( personalityType ) )
                 {
-                    var personalityValue = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid() ).DefinedValues.Where( v => v.Value == personalityType ).FirstOrDefault();
+                    var personalityValue = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid() ).DefinedValues.Where( v => v.Value == personalityType ).FirstOrDefault();
                     if ( personalityValue != null )
                     {
                         description = personalityValue.Description;
@@ -102,7 +102,7 @@ namespace Rock.PersonProfile.Badge
                 string detailPageUrl = string.Empty;
                 if ( !String.IsNullOrEmpty( GetAttributeValue( badge, "DISCResultDetail" ) ) )
                 {
-                    int pageId = Rock.Web.Cache.PageCache.Read( Guid.Parse( GetAttributeValue( badge, "DISCResultDetail" ) ) ).Id;
+                    int pageId = PageCache.Get( Guid.Parse( GetAttributeValue( badge, "DISCResultDetail" ) ) ).Id;
                     detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( String.Format( "~/page/{0}?Person={1}", pageId, Person.UrlEncodedKey ) );
                     writer.Write( "<a href='{0}'>", detailPageUrl  );
                 }

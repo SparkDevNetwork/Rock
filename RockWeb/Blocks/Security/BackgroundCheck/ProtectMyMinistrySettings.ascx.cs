@@ -30,6 +30,9 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System.Data.SqlClient;
+using Rock.Checkr.Constants;
+using Rock.Checkr;
 
 namespace RockWeb.Blocks.Security.BackgroundCheck
 {
@@ -41,6 +44,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
     {
         private const string GET_STARTED_URL = "http://www.rockrms.com/Redirect/PMMSignup";
         private const string PROMOTION_IMAGE_URL = "https://rockrms.blob.core.windows.net/resources/pmm-integration/pmm-integration-banner.png";
+        private const string TYPENAME_PREFIX = "PMM - ";
 
         #region Control Methods
 
@@ -148,7 +152,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     SetSettingValue( rockContext, settings, "UserName", tbUserName.Text );
                     SetSettingValue( rockContext, settings, "Password", tbPassword.Text, true );
                     SetSettingValue( rockContext, settings, "ReturnURL", urlWebHook.Text );
-                    SetSettingValue( rockContext, settings, "TestMode", cbTestMode.Checked.ToString() );
                     SetSettingValue( rockContext, settings, "Active", cbActive.Checked.ToString() );
                     rockContext.SaveChanges();
 
@@ -209,7 +212,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void gDefinedValues_GridReorder( object sender, GridReorderEventArgs e )
         {
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_PACKAGES.AsGuid() );
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() );
             if ( definedType != null )
             {
                 var changedIds = new List<int>();
@@ -217,15 +220,9 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 using ( var rockContext = new RockContext() )
                 {
                     var definedValueService = new DefinedValueService( rockContext );
-                    var definedValues = definedValueService.Queryable().Where( a => a.DefinedTypeId == definedType.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Value );
+                    var definedValues = definedValueService.Queryable().Where( a => a.DefinedTypeId == definedType.Id ).Where( a => a.ForeignId == 1 ).OrderBy( a => a.Order ).ThenBy( a => a.Value );
                     changedIds = definedValueService.Reorder( definedValues.ToList(), e.OldIndex, e.NewIndex );
                     rockContext.SaveChanges();
-                }
-
-                DefinedTypeCache.Flush( definedType.Id );
-                foreach ( int id in changedIds )
-                {
-                    Rock.Web.Cache.DefinedValueCache.Flush( id );
                 }
             }
 
@@ -264,9 +261,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
                     definedValueService.Delete( value );
                     rockContext.SaveChanges();
-
-                    DefinedTypeCache.Flush( value.DefinedTypeId );
-                    DefinedValueCache.Flush( value.Id );
                 }
 
                 BindPackageGrid();
@@ -277,7 +271,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         {
             int definedValueId = hfDefinedValueId.Value.AsInteger();
 
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_PACKAGES.AsGuid() );
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() );
             if ( definedType != null )
             {
                 using ( var rockContext = new RockContext() )
@@ -297,7 +291,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                         service.Add( definedValue );
                     }
 
-                    definedValue.Value = tbTitle.Text;
+                    definedValue.Value = TYPENAME_PREFIX + tbTitle.Text;
                     definedValue.Description = tbDescription.Text;
                     rockContext.SaveChanges();
 
@@ -307,7 +301,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     int? dvJurisdictionCodeId = ddlMVRJurisdication.SelectedValueAsInt();
                     if ( dvJurisdictionCodeId.HasValue && dvJurisdictionCodeId.Value > 0 )
                     {
-                        var dvJurisdicationCode = DefinedValueCache.Read( dvJurisdictionCodeId.Value );
+                        var dvJurisdicationCode = DefinedValueCache.Get( dvJurisdictionCodeId.Value );
                         if ( dvJurisdicationCode != null )
                         {
                             dvJurisdicationCodeGuid = dvJurisdicationCode.Guid;
@@ -322,16 +316,66 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     definedValue.SetAttributeValue( "MVRJurisdiction", dvJurisdicationCodeGuid.HasValue ? dvJurisdicationCodeGuid.Value.ToString() : string.Empty );
                     definedValue.SetAttributeValue( "SendHomeStateMVR", cbSendStateMVR.Checked.ToString() );
                     definedValue.SaveAttributeValues( rockContext );
-
-                    DefinedTypeCache.Flush( definedType.Id );
-                    DefinedValueCache.Flush( definedValue.Id );
                 }
             }
 
             BindPackageGrid();
-
             HideDialog();
+        }
 
+        /// <summary>
+        /// Handles the Click event of the btnDefault control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDefault_Click( object sender, EventArgs e )
+        {
+            var bioBlock = BlockCache.Get( Rock.SystemGuid.Block.BIO.AsGuid() );
+            List<Guid> workflowActionGuidList = bioBlock.GetAttributeValues( "WorkflowActions" ).AsGuidList();
+            if ( workflowActionGuidList == null || workflowActionGuidList.Count == 0 )
+            {
+                // Add Checkr to Bio Workflow Actions
+                bioBlock.SetAttributeValue( "WorkflowActions", Rock.SystemGuid.WorkflowType.PROTECTMYMINISTRY );
+                ///BackgroundCheckContainer.Instance.Components
+            }
+            else
+            {
+                //var workflowActionValues = workflowActionValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                Guid guid = Rock.SystemGuid.WorkflowType.PROTECTMYMINISTRY.AsGuid();
+                if ( !workflowActionGuidList.Any( w => w == guid ) )
+                {
+                    // Add Checkr to Bio Workflow Actions
+                    workflowActionGuidList.Add( guid );
+                }
+
+                // Remove PMM from Bio Workflow Actions
+                guid = CheckrSystemGuid.CHECKR_WORKFLOW_TYPE.AsGuid();
+                workflowActionGuidList.RemoveAll( w => w == guid );
+                bioBlock.SetAttributeValue( "WorkflowActions", workflowActionGuidList.AsDelimited( "," ) );
+                string pmmTypeName = ( typeof( Rock.Security.BackgroundCheck.ProtectMyMinistry ) ).FullName;
+                var pmmComponent = BackgroundCheckContainer.Instance.Components.Values.FirstOrDefault(c => c.Value.TypeName == pmmTypeName );
+                // pmmComponent.Value.GetAttributeValue( "Active" );
+                pmmComponent.Value.SetAttributeValue( "Active", "True" );
+                pmmComponent.Value.SaveAttributeValue( "Active" );
+            }
+
+            bioBlock.SaveAttributeValue( "WorkflowActions" );
+
+            using ( var rockContext = new RockContext() )
+            {
+                WorkflowTypeService workflowTypeService = new WorkflowTypeService( rockContext );
+                // Rename PMM Workflow
+                var pmmWorkflowAction = workflowTypeService.Get( Rock.SystemGuid.WorkflowType.PROTECTMYMINISTRY.AsGuid() );
+                pmmWorkflowAction.Name = "Background Check";
+
+                var checkrWorkflowAction = workflowTypeService.Get( CheckrSystemGuid.CHECKR_WORKFLOW_TYPE.AsGuid() );
+                // Rename Checkr Workflow
+                checkrWorkflowAction.Name = CheckrConstants.CHECKR_WORKFLOW_TYPE_NAME;
+
+                rockContext.SaveChanges();
+            }
+
+            ShowDetail();
         }
 
         #endregion
@@ -339,6 +383,35 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         #endregion
 
         #region Internal Methods
+        /// <summary>
+        /// Haves the workflow action.
+        /// </summary>
+        /// <param name="guidValue">The Guid value of the action.</param>
+        /// <returns>True/False if the Workflow contains the action</returns>
+        private bool HaveWorkflowAction( string guidValue )
+        {
+            // workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson
+
+            using ( var rockContext = new RockContext() )
+            {
+                BlockService blockService = new BlockService( rockContext );
+                AttributeService attributeService = new AttributeService( rockContext );
+                AttributeValueService attributeValueService = new AttributeValueService( rockContext );
+
+                var block = blockService.Get( Rock.SystemGuid.Block.BIO.AsGuid() );
+
+                var attribute = attributeService.Get( Rock.SystemGuid.Attribute.BIO_WORKFLOWACTION.AsGuid() );
+                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, block.Id );
+                if ( attributeValue == null || string.IsNullOrWhiteSpace( attributeValue.Value ) )
+                {
+                    return false;
+                }
+
+                var workflowActionValues = attributeValue.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                Guid guid = guidValue.AsGuid();
+                return workflowActionValues.Any( w => w.AsGuid() == guid );
+            }
+        }
 
         /// <summary>
         /// Shows the detail.
@@ -348,7 +421,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         {
             using ( var rockContext = new RockContext() )
             {
-                var mvrJurisdicationCodes = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES.AsGuid() );
+                var mvrJurisdicationCodes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES.AsGuid() );
                 if ( mvrJurisdicationCodes != null )
                 {
                     ddlMVRJurisdication.BindToDefinedType( mvrJurisdicationCodes, true, true );
@@ -381,9 +454,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// </summary>
         public void ShowNew()
         {
-            hlMode.Visible = false;
-            hlActive.Visible = false;
-
             imgPromotion.ImageUrl = PROMOTION_IMAGE_URL;
             hlGetStarted.NavigateUrl = GET_STARTED_URL;
 
@@ -404,22 +474,21 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="settings">The settings.</param>
         public void ShowView( List<AttributeValue> settings )
         {
-            ShowHighlightLabels( settings );
-
             lUserName.Text = GetSettingValue( settings, "UserName" );
             lPassword.Text = "********";
 
             using ( var rockContext = new RockContext() )
             {
                 var packages = new DefinedValueService( rockContext )
-                    .GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_PACKAGES.AsGuid() )
-                    .Select( v => v.Value )
+                    .GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() )
+                    .Where( v => v.ForeignId == 1 )
+                    .Select( v => v.Value.Substring( TYPENAME_PREFIX.Length) )
                     .ToList();
                 lPackages.Text = packages.AsDelimited( "<br/>" );
             }
 
             nbSSLWarning.Visible = !GetSettingValue( settings, "ReturnURL" ).StartsWith( "https://" );
-            nbSSLWarning.NotificationBoxType = GetSettingValue( settings, "TestMode" ).AsBoolean() ? NotificationBoxType.Warning : NotificationBoxType.Danger;
+            nbSSLWarning.NotificationBoxType = NotificationBoxType.Warning;
 
             pnlNew.Visible = false;
             pnlViewDetails.Visible = true;
@@ -427,6 +496,15 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             pnlPackages.Visible = false;
 
             HideSecondaryBlocks( false );
+
+            if ( HaveWorkflowAction( Rock.SystemGuid.WorkflowType.PROTECTMYMINISTRY ) )
+            {
+                btnDefault.Visible = false;
+            }
+            else
+            {
+                btnDefault.Visible = true;
+            }
         }
 
         /// <summary>
@@ -435,13 +513,10 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="settings">The settings.</param>
         public void ShowEdit( List<AttributeValue> settings )
         {
-            ShowHighlightLabels( settings );
-
             tbUserName.Text = GetSettingValue( settings, "UserName" );
             tbPassword.Text = GetSettingValue( settings, "Password", true );
             urlWebHook.Text = GetSettingValue( settings, "ReturnURL" );
             cbActive.Checked = GetSettingValue( settings, "Active" ).AsBoolean();
-            cbTestMode.Checked = GetSettingValue( settings, "TestMode" ).AsBoolean();
 
             BindPackageGrid();
 
@@ -461,7 +536,8 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             using ( var rockContext = new RockContext() )
             {
                 var definedValues = new DefinedValueService( rockContext )
-                    .GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_PACKAGES.AsGuid() )
+                    .GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() )
+                    .Where( a => a.ForeignId == 1 )
                     .ToList();
 
                 foreach( var definedValue in definedValues )
@@ -472,7 +548,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 gDefinedValues.DataSource = definedValues.Select( v => new
                 {
                     v.Id,
-                    v.Value,
+                    Value = v.Value.Substring( TYPENAME_PREFIX.Length ),
                     v.Description,
                     PackageName = v.GetAttributeValue( "PMMPackageName" ),
                     DefaultCounty = v.GetAttributeValue( "DefaultCounty" ),
@@ -493,7 +569,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="definedValueId">The defined value identifier.</param>
         public void ShowPackageEdit( int definedValueId )
         {
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_PACKAGES.AsGuid() );
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() );
             if ( definedType != null )
             {
                 DefinedValue definedValue = null;
@@ -505,7 +581,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 if ( definedValue != null )
                 {
                     hfDefinedValueId.Value = definedValue.Id.ToString();
-                    dlgPackage.Title = definedValue.Value;
+                    dlgPackage.Title = definedValue.Value.Substring( TYPENAME_PREFIX.Length );
                 }
                 else
                 {
@@ -515,7 +591,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     dlgPackage.Title = "New Package";
                 }
 
-                tbTitle.Text = definedValue.Value;
+                tbTitle.Text = definedValue.Value.Substring( TYPENAME_PREFIX.Length );
                 tbDescription.Text = definedValue.Description;
 
                 definedValue.LoadAttributes();
@@ -524,7 +600,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 Guid? mvrJurisdicationGuid = definedValue.GetAttributeValue( "MVRJurisdiction" ).AsGuidOrNull();
                 if ( mvrJurisdicationGuid.HasValue )
                 {
-                    var mvrJurisdication = DefinedValueCache.Read( mvrJurisdicationGuid.Value );
+                    var mvrJurisdication = DefinedValueCache.Get( mvrJurisdicationGuid.Value );
                     if ( mvrJurisdication != null )
                     {
                         ddlMVRJurisdication.SetValue( mvrJurisdication.Id );
@@ -540,23 +616,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
                 ShowDialog( "Package" );
             }
-        }
-
-        /// <summary>
-        /// Shows the highlight labels.
-        /// </summary>
-        /// <param name="settings">The settings.</param>
-        public void ShowHighlightLabels( List<AttributeValue> settings )
-        {
-            bool testMode = GetSettingValue( settings, "TestMode" ).AsBoolean();
-            hlMode.LabelType = testMode ? LabelType.Primary : LabelType.Success;
-            hlMode.Text = testMode ? "In Test Mode" : "In Live Mode";
-            hlMode.Visible = true;
-
-            bool active = GetSettingValue( settings, "Active" ).AsBoolean();
-            hlActive.LabelType = active ? LabelType.Success : LabelType.Danger;
-            hlActive.Text = active ? "Active" : "Inactive";
-            hlActive.Visible = true;
         }
 
         /// <summary>
@@ -604,7 +663,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <returns></returns>
         private List<AttributeValue> GetSettings( RockContext rockContext )
         {
-            var pmmEntityType = EntityTypeCache.Read( typeof( Rock.Security.BackgroundCheck.ProtectMyMinistry ) );
+            var pmmEntityType = EntityTypeCache.Get( typeof( Rock.Security.BackgroundCheck.ProtectMyMinistry ) );
             if ( pmmEntityType != null )
             {
                 var service = new AttributeValueService( rockContext );
@@ -661,7 +720,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             }
             else
             {
-                var pmmEntityType = EntityTypeCache.Read( typeof( Rock.Security.BackgroundCheck.ProtectMyMinistry ) );
+                var pmmEntityType = EntityTypeCache.Get( typeof( Rock.Security.BackgroundCheck.ProtectMyMinistry ) );
                 if ( pmmEntityType != null )
                 {
                     var attribute = new AttributeService( rockContext )

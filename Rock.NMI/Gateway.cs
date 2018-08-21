@@ -31,8 +31,8 @@ using RestSharp;
 using Rock.Attribute;
 using Rock.Financial;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Security;
 
 namespace Rock.NMI
 {
@@ -126,16 +126,16 @@ namespace Rock.NMI
             get
             {
                 var values = new List<DefinedValueCache>();
-                values.Add( DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
-                values.Add( DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY ) );
-                values.Add( DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY ) );
-                values.Add( DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY ) );
                 return values;
             }
         }
 
         /// <summary>
-        /// Returnes a boolean value indicating if 'Saved Account' functionality is supported for frequency (i.e. one-time vs repeating )
+        /// Returns a boolean value indicating if 'Saved Account' functionality is supported for frequency (i.e. one-time vs repeating )
         /// </summary>
         /// <param name="isRepeating">if set to <c>true</c> [is repeating].</param>
         /// <returns></returns>
@@ -286,7 +286,7 @@ namespace Rock.NMI
                     errorMessage = result.GetValueOrNull( "result-text" );
 
                     string resultCodeMessage = GetResultCodeMessage( result );
-                    if ( resultCodeMessage.IsNotNullOrWhitespace() )
+                    if ( resultCodeMessage.IsNotNullOrWhiteSpace() )
                     {
                         errorMessage += string.Format( " ({0})", resultCodeMessage );
                     }
@@ -306,7 +306,7 @@ namespace Rock.NMI
                 if ( !string.IsNullOrWhiteSpace( ccNumber ) )
                 {
                     // cc payment
-                    var curType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
+                    var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
                     transaction.FinancialPaymentDetail.NameOnCardEncrypted = Encryption.EncryptString( $"{result.GetValueOrNull( "billing_first-name" )} {result.GetValueOrNull( "billing_last-name" )}" );
                     transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : (int?)null;
                     transaction.FinancialPaymentDetail.CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardType( ccNumber.Replace( '*', '1' ).AsNumeric() )?.Id;
@@ -322,7 +322,7 @@ namespace Rock.NMI
                 else
                 {
                     // ach payment
-                    var curType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
+                    var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
                     transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : (int?)null;
                     transaction.FinancialPaymentDetail.AccountNumberMasked = result.GetValueOrNull( "billing_account-number" ).Masked( true );
                 }
@@ -534,7 +534,7 @@ namespace Rock.NMI
                 if ( !string.IsNullOrWhiteSpace( ccNumber ) )
                 {
                     // cc payment
-                    var curType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
+                    var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
                     scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : (int?)null;
                     scheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardType( ccNumber.Replace( '*', '1' ).AsNumeric() )?.Id;
                     scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked = ccNumber.Masked( true );
@@ -549,7 +549,7 @@ namespace Rock.NMI
                 else
                 {
                     // ach payment
-                    var curType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
+                    var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
                     scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : (int?)null;
                     scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked = result.GetValueOrNull( "billing_account_number" ).Masked( true );
                 }

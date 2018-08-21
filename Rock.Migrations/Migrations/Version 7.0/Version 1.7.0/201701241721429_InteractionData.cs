@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -105,7 +105,7 @@ BEGIN
             " );
 
 
-            // Job for Migrating Interaction Data
+            // Job for Migrating Interaction Data (schedule for 9pm to avoid conflict with AppPoolRecycle)
             Sql( @"
 INSERT INTO [dbo].[ServiceJob]
            ([IsSystem]
@@ -122,7 +122,7 @@ INSERT INTO [dbo].[ServiceJob]
          ,'Move Data from PageViews and Communication Activity to the new Interaction Tables'
          ,'Moves the data from Page Views and Communication Recipient Activity into the Interaction tables. When done, the job will drop the PageView and CommunicationRecipientActivity tables, then the job will remove itself.'
          ,'Rock.Jobs.MigrateInteractionsData'
-         ,'0 0 4 1/1 * ? *'
+         ,'0 0 21 1/1 * ? *'
          ,3
          ,'189AE3F1-92E9-4394-ACC5-0F244967F32E')" );
 

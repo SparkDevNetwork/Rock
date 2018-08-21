@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.Finance
                     int? campusId = e.Value.AsIntegerOrNull();
                     if ( campusId.HasValue )
                     {
-                        var campus = CampusCache.Read( campusId.Value );
+                        var campus = CampusCache.Get( campusId.Value );
                         if ( campus != null )
                         {
                             e.Value = campus.Name;
@@ -357,7 +357,7 @@ namespace RockWeb.Blocks.Finance
                     boundField.AttributeId = attribute.Id;
                     boundField.HeaderText = attribute.Name;
 
-                    var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                     if ( attributeCache != null )
                     {
                         boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;

@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -48,7 +49,7 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Enable Comments Flag", "If enabled, requestors will be able set whether or not they want to allow comments on their requests.", false, "Features", 7 )]
     [BooleanField( "Enable Public Display Flag", "If enabled, requestors will be able set whether or not they want their request displayed on the public website.", false, "Features", 8 )]
     [IntegerField( "Character Limit", "If set to something other than 0, this will limit the number of characters allowed when entering a new prayer request.", false, 250, "Features", 9 )]
-    [BooleanField( "Autofill User Info", "When enabled will autofill the user's info. This is generally no wanted on a public kioks.", false, "", 10)]
+    [BooleanField( "Autofill User Info", "When enabled will autofill the user's info. This is generally not wanted on a public kiosk.", false, "", 10)]
 
     // On Save Behavior
     [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 11 )]
@@ -102,7 +103,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             Type type = new PrayerRequest().GetType();
-            this.PrayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );
+            this.PrayerRequestEntityTypeId = EntityTypeCache.GetId( type.FullName );
 
             int charLimit = GetAttributeValue( "CharacterLimit" ).AsInteger();
             if ( charLimit > 0 )

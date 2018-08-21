@@ -143,6 +143,15 @@ namespace Rock.Model
         [DataMember]
         public int? PersonalDeviceId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the interaction end date time.
+        /// </summary>
+        /// <value>
+        /// The interaction end date time.
+        /// </value>
+        [DataMember]
+        public DateTime? InteractionEndDateTime { get; set; }
+
         #endregion
 
         #region Campaign Meta fields
@@ -187,15 +196,25 @@ namespace Rock.Model
         [MaxLength( 50 )]
         public string Content { get; set; }
 
+        /// <summary>
+        /// Gets or sets the term(s).
+        /// </summary>
+        /// <value>
+        /// The term.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string Term { get; set; }
+
         #endregion
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the interaction componenent.
+        /// Gets or sets the interaction component.
         /// </summary>
         /// <value>
-        /// The interaction componenent.
+        /// The interaction component.
         /// </value>
         [DataMember]
         public virtual InteractionComponent InteractionComponent { get; set; }
@@ -219,10 +238,10 @@ namespace Rock.Model
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the interaction componenent.
+        /// Gets or sets the interaction component.
         /// </summary>
         /// <value>
-        /// The interaction componenent.
+        /// The interaction component.
         /// </value>
         [DataMember]
         public virtual InteractionSession InteractionSession { get; set; }

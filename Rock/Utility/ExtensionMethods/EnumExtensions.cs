@@ -80,7 +80,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Converts a string value to an enum value.
+        /// Converts a string value to an enum value, first using a case-sensitive match, but also trying a case-insensitive match
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="enumValue">The enum value.</param>
@@ -100,7 +100,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Converts to enum or null.
+        /// Converts a string to an enum value, first using a case-sensitive match, but also trying a case-insensitive match
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="enumValue">The enum value.</param>
@@ -111,6 +111,12 @@ namespace Rock
             T result;
             if ( Enum.TryParse<T>( ( enumValue ?? "" ).Replace( " ", "" ), out result ) && Enum.IsDefined( typeof( T ), result ) )
             {
+                // a regular case-sensitive parse found it, so we got it
+                return result;
+            }
+            else if ( Enum.TryParse<T>( ( enumValue ?? "" ).Replace( " ", "" ), true, out result ) && Enum.IsDefined( typeof( T ), result ) )
+            {
+                // case-sensitive parse didn't work, but parsing again with ignoreCase = true got it for us
                 return result;
             }
             else

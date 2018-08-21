@@ -247,7 +247,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public int? GradeOffset
         {
-            get { return _ddlGradePicker.SelectedValueAsInt( NoneAsNull: false ); }
+            get { return _ddlGradePicker.SelectedValueAsInt( noneAsNull: false ); }
             set { SetListValue( _ddlGradePicker, value ); }
         }
 
@@ -263,7 +263,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( GroupTypeId.HasValue )
                 {
-                    var groupGroupType = GroupTypeCache.Read( GroupTypeId.Value );
+                    var groupGroupType = GroupTypeCache.Get( GroupTypeId.Value );
                     if ( groupGroupType != null )
                     {
                         return groupGroupType.Roles;
@@ -503,7 +503,7 @@ namespace Rock.Web.UI.Controls
             _lbDelete.Controls.Add( iDelete );
             iDelete.AddCssClass( "fa fa-times" );
 
-            _lbDelete.CssClass = "btn btn-sm btn-danger pull-right";
+            _lbDelete.CssClass = "btn btn-square btn-danger pull-right";
             _lbDelete.Click += lbDelete_Click;
             _lbDelete.CausesValidation = false;
         }
@@ -632,7 +632,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
         protected void BindListToDefinedType( ListControl listControl, string definedTypeGuid, bool insertBlankOption = false )
         {
-            var definedType = DefinedTypeCache.Read( new Guid( definedTypeGuid ) );
+            var definedType = DefinedTypeCache.Get( new Guid( definedTypeGuid ) );
             listControl.BindToDefinedType( definedType, insertBlankOption );
         }
 

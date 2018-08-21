@@ -46,6 +46,8 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
+            var locationCampusValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid() );
+
             if ( !Page.IsPostBack )
             {
                 LoadDropDowns();
@@ -98,7 +100,7 @@ namespace RockWeb.Blocks.Core
             var rockContext = new RockContext();
             var campusService = new CampusService( rockContext );
             var locationService = new LocationService( rockContext );
-            var locationCampusValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid() );
+            var locationCampusValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid() );
 
             int campusId = int.Parse( hfCampusId.Value );
 
@@ -175,8 +177,6 @@ namespace RockWeb.Blocks.Core
                 }
 
             } );
-
-            Rock.Web.Cache.CampusCache.Flush( campus.Id );
 
             NavigateToParentPage();
         }

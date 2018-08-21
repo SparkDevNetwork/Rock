@@ -22,8 +22,8 @@ using System.ComponentModel.Composition;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Security;
 
 namespace Rock.Workflow.Action
 {
@@ -41,7 +41,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "SSN Attribute", "The attribute that contains the Social Security Number of the person who the background check should be submitted for ( Must be an 'Encrypted Text' attribute )", false, "", "", 2, null,
         new string[] { "Rock.Field.Types.SSNFieldType" } )]
     [WorkflowAttribute( "Request Type Attribute", "The attribute that contains the type of background check to submit (Specific to provider).", false, "", "", 3, null)]
-    [WorkflowAttribute( "Billing Code Attribute", "The attribute that contains the billing code to use when submitting background checkk.", false, "", "", 4 )]
+    [WorkflowAttribute( "Billing Code Attribute", "The attribute that contains the billing code to use when submitting background check.", false, "", "", 4 )]
     public class BackgroundCheckRequest : ActionComponent
     {
         /// <summary>
@@ -62,10 +62,10 @@ namespace Rock.Workflow.Action
                 var provider = BackgroundCheckContainer.GetComponent( providerGuid );
                 if ( provider != null )
                 {
-                    var personAttribute = AttributeCache.Read( GetAttributeValue( action, "PersonAttribute" ).AsGuid() );
-                    var ssnAttribute = AttributeCache.Read( GetAttributeValue( action, "SSNAttribute" ).AsGuid() );
-                    var requestTypeAttribute = AttributeCache.Read( GetAttributeValue( action, "RequestTypeAttribute" ).AsGuid() );
-                    var billingCodeAttribute = AttributeCache.Read( GetAttributeValue( action, "BillingCodeAttribute" ).AsGuid() );
+                    var personAttribute = AttributeCache.Get( GetAttributeValue( action, "PersonAttribute" ).AsGuid() );
+                    var ssnAttribute = AttributeCache.Get( GetAttributeValue( action, "SSNAttribute" ).AsGuid() );
+                    var requestTypeAttribute = AttributeCache.Get( GetAttributeValue( action, "RequestTypeAttribute" ).AsGuid() );
+                    var billingCodeAttribute = AttributeCache.Get( GetAttributeValue( action, "BillingCodeAttribute" ).AsGuid() );
 
                     return provider.SendRequest( rockContext, action.Activity.Workflow, personAttribute,
                         ssnAttribute, requestTypeAttribute, billingCodeAttribute, out errorMessages );

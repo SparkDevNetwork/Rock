@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Prayer
                 {
                     
                     Guid defaultCategoryGuid = GetAttributeValue( "DefaultCategory" ).AsGuid();
-                    var defaultCategoryId = CategoryCache.Read( defaultCategoryGuid, rockContext ).Id;
+                    var defaultCategoryId = CategoryCache.Get( defaultCategoryGuid, rockContext ).Id;
 
                     bddlCategory.SetValue( defaultCategoryId );
                 }
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             Type type = new PrayerRequest().GetType();
-            this.PrayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );
+            this.PrayerRequestEntityTypeId = EntityTypeCache.GetId( type.FullName );
 
             int charLimit = GetAttributeValue( "CharacterLimit" ).AsInteger();
             if ( charLimit > 0 )
@@ -190,7 +190,9 @@ namespace RockWeb.Blocks.Prayer
             var prayerRequest = new PrayerRequest { Id = 0 };
             prayerRequest.LoadAttributes();
             phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( prayerRequest, phAttributes, false, BlockValidationGroup );
+            // Filter to only include attribute / attribute values that the person is authorized to edit.
+            var excludeForEdit = prayerRequest.Attributes.Where( a => !a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+            Rock.Attribute.Helper.AddEditControls( prayerRequest, phAttributes, false, BlockValidationGroup, excludeForEdit );
         }
 
         #endregion
@@ -409,7 +411,7 @@ namespace RockWeb.Blocks.Prayer
             Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
             if ( workflowTypeGuid.HasValue )
             {
-                var workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
+                var workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
                     try

@@ -182,10 +182,10 @@ namespace Rock.Field.Types
             {
                 if ( workflowPicker.WorkflowId.HasValue )
                 {
-                    var workflow = new WorkflowService( new RockContext() ).Get( workflowPicker.WorkflowId.Value );
-                    if ( workflow != null )
+                    var workflowGuid = new WorkflowService( new RockContext() ).GetGuid( workflowPicker.WorkflowId.Value );
+                    if ( workflowGuid != null )
                     {
-                        return workflow.Guid.ToString();
+                        return workflowGuid.ToString();
                     }
                 }
             }
@@ -207,10 +207,10 @@ namespace Rock.Field.Types
                 Guid? guid = value.AsGuidOrNull();
                 if ( guid.HasValue )
                 {
-                    var workflow = new WorkflowService( new RockContext() ).Get( guid.Value );
-                    if ( workflow != null )
+                    var workflowId = new WorkflowService( new RockContext() ).GetId( guid.Value );
+                    if ( workflowId != null )
                     {
-                        workflowPicker.WorkflowId = workflow.Id;
+                        workflowPicker.WorkflowId = workflowId;
                         return;
                     }
                 }
@@ -240,8 +240,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new WorkflowService( new RockContext() ).Get( guid );
-            return item != null ? item.Id : (int?)null;
+            return new WorkflowService( new RockContext() ).GetId( guid );
         }
 
         /// <summary>
@@ -252,8 +251,8 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new WorkflowService( new RockContext() ).Get( id ?? 0 );
-            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            var itemGuid = new WorkflowService( new RockContext() ).GetGuid( id ?? 0 );
+            string guidValue = itemGuid?.ToString() ?? string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }
 

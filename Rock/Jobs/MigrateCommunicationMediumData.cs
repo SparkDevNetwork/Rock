@@ -252,7 +252,7 @@ END
                 {
                     if ( !commDetails.SMSFromDefinedValueId.HasValue )
                     {
-                        var dv = DefinedValueCache.Read( mediumData["FromValue"].AsInteger() );
+                        var dv = DefinedValueCache.Get( mediumData["FromValue"].AsInteger() );
                         commDetails.SMSFromDefinedValueId = dv != null ? dv.Id : ( int? ) null;
                     }
                     commDetails.SMSMessage = ConvertMediumData( mediumData, "Message", commDetails.SMSMessage );
@@ -285,7 +285,7 @@ END
         /// <returns></returns>
         private static string ConvertMediumData( Dictionary<string, string> mediumData, string key, string propertyValue )
         {
-            if ( propertyValue.IsNotNullOrWhitespace() )
+            if ( propertyValue.IsNotNullOrWhiteSpace() )
             {
                 return propertyValue;
             }

@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Groups
     [CodeEditorField( "Not In Group Message", "Lava template to display when person is not in the group.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, @"<div class='alert alert-warning'>
     {{ Person.NickName }} was not in the group '{{ Group.Name }}'.
 </div>", order: 2 )]
-    [BooleanField("Warn When Not In Group", "Determines if the 'Not In Group Message'should be shown if the person is not in the group. Otherwise the success message will be shown", true, order: 3)]
+    [BooleanField("Warn When Not In Group", "Determines if the 'Not In Group Message' should be shown if the person is not in the group. Otherwise the success message will be shown", true, order: 3)]
     [BooleanField("Inactivate Instead of Remove", "Inactivates the person in the group instead of removing them.", false, key:"Inactivate", order: 4)]
     public partial class GroupMemberRemoveFromUrl : Rock.Web.UI.RockBlock
     {
@@ -89,26 +89,20 @@ namespace RockWeb.Blocks.Groups
             if ( !Page.IsPostBack )
             {
                 RockContext rockContext = new RockContext();
-                
+
                 Group group = null;
                 Guid personGuid = Guid.Empty;
 
                 // get group from url
-                if ( Request["GroupId"] != null || Request["GroupGuid"] != null )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupId" ) ) )
                 {
-                    if ( Request["GroupId"] != null )
-                    {
-                        int groupId = 0;
-                        if ( Int32.TryParse( Request["GroupId"], out groupId ) )
-                        {
-                            group = new GroupService( rockContext ).Queryable().Where( g => g.Id == groupId ).FirstOrDefault();
-                        }
-                    }
-                    else
-                    {
-                        Guid groupGuid = Request["GroupGuid"].AsGuid();
-                        group = new GroupService( rockContext ).Queryable().Where( g => g.Guid == groupGuid ).FirstOrDefault();
-                    }
+                    int groupId = PageParameter( "GroupId" ).AsInteger();
+                    group = new GroupService( rockContext ).Queryable().Where( g => g.Id == groupId ).FirstOrDefault();
+                }
+                else if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupGuid" ) ) )
+                {
+                    Guid groupGuid = PageParameter( "GroupGuid" ).AsGuid();
+                    group = new GroupService( rockContext ).Queryable().Where( g => g.Guid == groupGuid ).FirstOrDefault();
                 }
                 else
                 {
@@ -127,9 +121,9 @@ namespace RockWeb.Blocks.Groups
                 // get person
                 Person person = null;
 
-                if ( !string.IsNullOrWhiteSpace(Request["PersonGuid"]) )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonGuid" ) ) )
                 {
-                    person = new PersonService( rockContext ).Get( Request["PersonGuid"].AsGuid() );
+                    person = new PersonService( rockContext ).Get( PageParameter( "PersonGuid" ).AsGuid() );
                 }
 
                 if ( person == null )
@@ -168,7 +162,7 @@ namespace RockWeb.Blocks.Groups
                         {
                             groupMemberService.Delete( groupMember );
                         }
-                        
+
                         rockContext.SaveChanges();
                     }
 

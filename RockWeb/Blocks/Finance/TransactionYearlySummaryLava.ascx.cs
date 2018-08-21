@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
-            var contributionType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            var contributionType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
             if ( contributionType != null )
             {
                 var rockContext = new RockContext();

@@ -23,21 +23,22 @@
                         <Rock:RockDropDownList ID="ddlLocation" runat="server" Label="Location" DataValueField="Key" DataTextField="Value" />
                         <Rock:RockDropDownList ID="ddlSchedule" runat="server" Label="Schedule" DataValueField="Key" DataTextField="Value"  />
                     </Rock:GridFilter>
-
+                    <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                     <Rock:Grid ID="gOccurrences" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Occurrence" OnRowSelected="gOccurrences_Edit" >
                         <Columns>
-                            <Rock:DateField DataField="Date" HeaderText="Date" ItemStyle-HorizontalAlign="Left" SortExpression="Date" />
+                            <Rock:DateField DataField="OccurrenceDate" HeaderText="Date" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left" SortExpression="OccurrenceDate" />
 		                    <Rock:RockTemplateField HeaderText="Location" SortExpression="LocationPath,LocationName">
 		                        <ItemTemplate>
 		                            <%#Eval("LocationName")%><br />
-		                            <small><%#Eval("LocationPath")%></small>
+		                            <small><%#Eval("ParentLocationPath")%></small>
 		                        </ItemTemplate>
 		                    </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="ScheduleName" HeaderText="Schedule" SortExpression="ScheduleName" />
                             <Rock:BoolField DataField="AttendanceEntered" HeaderText="Attendance Entered" SortExpression="AttendanceEntered" />
                             <Rock:BoolField DataField="DidNotOccur" HeaderText="Didn't Meet" SortExpression="DidNotOccur" />
-                            <Rock:RockBoundField DataField="DidAttendCount" HeaderText="Attendance Count" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:N0}" SortExpression="DidAttendCount" />
-                            <Rock:RockBoundField DataField="Percentage" HeaderText="Percent Attended" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:P0}" SortExpression="Percentage" />
+                            <Rock:RockBoundField DataField="DidAttendCount" HeaderText="Attendance Count" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:N0}" SortExpression="DidAttendCount" HeaderStyle-HorizontalAlign="Right" />
+                            <Rock:RockBoundField DataField="AttendanceRate" HeaderText="Percent Attended" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:P0}" SortExpression="AttendanceRate" HeaderStyle-HorizontalAlign="Right"/>
+                            <Rock:RockBoundField DataField="Notes" HeaderText="Notes" HtmlEncode="false" ColumnPriority="Desktop" SortExpression="Notes"/>
                             <Rock:EditField IconCssClass="fa fa-check-square-o" OnClick="gOccurrences_Edit" ToolTip="Enter Attendance" />
                             <Rock:DeleteField OnClick="gOccurrences_Delete" />
                         </Columns>

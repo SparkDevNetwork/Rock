@@ -189,7 +189,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
                 if ( control != null )
                 {
                     // Add the field to the dropdown of available fields
-                    if ( AttributeCache.Read( entityField.AttributeGuid.Value )?.EntityTypeQualifierColumn == "ContentChannelTypeId" )
+                    if ( AttributeCache.Get( entityField.AttributeGuid.Value )?.EntityTypeQualifierColumn == "ContentChannelTypeId" )
                     {
                         ddlProperty.Items.Add( new ListItem( entityField.TitleWithoutQualifier, entityField.UniqueName ) );
                     }
@@ -418,7 +418,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
                     var allEntityAttributeFields = EntityHelper.GetEntityFields( typeof( Rock.Model.ContentChannelItem ) ).Where( a => a.FieldKind == FieldKind.Attribute );
                     foreach ( var entityAttributeField in allEntityAttributeFields )
                     {
-                        var attributeCache = AttributeCache.Read( entityAttributeField.AttributeGuid.Value );
+                        var attributeCache = AttributeCache.Get( entityAttributeField.AttributeGuid.Value );
                         if ( attributeCache.EntityTypeQualifierColumn == "ContentChannelTypeId" && attributeCache.EntityTypeQualifierValue == contentChannelTypeId.ToString() )
                         {
                             entityAttributeFields.Add( entityAttributeField );

@@ -157,8 +157,6 @@ namespace RockWeb.Blocks.Cms
                 pageService.Delete( page );
 
                 rockContext.SaveChanges();
-
-                PageCache.Flush( page.Id );
             }
 
             BindPagesGrid();
@@ -179,7 +177,7 @@ namespace RockWeb.Blocks.Cms
                 // quit if the siteId can't be determined
                 return;
             }
-            LayoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ) );
+            LayoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Get( siteId ) );
             LayoutService layoutService = new LayoutService( new RockContext() );
             var layouts = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) ).ToList();
             ddlLayoutFilter.DataSource = layouts;
@@ -208,7 +206,7 @@ namespace RockWeb.Blocks.Cms
             // Question: Is this RegisterLayouts necessary here?  Since if it's a new layout
             // there would not be any pages on them (which is our concern here).
             // It seems like it should be the concern of some other part of the puzzle.
-            LayoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ) );
+            LayoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Get( siteId ) );
             //var layouts = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) ).Select( a => a.Id ).ToList();
 
             // Find all the pages that are related to this site...

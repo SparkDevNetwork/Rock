@@ -52,6 +52,7 @@ namespace Rock.Web.UI.Controls
         EmailBox _ebContactEmail;
         DateTimePicker _dtpSendReminder;
         RockCheckBox _cbReminderSent;
+        HtmlEditor _htmlRegistrationInstructions;
         HtmlEditor _htmlAdditionalReminderDetails;
         HtmlEditor _htmlAdditionalConfirmationDetails;
 
@@ -466,6 +467,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the registration instructions.
+        /// </summary>
+        /// <value>
+        /// The registration instructions.
+        /// </value>
+        public string RegistrationInstructions {
+            get {
+                EnsureChildControls();
+                return _htmlRegistrationInstructions.Text;
+            }
+            set {
+                EnsureChildControls();
+                _htmlRegistrationInstructions.Text = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the additional reminder details.
         /// </summary>
         /// <value>
@@ -539,6 +557,7 @@ namespace Rock.Web.UI.Controls
                 _dtpSendReminder.ValidationGroup = value;
                 _cbReminderSent.ValidationGroup = value;
                 _htmlAdditionalConfirmationDetails.ValidationGroup = value;
+                _htmlRegistrationInstructions.ValidationGroup = value;
                 _htmlAdditionalReminderDetails.ValidationGroup = value;
             }
         }
@@ -592,6 +611,7 @@ namespace Rock.Web.UI.Controls
                 _apAccount.Visible = instance.RegistrationTemplate != null && instance.RegistrationTemplate.FinancialGatewayId.HasValue;
                 _dtpSendReminder.SelectedDateTime = instance.SendReminderDateTime;
                 _cbReminderSent.Checked = instance.ReminderSent;
+                _htmlRegistrationInstructions.Text = instance.RegistrationInstructions;
                 _htmlAdditionalReminderDetails.Text = instance.AdditionalReminderDetails;
                 _htmlAdditionalConfirmationDetails.Text = instance.AdditionalConfirmationDetails;
             }
@@ -612,6 +632,7 @@ namespace Rock.Web.UI.Controls
                 _apAccount.SetValue( null );
                 _dtpSendReminder.SelectedDateTime = null;
                 _cbReminderSent.Checked = false;
+                _htmlRegistrationInstructions.Text = string.Empty;
                 _htmlAdditionalReminderDetails.Text = string.Empty;
                 _htmlAdditionalConfirmationDetails.Text = string.Empty;
             }
@@ -646,6 +667,7 @@ namespace Rock.Web.UI.Controls
                 instance.AccountId = accountId > 0 ? accountId : (int?)null;
                 instance.SendReminderDateTime = _dtpSendReminder.SelectedDateTime;
                 instance.ReminderSent = _cbReminderSent.Checked;
+                instance.RegistrationInstructions = _htmlRegistrationInstructions.Text;
                 instance.AdditionalReminderDetails = _htmlAdditionalReminderDetails.Text; 
                 instance.AdditionalConfirmationDetails = _htmlAdditionalConfirmationDetails.Text; 
             }
@@ -757,6 +779,14 @@ namespace Rock.Web.UI.Controls
                 _cbReminderSent.Label = "Reminder Sent";
                 _cbReminderSent.Text = "Yes";
                 Controls.Add( _cbReminderSent );
+
+                _htmlRegistrationInstructions = new HtmlEditor();
+                _htmlRegistrationInstructions.ID = this.ID + "_htmlRegistrationInstructions";
+                _htmlRegistrationInstructions.Toolbar = HtmlEditor.ToolbarConfig.Light;
+                _htmlRegistrationInstructions.Label = "Registration Instructions";
+                _htmlRegistrationInstructions.Help = "These instructions will appear at the beginning of the registration process when selecting how many registrants for the registration. These instructions can be provided on the registration template also. Any instructions here will override the instructions on the template.";
+                _htmlRegistrationInstructions.Height = 200;
+                Controls.Add(_htmlRegistrationInstructions);
 
                 _htmlAdditionalReminderDetails = new HtmlEditor();
                 _htmlAdditionalReminderDetails.ID = this.ID + "_htmlAdditionalReminderDetails";
@@ -880,6 +910,8 @@ namespace Rock.Web.UI.Controls
 
                 writer.RenderEndTag();  // col-md-6
             writer.RenderEndTag();  // row
+
+            _htmlRegistrationInstructions.RenderControl(writer);
 
             _htmlAdditionalReminderDetails.RenderControl( writer );
 

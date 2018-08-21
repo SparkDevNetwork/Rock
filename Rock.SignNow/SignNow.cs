@@ -21,10 +21,10 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 
-using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Security;
 
 using Newtonsoft.Json.Linq;
 using System.Web;
@@ -232,7 +232,7 @@ namespace Rock.SignNow
                 return null;
             }
 
-            // Create a docuemnt from the template
+            // Create a document from the template
             JObject copyTemplateRes = SignNowSDK.Template.Copy( accessToken, documentTemplate.ProviderTemplateKey, documentName );
             string documentId = copyTemplateRes.Value<string>( "id" );
             if ( string.IsNullOrWhiteSpace( documentId ) )
@@ -661,7 +661,7 @@ namespace Rock.SignNow
             if ( string.IsNullOrWhiteSpace( errorMessage ) )
             {
                 accessToken = OAuthRes.Value<string>( "access_token" );
-                GlobalAttributesCache globalCache = GlobalAttributesCache.Read();
+                GlobalAttributesCache globalCache = GlobalAttributesCache.Get();
                 globalCache.SetValue( "SignNowAccessToken", accessToken, true );
             }
 

@@ -34,7 +34,7 @@ namespace Rock.Communication
         {
             get
             {
-                return EntityTypeCache.Read( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ).Id;
+                return EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ).Id;
             }
         }
 

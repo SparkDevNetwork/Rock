@@ -58,11 +58,11 @@ namespace Rock.Web.UI.Controls
             CampusCache campusCache = null;
             if ( dataValueAsInt.HasValue )
             {
-                campusCache = CampusCache.Read( dataValueAsInt.Value );
+                campusCache = CampusCache.Get( dataValueAsInt.Value );
             }
             else if ( dataValueAsGuid.HasValue )
             {
-                campusCache = CampusCache.Read( dataValueAsGuid.Value );
+                campusCache = CampusCache.Get( dataValueAsGuid.Value );
             }
 
             if ( campusCache != null )

@@ -49,7 +49,7 @@ namespace Rock.Model
         /// <returns></returns>
         public bool Process( Workflow workflow, object entity, out List<string> errorMessages )
         {
-            var workflowType = WorkflowTypeCache.Read( workflow.WorkflowTypeId );
+            var workflowType = WorkflowTypeCache.Get( workflow.WorkflowTypeId );
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 var rockContext = (RockContext)this.Context;

@@ -146,11 +146,11 @@ namespace Rock.Model
             {
                 if ( ActivityTypeId > 0 )
                 {
-                    return WorkflowActivityTypeCache.Read( ActivityTypeId );
+                    return WorkflowActivityTypeCache.Get( ActivityTypeId );
                 }
                 else if ( ActivityType != null )
                 {
-                    return WorkflowActivityTypeCache.Read( ActivityType.Id );
+                    return WorkflowActivityTypeCache.Get( ActivityType.Id );
                 }
                 return null;
             }
@@ -280,7 +280,7 @@ namespace Rock.Model
         /// <see cref="System.Collections.Generic.List{String}" /> that will contain any error messages that are
         /// returned while processing this WorkflowActivity</param>
         /// <returns>
-        /// A <see cref="System.Boolean" /> vlaue that is <c>true</c> if the WorkflowActivity processes successfully; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean" /> value that is <c>true</c> if the WorkflowActivity processes successfully; otherwise <c>false</c>.
         /// </returns>
         internal virtual bool Process( RockContext rockContext, Object entity, out List<string> errorMessages )
         {
@@ -409,7 +409,7 @@ namespace Rock.Model
         {
             if ( activityType != null )
             {
-                var activityTypeCache = WorkflowActivityTypeCache.Read( activityType.Id );
+                var activityTypeCache = WorkflowActivityTypeCache.Get( activityType.Id );
                 var activity = Activate( activityTypeCache, workflow, rockContext );
                 if ( activity != null )
                 {

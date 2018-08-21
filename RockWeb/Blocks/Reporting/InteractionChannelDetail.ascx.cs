@@ -79,7 +79,7 @@ namespace RockWeb.Blocks.Reporting
             base.OnInit( e );
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", InteractionChannel.FriendlyTypeName );
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.InteractionChannel ) ).Id;
+            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.InteractionChannel ) ).Id;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -192,6 +192,7 @@ namespace RockWeb.Blocks.Reporting
                 _channel.ComponentDetailTemplate = ceComponentDetail.Text;
                 _channel.InteractionListTemplate = ceInteractionList.Text;
                 _channel.InteractionDetailTemplate = ceInteractionDetail.Text;
+                _channel.IsActive = cbIsActive.Checked;
 
                 _channel.ModifiedDateTime = RockDateTime.Now;
                 _channel.ModifiedByPersonAliasId = CurrentPersonAliasId;
@@ -232,6 +233,7 @@ namespace RockWeb.Blocks.Reporting
                 SetEditMode( true );
 
                 tbName.Text = _channel.Name;
+                cbIsActive.Checked = _channel.IsActive;
                 nbRetentionDuration.Text = _channel.RetentionDuration.ToString();
                 ceChannelList.Text = _channel.ChannelListTemplate;
                 ceChannelDetail.Text = _channel.ChannelDetailTemplate;

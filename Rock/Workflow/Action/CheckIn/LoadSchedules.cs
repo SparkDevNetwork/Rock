@@ -87,16 +87,18 @@ namespace Rock.Workflow.Action.CheckIn
                                                     {
                                                         var checkInSchedule = new CheckInSchedule();
                                                         checkInSchedule.Schedule = kioskSchedule.Schedule.Clone( false );
+                                                        checkInSchedule.CampusId = kioskSchedule.CampusId;
                                                         checkInSchedule.StartTime = kioskSchedule.StartTime;
                                                         location.Schedules.Add( checkInSchedule );
                                                     }
 
-                                                    if ( checkInState.CheckInType != null && 
+                                                    if ( checkInState.CheckInType != null &&
                                                         checkInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family &&
                                                         !person.PossibleSchedules.Any( s => s.Schedule.Id == kioskSchedule.Schedule.Id ) )
                                                     {
                                                         var checkInSchedule = new CheckInSchedule();
                                                         checkInSchedule.Schedule = kioskSchedule.Schedule.Clone( false );
+                                                        checkInSchedule.CampusId = kioskSchedule.CampusId;
                                                         checkInSchedule.StartTime = kioskSchedule.StartTime;
                                                         person.PossibleSchedules.Add( checkInSchedule );
                                                     }

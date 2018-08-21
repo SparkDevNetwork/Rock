@@ -146,7 +146,7 @@ namespace Rock.Reporting.DataSelect.Person
                 addressNamePart = values[1].ConvertToEnumOrNull<RockUdfHelper.AddressNamePart>() ?? RockUdfHelper.AddressNamePart.Full;
             }
 
-            string addressTypeId = DefinedValueCache.Read( groupLocationTypeValueGuid ).Id.ToString();
+            string addressTypeId = DefinedValueCache.Get( groupLocationTypeValueGuid ).Id.ToString();
             string addressComponent = addressNamePart.ConvertToString( false );
             var personLocationQuery = new PersonService( context ).Queryable()
                 .Select( p => RockUdfHelper.ufnCrm_GetAddress( p.Id, addressTypeId, addressComponent ) );
@@ -163,7 +163,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             RockDropDownList locationTypeList = new RockDropDownList();
             locationTypeList.Items.Clear();
-            foreach ( var value in DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
+            foreach ( var value in DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
             {
                 locationTypeList.Items.Add( new ListItem( value.Value, value.Guid.ToString() ) );
             }
@@ -179,9 +179,9 @@ namespace Rock.Reporting.DataSelect.Person
 
             // Localises the radio button list by modifying the text Value of radio buttons
             Dictionary<string, string> newLabels = new Dictionary<string, string>();
-            var globalAttributesCache = GlobalAttributesCache.Read();
+            var globalAttributesCache = GlobalAttributesCache.Get();
             var defaultCountry = ( !string.IsNullOrWhiteSpace( globalAttributesCache.OrganizationCountry ) ) ? globalAttributesCache.OrganizationCountry : "US";
-            var countryValue = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
+            var countryValue = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                     .DefinedValues
                     .Where( v => v.Value.Equals( defaultCountry, StringComparison.OrdinalIgnoreCase ) )
                     .FirstOrDefault();

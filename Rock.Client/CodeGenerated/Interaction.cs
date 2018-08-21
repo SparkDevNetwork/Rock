@@ -59,6 +59,9 @@ namespace Rock.Client
         public DateTime InteractionDateTime { get; set; }
 
         /// <summary />
+        public DateTime? InteractionEndDateTime { get; set; }
+
+        /// <summary />
         public int? InteractionSessionId { get; set; }
 
         /// <summary />
@@ -89,6 +92,9 @@ namespace Rock.Client
 
         /// <summary />
         public string Source { get; set; }
+
+        /// <summary />
+        public string Term { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -131,6 +137,7 @@ namespace Rock.Client
             this.InteractionComponentId = source.InteractionComponentId;
             this.InteractionData = source.InteractionData;
             this.InteractionDateTime = source.InteractionDateTime;
+            this.InteractionEndDateTime = source.InteractionEndDateTime;
             this.InteractionSessionId = source.InteractionSessionId;
             this.InteractionSummary = source.InteractionSummary;
             this.Medium = source.Medium;
@@ -141,6 +148,7 @@ namespace Rock.Client
             this.RelatedEntityId = source.RelatedEntityId;
             this.RelatedEntityTypeId = source.RelatedEntityTypeId;
             this.Source = source.Source;
+            this.Term = source.Term;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

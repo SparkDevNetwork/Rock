@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void LoadDropdowns()
         {
-            var scheduleEntityType = EntityTypeCache.Read( typeof( Schedule ) );
+            var scheduleEntityType = EntityTypeCache.Get( typeof( Schedule ) );
             var currentSchedule = RockPage.GetCurrentContext( scheduleEntityType ) as Schedule;
 
             var scheduleIdString = Request.QueryString["scheduleId"];

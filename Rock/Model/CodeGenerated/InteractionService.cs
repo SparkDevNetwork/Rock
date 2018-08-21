@@ -96,6 +96,7 @@ namespace Rock.Model
             target.InteractionComponentId = source.InteractionComponentId;
             target.InteractionData = source.InteractionData;
             target.InteractionDateTime = source.InteractionDateTime;
+            target.InteractionEndDateTime = source.InteractionEndDateTime;
             target.InteractionSessionId = source.InteractionSessionId;
             target.InteractionSummary = source.InteractionSummary;
             target.Medium = source.Medium;
@@ -105,6 +106,7 @@ namespace Rock.Model
             target.RelatedEntityId = source.RelatedEntityId;
             target.RelatedEntityTypeId = source.RelatedEntityTypeId;
             target.Source = source.Source;
+            target.Term = source.Term;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
