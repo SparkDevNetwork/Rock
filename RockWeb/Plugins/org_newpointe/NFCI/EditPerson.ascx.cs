@@ -58,14 +58,14 @@ namespace RockWeb.Plugins.org_newpointe.NFCI
             {
                 tbNickName.Text = person.NickName;
 
-                dvpTitle.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ), true );
+                dvpTitle.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ), true );
                 dvpTitle.SelectedValue = person.TitleValueId.ToString();
 
                 tbFirstName.Text = person.FirstName;
                 tbMiddleName.Text = person.MiddleName;
                 tbLastName.Text = person.LastName;
 
-                dvpSuffix.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ), true );
+                dvpSuffix.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ), true );
                 dvpSuffix.SelectedValue = person.SuffixValueId.ToString();
 
                 rblGender.BindToEnum<Gender>( false );
@@ -87,10 +87,10 @@ namespace RockWeb.Plugins.org_newpointe.NFCI
                 
                 ebEmail.Text = person.Email;
 
-                var mobilePhoneType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
+                var mobilePhoneType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
 
                 var phoneNumbers = new List<PhoneNumber>();
-                var phoneNumberTypes = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
+                var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
                 if ( phoneNumberTypes.DefinedValues.Any() )
                 {
                     foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues )
@@ -139,27 +139,12 @@ namespace RockWeb.Plugins.org_newpointe.NFCI
                         personSave.LoadAttributes();
 
 
-                        int? newTitleId = dvpTitle.SelectedValueAsInt();
-                        History.EvaluateChange( changes, "Title", DefinedValueCache.GetName( personSave.TitleValueId ), DefinedValueCache.GetName( newTitleId ) );
-                        personSave.TitleValueId = newTitleId;
-
-                        History.EvaluateChange( changes, "First Name", personSave.FirstName, tbFirstName.Text );
+                        personSave.TitleValueId = dvpTitle.SelectedValueAsInt();
                         personSave.FirstName = tbFirstName.Text;
-
-                        string nickName = string.IsNullOrWhiteSpace( tbNickName.Text ) ? tbFirstName.Text : tbNickName.Text;
-                        History.EvaluateChange( changes, "Nick Name", personSave.NickName, nickName );
                         personSave.NickName = tbNickName.Text;
-
-                        History.EvaluateChange( changes, "Middle Name", personSave.MiddleName, tbMiddleName.Text );
                         personSave.MiddleName = tbMiddleName.Text;
-
-                        History.EvaluateChange( changes, "Last Name", personSave.LastName, tbLastName.Text );
                         personSave.LastName = tbLastName.Text;
-
-                        int? newSuffixId = dvpSuffix.SelectedValueAsInt();
-                        History.EvaluateChange( changes, "Suffix", DefinedValueCache.GetName( personSave.SuffixValueId ), DefinedValueCache.GetName( newSuffixId ) );
-                        personSave.SuffixValueId = newSuffixId;
-
+                        personSave.SuffixValueId = dvpSuffix.SelectedValueAsInt();
                         var birthMonth = personSave.BirthMonth;
                         var birthDay = personSave.BirthDay;
                         var birthYear = personSave.BirthYear;
@@ -189,13 +174,8 @@ namespace RockWeb.Plugins.org_newpointe.NFCI
                         {
                             personSave.SetBirthDate( null );
                         }
-
-                        History.EvaluateChange( changes, "Birth Month", birthMonth, personSave.BirthMonth );
-                        History.EvaluateChange( changes, "Birth Day", birthDay, personSave.BirthDay );
-                        History.EvaluateChange( changes, "Birth Year", birthYear, personSave.BirthYear );
-
-
-                        DateTime gradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime() ?? new DateTime( RockDateTime.Now.Year, 6, 1 );
+                        
+                        DateTime gradeTransitionDate = GlobalAttributesCache.Get().GetValue( "GradeTransitionDate" ).AsDateTime() ?? new DateTime( RockDateTime.Now.Year, 6, 1 );
 
                         // add a year if the next graduation mm/dd won't happen until next year
                         int gradeOffsetRefactor = ( RockDateTime.Now < gradeTransitionDate ) ? 0 : 1;
@@ -206,13 +186,10 @@ namespace RockWeb.Plugins.org_newpointe.NFCI
                         {
                             graduationYear = gradeTransitionDate.Year + gradeOffsetRefactor + gpGrade.SelectedValue.AsIntegerOrNull();
                         }
-
-                        History.EvaluateChange( changes, "Graduation Year", person.GraduationYear, graduationYear );
+                        
                         personSave.GraduationYear = graduationYear;
-
-                        var newGender = rblGender.SelectedValue.ConvertToEnum<Gender>();
-                        History.EvaluateChange( changes, "Gender", personSave.Gender, newGender );
-                        personSave.Gender = newGender;
+                        
+                        personSave.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
 
                         personSave.SetAttributeValue( "Allergy", rtbAllergy.Text );
 
@@ -250,12 +227,7 @@ namespace RockWeb.Plugins.org_newpointe.NFCI
 
                                         phoneNumber.IsUnlisted = cbUnlisted.Checked;
                                         phoneNumberTypeIds.Add( phoneNumberTypeId );
-
-                                        History.EvaluateChange(
-                                            changes,
-                                            string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumberTypeId ) ),
-                                            oldPhoneNumber,
-                                            phoneNumber.NumberFormattedWithCountryCode );
+                                        
                                     }
                                 }
                             }
@@ -267,37 +239,16 @@ namespace RockWeb.Plugins.org_newpointe.NFCI
                             .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
                             .ToList() )
                         {
-                            History.EvaluateChange(
-                                changes,
-                                string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumber.NumberTypeValueId ) ),
-                                phoneNumber.ToString(),
-                                string.Empty );
-
                             personSave.PhoneNumbers.Remove( phoneNumber );
                             phoneNumberService.Delete( phoneNumber );
                         }
-
-                        History.EvaluateChange( changes, "Email", personSave.Email, ebEmail.Text );
+                        
                         personSave.Email = ebEmail.Text.Trim();
 
                         if ( personSave.IsValid )
                         {
 
                             personSave.SaveAttributeValues();
-
-                            if ( rockContext.SaveChanges() > 0 )
-                            {
-                                if ( changes.Any() )
-                                {
-                                    HistoryService.SaveChanges(
-                                        rockContext,
-                                        typeof( Person ),
-                                        Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                        person.Id,
-                                        changes );
-                                }
-
-                            }
 
                             if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "PersonDetailsPage" ) ) )
                             {

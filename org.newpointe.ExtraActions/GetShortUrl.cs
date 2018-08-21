@@ -32,7 +32,7 @@ namespace org.newpointe.Giving.Workflow
 
             errorMessages = new List<string>();
 
-            AttributeCache attribute = AttributeCache.Read( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
+            AttributeCache attribute = AttributeCache.Get( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
             string urlToShorten = GetAttributeValue( action, "URL", true );
             string shortenerURL = GetAttributeValue( action, "URLShortener", true );
 

@@ -31,7 +31,7 @@ namespace org.newpointe.WorkflowEntities
         {
             errorMessages = new List<string>();
 
-            EntityTypeCache cachedEntityType = EntityTypeCache.Read( GetAttributeValue( action, "EntityType" ).AsGuid() );
+            EntityTypeCache cachedEntityType = EntityTypeCache.Get( GetAttributeValue( action, "EntityType" ).AsGuid() );
 
             if ( cachedEntityType != null )
             {

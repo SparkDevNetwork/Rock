@@ -89,7 +89,7 @@ namespace RockWeb.Plugins.org_newpointe.Reporting
         protected void DoSQL()
         {
             int SelectedCampusId = cpCampus.SelectedValue.AsInteger();
-            CampusCache SelectedCampus = CampusCache.Read( SelectedCampusId );
+            CampusCache SelectedCampus = CampusCache.Get( SelectedCampusId );
             string SelectedCampusName = SelectedCampus != null ? SelectedCampus.Name : "";
 
             var sunday = DateTime.Today.SundayDate().AddDays( -6 );

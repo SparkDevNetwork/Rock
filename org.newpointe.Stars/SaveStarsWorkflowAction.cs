@@ -39,7 +39,7 @@ namespace org.newpointe.Stars
             Guid? guidPersonAttribute = personAttributeValue.AsGuidOrNull();
             if (guidPersonAttribute.HasValue)
             {
-                var attributePerson = AttributeCache.Read(guidPersonAttribute.Value, rockContext);
+                var attributePerson = AttributeCache.Get(guidPersonAttribute.Value, rockContext);
                 if (attributePerson != null || attributePerson.FieldType.Class != "Rock.Field.Types.PersonFieldType")
                 {
                     string attributePersonValue = action.GetWorklowAttributeValue(guidPersonAttribute.Value);

@@ -39,7 +39,7 @@ public class ParentPageBlinker : IHttpHandler
         DefinedValueCache statusToShow = activePagerWorkflows.ToList().Select( p =>
         {
             p.LoadAttributes();
-            return DefinedValueCache.Read( p.GetAttributeValue( "PagerStatus" ).AsGuid(), rockContext );
+            return DefinedValueCache.Get( p.GetAttributeValue( "PagerStatus" ).AsGuid(), rockContext );
         } )
             .Where( dv => dv != null )
             .OrderBy( dv => dv.Order )

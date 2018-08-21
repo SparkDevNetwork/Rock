@@ -36,7 +36,7 @@ namespace org.newpointe.WorkflowEntities
 
             if ( !entityGuid.IsEmpty() )
             {
-                IEntityFieldType entityField = AttributeCache.Read( workflowAttributeGuid ).FieldType.Field as IEntityFieldType;
+                IEntityFieldType entityField = AttributeCache.Get( workflowAttributeGuid ).FieldType.Field as IEntityFieldType;
                 if ( entityField == null )
                 {
                     errorMessages.Add( "Attribute Type is not an Entity." );

@@ -105,7 +105,7 @@ namespace RockWeb.Plugins.org_newpointe.ServiceUEvents
                     campusCode = cIdParam;
                 }
 
-                var campusEntityType = EntityTypeCache.Read( typeof( Campus ) );
+                var campusEntityType = EntityTypeCache.Get( typeof( Campus ) );
                 var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
                 if ( currentCampus != null && !String.IsNullOrWhiteSpace( currentCampus.ShortCode ) )
                 {

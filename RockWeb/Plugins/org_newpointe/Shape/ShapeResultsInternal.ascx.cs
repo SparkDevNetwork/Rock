@@ -407,7 +407,7 @@ namespace RockWeb.Plugins.org_newpointe.Shape
         private void ShowExplaination(string personalityType)
         {
             var personalityValue =
-                DefinedTypeCache.Read(Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid())
+                DefinedTypeCache.Get(Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid())
                     .DefinedValues.Where(v => v.Value == personalityType)
                     .FirstOrDefault();
             if (personalityValue != null)

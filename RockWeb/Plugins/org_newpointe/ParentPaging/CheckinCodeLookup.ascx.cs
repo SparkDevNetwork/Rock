@@ -10,6 +10,7 @@ using Rock.Attribute;
 using Rock.Web.UI.Controls;
 using System.Web.UI.WebControls;
 using System.Data;
+using Rock.Web.Cache;
 
 namespace RockWeb.Plugins.org_newpointe.ParentPage
 {
@@ -196,10 +197,10 @@ namespace RockWeb.Plugins.org_newpointe.ParentPage
         {
             var attendance = new AttendanceService( rockContext ).Get( SelectedAttendanceGuid );
             var selectedPlegePersonAlias = new PersonAliasService( rockContext ).Get( ( Guid ) e.RowKeyValue );
-            var workflowType = new WorkflowTypeService( rockContext ).Get( GetAttributeValue( "WorkflowType" ).AsGuid() );
+            var workflowTypeCache = WorkflowTypeCache.Get( GetAttributeValue( "WorkflowType" ).AsGuid() );
 
             if ( attendance != null && selectedPlegePersonAlias != null )
-                LaunchWorkflow( rockContext, attendance, selectedPlegePersonAlias, workflowType );
+                LaunchWorkflow( rockContext, attendance, selectedPlegePersonAlias, workflowTypeCache);
 
         }
 
@@ -210,11 +211,11 @@ namespace RockWeb.Plugins.org_newpointe.ParentPage
         /// <param name="rockContext">The rock context.</param>
         /// <param name="connectionWorkflow">The connection workflow.</param>
         /// <param name="name">The name.</param>
-        private void LaunchWorkflow( RockContext rockContext, Attendance attendance, PersonAlias pagePersonAlias, WorkflowType pageWorkflowType )
+        private void LaunchWorkflow( RockContext rockContext, Attendance attendance, PersonAlias pagePersonAlias, WorkflowTypeCache pageWorkflowTypeCache )
         {
-            if ( pageWorkflowType != null )
+            if ( pageWorkflowTypeCache != null )
             {
-                var workflow = Rock.Model.Workflow.Activate( pageWorkflowType, pageWorkflowType.WorkTerm, rockContext );
+                var workflow = Rock.Model.Workflow.Activate( pageWorkflowTypeCache, pageWorkflowTypeCache.WorkTerm, rockContext );
                 if ( workflow != null )
                 {
                     workflow.SetAttributeValue( "Person", attendance.PersonAlias.Guid );
@@ -231,20 +232,20 @@ namespace RockWeb.Plugins.org_newpointe.ParentPage
                             if ( workflow.HasActiveEntryForm( CurrentPerson ) )
                             {
                                 var qryParam = new Dictionary<string, string>();
-                                qryParam.Add( "WorkflowTypeId", pageWorkflowType.Id.ToString() );
+                                qryParam.Add( "WorkflowTypeId", pageWorkflowTypeCache.Id.ToString() );
                                 qryParam.Add( "WorkflowId", workflow.Id.ToString() );
                                 NavigateToLinkedPage( "WorkflowEntryPage", qryParam );
                             }
                             else
                             {
                                 mdWorkflowLaunched.Show( string.Format( "A '{0}' workflow has been started.",
-                                    pageWorkflowType.Name ), ModalAlertType.Information );
+                                    pageWorkflowTypeCache.Name ), ModalAlertType.Information );
                             }
                         }
                         else
                         {
                             mdWorkflowLaunched.Show( string.Format( "A '{0}' workflow was processed (but not persisted).",
-                                pageWorkflowType.Name ), ModalAlertType.Information );
+                                pageWorkflowTypeCache.Name ), ModalAlertType.Information );
                         }
                     }
                     else

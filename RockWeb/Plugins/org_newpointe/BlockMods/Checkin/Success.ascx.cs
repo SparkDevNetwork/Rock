@@ -133,7 +133,7 @@ namespace RockWeb.Plugins.org_newpointe.BlockMods.CheckIn
 
                             foreach ( var label in printFromServer.OrderBy( l => l.Order ) )
                             {
-                                var labelCache = KioskLabel.Read( label.FileGuid );
+                                var labelCache = KioskLabel.Get( label.FileGuid );
                                 if ( labelCache != null )
                                 {
                                     if ( !string.IsNullOrWhiteSpace( label.PrinterAddress ) )

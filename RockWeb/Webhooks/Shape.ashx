@@ -33,8 +33,6 @@ namespace RockWeb.Webhooks
 
     public class Shape : IHttpHandler
     {
-
-        private int transactionCount = 0;
         private RockContext rockContext = new RockContext();
 
         private string TopGift1;
@@ -619,8 +617,8 @@ namespace RockWeb.Webhooks
             }
             else
             {
-                DefinedValueCache dvcConnectionStatus = DefinedValueCache.Read("368DD475-242C-49C4-A42C-7278BE690CC2");
-                DefinedValueCache dvcRecordStatus = DefinedValueCache.Read("283999EC-7346-42E3-B807-BCE9B2BABB49");
+                DefinedValueCache dvcConnectionStatus = DefinedValueCache.Get("368DD475-242C-49C4-A42C-7278BE690CC2");
+                DefinedValueCache dvcRecordStatus = DefinedValueCache.Get("283999EC-7346-42E3-B807-BCE9B2BABB49");
 
                 Person person = new Person();
                 person.FirstName = FirstName;
@@ -628,7 +626,7 @@ namespace RockWeb.Webhooks
                 person.Email = Email;
                 person.IsEmailActive = true;
                 person.EmailPreference = EmailPreference.EmailAllowed;
-                person.RecordTypeValueId = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid()).Id;
+                person.RecordTypeValueId = DefinedValueCache.Get(Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid()).Id;
                 if (dvcConnectionStatus != null)
                 {
                     person.ConnectionStatusValueId = dvcConnectionStatus.Id;
@@ -665,7 +663,7 @@ namespace RockWeb.Webhooks
             mediumData.Add("Subject", subject);
             mediumData.Add("Body", body);
 
-            var mediumEntity = EntityTypeCache.Read(Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid(), rockContext);
+            var mediumEntity = EntityTypeCache.Get(Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid(), rockContext);
             if (mediumEntity != null)
             {
                 var medium = MediumContainer.GetComponent(mediumEntity.Name);
@@ -674,7 +672,7 @@ namespace RockWeb.Webhooks
                     var transport = medium.Transport;
                     if (transport != null && transport.IsActive)
                     {
-                        var appRoot = GlobalAttributesCache.Read(rockContext).GetValue("InternalApplicationRoot");
+                        var appRoot = GlobalAttributesCache.Value("InternalApplicationRoot");
                         transport.Send(mediumData, recipients, appRoot, string.Empty);
                     }
                 }
