@@ -56,7 +56,10 @@
 			</div>
 		</div>
 		</div>
-		<p><a class="btn btn-outline-default backlink" href="/groupfinder"><i class="np-icon np-caret"></i> Back</a></p>
+		<p>
+			<a class="btn btn-outline-default backlink" href="/groupfinder"><i class="np-icon np-caret"></i> Back</a>
+			<a class="btn btn-primary pull-right" href="{{ Group.Id }}/register">Sign Up <i class="np-icon np-caret"></i></a>
+		</p>
 	</div>
 	{% for groupLocation in Group.GroupLocations %}
 		{% if groupLocation.Location.GeoPoint != '' %}
