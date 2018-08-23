@@ -8,7 +8,7 @@
 
     Sys.Application.add_load(function () {
         $('div.js-same-family').find('input:radio').on('click', function () {
-            if ($(this).val() == '1') {
+            if ($(this).val() > 0) {
                 $('.js-current-family-members').slideDown();
             } else {
                 var $div = $('.js-current-family-members');
@@ -74,6 +74,13 @@
 
                                     </div>
                                 </div>
+                                <Rock:RockRadioButtonList ID="rblRegistrantsInSameFamily" runat="server" Label="Registrants in same Family" RepeatDirection="Horizontal" CssClass="js-same-family"
+                                    Help="Typical relationship of registrants that user would register." />
+                                <div id="divCurrentFamilyMembers" runat="server" class="js-current-family-members" >
+                                    <Rock:RockCheckBox ID="cbShowCurrentFamilyMembers" runat="server" Label="Show Family Members" Text="Yes"
+                                        Help="If Registrants in Same Family option is set to 'Yes' or 'Ask', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
+                                </div>
+                                
 
                                 <div class="row">
                                     <div class="col-xs-6">
