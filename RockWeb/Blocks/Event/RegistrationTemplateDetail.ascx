@@ -72,22 +72,14 @@
                                             Help="The maximum number of registrants that user is allowed to register. Leave blank for unlimited." Visible="false" />
                                     </div>
                                 </div>
-                                <Rock:RockRadioButtonList ID="rblRegistrantsInSameFamily" runat="server" Label="Registrants in same Family" RepeatDirection="Horizontal" CssClass="js-same-family"
-                                    Help="Typical relationship of registrants that user would register." />
-                                <div id="divCurrentFamilyMembers" runat="server" class="js-current-family-members">
-                                    <Rock:RockCheckBox ID="cbShowCurrentFamilyMembers" runat="server" Label="Show Family Members" Text="Yes"
-                                        Help="If Registrants in Same Family option is set to 'Yes' or 'Ask', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
-                                </div>
-
+                                
                                 <div class="row">
                                     <div class="col-xs-6">
                                         <Rock:RockRadioButtonList ID="rblRegistrantsInSameFamily" runat="server" Label="Registrants In Same Family" RepeatDirection="Horizontal" CssClass="js-same-family"
                                             Help="Typical relationship of registrants that user would register." />
-
                                         <div id="divCurrentFamilyMembers" runat="server" class="js-current-family-members">
-
                                             <Rock:RockCheckBox ID="cbShowCurrentFamilyMembers" runat="server" Label="Show Family Members" Text="Yes"
-                                                Help="If Registrants in Same Family option is set to 'Yes', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
+                                                Help="If Registrants in Same Family option is set to 'Yes' or 'Ask', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
                                         </div>
 
                                         <Rock:RockCheckBox id="cbWaitListEnabled" runat="server" Label="Enable Wait List" Text="Yes" Help="Should a wait list be enabled when the maximum number of registrants is reached." />
