@@ -128,15 +128,15 @@ namespace Rock.Slingshot
             var attendancesAlreadyExistForeignIdHash = new HashSet<int>( qryAttendancesWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
 
             // Get list of existing occurrence records that have already been created
-            var existingOccurrences = new HashSet<ImportOccurrence>( new AttendanceOccurrenceService( rockContext ).Queryable()
-                .Select( o => new ImportOccurrence
+            var existingOccurrencesLookup = new AttendanceOccurrenceService( rockContext ).Queryable()
+                .Select( o => new
                 {
                     Id = o.Id,
                     GroupId = o.GroupId,
                     LocationId = o.LocationId,
                     ScheduleId = o.ScheduleId,
                     OccurrenceDate = o.OccurrenceDate
-                } ) );
+                } ).ToDictionary( k => $"{k.GroupId}|{k.LocationId}|{k.ScheduleId}|{k.OccurrenceDate}", v => v.Id );
 
             // Get the attendance records being imported that are new
             var newAttendanceImports = attendanceImports.Where( a => !a.AttendanceForeignId.HasValue || !attendancesAlreadyExistForeignIdHash.Contains( a.AttendanceForeignId.Value ) ).ToList();
@@ -177,11 +177,7 @@ namespace Rock.Slingshot
                 occurrence.OccurrenceDate = groupKey.OccurrenceDate;
 
                 // If we haven'r already added it to list, and it doesn't already exist, add it to list
-                if ( !existingOccurrences.Any( o =>
-                        o.GroupId == occurrence.GroupId &&
-                        o.LocationId == occurrence.LocationId &&
-                        o.ScheduleId == occurrence.ScheduleId &&
-                        o.OccurrenceDate == occurrence.OccurrenceDate ) )
+                if ( !existingOccurrencesLookup.ContainsKey( $"{occurrence.GroupId}|{occurrence.LocationId}|{occurrence.ScheduleId}|{occurrence.OccurrenceDate}" ))
                 {
                     newOccurrences.Add( occurrence );
                 }
@@ -208,15 +204,15 @@ namespace Rock.Slingshot
             rockContext.BulkInsert( occurrencesToInsert );
 
             // Load all the existing occurrences again.
-            existingOccurrences = new HashSet<ImportOccurrence>( new AttendanceOccurrenceService( rockContext ).Queryable()
-                .Select( o => new ImportOccurrence
+            existingOccurrencesLookup = new AttendanceOccurrenceService( rockContext ).Queryable()
+                .Select( o => new
                 {
                     Id = o.Id,
                     GroupId = o.GroupId,
                     LocationId = o.LocationId,
                     ScheduleId = o.ScheduleId,
                     OccurrenceDate = o.OccurrenceDate
-                } ) );
+                } ).ToDictionary( k => $"{k.GroupId}|{k.LocationId}|{k.ScheduleId}|{k.OccurrenceDate}", v => v.Id );
 
             var attendancesToInsert = new List<Attendance>( newAttendanceImports.Count );
 
@@ -250,18 +246,11 @@ namespace Rock.Slingshot
                     scheduleId = scheduleIdLookup.GetValueOrNull( attendanceImport.ScheduleForeignId.Value );
                 }
 
-                var occurrenceId = existingOccurrences
-                    .Where( o =>
-                        o.GroupId == groupId &&
-                        o.LocationId == locationId &&
-                        o.ScheduleId == scheduleId &&
-                        o.OccurrenceDate == occurrenceDate )
-                    .Select( o => o.Id )
-                    .FirstOrDefault(); 
+                int? occurrenceId = existingOccurrencesLookup.GetValueOrNull( $"{groupId}|{locationId}|{scheduleId}|{occurrenceDate}" );
 
-                if ( occurrenceId > 0 )
+                if ( occurrenceId.HasValue )
                 {
-                    attendance.OccurrenceId = occurrenceId;
+                    attendance.OccurrenceId = occurrenceId.Value;
                     attendance.PersonAliasId = personAliasIdLookup.GetValueOrNull( attendanceImport.PersonForeignId );
                     attendance.Note = attendanceImport.Note;
                     attendance.DidAttend = true;
@@ -311,7 +300,7 @@ namespace Rock.Slingshot
                 financialAccount.ForeignKey = foreignSystemKey;
                 if ( financialAccountImport.Name.Length > 50 )
                 {
-                    financialAccount.Name = financialAccountImport.Name.Truncate( 50 );
+                    financialAccount.Name = financialAccountImport.Name.Left( 50 );
                     financialAccount.Description = financialAccountImport.Name;
                 }
                 else
@@ -516,7 +505,7 @@ namespace Rock.Slingshot
                 financialBatch.ForeignKey = foreignSystemKey;
                 if ( financialBatchImport.Name.Length > 50 )
                 {
-                    financialBatch.Name = financialBatchImport.Name.Truncate( 50 );
+                    financialBatch.Name = financialBatchImport.Name.Left( 50 );
                 }
                 else
                 {
@@ -722,6 +711,19 @@ namespace Rock.Slingshot
             StringBuilder sbStats = new StringBuilder();
 
             int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
+            var entityTypeIdGroup = EntityTypeCache.Get<Group>().Id;
+            var locationService = new LocationService( rockContext );
+            Dictionary<int, List<AttributeValueCache>> attributeValuesLookup = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.EntityTypeId == entityTypeIdGroup && a.EntityId.HasValue )
+                .Select( a => new
+                {
+                    GroupId = a.EntityId.Value,
+                    a.AttributeId,
+                    a.Value
+                } )
+                .GroupBy( a => a.GroupId )
+                .ToDictionary(
+                    k => k.Key,
+                    v => v.Select( x => new AttributeValueCache { AttributeId = x.AttributeId, EntityId = x.GroupId, Value = x.Value } ).ToList() );
 
             var groupsAlreadyExistLookupQry = new GroupService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId != groupTypeIdFamily ).Select( a => a.ForeignId.Value );
 
@@ -747,7 +749,7 @@ namespace Rock.Slingshot
                     {
                         var groupTypeRole = new GroupTypeRole();
                         groupTypeRole.GroupTypeId = groupTypeCache.Id;
-                        groupTypeRole.Name = roleName.Truncate( 100 );
+                        groupTypeRole.Name = roleName.Left( 100 );
                         groupTypeRole.CreatedDateTime = importedDateTime;
                         groupTypeRole.ModifiedDateTime = importedDateTime;
                         groupTypeRolesToInsert.Add( groupTypeRole );
@@ -773,18 +775,42 @@ namespace Rock.Slingshot
                 group.GroupTypeId = groupImport.GroupTypeId;
                 if ( groupImport.Name.Length > 100 )
                 {
-                    group.Name = groupImport.Name.Truncate( 100 );
+                    group.Name = groupImport.Name.Left( 100 );
                     group.Description = groupImport.Name;
                 }
                 else
                 {
                     group.Name = groupImport.Name;
+                    group.Description = groupImport.Description;
                 }
 
                 group.Order = groupImport.Order;
                 group.CampusId = groupImport.CampusId;
+                group.IsActive = groupImport.IsActive;
+                group.IsPublic = groupImport.IsPublic;
+                group.GroupCapacity = groupImport.Capacity;
                 group.CreatedDateTime = importedDateTime;
                 group.ModifiedDateTime = importedDateTime;
+
+                // set weekly schedule
+                DayOfWeek meetingDay;
+                if ( !string.IsNullOrWhiteSpace( groupImport.MeetingDay ) && Enum.TryParse( groupImport.MeetingDay, out meetingDay ) )
+                {
+                    TimeSpan meetingTime;
+                    TimeSpan.TryParse( groupImport.MeetingTime, out meetingTime );
+                    group.Schedule = new Schedule()
+                    {
+                        Name = group.Name,
+                        IsActive = group.IsActive,
+                        WeeklyDayOfWeek = meetingDay,
+                        WeeklyTimeOfDay = meetingTime,
+                        ForeignId = groupImport.GroupForeignId,
+                        ForeignKey = foreignSystemKey,
+                        CreatedDateTime = importedDateTime,
+                        ModifiedDateTime = importedDateTime
+                    };
+                }
+
                 groupsToInsert.Add( group );
             }
 
@@ -841,6 +867,139 @@ namespace Rock.Slingshot
             }
 
             rockContext.BulkInsert( groupMembersToInsert );
+
+            // populate Schedules from the new groups that we added
+            var groupSchedulesToInsert = new List<Schedule>();
+            foreach ( var groupWithSchedule in groupsToInsert.Where( g => g.Schedule != null && g.ForeignId != null ) )
+            {
+                var groupId = groupTypeGroupLookup.GetValueOrNull( groupWithSchedule.GroupTypeId )?.GetValueOrNull( (int)groupWithSchedule.ForeignId )?.Id;
+                groupSchedulesToInsert.Add( groupWithSchedule.Schedule );
+            }
+
+            rockContext.BulkInsert( groupSchedulesToInsert );
+
+            if ( groupSchedulesToInsert.Any() )
+            {
+                // manually update Group.ScheduleId since BulkInsert doesn't
+                rockContext.Database.ExecuteSqlCommand( string.Format( @"
+UPDATE [Group]
+SET ScheduleId = [Schedule].[Id]
+FROM [Group]
+JOIN [Schedule]
+ON [Group].[ForeignId] = [Schedule].[ForeignId]
+AND [Group].[Name] = [Schedule].[Name]
+AND [Group].[ForeignKey] = '{0}'
+AND [Schedule].[ForeignKey] = '{0}'
+                ", foreignSystemKey ) );
+            }
+
+            // Attribute Values
+            var attributeValuesToInsert = new List<AttributeValue>();
+            foreach ( var groupWithAttributes in newGroupImports.Where( a => a.AttributeValues.Any() ) )
+            {
+                var groupId = groupTypeGroupLookup.GetValueOrNull( groupWithAttributes.GroupTypeId )?.GetValueOrNull( groupWithAttributes.GroupForeignId )?.Id;
+                if ( groupId.HasValue )
+                {
+                    foreach ( var attributeValueImport in groupWithAttributes.AttributeValues )
+                    {
+                        var attributeValue = new AttributeValue();
+                        attributeValue.EntityId = groupId;
+                        attributeValue.AttributeId = attributeValueImport.AttributeId;
+                        attributeValue.Value = attributeValueImport.Value;
+                        attributeValue.CreatedDateTime = importedDateTime;
+                        attributeValue.ModifiedDateTime = importedDateTime;
+                        attributeValuesToInsert.Add( attributeValue );
+                    }
+                }
+            }
+
+            rockContext.BulkInsert( attributeValuesToInsert );
+
+            if ( attributeValuesToInsert.Any() )
+            {
+                // manually update ValueAsDateTime since the tgrAttributeValue_InsertUpdate trigger won't fire during when using BulkInsert
+                rockContext.Database.ExecuteSqlCommand( @"
+UPDATE [AttributeValue] SET ValueAsDateTime =
+		CASE WHEN
+			LEN(value) < 50 and
+			ISNULL(value,'') != '' and
+			ISNUMERIC([value]) = 0 THEN
+				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN
+					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
+				ELSE
+					TRY_CAST( [value] as datetime )
+				END
+		END
+        where (CASE WHEN
+			LEN(value) < 50 and
+			ISNULL(value,'') != '' and
+			ISNUMERIC([value]) = 0 THEN
+				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN
+					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
+				ELSE
+					TRY_CAST( [value] as datetime )
+				END
+		END) is not null
+        and ValueAsDateTime is null
+" );
+            }
+
+            // Addresses
+            var locationsToInsert = new List<Location>();
+            var groupLocationsToInsert = new List<GroupLocation>();
+            foreach ( var groupWithAddresses in newGroupImports.Where( a => a.Addresses.Any() ) )
+            {
+                var groupId = groupTypeGroupLookup.GetValueOrNull( groupWithAddresses.GroupTypeId )?.GetValueOrNull( groupWithAddresses.GroupForeignId )?.Id;
+                if ( groupId.HasValue )
+                {
+                    // get the distinct addresses for each group in our import
+                    var groupAddresses = groupWithAddresses.Addresses.DistinctBy( a => new { a.GroupLocationTypeValueId, a.Street1, a.Street2, a.City, a.County, a.State } ).ToList();
+
+                    foreach ( var address in groupAddresses )
+                    {
+                        GroupLocation groupLocation = new GroupLocation();
+                        groupLocation.GroupLocationTypeValueId = address.GroupLocationTypeValueId;
+                        groupLocation.GroupId = groupId.Value;
+                        groupLocation.IsMailingLocation = address.IsMailingLocation;
+                        groupLocation.IsMappedLocation = address.IsMappedLocation;
+                        groupLocation.CreatedDateTime = importedDateTime;
+                        groupLocation.ModifiedDateTime = importedDateTime;
+
+                        Location location = new Location();
+
+                        location.Street1 = address.Street1.Left( 100 );
+                        location.Street2 = address.Street2.Left( 100 );
+                        location.City = address.City.Left( 50 );
+                        location.County = address.County.Left( 50 );
+                        location.State = address.State.Left( 50 );
+                        location.Country = address.Country.Left( 50 );
+                        location.PostalCode = address.PostalCode.Left( 50 );
+                        location.CreatedDateTime = importedDateTime;
+                        location.ModifiedDateTime = importedDateTime;
+                        if ( address.Latitude.HasValue && address.Longitude.HasValue )
+                        {
+                            location.SetLocationPointFromLatLong( address.Latitude.Value, address.Longitude.Value );
+                        }
+
+                        // give the Location a Guid, and store a reference to which Location is associated with the GroupLocation record. Then we'll match them up later and do the bulk insert
+                        location.Guid = Guid.NewGuid();
+                        groupLocation.Location = location;
+
+                        groupLocationsToInsert.Add( groupLocation );
+                        locationsToInsert.Add( location );
+                    }
+                }
+            }
+
+            rockContext.BulkInsert( locationsToInsert );
+
+            var locationIdLookup = locationService.Queryable().Select( a => new { a.Id, a.Guid } ).ToList().ToDictionary( k => k.Guid, v => v.Id );
+            foreach ( var groupLocation in groupLocationsToInsert )
+            {
+                groupLocation.LocationId = locationIdLookup[groupLocation.Location.Guid];
+            }
+
+            rockContext.BulkInsert( groupLocationsToInsert );
 
             var groupsUpdated = false;
             var groupImportsWithParentGroup = newGroupImports.Where( a => a.ParentGroupForeignId.HasValue ).ToList();
@@ -960,15 +1119,15 @@ WHERE gta.GroupTypeId IS NULL" );
                 location.ForeignKey = foreignSystemKey;
                 location.LocationTypeValueId = locationImport.LocationTypeValueId;
 
-                location.Street1 = locationImport.Street1.Truncate( 50 );
-                location.Street2 = locationImport.Street2.Truncate( 50 );
-                location.City = locationImport.City;
-                location.County = locationImport.County;
-                location.State = locationImport.State;
-                location.Country = locationImport.Country;
-                location.PostalCode = locationImport.PostalCode;
+                location.Street1 = locationImport.Street1.Left( 100 );
+                location.Street2 = locationImport.Street2.Left( 100 );
+                location.City = locationImport.City.Left( 50 );
+                location.County = locationImport.County.Left( 50 );
+                location.State = locationImport.State.Left( 50 );
+                location.Country = locationImport.Country.Left( 50 );
+                location.PostalCode = locationImport.PostalCode.Left( 50 );
 
-                location.Name = locationImport.Name.Truncate( 100 );
+                location.Name = locationImport.Name.Left( 100 );
                 location.IsActive = locationImport.IsActive;
                 location.CreatedDateTime = importDateTime;
                 location.ModifiedDateTime = importDateTime;
@@ -1206,18 +1365,20 @@ WHERE gta.GroupTypeId IS NULL" );
             PersonAliasService personAliasService = new PersonAliasService( rockContext );
             var personAliasServiceQry = personAliasService.Queryable();
             List<PersonAlias> personAliasesToInsert = qryAllPersons.Where( p => p.ForeignId.HasValue && p.ForeignKey == foreignSystemKey && !p.Aliases.Any() && !personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ) )
-                .Select( x => new { x.Id, x.Guid } )
+                .Select( x => new { x.Id, x.Guid, x.ForeignId } )
                 .ToList()
-                .Select( person => new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid, PersonId = person.Id, ForeignKey = foreignSystemKey } ).ToList();
+                .Select( person => new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid, PersonId = person.Id, ForeignId = person.ForeignId, ForeignKey = foreignSystemKey } ).ToList();
 
             rockContext.BulkInsert( personAliasesToInsert );
 
             var familyGroupMembersQry = new GroupMemberService( rockContext ).Queryable( true ).Where( a => a.Group.GroupTypeId == familyGroupTypeId );
 
             // get the person Ids along with the PersonImport and GroupMember record
-            var personsIdsForPersonImport = from p in qryAllPersons.AsNoTracking().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ).Select( a => new { a.Id, a.ForeignId } ).ToList()
+            var personsIdsForPersonImport = from p in qryAllPersons.AsNoTracking().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
+                                                .Select( a => new { a.Id, a.ForeignId } ).ToList()
                                             join pi in personImports on p.ForeignId equals pi.PersonForeignId
-                                            join f in groupService.Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId == familyGroupTypeId ).Select( a => new { a.Id, a.ForeignId } ).ToList() on pi.FamilyForeignId equals f.ForeignId
+                                            join f in groupService.Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId == familyGroupTypeId )
+                                                .Select( a => new { a.Id, a.ForeignId } ).ToList() on pi.FamilyForeignId equals f.ForeignId
                                             join gm in familyGroupMembersQry.Select( a => new { a.Id, a.PersonId } ) on p.Id equals gm.PersonId into gmj
                                             from gm in gmj.DefaultIfEmpty()
                                             select new
@@ -1256,7 +1417,7 @@ WHERE gta.GroupTypeId IS NULL" );
             foreach ( var familyRecord in personsIdsForPersonImport.GroupBy( a => a.FamilyId ) )
             {
                 // get the distinct addresses for each family in our import
-                var familyAddresses = familyRecord.Where( a => a.PersonImport?.Addresses != null ).SelectMany( a => a.PersonImport.Addresses ).DistinctBy( a => new { a.GroupLocationTypeValueId, a.Street1, a.Street2, a.City, a.County, a.State, a.Country, a.PostalCode } );
+                var familyAddresses = familyRecord.Where( a => a.PersonImport?.Addresses != null ).SelectMany( a => a.PersonImport.Addresses ).DistinctBy( a => new { a.GroupLocationTypeValueId, a.Street1, a.Street2, a.City, a.County, a.State } ).ToList();
 
                 foreach ( var address in familyAddresses )
                 {
@@ -1270,13 +1431,13 @@ WHERE gta.GroupTypeId IS NULL" );
 
                     Location location = new Location();
 
-                    location.Street1 = address.Street1.Truncate( 50 );
-                    location.Street2 = address.Street2.Truncate( 50 );
-                    location.City = address.City;
-                    location.County = address.County;
-                    location.State = address.State;
-                    location.Country = address.Country;
-                    location.PostalCode = address.PostalCode;
+                    location.Street1 = address.Street1.Left( 100 );
+                    location.Street2 = address.Street2.Left( 100 );
+                    location.City = address.City.Left( 50 );
+                    location.County = address.County.Left( 50 );
+                    location.State = address.State.Left( 50 );
+                    location.Country = address.Country.Left( 50 );
+                    location.PostalCode = address.PostalCode.Left( 50 );
                     location.CreatedDateTime = locationCreatedDateTimeStart;
                     location.ModifiedDateTime = locationCreatedDateTimeStart;
                     if ( address.Latitude.HasValue && address.Longitude.HasValue )
@@ -1405,21 +1566,21 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
             person.ReviewReasonValueId = personImport.ReviewReasonValueId;
             person.IsDeceased = personImport.IsDeceased;
             person.TitleValueId = personImport.TitleValueId;
-            person.FirstName = personImport.FirstName.FixCase();
-            person.NickName = personImport.NickName.FixCase();
+            person.FirstName = personImport.FirstName.FixCase().Left( 50 );
+            person.NickName = personImport.NickName.FixCase().Left( 50 );
 
             if ( string.IsNullOrWhiteSpace( person.NickName ) )
             {
-                person.NickName = person.FirstName;
+                person.NickName = person.FirstName.Left( 50 );
             }
 
             if ( string.IsNullOrWhiteSpace( person.FirstName ) )
             {
-                person.FirstName = person.NickName;
+                person.FirstName = person.NickName.Left( 50 );
             }
 
-            person.MiddleName = personImport.MiddleName.FixCase();
-            person.LastName = personImport.LastName.FixCase();
+            person.MiddleName = personImport.MiddleName.FixCase().Left( 50 );
+            person.LastName = personImport.LastName.FixCase().Left( 50 );
             person.SuffixValueId = personImport.SuffixValueId;
             person.BirthDay = personImport.BirthDay;
             person.BirthMonth = personImport.BirthMonth;
@@ -1428,7 +1589,7 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
             person.MaritalStatusValueId = personImport.MaritalStatusValueId;
             person.AnniversaryDate = personImport.AnniversaryDate;
             person.GraduationYear = personImport.GraduationYear;
-            person.Email = personImport.Email;
+            person.Email = personImport.Email.Left( 75 );
 
             if ( !person.Email.IsValidEmail() )
             {
@@ -1436,11 +1597,12 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
             }
 
             person.IsEmailActive = personImport.IsEmailActive;
-            person.EmailNote = personImport.EmailNote;
+            person.EmailNote = personImport.EmailNote.Left( 250 );
             person.EmailPreference = (EmailPreference)personImport.EmailPreference;
-            person.InactiveReasonNote = personImport.InactiveReasonNote;
+            person.InactiveReasonNote = personImport.InactiveReasonNote.Left( 1000 );
             person.CreatedDateTime = personImport.CreatedDateTime;
             person.ModifiedDateTime = personImport.ModifiedDateTime;
+            person.SystemNote = personImport.Note;
             person.ForeignId = personImport.PersonForeignId;
             person.ForeignKey = foreignSystemKey;
         }
@@ -1738,12 +1900,19 @@ WHERE b.ForeignKey LIKE 'PersonForeignId_{foreignSystemKey}_%'
 	AND p.PhotoId IS NULL" );
 
             // Update FamilyPhoto attribute for photos that were imported
-            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
-            var familyPhotoAttribute = familyGroupType.Attributes.GetValueOrNull( "FamilyPhoto" );
-            if ( familyPhotoAttribute != null )
+            int? familyPhotoAttributeId = null;
+            var groupEntityTypeId = EntityTypeCache.Get( SystemGuid.EntityType.GROUP.AsGuid() )?.Id;
+            var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType()?.Id;
+            if ( groupEntityTypeId.HasValue && familyGroupTypeId.HasValue )
+            {
+                familyPhotoAttributeId = new AttributeService( rockContext )
+                    .Get( groupEntityTypeId.Value, "GroupTypeId", familyGroupTypeId.Value.ToString(), "FamilyPhoto" )?.Id;
+            }
+
+            if ( familyPhotoAttributeId.HasValue )
             {
                 rockContext.Database.ExecuteSqlCommand( $@"
-DECLARE @AttributeId INT = {familyPhotoAttribute.Id}
+DECLARE @AttributeId INT = {familyPhotoAttributeId.Value}
 
 -- just in case the family photo was already saved but with No Photo
 DELETE
@@ -1769,7 +1938,7 @@ SELECT 0
 	,newid()
 FROM [Group] g
 INNER JOIN BinaryFile b ON g.ForeignId = Replace(b.ForeignKey, 'FamilyForeignId_{foreignSystemKey}_', '')
-WHERE g.GroupTypeId = {familyGroupType.Id}
+WHERE g.GroupTypeId = {familyGroupTypeId.Value}
 	AND b.ForeignKey LIKE 'FamilyForeignId_{foreignSystemKey}_%'
 	AND g.Id NOT IN (
 		SELECT EntityId
@@ -1851,7 +2020,7 @@ and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
                 schedule.CategoryId = scheduleCategory.Id;
                 if ( scheduleImport.Name.Length > 50 )
                 {
-                    schedule.Name = scheduleImport.Name.Truncate( 50 );
+                    schedule.Name = scheduleImport.Name.Left( 50 );
                     schedule.Description = scheduleImport.Name;
                 }
                 else
@@ -2035,7 +2204,7 @@ and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
                 note.Caption = noteImport.Caption ?? string.Empty;
                 if ( note.Caption.Length > 200 )
                 {
-                    note.Caption = note.Caption.Truncate( 200 );
+                    note.Caption = note.Caption.Left( 200 );
                 }
 
                 note.IsAlert = noteImport.IsAlert;

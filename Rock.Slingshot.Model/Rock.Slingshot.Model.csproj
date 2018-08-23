@@ -20,7 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>6</LangVersion>
+    <LangVersion>7</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -55,6 +55,7 @@
     <Compile Include="GroupImport.cs" />
     <Compile Include="GroupMemberImport.cs" />
     <Compile Include="LocationImport.cs" />
+    <Compile Include="GroupAddressImport.cs" />
     <Compile Include="PersonAddressImport.cs" />
     <Compile Include="PersonImport.cs" />
     <Compile Include="PhoneNumberImport.cs" />

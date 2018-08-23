@@ -267,6 +267,19 @@ namespace RockWeb
                                 job.LastStatusMessage = message;
                                 job.LastStatus = errorLoadingStatus;
                                 rockContext.SaveChanges();
+
+                                var jobHistoryService = new ServiceJobHistoryService( rockContext );
+                                var jobHistory = new ServiceJobHistory()
+                                {
+                                    ServiceJobId = job.Id,
+                                    StartDateTime = RockDateTime.Now,
+                                    StopDateTime = RockDateTime.Now,
+                                    Status = job.LastStatus,
+                                    StatusMessage = job.LastStatusMessage
+                                };
+                                jobHistoryService.Add( jobHistory );
+                                rockContext.SaveChanges();
+
                             }
                         }
 

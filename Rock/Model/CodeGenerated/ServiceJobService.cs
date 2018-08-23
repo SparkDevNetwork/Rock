@@ -51,6 +51,13 @@ namespace Rock.Model
         public bool CanDelete( ServiceJob item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<ServiceJobHistory>( Context ).Queryable().Any( a => a.ServiceJobId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} contains one or more child {1}.", ServiceJob.FriendlyTypeName, ServiceJobHistory.FriendlyTypeName.Pluralize().ToLower() );
+                return false;
+            }
+
             return true;
         }
     }

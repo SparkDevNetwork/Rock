@@ -2817,11 +2817,11 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Rock.Model.GroupMember> Groups( DotLiquid.Context context, object input, string groupTypeId )
         {
-            return Groups( context, input, groupTypeId, "Active" );
+            return Groups( context, input, groupTypeId, "Active", "Active" );
         }
 
         /// <summary>
-        /// Gets the groups of selected type that person is a member of
+        /// Groupses the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
@@ -2830,6 +2830,20 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Rock.Model.GroupMember> Groups( DotLiquid.Context context, object input, string groupTypeId, string status )
         {
+        	return Groups( context, input, groupTypeId, status, "Active" );
+        }
+
+        /// <summary>
+        /// Gets the groups of selected type that person is a member of
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="memberStatus">The member status.</param>
+        /// <param name="groupStatus">The group status.</param>
+        /// <returns></returns>
+        public static List<Rock.Model.GroupMember> Groups( DotLiquid.Context context, object input, string groupTypeId, string memberStatus, string groupStatus )
+        {
             var person = GetPerson( input );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
 
@@ -2837,15 +2851,20 @@ namespace Rock.Lava
             {
                 var groupQuery = new GroupMemberService( GetRockContext( context ) )
                     .Queryable( "Group, GroupRole" )
+                    .AsNoTracking()
                     .Where( m =>
                         m.PersonId == person.Id &&
-                        m.Group.GroupTypeId == numericalGroupTypeId.Value &&
-                        m.Group.IsActive );
+                        m.Group.GroupTypeId == numericalGroupTypeId.Value );
 
-                if ( status != "All" )
+                if ( groupStatus != "All" )
+                {
+                    groupQuery = groupQuery.Where( m => m.Group.IsActive );
+                }
+
+                if ( memberStatus != "All" )
                 {
                     GroupMemberStatus queryStatus = GroupMemberStatus.Active;
-                    queryStatus = (GroupMemberStatus)Enum.Parse( typeof( GroupMemberStatus ), status, true );
+                    queryStatus = (GroupMemberStatus)Enum.Parse( typeof( GroupMemberStatus ), memberStatus, true );
 
                     groupQuery = groupQuery.Where( m => m.GroupMemberStatus == queryStatus );
                 }
@@ -2878,6 +2897,7 @@ namespace Rock.Lava
             {
                 var groupQuery = new GroupMemberService( GetRockContext( context ) )
                     .Queryable( "Group, GroupRole" )
+                    .AsNoTracking()
                     .Where( m =>
                         m.PersonId == person.Id &&
                         m.Group.Id == numericalGroupId.Value &&
@@ -4103,6 +4123,7 @@ namespace Rock.Lava
             if ( !siteId.HasValue )
             {
                 siteId = new SiteService( rockContext ).Queryable()
+                    .AsNoTracking()
                     .OrderBy( s => s.EnabledForShortening )
                     .Take( 1 )
                     .Select( s => s.Id ).FirstOrDefault();
@@ -4450,7 +4471,7 @@ namespace Rock.Lava
                 noteTypeIds = ((string)noteType).Split( ',' ).Select( Int32.Parse ).ToList();
             }
 
-            var notes = new NoteService( new RockContext() ).Queryable().Where( n => n.EntityId == entityId );
+            var notes = new NoteService( new RockContext() ).Queryable().AsNoTracking().Where( n => n.EntityId == entityId );
 
             if ( noteTypeIds.Count > 0 )
             {

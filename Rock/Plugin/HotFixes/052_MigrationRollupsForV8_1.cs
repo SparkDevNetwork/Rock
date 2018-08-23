@@ -34,14 +34,14 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            InactivePeopleInStatementGenerator();
-            RemoveAdultChildrenServiceJob();
-            EnableAlternateIdentifier();
-            MoveAdultChildrenDefaults();
-            ERAFinancial();
-            AddDisplayNotes();
-            HomepageStylesheet();
-            HomepageMatrix();
+            //InactivePeopleInStatementGenerator();
+            //RemoveAdultChildrenServiceJob();
+            //EnableAlternateIdentifier();
+            //MoveAdultChildrenDefaults();
+            //ERAFinancial();
+            //AddDisplayNotes();
+            //HomepageStylesheet();
+            //HomepageMatrix();
         }
 
         /// <summary>
@@ -58,13 +58,13 @@ namespace Rock.Plugin.HotFixes
         private void InactivePeopleInStatementGenerator()
         {
             // MP - Fix for Inactive People showing up in Statement Generator Address when ExcludeInactive = True
-            Sql( @"
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ufnCrm_GetFamilyTitleIncludeInactive]') AND type in (N'P', N'PC', N'TF'))
-DROP PROCEDURE [dbo].[ufnCrm_GetFamilyTitleIncludeInactive]
-" );
+//            Sql( @"
+//IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ufnCrm_GetFamilyTitleIncludeInactive]') AND type in (N'P', N'PC', N'TF'))
+//DROP PROCEDURE [dbo].[ufnCrm_GetFamilyTitleIncludeInactive]
+//" );
 
-            Sql( HotFixMigrationResource._052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive );
-            Sql( HotFixMigrationResource._052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle );
+//            Sql( HotFixMigrationResource._052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive );
+//            Sql( HotFixMigrationResource._052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle );
         }
 
         /// <summary>
@@ -244,7 +244,7 @@ DROP PROCEDURE [dbo].[ufnCrm_GetFamilyTitleIncludeInactive]
         }
 
         /// <summary>
-        /// GJ: Homepage Updates
+        /// GJ: Default Values IF move adult children is not enabled.
         /// </summary>
         private void HomepageMatrix()
         {

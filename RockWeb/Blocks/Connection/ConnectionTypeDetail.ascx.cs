@@ -224,10 +224,19 @@ namespace RockWeb.Blocks.Connection
                 ConnectionTypeService connectionTypeService = new ConnectionTypeService( rockContext );
 
                 newConnectionTypeId = connectionTypeService.Copy( hfConnectionTypeId.Value.AsInteger() );
+
+                var newConnectionType = connectionTypeService.Get( newConnectionTypeId );
+                if (newConnectionType != null)
+                {
+                    mdCopy.Show( "Connection Type copied to '" + newConnectionType.Name + "'", ModalAlertType.Information );
+                }
+                else
+                {
+                    mdCopy.Show( "Connection Type failed to copy.", ModalAlertType.Warning );
+                }
             }
 
             ConnectionWorkflowService.RemoveCachedTriggers();
-            modalCopy.Show();
         }
         #endregion
 
@@ -272,6 +281,30 @@ namespace RockWeb.Blocks.Connection
                         return;
                     }
 
+                    // var connectionOppotunityies = new Service<ConnectionOpportunity>( rockContext ).Queryable().All( a => a.ConnectionTypeId == connectionType.Id );
+                    var connectionOpportunities = connectionType.ConnectionOpportunities.ToList();
+                    ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
+                    ConnectionRequestActivityService connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
+                    foreach ( var connectionOpportunity in connectionOpportunities )
+                    {
+                        var connectionRequestActivities = new Service<ConnectionRequestActivity>( rockContext ).Queryable().Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id ).ToList();
+                        foreach ( var connectionRequestActivity in connectionRequestActivities )
+                        {
+                            connectionRequestActivityService.Delete( connectionRequestActivity );
+                        }
+
+                        rockContext.SaveChanges();
+                        string errorMessageConnectionOpportunity;
+                        if ( !connectionOpportunityService.CanDelete( connectionOpportunity, out errorMessageConnectionOpportunity ) )
+                        {
+                            mdDeleteWarning.Show( errorMessageConnectionOpportunity, ModalAlertType.Information );
+                            return;
+                        }
+
+                        connectionOpportunityService.Delete( connectionOpportunity );
+                    }
+
+                    rockContext.SaveChanges();
                     string errorMessage;
                     if ( !connectionTypeService.CanDelete( connectionType, out errorMessage ) )
                     {

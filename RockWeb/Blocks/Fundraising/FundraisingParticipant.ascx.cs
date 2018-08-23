@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Fundraising
                 // Setup for being able to copy text to clipboard
                 RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
                 string script = string.Format( @"
-    new Clipboard('#{0}');
+    new ClipboardJS('#{0}');
     $('#{0}').tooltip();
 ", btnCopyToClipboard.ClientID );
                 ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
@@ -458,7 +458,7 @@ namespace RockWeb.Blocks.Fundraising
 
             mergeFields.Add( "AmountLeft", amountLeft );
             mergeFields.Add( "PercentMet", percentMet );
-         
+
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "GroupId", hfGroupId.Value );
             queryParams.Add( "GroupMemberId", hfGroupMemberId.Value );
@@ -588,8 +588,8 @@ namespace RockWeb.Blocks.Fundraising
         protected void gContributions_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             FinancialTransaction financialTransaction = e.Row.DataItem as FinancialTransaction;
-            if ( financialTransaction != null && 
-                financialTransaction.AuthorizedPersonAlias != null && 
+            if ( financialTransaction != null &&
+                financialTransaction.AuthorizedPersonAlias != null &&
                 financialTransaction.AuthorizedPersonAlias.Person != null )
             {
 	            Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;

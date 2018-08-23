@@ -36,10 +36,12 @@
                         <Rock:RockCheckBox ID="cbAutoWatchAuthors" runat="server" Label="Auto Watch Authors" Text="Yes" />
 
                         <Rock:RockCheckBox ID="cbAllowsReplies" runat="server" Label="Allow Replies" AutoPostBack="true" OnCheckedChanged="cbAllowsReplies_CheckedChanged" Text="Yes" />
-
                         <Rock:NumberBox ID="nbMaxReplyDepth" runat="server" CssClass="input-width-sm" NumberType="Integer" MinimumValue="0" MaximumValue="9999" Label="Max Reply Depth" />
 
-                        <Rock:CodeEditor ID="ceApprovalUrlTemplate" runat="server" Label="Approval URL Template" EditorHeight="100" EditorMode="Lava" Help="An optional lava template that can be used to general a URL where notes of this type can be approved. If this is left blank, the approval URL will be a URL to the page (including a hash anchor to the note) where the note was originally created." />
+                        <Rock:RockCheckBox ID="cbAllowsAttachments" runat="server" Label="Allows Attachments" Text="Yes" Help="If enabled, then this note type will allow attachments. However, not all UI components will currently allow file uploads." AutoPostBack="true" OnCheckedChanged="cbAllowsAttachments_CheckedChanged" />
+                        <Rock:BinaryFileTypePicker ID="bftpAttachmentType" runat="server" Label="Attachment File Type" Required="true" Help="When a file is attached to a note, it will be stored using this file type." />
+
+                        <Rock:CodeEditor ID="ceApprovalUrlTemplate" runat="server" Label="Approval URL Template" EditorHeight="100" EditorMode="Lava" Help="An optional lava template that can be used to generate a URL where notes of this type can be approved. If this is left blank, the approval URL will be a URL to the page (including a hash anchor to the note) where the note was originally created." />
                     </div>
                 </div>
 
