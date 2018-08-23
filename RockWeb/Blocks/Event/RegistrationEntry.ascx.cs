@@ -23,9 +23,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Humanizer;
-
 using Newtonsoft.Json;
 
 using Rock;
@@ -58,7 +56,6 @@ namespace RockWeb.Blocks.Event
     [TextField( "Family Term", "The term to use for specifying which household or family a person is a member of.", true, "immediate family", "", 8 )]
     [BooleanField( "Force Email Update", "Force the email to be updated on the person's record.", false, "", 9 )]
     [BooleanField( "Show Field Descriptions", "Show the field description as help text", defaultValue: false, order: 10, key: "ShowFieldDescriptions" )]
-
     public partial class RegistrationEntry : RockBlock
     {
         #region Fields
@@ -171,7 +168,7 @@ namespace RockWeb.Blocks.Event
         protected RegistrationInfo RegistrationState { get; set; }
 
         /// <summary>
-        /// Gets or sets the current panel. 
+        /// Gets or sets the current panel.
         /// </summary>
         /// <value>
         /// The current panel.
@@ -531,7 +528,7 @@ namespace RockWeb.Blocks.Event
                                         DigitalSignatureComponent != null &&
                                         !string.IsNullOrWhiteSpace( DigitalSignatureComponent.CookieInitializationUrl ) )
                                     {
-                                        // Redirect for Digital Signature Cookie Initialization 
+                                        // Redirect for Digital Signature Cookie Initialization
                                         var returnUrl = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash() + Request.Url.PathAndQuery.RemoveLeadingForwardslash();
                                         returnUrl = returnUrl + ( returnUrl.Contains( "?" ) ? "&" : "?" ) + "redirected=True";
                                         string redirectUrl = string.Format( "{0}?redirect_uri={1}", DigitalSignatureComponent.CookieInitializationUrl, HttpUtility.UrlEncode( returnUrl ) );
@@ -1327,8 +1324,8 @@ namespace RockWeb.Blocks.Event
                     return false;
                 }
 
-                // Only allow the person that was logged in when this registration was created. 
-                // If the logged in person, registered on someone elses behalf (for example, husband logged in, but entered wife's name as the Registrar), 
+                // Only allow the person that was logged in when this registration was created.
+                // If the logged in person, registered on someone elses behalf (for example, husband logged in, but entered wife's name as the Registrar),
                 // also allow that person to access the registration
                 if ( ( registration.PersonAlias != null && registration.PersonAlias.PersonId == CurrentPersonId.Value ) ||
                     ( registration.CreatedByPersonAlias != null && registration.CreatedByPersonAlias.PersonId == CurrentPersonId.Value ) )
@@ -2257,7 +2254,7 @@ namespace RockWeb.Blocks.Event
                                 case RegistrationPersonFieldType.Campus:
                                     campusId = fieldValue.ToString().AsIntegerOrNull();
                                     break;
-                                
+
                                 case RegistrationPersonFieldType.MiddleName:
                                     string middleName = fieldValue.ToString().Trim();
                                     History.EvaluateChange( personChanges, "Middle Name", person.MiddleName, middleName );
@@ -4287,7 +4284,7 @@ namespace RockWeb.Blocks.Event
                         ValidationGroup = BlockValidationGroup,
                         SelectedDate = setValue && fieldValue != null ? fieldValue as DateTime? : null
                     };
-                    
+
                     phRegistrantControls.Controls.Add( dppAnniversaryDate );
                     break;
 
@@ -4306,7 +4303,7 @@ namespace RockWeb.Blocks.Event
                         ValidationGroup = BlockValidationGroup,
                         CountryCode = PhoneNumber.DefaultCountryCode()
                     };
-                    
+
                     var mobilePhoneNumber = setValue && fieldValue != null ? fieldValue as PhoneNumber : null;
                     ppMobile.CountryCode = mobilePhoneNumber != null ? mobilePhoneNumber.CountryCode : string.Empty;
                     ppMobile.Number = mobilePhoneNumber != null ? mobilePhoneNumber.ToString() : string.Empty;
@@ -4329,7 +4326,7 @@ namespace RockWeb.Blocks.Event
                         ValidationGroup = BlockValidationGroup,
                         CountryCode = PhoneNumber.DefaultCountryCode()
                     };
-                        
+
                     var homePhoneNumber = setValue && fieldValue != null ? fieldValue as PhoneNumber : null;
                     ppHome.CountryCode = homePhoneNumber != null ? homePhoneNumber.CountryCode : string.Empty;
                     ppHome.Number = homePhoneNumber != null ? homePhoneNumber.ToString() : string.Empty;
@@ -4352,7 +4349,7 @@ namespace RockWeb.Blocks.Event
                         ValidationGroup = BlockValidationGroup,
                         CountryCode = PhoneNumber.DefaultCountryCode()
                     };
-                    
+
                     var workPhoneNumber = setValue && fieldValue != null ? fieldValue as PhoneNumber : null;
                     ppWork.CountryCode = workPhoneNumber != null ? workPhoneNumber.CountryCode : string.Empty;
                     ppWork.Number = workPhoneNumber != null ? workPhoneNumber.ToString() : string.Empty;
@@ -4370,7 +4367,7 @@ namespace RockWeb.Blocks.Event
                     };
 
                     ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
-                    
+
                     if ( setValue && fieldValue != null )
                     {
                         var value = fieldValue.ToString().AsInteger();
@@ -4684,7 +4681,7 @@ namespace RockWeb.Blocks.Event
                     var tbLastName = phRegistrantControls.FindControl( "tbLastName" ) as RockTextBox;
                     string lastName = tbLastName != null ? tbLastName.Text : null;
                     return string.IsNullOrWhiteSpace( lastName ) ? null : lastName;
-                
+
                 case RegistrationPersonFieldType.MiddleName:
                     var tbMiddleName = phRegistrantControls.FindControl( "tbMiddleName" ) as RockTextBox;
                     string middleName = tbMiddleName != null ? tbMiddleName.Text : null;
@@ -4725,7 +4722,7 @@ namespace RockWeb.Blocks.Event
                 case RegistrationPersonFieldType.MaritalStatus:
                     var ddlMaritalStatus = phRegistrantControls.FindControl( "ddlMaritalStatus" ) as RockDropDownList;
                     return ddlMaritalStatus != null ? ddlMaritalStatus.SelectedValueAsInt() : null;
-                
+
                 case RegistrationPersonFieldType.AnniversaryDate:
                     var dppAnniversaryDate = phRegistrantControls.FindControl( "dppAnniversaryDate" ) as DatePartsPicker;
                     return dppAnniversaryDate != null ? dppAnniversaryDate.SelectedDate : null;
