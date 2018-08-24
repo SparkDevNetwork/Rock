@@ -66,7 +66,12 @@
                     <div class="info-text">
                         <ul class="list-unstyled">
                             {% for scheduledDate in scheduledDates %}
-                                <li>{{  scheduledDate | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}</li>
+                                {% assign scheduleTime = scheduledDate | Date:'hmm' %}
+                                {% if scheduleTime == '1200' %}
+                                    <li>{{  scheduledDate | Date:'dddd, MMMM d, yyyy' }}</li>
+                                {% else %}
+                                    <li>{{  scheduledDate | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}</li>
+                                {% endif %}
                             {% endfor %}
                         </ul>
                     </div>

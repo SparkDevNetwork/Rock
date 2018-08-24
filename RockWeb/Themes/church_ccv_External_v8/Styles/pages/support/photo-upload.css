@@ -6,7 +6,7 @@
     display: none;
 }
 
-.photo-upload-panel {
+.upload > div > div:last-of-type {
     display: flex;
     flex-direction: column;
 }
@@ -30,7 +30,7 @@
         height: 350px;
     }
 
-    .photo-upload-panel {
+    .upload > div > div:last-of-type {
         flex-direction: row;
     }
 }

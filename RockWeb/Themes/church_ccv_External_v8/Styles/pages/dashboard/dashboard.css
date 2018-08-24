@@ -1361,34 +1361,34 @@ h2 {
         display: none;
     }
 
-    #gSavedAccounts th:nth-child(2), #gSavedAccounts th:nth-child(3) {
+    .saved-account-list th:nth-child(2), .saved-account-list th:nth-child(3) {
         display: none;
     }
 
-    #gSavedAccounts td:nth-child(2), #gSavedAccounts td:nth-child(3) {
+    .saved-account-list td:nth-child(2), .saved-account-list td:nth-child(3) {
         display: none;
     }
 
-    #gSavedAccounts td:nth-child(1) {
+    .saved-account-list td:nth-child(1) {
         width: 230px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    #gTransactions th:nth-child(2), #gTransactions th:nth-child(3), #gTransactions th:nth-child(4) {
+    .transaction-report th:nth-child(2), .transaction-report th:nth-child(3), .transaction-report th:nth-child(4) {
         display: none;
     }
 
-    #gTransactions td:nth-child(2), #gTransactions td:nth-child(3), #gTransactions td:nth-child(4) {
+    .transaction-report td:nth-child(2), .transaction-report td:nth-child(3), .transaction-report td:nth-child(4) {
         display: none;
     }
 
-    #gTransactions th:nth-child(1), #gTransactions th:nth-child(1) {
+    .transaction-report th:nth-child(1), .transaction-report th:nth-child(1) {
         width: 100px;
     }
 
-    #gTransactions th:last-child, #gTransactions td:last-child {
+    .transaction-report th:last-child, .transaction-report td:last-child {
         border-right: 1px solid #ddd;
     }
 
