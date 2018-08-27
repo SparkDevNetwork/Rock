@@ -589,7 +589,7 @@ Response XML ({0}):
                         if ( xStatus != null )
                         {
                             resultFound = true;
-                            if ( xStatus.Value != "NO RECORD" )
+                            if ( !( xStatus.Value.Equals( "NO RECORD", StringComparison.OrdinalIgnoreCase ) || xStatus.Value.Equals( "COMPLETE", StringComparison.OrdinalIgnoreCase ) ) )
                             {
                                 reportStatus = "Review";
                                 break;
