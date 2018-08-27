@@ -144,13 +144,13 @@ namespace Rock.Utility
             // Attribute Value records only exist for Entities that have a value specified for the Attribute.
             // Therefore, if the specified comparison works by excluding certain values we must invert our filter logic:
             // first we find the Attribute Values that match those values and then we exclude the associated Entities from the result set.
-            var comparisonType = ComparisonType.EqualTo;
-            ComparisonType evaluatedComparisonType = comparisonType;
+            ComparisonType? comparisonType = ComparisonType.EqualTo;
+            ComparisonType? evaluatedComparisonType = comparisonType;
             string compareToValue = null;
 
             if ( values.Count >= 2 )
             {
-                comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                comparisonType = values[0].ConvertToEnumOrNull<ComparisonType>();
                 compareToValue = values[1];
 
                 switch ( comparisonType )
