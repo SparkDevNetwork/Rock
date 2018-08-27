@@ -313,7 +313,8 @@ namespace Rock.Data
 
             foreach ( var propInfo in this.GetType().GetProperties() )
             {
-                if ( !propInfo.GetGetMethod().IsVirtual || virtualPropsWhiteList.Contains(propInfo.Name) )
+                MethodInfo getMethod = propInfo.GetGetMethod();
+                if ( getMethod != null && ( !getMethod.IsVirtual || virtualPropsWhiteList.Contains(propInfo.Name) ) )
                 {
                     dictionary.Add( propInfo.Name, propInfo.GetValue( this, null ) );
                 }
