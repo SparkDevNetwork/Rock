@@ -228,7 +228,7 @@ namespace Rock.Utility
                 var filterIsDefault = entityField.FieldType.Field.IsEqualToValue( values, attributeCache.DefaultValue );
                 if ( filterIsDefault )
                 {
-                    var allAttributeValueIds = service.Queryable().Where( v => v.Attribute.Id == attributeCache.Id && v.EntityId.HasValue ).Select( a => a.EntityId.Value );
+                    var allAttributeValueIds = service.Queryable().Where( v => v.Attribute.Id == attributeCache.Id && v.EntityId.HasValue && v.Value != null ).Select( a => a.EntityId.Value );
 
                     ConstantExpression allIdsExpression = Expression.Constant( allAttributeValueIds.AsQueryable(), typeof( IQueryable<int> ) );
                     Expression notContainsExpression = Expression.Not( Expression.Call( typeof( Queryable ), "Contains", new Type[] { typeof( int ) }, allIdsExpression, propertyExpression ) );
