@@ -106,8 +106,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 string dataFieldName = string.Format( "scheduleField_{0}", item.Id );
 
-                CheckBoxEditableField field = new CheckBoxEditableField { HeaderText = item.FriendlyScheduleText.Replace( " at ", "<br/>" ), DataField = dataFieldName };
-
+                CheckBoxEditableField field = new CheckBoxEditableField { HeaderText = item.Name.Replace( " ", "<br/>" ), DataField = dataFieldName };
                 gGroupLocationSchedule.Columns.Add( field );
             }
         }
