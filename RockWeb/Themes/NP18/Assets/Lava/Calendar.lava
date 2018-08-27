@@ -1,12 +1,16 @@
 
 {% assign Filter = '' | PageParameter:'filter' %}
 {% assign CalendarFilter = '' | PageParameter:'calendar' | AsInteger %}
+{% assign EventFilter = '' | PageParameter:'event' | AsInteger %}
 
 {% if Filter != '' %}
 	<div class="text-center"> <b>Filtered by:</b> {{ Filter }} <a href="/events#events_list"><i class="fas fa-times"></i></a></div>
 {% endif %}
 {% if CalendarFilter != null %}
-	<div class="text-center"> <b>Filtered by Calendar:</b> {{ CalendarFilter }} <a href="/events#events_list"><i class="fas fa-times"></i></a></div>
+	<div class="text-center"> <b>Filtered by Calendar:</b> {% eventcalendar id:'{{ CalendarFilter }}' %}{{ eventcalendar.Name }}{% endeventcalendar %} <a href="/events#events_list"><i class="fas fa-times"></i></a></div>
+{% endif %}
+{% if EventFilter != null %}
+	<div class="text-center"> <b>Filtered by Event:</b> {% eventitem id:'{{ EventFilter }}' %}{{ eventitem.Name }}{% endeventitem %} <a href="/events#events_list"><i class="fas fa-times"></i></a></div>
 {% endif %}
 
 <div class="row">
@@ -25,6 +29,8 @@
 				  {% assign calendarIds = eventItemOccurrence.EventItemOccurrence.EventItem.EventCalendarItems | Select:'EventCalendarId' %}
 				  {% if CalendarFilter == null or calendarIds contains CalendarFilter %}
 
+				  {% if EventFilter == null or EventFilter == eventItemOccurrence.EventItemOccurrence.EventItem.Id %}
+
 	 					{% if eventItemOccurrence.Date != current_start_day %}
 							{% if current_start_day != null %}
 								</div></div></div>
@@ -36,7 +42,7 @@
 										<p class="date">{{ eventItemOccurrence.Date  | Date: 'MMM dd' }}</p>
 							    </div>
 									<div class='day_event_list col-sm-9'>
-	    			{% endif %}
+	    				{% endif %}
 
 						<div class='event'>
 							<div class='row'>
@@ -52,7 +58,8 @@
 										{% if eventItemOccurrence.DetailPage != null %}
 											<a href="{{ eventItemOccurrence.DetailPage }}">{{ eventItemOccurrence.Name }}</a>
 										{% else %}
-											<a href="{{ DetailsPage }}?EventOccurrenceId={{ eventItemOccurrence.EventItemOccurrence.Id }}">{{ eventItemOccurrence.Name }}</a>
+											{% assign EventOccurrenceId = eventItemOccurrence.EventItemOccurrence.Id %}
+											<a href="{[ FormatLink url:'{{ DetailsPage }}' keys:'EventOccurrenceId' ]}">{{ eventItemOccurrence.Name }}</a>
 										{% endif %}
 									</span>
 								</div>
@@ -70,6 +77,7 @@
 		    		
 					{% endif %}
 					{% endif %}
+					{% endif %}
 
 				{% endif %}
 			{% endfor %}
@@ -78,7 +86,7 @@
 				</div></div></div>
 			{% else %}
 	 			<div class="panel panel-default margin-t-md">
-    			<div class="margin-all-md"> There are no events in this time frame.</div>
+    			<div class="margin-all-md"> There aren't any events for this time frame. Please try a different month, or check out what's happening at a different campus.</div>
   			</div>
 			{% endif %}
 
