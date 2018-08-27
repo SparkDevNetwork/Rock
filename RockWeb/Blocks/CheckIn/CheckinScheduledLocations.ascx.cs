@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.CheckIn
             ScheduleService scheduleService = new ScheduleService( new RockContext() );
 
             // limit Schedules to ones that have a CheckInStartOffsetMinutes
-            var scheduleQry = scheduleService.Queryable().Where( a => a.CheckInStartOffsetMinutes != null );
+            var scheduleQry = scheduleService.Queryable().Where( a => a.CheckInStartOffsetMinutes != null && a.IsActive );
 
             // limit Schedules to the Category from the Filter
             int scheduleCategoryId = CategoryCache.Get( Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid() ).Id;
