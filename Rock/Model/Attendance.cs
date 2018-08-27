@@ -22,6 +22,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -39,10 +40,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.OccurrenceAttendance"/> that the attendance is for. 
+        /// Gets or sets the Id of the AttendanceOccurrence that the attendance is for.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.OccurrenceAttendance"/> that the attendance is for. 
+        /// A <see cref="System.Int32" /> representing the Id of the AttendanceOccurrence that the attendance is for.
         /// </value>
         [DataMember]
         public int OccurrenceId { get; set; }
@@ -65,7 +66,7 @@ namespace Rock.Model
         [DataMember]
         [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
         public int? CampusId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Device"/> that was used (the device where the person checked in from).
         /// </summary>
@@ -93,6 +94,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string SearchValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person who was identified as the person doing the check-in.
+        /// </summary>
+        /// <value>
+        /// The person alias identifier of person doing check-in.
+        /// </value>
+        [DataMember]
+        public int? CheckedInByPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Group"/> (family) that was selected after searching.
@@ -254,9 +264,77 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue Qualifier { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether this attenance is currently checked in.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is currently checked in; otherwise, <c>false</c>.
+        /// </value>
+        [NotMapped]
+        public bool IsCurrentlyCheckedIn
+        {
+            get
+            {
+                // If the attendance does not have an occurrence schedule, then there's nothing to check.
+                if ( Occurrence == null || Occurrence.Schedule == null )
+                {
+                    return false;
+                }
+
+                // If person has checked-out, they are obviously not still checked in
+                if ( EndDateTime.HasValue )
+                {
+                    return false;
+                }
+
+                // We'll check start time against timezone next, but don't even bother with that, if start date was more than 2 days ago
+                if ( StartDateTime < RockDateTime.Now.AddDays( -2 ) )
+                {
+                    return false;
+                }
+
+                // Get the current time (and adjust for a campus timezone)
+                var currentDateTime = RockDateTime.Now;
+                if ( Campus != null )
+                {
+                    currentDateTime = Campus.CurrentDateTime;
+                }
+                else if ( CampusId.HasValue )
+                {
+                    var campus = CampusCache.Get( CampusId.Value );
+                    if ( campus != null )
+                    {
+                        currentDateTime = campus.CurrentDateTime;
+                    }
+                }
+
+                // Now that we now the correct time, make sure that the attendance is for today and previous to current time
+                if ( StartDateTime < currentDateTime.Date || StartDateTime > currentDateTime )
+                {
+                    return false;
+                }
+
+                // Person is currently checked in, if the schedule for this attendance is still active
+                return Occurrence.Schedule.WasScheduleOrCheckInActive( currentDateTime );
+            }
+        }
+
         #endregion
 
         #region Obsolete Properties
+
+        // Keep track if any of the obsolete properties that were moved to AttendanceOccurrence were updated, then we'll deal with that on PreSaveChanges
+        private bool _updatedObsoleteGroupId = false;
+        private int? _updatedObsoleteGroupIdValue = null;
+
+        private bool _updatedObsoleteLocationId = false;
+        private int? _updatedObsoleteLocationIdValue = null;
+
+        private bool _updatedObsoleteScheduleId = false;
+        private int? _updatedObsoleteScheduleIdValue = null;
+
+        private bool _updatedObsoleteDidNotOccur = false;
+        private bool? _updatedObsoleteDidNotOccurValue = null;
 
         /// <summary>
         /// Gets the Id of the <see cref="Rock.Model.Group"/> that the <see cref="Rock.Model.Person"/> checked in to.
@@ -267,7 +345,22 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [Obsolete( "Use Occurrence.GroupId instead", false )]
-        public int? GroupId => Occurrence?.GroupId;
+        public int? GroupId
+        {
+            get
+            {
+                return _updatedObsoleteGroupId ? _updatedObsoleteGroupIdValue : Occurrence?.GroupId;
+            }
+
+            set
+            {
+                _updatedObsoleteGroupId = true;
+                _updatedObsoleteGroupIdValue = value;
+
+                // Update ModifiedDateTime to ensure this record is Tracked in ChangeTracker
+                ModifiedDateTime = RockDateTime.Now;
+            }
+        }
 
         /// <summary>
         /// Gets the Id of the <see cref="Rock.Model.Location"/> that the individual attended/checked in to. 
@@ -277,8 +370,23 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         [NotMapped]
-        [Obsolete( "Use Occurrence.GroupId instead", false )]
-        public int? LocationId => Occurrence?.LocationId;
+        [Obsolete( "Use Occurrence.LocationId instead", false )]
+        public int? LocationId
+        {
+            get
+            {
+                return _updatedObsoleteLocationId ? _updatedObsoleteLocationIdValue : Occurrence?.LocationId;
+            }
+
+            set
+            {
+                _updatedObsoleteLocationId = true;
+                _updatedObsoleteLocationIdValue = value;
+
+                // Update ModifiedDateTime to ensure this record is Tracked in ChangeTracker
+                ModifiedDateTime = RockDateTime.Now;
+            }
+        }
 
         /// <summary>
         /// Gets the Id of the schedule that the <see cref="Rock.Model.Person"/> checked in to.
@@ -289,8 +397,22 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [Obsolete( "Use Occurrence.ScheduleId instead", false )]
+        public int? ScheduleId
+        {
+            get
+            {
+                return _updatedObsoleteScheduleId ? _updatedObsoleteScheduleIdValue : Occurrence?.ScheduleId;
+            }
 
-        public int? ScheduleId => Occurrence?.ScheduleId;
+            set
+            {
+                _updatedObsoleteScheduleId = true;
+                _updatedObsoleteScheduleIdValue = value;
+
+                // Update ModifiedDateTime to ensure this record is Tracked in ChangeTracker
+                ModifiedDateTime = RockDateTime.Now;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the did not occur.
@@ -301,7 +423,22 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [Obsolete( "Use Occurrence.DidNotOccur instead", false )]
-        public bool? DidNotOccur => Occurrence?.DidNotOccur;
+        public bool? DidNotOccur
+        {
+            get
+            {
+                return _updatedObsoleteDidNotOccur ? _updatedObsoleteDidNotOccurValue : Occurrence?.DidNotOccur;
+            }
+
+            set
+            {
+                _updatedObsoleteDidNotOccur = true;
+                _updatedObsoleteDidNotOccurValue = value;
+
+                // Update ModifiedDateTime to ensure this record is Tracked in ChangeTracker
+                ModifiedDateTime = RockDateTime.Now;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the sunday date.
@@ -312,7 +449,21 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [Obsolete( "Use Occurrence.SundayDate instead", false )]
-        public DateTime SundayDate => Occurrence.SundayDate;
+        public DateTime SundayDate
+        {
+            get
+            {
+                return Occurrence?.SundayDate ?? DateTime.MinValue;
+            }
+
+            set
+            {
+                if ( Occurrence != null )
+                {
+                    Occurrence.SundayDate = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Group"/> that was attended.
@@ -321,8 +472,25 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Group"/> that was attended.
         /// </value>
         [LavaInclude]
+        [NotMapped]
         [Obsolete( "Use Occurrence.Group instead", false )]
-        public virtual Group Group => Occurrence?.Group;
+        public virtual Group Group
+        {
+            get
+            {
+                return Occurrence?.Group;
+            }
+
+            set
+            {
+                this.GroupId = value?.Id;
+                if ( Occurrence != null )
+                {
+                    Occurrence.Group = value;
+                }
+            }
+        }
+
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Location"/> where the <see cref="Rock.Model.Person"/> attended.
@@ -331,8 +499,24 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Location"/> where the <see cref="Rock.Model.Person"/> attended.
         /// </value>
         [LavaInclude]
+        [NotMapped]
         [Obsolete( "Use Occurrence.Location instead", false )]
-        public virtual Location Location => Occurrence?.Location;
+        public virtual Location Location
+        {
+            get
+            {
+                return Occurrence?.Location;
+            }
+
+            set
+            {
+                this.LocationId = value?.Id;
+                if ( Occurrence != null )
+                {
+                    Occurrence.Location = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the schedule.
@@ -341,8 +525,24 @@ namespace Rock.Model
         /// The schedule.
         /// </value>
         [LavaInclude]
+        [NotMapped]
         [Obsolete( "Use Occurrence.Schedule instead", false )]
-        public virtual Schedule Schedule => Occurrence?.Schedule;
+        public virtual Schedule Schedule
+        {
+            get
+            {
+                return Occurrence?.Schedule;
+            }
+
+            set
+            {
+                this.ScheduleId = value?.Id;
+                if ( Occurrence != null )
+                {
+                    Occurrence.Schedule = value;
+                }
+            }
+        }
 
         #endregion
 
@@ -358,7 +558,82 @@ namespace Rock.Model
             var transaction = new Rock.Transactions.GroupAttendedTransaction( entry );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
 
+#pragma warning disable 612, 618
+            ProcessObsoleteOccurrenceFields( entry );
+#pragma warning restore 612, 618
+
             base.PreSaveChanges( dbContext, entry );
+        }
+
+        /// <summary>
+        /// Processes the obsolete occurrence fields.
+        /// </summary>
+        /// <param name="entry">The entry.</param>
+        [Obsolete]
+        private void ProcessObsoleteOccurrenceFields( System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        {
+            if ( entry.State == System.Data.Entity.EntityState.Modified || entry.State == System.Data.Entity.EntityState.Added )
+            {
+                // NOTE: If they only changed StartDateTime, don't change the Occurrence record. We want to support letting StartDateTime be a different Date than the OccurenceDate in that situation
+                if ( _updatedObsoleteGroupId || _updatedObsoleteLocationId || _updatedObsoleteScheduleId || _updatedObsoleteDidNotOccur )
+                {
+                    if ( _updatedObsoleteGroupId || _updatedObsoleteLocationId || _updatedObsoleteScheduleId )
+                    {
+                        // if they changed or set stuff related to AttendanceOccurrence (not including DidNotOccur or StartDateTime) thru obsolete properties, find or create a Matching AttendanceOccurrence Record
+                        using ( var attendanceOccurrenceRockContext = new RockContext() )
+                        {
+                            var attendanceOccurrenceService = new AttendanceOccurrenceService( attendanceOccurrenceRockContext );
+
+                            // if GroupId,LocationId, or ScheduleId changed, use StartDateTime's Date as the OccurrenceDate to look up AttendanceOccurence since it is really a completely different Occurence if Group,Location or Schedule changes
+                            var occurrenceDate = this.StartDateTime.Date;
+
+                            var attendanceOccurrence = attendanceOccurrenceService.Queryable().Where( a => a.GroupId == this.GroupId && a.LocationId == this.LocationId && a.ScheduleId == this.ScheduleId && a.OccurrenceDate == occurrenceDate ).FirstOrDefault();
+                            if ( attendanceOccurrence != null )
+                            {
+                                // found a matching attendanceOccurrence, so use that
+                                if ( _updatedObsoleteDidNotOccur && attendanceOccurrence.DidNotOccur != this.DidNotOccur )
+                                {
+                                    // If DidNotOccur also changed, update the DidNotOccur for the attendanceOccurrence
+                                    // NOTE: This will update *all* Attendances' DidNotOccur for this AttendanceOccurrence. That is OK. That is what we want to happen.
+                                    attendanceOccurrence.DidNotOccur = this.DidNotOccur;
+                                    attendanceOccurrenceRockContext.SaveChanges();
+                                }
+
+                                if ( attendanceOccurrence.Id != this.OccurrenceId )
+                                {
+                                    this.OccurrenceId = attendanceOccurrence.Id;
+                                }
+                            }
+                            else
+                            {
+                                // didn't find a matching attendanceOccurrence, so create and insert a new one
+                                attendanceOccurrence = new AttendanceOccurrence
+                                {
+                                    GroupId = this.GroupId,
+                                    LocationId = this.LocationId,
+                                    ScheduleId = this.ScheduleId,
+                                    DidNotOccur = this.DidNotOccur,
+                                    OccurrenceDate = occurrenceDate
+                                };
+
+                                attendanceOccurrenceService.Add( attendanceOccurrence );
+                                attendanceOccurrenceRockContext.SaveChanges();
+                                this.OccurrenceId = attendanceOccurrence.Id;
+                            }
+
+
+                        }
+                    }
+                    else if ( _updatedObsoleteDidNotOccur )
+                    {
+                        // if they only changed DidNotOccur, but not any of the other obsolete attendanceoccurrence properties, just change the DidNotOccur on the existing AttendanceOccurrence record
+                        if ( this.Occurrence != null )
+                        {
+                            this.Occurrence.DidNotOccur = _updatedObsoleteDidNotOccurValue;
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -369,33 +644,47 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            if (!DidAttend.HasValue) return string.Empty;
+            if ( !DidAttend.HasValue )
+                return string.Empty;
 
             var sb = new StringBuilder();
             sb.Append( ( PersonAlias?.Person != null ) ? PersonAlias.Person.ToStringSafe() + " " : "" );
             sb.Append( DidAttend.Value ? "attended " : "did not attend " );
             sb.Append( Occurrence?.Group?.ToStringSafe() );
-            if (DidAttend.Value)
+            if ( DidAttend.Value )
             {
-                sb.AppendFormat("on {0} at {1} ", StartDateTime.ToShortDateString(), StartDateTime.ToShortTimeString());
+                sb.AppendFormat( "on {0} at {1} ", StartDateTime.ToShortDateString(), StartDateTime.ToShortTimeString() );
 
                 var end = EndDateTime ?? Occurrence?.OccurrenceDate;
-                if (end.HasValue)
+                if ( end.HasValue )
                 {
-                    sb.AppendFormat("until {0} at {1} ", end.Value.ToShortDateString(), end.Value.ToShortTimeString());
+                    sb.AppendFormat( "until {0} at {1} ", end.Value.ToShortDateString(), end.Value.ToShortTimeString() );
                 }
             }
 
-            if (Occurrence?.Location != null)
+            if ( Occurrence?.Location != null )
             {
-                sb.Append("in " + Occurrence.Location.ToStringSafe());
+                sb.Append( "in " + Occurrence.Location.ToStringSafe() );
             }
 
             return sb.ToString().Trim();
         }
 
-        #endregion
+        /// <summary>
+        /// Returns true if ... is valid.
+        /// </summary>
+        /// <value>
+        /// A <see cref="T:System.Boolean" /> that is <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsValid
+        {
+            get
+            {
+                return base.IsValid;
+            }
+        }
 
+        #endregion
     }
 
     #region Entity Configuration

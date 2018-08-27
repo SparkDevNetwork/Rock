@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 using Rock;
+using Rock.Web.Cache;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -207,7 +208,7 @@ namespace Rock.Reporting.DataSelect.Person
             // t.Transaction.TransactionTypeValueId
             MemberExpression transactionTypeValueIdProperty = Expression.Property( transactionProperty, "TransactionTypeValueId" );
 
-            int transactionTypeContributionId = Rock.Cache.CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+            int transactionTypeContributionId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
             // t.Transaction.TransactionTypeValueId == transactionTypeContributionId
             whereClause = Expression.And( whereClause, Expression.Equal( transactionTypeValueIdProperty, Expression.Constant( transactionTypeContributionId ) ) );

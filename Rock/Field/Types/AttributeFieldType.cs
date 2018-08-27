@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -124,7 +124,7 @@ namespace Rock.Field.Types
                     int? entityTypeId = ( (EntityTypePicker)controls[0] ).SelectedValue.AsIntegerOrNull();
                     if ( entityTypeId.HasValue )
                     {
-                        var entityType = CacheEntityType.Get( entityTypeId.Value );
+                        var entityType = EntityTypeCache.Get( entityTypeId.Value );
                         if ( entityType != null )
                         {
                             value = entityType.Guid.ToString();
@@ -167,7 +167,7 @@ namespace Rock.Field.Types
                     Guid? entityTypeGuid = configurationValues[ENTITY_TYPE_KEY].Value.AsGuidOrNull();
                     if ( entityTypeGuid.HasValue )
                     {
-                        var entityType = CacheEntityType.Get( entityTypeGuid.Value );
+                        var entityType = EntityTypeCache.Get( entityTypeGuid.Value );
                         if ( entityType != null )
                         {
                             value = entityType.Id.ToString();
@@ -214,7 +214,7 @@ namespace Rock.Field.Types
                 var names = new List<string>();
                 foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                 {
-                    var attribute = CacheAttribute.Get( guid );
+                    var attribute = AttributeCache.Get( guid );
                     if ( attribute != null )
                     {
                         names.Add( attribute.Name );
@@ -260,7 +260,7 @@ namespace Rock.Field.Types
                 Guid? entityTypeGuid = configurationValues[ENTITY_TYPE_KEY].Value.AsGuidOrNull();
                 if ( entityTypeGuid.HasValue )
                 {
-                    var entityType = CacheEntityType.Get( entityTypeGuid.Value );
+                    var entityType = EntityTypeCache.Get( entityTypeGuid.Value );
                     if ( entityType != null )
                     {
                         Rock.Model.AttributeService attributeService = new Model.AttributeService( new RockContext() );
@@ -276,7 +276,7 @@ namespace Rock.Field.Types
                             attributeQuery = attributeService.GetByEntityTypeId( entityType.Id, true );
                         }
 
-                        List<CacheAttribute> attributeList = attributeQuery.ToCacheAttributeList();
+                        List<AttributeCache> attributeList = attributeQuery.ToCacheAttributeList();
 
                         if ( attributeList.Any() )
                         {
@@ -323,7 +323,7 @@ namespace Rock.Field.Types
 
             foreach ( int attributeId in ids.AsIntegerList() )
             {
-                var attribute = Rock.Cache.CacheAttribute.Get( attributeId );
+                var attribute = Rock.Web.Cache.AttributeCache.Get( attributeId );
                 if ( attribute != null )
                 {
                     guids.Add( attribute.Guid.ToString() );
@@ -348,7 +348,7 @@ namespace Rock.Field.Types
                     var ids = new List<string>();
                     foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                     {
-                        var attribute = Rock.Cache.CacheAttribute.Get( guid );
+                        var attribute = Rock.Web.Cache.AttributeCache.Get( guid );
                         if ( attribute != null )
                         {
                             ids.Add( attribute.Id.ToString() );

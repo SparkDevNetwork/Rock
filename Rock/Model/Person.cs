@@ -31,7 +31,7 @@ using System.Web;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -323,7 +323,7 @@ namespace Rock.Model
 
             private set
             {
-                // don't do anthing here since EF uses this for loading 
+                // don't do anthing here since EF uses this for loading
             }
         }
 
@@ -611,7 +611,7 @@ namespace Rock.Model
         {
             get
             {
-                // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
+                // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so
                 // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
                 return FormatFullName( NickName, LastName, SuffixValueId );
             }
@@ -632,7 +632,7 @@ namespace Rock.Model
         {
             if ( recordTypeValueId.HasValue )
             {
-                int recordTypeValueIdBusiness = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                int recordTypeValueIdBusiness = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
                 return recordTypeValueId.Value == recordTypeValueIdBusiness;
             }
             else
@@ -675,11 +675,11 @@ namespace Rock.Model
 
             fullName.Append( lastName );
 
-            // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
+            // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so
             // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
             if ( suffixValueId.HasValue )
             {
-                var suffix = CacheDefinedValue.Get( suffixValueId.Value );
+                var suffix = DefinedValueCache.Get( suffixValueId.Value );
                 if ( suffix != null )
                 {
                     fullName.AppendFormat( " {0}", suffix.Value );
@@ -1080,7 +1080,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the number of days until their next birthday. This is a computed column and can be used
-        /// in LinqToSql queries, but there is no in-memory calculation. Avoid using this property outside of 
+        /// in LinqToSql queries, but there is no in-memory calculation. Avoid using this property outside of
         /// a linq query. Use DaysToBirthday property instead
         /// NOTE: If their birthday is Feb 29, and this isn't a leap year, it'll treat Feb 28th as their birthday when doing this calculation
         /// </summary>
@@ -1164,7 +1164,7 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Formats the age with unit (year, month, day) suffix depending on the age of the individual. 
+        /// Formats the age with unit (year, month, day) suffix depending on the age of the individual.
         /// </summary>
         /// <param name="condensed">if set to <c>true</c> age in years is returned without a unit suffix.</param>
         /// <returns></returns>
@@ -1257,7 +1257,7 @@ namespace Rock.Model
         /// use DaysUntilBirthday property instead
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the number of days until the Person's birthday. If the person's birthdate is 
+        /// A <see cref="System.Int32"/> representing the number of days until the Person's birthday. If the person's birthdate is
         /// not available returns Int.MaxValue
         /// </value>
         [DataMember]
@@ -1345,7 +1345,7 @@ namespace Rock.Model
         /// use DaysUntilAnniversary property instead
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the number of days until the Person's anniversary. If the person's anniversary 
+        /// A <see cref="System.Int32"/> representing the number of days until the Person's anniversary. If the person's anniversary
         /// is not available returns Int.MaxValue
         /// </value>
         [DataMember]
@@ -1694,7 +1694,7 @@ namespace Rock.Model
                     rockUrlRoot.EnsureTrailingBackslash();
 
                     // get email link preference (new communication/mailto)
-                    var globalAttributes = Rock.Cache.CacheGlobalAttributes.Get();
+                    var globalAttributes = GlobalAttributesCache.Get();
                     string emailLinkPreference = globalAttributes.GetValue( "PreferredEmailLinkType" );
 
                     string emailLink = string.Empty;
@@ -1790,8 +1790,8 @@ namespace Rock.Model
         {
             var rockContext = (RockContext)dbContext;
 
-            var inactiveStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
-            var deceased = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() );
+            var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+            var deceased = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() );
 
             if ( inactiveStatus != null && deceased != null )
             {
@@ -1844,13 +1844,20 @@ namespace Rock.Model
 
             if ( this.AnniversaryDate.HasValue )
             {
-                var dbPropertyEntry = entry.Property( "AnniversaryDate" );
-                if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
+                if ( this.MaritalStatusValueId != DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id )
                 {
-                    var spouse = this.GetSpouse( (RockContext)dbContext );
-                    if ( spouse != null && spouse.AnniversaryDate != this.AnniversaryDate )
+                    this.AnniversaryDate = null;
+                }
+                else
+                {
+                    var dbPropertyEntry = entry.Property( "AnniversaryDate" );
+                    if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
                     {
-                        spouse.AnniversaryDate = this.AnniversaryDate;
+                        var spouse = this.GetSpouse( ( RockContext ) dbContext );
+                        if ( spouse != null && spouse.AnniversaryDate != this.AnniversaryDate )
+                        {
+                            spouse.AnniversaryDate = this.AnniversaryDate;
+                        }
                     }
                 }
             }
@@ -1902,6 +1909,17 @@ namespace Rock.Model
                         {
                             HistoryChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Property, "Photo" );
                         }
+
+                        // ensure a new person has an Alternate Id
+                        int alternateValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
+                        var personSearchKeyService = new PersonSearchKeyService( rockContext );
+                        PersonSearchKey personSearchKey = new PersonSearchKey()
+                        {
+                            PersonAlias = this.Aliases.First(),
+                            SearchTypeValueId = alternateValueId,
+                            SearchValue = PersonSearchKeyService.GenerateRandomAlternateId( true )
+                        };
+                        personSearchKeyService.Add( personSearchKey );
 
                         break;
                     }
@@ -1961,8 +1979,8 @@ namespace Rock.Model
                             if ( !string.IsNullOrEmpty( currentEmail ) )
                             {
                                 var personSearchKeyService = new PersonSearchKeyService( rockContext );
-                                var searchTypeValue = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
-                                if ( !personSearchKeyService.Queryable().Any( a => a.PersonAlias.PersonId == Id && a.SearchTypeValueId == searchTypeValue.Id && a.SearchValue == currentEmail ) )
+                                var searchTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
+                                if ( !personSearchKeyService.Queryable().Any( a => a.PersonAlias.PersonId == Id && a.SearchTypeValueId == searchTypeValue.Id && a.SearchValue.Equals( currentEmail, StringComparison.OrdinalIgnoreCase ) ) )
                                 {
                                     PersonSearchKey personSearchKey = new PersonSearchKey()
                                     {
@@ -1974,6 +1992,11 @@ namespace Rock.Model
 
                                 }
                             }
+                        }
+
+                        if ( entry.OriginalValues["RecordStatusValueId"].ToStringSafe().AsIntegerOrNull() != RecordStatusReasonValueId )
+                        {
+                            RecordStatusLastModifiedDateTime = RockDateTime.Now;
                         }
 
                         break;
@@ -2074,7 +2097,7 @@ namespace Rock.Model
                     .Select( s => new
                     {
                         Id = s.Id,
-                        SignalType = Rock.Cache.CacheSignalType.Get( s.SignalTypeId )
+                        SignalType = SignalTypeCache.Get( s.SignalTypeId )
                     } )
                     .OrderBy( s => s.SignalType.Order )
                     .ThenBy( s => s.SignalType.Id )
@@ -2112,10 +2135,10 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetFamilySalutation( Person person, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalSeparator = "&", string separator = ","  )
         {
-            var _familyType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            var _familyType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             var _adultRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
             var _childRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) );
-            var _deceased = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ).Id;
+            var _deceased = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ).Id;
 
             // clean up the separators
             finalSeparator = $" {finalSeparator} "; // add spaces before and after
@@ -2136,7 +2159,7 @@ namespace Rock.Model
             // filter for inactive
             if ( !includeInactive )
             {
-                var activeRecordStatusId = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
+                var activeRecordStatusId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
                 familyMembers = familyMembers.Where( f => f.Person.RecordStatusValueId == activeRecordStatusId ).ToList();
             }
 
@@ -2342,14 +2365,7 @@ namespace Rock.Model
                 else if ( age.HasValue && age.Value < 18 )
                 {
                     // it's a child
-                    if ( gender == Model.Gender.Female )
-                    {
-                        virtualPath = "~/Assets/Images/person-no-photo-child-female.svg?";
-                    }
-                    else
-                    {
-                        virtualPath = "~/Assets/Images/person-no-photo-child-male.svg?";
-                    }
+                    virtualPath = $"~/{GetPhotoPath( gender, false )}";
                 }
                 else
                 {
@@ -2357,7 +2373,7 @@ namespace Rock.Model
                     Guid? familyRoleGuid = null;
                     if ( personId.HasValue )
                     {
-                        var familyGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+                        var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
                         familyRoleGuid = new GroupMemberService( new RockContext() ).Queryable()
                                             .Where( m =>
                                                 m.Group.GroupTypeId == familyGroupTypeId
@@ -2371,26 +2387,12 @@ namespace Rock.Model
                     if ( familyRoleGuid.HasValue && familyRoleGuid == familyRoleChildGuid )
                     {
                         // it's a child
-                        if ( gender == Model.Gender.Female )
-                        {
-                            virtualPath = "~/Assets/Images/person-no-photo-child-female.svg?";
-                        }
-                        else
-                        {
-                            virtualPath = "~/Assets/Images/person-no-photo-child-male.svg?";
-                        }
+                        virtualPath = $"~/{GetPhotoPath( gender, false )}";
                     }
                     else
                     {
                         // it's an adult
-                        if ( gender == Model.Gender.Female )
-                        {
-                            virtualPath = "~/Assets/Images/person-no-photo-female.svg?";
-                        }
-                        else
-                        {
-                            virtualPath = "~/Assets/Images/person-no-photo-male.svg?";
-                        }
+                        virtualPath = $"~/{GetPhotoPath( gender, true )}";
                     }
                 }
             }
@@ -2414,7 +2416,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoUrl( Person person, int? maxWidth = null, int? maxHeight = null )
         {
-            return GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? CacheDefinedValue.Get( person.RecordTypeValueId.Value ).Guid : (Guid?)null, maxWidth, maxHeight );
+            return GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : (Guid?)null, maxWidth, maxHeight );
         }
 
         /// <summary>
@@ -2442,7 +2444,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonNoPictureUrl( Person person, int? maxWidth = null, int? maxHeight = null )
         {
-            return GetPersonPhotoUrl( person.Id, null, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? CacheDefinedValue.Get( person.RecordTypeValueId.Value ).Guid : ( Guid? ) null, maxWidth, maxHeight );
+            return GetPersonPhotoUrl( person.Id, null, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : ( Guid? ) null, maxWidth, maxHeight );
         }
 
         /// <summary>
@@ -2483,14 +2485,7 @@ namespace Rock.Model
                 else if ( age.HasValue && age.Value < 18 )
                 {
                     // it's a child
-                    if ( gender == Model.Gender.Female )
-                    {
-                        virtualPath = "~/Assets/Images/person-no-photo-child-female.svg?";
-                    }
-                    else
-                    {
-                        virtualPath = "~/Assets/Images/person-no-photo-child-male.svg?";
-                    }
+                    virtualPath = $"~/{GetPhotoPath( gender, false )}";
                 }
                 else
                 {
@@ -2503,30 +2498,17 @@ namespace Rock.Model
                             ageClassification = new PersonService( rockContext ).Queryable( true ).Where( a => a.Id == personId ).Select( a => ( AgeClassification ? )a.AgeClassification ).FirstOrDefault();
                         }
                     }
-                    
+
                     if ( ageClassification.HasValue && ageClassification == AgeClassification.Child )
                     {
                         // it's a child
-                        if ( gender == Model.Gender.Female )
-                        {
-                            virtualPath = "~/Assets/Images/person-no-photo-child-female.svg?";
-                        }
-                        else
-                        {
-                            virtualPath = "~/Assets/Images/person-no-photo-child-male.svg?";
-                        }
+                        virtualPath = $"~/{GetPhotoPath( gender, false )}";
                     }
                     else
                     {
                         // it's an adult
-                        if ( gender == Model.Gender.Female )
-                        {
-                            virtualPath = "~/Assets/Images/person-no-photo-female.svg?";
-                        }
-                        else
-                        {
-                            virtualPath = "~/Assets/Images/person-no-photo-male.svg?";
-                        }
+                        virtualPath = $"~/{GetPhotoPath( gender, true )}";
+
                     }
                 }
             }
@@ -2538,6 +2520,50 @@ namespace Rock.Model
             else
             {
                 return VirtualPathUtility.ToAbsolute( virtualPath );
+            }
+        }
+
+        /// <summary>
+        /// Gets the photo path based on the gender and adult/child status.
+        /// </summary>
+        /// <param name="gender">The gender.</param>
+        /// <param name="isAdult">if set to <c>true</c> is adult.</param>
+        /// <returns></returns>
+        private static string GetPhotoPath(Gender gender, bool isAdult )
+        {
+            if ( isAdult )
+            {
+                switch ( gender )
+                {
+                    case Gender.Female:
+                        {
+                            return "Assets/Images/person-no-photo-female.svg?";
+                        }
+                    case Gender.Male:
+                        {
+                            return "Assets/Images/person-no-photo-male.svg?";
+                        }
+                    default:
+                        {
+                            return "Assets/Images/person-no-photo-unknown.svg?";
+                        }
+                }
+            }
+
+            switch ( gender )
+            {
+                case Gender.Female:
+                    {
+                        return "Assets/Images/person-no-photo-child-female.svg?";
+                    }
+                case Gender.Male:
+                    {
+                        return "Assets/Images/person-no-photo-child-male.svg?";
+                    }
+                default:
+                    {
+                        return "Assets/Images/person-no-photo-child-unknown.svg?";
+                    }
             }
         }
 
@@ -2580,7 +2606,7 @@ namespace Rock.Model
                 gender = person.Gender;
                 altText = person.FullName;
                 age = person.Age;
-                recordTypeValueGuid = person.RecordTypeValueId.HasValue ? CacheDefinedValue.Get( person.RecordTypeValueId.Value ).Guid : (Guid?)null;
+                recordTypeValueGuid = person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : (Guid?)null;
                 personId = person.Id;
             }
 
@@ -2688,14 +2714,7 @@ namespace Rock.Model
                 else if ( age.HasValue && age.Value < 18 )
                 {
                     // it's a child
-                    if ( gender == Model.Gender.Female )
-                    {
-                        photoUrl.Append( "Assets/Images/person-no-photo-child-female.svg?" );
-                    }
-                    else
-                    {
-                        photoUrl.Append( "Assets/Images/person-no-photo-child-male.svg?" );
-                    }
+                    photoUrl.Append( GetPhotoPath( gender, false ) );
                 }
                 else
                 {
@@ -2703,7 +2722,7 @@ namespace Rock.Model
                     Guid? familyRoleGuid = null;
                     if ( personId.HasValue )
                     {
-                        var familyGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+                        var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
                         familyRoleGuid = new GroupMemberService( new RockContext() ).Queryable()
                                             .Where( m =>
                                                 m.Group.GroupTypeId == familyGroupTypeId
@@ -2717,36 +2736,15 @@ namespace Rock.Model
                     if ( familyRoleGuid.HasValue && familyRoleGuid == familyRoleChildGuid )
                     {
                         // it's a child
-                        if ( gender == Model.Gender.Female )
-                        {
-                            photoUrl.Append( "Assets/Images/person-no-photo-child-female.svg?");
-                        }
-                        else
-                        {
-                            photoUrl.Append( "Assets/Images/person-no-photo-child-male.svg?" );
-                        }
+                        photoUrl.Append( GetPhotoPath( gender, false ) );
                     }
                     else
                     {
                         // it's an adult
-                        if ( gender == Model.Gender.Female )
-                        {
-                            photoUrl.Append( "Assets/Images/person-no-photo-female.svg?" );
-                        }
-                        else
-                        {
-                            photoUrl.Append( "Assets/Images/person-no-photo-male.svg?" );
-                        }
+                        photoUrl.Append( GetPhotoPath( gender, true ) );
                     }
                 }
 
-                if ( maxWidth.HasValue || maxHeight.HasValue )
-                {
-                    styleString = string.Format(
-                        " style='{0}{1}'",
-                        maxWidth.HasValue ? "max-width:" + maxWidth.Value.ToString() + "px; " : string.Empty,
-                        maxHeight.HasValue ? "max-height:" + maxHeight.Value.ToString() + "px;" : string.Empty );
-                }
             }
 
             return string.Format( "<img src='{0}'{1}{2}{3}/>", photoUrl.ToString(), styleString, altString, classString );
@@ -2841,14 +2839,7 @@ namespace Rock.Model
                 else if ( age.HasValue && age.Value < 18 )
                 {
                     // it's a child
-                    if ( gender == Model.Gender.Female )
-                    {
-                        photoUrl.Append( "Assets/Images/person-no-photo-child-female.svg?" );
-                    }
-                    else
-                    {
-                        photoUrl.Append( "Assets/Images/person-no-photo-child-male.svg?" );
-                    }
+                    photoUrl.Append( GetPhotoPath( gender, false ) );
                 }
                 else
                 {
@@ -2865,35 +2856,13 @@ namespace Rock.Model
                     if ( ageClassification.HasValue && ageClassification == AgeClassification.Child )
                     {
                         // it's a child
-                        if ( gender == Model.Gender.Female )
-                        {
-                            photoUrl.Append( "Assets/Images/person-no-photo-child-female.svg?" );
-                        }
-                        else
-                        {
-                            photoUrl.Append( "Assets/Images/person-no-photo-child-male.svg?" );
-                        }
+                        photoUrl.Append( GetPhotoPath( gender, false ) );
                     }
                     else
                     {
                         // it's an adult
-                        if ( gender == Model.Gender.Female )
-                        {
-                            photoUrl.Append( "Assets/Images/person-no-photo-female.svg?" );
-                        }
-                        else
-                        {
-                            photoUrl.Append( "Assets/Images/person-no-photo-male.svg?" );
-                        }
+                        photoUrl.Append( GetPhotoPath( gender, true ) );
                     }
-                }
-
-                if ( maxWidth.HasValue || maxHeight.HasValue )
-                {
-                    styleString = string.Format(
-                        " style='{0}{1}'",
-                        maxWidth.HasValue ? "max-width:" + maxWidth.Value.ToString() + "px; " : string.Empty,
-                        maxHeight.HasValue ? "max-height:" + maxHeight.Value.ToString() + "px;" : string.Empty );
                 }
             }
 
@@ -2935,7 +2904,7 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         public static void CreateCheckinRelationship( int personId, int relatedPersonId, RockContext rockContext = null )
         {
-            var knownRelationshipGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
+            var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
             var canCheckInRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) );
             if ( canCheckInRole != null )
             {
@@ -2983,7 +2952,7 @@ namespace Rock.Model
 
             if ( suffixValueId.HasValue )
             {
-                var suffix = CacheDefinedValue.Get( suffixValueId.Value );
+                var suffix = DefinedValueCache.Get( suffixValueId.Value );
                 if ( suffix != null )
                 {
                     return FormatFullName( nickName, lastName, suffix.Value );
@@ -3059,7 +3028,7 @@ namespace Rock.Model
         {
             if ( gradeOffset.HasValue && gradeOffset >= 0 )
             {
-                var schoolGrades = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+                var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
                 if ( schoolGrades != null )
                 {
                     var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
@@ -3075,8 +3044,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the home locations for all the person id's passed in. If a person is in 
-        /// more than one family or that family has more than one home address a single 
+        /// Gets the home locations for all the person id's passed in. If a person is in
+        /// more than one family or that family has more than one home address a single
         /// location is provided.
         /// </summary>
         /// <param name="personIds">The person ids.</param>
@@ -3096,8 +3065,8 @@ namespace Rock.Model
 
                 if ( homeAddressGuid.HasValue && familyGuid.HasValue )
                 {
-                    var homeAddressDv = CacheDefinedValue.Get( homeAddressGuid.Value );
-                    var familyGroupType = CacheGroupType.Get( familyGuid.Value );
+                    var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
+                    var familyGroupType = GroupTypeCache.Get( familyGuid.Value );
                     if ( homeAddressDv != null && familyGroupType != null )
                     {
                         var personLocations = new GroupMemberService( rockContext ).Queryable()
@@ -3136,8 +3105,8 @@ namespace Rock.Model
         {
             List<IndexModelBase> indexableItems = new List<IndexModelBase>();
 
-            var recordTypePersonId = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-            var recordTypeBusinessId = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+            var recordTypePersonId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            var recordTypeBusinessId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
             RockContext rockContext = new RockContext();
 
@@ -3411,7 +3380,7 @@ namespace Rock.Model
             Guid? homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
             if ( homeAddressGuid.HasValue )
             {
-                var homeAddressDv = CacheDefinedValue.Get( homeAddressGuid.Value );
+                var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
                 if ( homeAddressDv != null )
                 {
                     foreach ( var family in person.GetFamilies( rockContext ) )
@@ -3477,8 +3446,8 @@ namespace Rock.Model
                 var workAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuidOrNull();
                 if ( homeAddressGuid.HasValue && workAddressGuid.HasValue )
                 {
-                    var homeAddressDv = CacheDefinedValue.Get( homeAddressGuid.Value );
-                    var workAddressDv = CacheDefinedValue.Get( workAddressGuid.Value );
+                    var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
+                    var workAddressDv = DefinedValueCache.Get( workAddressGuid.Value );
                     if ( homeAddressDv != null && workAddressDv != null )
                     {
                         // Get all available mailing locations, prioritizing mapped locations then home locations
@@ -3508,7 +3477,7 @@ namespace Rock.Model
                 .FirstOrDefault();
 
             // Since only one number can be used for SMS, before anything else, if isMessagingEnabled is true, turn it off on ALL
-            // numbers, so we only enable it for this one. 
+            // numbers, so we only enable it for this one.
             if( isMessagingEnabled.HasValue && isMessagingEnabled.Value == true )
             {
                 foreach( PhoneNumber currPhoneNumber in person.PhoneNumbers )
@@ -3551,7 +3520,7 @@ namespace Rock.Model
                 phoneNumberService.Add( phoneObject );
 
                 // get the typeId for this phone number so we set it correctly
-                //var numberType = Rock.Cache.CacheDefinedValue.Get( phoneTypeGuid );
+                //var numberType = DefinedValueCache.Get( phoneTypeGuid );
                 phoneObject.NumberTypeValueId = numberTypeValueId;
 
                 phoneObject.CountryCode = PhoneNumber.CleanNumber( phoneCountryCode );

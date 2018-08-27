@@ -4,9 +4,19 @@
       <ul class="slides">
 
         {% for item in Items -%}
+          {%- assign itemPrimarySlug = item.PrimarySlug | Trim -%}
+          {%- if LinkedPages.DetailPage contains '{Slug}' and itemPrimarySlug != '' -%}
+            {%- assign itemLink = LinkedPages.DetailPage | Replace:'{Slug}',item.PrimarySlug | Prepend:'/' -%}
+          {%- else -%}
+            {%- if LinkedPages.DetailPage contains '{Slug}' -%}
+              {%- assign itemLink = LinkedPages.DetailPage | Replace:'{Slug}',item.Id | Prepend:'/' -%}
+            {%- else -%}
+              {%- capture itemLink -%}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{%- endcapture -%}
+            {%- endif -%}
+          {%- endif -%}
           <li>
-            <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">{{ item | Attribute:'Image' }}</a>
-          </li>   
+            <a href="{{ itemLink }}">{{ item | Attribute:'Image' }}</a>
+          </li>
         {% endfor -%}
 
       </ul>
@@ -14,11 +24,11 @@
 
   <div class="slide-control">
     <ul>
-    
+
       {% for item in Items -%}
-        <li>{{ item.Title }}</li>   
+        <li>{{ item.Title }}</li>
       {% endfor -%}
-      
+
     </ul>
     <div class="tipper"></div>
   </div>

@@ -28,7 +28,7 @@ using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -122,12 +122,12 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     if ( Request.Form["__EVENTARGUMENT"] == "Wedge_Entry" )
                     {
-                        var dv = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_SCANNED_ID );
+                        var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_SCANNED_ID );
                         DoFamilySearch( dv, hfSearchEntry.Value );
                     }
                     else if ( Request.Form["__EVENTARGUMENT"] == "Family_Id_Search" )
                     {
-                        var dv = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_FAMILY_ID );
+                        var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_FAMILY_ID );
                         DoFamilySearch( dv, hfSearchEntry.Value );
                     }
                 }
@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         /// <param name="searchType">Type of the search.</param>
         /// <param name="searchValue">The search value.</param>
-        private void DoFamilySearch( CacheDefinedValue searchType, string searchValue )
+        private void DoFamilySearch( DefinedValueCache searchType, string searchValue )
         {
             CurrentCheckInState.CheckIn.UserEnteredSearch = false;
             CurrentCheckInState.CheckIn.ConfirmSingleFamily = false;
@@ -206,7 +206,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !CurrentCheckInState.CheckIn.Families.Any() )
                 {
-                    maWarning.Show( string.Format( "<p>{0}</p>", GetAttributeValue( "NoMatchText" ) ), Rock.Web.UI.Controls.ModalAlertType.Warning );
+                    maWarning.Show( string.Format( "<p>{0}</p>", GetAttributeValue( "NoOptionCaption" ) ), Rock.Web.UI.Controls.ModalAlertType.Warning );
                 }
                 else
                 {
@@ -258,8 +258,15 @@ namespace RockWeb.Blocks.CheckIn
             else if ( !CurrentCheckInState.Kiosk.HasLocations( CurrentCheckInState.ConfiguredGroupTypes ) )
             {
                 DateTime activeAt = CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentCheckInState.ConfiguredGroupTypes ).Select( g => g.NextActiveTime ).Min();
-                lblActiveWhen.Text = activeAt.ToString( "o" );
-                pnlNotActiveYet.Visible = true;
+                if ( activeAt == DateTime.MaxValue )
+                {
+                    pnlClosed.Visible = true;
+                }
+                else
+                {
+                    lblActiveWhen.Text = activeAt.ToString( "o" ).Left( 27 );   // strip the timezone offset off of the string, so that countdown is displayed relative to kiosk's local time.
+                    pnlNotActiveYet.Visible = true;
+                }
             }
             else if ( !CurrentCheckInState.Kiosk.HasActiveLocations( CurrentCheckInState.ConfiguredGroupTypes ) )
             {
@@ -406,7 +413,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( userLogin != null && userLogin.EntityTypeId.HasValue )
             {
                 // make sure this is a PIN auth user login
-                var userLoginEntityType = CacheEntityType.Get( userLogin.EntityTypeId.Value );
+                var userLoginEntityType = EntityTypeCache.Get( userLogin.EntityTypeId.Value );
                 if ( userLoginEntityType != null && userLoginEntityType.Id == pinAuth.EntityType.Id )
                 {
                     if ( pinAuth != null && pinAuth.IsActive )

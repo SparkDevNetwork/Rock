@@ -14,7 +14,7 @@
                 <Rock:NotificationBox ID="nbBlockConfigurationWarning" runat="server" NotificationBoxType="Warning" Text="Please set the Entity Type in block settings" Visible="false" />
                 <div class="row">
                     <div class="col-md-4">
-                        <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Dataview" AutoPostBack="true" OnSelectedIndexChanged="FilterChanged" EnhanceForLongLists="true" />
+                        <Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Dataview" OnSelectItem="FilterChanged" />
                         <Rock:RockDropDownList ID="ddlBatch" runat="server" Label="Open Batches" AutoPostBack="true" OnSelectedIndexChanged="FilterChanged" EnhanceForLongLists="true" />
                     </div>
                 </div>

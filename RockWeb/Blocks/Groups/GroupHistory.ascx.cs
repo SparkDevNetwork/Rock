@@ -20,10 +20,9 @@ using System.Web.UI;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -37,8 +36,8 @@ namespace RockWeb.Blocks.Groups
     [Description( "Displays a timeline of history for a group" )]
 
     [CodeEditorField( "Timeline Lava Template", "The Lava Template to use when rendering the timeline view of the history.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, @"{% include '~~/Assets/Lava/GroupHistoryTimeline.lava' %}", order: 1 )]
-    [LinkedPage( "Group History Grid Page", required: true, order: 2 )]
-    [LinkedPage( "Group Member History Page", required: true, order: 3 )]
+    [LinkedPage( "Group History Grid Page", defaultValue: Rock.SystemGuid.Page.GROUP_HISTORY_GRID, required: true, order: 2 )]
+    [LinkedPage( "Group Member History Page", defaultValue: Rock.SystemGuid.Page.GROUP_MEMBER_HISTORY, required: true, order: 3 )]
     public partial class GroupHistory : RockBlock, ICustomGridColumns
     {
         #region Base Control Methods
@@ -125,10 +124,12 @@ namespace RockWeb.Blocks.Groups
         private void ShowGroupHistory( int groupId )
         {
             int entityId;
-            CacheEntityType primaryEntityType;
-            CacheEntityType secondaryEntityType = null;
+            EntityTypeCache primaryEntityType;
+            EntityTypeCache secondaryEntityType = null;
 
-            primaryEntityType = CacheEntityType.Get<Rock.Model.Group>();
+            hlMemberHistory.NavigateUrl = LinkedPageUrl( "GroupMemberHistoryPage", new Dictionary<string, string> { { "GroupId", groupId.ToString() } } );
+
+            primaryEntityType = EntityTypeCache.Get<Rock.Model.Group>();
             entityId = groupId;
             var group = new GroupService( new RockContext() ).Get( groupId );
             if ( group != null )
@@ -138,7 +139,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( tglShowGroupMembersInHistory.Checked )
             {
-                secondaryEntityType = CacheEntityType.Get<Rock.Model.GroupMember>();
+                secondaryEntityType = EntityTypeCache.Get<Rock.Model.GroupMember>();
             }
 
             var rockContext = new RockContext();

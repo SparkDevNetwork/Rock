@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void LoadDropDowns()
         {
-            var groupEntityType = CacheEntityType.Get( typeof( Group ) );
+            var groupEntityType = EntityTypeCache.Get( typeof( Group ) );
             var currentGroup = RockPage.GetCurrentContext( groupEntityType ) as Group;
 
             var groupIdString = Request.QueryString["groupId"];
@@ -145,7 +145,7 @@ namespace RockWeb.Blocks.Core
 
             if ( GetAttributeValue( "RespectCampusContext" ).AsBoolean() )
             {
-                var campusContext = RockPage.GetCurrentContext( CacheEntityType.Get( typeof( Campus ) ) );
+                var campusContext = RockPage.GetCurrentContext( EntityTypeCache.Get( typeof( Campus ) ) );
 
                 if ( campusContext != null )
                 {

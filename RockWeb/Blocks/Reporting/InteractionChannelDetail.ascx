@@ -34,7 +34,7 @@
 
                 <asp:Panel id="pnlEditDetails" runat="server" Visible="false">
 
-                    <asp:ValidationSummary ID="valChannel" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="valChannel" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                     <div class="row">
                         <div class="col-md-6">

@@ -27,7 +27,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security
@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Security
     [TextField( "Found Duplicate Caption", "", false, "There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?", "Captions", 1 )]
     [TextField( "Existing Account Caption", "", false, "{0}, you already have an existing account.  Would you like us to email you the username?", "Captions", 2 )]
     [TextField( "Sent Login Caption", "", false, "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password.", "Captions", 3 )]
-    [TextField( "Confirm Caption", "", false, "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "Captions", 4 )]
+    [TextField( "Confirm Caption", "", false, "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We’ve sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "Captions", 4 )]
     [TextField( "Success Caption", "", false, "{0}, Your account has been created", "Captions", 5 )]
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", false, "", "Pages", 6 )]
     [LinkedPage( "Login Page", "Page to navigate to when user elects to login (if blank will use 'Login' page route)", false, "", "Pages", 7 )]
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Security
                 // add phone number types
                 if ( pnlPhoneNumbers.Visible )
                 {
-                    var phoneNumberTypeDefinedType = CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
+                    var phoneNumberTypeDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
 
                     if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PhoneTypes" ) ) )
                     {
@@ -612,8 +612,8 @@ namespace RockWeb.Blocks.Security
         {
             var rockContext = new RockContext();
 
-            CacheDefinedValue dvcConnectionStatus = CacheDefinedValue.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-            CacheDefinedValue dvcRecordStatus = CacheDefinedValue.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
+            DefinedValueCache dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+            DefinedValueCache dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
 
             Person person = new Person();
             person.FirstName = tbFirstName.Text;
@@ -621,7 +621,7 @@ namespace RockWeb.Blocks.Security
             person.Email = tbEmail.Text;
             person.IsEmailActive = true;
             person.EmailPreference = EmailPreference.EmailAllowed;
-            person.RecordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             if ( dvcConnectionStatus != null )
             {
                 person.ConnectionStatusValueId = dvcConnectionStatus.Id;
@@ -713,7 +713,7 @@ namespace RockWeb.Blocks.Security
                         var location = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
                         groupLocation.Location = location;
 
-                        groupLocation.GroupLocationTypeValueId = CacheDefinedValue.Get( locationTypeGuid ).Id;
+                        groupLocation.GroupLocationTypeValueId = DefinedValueCache.Get( locationTypeGuid ).Id;
                         groupLocation.IsMailingLocation = true;
                         groupLocation.IsMappedLocation = true;
 
@@ -739,7 +739,7 @@ namespace RockWeb.Blocks.Security
                 rockContext,
                 person,
                 Rock.Model.AuthenticationServiceType.Internal,
-                CacheEntityType.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                EntityTypeCache.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
                 tbUserName.Text,
                 Password,
                 confirmed );

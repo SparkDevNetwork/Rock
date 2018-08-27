@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -32,7 +32,7 @@ namespace Rock
         /// <returns></returns>
         public static string FormatAsCurrency( this decimal value )
         {
-            var currencySymbol = CacheGlobalAttributes.Value( "CurrencySymbol" );
+            var currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
             return string.Format( "{0}{1:N}", currencySymbol, value );
         }
 

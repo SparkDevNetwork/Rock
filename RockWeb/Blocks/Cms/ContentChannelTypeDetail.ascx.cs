@@ -22,7 +22,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -243,11 +243,11 @@ namespace RockWeb.Blocks.Cms
                     contentType = contentTypeService.Get( contentType.Guid );
 
                     // Save the Channel Attributes
-                    int entityTypeId = CacheEntityType.Get( typeof( ContentChannel ) ).Id;
+                    int entityTypeId = EntityTypeCache.Get( typeof( ContentChannel ) ).Id;
                     SaveAttributes( contentType.Id, entityTypeId, ChannelAttributesState, rockContext );
 
                     // Save the Item Attributes
-                    entityTypeId = CacheEntityType.Get( typeof( ContentChannelItem ) ).Id;
+                    entityTypeId = EntityTypeCache.Get( typeof( ContentChannelItem ) ).Id;
                     SaveAttributes( contentType.Id, entityTypeId, ItemAttributesState, rockContext );
 
                 } );
@@ -314,7 +314,7 @@ namespace RockWeb.Blocks.Cms
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtChannelAttributes.ActionTitle = ActionTitle.Add( tbName.Text + " Channel Attribute" );
 
             }
@@ -467,7 +467,7 @@ namespace RockWeb.Blocks.Cms
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtItemAttributes.ActionTitle = ActionTitle.Add( tbName.Text + " Item Attribute" );
 
             }
@@ -694,7 +694,6 @@ namespace RockWeb.Blocks.Cms
             var selectedAttributeGuids = attributes.Select( a => a.Guid );
             foreach ( var attr in existingAttributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
-                Rock.Cache.CacheAttribute.Remove( attr.Id );
                 attributeService.Delete( attr );
             }
 
@@ -705,8 +704,6 @@ namespace RockWeb.Blocks.Cms
             {
                 Rock.Attribute.Helper.SaveAttributeEdits( attr, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
-
-            CacheAttribute.RemoveEntityAttributes();
         }
 
         /// <summary>

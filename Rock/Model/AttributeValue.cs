@@ -24,7 +24,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -35,7 +35,7 @@ namespace Rock.Model
     [Table( "AttributeValue" )]
     [DataContract]
     [JsonConverter( typeof( Rock.Utility.AttributeValueJsonConverter ) )]
-    public partial class AttributeValue : Model<AttributeValue>
+    public partial class AttributeValue : Model<AttributeValue>, ICacheable
     {
         #region Entity Properties
 
@@ -166,7 +166,7 @@ namespace Rock.Model
             {
 
                 Rock.Field.IFieldType result = null;
-                Rock.Cache.CacheAttribute attribute = Rock.Cache.CacheAttribute.Get( this.AttributeId );
+                Rock.Web.Cache.AttributeCache attribute = Rock.Web.Cache.AttributeCache.Get( this.AttributeId );
                 if ( attribute != null )
                 {
                     if ( attribute.FieldType != null )
@@ -210,7 +210,7 @@ namespace Rock.Model
         {
             get
             {
-                var attribute = CacheAttribute.Get( this.AttributeId );
+                var attribute = AttributeCache.Get( this.AttributeId );
                 if ( attribute != null )
                 {
                     return attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, this.EntityId, Value, attribute.QualifierValues, false );
@@ -234,7 +234,7 @@ namespace Rock.Model
         {
             get
             {
-                var attribute = CacheAttribute.Get( this.AttributeId );
+                var attribute = AttributeCache.Get( this.AttributeId );
                 if ( attribute != null )
                 {
                     return attribute.Name;
@@ -258,7 +258,7 @@ namespace Rock.Model
         {
             get
             {
-                var attribute = CacheAttribute.Get( this.AttributeId );
+                var attribute = AttributeCache.Get( this.AttributeId );
                 if ( attribute != null )
                 {
                     return attribute.Key;
@@ -282,7 +282,7 @@ namespace Rock.Model
         {
             get
             {
-                var attribute = CacheAttribute.Get( this.AttributeId );
+                var attribute = AttributeCache.Get( this.AttributeId );
                 if ( attribute != null )
                 {
                     return attribute.IsGridColumn;
@@ -340,7 +340,7 @@ namespace Rock.Model
         /// <param name="entry">The entry.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
-            var attributeCache = CacheAttribute.Get( this.AttributeId );
+            var attributeCache = AttributeCache.Get( this.AttributeId );
             if ( attributeCache != null )
             {
                 // Check to see if this attribute value if for a Field or Image field type 
@@ -390,8 +390,8 @@ namespace Rock.Model
 
                 // Check to see if this attribute is for a person or group, and if so, save to history table
                 bool saveToHistoryTable = attributeCache.EntityTypeId.HasValue &&
-                        ( attributeCache.EntityTypeId.Value == CacheEntityType.Get( typeof( Person ) ).Id
-                          || attributeCache.EntityTypeId.Value == CacheEntityType.Get( typeof( Group ) ).Id );
+                        ( attributeCache.EntityTypeId.Value == EntityTypeCache.Get( typeof( Person ) ).Id
+                          || attributeCache.EntityTypeId.Value == EntityTypeCache.Get( typeof( Group ) ).Id );
 
                 if ( saveToHistoryTable || attributeCache.EnableHistory )
                 {
@@ -428,8 +428,8 @@ namespace Rock.Model
 
                     if ( oldValue != newValue )
                     {
-                        var formattedOldValue = oldValue.IsNotNullOrWhitespace() ? attributeCache.FieldType.Field.FormatValue( null, oldValue, attributeCache.QualifierValues, true ) : string.Empty;
-                        var formattedNewValue = newValue.IsNotNullOrWhitespace() ? attributeCache.FieldType.Field.FormatValue( null, newValue, attributeCache.QualifierValues, true ) : string.Empty;
+                        var formattedOldValue = oldValue.IsNotNullOrWhiteSpace() ? attributeCache.FieldType.Field.FormatValue( null, oldValue, attributeCache.QualifierValues, true ) : string.Empty;
+                        var formattedNewValue = newValue.IsNotNullOrWhiteSpace() ? attributeCache.FieldType.Field.FormatValue( null, newValue, attributeCache.QualifierValues, true ) : string.Empty;
 
                         if ( saveToHistoryTable )
                         {
@@ -487,7 +487,7 @@ namespace Rock.Model
             var rockContext = dbContext as RockContext;
             if ( HistoryChanges != null && HistoryChanges.Any() && HistoryEntityTypeId.HasValue && historyEntityId.HasValue )
             {
-                if ( HistoryEntityTypeId.Value == CacheEntityType.Get( typeof( Person ) ).Id )
+                if ( HistoryEntityTypeId.Value == EntityTypeCache.Get( typeof( Person ) ).Id )
                 {
                     HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), historyEntityId.Value, HistoryChanges, string.Empty, typeof( Attribute ), AttributeId, true, this.ModifiedByPersonAliasId );
                 }
@@ -527,6 +527,51 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Value;
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            // no cache entity associated with AttributeValue
+            return null;
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            AttributeCache cacheAttribute = AttributeCache.Get( this.AttributeId, dbContext as RockContext );
+
+            if ( cacheAttribute == null )
+            {
+                return;
+            }
+
+            if ( this.EntityId.HasValue && cacheAttribute.EntityTypeId.HasValue )
+            {
+                EntityTypeCache entityType = EntityTypeCache.Get( cacheAttribute.EntityTypeId.Value );
+
+                if ( entityType?.HasEntityCache() == true )
+                {
+                    entityType.FlushCachedItem( this.EntityId.Value );
+                }
+            }
+
+            if ( ( !cacheAttribute.EntityTypeId.HasValue || cacheAttribute.EntityTypeId.Value == 0 ) && string.IsNullOrEmpty( cacheAttribute.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( cacheAttribute.EntityTypeQualifierValue ) )
+            {
+                // Update GlobalAttributes if one of the values changed
+                GlobalAttributesCache.Remove();
+            }
         }
 
         #endregion

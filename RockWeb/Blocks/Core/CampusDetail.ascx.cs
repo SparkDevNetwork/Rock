@@ -26,7 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
-            var locationCampusValue = Rock.Cache.CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid() );
+            var locationCampusValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid() );
 
             if ( !Page.IsPostBack )
             {
@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Core
             var rockContext = new RockContext();
             var campusService = new CampusService( rockContext );
             var locationService = new LocationService( rockContext );
-            var locationCampusValue = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid() );
+            var locationCampusValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid() );
 
             int campusId = int.Parse( hfCampusId.Value );
 
@@ -177,8 +177,6 @@ namespace RockWeb.Blocks.Core
                 }
 
             } );
-
-            Rock.Cache.CacheCampus.Remove( campus.Id );
 
             NavigateToParentPage();
         }

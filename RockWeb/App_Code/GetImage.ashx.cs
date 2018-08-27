@@ -263,7 +263,7 @@ namespace RockWeb
                 context.Response.ContentType = binaryFileMetaData.MimeType != "image/tiff" ? binaryFileMetaData.MimeType : "image/jpg";
 
                 // check that the format of the image wasn't changed by a format query parm if so adjust the mime-type to reflect the conversion
-                if ( context.Request["format"].IsNotNullOrWhitespace() )
+                if ( context.Request["format"].IsNotNullOrWhiteSpace() )
                 {
                     switch ( context.Request["format"] )
                     {
@@ -406,6 +406,8 @@ namespace RockWeb
                         }
                     }
                 }
+
+                settings.Add( "autorotate.default", "true" );
 
                 MemoryStream resizedStream = new MemoryStream();
 

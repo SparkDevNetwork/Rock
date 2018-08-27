@@ -18,12 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
-using System.Web.UI.WebControls;
-using Rock.Cache;
 
 namespace Rock.Field.Types
 {
@@ -33,7 +31,10 @@ namespace Rock.Field.Types
     /// </summary>
     public class BackgroundCheckFieldType : BinaryFileFieldType
     {
-
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
         public override List<Control> ConfigurationControls()
         {
             return base.ConfigurationControls();
@@ -167,7 +168,7 @@ namespace Rock.Field.Types
                     else
                     {
                         var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetBackgroundCheck.ashx" );
-                        return string.Format( "<a href='{0}?EntityTypeId={1}&RecordKey={2}' title='{3}' class='btn btn-xs btn-default'>View</a>", filePath, CacheEntityType.Get( typeof( Security.BackgroundCheck.ProtectMyMinistry ) ).Id, binaryFileInfo.Guid, System.Web.HttpUtility.HtmlEncode( binaryFileInfo.FileName ) );
+                        return string.Format( "<a href='{0}?EntityTypeId={1}&RecordKey={2}' title='{3}' class='btn btn-xs btn-default'>View</a>", filePath, EntityTypeCache.Get( typeof( Security.BackgroundCheck.ProtectMyMinistry ) ).Id, binaryFileInfo.Guid, System.Web.HttpUtility.HtmlEncode( binaryFileInfo.FileName ) );
                     }
                 }
             }

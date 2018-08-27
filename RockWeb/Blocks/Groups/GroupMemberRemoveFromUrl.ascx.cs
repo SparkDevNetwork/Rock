@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Security;
@@ -94,21 +94,15 @@ namespace RockWeb.Blocks.Groups
                 Guid personGuid = Guid.Empty;
 
                 // get group from url
-                if ( Request["GroupId"] != null || Request["GroupGuid"] != null )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupId" ) ) )
                 {
-                    if ( Request["GroupId"] != null )
-                    {
-                        int groupId = 0;
-                        if ( Int32.TryParse( Request["GroupId"], out groupId ) )
-                        {
-                            group = new GroupService( rockContext ).Queryable().Where( g => g.Id == groupId ).FirstOrDefault();
-                        }
-                    }
-                    else
-                    {
-                        Guid groupGuid = Request["GroupGuid"].AsGuid();
-                        group = new GroupService( rockContext ).Queryable().Where( g => g.Guid == groupGuid ).FirstOrDefault();
-                    }
+                    int groupId = PageParameter( "GroupId" ).AsInteger();
+                    group = new GroupService( rockContext ).Queryable().Where( g => g.Id == groupId ).FirstOrDefault();
+                }
+                else if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupGuid" ) ) )
+                {
+                    Guid groupGuid = PageParameter( "GroupGuid" ).AsGuid();
+                    group = new GroupService( rockContext ).Queryable().Where( g => g.Guid == groupGuid ).FirstOrDefault();
                 }
                 else
                 {
@@ -127,9 +121,9 @@ namespace RockWeb.Blocks.Groups
                 // get person
                 Person person = null;
 
-                if ( !string.IsNullOrWhiteSpace(Request["PersonGuid"]) )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonGuid" ) ) )
                 {
-                    person = new PersonService( rockContext ).Get( Request["PersonGuid"].AsGuid() );
+                    person = new PersonService( rockContext ).Get( PageParameter( "PersonGuid" ).AsGuid() );
                 }
 
                 if ( person == null )

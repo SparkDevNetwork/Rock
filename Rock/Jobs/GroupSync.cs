@@ -27,7 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Communication;
 
 namespace Rock.Jobs
@@ -97,7 +97,7 @@ namespace Rock.Jobs
                             .FirstOrDefault( s => s.Id == syncId );
 
                         // Ensure that the group's Sync Data View is a person dataview
-                        if ( sync.SyncDataView.EntityTypeId == CacheEntityType.Get( typeof( Person ) ).Id )
+                        if ( sync.SyncDataView.EntityTypeId == EntityTypeCache.Get( typeof( Person ) ).Id )
                         {
                             List<string> errorMessages = new List<string>();
 
@@ -152,7 +152,7 @@ namespace Rock.Jobs
                                     if ( sync.ExitSystemEmail != null )
                                     {
                                         var person = new PersonService( groupMemberContext ).Get( personId );
-                                        if ( person.Email.IsNotNullOrWhitespace() )
+                                        if ( person.Email.IsNotNullOrWhiteSpace() )
                                         {
                                             // Send the exit email
                                             var mergeFields = new Dictionary<string, object>();
@@ -187,7 +187,7 @@ namespace Rock.Jobs
                                     if ( sync.WelcomeSystemEmail != null )
                                     {
                                         var person = new PersonService( groupMemberContext ).Get( personId );
-                                        if ( person.Email.IsNotNullOrWhitespace() )
+                                        if ( person.Email.IsNotNullOrWhiteSpace() )
                                         {
                                             // If the group is configured to add a user account for anyone added to the group, and person does not yet have an
                                             // account, add one for them.
@@ -204,7 +204,7 @@ namespace Rock.Jobs
                                                     groupMemberContext,
                                                     person,
                                                     AuthenticationServiceType.Internal,
-                                                    CacheEntityType.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                                                    EntityTypeCache.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
                                                     username,
                                                     newPassword,
                                                     true,
@@ -235,12 +235,6 @@ namespace Rock.Jobs
 
                             // Increment the Groups Synced Counter
                             groupsSynced++;
-
-                            // If the group changed, and it was a security group, flush the security for the group
-                            if ( hasSyncChanged && ( sync.Group.IsSecurityRole || sync.Group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) ) )
-                            {
-                                Rock.Cache.CacheRole.Remove( sync.GroupId );
-                            }
                         }
                     }
                 }

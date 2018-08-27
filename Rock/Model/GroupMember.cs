@@ -27,7 +27,7 @@ using System.Runtime.Serialization;
 using Humanizer;
 using Rock.Data;
 using Rock.Transactions;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -37,7 +37,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupMember" )]
     [DataContract]
-    public partial class GroupMember : Model<GroupMember>
+    public partial class GroupMember : Model<GroupMember>, ICacheable
     {
         #region Entity Properties
 
@@ -434,7 +434,7 @@ namespace Rock.Model
                 }
 
                 // process universal search indexing if required
-                var groupType = CacheGroupType.Get( group.GroupTypeId );
+                var groupType = GroupTypeCache.Get( group.GroupTypeId );
                 if ( groupType != null && groupType.IsIndexEnabled )
                 {
                     IndexEntityTransaction transaction = new IndexEntityTransaction();
@@ -536,7 +536,7 @@ namespace Rock.Model
             var groupService = new GroupService( rockContext );
             var group = this.Group ?? new GroupService( rockContext ).Queryable( "Members" ).Where( g => g.Id == this.GroupId ).FirstOrDefault();
 
-            var groupType = CacheGroupType.Get( group.GroupTypeId );
+            var groupType = GroupTypeCache.Get( group.GroupTypeId );
             var groupRole = groupType.Roles.First( a => a.Id == this.GroupRoleId );
 
             var existingGroupMembership = group.Members.Where( m => m.PersonId == this.PersonId );
@@ -815,8 +815,8 @@ namespace Rock.Model
         /// <summary>
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
-        /// <returns>A list of all inherited CacheAttribute objects.</returns>
-        public override List<Cache.CacheAttribute> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        /// <returns>A list of all inherited AttributeCache objects.</returns>
+        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
             var group = this.Group;
             if ( group == null && this.GroupId > 0 )
@@ -831,7 +831,7 @@ namespace Rock.Model
                 var groupType = group.GroupType;
                 if ( groupType == null && group.GroupTypeId > 0 )
                 {
-                    // Can't use CacheGroupType here since it loads attributes and would
+                    // Can't use GroupTypeCache here since it loads attributes and would
                     // result in a recursive stack overflow situation.
                     groupType = new GroupTypeService( rockContext )
                         .Queryable().AsNoTracking()
@@ -845,6 +845,39 @@ namespace Rock.Model
             }
 
             return null;
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            var group = this.Group ?? new GroupService( new RockContext() ).GetNoTracking( this.GroupId );
+            if ( group != null )
+            {
+
+                var groupType = GroupTypeCache.Get( group.GroupTypeId, (RockContext)dbContext );
+                if ( group.IsSecurityRole || groupType?.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() )
+                {
+                    RoleCache.FlushItem( group.Id );
+                    Rock.Security.Authorization.Clear();
+                }
+            }
         }
 
         #endregion
@@ -936,6 +969,15 @@ namespace Rock.Model
         /// The person identifier.
         /// </value>
         public int PersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the changes.
+        /// </summary>
+        /// <value>
+        /// The changes.
+        /// </value>
+        [Obsolete( "Use PersonHistoryChangeList or GroupMemberHistoryChangeList instead, depending on what you are doing. " )]
+        public List<string> Changes { get; set; }
 
         /// <summary>
         /// Gets or sets the changes to be written as Person History

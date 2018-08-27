@@ -20,9 +20,11 @@ using System.Net;
 using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Authenticators;
+using Rock.Web.Cache;
 using Rock.Checkr.Constants;
-using Rock.Checkr.SystemKey;
+using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Checkr.CheckrApi
 {
@@ -30,14 +32,63 @@ namespace Rock.Checkr.CheckrApi
     {
         #region Utilities        
         /// <summary>
+        /// Gets the settings.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private static List<AttributeValue> GetSettings( RockContext rockContext )
+        {
+            var checkrEntityType = EntityTypeCache.Get( typeof( Rock.Checkr.Checkr ) );
+            if ( checkrEntityType != null )
+            {
+                var service = new AttributeValueService( rockContext );
+                return service.Queryable( "Attribute" )
+                    .Where( v => v.Attribute.EntityTypeId == checkrEntityType.Id )
+                    .ToList();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the setting value.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        private static string GetSettingValue( List<AttributeValue> values, string key, bool encryptedValue = false )
+        {
+            string value = values
+                .Where( v => v.AttributeKey == key )
+                .Select( v => v.Value )
+                .FirstOrDefault();
+            if ( encryptedValue && !string.IsNullOrWhiteSpace( value ) )
+            {
+                try { value = Encryption.DecryptString( value ); }
+                catch { }
+            }
+
+            return value;
+        }
+
+        /// <summary>
         /// Return a rest client.
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <returns>The rest client.</returns>
-        private static RestClient RestClient( string url )
+        private static RestClient RestClient()
         {
-            var restClient = new RestClient( url );
-            string token = Rock.Web.SystemSettings.GetValue( SystemSetting.ACCESS_TOKEN );
+            string token = null;
+            var restClient = new RestClient( CheckrConstants.CHECKR_APISERVER );
+            using ( RockContext rockContext = new RockContext() )
+            {
+                var settings = GetSettings( rockContext );
+                if ( settings != null )
+                {
+                    token = GetSettingValue( settings, "AccessToken" );
+                }
+            }
+
             restClient.Authenticator = new HttpBasicAuthenticator( token, string.Empty );
             return restClient;
         }
@@ -101,13 +152,13 @@ namespace Rock.Checkr.CheckrApi
         internal static bool GetPackages( out GetPackagesResponse getPackagesResponse, List<string> errorMessages )
         {
             getPackagesResponse = null;
-            RestClient restClient = RestClient( CheckrConstants.CHECKR_PACKAGES_URL );
-            RestRequest restRequest = new RestRequest();
+            RestClient restClient = RestClient();
+            RestRequest restRequest = new RestRequest( CheckrConstants.CHECKR_PACKAGES_URL );
             IRestResponse restResponse = restClient.Execute( restRequest );
 
             if ( restResponse.StatusCode == HttpStatusCode.Unauthorized )
             {
-                errorMessages.Add( "Failed to authorize Checkr Account. Check Checkr Access Token in 'System Settings', 'Checkr' " );
+                errorMessages.Add( "Failed to authorize Checkr. Please confirm your access token." );
                 return false;
             }
 
@@ -137,8 +188,8 @@ namespace Rock.Checkr.CheckrApi
         internal static bool CreateCandidate( Person person, out CreateCandidateResponse createCandidateResponse, List<string> errorMessages )
         {
             createCandidateResponse = null;
-            RestClient restClient = RestClient( CheckrConstants.CHECKR_CANDIDATES_URL );
-            RestRequest restRequest = new RestRequest( Method.POST );
+            RestClient restClient = RestClient();
+            RestRequest restRequest = new RestRequest( CheckrConstants.CHECKR_CANDIDATES_URL, Method.POST );
             restRequest.AddParameter( "first_name", person.FirstName );
             restRequest.AddParameter( "middle_name", person.MiddleName );
             restRequest.AddParameter( "no_middle_name", person.MiddleName.IsNullOrWhiteSpace() );
@@ -151,7 +202,7 @@ namespace Rock.Checkr.CheckrApi
 
             if ( restResponse.StatusCode == HttpStatusCode.Unauthorized )
             {
-                errorMessages.Add( "Failed to authorize Checkr Account. Check Checkr Access Token in 'System Settings', 'Checkr' " );
+                errorMessages.Add( "Invalid Checkr access token. To Re-authenticate go to Admin Tools > System Settings > Checkr. Click edit to change your access token." );
                 return false;
             }
 
@@ -182,8 +233,8 @@ namespace Rock.Checkr.CheckrApi
         internal static bool CreateInvitation( string candidateId, string package, out CreateInvitationResponse createInvitationResponse, List<string> errorMessages )
         {
             createInvitationResponse = null;
-            RestClient restClient = RestClient( CheckrConstants.CHECKR_INVITATIONS_URL );
-            RestRequest restRequest = new RestRequest( Method.POST );
+            RestClient restClient = RestClient();
+            RestRequest restRequest = new RestRequest( CheckrConstants.CHECKR_INVITATIONS_URL, Method.POST );
             restRequest.AddParameter( "candidate_id", candidateId );
             restRequest.AddParameter( "package", package );
 
@@ -193,7 +244,7 @@ namespace Rock.Checkr.CheckrApi
 
             if ( restResponse.StatusCode == HttpStatusCode.Unauthorized )
             {
-                errorMessages.Add( "Failed to authorize Checkr Account. Check Checkr Access Token in 'System Settings', 'Checkr' " );
+                errorMessages.Add( "Invalid Checkr access token. To Re-authenticate go to Admin Tools > System Settings > Checkr. Click edit to change your access token." );
                 return false;
             }
 
@@ -223,13 +274,13 @@ namespace Rock.Checkr.CheckrApi
         internal static bool GetReport( string reportId, out GetReportResponse getReportResponse, List<string> errorMessages )
         {
             getReportResponse = null;
-            RestClient restClient = RestClient( CheckrConstants.CHECKR_REPORT_URL + "/" + reportId );
-            RestRequest restRequest = new RestRequest();
+            RestClient restClient = RestClient();
+            RestRequest restRequest = new RestRequest( CheckrConstants.CHECKR_REPORT_URL + "/" + reportId );
             IRestResponse restResponse = restClient.Execute( restRequest );
 
             if ( restResponse.StatusCode == HttpStatusCode.Unauthorized )
             {
-                errorMessages.Add( "Failed to authorize Checkr Account. Check Checkr Access Token in 'System Settings', 'Checkr' " );
+                errorMessages.Add( "Invalid Checkr access token. To Re-authenticate go to Admin Tools > System Settings > Checkr. Click edit to change your access token." );
                 return false;
             }
 
@@ -259,13 +310,13 @@ namespace Rock.Checkr.CheckrApi
         internal static bool GetDocument( string documentId, out GetDocumentResponse getDocumentResponse, List<string> errorMessages )
         {
             getDocumentResponse = null;
-            RestClient restClient = RestClient( CheckrConstants.CHECKR_DOCUMENT_URL + "/" + documentId );
-            RestRequest restRequest = new RestRequest();
+            RestClient restClient = RestClient();
+            RestRequest restRequest = new RestRequest( CheckrConstants.CHECKR_DOCUMENT_URL + "/" + documentId );
             IRestResponse restResponse = restClient.Execute( restRequest );
 
             if ( restResponse.StatusCode == HttpStatusCode.Unauthorized )
             {
-                errorMessages.Add( "Failed to authorize Checkr Account. Check Checkr Access Token in 'System Settings', 'Checkr' " );
+                errorMessages.Add( "Invalid Checkr access token. To Re-authenticate go to Admin Tools > System Settings > Checkr. Click edit to change your access token." );
                 return false;
             }
 

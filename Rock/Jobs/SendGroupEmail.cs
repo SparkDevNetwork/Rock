@@ -26,7 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web;
 using Rock.Communication;
 
@@ -74,8 +74,14 @@ namespace Rock.Jobs
                     .ToList();
                 foreach ( GroupMember groupMember in groupMemberList )
                 {
+                    var person = groupMember.Person;
+                    if ( !person.IsEmailActive || person.Email.IsNullOrWhiteSpace() || person.EmailPreference == EmailPreference.DoNotEmail )
+                    {
+                        continue;
+                    }
+
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                    mergeFields.Add( "Person", groupMember.Person );
+                    mergeFields.Add( "Person", person );
                     mergeFields.Add( "GroupMember", groupMember );
                     mergeFields.Add( "Group", groupMember.Group );
 

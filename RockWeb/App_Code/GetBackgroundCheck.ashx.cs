@@ -15,18 +15,13 @@
 // </copyright>
 //
 using System;
-using System.IO;
 using System.Net;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Web;
 using Rock;
-using Rock.Cache;
-using Rock.Data;
+using Rock.Web.Cache;
 using Rock.Model;
-using Rock.Security;
 
 namespace RockWeb
 {
@@ -42,13 +37,6 @@ namespace RockWeb
         /// <exception cref="System.NotImplementedException"></exception>
         public void ProcessRequest( HttpContext context )
         {
-            /*
-            if ( !binaryFile.IsAuthorized( Authorization.VIEW, currentPerson ) )
-            {
-                SendNotAuthorized( context );
-                return;
-            }
-            */
             try
             {
                 int entityTypeId = context.Request.QueryString["EntityTypeId"].AsInteger();
@@ -59,7 +47,7 @@ namespace RockWeb
                     throw new Exception( "Missing or invalid EntityTypeId or RecordKey" );
                 }
 
-                Type backgroundCheckComponentType = Type.GetType( CacheEntityType.Get( entityTypeId ).AssemblyName );
+                Type backgroundCheckComponentType = Type.GetType( EntityTypeCache.Get( entityTypeId ).AssemblyName );
                 if ( backgroundCheckComponentType != null )
                 {
                     MethodInfo methodInfo = backgroundCheckComponentType.GetMethod( "GetReportUrl" );
@@ -74,7 +62,7 @@ namespace RockWeb
                         // The invoke does NOT work;
                         // it throws "Object does not match target type"             
                         string url = methodInfo.Invoke( classInstance, parametersArray ).ToStringSafe();
-                        if ( url.IsNotNullOrWhitespace() )
+                        if ( url.IsNotNullOrWhiteSpace() )
                         {
                             try
                             {
@@ -85,12 +73,12 @@ namespace RockWeb
                                 }
                                 else
                                 {
-                                    context.Response.Redirect( url, true );
+                                    context.Response.Redirect( url, false );
                                     context.ApplicationInstance.CompleteRequest(); // https://blogs.msdn.microsoft.com/tmarq/2009/06/25/correct-use-of-system-web-httpresponse-redirect/
                                     return;
                                 }
                             }
-                            catch ( ThreadAbortException ex )
+                            catch ( ThreadAbortException )
                             {
                                 // Can safely ignore this exception
                             }
@@ -105,7 +93,7 @@ namespace RockWeb
                 }
                 catch { }
             }
-            catch ( ThreadAbortException ex )
+            catch ( ThreadAbortException )
             {
                 // Can safely ignore this exception
             }
@@ -128,7 +116,7 @@ namespace RockWeb
                 context.Response.StatusDescription = "Not authorized to view file";
                 context.ApplicationInstance.CompleteRequest();
             }
-            catch ( ThreadAbortException ex )
+            catch ( ThreadAbortException )
             {
                 // Can safely ignore this exception
             }

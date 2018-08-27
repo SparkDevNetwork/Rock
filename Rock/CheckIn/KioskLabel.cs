@@ -16,8 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
-
-using Rock.Cache;
+using System.Runtime.Serialization;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -26,6 +26,7 @@ namespace Rock.CheckIn
     /// <summary>
     /// Cached Check-in Label
     /// </summary>
+    [DataContract]
     public class KioskLabel : ItemCache<KioskLabel>
     {
         /// <summary>
@@ -41,6 +42,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The GUID.
         /// </value>
+        [DataMember]
         public Guid Guid { get; set; }
 
         /// <summary>
@@ -49,6 +51,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The type of the label.
         /// </value>
+        [DataMember]
         public KioskLabelType LabelType { get; set; }
 
         /// <summary>
@@ -57,6 +60,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The order.
         /// </value>
+        [DataMember]
         public int Order { get; set; }
 
         /// <summary>
@@ -65,6 +69,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The URL.
         /// </value>
+        [DataMember]
         public string Url { get; set; }
 
         /// <summary>
@@ -73,6 +78,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The content of the file.
         /// </value>
+        [DataMember]
         public string FileContent { get; set; }
 
         /// <summary>
@@ -81,6 +87,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The merge fields.
         /// </value>
+        [DataMember]
         public Dictionary<string, string> MergeFields { get; set; }
 
         #region Static Methods
@@ -139,7 +146,7 @@ namespace Rock.CheckIn
                                 int definedValueId = int.MinValue;
                                 if ( int.TryParse( nameAndValue[1], out definedValueId ) )
                                 {
-                                    var definedValue = CacheDefinedValue.Get( definedValueId );
+                                    var definedValue = DefinedValueCache.Get( definedValueId );
                                     if ( definedValue != null )
                                     {
                                         string mergeField = definedValue.GetAttributeValue( "MergeField" );

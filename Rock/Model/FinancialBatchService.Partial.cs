@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -38,24 +38,7 @@ namespace Rock.Model
         /// <param name="batchTimeOffset">The batch time offset.</param>
         /// <param name="batches">The batches.</param>
         /// <returns></returns>
-        [Obsolete]
-        public FinancialBatch Get( string namePrefix, Web.Cache.DefinedValueCache currencyType, Web.Cache.DefinedValueCache creditCardType,
-            DateTime transactionDate, TimeSpan batchTimeOffset, List<FinancialBatch> batches = null )
-        {
-            return Get( namePrefix, string.Empty, currencyType, creditCardType, transactionDate, batchTimeOffset, batches );
-        }
-
-        /// <summary>
-        /// Gets the specified name prefix.
-        /// </summary>
-        /// <param name="namePrefix">The name prefix.</param>
-        /// <param name="currencyType">Type of the currency.</param>
-        /// <param name="creditCardType">Type of the credit card.</param>
-        /// <param name="transactionDate">The transaction date.</param>
-        /// <param name="batchTimeOffset">The batch time offset.</param>
-        /// <param name="batches">The batches.</param>
-        /// <returns></returns>
-        public FinancialBatch Get( string namePrefix, CacheDefinedValue currencyType, CacheDefinedValue creditCardType,
+        public FinancialBatch Get( string namePrefix, DefinedValueCache currencyType, DefinedValueCache creditCardType,
             DateTime transactionDate, TimeSpan batchTimeOffset, List<FinancialBatch> batches = null )
         {
             return Get( namePrefix, string.Empty, currencyType, creditCardType, transactionDate, batchTimeOffset, batches );
@@ -72,44 +55,7 @@ namespace Rock.Model
         /// <param name="batchTimeOffset">The batch time offset.</param>
         /// <param name="batches">The batches.</param>
         /// <returns></returns>
-        [Obsolete]
-        public FinancialBatch Get( string namePrefix, string nameSuffix, Web.Cache.DefinedValueCache currencyType, Web.Cache.DefinedValueCache creditCardType,
-            DateTime transactionDate, TimeSpan batchTimeOffset, List<FinancialBatch> batches = null )
-        {
-            // Use the credit card type's batch name suffix, or if that doesn't exist, use the currency type value
-            string ccSuffix = string.Empty;
-            
-            if (creditCardType != null )
-            {
-                ccSuffix = creditCardType.GetAttributeValue( "BatchNameSuffix" );
-                if ( string.IsNullOrWhiteSpace( ccSuffix ) )
-                {
-                    ccSuffix = creditCardType.Value;
-                }
-            }
-
-            if ( string.IsNullOrWhiteSpace( ccSuffix ) && currencyType != null )
-            {
-                ccSuffix = currencyType.Value;
-            }
-
-            string batchName = namePrefix.Trim() + ( string.IsNullOrWhiteSpace( ccSuffix ) ? "" : " " + ccSuffix ) + nameSuffix;
-
-            return GetByNameAndDate( batchName, transactionDate, batchTimeOffset, batches );
-        }
-
-        /// <summary>
-        /// Gets the specified name prefix.
-        /// </summary>
-        /// <param name="namePrefix">The name prefix.</param>
-        /// <param name="nameSuffix">The name suffix.</param>
-        /// <param name="currencyType">Type of the currency.</param>
-        /// <param name="creditCardType">Type of the credit card.</param>
-        /// <param name="transactionDate">The transaction date.</param>
-        /// <param name="batchTimeOffset">The batch time offset.</param>
-        /// <param name="batches">The batches.</param>
-        /// <returns></returns>
-        public FinancialBatch Get( string namePrefix, string nameSuffix, CacheDefinedValue currencyType, CacheDefinedValue creditCardType,
+        public FinancialBatch Get( string namePrefix, string nameSuffix, DefinedValueCache currencyType, DefinedValueCache creditCardType,
             DateTime transactionDate, TimeSpan batchTimeOffset, List<FinancialBatch> batches = null )
         {
             // Use the credit card type's batch name suffix, or if that doesn't exist, use the currency type value

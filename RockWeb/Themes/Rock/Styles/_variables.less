@@ -1,50 +1,46 @@
 
 // Theme Colors *show in editor*
-@brand-color: #ee7725; // This is the primary brand color that will be used for the header, primary buttons and other accents. #color
+@brand-color: #ee7725;     // This is the primary brand color that will be used for the header, primary buttons and other accents. #color
+@body-background: #fafafa; // The page background color. #color
+@text-color: #484848;     // The default text color. #color
+@text-muted: #767676;     // The muted color for text #color
+
+@link-color: #007acc; // The color for all links. #color
+@link-hover-color: #009ce3; // The rollover color for all links. #color
+
+// Side Navigation *show in editor*
+@side-navigation-background-color: #3d3d3d; // This is the background color for the right-hand menu. #color
+@side-navigation-open-background-color: #484848; // #color
+@side-navigation-text-color: #f3f3f3; // #color
+
+// Side Navigation Conversions
+@side-navigation-width: 80px;
+@navbarside-background-color: @side-navigation-background-color;
+@navbarside-sub-bg: @side-navigation-open-background-color;
+@navbarside-color: @side-navigation-text-color;
+@navbarside-width: @side-navigation-width;
 
 // Bootstrap Colors *show in editor*
+
+//// Bootstrap Colors {The primary colors defined by the Bootstrap framework. [More Information](http://getbootstrap.com/customize/#colors)}
 @brand-success: #16c98d; // #color
 @brand-warning: #ffc870; // #color
 @brand-danger: #d4442e; // #color
 @brand-info: #009ce3; // #color
 @brand-critical: #ee7624; // #color
 
-@gray-base:              #000;
-@gray-darker:            #2d2d2d; // #color
-@gray-dark:              #484848;   // #color
+@gray-base:              #000000; // #color
+@gray-darker:            #3d3d3d; // #color
+@gray-dark:              #484848; // #color
 @gray:                   #767676; // #color
 @gray-light:             #d8d8d8; // #color
 @gray-lighter:           #e6e6e6; // #color
-@gray-lightest:          #f3f3f3;
-
-@ui-2: #f5f7fa;
-@ui-3: #f0f3f6;
-@ui-4: #dbdbdb;
-@ui-5: #aaa;
-
-@body-background: #fafafa; // The page background color. #color
-@text-color: @gray-dark; // The default text color. #color
-@text-muted: @gray; // The muted color for text #color
-
-@link-color: #007acc; // The color for all links. #color
-@link-hover-color: @brand-info; // The rollover color for all links. #color
-
-
-@navbarside-background-color: @gray-darker; // This is the background color for the right-hand menu. #color
-@navbarside-sub-bg: @gray-dark;
-@navbarside-color: @gray-lightest;
-
-
-@navbarside-width: @side-nav-width;
-
-
-@modal-header-background: @gray-base; // The header color for modal dialogs. #color
-@modal-footer-background: @ui-3; // The header color for modal dialogs. #color
-@modal-backdrop-background: rgba(240, 243, 246, .5); // The backdrop color that overlays the page when a modal is displayed. #color
-
-@table-column-border-width: 0; // The size of the column borders on tables. Set to 1px to show column separators on the grid.
-
-
+@gray-lightest:          #f3f3f3; // #color
+//--
+@ui-2: #f7f7f7; // Used for well and picker backgrounds. (Lightest UI Color) #color
+@ui-3: #f0f3f6; // Modal footer background. #color
+@ui-4: #dbdbdb; // Table, panel, well, and hr border color. #color
+@ui-5: #aaaaaa; // Grid action button color. #color
 
 // Text *show in editor*
 @text-selection-background: #bcd9ea; // Text selection background color (used when people select text with the mouse). #color
@@ -54,12 +50,11 @@
 @font-size-small: 14px;
 @line-height-base: 1.5; // The default line height.
 //--
-@help-color-hex: #3d70b2;
-@help-color: rgba(red(@help-color-hex), green(@help-color-hex), blue(@help-color-hex), .8); // The color of the help icon used in Rock. #color
-@required-field-color: @brand-danger; // Color of the small dot that denotes required fields. #color
+@help-color-hex: #3d70b2; // The color of the help icon used in Rock. #color
+@required-field-color: #d4442e; // Color of the small dot that denotes required fields. #color
 
-// Navbar Styling *show in editor*
-@side-nav-width: 80px;
+// Text Conversion
+@help-color: fade(@help-color-hex, 80%);
 
 // Layers
 @shadow-raised: 0 0 1px 0 rgba(0, 0, 0, .03), 0 1px 3px 0 rgba(0, 0, 0, .08);
@@ -70,6 +65,13 @@
 
 
 // Modals
+
+@modal-header-background: @gray-base; // The header color for modal dialogs. #color
+@modal-footer-background: @ui-3; // The header color for modal dialogs. #color
+@modal-backdrop-background: rgba(240, 243, 246, .5); // The backdrop color that overlays the page when a modal is displayed. #color
+
+@table-column-border-width: 0; // The size of the column borders on tables. Set to 1px to show column separators on the grid.
+
 @modal-header-bg: @modal-header-background; // The header color for modal dialogs. #color
 @modal-footer-bg: @modal-footer-background; // The header color for modal dialogs. #color
 @modal-backdrop-bg: @modal-backdrop-background; // The backdrop color that overlays the page when a modal is displayed. #color
@@ -170,16 +172,11 @@
 
 //// Heading Sizes
 @font-size-h1:            (@font-size-base * 2.5);    // ~36px
-@font-size-h2:            (@font-size-base * 2);    // ~30px
-@font-size-h3:            (@font-size-base * 1.75);     // ~24px
-@font-size-h4:            (@font-size-base * 1.5);     // ~18px
+@font-size-h2:            (@font-size-base * 2);      // ~30px
+@font-size-h3:            (@font-size-base * 1.75);   // ~24px
+@font-size-h4:            (@font-size-base * 1.5);    // ~18px
 @font-size-h5:            (@font-size-base * 1.25);
 @font-size-h6:            @font-size-base;     // ~12px
-
-
-// Bootstrap Colors
-
-//// Bootstrap Colors {The primary colors defined by the Bootstrap framework. [More Information](http://getbootstrap.com/customize/#colors)}
 
 
 // Page Areas
@@ -248,7 +245,7 @@
 @input-group-addon-border-color: @input-border;             // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker borders (highly recommended that you use the same color as the input border).
 
 //// Picker
-@picker-action-bg: #f7f7f7;     // The background color of the actions bar at the bottom of the picker dropdown.
+@picker-action-bg: @ui-2;     // The background color of the actions bar at the bottom of the picker dropdown.
 
 
 //// Date Picker
@@ -273,7 +270,7 @@
 @panel-border:                @ui-4;        // The panel's border color.
 @panel-top-border-color:      @ui-4;    // Color of the panel's top border often used as an accent color.
 @panel-border-radius:         @border-radius-base;
-@panel-subheading:            #f7f7f7;
+@panel-subheading:            @ui-2;
 @drawer-bg:                   @panel-subheading;
 //--
 @panel-heading-text-color:  #484848;             // The heading's text color.
@@ -323,9 +320,9 @@
 @grid-pager-button-bg: transparent;
 @grid-pager-button-color: @text-color;
 @grid-pager-button-border: transparent;
-@grid-pager-button-active-bg: transparent;
-@grid-pager-button-active-border: @brand-primary;
-@grid-pager-button-active-color: @brand-primary;
+@grid-pager-button-active-bg: @gray-lightest;
+@grid-pager-button-active-border: @gray;
+@grid-pager-button-active-color: @gray;
 @table-border-color: @ui-4;
 
 //== Pagination
@@ -340,9 +337,9 @@
 @pagination-hover-bg:                  transparent;
 @pagination-hover-border:              @ui-5;
 
-@pagination-active-color:              @brand-primary;
-@pagination-active-bg:                 #fff;
-@pagination-active-border:             @brand-primary;
+@pagination-active-color:              @gray;
+@pagination-active-bg:                 @gray-lightest;
+@pagination-active-border:             @gray;
 
 @pagination-disabled-color:            @gray-light;
 @pagination-disabled-bg:               #fff;
@@ -527,7 +524,7 @@
 // Custom Labels { The bootstrap labels use the brand colors. }
 @label-default-bg: @gray;
 @label-campus-bg: #83758f;               // Used for identifing campuses.
-@label-type-bg: @gray-dark;  // Used for showing the 'type' of an idea. For instance on the group viewer this highlights the group's type.
+@label-type-bg: @gray;  // Used for showing the 'type' of an idea. For instance on the group viewer this highlights the group's type.
 
 // Form States and Actions Colors
 

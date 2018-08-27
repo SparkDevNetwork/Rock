@@ -25,7 +25,7 @@
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
                 <div id="pnlEditDetails" runat="server">
-                    <asp:ValidationSummary ID="valSummaryBatch" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="valSummaryBatch" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <asp:CustomValidator ID="cvBatch" runat="server" />
 
                     <div class="row">
@@ -86,7 +86,7 @@
                         </div>
                     </div>
                     <div class="actions">
-                        <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
+                        <asp:LinkButton ID="lbEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
                         <div class="pull-right">
                             <asp:LinkButton ID="lbMatch" runat="server" CssClass="btn btn-default" CausesValidation="false" OnClick="lbMatch_Click"><i class="fa fa-money"></i> Match Transactions</asp:LinkButton>
                             <asp:LinkButton ID="lbHistory" runat="server" CssClass="btn btn-default" CausesValidation="false" OnClick="lbHistory_Click"><i class="fa fa-file-text-o"></i> Audit Log</asp:LinkButton>

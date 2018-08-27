@@ -24,20 +24,20 @@ namespace Rock.Migrations
     public partial class Checkr_CreatePages : Migration
     {
         /// <summary>
-        /// The new Protect My Ministry workflow action name
+        /// The new Protect My Ministry workflow name
         /// </summary>
         public static readonly string NEW_PMM_WORKFLOW_TYPE_NAME = "Background Check (PMM)";
 
         /// <summary>
-        /// Makes the Checkr the default workflow action.
+        /// Makes the Checkr the default workflow action in Bio block.
         /// </summary>
         public void MakeCheckrDefaultWorkflowAction()
         {
             // Remove Checr background check workflow from bio
-            RockMigrationHelper.DeleteBlockAttributeValue( Block.BIO, SystemGuid.Attribute.BIO_WORKFLOWACTION, CheckrSystemGuid.CHECKR_WORKFLOW_TYPE );
+            RockMigrationHelper.DeleteBlockAttributeValue( Block.BIO, SystemGuid.Attribute.BIO_WORKFLOWACTION, WorkflowType.PROTECTMYMINISTRY );
 
             // Add PMM background check workflow to bio
-            RockMigrationHelper.AddBlockAttributeValue( Block.BIO, SystemGuid.Attribute.BIO_WORKFLOWACTION, WorkflowType.PROTECTMYMINISTRY, appendToExisting: true );
+            RockMigrationHelper.AddBlockAttributeValue( Block.BIO, SystemGuid.Attribute.BIO_WORKFLOWACTION, CheckrSystemGuid.CHECKR_WORKFLOW_TYPE, appendToExisting: true );
             // Sql( string.Format( "UPDATE [dbo].[WorkflowType] SET [Name] = '{0}' WHERE [Guid] = '{1}'", NEW_PMM_WORKFLOW_TYPE_NAME, PMM_WORKFLOW_TYPE ) );
             Sql( string.Format( "UPDATE [dbo].[WorkflowType] SET [Name] = '{0}' WHERE [Guid] = '{1}'", CheckrConstants.CHECKR_WORKFLOW_TYPE_NAME, CheckrSystemGuid.CHECKR_WORKFLOW_TYPE ) );
         }
@@ -74,7 +74,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue( CheckrSystemGuid.CHECKR_REQUESTLIST_WORKFLOWDETAILPAGE_ATTRIBUTE, "EBD0D19C-E73D-41AE-82D4-C89C21C35998", Rock.SystemGuid.Page.WORKFLOW_DETAIL );
 
             int count = (int)SqlScalar( "SELECT COUNT(Id) FROM [dbo].[BackgroundCheck]" );
-            if ( count != 0 )
+            if ( count == 0 )
             {
                 MakeCheckrDefaultWorkflowAction();
             }

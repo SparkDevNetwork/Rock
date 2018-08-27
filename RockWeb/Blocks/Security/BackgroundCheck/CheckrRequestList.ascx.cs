@@ -169,7 +169,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                         Context.ApplicationInstance.CompleteRequest();
                         return;
                     }
-                    catch ( ThreadAbortException ex )
+                    catch ( ThreadAbortException )
                     {
                         // Can safely ignore this exception
                     }
@@ -190,14 +190,14 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 if ( bc != null )
                 {
                     string url = new Checkr().GetReportUrl( bc.ResponseId );
-                    if ( url.IsNotNullOrWhitespace() && url != "Unauthorized" )
+                    if ( url.IsNotNullOrWhiteSpace() && url != "Unauthorized" )
                     {
                         try
                         {
                             Response.Redirect( url, false );
                             Context.ApplicationInstance.CompleteRequest(); // https://blogs.msdn.microsoft.com/tmarq/2009/06/25/correct-use-of-system-web-httpresponse-redirect/
                         }
-                        catch ( ThreadAbortException ex )
+                        catch ( ThreadAbortException )
                         {
                             // Can safely ignore this exception
                         }
@@ -371,7 +371,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         }
 
         /// <summary>
-        /// 
+        /// The Checkr table row columns tags
         /// </summary>
         private class BackgroundCheckRow
         {

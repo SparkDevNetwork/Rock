@@ -20,7 +20,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Security;
 
@@ -32,7 +32,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "EventCalendar" )]
     [DataContract]
-    public partial class EventCalendar : Model<EventCalendar>, ISecured, IHasActiveFlag
+    public partial class EventCalendar : Model<EventCalendar>, ISecured, IHasActiveFlag, ICacheable
     {
         /// <summary>
         /// Gets or sets the Name of the EventCalendar. This property is required.
@@ -124,6 +124,29 @@ namespace Rock.Model
                 supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve calendar items." );
                 return supportedActions;
             }
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return EventCalendarCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            EventCalendarCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion

@@ -22,7 +22,7 @@ using System.ComponentModel.Composition;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -53,11 +53,11 @@ namespace Rock.Workflow.Action
             errorMessages = new List<string>();
 
             // Get the entity type
-            CacheEntityType entityType = null;
+            EntityTypeCache entityType = null;
             var entityTypeGuid = GetAttributeValue( action, "EntityType" ).AsGuidOrNull();
             if ( entityTypeGuid.HasValue )
             {
-                entityType = CacheEntityType.Get( entityTypeGuid.Value );
+                entityType = EntityTypeCache.Get( entityTypeGuid.Value );
             }
             if ( entityType == null )
             {
@@ -92,7 +92,7 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            var entityWithAttributes = entityObject as Data.IHasAttributes;
+            var entityWithAttributes = entityObject as Attribute.IHasAttributes;
             if ( entityWithAttributes == null )
             {
                 errorMessages.Add( string.Format( "Entity does not support attributes ('{0}')!", entityIdGuidString ) );

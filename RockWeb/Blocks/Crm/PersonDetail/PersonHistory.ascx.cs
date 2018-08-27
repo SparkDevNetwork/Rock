@@ -27,18 +27,18 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// Block for displaying the history of changes to a particular user.
+    /// (OBSOLETE) Block for displaying the history of changes to a particular user.
     /// </summary>
     [DisplayName( "Person History" )]
     [Category( "CRM > Person Detail" )]
-    [Description( "Block for displaying the history of changes to a particular user." )]
+    [Description( "NOTE: This block is obsolete. Use Core > HistoryLog instead." )]
     public partial class PersonHistory : PersonBlock
     {
 
@@ -76,8 +76,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnLoad( e );
 
-            personEntityTypeId = CacheEntityType.Get( typeof( Person ) ).Id;
-            groupEntityTypeId = CacheEntityType.Get( typeof( Group ) ).Id;
+            personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
+            groupEntityTypeId = EntityTypeCache.Get( typeof( Group ) ).Id;
 
             if ( Person != null )
             {
@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         int? categoryId = e.Value.AsIntegerOrNull();
                         if ( categoryId.HasValue )
                         {
-                            var category = Rock.Cache.CacheCategory.Get( categoryId.Value );
+                            var category = CategoryCache.Get( categoryId.Value );
                             if ( category != null )
                             {
                                 e.Value = category.Name;
@@ -280,7 +280,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         // Make sure current person is allowed to view the category for the history item.
                         if ( !categoriesAllowed.ContainsKey( history.CategoryId ) )
                         {
-                            var categoryCache = CacheCategory.Get( history.CategoryId );
+                            var categoryCache = CategoryCache.Get( history.CategoryId );
                             if ( categoryCache != null )
                             {
                                 categoriesAllowed.Add( history.CategoryId, categoryCache.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
@@ -318,13 +318,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
 
                     // For related items, make sure user is authorized to view the history
-                    int? attributeEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Attribute ) ).Id;
+                    int? attributeEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
                     var groupService = new GroupService( rockContext );
                     foreach ( var history in histories.Where( h => h.RelatedEntityId.HasValue && h.RelatedEntityId.Value > 0 ).ToList() )
                     {
                         if ( history.RelatedEntityTypeId == attributeEntityTypeId )
                         {
-                            var attr = CacheAttribute.Get( history.RelatedEntityId.Value );
+                            var attr = AttributeCache.Get( history.RelatedEntityId.Value );
                             if ( attr == null || !attr.IsAuthorized( Authorization.VIEW, CurrentPerson ))
                             {
                                 histories.Remove( history );
@@ -356,7 +356,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         CreatedDateTime = h.CreatedDateTime
                     } ).ToList();
 
-                    gHistory.EntityTypeId = CacheEntityType.Get<History>().Id;
+                    gHistory.EntityTypeId = EntityTypeCache.Get<History>().Id;
                     gHistory.DataBind();
                 }
             }
@@ -392,7 +392,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( entityId.HasValue && entityId.Value > 0 )
             {
-                var category = CacheCategory.Get( categoryId );
+                var category = CategoryCache.Get( categoryId );
                 if ( category != null )
                 {
                     string urlMask = category.GetAttributeValue( "UrlMask" );

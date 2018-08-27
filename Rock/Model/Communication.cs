@@ -27,7 +27,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Communication;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Data.Entity;
 
 namespace Rock.Model
@@ -131,7 +131,7 @@ namespace Rock.Model
         public bool IsBulkCommunication { get; set; }
 
         /// <summary>
-        /// Gets or sets the datetime that communication was sent.
+        /// Gets or sets the datetime that communication was sent. This also indicates that communication shouldn't attempt to send again.
         /// </summary>
         /// <value>
         /// The send date time.
@@ -698,34 +698,41 @@ namespace Rock.Model
                 return;
             }
 
-            var emailMediumEntityType = CacheEntityType.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
-            var smsMediumEntityType = CacheEntityType.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+            var emailMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
+            var smsMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+            var preferredCommunicationTypeAttribute = AttributeCache.Get( SystemGuid.Attribute.GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM.AsGuid() );
 
-            var personInCommunicationList = new GroupMemberService( rockContext )
+            var qryCommunicationListMembers = new GroupMemberService( rockContext )
                 .Queryable()
-                .Where( a => a.GroupId == ListGroupId.Value )
-                .ToList();
+                .Where( a => a.GroupId == ListGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active );
+
+            // NOTE: If this is scheduled communication, don't include Members that were added after the scheduled FutureSendDateTime
+            if ( this.FutureSendDateTime.HasValue )
+            {
+                var memberAddedCutoffDate = this.FutureSendDateTime;
+                qryCommunicationListMembers = qryCommunicationListMembers.Where( a => ( a.DateTimeAdded.HasValue && a.DateTimeAdded.Value < memberAddedCutoffDate ) || ( a.CreatedDateTime.HasValue && a.CreatedDateTime.Value < memberAddedCutoffDate ) );
+            }
 
             var communicationRecipientService = new CommunicationRecipientService( rockContext );
 
-            var existingRecipients = GetRecipientsQry( rockContext ).ToList();
+            var recipientsQry = GetRecipientsQry( rockContext );
 
-            //Get all the List member which is not part of communiation recipents 
-            var newMemberInList = personInCommunicationList
-                .Where( a => 
-                    a.Person?.PrimaryAliasId != null && 
-                    existingRecipients.All( b => b.PersonAliasId != a.Person.PrimaryAliasId ) );
+            // Get all the List member which is not part of communication recipients yet
+            var newMemberInList = qryCommunicationListMembers
+                .Where( a => !recipientsQry.Any( r => r.PersonAlias.PersonId == a.PersonId ) )
+                .AsNoTracking()
+                .ToList();
 
             foreach ( var newMember in newMemberInList )
             {
                 var communicationRecipient = new CommunicationRecipient
-                    {
-                        PersonAliasId = newMember.Person.PrimaryAliasId.Value,
-                        Status = CommunicationRecipientStatus.Pending,
-                        CommunicationId = Id
-                    };
+                {
+                    PersonAliasId = newMember.Person.PrimaryAliasId.Value,
+                    Status = CommunicationRecipientStatus.Pending,
+                    CommunicationId = Id
+                };
 
-                switch (CommunicationType)
+                switch ( CommunicationType )
                 {
                     case CommunicationType.Email:
                         communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
@@ -736,13 +743,12 @@ namespace Rock.Model
                     case CommunicationType.RecipientPreference:
                         newMember.LoadAttributes();
 
-                        var preferredCommunicationTypeAttribute = CacheAttribute.Get( SystemGuid.Attribute.GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM.AsGuid() );
-                        if (preferredCommunicationTypeAttribute != null)
+                        if ( preferredCommunicationTypeAttribute != null )
                         {
-                            var recipientPreference = (CommunicationType?) newMember
-                                .GetAttributeValue(preferredCommunicationTypeAttribute.Key).AsIntegerOrNull();
+                            var recipientPreference = ( CommunicationType? ) newMember
+                                .GetAttributeValue( preferredCommunicationTypeAttribute.Key ).AsIntegerOrNull();
 
-                            switch (recipientPreference)
+                            switch ( recipientPreference )
                             {
                                 case CommunicationType.SMS:
                                     communicationRecipient.MediumEntityTypeId = smsMediumEntityType.Id;
@@ -765,10 +771,12 @@ namespace Rock.Model
                 communicationRecipientService.Add( communicationRecipient );
             }
 
-            //Get all pending communiation recipents that is no longer part of the group list member
-            var missingMemberInList = existingRecipients
-                .Where( a => 
-                    personInCommunicationList.All(b => b.Person.PrimaryAliasId != a.PersonAliasId) );
+            // Get all pending communiation recipents that is no longer part of the group list member
+            var missingMemberInList = recipientsQry.Where( a => a.Status == CommunicationRecipientStatus.Pending )
+                .Where( a => !qryCommunicationListMembers.Any( r => r.PersonId == a.PersonAlias.PersonId ) )
+                .AsNoTracking()
+                .ToList();
+
             foreach ( var missingMember in missingMemberInList )
             {
                 communicationRecipientService.Delete( missingMember );
@@ -829,36 +837,32 @@ namespace Rock.Model
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        public static void Send(Rock.Model.Communication communication)
+        public static void Send( Rock.Model.Communication communication )
         {
-            if (communication == null || communication.Status != CommunicationStatus.Approved) return;
-
-            if (communication.ListGroupId.HasValue)
+            if ( communication == null || communication.Status != CommunicationStatus.Approved )
             {
-                using (var rockContext = new RockContext())
+                return;
+            }
+
+            if ( communication.ListGroupId.HasValue && !communication.SendDateTime.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
                 {
-                    communication.RefreshCommunicationRecipientList(rockContext);
+                    communication.RefreshCommunicationRecipientList( rockContext );
                 }
             }
 
-            foreach (var medium in communication.GetMediums())
+            foreach ( var medium in communication.GetMediums() )
             {
-                medium.Send(communication);
+                medium.Send( communication );
             }
 
-            using (var rockContext = new RockContext())
+            using ( var rockContext = new RockContext() )
             {
-                var dbCommunication = new CommunicationService(rockContext).Get(communication.Id);
+                var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
 
-                var maxSendDateTime = dbCommunication.Recipients
-                    .Where(a => a.CommunicationId == communication.Id && a.SendDateTime.HasValue)
-                    .OrderByDescending(a => a.SendDateTime)
-                    .Select(a => a.SendDateTime)
-                    .FirstOrDefault();
-
-                if (!maxSendDateTime.HasValue) return;
-
-                dbCommunication.SendDateTime = maxSendDateTime;
+                // Set the SendDateTime of the Communication
+                dbCommunication.SendDateTime = RockDateTime.Now;
                 rockContext.SaveChanges();
             }
         }

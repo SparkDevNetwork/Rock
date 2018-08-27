@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Web.UI;
@@ -132,11 +132,11 @@ The SQL can include Lava merge fields:";
 
             ceWarningSqlExpression.Text = groupRequirementType.WarningSqlExpression;
 
-            dpDataView.EntityTypeId = CacheEntityType.Get<Person>().Id;
-            dpDataView.SelectedValue = groupRequirementType.DataViewId.ToString();
+            dpDataView.EntityTypeId = EntityTypeCache.Get<Person>().Id;
+            dpDataView.SetValue( groupRequirementType.DataViewId );
 
-            dpWarningDataView.EntityTypeId = CacheEntityType.Get<Person>().Id;
-            dpWarningDataView.SelectedValue = groupRequirementType.WarningDataViewId.ToString();
+            dpWarningDataView.EntityTypeId = EntityTypeCache.Get<Person>().Id;
+            dpWarningDataView.SetValue( groupRequirementType.WarningDataViewId );
 
             hfRequirementCheckType.Value = groupRequirementType.RequirementCheckType.ConvertToInt().ToString();
         }

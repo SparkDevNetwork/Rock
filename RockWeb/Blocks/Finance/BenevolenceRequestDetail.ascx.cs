@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( !Page.IsPostBack )
             {
-                cpCampus.Campuses = CacheCampus.All();
+                cpCampus.Campuses = CampusCache.All();
                 ShowDetail( PageParameter( "BenevolenceRequestId" ).AsInteger() );
             }
             else
@@ -219,7 +219,7 @@ namespace RockWeb.Blocks.Finance
             ddlResultType.Items.Clear();
             ddlResultType.AutoPostBack = false;
             ddlResultType.Required = true;
-            ddlResultType.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) ), true );
+            ddlResultType.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) ), true );
             dtbResultSummary.Text = string.Empty;
             dtbAmount.Text = string.Empty;
 
@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.Finance
                 ddlResultType.Items.Clear();
                 ddlResultType.AutoPostBack = false;
                 ddlResultType.Required = true;
-                ddlResultType.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) ), true );
+                ddlResultType.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) ), true );
                 ddlResultType.SetValue( resultInfo.ResultTypeValueId );
                 dtbResultSummary.Text = resultInfo.ResultSummary;
                 dtbAmount.Text = resultInfo.Amount.ToString();
@@ -539,7 +539,7 @@ namespace RockWeb.Blocks.Finance
                     ddlConnectionStatus.SetValue( person.ConnectionStatusValueId );
                     ddlConnectionStatus.Enabled = false;
 
-                    var homePhoneType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
+                    var homePhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
                     if ( homePhoneType != null )
                     {
                         var homePhone = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == homePhoneType.Id );
@@ -550,7 +550,7 @@ namespace RockWeb.Blocks.Finance
                         }
                     }
 
-                    var mobilePhoneType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+                    var mobilePhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
                     if ( mobilePhoneType != null )
                     {
                         var mobileNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneType.Id );
@@ -561,7 +561,7 @@ namespace RockWeb.Blocks.Finance
                         }
                     }
 
-                    var workPhoneType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
+                    var workPhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
                     if ( workPhoneType != null )
                     {
                         var workPhone = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == workPhoneType.Id );
@@ -579,7 +579,7 @@ namespace RockWeb.Blocks.Finance
                     lapAddress.Enabled = false;
 
                     // set the campus but not on page load (e will be null) unless from the person profile page (in which case BenevolenceRequestId in the query string will be 0)
-                    int? requestId = Request["BenevolenceRequestId"].AsIntegerOrNull();
+                    int? requestId = PageParameter( "BenevolenceRequestId" ).AsIntegerOrNull();
                     
                     if ( !cpCampus.SelectedCampusId.HasValue && ( e != null || (requestId.HasValue && requestId == 0 ) ) )
                     {
@@ -810,8 +810,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void LoadDropDowns( BenevolenceRequest benevolenceRequest )
         {
-            ddlRequestStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS ) ), false );
-            ddlConnectionStatus.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
+            ddlRequestStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS ) ), false );
+            ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
 
             if ( _caseWorkerGroupGuid.HasValue )
             {

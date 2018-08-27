@@ -29,7 +29,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 using Newtonsoft.Json.Linq;
@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Groups
                 GroupMember groupMember = new GroupMemberService( new RockContext() ).Get( groupMemberId.Value );
                 if ( groupMember != null )
                 {
-                    var parentPageReference = PageReference.GetParentPageReferences( this.RockPage, this.CachePage, pageReference ).LastOrDefault();
+                    var parentPageReference = PageReference.GetParentPageReferences( this.RockPage, this.PageCache, pageReference ).LastOrDefault();
 
                     if ( parentPageReference != null )
                     {
@@ -458,11 +458,6 @@ namespace RockWeb.Blocks.Groups
                 } );
 
                 groupMember.CalculateRequirements( rockContext, true );
-
-                if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-                {
-                    Rock.Cache.CacheRole.Remove( group.Id );
-                }
             }
 
             return true;
@@ -1147,7 +1142,7 @@ namespace RockWeb.Blocks.Groups
                 if ( cbMoveGroupMemberMoveNotes.Checked )
                 {
                     destGroupMember.Note = groupMember.Note;
-                    int groupMemberEntityTypeId = CacheEntityType.GetId<Rock.Model.GroupMember>().Value;
+                    int groupMemberEntityTypeId = EntityTypeCache.GetId<Rock.Model.GroupMember>().Value;
                     var noteService = new NoteService( rockContext );
                     var groupMemberNotes = noteService.Queryable().Where( a => a.NoteType.EntityTypeId == groupMemberEntityTypeId && a.EntityId == groupMember.Id );
                     foreach ( var note in groupMemberNotes )

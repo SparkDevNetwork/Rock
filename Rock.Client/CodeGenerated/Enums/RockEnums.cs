@@ -432,6 +432,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum NoteApprovalStatus
+    {
+        PendingApproval = 0x0,
+        Approved = 0x1,
+        Denied = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum NotificationClassification
     {
         Success = 0x0,
@@ -473,6 +482,15 @@ namespace Rock.Client.Enums
         No = 0x0,
         Yes = 0x1,
         Ask = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum RegistrarOption
+    {
+        PromptForRegistrar = 0x0,
+        PrefillFirstRegistrant = 0x1,
+        UseFirstRegistrant = 0x2,
     }
 
     /// <summary>
@@ -532,6 +550,8 @@ namespace Rock.Client.Enums
         WorkPhone = 0xa,
         Grade = 0xb,
         ConnectionStatus = 0xc,
+        MiddleName = 0xd,
+        AnniversaryDate = 0xe,
     }
 
     /// <summary>

@@ -17,8 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Rock.Cache;
+using System.Runtime.Serialization;
+using Rock.Web.Cache;
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -26,6 +26,7 @@ namespace Rock.CheckIn
     /// <summary>
     /// Helper class for storing the current attendance for a given kiosk location
     /// </summary>
+    [DataContract]
     public class KioskLocationAttendance : ItemCache<KioskLocationAttendance>
     {
         /// <summary>
@@ -41,6 +42,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The location id.
         /// </value>
+        [DataMember]
         public int LocationId { get; set; }
 
         /// <summary>
@@ -49,6 +51,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The name of the location.
         /// </value>
+        [DataMember]
         public string LocationName { get; set; }
 
         /// <summary>
@@ -57,6 +60,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The groups.
         /// </value>
+        [DataMember]
         public List<KioskGroupAttendance> Groups { get; set; }
 
         /// <summary>
@@ -201,7 +205,7 @@ namespace Rock.CheckIn
                     scheduleAttendance = new KioskScheduleAttendance();
                     scheduleAttendance.ScheduleId = attendance.Occurrence.ScheduleId.Value;
                     scheduleAttendance.ScheduleName = attendance.Occurrence.Schedule.Name;
-                    scheduleAttendance.IsActive = attendance.Occurrence.Schedule.IsScheduleOrCheckInActive;
+                    scheduleAttendance.IsActive = attendance.IsCurrentlyCheckedIn;
                     scheduleAttendance.PersonIds = new List<int>();
                     groupAttendance.Schedules.Add( scheduleAttendance );
                 }

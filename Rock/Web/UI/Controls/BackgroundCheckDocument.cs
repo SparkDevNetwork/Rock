@@ -15,11 +15,9 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Cache;
-using Rock.Constants;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -103,7 +101,6 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-
         /// <summary>
         /// Gets or sets the binary file id.
         /// </summary>
@@ -142,9 +139,9 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 Guid? providerGuid = _componentPicker.SelectedValue.AsGuidOrNull();
-                if ( _textBox.Text.IsNotNullOrWhitespace() && providerGuid.HasValue )
+                if ( _textBox.Text.IsNotNullOrWhiteSpace() && providerGuid.HasValue )
                 {
-                    return $"{CacheEntityType.Get( providerGuid.Value ).Id},{_textBox.Text}";
+                    return $"{EntityTypeCache.Get( providerGuid.Value ).Id},{_textBox.Text}";
                 }
 
                 return _textBox.Text;
@@ -153,15 +150,15 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                if ( value.IsNotNullOrWhitespace() )
+                if ( value.IsNotNullOrWhiteSpace() )
                 {
                     var valueSplit = value.Split( ',' );
                     if ( valueSplit != null && valueSplit.Length == 2 )
                     {
-                        //CacheEntityType.Get( typeof(Checkr) ).Id
-                        //Type backgroundCheckComponentType = Type.GetType( CacheEntityType.Get( entityTypeId ).AssemblyName )
+                        //EntityTypeCache.Get( typeof(Checkr) ).Id
+                        //Type backgroundCheckComponentType = Type.GetType( EntityTypeCache.Get( entityTypeId ).AssemblyName )
                         string entityTypeId = valueSplit[0];
-                        var li = _componentPicker.Items.FindByValue( CacheEntityType.Get( entityTypeId.AsInteger() ).Guid.ToString().ToUpper() );
+                        var li = _componentPicker.Items.FindByValue( EntityTypeCache.Get( entityTypeId.AsInteger() ).Guid.ToString().ToUpper() );
                         if ( li != null )
                         {
                             li.Selected = true;

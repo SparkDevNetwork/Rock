@@ -26,7 +26,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Administration
     {
         #region Fields
 
-        private Rock.Cache.CachePage _Page = null;
+        private PageCache _Page = null;
         private string _ZoneName = string.Empty;
 
         #endregion
@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
 
             int pageId = PageParameter( "EditPage" ).AsInteger();
-            _Page = Rock.Cache.CachePage.Get( pageId );
+            _Page = PageCache.Get( pageId );
             _ZoneName = this.PageParameter( "ZoneName" );
 
             if ( _Page != null )
@@ -224,15 +224,9 @@ namespace RockWeb.Blocks.Administration
                 var blocks = blockService.GetBySiteAndZone( _Page.SiteId, _ZoneName ).ToList();
                 blockService.Reorder( blocks, e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
-
-                foreach ( var zoneBlock in blocks )
-                {
-                    // make sure the CacheBlock for all the re-ordered blocks get flushed so the new Order is updated
-                    Rock.Cache.CacheBlock.Remove( zoneBlock.Id );
-                }
             }
 
-            Rock.Cache.CachePage.RemoveSiteBlocks( _Page.SiteId );
+            PageCache.RemoveSiteBlocks( _Page.SiteId );
             PageUpdated = true;
 
             BindGrids();
@@ -264,7 +258,7 @@ namespace RockWeb.Blocks.Administration
                     blockService.Delete( block );
                     rockContext.SaveChanges();
 
-                    Rock.Cache.CachePage.RemoveSiteBlocks( _Page.SiteId );
+                    PageCache.RemoveSiteBlocks( _Page.SiteId );
                     PageUpdated = true;
                 }
             }
@@ -305,15 +299,9 @@ namespace RockWeb.Blocks.Administration
                 var blocks = blockService.GetByLayoutAndZone( _Page.LayoutId, _ZoneName ).ToList();
                 blockService.Reorder( blocks, e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
-
-                foreach ( var zoneBlock in blocks )
-                {
-                    // make sure the CacheBlock for all the re-ordered blocks get flushed so the new Order is updated
-                    Rock.Cache.CacheBlock.Remove( zoneBlock.Id );
-                }
             }
 
-            Rock.Cache.CachePage.RemoveLayoutBlocks( _Page.LayoutId );
+            PageCache.RemoveLayoutBlocks( _Page.LayoutId );
             PageUpdated = true;
             
             BindGrids();
@@ -345,7 +333,7 @@ namespace RockWeb.Blocks.Administration
                     blockService.Delete( block );
                     rockContext.SaveChanges();
 
-                    Rock.Cache.CachePage.RemoveLayoutBlocks( _Page.LayoutId );
+                    PageCache.RemoveLayoutBlocks( _Page.LayoutId );
                     PageUpdated = true;
                 }
             }
@@ -386,12 +374,6 @@ namespace RockWeb.Blocks.Administration
                 var blocks = blockService.GetByPageAndZone( _Page.Id, _ZoneName ).ToList();
                 blockService.Reorder( blocks, e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
-
-                foreach ( var zoneBlock in blocks )
-                {
-                    // make sure the CacheBlock for all the re-ordered blocks get flushed so the new Order is updated
-                    Rock.Cache.CacheBlock.Remove( zoneBlock.Id );
-                }
             }
 
             _Page.RemoveBlocks();
@@ -544,7 +526,7 @@ namespace RockWeb.Blocks.Administration
 
                 if ( block.Layout != null )
                 {
-                    Rock.Cache.CachePage.RemoveLayoutBlocks( _Page.LayoutId );
+                    PageCache.RemoveLayoutBlocks( _Page.LayoutId );
                 }
                 else
                 {
@@ -601,7 +583,8 @@ namespace RockWeb.Blocks.Administration
                         b.Id,
                         b.Name,
                         BlockTypeName = b.BlockType.Name,
-                        BlockTypePath = b.BlockType.Path
+                        BlockTypePath = b.BlockType.Path,
+                        BlockTypeCategory = b.BlockType.Category
                     } )
                     .ToList();
                 gSiteBlocks.DataBind();
@@ -612,7 +595,8 @@ namespace RockWeb.Blocks.Administration
                         b.Id,
                         b.Name,
                         BlockTypeName = b.BlockType.Name,
-                        BlockTypePath = b.BlockType.Path
+                        BlockTypePath = b.BlockType.Path,
+                        BlockTypeCategory = b.BlockType.Category
                     } )
                     .ToList();
                 gLayoutBlocks.DataBind();
@@ -623,7 +607,8 @@ namespace RockWeb.Blocks.Administration
                     b.Id,
                     b.Name,
                     BlockTypeName = b.BlockType.Name,
-                    BlockTypePath = b.BlockType.Path
+                    BlockTypePath = b.BlockType.Path,
+                    BlockTypeCategory = b.BlockType.Category
                 } )
                 .ToList();
                 gPageBlocks.DataBind();
@@ -769,7 +754,7 @@ namespace RockWeb.Blocks.Administration
         {
             LinkButton btnNewBlockQuickSetting = sender as LinkButton;
 
-            CacheBlockType quickSettingBlockType = CacheBlockType.Get( btnNewBlockQuickSetting.CommandArgument.AsInteger() );
+            BlockTypeCache quickSettingBlockType = BlockTypeCache.Get( btnNewBlockQuickSetting.CommandArgument.AsInteger() );
 
             if ( quickSettingBlockType != null )
             {

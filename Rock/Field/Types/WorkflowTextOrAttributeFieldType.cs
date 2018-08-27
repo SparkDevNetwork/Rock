@@ -20,7 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -156,7 +156,7 @@ namespace Rock.Field.Types
 
                 if ( string.IsNullOrWhiteSpace( formattedValue ) )
                 {
-                    var attributeCache = CacheAttribute.Get( guid );
+                    var attributeCache = AttributeCache.Get( guid );
                     if ( attributeCache != null )
                     {
                         formattedValue = attributeCache.Name;
@@ -207,7 +207,7 @@ namespace Rock.Field.Types
             {
                 foreach ( var attribute in attributes )
                 {
-                    var fieldType = CacheFieldType.Get( attribute.Value.FieldTypeId );
+                    var fieldType = FieldTypeCache.Get( attribute.Value.FieldTypeId );
                     if ( !filteredFieldTypes.Any() || filteredFieldTypes.Contains( fieldType.Class, StringComparer.OrdinalIgnoreCase ) )
                     {
                         editControl.DropDownList.Items.Add( new ListItem( attribute.Value.Name, attribute.Key.ToString() ) );

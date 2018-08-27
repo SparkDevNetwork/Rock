@@ -20,7 +20,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {
@@ -37,7 +37,7 @@ namespace Rock.CheckIn
         /// The type of the group.
         /// </value>
         [DataMember]
-        public CacheGroupType GroupType { get; set; }
+        public GroupTypeCache GroupType { get; set; }
 
         /// <summary>
         /// All groups with active schedules
@@ -95,7 +95,7 @@ namespace Rock.CheckIn
         public KioskGroupType( int groupTypeid )
             : base()
         {
-            GroupType = CacheGroupType.Get( groupTypeid );
+            GroupType = GroupTypeCache.Get( groupTypeid );
             KioskGroups = new List<KioskGroup>();
         }
 

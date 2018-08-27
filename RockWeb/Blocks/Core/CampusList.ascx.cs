@@ -23,7 +23,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Core
         /// <value>
         /// The available attributes.
         /// </value>
-        public List<CacheAttribute> AvailableAttributes { get; set; }
+        public List<AttributeCache> AvailableAttributes { get; set; }
 
         #endregion
 
@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Core
         {
             base.LoadViewState( savedState );
 
-            AvailableAttributes = ViewState["AvailableAttributes"] as List<CacheAttribute>;
+            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
         }
 
         /// <summary>
@@ -159,8 +159,6 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
-                CacheCampus.Remove( campus.Id );
-
                 campusService.Delete( campus );
                 rockContext.SaveChanges();
             }
@@ -192,8 +190,6 @@ namespace RockWeb.Blocks.Core
             {
                 new CampusService( rockContext ).Reorder( campuses, e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
-
-                campuses.ForEach( t => CacheCampus.Remove( t.Id ) );
             }
 
             BindGrid();
@@ -209,7 +205,7 @@ namespace RockWeb.Blocks.Core
         private void BindAttributes()
         {
             // Parse the attribute filters 
-            AvailableAttributes = new List<CacheAttribute>();
+            AvailableAttributes = new List<AttributeCache>();
 
             int entityTypeId = new Campus().TypeId;
             foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
@@ -219,7 +215,7 @@ namespace RockWeb.Blocks.Core
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {
-                AvailableAttributes.Add( CacheAttribute.Get( attributeModel ) );
+                AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
             }
         }
 
@@ -246,7 +242,7 @@ namespace RockWeb.Blocks.Core
                         boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
 
-                        var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                         if ( attributeCache != null )
                         {
                             boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;

@@ -29,7 +29,7 @@ namespace Rock.Lava.Blocks
 {
     /// <summary>
     /// Sql stores the result of provided SQL query into a variable.
-    /// 
+    ///
     /// {% sql results %}
     /// SELECT [FirstName], [LastName] FROM [Person]
     /// {% endsql %}
@@ -104,7 +104,6 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
         private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup
@@ -132,7 +131,7 @@ namespace Rock.Lava.Blocks
             parms.Add( "return", "results" );
             parms.Add( "statement", "select" );
 
-            var markupItems = Regex.Matches( markup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( markup, "(.*?:'[^']*')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

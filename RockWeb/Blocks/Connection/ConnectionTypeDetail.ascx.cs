@@ -31,7 +31,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Connection
             gWorkflows.GridRebind += gWorkflows_GridRebind;
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the connection opportunities! Are you sure you wish to continue with the delete?');", ConnectionType.FriendlyTypeName );
-            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.ConnectionType ) ).Id;
+            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ConnectionType ) ).Id;
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upConnectionType );
@@ -209,6 +209,26 @@ namespace RockWeb.Blocks.Connection
             return breadCrumbs;
         }
 
+        /// <summary>
+        /// Makes a duplicate of a Connection Type
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCopy_Click( object sender, EventArgs e )
+        {
+
+            int newConnectionTypeId = 0;
+
+            using ( RockContext rockContext = new RockContext() )
+            {
+                ConnectionTypeService connectionTypeService = new ConnectionTypeService( rockContext );
+
+                newConnectionTypeId = connectionTypeService.Copy( hfConnectionTypeId.Value.AsInteger() );
+            }
+
+            ConnectionWorkflowService.RemoveCachedTriggers();
+            modalCopy.Show();
+        }
         #endregion
 
         #region Events
@@ -410,7 +430,7 @@ namespace RockWeb.Blocks.Connection
 
                         /* Save Attributes */
                         string qualifierValue = connectionType.Id.ToString();
-                        SaveAttributes( new ConnectionOpportunity().TypeId, "ConnectionTypeId", qualifierValue, AttributesState, rockContext );
+                        Helper.SaveAttributeEdits( AttributesState, new ConnectionOpportunity().TypeId, "ConnectionTypeId", qualifierValue, rockContext );
 
                         connectionType = connectionTypeService.Get( connectionType.Id );
                         if ( connectionType != null )
@@ -524,7 +544,7 @@ namespace RockWeb.Blocks.Connection
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
             }
             else
             {
@@ -534,7 +554,7 @@ namespace RockWeb.Blocks.Connection
             edtAttributes.ActionTitle = ActionTitle.Edit( "attribute for Opportunities of Connection type " + tbName.Text );
             var reservedKeyNames = new List<string>();
             AttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
-            edtAttributes.AllowSearchVisible = true; 
+            edtAttributes.AllowSearchVisible = true;
             edtAttributes.ReservedKeyNames = reservedKeyNames.ToList();
             edtAttributes.SetAttributeProperties( attribute, typeof( ConnectionType ) );
 
@@ -622,7 +642,7 @@ namespace RockWeb.Blocks.Connection
                              a.Guid,
                              a.Name,
                              a.Description,
-                             FieldType = CacheFieldType.GetName( a.FieldTypeId ),
+                             FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
                              a.IsRequired,
                              a.IsGridColumn,
                              a.AllowSearch
@@ -672,40 +692,6 @@ namespace RockWeb.Blocks.Connection
             attributeList = attributeList.OrderBy( a => a.Order ).ToList();
             int order = 0;
             attributeList.ForEach( a => a.Order = order++ );
-        }
-
-        /// <summary>
-        /// Saves the attributes.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="qualifierColumn">The qualifier column.</param>
-        /// <param name="qualifierValue">The qualifier value.</param>
-        /// <param name="viewStateAttributes">The view state attributes.</param>
-        /// <param name="attributeService">The attribute service.</param>
-        /// <param name="qualifierService">The qualifier service.</param>
-        /// <param name="categoryService">The category service.</param>
-        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<Attribute> viewStateAttributes, RockContext rockContext )
-        {
-            // Get the existing attributes for this entity type and qualifier value
-            var attributeService = new AttributeService( rockContext );
-            var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
-
-            // Delete any of those attributes that were removed in the UI
-            var selectedAttributeGuids = viewStateAttributes.Select( a => a.Guid );
-            foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
-            {
-                attributeService.Delete( attr );
-                rockContext.SaveChanges();
-                Rock.Cache.CacheAttribute.Remove( attr.Id );
-            }
-
-            // Update the Attributes that were assigned in the UI
-            foreach ( var attributeState in viewStateAttributes )
-            {
-                var attribute = Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
-            }
-
-            CacheAttribute.RemoveEntityAttributes();
         }
 
         #endregion
@@ -1073,11 +1059,11 @@ namespace RockWeb.Blocks.Connection
                 wpWorkflowType.SetValue( connectionWorkflow.WorkflowTypeId );
                 ddlTriggerType.SelectedValue = connectionWorkflow.TriggerType.ConvertToInt().ToString();
             }
-         
+
 
             hfAddConnectionWorkflowGuid.Value = connectionWorkflowGuid.ToString();
-            UpdateTriggerQualifiers();
             ShowDialog( "ConnectionWorkflows", true );
+            UpdateTriggerQualifiers();
         }
 
         /// <summary>

@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -49,8 +49,8 @@ namespace RockWeb.Blocks.Connection
     {
         #region Fields
 
-        CacheDefinedValue _homePhone = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
-        CacheDefinedValue _cellPhone = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+        DefinedValueCache _homePhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+        DefinedValueCache _cellPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
         int _opportunityId = 0;
 
         #endregion
@@ -165,8 +165,8 @@ namespace RockWeb.Blocks.Connection
                     if ( person == null )
                     {
                         // If a match was not found, create a new person
-                        var dvcConnectionStatus = CacheDefinedValue.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-                        var dvcRecordStatus = CacheDefinedValue.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
+                        var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+                        var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
 
                         person = new Person();
                         person.FirstName = firstName;
@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Connection
                         person.IsEmailActive = true;
                         person.Email = email;
                         person.EmailPreference = EmailPreference.EmailAllowed;
-                        person.RecordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                        person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                         if ( dvcConnectionStatus != null )
                         {
                             person.ConnectionStatusValueId = dvcConnectionStatus.Id;
@@ -278,7 +278,7 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 // load campus dropdown
-                var campuses = CacheCampus.All().Where( c => ( c.IsActive ?? false ) && opportunity.ConnectionOpportunityCampuses.Any( o => o.CampusId == c.Id ) ).ToList();
+                var campuses = CampusCache.All().Where( c => ( c.IsActive ?? false ) && opportunity.ConnectionOpportunityCampuses.Any( o => o.CampusId == c.Id ) ).ToList();
                 cpCampus.Campuses = campuses;
                 cpCampus.Visible = campuses.Any();
 
@@ -353,7 +353,7 @@ namespace RockWeb.Blocks.Connection
                     // set the campus to the context
                     if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
                     {
-                        var campusEntityType = CacheEntityType.Get( "Rock.Model.Campus" );
+                        var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
                         var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
                         if ( contextCampus != null )
@@ -372,7 +372,7 @@ namespace RockWeb.Blocks.Connection
 
         private void SavePhone( PhoneNumberBox phoneNumberBox, Person person, Guid phoneTypeGuid )
         {
-            var numberType = CacheDefinedValue.Get( phoneTypeGuid );
+            var numberType = DefinedValueCache.Get( phoneTypeGuid );
             if ( numberType != null )
             {
                 var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -49,7 +50,7 @@ namespace Rock.Field.Types
                 if ( locGuid.HasValue )
                 {
                     // Check to see if this is the org address first (to avoid db read)
-                    var globalAttributesCache = Cache.CacheGlobalAttributes.Get();
+                    var globalAttributesCache = GlobalAttributesCache.Get();
                     var orgLocGuid = globalAttributesCache.GetValue( "OrganizationAddress" ).AsGuidOrNull();
                     if ( orgLocGuid.HasValue && orgLocGuid.Value == locGuid.Value )
                     {

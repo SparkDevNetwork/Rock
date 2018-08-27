@@ -22,7 +22,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 using System.Linq;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Field.Types
 {

@@ -32,7 +32,7 @@ using Rock.Attribute;
 using Rock.Chart;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -101,7 +101,7 @@ namespace RockWeb.Blocks.Finance
             gGiversGifts.DataKeyNames = new string[] { "Id" };
             gGiversGifts.PersonIdField = "Id";
             gGiversGifts.GridRebind += gGiversGifts_GridRebind;
-            gGiversGifts.EntityTypeId = CacheEntityType.GetId<Rock.Model.Person>();
+            gGiversGifts.EntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
 
             pnlTotal = new Panel();
             gGiversGifts.Actions.AddCustomActionControl( pnlTotal );
@@ -114,7 +114,7 @@ namespace RockWeb.Blocks.Finance
             pnlTotal.Controls.Add( lTotal );
             lTotal.ID = "lTotal";
 
-            dvpDataView.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Person ) ).Id;
+            dvpDataView.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
 
             pnlViewBy.Visible = !GetAttributeValue( "HideViewByOptions" ).AsBoolean();
         }
@@ -405,7 +405,7 @@ namespace RockWeb.Blocks.Finance
 
                 if ( campusId.Key > 0 )
                 {
-                    var campus = CacheCampus.Get( campusId.Key );
+                    var campus = CampusCache.Get( campusId.Key );
                     cbList.Label = campus != null ? campus.Name + " Accounts" : "Campus " + campusId.Key.ToString();
                 }
                 else
@@ -433,9 +433,9 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         public void LoadDropDowns()
         {
-            cblTransactionType.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid() ) );
-            cblCurrencyTypes.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() ) );
-            cblTransactionSource.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() ) );
+            cblTransactionType.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid() ) );
+            cblCurrencyTypes.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() ) );
+            cblTransactionSource.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() ) );
         }
 
         /// <summary>
@@ -677,7 +677,7 @@ function(item) {
                 cblAccounts.SetValues( accountIdList );
             }
 
-            dvpDataView.SetValue( GetSetting( keyPrefix, "DataView" ) );
+            dvpDataView.SetValue( GetSetting( keyPrefix, "DataView" ).AsIntegerOrNull() );
             HideShowDataViewResultOption();
 
             rblDataViewAction.SetValue( GetSetting( keyPrefix, "DataViewAction" ) );
@@ -861,7 +861,7 @@ function(item) {
 
                         if ( chartData.CampusId.HasValue )
                         {
-                            var campus = CacheCampus.Get( chartData.CampusId.Value );
+                            var campus = CampusCache.Get( chartData.CampusId.Value );
                             if ( campus != null )
                             {
                                 chartData.CampusName = campus.Name;
@@ -1625,8 +1625,8 @@ function(item) {
 
                 // Load the phone numbers for these people
                 var phoneNumbers = new List<PhoneNumber>();
-                var homePhoneType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
-                var cellPhoneType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                var homePhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+                var cellPhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
                 if ( homePhoneType != null && cellPhoneType != null )
                 {
                     phoneNumbers = new PhoneNumberService( rockContext )
@@ -1642,8 +1642,8 @@ function(item) {
 
                 // Load the home addresses
                 var personLocations = new Dictionary<int, Location>();
-                var familyGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
-                var homeAddressDv = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
+                var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                var homeAddressDv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
                 if ( familyGroupType != null && homeAddressDv != null )
                 {
 

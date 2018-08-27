@@ -13,7 +13,7 @@
             </div>
             <div class="panel-body">
 
-                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <asp:CustomValidator ID="cvGroupMember" runat="server" Display="None" />
                 <Rock:NotificationBox ID="nbRoleLimitWarning" runat="server" NotificationBoxType="Warning" Heading="Role Limit Warning" />
 
@@ -169,8 +169,8 @@
                     <li id="liExistingPerson" runat="server"><a href='#<%=divExistingPerson.ClientID%>' data-toggle="pill">Add Existing Person</a></li>
                 </ul>
 
-                <Rock:NotificationBox ID="nbAddPerson" runat="server" Heading="Please Correct the Following" NotificationBoxType="Danger" Visible="false" />
-                <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="AddPerson"/>
+                <Rock:NotificationBox ID="nbAddPerson" runat="server" Heading="Please correct the following:" NotificationBoxType="Danger" Visible="false" />
+                <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="AddPerson"/>
 
                 <div class="tab-content">
 

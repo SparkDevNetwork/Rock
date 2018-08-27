@@ -52,6 +52,8 @@ namespace Rock.Tests.Rock.Lava
         private static readonly string iCalStringSaturday430 = serializer.SerializeToString( weeklySaturday430 );
         private static readonly string iCalStringFirstSaturdayOfMonth = serializer.SerializeToString( monthlyFirstSaturday );
 
+        #region Numeric Filters
+
         #region Minus
 
         /// <summary>
@@ -240,6 +242,10 @@ namespace Rock.Tests.Rock.Lava
 
         #endregion
 
+        #endregion
+
+        #region "Other" category filters
+
         #region AsInteger
 
         /// <summary>
@@ -283,16 +289,6 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- should not cast the decimal to an integer.
-        /// </summary>
-        [Fact( Skip = "this seems to cast without error" )]
-        public void AsInteger_InvalidDecimal()
-        {
-            var output = RockFilters.AsInteger( ( decimal ) 3.2d );
-            Assert.Null( output );
-        }
-
-        /// <summary>
         /// For use in Lava -- should cast the double to an integer.
         /// </summary>
         [Fact]
@@ -300,16 +296,6 @@ namespace Rock.Tests.Rock.Lava
         {
             var output = RockFilters.AsInteger( 3.0d );
             Assert.Equal( output, 3 );
-        }
-
-        /// <summary>
-        /// For use in Lava -- should not cast the double to an integer.
-        /// </summary>
-        [Fact( Skip = "this seems to cast without error" )]
-        public void AsInteger_InvalidDouble()
-        {
-            var output = RockFilters.AsInteger( 3.2d );
-            Assert.Null( output );
         }
 
         /// <summary>
@@ -335,11 +321,11 @@ namespace Rock.Tests.Rock.Lava
         /// <summary>
         /// For use in Lava -- should not cast the decimal string to an integer.
         /// </summary>
-        [Fact( Skip = "this seems to cast without error" )]
-        public void AsInteger_InvalidDecimalString()
+        [Fact]
+        public void AsInteger_ValidDecimalString()
         {
-            var output = RockFilters.AsInteger( "3.0" );
-            Assert.Null( output );
+            var output = RockFilters.AsInteger( "3.2" );
+            Assert.Equal( output, 3 );
         }
 
         #endregion
@@ -642,6 +628,10 @@ namespace Rock.Tests.Rock.Lava
 
         #endregion
 
+        #endregion
+
+        #region Array filters
+
         #region Index
 
         /// <summary>
@@ -695,6 +685,191 @@ namespace Rock.Tests.Rock.Lava
         }
 
         #endregion
+
+        #endregion
+
+        #region Date Filters
+
+        /// <summary>
+        /// For use in Lava -- adding default days to 'Now' should be equal.
+        /// </summary>
+        [Fact]
+        public void DateAdd_AddDaysDefaultViaNow()
+        {
+            var output = RockFilters.DateAdd( "Now", 5 );
+            DateTimeAssert.AreEqual( output, RockDateTime.Now.AddDays( 5 ) );
+        }
+
+        /// <summary>
+        /// For use in Lava -- adding days (default) to a given date should be equal.
+        /// </summary>
+        [Fact]
+        public void DateAdd_AddDaysDefaultToGivenDate()
+        {
+            var output = RockFilters.DateAdd( "5/1/2018", 3 );
+            DateTimeAssert.AreEqual( output, DateTime.Parse("5/4/2018") );
+        }
+
+        /// <summary>
+        /// For use in Lava -- adding days (d param) to a given date should be equal.
+        /// </summary>
+        [Fact]
+        public void DateAdd_AddDaysIntervalToGivenDate()
+        {
+            var output = RockFilters.DateAdd( "5/1/2018", 3, "d" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/4/2018" ) );
+        }
+
+        /// <summary>
+        /// For use in Lava -- adding hours (h param) to a given date should be equal.
+        /// </summary>
+        [Fact]
+        public void DateAdd_AddHoursIntervalToGivenDate()
+        {
+            var output = RockFilters.DateAdd( "5/1/2018 3:00 PM", 1, "h" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/1/2018 4:00 PM" ) );
+        }
+
+        /// <summary>
+        /// For use in Lava -- adding minutes (m param) to a given date should be equal.
+        /// </summary>
+        [Fact]
+        public void DateAdd_AddMinutesIntervalToGivenDate()
+        {
+            var output = RockFilters.DateAdd( "5/1/2018 3:00 PM", 120, "m" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/1/2018 5:00 PM" ) );
+        }
+
+        /// <summary>
+        /// For use in Lava -- adding seconds (s param) to a given date should be equal.
+        /// </summary>
+        [Fact]
+        public void DateAdd_AddSecondsIntervalToGivenDate()
+        {
+            var output = RockFilters.DateAdd( "5/1/2018 3:00 PM", 300, "s" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/1/2018 3:05 PM" ) );
+        }
+
+        /// <summary>
+        /// For use in Lava -- adding years (y param) to a given date should be equal.
+        /// </summary>
+        [Fact]
+        public void DateAdd_AddYearsIntervalToGivenDate()
+        {
+            var output = RockFilters.DateAdd( "5/1/2018 3:00 PM", 2, "y" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/1/2020 3:00 PM" ) );
+        }
+
+        /// <summary>
+        /// For use in Lava -- adding years (y param) to a given leap-year date should be equal.
+        /// </summary>
+        [Fact]
+        public void DateAdd_AddYearsIntervalToGivenLeapDate()
+        {
+            var output = RockFilters.DateAdd( "2/29/2016 3:00 PM", 1, "y" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "2/28/2017 3:00 PM" ) );
+        }
+
+        /// <summary>
+        /// For use in Lava -- adding months (M param) to a given date should be equal.
+        /// </summary>
+        [Fact]
+        public void DateAdd_AddMonthsIntervalToGivenDate()
+        {
+            var output = RockFilters.DateAdd( "5/1/2018 3:00 PM", 1, "M" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "6/1/2018 3:00 PM" ) );
+        }
+
+        /// <summary>
+        /// For use in Lava -- adding months (M param) to a given date with more days in the month
+        /// should be equal to the month's last day.
+        /// </summary>
+        [Fact]
+        public void DateAdd_AddMonthsIntervalToGivenLongerMonthDate()
+        {
+            var output = RockFilters.DateAdd( "5/31/2018 3:00 PM", 1, "M" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "6/30/2018 3:00 PM" ) );
+        }
+
+        /// <summary>
+        /// For use in Lava -- adding weeks (w param) to a given date should be equal.
+        /// </summary>
+        [Fact]
+        public void DateAdd_AddWeeksIntervalToGivenDate()
+        {
+            var output = RockFilters.DateAdd( "5/1/2018 3:00 PM", 2, "w" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/15/2018 3:00 PM" ) );
+        }
+
+        /// <summary>
+        /// Tests the next day of the week using the simplest format.
+        /// </summary>
+        [Fact]
+        public void NextDayOfTheWeek_NextWeekdate()
+        {
+            var output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/8/2018 3:00 PM" ) );
+        }
+
+        /// <summary>
+        /// Tests the next day of the week including the current day.
+        /// </summary>
+        [Fact]
+        public void NextDayOfTheWeek_NextWeekdateIncludeCurrentDay()
+        {
+            var output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday", true );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/1/2018 3:00 PM" ) );
+        }
+
+        /// <summary>
+        /// Tests the next day of the week in two weeks.
+        /// </summary>
+        [Fact]
+        public void NextDayOfTheWeek_NextWeekdateTwoWeeks()
+        {
+            var output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday", false, 2 );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/15/2018 3:00 PM" ) );
+        }
+
+        /// <summary>
+        /// Tests the next day of the week in minus one week.
+        /// </summary>
+        [Fact]
+        public void NextDayOfTheWeek_NextWeekdateBackOneWeek()
+        {
+            var output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday", false, -1 );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "4/24/2018 3:00 PM" ) );
+        }
+
+        /// <summary>
+        /// Tests the To Midnight using a string.
+        /// </summary>
+        [Fact]
+        public void ToMidnight_TextString()
+        {
+            var output = RockFilters.ToMidnight( "5/1/2018 3:00 PM" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/1/2018 12:00 AM" ) );
+        }
+
+        /// <summary>
+        /// Tests the To Midnight using a string of "Now".
+        /// </summary>
+        [Fact]
+        public void ToMidnight_Now()
+        {
+            var output = RockFilters.ToMidnight( "Now" );
+            DateTimeAssert.AreEqual( output, RockDateTime.Now.Date );
+        }
+
+        /// <summary>
+        /// Tests the To Midnight using a datetime.
+        /// </summary>
+        [Fact]
+        public void ToMidnight_DateTime()
+        {
+            var output = RockFilters.ToMidnight( RockDateTime.Now );
+            DateTimeAssert.AreEqual( output, RockDateTime.Now.Date );
+        }
 
         #region DatesFromICal
 
@@ -765,6 +940,8 @@ namespace Rock.Tests.Rock.Lava
             var output = RockFilters.DatesFromICal( iCalStringFirstSaturdayOfMonth, 13, "enddatetime" ).LastOrDefault();
             Assert.Equal( expected, output );
         }
+
+        #endregion
 
         #endregion
 
@@ -901,4 +1078,56 @@ namespace Rock.Tests.Rock.Lava
 
         #endregion
     }
+
+    #region Helper class to deal with comparing inexact dates (that are otherwise equal).
+
+    public static class DateTimeAssert
+    {
+        /// <summary>
+        /// Asserts that the two dates are equal within a timespan of 500 milliseconds.
+        /// </summary>
+        /// <param name="expectedDate">The expected date.</param>
+        /// <param name="actualDate">The actual date.</param>
+        /// <exception cref="Xunit.Sdk.EqualException">Thrown if the two dates are not equal enough.</exception>
+        public static void AreEqual( DateTime? expectedDate, DateTime? actualDate )
+        {
+            AreEqual( expectedDate, actualDate, TimeSpan.FromMilliseconds( 500 ) );
+        }
+
+        /// <summary>
+        /// Asserts that the two dates are equal within what ever timespan you deem is sufficient.
+        /// </summary>
+        /// <param name="expectedDate">The expected date.</param>
+        /// <param name="actualDate">The actual date.</param>
+        /// <param name="maximumDelta">The maximum delta.</param>
+        /// <exception cref="Xunit.Sdk.EqualException">Thrown if the two dates are not equal enough.</exception>
+        public static void AreEqual( DateTime? expectedDate, DateTime? actualDate, TimeSpan maximumDelta )
+        {
+            if ( expectedDate == null && actualDate == null )
+            {
+                return;
+            }
+            else if ( expectedDate == null )
+            {
+                throw new NullReferenceException( "The expected date was null" );
+            }
+            else if ( actualDate == null )
+            {
+                throw new NullReferenceException( "The actual date was null" );
+            }
+
+            double totalSecondsDifference = Math.Abs( ( ( DateTime ) actualDate - ( DateTime ) expectedDate ).TotalSeconds );
+
+            if ( totalSecondsDifference > maximumDelta.TotalSeconds )
+            {
+                //throw new Xunit.Sdk.EqualException( string.Format( "{0}", expectedDate ), string.Format( "{0}", actualDate ) );
+                throw new Exception( string.Format( "\nExpected Date: {0}\nActual Date: {1}\nExpected Delta: {2}\nActual Delta in seconds: {3}",
+                                                expectedDate,
+                                                actualDate,
+                                                maximumDelta,
+                                                totalSecondsDifference ) );
+            }
+        }
+    }
+    #endregion
 }

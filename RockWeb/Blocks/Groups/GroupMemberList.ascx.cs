@@ -29,7 +29,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Detail Page" )]
     [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
     [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 3 )]
+    [LinkedPage( "Data View Detail Page", "Page used to view data views that are used with the group member sync.", false, order: 3 )]
     [BooleanField( "Show Campus Filter", "Setting to show/hide campus filter.", true, order: 4 )]
     [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 5, "ShowAttendance" )]
     [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 6 )]
@@ -51,9 +52,9 @@ namespace RockWeb.Blocks.Groups
     {
         #region Private Variables
 
-        private CacheDefinedValue _inactiveStatus = null;
+        private DefinedValueCache _inactiveStatus = null;
         private Group _group = null;
-        private CacheGroupType _groupTypeCache = null;
+        private GroupTypeCache _groupTypeCache = null;
         private bool _canView = false;
         private Dictionary<int, List<GroupMemberRegistrationItem>> _groupMembersWithRegistrations = new Dictionary<int, List<GroupMemberRegistrationItem>>();
 
@@ -79,7 +80,7 @@ namespace RockWeb.Blocks.Groups
         /// <value>
         /// The available attributes.
         /// </value>
-        public List<CacheAttribute> AvailableAttributes { get; set; }
+        public List<AttributeCache> AvailableAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the signed person ids.
@@ -101,7 +102,7 @@ namespace RockWeb.Blocks.Groups
         {
             base.LoadViewState( savedState );
 
-            AvailableAttributes = ViewState["AvailableAttributes"] as List<CacheAttribute>;
+            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
 
             AddDynamicControls();
         }
@@ -145,7 +146,7 @@ namespace RockWeb.Blocks.Groups
 
                 if ( _group != null )
                 {
-                    _groupTypeCache = CacheGroupType.Get( _group.GroupTypeId );
+                    _groupTypeCache = GroupTypeCache.Get( _group.GroupTypeId );
                 }
 
                 if ( _group != null && _group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
@@ -164,7 +165,7 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.ExportFilename = _group.Name;
                     gGroupMembers.ExportSource = ExcelExportSource.DataSource;
 
-                    // we'll have custom javascript (see GroupMemberList.ascx ) do this instead 
+                    // we'll have custom javascript (see GroupMemberList.ascx ) do this instead
                     gGroupMembers.ShowConfirmDeleteDialog = false;
 
                     // make sure they have Auth to edit the block OR edit to the Group
@@ -180,11 +181,23 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            // Show the sync icon if group member sync is set up for this group.
             if ( _group != null && _group.GroupSyncs != null && _group.GroupSyncs.Count() > 0 )
             {
-                string syncedRoles = string.Join( "\r\n", _group.GroupSyncs.Select( s => s.GroupTypeRole.Name ).ToArray() );
-                hlSyncStatus.ToolTip = syncedRoles;
-                hlSyncStatus.Visible = true;
+                string syncedRolesHtml = string.Empty;
+                var dataViewDetailPage = GetAttributeValue( "DataViewDetailPage" );
+
+                if ( !string.IsNullOrWhiteSpace( dataViewDetailPage ) )
+                {
+                    syncedRolesHtml = string.Join( "<br>", _group.GroupSyncs.Select( s => string.Format( "<small><a href='{0}'>{1}</a> as {2}</small>", LinkedPageUrl( "DataViewDetailPage", new Dictionary<string, string>() { { "DataViewId", s.SyncDataViewId.ToString() } } ), s.SyncDataView.Name, s.GroupTypeRole.Name ) ).ToArray() );
+                }
+                else
+                {
+                    syncedRolesHtml = string.Join( "<br>", _group.GroupSyncs.Select( s => string.Format( "<small><i class='text-info'>{0}</i> as {1}</small>", s.SyncDataView.Name, s.GroupTypeRole.Name ) ).ToArray() );
+                }
+
+                spanSyncLink.Attributes.Add( "data-content", syncedRolesHtml );
+                spanSyncLink.Visible = true;
             }
         }
 
@@ -283,10 +296,10 @@ namespace RockWeb.Blocks.Groups
 
                         if ( !_deleteFieldColumnIndex.HasValue )
                         {
-                            _deleteFieldColumnIndex = gGroupMembers.GetColumnIndex( _deleteField );
+                            _deleteFieldColumnIndex = gGroupMembers.GetColumnIndex( gGroupMembers.Columns.OfType<DeleteField>().First() );
                         }
 
-                        if ( _deleteFieldColumnIndex.HasValue )
+                        if ( _deleteFieldColumnIndex.HasValue && _deleteFieldColumnIndex > -1 )
                         {
                             deleteButton = e.Row.Cells[_deleteFieldColumnIndex.Value].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
                         }
@@ -432,7 +445,7 @@ namespace RockWeb.Blocks.Groups
                 var campusId = e.Value.AsIntegerOrNull();
                 if ( campusId.HasValue )
                 {
-                    var campusCache = CacheCampus.Get( campusId.Value );
+                    var campusCache = CampusCache.Get( campusId.Value );
                     if ( campusCache != null )
                     {
                         e.Value = campusCache.Name;
@@ -500,7 +513,7 @@ namespace RockWeb.Blocks.Groups
         {
             RockContext rockContext = new RockContext();
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-            
+
             GroupMemberHistoricalService groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
             GroupMember groupMember = groupMemberService.Get( e.RowKeyId );
             if ( groupMember != null )
@@ -525,7 +538,7 @@ namespace RockWeb.Blocks.Groups
 
                 if ( archive )
                 {
-                    // NOTE: Delete will AutoArchive, but since we know that we need to archive, we can call .Archive directly 
+                    // NOTE: Delete will AutoArchive, but since we know that we need to archive, we can call .Archive directly
                     groupMemberService.Archive( groupMember, this.CurrentPersonAliasId, true );
                 }
                 else
@@ -534,14 +547,6 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 rockContext.SaveChanges();
-
-                Group group = new GroupService( rockContext ).Get( groupId );
-                if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-                {
-                    // person removed from SecurityRole, Flush
-                    Rock.Cache.CacheRole.Remove( group.Id );
-                }
-                
             }
 
             BindGroupMembersGrid();
@@ -605,19 +610,23 @@ namespace RockWeb.Blocks.Groups
             }
 
             cblGroupMemberStatus.BindToEnum<GroupMemberStatus>();
-            cpCampusFilter.Campuses = CacheCampus.All();
+            cpCampusFilter.Campuses = CampusCache.All();
 
             BindAttributes();
             AddDynamicControls();
-            
+
             tbFirstName.Text = rFilter.GetUserPreference( "First Name" );
             tbLastName.Text = rFilter.GetUserPreference( "Last Name" );
             cpCampusFilter.SelectedCampusId = rFilter.GetUserPreference( "Campus" ).AsIntegerOrNull();
-            
+
             string genderValue = rFilter.GetUserPreference( "Gender" );
             if ( !string.IsNullOrWhiteSpace( genderValue ) )
             {
                 cblGenderFilter.SetValues( genderValue.Split( ';' ).ToList() );
+            }
+            else
+            {
+                cblGenderFilter.ClearSelection();
             }
 
             string roleValue = rFilter.GetUserPreference( "Role" );
@@ -645,7 +654,7 @@ namespace RockWeb.Blocks.Groups
         private void BindAttributes()
         {
             // Parse the attribute filters 
-            AvailableAttributes = new List<CacheAttribute>();
+            AvailableAttributes = new List<AttributeCache>();
             if ( _group != null )
             {
                 var rockContext = new RockContext();
@@ -677,12 +686,9 @@ namespace RockWeb.Blocks.Groups
             // Clear the filter controls
             phAttributeFilters.Controls.Clear();
 
-            // Remove attribute columns
-            foreach ( var column in gGroupMembers.Columns.OfType<AttributeField>().ToList() )
-            {
-                gGroupMembers.Columns.Remove( column );
-            }
-
+            // Clear dynamic controls so we can re-add them
+            RemoveAttributeAndButtonColumns();
+            
             if ( AvailableAttributes != null )
             {
                 foreach ( var attribute in AvailableAttributes )
@@ -728,18 +734,46 @@ namespace RockWeb.Blocks.Groups
                         boundField.DataField = attribute.Key;
                         boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
-
-                        var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
-                        if ( attributeCache != null )
-                        {
-                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
-                        }
+                        boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
 
                         gGroupMembers.Columns.Add( boundField );
                     }
                 }
             }
 
+            AddRowButtonsToEnd();
+        }
+
+        private void RemoveAttributeAndButtonColumns()
+        {
+            // Remove added button columns
+            DataControlField buttonColumn = gGroupMembers.Columns.OfType<DeleteField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
+            if ( buttonColumn != null )
+            {
+                gGroupMembers.Columns.Remove( buttonColumn );
+            }
+
+            buttonColumn = gGroupMembers.Columns.OfType<HyperLinkField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
+            if ( buttonColumn != null )
+            {
+                gGroupMembers.Columns.Remove( buttonColumn );
+            }
+
+            buttonColumn = gGroupMembers.Columns.OfType<LinkButtonField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
+            if ( buttonColumn != null )
+            {
+                gGroupMembers.Columns.Remove( buttonColumn );
+            }
+
+            // Remove attribute columns
+            foreach ( var column in gGroupMembers.Columns.OfType<AttributeField>().ToList() )
+            {
+                gGroupMembers.Columns.Remove( column );
+            }
+        }
+
+        private void AddRowButtonsToEnd()
+        {
             // Add Place Elsewhere column if the group or group type has any Place Elsewhere member triggers
             if ( _group != null && _group.GroupType != null )
             {
@@ -757,8 +791,9 @@ namespace RockWeb.Blocks.Groups
 
             // Add delete column
             _deleteField = new DeleteField();
-            gGroupMembers.Columns.Add( _deleteField );
             _deleteField.Click += DeleteOrArchiveGroupMember_Click;
+            gGroupMembers.Columns.Add( _deleteField );
+            
         }
 
         /// <summary>
@@ -1048,7 +1083,7 @@ namespace RockWeb.Blocks.Groups
                     // Filter by Campus
                     if ( cpCampusFilter.SelectedCampusId.HasValue )
                     {
-                        int familyGroupTypeId = CacheGroupType.GetFamilyGroupType().Id;
+                        int familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
                         int campusId = cpCampusFilter.SelectedCampusId.Value;
                         var qryFamilyMembersForCampus = new GroupMemberService( rockContext ).Queryable().Where( a => a.Group.GroupTypeId == familyGroupTypeId && a.Group.CampusId == campusId );
                         qry = qry.Where( a => qryFamilyMembersForCampus.Any( f => f.PersonId == a.PersonId ) );
@@ -1119,7 +1154,7 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
 
-                    _inactiveStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+                    _inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
 
                     SortProperty sortProperty = gGroupMembers.SortProperty;
 
@@ -1151,10 +1186,10 @@ namespace RockWeb.Blocks.Groups
                     // we need to save the group members into the grid's object list
                     gGroupMembers.ObjectList = new Dictionary<string, object>();
                     groupMembersList.ForEach( m => gGroupMembers.ObjectList.Add( m.Id.ToString(), m ) );
-                    gGroupMembers.EntityTypeId = CacheEntityType.Get( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
+                    gGroupMembers.EntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
 
-                    var homePhoneType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
-                    var cellPhoneType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                    var homePhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+                    var cellPhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
 
                     // If exporting to Excel, the selectAll option will be true, and home location should be calculated
                     var homeLocations = new Dictionary<int, Location>();
@@ -1251,7 +1286,7 @@ namespace RockWeb.Blocks.Groups
                         NickName = m.Person.NickName,
                         LastName = m.Person.LastName,
                         Name =
-                        isExporting ? m.Person.LastName + ", " + m.Person.NickName : string.Format( photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) )
+                        isExporting ? m.Person.LastName + ", " + m.Person.NickName : string.Format( photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) )
                                     + m.Person.NickName + " " + m.Person.LastName
                             + ( !string.IsNullOrWhiteSpace( m.Person.TopSignalColor ) ? " " + m.Person.GetSignalMarkup() : string.Empty )
                             + ( ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id ) )
@@ -1385,7 +1420,7 @@ namespace RockWeb.Blocks.Groups
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="DotLiquid.Drop" />
     public class GroupMemberDataRow : DotLiquid.Drop

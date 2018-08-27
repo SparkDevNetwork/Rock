@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Core
                     {
                         if ( e.Value != "" )
                         {
-                            var entityType = Rock.Cache.CacheEntityType.Get( int.Parse( e.Value ) );
+                            var entityType = EntityTypeCache.Get( int.Parse( e.Value ) );
                             if ( entityType != null )
                             {
                                 e.Value = entityType.FriendlyName;
@@ -239,7 +239,7 @@ namespace RockWeb.Blocks.Core
                 queryable = queryable.OrderByDescending( q => q.Id );
             }
 
-            gAuditInformationList.EntityTypeId = CacheEntityType.Get<Rock.Model.Audit>().Id;
+            gAuditInformationList.EntityTypeId = EntityTypeCache.Get<Rock.Model.Audit>().Id;
             gAuditInformationList.DataSource = queryable.ToList();
             gAuditInformationList.DataBind();
         }

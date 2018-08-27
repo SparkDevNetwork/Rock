@@ -207,16 +207,18 @@ textarea,
 .tooltip-arrow {
   width: 10px;
   height: 10px;
-  background: #fff;
+  background: @gray-darker;
   border: 1px solid @ui-4;
   transform: rotate(45deg);
 }
 
 .tooltip-inner {
-  .box-shadow(@shadow-overlay);
   padding: (@padding-base-horizontal / 2);
+  color: #fff;
   text-align: left;
+  background-color: @gray-darker;
   border: 1px solid @ui-4;
+  .box-shadow(@shadow-overlay);
 }
 
 .close {
@@ -278,11 +280,16 @@ textarea,
   border: 0;
 
   .btn-link {
+    position: absolute;
     z-index: 100;
     margin: 5px 0 0 7px;
     color: @ui-5;
     text-decoration: none;
     background: #fff;
+
+    &.is-open {
+      background: @panel-subheading;
+    }
   }
 
   .grid-filter-entry {
@@ -291,7 +298,7 @@ textarea,
     padding-top: 37px;
   }
 
-  .grid-filter-overview {
+  .grid-filter-overview fieldset {
     padding: 37px 16px 8px;
   }
 }
@@ -309,9 +316,9 @@ textarea,
 .grid .table > thead > tr > th {
   padding: 18px 0 18px 12px;
   vertical-align: middle;
-  &:last-child {
-    border-right: 1px solid @table-border-color;
-  }
+  // &:last-child {
+  //   border-right: 1px solid @table-border-color;
+  // }
 }
 
 .grid .table > thead > tr.grid-header-bold > th {
@@ -332,10 +339,6 @@ textarea,
     min-width: 0;
     padding: 0;
     vertical-align: middle;
-  }
-
-  &:last-child {
-    border-right: 1px solid @table-border-color;
   }
 }
 
@@ -368,6 +371,11 @@ textarea,
 
 .control-label {
   font-weight: @font-weight-semibold;
+}
+
+.badge-circle {
+  width: @line-height-computed;
+  border-radius: 50%;
 }
 
 /*#endregion */
@@ -417,8 +425,7 @@ textarea,
 
 .wizard {
   margin: -35px;
-  margin-top: -16px;
-  margin-bottom: 24px;
+  margin-bottom: 35px;
 
   @media (max-width: @screen-md-min) {
     margin-left: -12px;
@@ -492,13 +499,17 @@ td.grid-actions {
 
   .checkbox:last-child,
   .radio:last-child {
-    margin: 0;
+    margin: 0 !important;
   }
 
   .checkbox input[type="checkbox"] + span.label-text::before,
   .radio input[type="radio"] + span.label-text::before {
     margin: 0;
   }
+}
+
+td.grid-select-field {
+  width: auto;
 }
 
 .grid-actions {
@@ -560,6 +571,26 @@ td.grid-actions {
     }
   }
 
+.navbar-zone-header {
+  .zone-content > .block-instance {
+    display: none;
+
+    @media @sm {
+      float: left;
+      display: block;
+    }
+  }
+
+  .zone-content > .smart-search {
+    display: block;
+    @media @sm {
+      float: right;
+    }
+  }
+
+
+}
+
   .navbar-toggle {
     float: left;
     margin-top: 12px;
@@ -582,7 +613,7 @@ td.grid-actions {
     background-size: 45px;
     border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
 
-    &::after {
+    &.no-logo::after {
       position: absolute;
       top: 0;
       right: 0;
@@ -598,6 +629,12 @@ td.grid-actions {
     &:hover {
       background-color: @navbarside-background-color;
       background-color: var(--navbarside-background-color);
+    }
+
+    .logo {
+      width: 47px;
+      height: 47px;
+      margin: 10px;
     }
 
     @media (min-width: @screen-sm-min) {
@@ -906,17 +943,38 @@ td.grid-actions {
 
         &:hover {
           color: @navbarside-color;
-          background-color: @navbarside-sub-bg;
         }
       }
 
       &.open {
         background-color: @navbarside-sub-bg;
+        box-shadow: inset 3px 0 0 0 @brand-color;
+
+        @media @sm {
+          &::before {
+            position: absolute;
+            top: -(ceil(@navbarside-width * .35));
+            right: 0;
+            width: ceil(@navbarside-width * .35);
+            height: ceil(@navbarside-width * .35);
+            content: " ";
+          }
+
+          &::after {
+            position: absolute;
+            right: 0;
+            bottom: -(ceil(@navbarside-width * .35));
+            z-index: 1;
+            width: ceil(@navbarside-width * .35);
+            height: ceil(@navbarside-width * .35);
+            content: " ";
+          }
+        }
       }
 
-      &.current {
-        border-right: 3px solid transparent;
-        border-left: 3px solid @brand-color;
+      &.current,
+      &.current:hover {
+        box-shadow: inset 3px 0 0 0 @brand-color;
         > i {
           color: #fff;
         }
@@ -930,7 +988,7 @@ td.grid-actions {
         display: none;
         width: 280px;
         height: 100%;
-        padding: 0 @padding-base-horizontal 72px;
+        padding: 0 @padding-base-horizontal;
         overflow-x: hidden;
         overflow-y: auto;
         text-align: left;
@@ -1010,9 +1068,11 @@ td.grid-actions {
               margin-top: 0;
             }
           }
+
+          &:last-child {
+            margin-bottom: 72px;
+          }
         }
-
-
 
 
         &::-webkit-scrollbar {
@@ -1075,6 +1135,7 @@ body.navbar-side-close {
 
 // sub page styles
 .main-content {
+  margin: 5px;
 
   #page-content {
     min-height: 600px;
@@ -1082,6 +1143,7 @@ body.navbar-side-close {
 
   .page-title {
     padding: 20px 15px;
+    margin: -5px -5px 5px -5px;
     background-color: @pagetitle-background;
     background-color: var(--pagetitle-background);
     border-bottom: 1px solid @gray-lighter;
@@ -1112,7 +1174,7 @@ body.navbar-side-close {
       > li + li::before {
         padding: 0 5;
         font-family: FontAwesome;
-        font-size:80%;
+        font-size: 80%;
         font-weight: 600;
         content: @fa-var-chevron-right;
       }
@@ -1236,6 +1298,11 @@ body.navbar-side-close {
   }
 }
 
+// Entity Attributes Picker
+.entity-type-picker .control-wrapper {
+  width: 270px;
+}
+
 /*#endregion */
 
 /*#region
@@ -1280,7 +1347,7 @@ body.navbar-side-close {
 
 .radio-inline:first-child,
 .checkbox-inline:first-child,
-.radio-inline+.radio-inline {
+.radio-inline + .radio-inline {
   margin-left: 0;
 }
 
@@ -1381,6 +1448,10 @@ body.navbar-side-close {
   }
 }
 
+.schedule-builder .checkbox {
+  display: inline;
+  padding-right: (@custom-control-indicator-size / 2);
+}
 
 .note-editor.note-frame {
   margin-bottom: 0;
@@ -1417,49 +1488,13 @@ body.navbar-side-close {
   font-weight: @fa-theme-weight;
 }
 
-// .note-editor .note-toolbar .btn .fa {
-//   font-size: 14px
-// }
-
 .note-editor .note-toolbar > .btn-group {
   margin-top: 0;
 }
 
-// .note-editor .note-toolbar .note-color .dropdown-toggle {
-//   padding-left: 5px;
-//   width: 20px
-// }
-
-// .note-editor .note-statusbar {
-//   background-color: #f6f6f6
-// }
-
-// .note-editor .note-statusbar .note-resizebar {
-//   height: auto;
-//   padding-top: 3px;
-//   padding-bottom: 4px
-// }
-
 .note-editor .note-editable {
   border: 1px solid #eaeaea;
 }
-
-// .note-editor .note-editing-area .note-editable {
-//   color: #555
-// }
-
-// .panel-body .actions {
-//   border-top: 2px solid #3d70b2;
-//   padding: 16px 16px 0 16px;
-//   margin: 0 -24px;
-// }
-
-// .fade {
-//   animation-name: css-1, css-11;
-//   animation-duration: .167s;
-//   animation-timing-function: cubic-bezier(.1, .25, .75, .9);
-//   animation-fill-mode: both;
-// }
 
 .picker-menu {
   animation-name: css-1, css-13;
@@ -1491,5 +1526,5 @@ body.navbar-side-close {
 }
 
 /*#endregion */
-// @import "_print.less";
+@import "_print.less";
 @import "_css-overrides.less";

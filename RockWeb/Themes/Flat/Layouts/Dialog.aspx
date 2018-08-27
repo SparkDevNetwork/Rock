@@ -5,7 +5,7 @@
 <!DOCTYPE html>
 
 <script runat="server">
-    
+
     /// <summary>
     /// An optional subtitle
     /// </summary>
@@ -29,7 +29,7 @@
     /// </summary>
     /// <value>
     /// The close message.
-    /// </value>    
+    /// </value>
     public override string CloseMessage
     {
         get
@@ -71,8 +71,8 @@
         {
             btnCancel.AddCssClass( "btn-primary" );
         }
-    }    
-    
+    }
+
 </script>
 
 <html class="no-js">

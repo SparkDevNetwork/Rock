@@ -25,7 +25,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Collections.Generic;
 
 namespace RockWeb.Blocks.Cms
@@ -179,7 +179,7 @@ namespace RockWeb.Blocks.Cms
                 types = types.OrderBy( p => p.Name ).ToList();
             }
 
-            gContentChannelType.EntityTypeId = CacheEntityType.Get<ContentChannelType>().Id;
+            gContentChannelType.EntityTypeId = EntityTypeCache.Get<ContentChannelType>().Id;
             gContentChannelType.DataSource = types;
             gContentChannelType.DataBind();
         }

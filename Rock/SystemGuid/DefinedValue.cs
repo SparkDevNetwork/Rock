@@ -50,12 +50,12 @@ namespace Rock.SystemGuid
         public const string CHECKIN_SEARCH_TYPE_NAME_AND_PHONE = "93773B0A-6E7F-1AA0-4F1D-9A4D6ACE930F";
 
         /// <summary>
-        /// Scanned Id Search Type
+        /// Scanned Id Search Type. This type is always supported and if a barcode or bio id is scanned, the attendance will be updated to reflect this type os search was used.
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_SCANNED_ID = "7668CE15-E372-47EE-8FF8-6FEE09F7C858";
 
         /// <summary>
-        /// Family Id Search Type
+        /// Family Id Search Type. This type is for future (face recognition) support and is not currently being used.
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_FAMILY_ID = "111385BB-DAEB-4CE3-A945-0B50DC15EE02";
 
@@ -555,9 +555,15 @@ namespace Rock.SystemGuid
         #region Person Search Keys
 
         /// <summary>
-        /// Interaction Channel Type: Website
+        /// Person Search Type: Email
         /// </summary>
         public const string PERSON_SEARCH_KEYS_EMAIL = "D6CFD200-B33B-4D01-B49F-24325E47D8B8";
+
+
+        /// <summary>
+        /// Person Search Type: Alternate Id
+        /// </summary>
+        public const string PERSON_SEARCH_KEYS_ALTERNATE_ID = "AD77CF28-E42B-44C2-8D5C-F6A0A6EE8022";
 
         #endregion
 

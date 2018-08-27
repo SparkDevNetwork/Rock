@@ -1,4 +1,4 @@
-ALTER VIEW [dbo].AnalyticsDimPersonHistoricalBirthDate
+ALTER VIEW [dbo].[AnalyticsDimPersonHistoricalBirthDate]
 AS
 SELECT d.DateKey AS [BirthDateKey]
     ,*

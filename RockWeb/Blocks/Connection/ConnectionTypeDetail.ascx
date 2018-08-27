@@ -26,7 +26,7 @@
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 <Rock:NotificationBox ID="nbRequired" runat="server" NotificationBoxType="Danger" Text="A default connection status and at least one activity are required." Visible="false" />
-                <asp:ValidationSummary ID="valConnectionTypeDetail" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="valConnectionTypeDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div id="pnlViewDetails" runat="server">
                     <p class="description">
@@ -38,6 +38,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
+                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="btnCopy_Click" ToolTip="Copy Connection Type" />
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                         </span>
                     </div>
@@ -127,6 +128,10 @@
                     </div>
                 </div>
             </div>
+            <Rock:ModalDialog ID="modalCopy" runat="server" Title="Copy Finished">
+                <Content>
+                </Content>
+            </Rock:ModalDialog>
         </asp:Panel>
 
         <Rock:ModalAlert ID="modalAlert" runat="server" />
@@ -174,7 +179,7 @@
 
                 <asp:HiddenField ID="hfAddConnectionWorkflowGuid" runat="server" />
 
-                <asp:ValidationSummary ID="valConnectionWorkflowSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="ConnectionWorkflow" />
+                <asp:ValidationSummary ID="valConnectionWorkflowSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="ConnectionWorkflow" />
 
                 <div class="row">
                     <div class="col-md-6">

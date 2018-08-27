@@ -15,7 +15,7 @@
 // </copyright>
 //
 using Rock.Field.Types;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Attribute
 {

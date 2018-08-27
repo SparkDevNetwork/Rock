@@ -51,7 +51,7 @@
                                 <small>Opened</small></a>
                         </asp:Panel>
                         <asp:Panel id="pnlFailed" runat="server">
-                            <a id="aFailed" runat="server" class="btn btn-lg btn-block btn-danger">
+                            <a id="aFailed" runat="server" class="btn btn-lg btn-block btn-danger-solid">
                                 <asp:Literal ID="lFailed" runat="server"></asp:Literal><br />
                                 <small>Failed</small></a>
                         </asp:Panel>
@@ -188,7 +188,7 @@
 
         <Rock:ModalDialog ID="mdCreateTemplate" runat="server" Title="New Personal Template" OnCancelScript="clearActiveDialog();">
             <Content>
-                <asp:ValidationSummary ID="valCreateTemplate" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="valCreateTemplate" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <Rock:NotificationBox id="nbTemplate" runat="server" NotificationBoxType="Info" Text="This will create a new personal communication template based of the current communication." Dismissable="True"></Rock:NotificationBox>
                 <div class="row">
                     <div class="col-sm-6">

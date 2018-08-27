@@ -26,7 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -197,7 +197,7 @@ function() {
             return result;
         }
 
-        private const string _CtlDataView = "ddlDataView";
+        private const string _CtlDataView = "dvpDataView";
 
         /// <summary>
         /// Creates the child controls.
@@ -209,18 +209,18 @@ function() {
         /// </returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            var ddlDataView = new DataViewPicker();
-            ddlDataView.ID = filterControl.GetChildControlInstanceName( _CtlDataView );
-            ddlDataView.Label = "Has a Person in this Data View";
-            ddlDataView.Help = "A Data View that provides the set of Person to match.";
+            var dvpDataView = new DataViewItemPicker();
+            dvpDataView.ID = filterControl.GetChildControlInstanceName( _CtlDataView );
+            dvpDataView.Label = "Has a Person in this Data View";
+            dvpDataView.Help = "A Data View that provides the set of Person to match.";
 
-            filterControl.Controls.Add( ddlDataView );
+            filterControl.Controls.Add( dvpDataView );
 
             // Populate the Data View Picker
-            int entityTypeId = CacheEntityType.Get( typeof( Model.FinancialPledge ) ).Id;
-            ddlDataView.EntityTypeId = entityTypeId;
+            int entityTypeId = EntityTypeCache.Get( typeof( Model.FinancialPledge ) ).Id;
+            dvpDataView.EntityTypeId = entityTypeId;
 
-            return new Control[] { ddlDataView };
+            return new Control[] { dvpDataView };
         }
 
         /// <summary>
@@ -234,11 +234,11 @@ function() {
         /// </returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            var ddlDataView = controls.GetByName<DataViewPicker>( _CtlDataView );
+            var dvpDataView = controls.GetByName<DataViewItemPicker>( _CtlDataView );
 
             var settings = new FilterSettings();
 
-            settings.DataViewGuid = DataComponentSettingsHelper.GetDataViewGuid( ddlDataView.SelectedValue );
+            settings.DataViewGuid = DataComponentSettingsHelper.GetDataViewGuid( dvpDataView.SelectedValue );
 
             return settings.ToSelectionString();
         }
@@ -252,7 +252,7 @@ function() {
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            var ddlDataView = controls.GetByName<DataViewPicker>( _CtlDataView );
+            var dvpDataView = controls.GetByName<DataViewItemPicker>( _CtlDataView );
 
             var settings = new FilterSettings( selection );
 
@@ -261,7 +261,7 @@ function() {
                 return;
             }
 
-            ddlDataView.SelectedValue = DataComponentSettingsHelper.GetDataViewId( settings.DataViewGuid ).ToStringSafe();
+            dvpDataView.SetValue( DataComponentSettingsHelper.GetDataViewId( settings.DataViewGuid ) );
         }
 
         /// <summary>

@@ -25,12 +25,13 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Data.Entity;
 using System.Text;
 using DotLiquid;
+using System.Runtime.Serialization;
 
 namespace RockWeb.Blocks.Utility
 {
@@ -47,13 +48,21 @@ namespace RockWeb.Blocks.Utility
     [IntegerField( "Metric Value Count", "The number of metric values to return per metric. You will always get the lastest value, but if you would like to return additional values (i.e. to create a chart) you can specify that here.", false, 0, order: 4 )]
     [CodeEditorField( "Body Template", "The Lava template for rendering the body of the block.", CodeEditorMode.Less, CodeEditorTheme.Rock, 600, true, "d", order: 5 )]
     [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be made available to the block.", false, order: 6 )]
-    [IntegerField( "Cache Duration", "The time, in seconds, to cache the data for this block. The Lava template will still be run to enable personalization. Only the data for the block will be cached.", false, 3600, order: 7)]
+    [IntegerField( "Cache Duration", "The time, in seconds, to cache the data for this block. The Lava template will still be run to enable personalization. Only the data for the block will be cached.", false, 3600, order: 7 )]
+    [CustomCheckboxListField( "Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", CACHE_TAG_LIST, false, key: "CacheTags", order: 10 )]
+
     public partial class InternalCommunicationView : Rock.Web.UI.RockBlock
     {
         #region Fields
 
         // used for private variables
         private int _currentPage = 0;
+
+        private const string CACHE_TAG_LIST = @"
+            SELECT CAST([DefinedValue].[Value] AS VARCHAR) AS [Value], [DefinedValue].[Value] AS [Text]
+            FROM[DefinedType]
+            JOIN[DefinedValue] ON[DefinedType].[Id] = [DefinedValue].[DefinedTypeId]
+            WHERE[DefinedType].[Guid] = 'BDF73089-9154-40C1-90E4-74518E9937DC'";
         #endregion
 
         #region Properties
@@ -190,6 +199,7 @@ namespace RockWeb.Blocks.Utility
             var blockTitleIconCssClass = GetAttributeValue( "BlockTitleIconCssClass" );
             var metricValueCount = GetAttributeValue( "MetricValueCount" ).AsInteger();
             var cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
+            string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
 
@@ -201,7 +211,7 @@ namespace RockWeb.Blocks.Utility
 
             CachedBlockData cachedItem = null;
 
-            if (cacheDuration > 0 && _currentPage == 0 )
+            if ( cacheDuration > 0 && _currentPage == 0 )
             {
                 cachedItem = RockCache.Get( cacheKey ) as CachedBlockData;
             }
@@ -273,12 +283,12 @@ namespace RockWeb.Blocks.Utility
                 if ( cacheDuration > 0 && _currentPage == 0 )
                 {
                     var cachedData = new CachedBlockData();
-                    cachedData.ContentChannelItem = contentChannelItem;
+                    cachedData.ContentChannelItem = contentChannelItem.Clone( false );
                     cachedData.ShowPrev = showPrev;
                     cachedData.Metrics = metrics;
 
                     var expiration = RockDateTime.Now.AddSeconds( cacheDuration );
-                    RockCache.AddOrUpdate( cacheKey, string.Empty, cachedData, expiration );
+                    RockCache.AddOrUpdate( cacheKey, string.Empty, cachedData, expiration, cacheTags );
                 }
             }
 
@@ -307,6 +317,8 @@ namespace RockWeb.Blocks.Utility
         /// <summary>
         /// Class to hold data for caching
         /// </summary>
+		[Serializable]
+        [DataContract]
         protected class CachedBlockData
         {
             /// <summary>
@@ -315,6 +327,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The metrics.
             /// </value>
+            [DataMember]
             public List<MetricResult> Metrics { get; set; }
             /// <summary>
             /// Gets or sets the content channel item.
@@ -322,6 +335,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The content channel item.
             /// </value>
+            [DataMember]
             public ContentChannelItem ContentChannelItem { get; set; }
             /// <summary>
             /// Gets or sets a value indicating whether [show previous].
@@ -329,19 +343,24 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             ///   <c>true</c> if [show previous]; otherwise, <c>false</c>.
             /// </value>
+            [DataMember]
             public bool ShowPrev { get; set; }
         }
 
         /// <summary>
         /// Result class for metrics
         /// </summary>
-        protected class MetricResult : Drop {
+		[Serializable]
+        [DataContract]
+        protected class MetricResult : Drop
+        {
             /// <summary>
             /// Gets or sets the identifier.
             /// </summary>
             /// <value>
             /// The identifier.
             /// </value>
+            [DataMember]
             public int Id { get; set; }
             /// <summary>
             /// Gets or sets the title.
@@ -349,6 +368,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The title.
             /// </value>
+            [DataMember]
             public string Title { get; set; }
             /// <summary>
             /// Gets or sets the description.
@@ -356,6 +376,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The description.
             /// </value>
+            [DataMember]
             public string Description { get; set; }
             /// <summary>
             /// Gets or sets the units label.
@@ -363,6 +384,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The units label.
             /// </value>
+            [DataMember]
             public string UnitsLabel { get; set; }
             /// <summary>
             /// Gets or sets the icon CSS class.
@@ -370,6 +392,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The icon CSS class.
             /// </value>
+            [DataMember]
             public string IconCssClass { get; set; }
             /// <summary>
             /// Gets or sets the last run date time.
@@ -377,6 +400,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The last run date time.
             /// </value>
+            [DataMember]
             public DateTime? LastRunDateTime { get; set; }
             /// <summary>
             /// Gets or sets the last value.
@@ -384,6 +408,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The last value.
             /// </value>
+            [DataMember]
             public decimal? LastValue { get; set; }
             /// <summary>
             /// Gets or sets the metric values.
@@ -391,12 +416,15 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The metric values.
             /// </value>
+            [DataMember]
             public List<MetricValue> MetricValues { get; set; }
         }
 
         /// <summary>
         /// Result class for metric values
         /// </summary>
+		[Serializable]
+        [DataContract]
         protected class MetricValue : Drop
         {
             /// <summary>
@@ -405,6 +433,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The date time.
             /// </value>
+            [DataMember]
             public DateTime? DateTime { get; set; }
             /// <summary>
             /// Gets or sets the value.
@@ -412,6 +441,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The value.
             /// </value>
+            [DataMember]
             public decimal? Value { get; set; }
             /// <summary>
             /// Gets or sets the note.
@@ -419,6 +449,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The note.
             /// </value>
+            [DataMember]
             public string Note { get; set; }
         }
         #endregion

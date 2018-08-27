@@ -17,6 +17,7 @@
 namespace Rock.Migrations
 {
     using System;
+    using System.Collections.Generic;
     using System.Data.Entity;
     using System.Data.Entity.Migrations;
     using System.Linq;
@@ -31,7 +32,7 @@ namespace Rock.Migrations
             CommandTimeout = 300;
         }
 
-        protected override void Seed(Rock.Data.RockContext context)
+        protected override void Seed( Rock.Data.RockContext context )
         {
             // In V7, the Communication and CommunicationTemplate models were updated to move data stored as JSON in a varchar(max) 
             // column (MediumDataJson) to specific columns. This method will update all of the communication templates, and the most 
@@ -45,21 +46,6 @@ namespace Rock.Migrations
                 var analyticsStartDate = new DateTime( RockDateTime.Today.AddYears( -150 ).Year, 1, 1 );
                 var analyticsEndDate = new DateTime( RockDateTime.Today.AddYears( 101 ).Year, 1, 1 ).AddDays( -1 );
                 Rock.Model.AnalyticsSourceDate.GenerateAnalyticsSourceDateData( 1, false, analyticsStartDate, analyticsEndDate );
-            }
-
-            // Run the attendance occurrence migration job if it exists.
-            RunJob( SystemGuid.ServiceJob.MIGRATE_ATTENDANCE_OCCURRENCE, context );
-        }
-
-        private void RunJob( string JobGuid, Data.RockContext context )
-        {
-            // Check to see if there is a valid service job
-            var job = new Model.ServiceJobService( context ).Get( JobGuid.AsGuid() );
-            if ( job != null )
-            {
-                // Run the job on another thread
-                var transaction = new Transactions.RunJobNowTransaction( job.Id );
-                System.Threading.Tasks.Task.Run( () => transaction.Execute() );
             }
         }
     }

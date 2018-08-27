@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Security;
@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Core
             var categoryGuid = GetAttributeValue( "Category" ).AsGuidOrNull();
             if ( categoryGuid.HasValue )
             {
-                var category = CacheCategory.Get( categoryGuid.Value );
+                var category = CategoryCache.Get( categoryGuid.Value );
                 if ( category != null )
                 {
                     _categoryId = category.Id;
@@ -162,8 +162,7 @@ namespace RockWeb.Blocks.Core
 
                     service.Delete( exclusion );
                     rockContext.SaveChanges();
-
-                    CacheCategory.Remove( categoryId );
+                    
                     Rock.CheckIn.KioskDevice.Clear();
                 }
                 else
@@ -234,8 +233,7 @@ namespace RockWeb.Blocks.Core
             if ( exclusion.IsValid )
             {
                 rockContext.SaveChanges();
-
-                CacheCategory.Remove( exclusion.CategoryId );
+                
                 Rock.CheckIn.KioskDevice.Clear();
 
                 hfIdValue.Value = string.Empty;

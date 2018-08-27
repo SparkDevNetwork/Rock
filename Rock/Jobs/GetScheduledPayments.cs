@@ -36,8 +36,9 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     public class GetScheduledPayments : IJob
     {
-        /// <summary>
-        /// Empty constructor for job initilization
+
+        /// <summary> 
+        /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
         /// scheduler can instantiate the class whenever it needs.

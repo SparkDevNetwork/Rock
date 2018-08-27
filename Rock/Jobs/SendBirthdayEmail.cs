@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -101,7 +101,7 @@ namespace Rock.Jobs
             }
 
             // only include people that have an email address and want an email
-            personQry = personQry.Where( a => ( a.Email != null ) && ( a.Email != "" ) && ( a.EmailPreference == EmailPreference.EmailAllowed ) );
+            personQry = personQry.Where( a => ( a.Email != null ) && ( a.Email != "" ) && ( a.EmailPreference != EmailPreference.DoNotEmail ) && (a.IsEmailActive) );
 
             var recipients = new List<RecipientData>();
 

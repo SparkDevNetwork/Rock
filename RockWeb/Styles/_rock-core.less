@@ -156,6 +156,32 @@ a.warning {
 // 4. Bootstrap Overrides
 //--------------------------------
 
+.dropdown-menu {
+  .box-shadow(@shadow-overlay);
+
+  .dropdown-item-danger {
+    color: @brand-danger;
+    &:hover {
+      color: #fff;
+      background-color: @brand-danger;
+    }
+  }
+
+  .dropdown-item.btn-link {
+    width: 100%;
+    padding: 3px 20px;
+    color: @dropdown-link-color;
+    text-align: left;
+
+    &:hover,
+    &:focus {
+      color: @dropdown-link-hover-color;
+      text-decoration: none;
+      background-color: @dropdown-link-hover-bg;
+    }
+  }
+}
+
 // make icons inside of a button fixed with
 .btn i.fa {
   width: 1.25em;
@@ -164,11 +190,11 @@ a.warning {
 
 .btn i.btn-icon {
   position: relative;
-  vertical-align: middle;
   top: -1px;
   width: 1em;
   height: 1em;
-  margin-left: 0.5em;
+  margin-left: .5em;
+  vertical-align: middle;
 }
 
 // add new alert style
@@ -450,8 +476,8 @@ th[align=center] {
     .checkbox {
       display: inline;
       float: left;
-      margin-top: 0;
-      margin-bottom: 0;
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
     }
 
     .actions {
@@ -861,4 +887,8 @@ div.aspNetDisabled {
 // Danger and error appear as red
 .btn-danger {
   .button-outline-variant(@btn-danger-color; @btn-danger-bg; @btn-danger-border);
+}
+// Danger and error appear as red
+.btn-danger-solid {
+  .button-variant(@btn-danger-color; @btn-danger-bg; @btn-danger-border);
 }

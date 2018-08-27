@@ -17,7 +17,7 @@
 using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -34,6 +34,7 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+            this.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
         }
 
         /// <summary>
@@ -48,7 +49,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( dataValue != null )
             {
-                return string.Format( "{0}{1:N}", CacheGlobalAttributes.Value( "CurrencySymbol" ), dataValue );
+                return string.Format( "{0}{1:N}", GlobalAttributesCache.Value( "CurrencySymbol" ), dataValue );
             }
             return base.FormatDataValue( dataValue, encode );
         }

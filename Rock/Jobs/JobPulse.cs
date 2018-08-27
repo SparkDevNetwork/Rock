@@ -20,7 +20,7 @@ using System.Linq;
 using Quartz;
 using Quartz.Impl.Matchers;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -31,7 +31,7 @@ namespace Rock.Jobs
     public class JobPulse : IJob
     {
         /// <summary> 
-        /// Empty constructor for job initilization
+        /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
         /// scheduler can instantiate the class whenever it needs.
@@ -51,7 +51,7 @@ namespace Rock.Jobs
         /// </summary>
         public virtual void Execute( IJobExecutionContext context )
         {
-            var globalAttributesCache = CacheGlobalAttributes.Get();
+            var globalAttributesCache = GlobalAttributesCache.Get();
 
             // Update a JobPulse global attribute value so that 3rd Party plugins could query this value in case they need to know
             globalAttributesCache.SetValue( "JobPulse", RockDateTime.Now.ToString(), true );

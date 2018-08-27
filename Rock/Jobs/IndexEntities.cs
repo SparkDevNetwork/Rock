@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -65,21 +65,21 @@ namespace Rock.Jobs
 
             RockContext rockContext = new RockContext();
 
-            var selectedEntityTypes = CacheEntityType.All().Where( e => e.IsIndexingSupported && e.IsIndexingEnabled && e.FriendlyName != "Site" );
+            var selectedEntityTypes = EntityTypeCache.All().Where( e => e.IsIndexingSupported && e.IsIndexingEnabled && e.FriendlyName != "Site" );
 
             // if 'All' wasn't selected the filter out the ones that weren't selected
             if ( !allEntities )
             {
-                if ( selectedEntitiesSetting.IsNotNullOrWhitespace() )
+                if ( selectedEntitiesSetting.IsNotNullOrWhiteSpace() )
                 {
                     var selectedEntityIds = selectedEntitiesSetting.Split( ',' ).Select( int.Parse ).ToList();
                     selectedEntityTypes = selectedEntityTypes.Where( e => selectedEntityIds.Contains( e.Id ) );
                 }
             }            
 
-            string results = string.Empty;           
-
-            foreach(var entityTypeCache in selectedEntityTypes )
+            string results = string.Empty;
+            var timerTotal = System.Diagnostics.Stopwatch.StartNew();
+            foreach (var entityTypeCache in selectedEntityTypes )
             {
                 EntityTypeService entityTypeService = new EntityTypeService( rockContext );
                 var entityType = entityTypeService.Get( entityTypeCache.Id );
@@ -104,6 +104,7 @@ namespace Rock.Jobs
                 }
             }
 
+            results += $"Total Time: {timerTotal.ElapsedMilliseconds / 1000}s,";
             context.Result = "Indexing results: " + results.Trim( ',' );
         }
     }

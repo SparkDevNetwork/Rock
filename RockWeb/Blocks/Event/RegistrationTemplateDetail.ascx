@@ -37,8 +37,8 @@
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body container-fluid">
 
-                <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
-                <Rock:NotificationBox ID="nbValidationError" runat="server" NotificationBoxType="Danger" Heading="Please Correct the Following" Visible="false" />
+                <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+                <Rock:NotificationBox ID="nbValidationError" runat="server" NotificationBoxType="Danger" Heading="Please correct the following:" Visible="false" />
 
                 <div id="pnlEditDetails" runat="server">
 
@@ -54,14 +54,14 @@
 
                     <Rock:PanelWidget ID="pwDetails" runat="server" Title="Details" Expanded="true">
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <Rock:GroupTypePicker ID="gtpGroupType" runat="server" Label="Group Type" AutoPostBack="true" OnSelectedIndexChanged="gtpGroupType_SelectedIndexChanged" />
                                 <Rock:GroupRolePicker ID="rpGroupTypeRole" runat="server" Label="Group Member Role"
                                     Help="The group member role that new registrants should be added to group with." />
                                 <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Group Member Status" 
                                     Help="The group member status that new registrants should be added to group with."/>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-8">
                                 <div class="row">
                                     <div class="col-xs-6">
                                         <Rock:RockCheckBox ID="cbMultipleRegistrants" runat="server" Label="Allow Multiple Registrants" Text="Yes"
@@ -69,19 +69,33 @@
                                             AutoPostBack="true" OnCheckedChanged="cbMultipleRegistrants_CheckedChanged" />
                                     </div>
                                     <div class="col-xs-6">
-                                        <Rock:NumberBox ID="nbMaxRegistrants" runat="server" Label="Maximum Registrants"
-                                            Help="The maximum number of registrants that user is allowed to register" Visible="false" />
+                                        <Rock:NumberBox MinimumValue="1" ID="nbMaxRegistrants" runat="server" Label="Maximum Registrants"
+                                            Help="The maximum number of registrants that user is allowed to register. Leave blank for unlimited." Visible="false" />
+
                                     </div>
                                 </div>
-                                <Rock:RockRadioButtonList ID="rblRegistrantsInSameFamily" runat="server" Label="Registrants In Same Family" RepeatDirection="Horizontal" CssClass="js-same-family"
-                                    Help="Typical relationship of registrants that user would register." />
-                                <div id="divCurrentFamilyMembers" runat="server" class="js-current-family-members" >
-                                    <Rock:RockCheckBox ID="cbShowCurrentFamilyMembers" runat="server" Label="Show Family Members" Text="Yes"
-                                        Help="If Registrants in Same Family option is set to 'Yes', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
-                                </div>
-                                
 
-                                <Rock:RockCheckBox id="cbWaitListEnabled" runat="server" Label="Enable Wait List" Text="Yes" Help="Should a wait list be enabled when the maximum number of registrants is reached." />
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockRadioButtonList ID="rblRegistrantsInSameFamily" runat="server" Label="Registrants In Same Family" RepeatDirection="Horizontal" CssClass="js-same-family"
+                                            Help="Typical relationship of registrants that user would register." />
+
+                                        <div id="divCurrentFamilyMembers" runat="server" class="js-current-family-members" >
+
+                                            <Rock:RockCheckBox ID="cbShowCurrentFamilyMembers" runat="server" Label="Show Family Members" Text="Yes"
+                                                Help="If Registrants in Same Family option is set to 'Yes', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
+                                        </div>
+
+                                        <Rock:RockCheckBox id="cbWaitListEnabled" runat="server" Label="Enable Wait List" Text="Yes" Help="Should a wait list be enabled when the maximum number of registrants is reached." />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <Rock:RockDropDownList ID="ddlRegistrarOption" runat="server" Label="Registrar Options">
+                                            <asp:ListItem Value="0" Text="Prompt For Registrar" />
+                                            <asp:ListItem Value="1" Text="Pre-fill First Registrant" />
+                                            <asp:ListItem Value="2" Text="Use First Registrant" />
+                                        </Rock:RockDropDownList>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -395,7 +409,7 @@
             <Content>
                 <asp:HiddenField ID="hfFormGuid" runat="server" />
                 <asp:HiddenField ID="hfAttributeGuid" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummaryAttribute" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="Field" />
+                <asp:ValidationSummary ID="ValidationSummaryAttribute" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Field" />
                 <div class="row">
                     <div class="col-md-3">
                         <Rock:RockLiteral ID="lFieldSource" runat="server" Label="Source" Visible="false" />
@@ -433,7 +447,7 @@
         <Rock:ModalDialog ID="dlgDiscount" runat="server" Title="Discount Code" OnSaveClick="dlgDiscount_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Discount">
             <Content>
                 <asp:HiddenField ID="hfDiscountGuid" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummaryDiscount" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="Discount" />
+                <asp:ValidationSummary ID="ValidationSummaryDiscount" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Discount" />
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbDiscountCode" runat="server" CssClass="input-width-xl" Label="Discount Code" ValidationGroup="Discount" Required="true" />
@@ -463,7 +477,7 @@
         <Rock:ModalDialog ID="dlgFee" runat="server" Title="Fee" OnSaveClick="dlgFee_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Fee">
             <Content>
                 <asp:HiddenField ID="hfFeeGuid" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummaryFee" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="Fee" />
+                <asp:ValidationSummary ID="ValidationSummaryFee" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Fee" />
                 <div class="row">
                     <div class="col-md-12">
                         <Rock:RockTextBox ID="tbFeeName" runat="server" Label="Name" ValidationGroup="Fee" Required="true" />

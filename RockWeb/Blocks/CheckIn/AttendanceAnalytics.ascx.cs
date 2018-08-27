@@ -31,7 +31,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.CheckIn
 
             _rockContext = new RockContext();
 
-            cbShowInactive.Checked = GetUserPreference( CacheBlock.Guid.ToString() + "_showInactive" ).AsBoolean();
+            cbShowInactive.Checked = GetUserPreference( BlockCache.Guid.ToString() + "_showInactive" ).AsBoolean();
 
             // Determine if the block should be for a specific group
             _isGroupSpecific = GetAttributeValue( "GroupSpecific" ).AsBoolean();
@@ -129,15 +129,13 @@ namespace RockWeb.Blocks.CheckIn
             gChartAttendance.GridRebind += gChartAttendance_GridRebind;
             gAttendeesAttendance.GridRebind += gAttendeesAttendance_GridRebind;
 
-            gAttendeesAttendance.EntityTypeId = CacheEntityType.Get<Rock.Model.Person>().Id;
+            gAttendeesAttendance.EntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
             gAttendeesAttendance.Actions.ShowBulkUpdate = GetAttributeValue( "ShowBulkUpdateOption" ).AsBoolean( true );
             gAttendeesAttendance.Actions.ShowMergePerson = !_isGroupSpecific;
             gAttendeesAttendance.Actions.ShowMergeTemplate = !_isGroupSpecific;
 
-            dvpDataView.AutoLoadItems = false;
-            dvpDataView.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Person ) ).Id;
+            dvpDataView.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
             dvpDataView.CategoryGuids = GetAttributeValue( "DataViewCategories" ).SplitDelimitedValues().AsGuidList();
-            dvpDataView.LoadDropDownItems();
 
             // show / hide the checkin details page
             btnCheckinDetails.Visible = !string.IsNullOrWhiteSpace( GetAttributeValue( "Check-inDetailPage" ) );
@@ -257,7 +255,7 @@ namespace RockWeb.Blocks.CheckIn
             noCampusListItem.Text = "<span title='Include records that are not associated with a campus'>No Campus</span>";
             noCampusListItem.Value = "null";
             clbCampuses.Items.Add( noCampusListItem );
-            foreach ( var campus in CacheCampus.All( includeInactiveCampuses ).OrderBy( a => a.Name ) )
+            foreach ( var campus in CampusCache.All( includeInactiveCampuses ).OrderBy( a => a.Name ) )
             {
                 var listItem = new ListItem();
                 listItem.Text = campus.Name;
@@ -388,25 +386,28 @@ namespace RockWeb.Blocks.CheckIn
         private List<GroupType> GetSelectedGroupTypes()
         {
 
+
             if ( !_isGroupSpecific )
             {
                 var groupTypeGuids = this.GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
                 if ( groupTypeGuids.Any() )
                 {
-                    var groupTypes = new List<GroupType>();
-
                     var groupTypeService = new GroupTypeService( _rockContext );
-                    foreach( var guid in groupTypeGuids )
-                    {
-                        var groupTypeCache = CacheGroupType.Get( guid );
-                        if ( groupTypeCache != null )
+
+                    var groupTypes = groupTypeService
+                        .Queryable().AsNoTracking()
+                        .Where( t => groupTypeGuids.Contains( t.Guid ) )
+                        .OrderBy( t => t.Order )
+                        .ThenBy( t => t.Name )
+                        .ToList();
+
+                    foreach ( var groupType in groupTypes.ToList() )
+                    { 
+                        foreach ( var childGroupType in groupTypeService.GetAllAssociatedDescendentsOrdered( groupType.Id ) )
                         {
-                            foreach ( var groupType in groupTypeService.GetAllAssociatedDescendentsOrdered( groupTypeCache.Id ) )
+                            if ( !groupTypes.Any( t => t.Id == childGroupType.Id ) )
                             {
-                                if ( !groupTypes.Any( t => t.Id == groupType.Id ) )
-                                {
-                                    groupTypes.Add( groupType );
-                                }
+                                groupTypes.Add( childGroupType );
                             }
                         }
                     }
@@ -704,7 +705,7 @@ function(item) {
                 drpSlidingDateRange.DelimitedValues = slidingDateRangeSettings;
             }
 
-            dvpDataView.SetValue( GetSetting( keyPrefix, "DataView" ) );
+            dvpDataView.SetValue( GetSetting( keyPrefix, "DataView" ).AsIntegerOrNull() );
 
             hfGroupBy.Value = GetSetting( keyPrefix, "GroupBy" );
             hfGraphBy.Value = GetSetting( keyPrefix, "GraphBy" );
@@ -1698,12 +1699,12 @@ function(item) {
         private void LoadCurrentPageObjects( List<int> personIds )
         {
             // Load the addresses
-            var familyGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             Guid? homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
 
             if ( familyGroupType != null && homeAddressGuid.HasValue && personIds != null )
             {
-                var homeAddressDv = CacheDefinedValue.Get( homeAddressGuid.Value );
+                var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
                 if ( homeAddressDv != null )
                 {
                     _personLocations = new Dictionary<int, Location>();
@@ -2025,7 +2026,7 @@ function(item) {
 
                         if ( phoneNumber.NumberTypeValueId.HasValue )
                         {
-                            var phoneType = CacheDefinedValue.Get( phoneNumber.NumberTypeValueId.Value );
+                            var phoneType = DefinedValueCache.Get( phoneNumber.NumberTypeValueId.Value );
                             if ( phoneType != null )
                             {
                                 formattedNumber = isExporting ?
@@ -2102,7 +2103,7 @@ function(item) {
             {
                 _addedGroupTypeIds.Add( groupType.Id );
 
-                bool showInactive = GetUserPreference( CacheBlock.Guid.ToString() + "_showInactive" ).AsBoolean();
+                bool showInactive = GetUserPreference( BlockCache.Guid.ToString() + "_showInactive" ).AsBoolean();
 
                 if ( ( groupType.Groups.Any() && showInactive ) || groupType.Groups.Where( g => g.IsActive ).Any() )
                 {
@@ -2470,7 +2471,7 @@ function(item) {
 
         protected void cbShowInactive_CheckedChanged( object sender, EventArgs e )
         {
-            SetUserPreference( CacheBlock.Guid.ToString() + "_showInactive", cbShowInactive.Checked.ToString() );
+            SetUserPreference( BlockCache.Guid.ToString() + "_showInactive", cbShowInactive.Checked.ToString() );
             BuildGroupTypesUI( true );
         }
 

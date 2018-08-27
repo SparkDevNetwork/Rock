@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -93,7 +93,10 @@ namespace Rock.Jobs
                             m.GroupMemberStatus == GroupMemberStatus.Active &&
                             m.Person != null &&
                             m.Person.Email != null &&
-                            m.Person.Email != "" )
+                            m.Person.Email != "" &&
+                            m.Person.EmailPreference != EmailPreference.DoNotEmail &&
+                            m.Person.IsEmailActive
+                         )
                         .Select( m => m.PersonId )
                         .Distinct()
                         .ToList();
@@ -165,7 +168,7 @@ namespace Rock.Jobs
                     foreach ( var keyVal in followedEntityIds )
                     {
                         // Get the entitytype
-                        CacheEntityType itemEntityType = CacheEntityType.Get( keyVal.Key );
+                        EntityTypeCache itemEntityType = EntityTypeCache.Get( keyVal.Key );
                         if ( itemEntityType.AssemblyName != null )
                         {
                             // get the actual type of what is being followed 

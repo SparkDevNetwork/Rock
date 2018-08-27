@@ -76,8 +76,32 @@ namespace Rock.Model
         /// <param name="attendanceCodeId">The attendance code identifier.</param>
         /// <returns></returns>
         public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
-                    int? groupId, int? locationId, int? scheduleId, int? campusId,
-                    int? deviceId, int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId )
+                    int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
+                    int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId )
+        {
+            return AddOrUpdate( personAliasId, checkinDateTime, groupId, locationId, scheduleId, campusId, deviceId,
+                searchTypeValueId, searchValue, searchResultGroupId, attendanceCodeId, null );
+        }
+
+        /// <summary>
+        /// Adds or updates an attendance record and will create the occurrence if needed
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="checkinDateTime">The checkin date time.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <param name="searchTypeValueId">The search type value identifier.</param>
+        /// <param name="searchValue">The search value.</param>
+        /// <param name="searchResultGroupId">The search result group identifier.</param>
+        /// <param name="attendanceCodeId">The attendance code identifier.</param>
+        /// <param name="checkedInByPersonAliasId">The checked in by person alias identifier.</param>
+        /// <returns></returns>
+        public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
+                    int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
+                    int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId, int? checkedInByPersonAliasId )
         {
             // Check to see if an occurrence exists already
             var occurrenceService = new AttendanceOccurrenceService( (RockContext)Context );
@@ -134,7 +158,8 @@ namespace Rock.Model
             if ( campusId.HasValue ) attendance.CampusId = campusId.Value;
             if ( deviceId.HasValue ) attendance.DeviceId = deviceId.Value;
             if ( searchTypeValueId.HasValue ) attendance.SearchTypeValueId = searchTypeValueId;
-            if ( searchValue.IsNotNullOrWhitespace() ) attendance.SearchValue = searchValue;
+            if ( searchValue.IsNotNullOrWhiteSpace() ) attendance.SearchValue = searchValue;
+            if ( checkedInByPersonAliasId.HasValue ) attendance.CheckedInByPersonAliasId = checkedInByPersonAliasId.Value;
             if ( searchResultGroupId.HasValue ) attendance.SearchResultGroupId = searchResultGroupId;
             if ( attendanceCodeId.HasValue ) attendance.AttendanceCodeId = attendanceCodeId;
             attendance.StartDateTime = checkinDateTime;

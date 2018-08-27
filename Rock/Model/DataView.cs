@@ -25,7 +25,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Web.UI.WebControls;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
 using Rock.Web.UI.Controls;
 
@@ -227,7 +227,7 @@ namespace Rock.Model
 
             if ( this.TransformEntityTypeId != null )
             {
-                string dataTransformationComponentTypeName = CacheEntityType.Get( this.TransformEntityTypeId ?? 0 ).GetEntityType().FullName;
+                string dataTransformationComponentTypeName = EntityTypeCache.Get( this.TransformEntityTypeId ?? 0 ).GetEntityType().FullName;
                 var dataTransformationComponent = Rock.Reporting.DataTransformContainer.GetComponent( dataTransformationComponentTypeName );
                 if ( dataTransformationComponent != null )
                 {
@@ -279,7 +279,7 @@ namespace Rock.Model
         {
             if ( EntityTypeId.HasValue )
             {
-                var cachedEntityType = CacheEntityType.Get( EntityTypeId.Value );
+                var cachedEntityType = EntityTypeCache.Get( EntityTypeId.Value );
                 if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
                 {
                     Type entityType = cachedEntityType.GetEntityType();
@@ -303,7 +303,7 @@ namespace Rock.Model
         {
             if ( EntityTypeId.HasValue )
             {
-                var cachedEntityType = CacheEntityType.Get( EntityTypeId.Value );
+                var cachedEntityType = EntityTypeCache.Get( EntityTypeId.Value );
                 if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
                 {
                     Type entityType = cachedEntityType.GetEntityType();
@@ -408,7 +408,7 @@ namespace Rock.Model
         {
             errorMessages = new List<string>();
 
-            var cachedEntityType = CacheEntityType.Get( EntityTypeId.Value );
+            var cachedEntityType = EntityTypeCache.Get( EntityTypeId.Value );
             if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
             {
                 Type filteredEntityType = cachedEntityType.GetEntityType();
@@ -416,7 +416,10 @@ namespace Rock.Model
                 if ( filteredEntityType != null )
                 {
                     bool usePersistedValues = this.PersistedScheduleIntervalMinutes.HasValue && this.PersistedLastRefreshDateTime.HasValue;
-                    usePersistedValues = usePersistedValues && ( dataViewFilterOverrides?.UsePersistedValuesIfAvailable ?? true );
+                    if ( dataViewFilterOverrides != null )
+                    {
+                        usePersistedValues = usePersistedValues && !dataViewFilterOverrides.IgnoreDataViewPersistedValues.Contains( this.Id );
+                    }
 
                     // don't use persisted values if there are dataViewFilterOverrides
                     if ( usePersistedValues && dataViewFilterOverrides?.Any() == true )
@@ -475,8 +478,10 @@ namespace Rock.Model
             List<string> errorMessages;
             var dbContext = this.GetDbContext();
             
+            DataViewFilterOverrides dataViewFilterOverrides = new DataViewFilterOverrides();
+
             // set an override so that the Persisted Values aren't used when rebuilding the values from the DataView Query
-            DataViewFilterOverrides dataViewFilterOverrides = new DataViewFilterOverrides { UsePersistedValuesIfAvailable = false };
+            dataViewFilterOverrides.IgnoreDataViewPersistedValues.Add( this.Id );
 
             var qry = this.GetQuery( null, dbContext, dataViewFilterOverrides, databaseTimeoutSeconds, out errorMessages );
             if ( !errorMessages.Any() )
@@ -537,7 +542,7 @@ namespace Rock.Model
         {
             if ( this.TransformEntityTypeId.HasValue )
             {
-                var entityType = Rock.Cache.CacheEntityType.Get( this.TransformEntityTypeId.Value );
+                var entityType = EntityTypeCache.Get( this.TransformEntityTypeId.Value );
                 if ( entityType != null )
                 {
                     var component = Rock.Reporting.DataTransformContainer.GetComponent( entityType.Name );
