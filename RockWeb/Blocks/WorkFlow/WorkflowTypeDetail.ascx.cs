@@ -1659,7 +1659,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 // Remove any fields that were removed
                 foreach ( var formAttribute in formAttributes.ToList() )
                 {
-                    if ( !attributes.ContainsKey( formAttribute.Attribute.Guid ) )
+                    if ( formAttribute.Attribute != null && !attributes.ContainsKey( formAttribute.Attribute.Guid ) )
                     {
                         formAttributes.Remove( formAttribute );
                     }
