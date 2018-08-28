@@ -420,7 +420,7 @@ namespace Rock.Model
             {% if Group.Schedule != null %}
 
             <dt> Schedule </dt>
-            <dd>{{ Group.Schedule.ToString() }}</ dd >
+            <dd>{{ Group.Schedule.FriendlyScheduleText }}</ dd >
             {% endif %}
             {% if Group.GroupCapacity != null and Group.GroupCapacity != '' %}
 
