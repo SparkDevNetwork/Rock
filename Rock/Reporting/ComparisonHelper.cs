@@ -37,7 +37,7 @@ namespace Rock.Reporting
         /// <param name="value">The value.</param>
         /// <param name="value2">If doing ComparisonType.Between, value2 is the upper value between expression</param>
         /// <returns></returns>
-        public static Expression ComparisonExpression( ComparisonType comparisonType, MemberExpression property, Expression value, Expression value2 = null)
+        public static Expression ComparisonExpression( ComparisonType comparisonType, MemberExpression property, Expression value, Expression value2 = null )
         {
             MemberExpression valueExpression;
             Expression comparisonExpression = null;
@@ -56,7 +56,7 @@ namespace Rock.Reporting
             {
                 if ( valueExpression.Type == typeof( int ) )
                 {
-                    comparisonExpression = Expression.Call( value, typeof(List<int>).GetMethod( "Contains", new Type[] { typeof(int) } ), valueExpression );
+                    comparisonExpression = Expression.Call( value, typeof( List<int> ).GetMethod( "Contains", new Type[] { typeof( int ) } ), valueExpression );
                 }
                 else
                 {
@@ -83,7 +83,7 @@ namespace Rock.Reporting
             {
                 Expression leftExpression = valueExpression;
                 Expression rightExpression = value;
-                
+
                 Expression rightExpression2 = value2;
 
                 if ( valueExpression.Type == typeof( string ) )
@@ -109,7 +109,7 @@ namespace Rock.Reporting
                 {
                     comparisonExpression = Expression.LessThanOrEqual( leftExpression, rightExpression );
                 }
-                else if (comparisonType == ComparisonType.Between)
+                else if ( comparisonType == ComparisonType.Between )
                 {
                     var lowerComparisonExpression = rightExpression != null ? Expression.GreaterThanOrEqual( leftExpression, rightExpression ) : null;
                     var upperComparisonExpression = rightExpression2 != null ? Expression.LessThanOrEqual( leftExpression, rightExpression2 ) : null;
@@ -117,7 +117,7 @@ namespace Rock.Reporting
                     {
                         comparisonExpression = Expression.AndAlso( lowerComparisonExpression, upperComparisonExpression );
                     }
-                    else if (rightExpression != null )
+                    else if ( rightExpression != null )
                     {
                         comparisonExpression = lowerComparisonExpression;
                     }
@@ -217,6 +217,37 @@ namespace Rock.Reporting
             }
 
             return ddl;
+        }
+
+        /// <summary>
+        /// Returns the result of doing a numeric comparison of the specified comparison type using the value and compareValue(s)
+        /// </summary>
+        /// <param name="comparisonType">Type of the comparison.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="compareValue1">The compare value1.</param>
+        /// <param name="compareValue2">The compare value2.</param>
+        /// <returns></returns>
+        public static bool CompareNumericValues( ComparisonType comparisonType, decimal? value, decimal? compareValue1, decimal? compareValue2 = null )
+        {
+            switch ( comparisonType )
+            {
+                case ComparisonType.GreaterThan:
+                    return value > compareValue1;
+                case ComparisonType.GreaterThanOrEqualTo:
+                    return value >= compareValue1;
+                case ComparisonType.LessThan:
+                    return value < compareValue1;
+                case ComparisonType.LessThanOrEqualTo:
+                    return value <= compareValue1;
+                case ComparisonType.EqualTo:
+                    return value == compareValue1;
+                case ComparisonType.NotEqualTo:
+                    return value == compareValue1;
+                case ComparisonType.Between:
+                    return compareValue2.HasValue && ( value >= compareValue1 && value <= compareValue2 );
+            }
+
+            return false;
         }
 
         /// <summary>
