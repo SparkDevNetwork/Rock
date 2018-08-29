@@ -58,7 +58,7 @@ namespace Rock.Utility
                     object value = ConvertValueToPropertyType( filterValues[1], type, isNullableType );
                     ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
 
-                    bool valueNotNeeded = (ComparisonType.IsBlank | ComparisonType.IsNotBlank).HasFlag( comparisonType );
+                    bool valueNotNeeded = ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType );
 
                     if ( value != null || valueNotNeeded )
                     {
@@ -225,10 +225,10 @@ namespace Rock.Utility
 
             if ( attributeCache != null )
             {
-                var filterIsDefault = entityField.FieldType.Field.IsEqualToValue( values, attributeCache.DefaultValue );
-                if ( filterIsDefault )
+                var comparedToDefault = entityField.FieldType.Field.IsComparedToValue( values, attributeCache.DefaultValue );
+                if ( comparedToDefault )
                 {
-                    var allAttributeValueIds = service.Queryable().Where( v => v.Attribute.Id == attributeCache.Id && v.EntityId.HasValue && v.Value != null ).Select( a => a.EntityId.Value );
+                    var allAttributeValueIds = service.Queryable().Where( v => v.Attribute.Id == attributeCache.Id && v.EntityId.HasValue && !string.IsNullOrEmpty( v.Value ) ).Select( a => a.EntityId.Value );
 
                     ConstantExpression allIdsExpression = Expression.Constant( allAttributeValueIds.AsQueryable(), typeof( IQueryable<int> ) );
                     Expression notContainsExpression = Expression.Not( Expression.Call( typeof( Queryable ), "Contains", new Type[] { typeof( int ) }, allIdsExpression, propertyExpression ) );
