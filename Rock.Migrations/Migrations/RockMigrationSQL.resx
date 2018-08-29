@@ -496,9 +496,6 @@
   <data name="_201707311527250_FirstNameGender" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 7.0\version 1.7.0\201707311527250_firstnamegender.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
-  <data name="_201707311527250_LastName" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 7.0\version 1.7.0\201707311527250_lastname.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
   <data name="_201707311527250_NickName" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 7.0\version 1.7.0\201707311527250_nickname.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
@@ -771,5 +768,8 @@
   </data>
   <data name="_201807191932379_Rollup_0719_Fix_Accordion_Bug" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 8.0\version 1.8.0\201807191932379_rollup_0719_fix accordion bug.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201707311527250_LastName" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 7.0\version 1.7.0\201707311527250_lastname.gz;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>
