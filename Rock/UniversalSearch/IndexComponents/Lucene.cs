@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -54,7 +55,7 @@ namespace Rock.UniversalSearch.IndexComponents
     {
         #region Private Fields
         private static readonly LuceneVersion _matchVersion = LuceneVersion.LUCENE_48;
-        private static Dictionary<string, Index> _indexes = new Dictionary<string, Index>();
+        private static ConcurrentDictionary<string, Index> _indexes = new ConcurrentDictionary<string, Index>();
         private static IndexWriterConfig _indexWriterConfig = null;
         private static IndexWriter _writer = null;
         private static DirectoryReader _reader = null;
@@ -528,8 +529,6 @@ namespace Rock.UniversalSearch.IndexComponents
             // Use the analyzer in fieldAnalyzers if that field is in that dictionary, otherwise use StandardAnalyzer.
             PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( _matchVersion ), fieldAnalyzers: combinedFieldAnalyzers );
 
-            BooleanQuery fieldCriteriaQuery = new BooleanQuery();
-
             if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
             {
                 Occur occur = fieldCriteria.SearchType == CriteriaSearchType.And ? Occur.MUST : Occur.SHOULD;
@@ -537,10 +536,8 @@ namespace Rock.UniversalSearch.IndexComponents
                 {
                     BooleanClause booleanClause = new BooleanClause( new TermQuery( new Term( match.Field, match.Value ) ), occur );
                     booleanClause.Query.Boost = match.Boost;
-                    fieldCriteriaQuery.Add( booleanClause );
+                    queryContainer.Add( booleanClause );
                 }
-
-                queryContainer.Add( fieldCriteriaQuery, Occur.MUST );
             }
 
             switch ( searchType )

@@ -58,7 +58,7 @@ namespace Rock.Utility
                     object value = ConvertValueToPropertyType( filterValues[1], type, isNullableType );
                     ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
 
-                    bool valueNotNeeded = (ComparisonType.IsBlank | ComparisonType.IsNotBlank).HasFlag( comparisonType );
+                    bool valueNotNeeded = ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType );
 
                     if ( value != null || valueNotNeeded )
                     {
@@ -144,13 +144,13 @@ namespace Rock.Utility
             // Attribute Value records only exist for Entities that have a value specified for the Attribute.
             // Therefore, if the specified comparison works by excluding certain values we must invert our filter logic:
             // first we find the Attribute Values that match those values and then we exclude the associated Entities from the result set.
-            var comparisonType = ComparisonType.EqualTo;
-            ComparisonType evaluatedComparisonType = comparisonType;
+            ComparisonType? comparisonType = ComparisonType.EqualTo;
+            ComparisonType? evaluatedComparisonType = comparisonType;
             string compareToValue = null;
 
             if ( values.Count >= 2 )
             {
-                comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                comparisonType = values[0].ConvertToEnumOrNull<ComparisonType>();
                 compareToValue = values[1];
 
                 switch ( comparisonType )
@@ -225,10 +225,10 @@ namespace Rock.Utility
 
             if ( attributeCache != null )
             {
-                var filterIsDefault = entityField.FieldType.Field.IsEqualToValue( values, attributeCache.DefaultValue );
-                if ( filterIsDefault )
+                var comparedToDefault = entityField.FieldType.Field.IsComparedToValue( values, attributeCache.DefaultValue );
+                if ( comparedToDefault )
                 {
-                    var allAttributeValueIds = service.Queryable().Where( v => v.Attribute.Id == attributeCache.Id && v.EntityId.HasValue ).Select( a => a.EntityId.Value );
+                    var allAttributeValueIds = service.Queryable().Where( v => v.Attribute.Id == attributeCache.Id && v.EntityId.HasValue && !string.IsNullOrEmpty( v.Value ) ).Select( a => a.EntityId.Value );
 
                     ConstantExpression allIdsExpression = Expression.Constant( allAttributeValueIds.AsQueryable(), typeof( IQueryable<int> ) );
                     Expression notContainsExpression = Expression.Not( Expression.Call( typeof( Queryable ), "Contains", new Type[] { typeof( int ) }, allIdsExpression, propertyExpression ) );

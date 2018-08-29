@@ -163,6 +163,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
         {
+            WorkflowActionFormCache.UpdateCachedEntity( this.WorkflowActionFormId, EntityState.Modified );
             WorkflowActionFormAttributeCache.UpdateCachedEntity( this.Id, entityState );
         }
 

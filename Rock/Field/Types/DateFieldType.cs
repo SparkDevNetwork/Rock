@@ -732,6 +732,47 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Determines whether the filter's comparison type and filter compare value(s) evaluates to true for the specified value
+        /// </summary>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if [is compared to value] [the specified filter values]; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsComparedToValue( List<string> filterValues, string value )
+        {
+            if ( filterValues == null || filterValues.Count < 2 )
+            {
+                return false;
+            }
+
+            ComparisonType? filterComparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
+            ComparisonType? equalToCompareValue = GetEqualToCompareValue().ConvertToEnumOrNull<ComparisonType>();
+            DateTime? valueAsDateTime = value.AsDateTime();
+
+            // uses Tab Delimited since slidingDateRangePicker is | delimited
+            var filterValueValues = filterValues[1].Split( new string[] { "\t" }, StringSplitOptions.None );
+
+            // Parse for RelativeValue of DateTime (if specified)
+            filterValueValues[0] = ParseRelativeValue( filterValueValues[0] );
+            DateTime? filterValueAsDateTime1;
+            DateTime? filterValueAsDateTime2 = null;
+            if ( filterComparisonType == ComparisonType.Between )
+            {
+                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( filterValueValues[1] );
+                filterValueAsDateTime1 = dateRange.Start;
+                filterValueAsDateTime2 = dateRange.End;
+            }
+            else
+            {
+                filterValueAsDateTime1 = filterValueValues[0].AsDateTime();
+                filterValueAsDateTime2 = null;
+            }
+
+            return ComparisonHelper.CompareNumericValues( filterComparisonType.Value, valueAsDateTime?.Ticks, filterValueAsDateTime1?.Ticks, filterValueAsDateTime2?.Ticks );
+        }
+
+        /// <summary>
         /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, ValueAsBoolean, or ValueAsNumeric)
         /// </summary>
         /// <value>
