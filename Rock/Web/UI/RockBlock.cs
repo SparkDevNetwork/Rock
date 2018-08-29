@@ -1043,29 +1043,40 @@ namespace Rock.Web.UI
         /// <param name="validationGroup">A <see cref="System.String"/> representing the name of the validation group.</param>
         public void SetValidationGroup( ControlCollection controls, string validationGroup )
         {
+            Control[] controlArray = controls.OfType<Control>().ToArray();
+            SetValidationGroup( controlArray, validationGroup );
+        }
+
+        /// <summary>
+        /// Sets the validation group.
+        /// </summary>
+        /// <param name="controls">The controls to include in the validation group.</param>
+        /// <param name="validationGroup">A <see cref="System.String" /> representing the name of the validation group.</param>
+        public void SetValidationGroup( Control[] controls, string validationGroup )
+        {
             if ( controls != null )
             {
                 foreach ( Control control in controls )
                 {
                     if ( control is Rock.Web.UI.Controls.IHasValidationGroup )
                     {
-                        var rockControl = (Rock.Web.UI.Controls.IHasValidationGroup)control;
+                        var rockControl = ( Rock.Web.UI.Controls.IHasValidationGroup ) control;
                         rockControl.ValidationGroup = SetValidationGroup( rockControl.ValidationGroup, validationGroup );
                     }
 
                     if ( control is ValidationSummary )
                     {
-                        var validationSummary = (ValidationSummary)control;
+                        var validationSummary = ( ValidationSummary ) control;
                         validationSummary.ValidationGroup = SetValidationGroup( validationSummary.ValidationGroup, validationGroup );
                     }
                     else if ( control is BaseValidator )
                     {
-                        var validator = (BaseValidator)control;
+                        var validator = ( BaseValidator ) control;
                         validator.ValidationGroup = SetValidationGroup( validator.ValidationGroup, validationGroup );
                     }
                     else if ( control is IButtonControl )
                     {
-                        var button = (IButtonControl)control;
+                        var button = ( IButtonControl ) control;
                         button.ValidationGroup = SetValidationGroup( button.ValidationGroup, validationGroup );
                     }
                     else

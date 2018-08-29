@@ -279,6 +279,39 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get
+            {
+                return ViewState["ValidationGroup"] as string;
+            }
+
+            set
+            {
+                ViewState["ValidationGroup"] = value;
+                SetFilterControlsValidationGroup( value );
+            }
+        }
+
+        /// <summary>
+        /// Sets the filter controls validation group.
+        /// </summary>
+        /// <param name="validationGroup">The validation group.</param>
+        private void SetFilterControlsValidationGroup( string validationGroup )
+        {
+            var rockBlock = this.RockBlock();
+            if ( filterControls != null && rockBlock != null )
+            {
+                rockBlock.SetValidationGroup( filterControls, validationGroup );
+            }
+        }
+
+        /// <summary>
         /// Gets whether the Checkbox is checked or not (not factoring in if it is showing)
         /// </summary>
         /// <value>
@@ -444,6 +477,8 @@ namespace Rock.Web.UI.Controls
             {
                 filterControls = new Control[0];
             }
+
+            SetFilterControlsValidationGroup( this.ValidationGroup );
 
             ddlFilterType.AutoPostBack = true;
             ddlFilterType.SelectedIndexChanged += ddlFilterType_SelectedIndexChanged;
@@ -611,7 +646,7 @@ namespace Rock.Web.UI.Controls
             {
                 //// EntityFieldFilter renders the checkbox itself (see EntityFieldFilter.cs),
                 //// so only render the checkbox if we are hiding filter criteria and it isn't an entity field filter
-                if ( !( component is Rock.Reporting.DataFilter.EntityFieldFilter ) || HideFilterCriteria)
+                if ( !( component is Rock.Reporting.DataFilter.EntityFieldFilter ) || HideFilterCriteria )
                 {
                     cbIncludeFilter.Text = this.Label;
                     cbIncludeFilter.RenderControl( writer );
@@ -649,7 +684,7 @@ namespace Rock.Web.UI.Controls
 
         void ddlFilterType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            FilterEntityTypeName = ( (DropDownList)sender ).SelectedValue;
+            FilterEntityTypeName = ( ( DropDownList ) sender ).SelectedValue;
 
             if ( SelectionChanged != null )
             {
