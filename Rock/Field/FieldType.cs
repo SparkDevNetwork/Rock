@@ -606,8 +606,7 @@ namespace Rock.Field
                             var filterValueValue = FormatFilterValueValue( configurationValues, filterValues[1] );
                             if ( string.IsNullOrEmpty( filterValueValue ) )
                             {
-                                // if there is no value specified, just return String.Empty
-                                return string.Empty;
+                                return string.Format( "{0} ''", comparisonType.ConvertToString() );
                             }
                             else
                             {
@@ -691,18 +690,22 @@ namespace Rock.Field
         {
             if ( filterValues.Count >= 2 )
             {
-                string comparisonValue = filterValues[0];
-                if ( comparisonValue != "0" )
+                ComparisonType? comparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
+                if ( comparisonType.HasValue )
                 {
-                    ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
                     string compareToValue = filterValues[1];
                     bool valueNotNeeded = ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType );
 
                     if ( valueNotNeeded || !string.IsNullOrWhiteSpace( compareToValue ) )
                     {
                         MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
-                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( compareToValue ) );
+                        return ComparisonHelper.ComparisonExpression( comparisonType.Value, propertyExpression, AttributeConstantExpression( compareToValue ) );
                     }
+                }
+                else
+                {
+                    // No comparison type specified, so return NoAttributeFilterExpression ( which means don't filter )
+                    return new NoAttributeFilterExpression();
                 }
             }
 
@@ -767,6 +770,19 @@ namespace Rock.Field
             }
 
             return filterValues[1] == value;
+        }
+
+        /// <summary>
+        /// Determines whether the filter's comparison type and filter compare value(s) evaluates to true for the specified value
+        /// </summary>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if [is compared to value] [the specified filter values]; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsComparedToValue( List<string> filterValues, string value )
+        {
+            return IsEqualToValue( filterValues, value );
         }
 
         /// <summary>

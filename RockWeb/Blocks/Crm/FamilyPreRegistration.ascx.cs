@@ -570,7 +570,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                         personService.Add( person );
 
                         person.Guid = child.Guid;
-                        person.NickName = child.NickName.FixCase();
+                        person.FirstName = child.NickName.FixCase();
                         person.LastName = child.LastName.FixCase();
                         person.RecordTypeValueId = recordTypePersonId;
                         person.RecordStatusValueId = recordStatusValue != null ? recordStatusValue.Id : (int?)null;
@@ -1293,7 +1293,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     adult = new Person();
                     personService.Add( adult );
 
-                    adult.NickName = tbFirstName.Text.FixCase();
+                    adult.FirstName = tbFirstName.Text.FixCase();
                     adult.LastName = tbLastName.Text.FixCase();
                     adult.RecordTypeValueId = recordTypePersonId;
                     adult.RecordStatusValueId = recordStatusValue != null ? recordStatusValue.Id : (int?)null;

@@ -708,6 +708,9 @@ namespace RockWeb.Blocks.Groups
                 if ( !oldScheduleId.HasValue || group.Schedule == null )
                 {
                     group.Schedule = new Schedule();
+
+                    // NOTE: Schedule Name should be set to string.Empty to indicate that it is a Custom or Weekly schedule and not a "Named" schedule
+                    group.Schedule.Name = string.Empty;
                 }
 
                 if ( scheduleType == ScheduleType.Custom )
@@ -722,8 +725,6 @@ namespace RockWeb.Blocks.Groups
                     group.Schedule.WeeklyDayOfWeek = dowWeekly.SelectedDayOfWeek;
                     group.Schedule.WeeklyTimeOfDay = timeWeekly.SelectedTime;
                 }
-
-                group.Schedule.Name = group.Schedule.ToString();
             }
             else
             {
