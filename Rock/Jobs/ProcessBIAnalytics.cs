@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -405,7 +405,7 @@ namespace Rock.Jobs
 UPDATE [{analyticsTableName}] 
     SET [{columnName}] = @attributeValue 
     WHERE [{analyticsTableModelIdColumnName}] IN (SELECT [EntityId] FROM [AttributeValue] WHERE [AttributeId] = {attribute.Id} AND [Value] = @modelAttributeValue) 
-    AND isnull([{columnName}],'') != @attributeValue
+    AND ([{columnName}] IS NULL OR [{columnName}] <> @attributeValue)
     ";
 
                             if ( hasCurrentRowIndicator )
@@ -414,8 +414,8 @@ UPDATE [{analyticsTableName}]
                             }
 
                             var parameters = new Dictionary<string, object>();
-                            parameters.Add( "@modelAttributeValue", modelAttributeValue );
-                            parameters.Add( "@attributeValue", attributeValue );
+                            parameters.Add( "@modelAttributeValue", modelAttributeValue ?? (object) DBNull.Value );
+                            parameters.Add( "@attributeValue", attributeValue ?? ( object ) DBNull.Value );
 
                             modelJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
                             modelJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters, _commandTimeout );
@@ -516,7 +516,7 @@ DECLARE
 UPDATE [AnalyticsSourcePersonHistorical] 
     SET [CurrentRowIndicator] = 0, [ExpireDate] = @EtlDate 
     WHERE [PersonId] IN (SELECT EntityId FROM AttributeValue WHERE AttributeId = {attribute.Id} AND Value = @personAttributeValue ) 
-    AND isnull([{columnName}],'') != @formattedValue AND [CurrentRowIndicator] = 1
+    AND ( [{columnName}] IS NULL OR [{columnName}] <> @formattedValue ) AND [CurrentRowIndicator] = 1
     AND PersonId NOT IN( --Ensure that there isn't already a History Record for the current EtlDate 
         SELECT PersonId
         FROM AnalyticsSourcePersonHistorical x
@@ -525,8 +525,8 @@ UPDATE [AnalyticsSourcePersonHistorical]
     )";
 
                             var parameters = new Dictionary<string, object>();
-                            parameters.Add( "@personAttributeValue", personAttributeValue );
-                            parameters.Add( "@formattedValue", formattedValue );
+                            parameters.Add( "@personAttributeValue", personAttributeValue ?? ( object ) DBNull.Value );
+                            parameters.Add( "@formattedValue", formattedValue ?? ( object ) DBNull.Value );
 
                             this._personJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
 
@@ -572,12 +572,12 @@ UPDATE [AnalyticsSourcePersonHistorical]
 UPDATE [AnalyticsSourcePersonHistorical] 
     SET [{columnName}] = @formattedValue 
     WHERE [PersonId] IN (SELECT EntityId FROM AttributeValue WHERE AttributeId = {attribute.Id} AND Value = @personAttributeValue) 
-    AND isnull([{columnName}],'') != @formattedValue
+    AND ( [{columnName}] IS NULL OR [{columnName}] <> @formattedValue )
     AND [CurrentRowIndicator] = 1";
 
                             var parameters = new Dictionary<string, object>();
-                            parameters.Add( "@personAttributeValue", personAttributeValue );
-                            parameters.Add( "@formattedValue", formattedValue );
+                            parameters.Add( "@personAttributeValue", personAttributeValue ?? ( object ) DBNull.Value );
+                            parameters.Add( "@formattedValue", formattedValue ?? ( object ) DBNull.Value );
 
                             _personJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
 
@@ -973,7 +973,7 @@ DECLARE
 UPDATE [AnalyticsSourceFamilyHistorical] 
     SET [CurrentRowIndicator] = 0, [ExpireDate] = @EtlDate 
     WHERE [FamilyId] IN (SELECT EntityId FROM AttributeValue WHERE AttributeId = {attribute.Id} AND Value = @familyAttributeValue ) 
-    AND isnull([{columnName}],'') != @attributeValue AND [CurrentRowIndicator] = 1
+    AND ( [{columnName}] IS NULL OR [{columnName}] <> @attributeValue ) AND [CurrentRowIndicator] = 1
     AND FamilyId NOT IN( --Ensure that there isn't already a History Record for the current EtlDate 
         SELECT FamilyId
         FROM AnalyticsSourceFamilyHistorical x
@@ -982,8 +982,8 @@ UPDATE [AnalyticsSourceFamilyHistorical]
     )";
 
                         var parameters = new Dictionary<string, object>();
-                        parameters.Add( "@familyAttributeValue", familyAttributeValue );
-                        parameters.Add( "@attributeValue", attributeValue );
+                        parameters.Add( "@familyAttributeValue", familyAttributeValue ?? ( object ) DBNull.Value );
+                        parameters.Add( "@attributeValue", attributeValue ?? ( object ) DBNull.Value );
                         this._familyJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
 
                         this._familyJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters, _commandTimeout );
