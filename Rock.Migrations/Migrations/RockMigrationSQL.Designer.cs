@@ -109,29 +109,12 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;SMITH&apos;,1,2376206,880.85
-        ///&apos;JOHNSON&apos;,2,1857160,688.44
-        ///&apos;WILLIAMS&apos;,3,1534042,568.66
-        ///&apos;BROWN&apos;,4,1380145,511.62
-        ///&apos;JONES&apos;,5,1362755,505.17
-        ///&apos;MILLER&apos;,6,1127803,418.07
-        ///&apos;DAVIS&apos;,7,1072335,397.51
-        ///&apos;GARCIA&apos;,8,858289,318.17
-        ///&apos;RODRIGUEZ&apos;,9,804240,298.13
-        ///&apos;WILSON&apos;,10,783051,290.27
-        ///&apos;MARTINEZ&apos;,11,775072,287.32
-        ///&apos;ANDERSON&apos;,12,762394,282.62
-        ///&apos;TAYLOR&apos;,13,720370,267.04
-        ///&apos;THOMAS&apos;,14,710696,263.45
-        ///&apos;HERNANDEZ&apos;,15,706372,261.85
-        ///&apos;MOORE&apos;,16,698671,259
-        ///&apos;MARTIN&apos;,17,672711,249.37
-        ///&apos;JACKSON&apos;,18,666125,246.93
-        ///&apos;THOMPSON&apos;,19,644368,2 [rest of string was truncated]&quot;;.
+        ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static string _201707311527250_LastName {
+        public static byte[] _201707311527250_LastName {
             get {
-                return ResourceManager.GetString("_201707311527250_LastName", resourceCulture);
+                object obj = ResourceManager.GetObject("_201707311527250_LastName", resourceCulture);
+                return ((byte[])(obj));
             }
         }
         

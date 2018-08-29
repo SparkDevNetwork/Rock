@@ -622,9 +622,6 @@
     <Content Include="Migrations\CreateDatabase\201707311527250_FirstNameGender.txt">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\CreateDatabase\201707311527250_LastName.txt">
-      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
-    </Content>
     <Content Include="Migrations\CreateDatabase\201707311527250_NickName.txt">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Content>
@@ -635,6 +632,9 @@
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
+    <None Include="Migrations\CreateDatabase\201707311527250_LastName.gz">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </None>
     <None Include="Migrations\Version 8.0\Version 1.8.0\201802092340176_Rollup_0209_spCrm_PersonDuplicateFinder.sql">
       <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
     </None>
