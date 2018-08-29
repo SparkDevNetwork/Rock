@@ -473,6 +473,8 @@ namespace Rock.Client.Enums
         NotProcessed = 0x0,
         Complete = 0x1,
         ManualUpdateRequired = 0x2,
+        ManualUpdateRequiredOrNotProcessed = 0x3,
+        All = 0x4,
     }
 
     /// <summary>
