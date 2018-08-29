@@ -135,7 +135,7 @@ namespace Rock.Web.Cache
                 foreach ( var id in _formAttributeIds )
                 {
                     var formAttribute = WorkflowActionFormAttributeCache.Get( id );
-                    if ( formAttribute != null )
+                    if ( formAttribute != null && formAttribute.Attribute != null )
                     {
                         formAttributes.Add( formAttribute );
                     }
