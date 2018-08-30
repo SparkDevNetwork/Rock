@@ -373,11 +373,11 @@ namespace RockWeb.Blocks.Administration
             var enabledLabel = string.Empty;
             if ( enabled )
             {
-                enabledLabel = "<span class='label label-success'>Enabled</span>";
+                enabledLabel = "<span class='label label-success'>Enabled</span> <span class='label label-warning'>$</span>";
             }
             else
             {
-                enabledLabel = "<span class='label label-warning'>Disabled</span>";
+                enabledLabel = "<span class='label label-warning'>Disabled</span> <span class='label label-warning'>$</span>";
             }
 
             panelWidget.Title = string.Format( "<h3 class='panel-title pull-left margin-r-sm'>{0}</h3> {1} ", title, enabledLabel );

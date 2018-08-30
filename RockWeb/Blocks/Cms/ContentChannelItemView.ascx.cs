@@ -628,7 +628,9 @@ namespace RockWeb.Blocks.Cms
 
             var items = new List<ContentChannelItem>();
 
-            var itemQry = new ContentChannelItemService( rockContext ).Queryable()
+            var contentChannelItemService = new ContentChannelItemService( rockContext );
+
+            var itemQry = contentChannelItemService.Queryable()
                 .Where( i => i.ContentChannelId == selectedChannel.Id );
 
             var drp = new DateRangePicker();
@@ -676,40 +678,10 @@ namespace RockWeb.Blocks.Cms
             // Filter query by any configured attribute filters
             if ( AvailableAttributes != null && AvailableAttributes.Any() )
             {
-                var attributeValueService = new AttributeValueService( rockContext );
-                var parameterExpression = attributeValueService.ParameterExpression;
-
                 foreach ( var attribute in AvailableAttributes )
                 {
                     var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                    if ( filterControl == null )
-                        continue;
-
-                    var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                    var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                    var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                    if ( expression == null )
-                        continue;
-
-                    var attributeValues = attributeValueService
-                        .Queryable()
-                        .Where( v => v.Attribute.Id == attribute.Id );
-
-                    var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                    isFiltered = true;
-
-                    if ( filterIsDefault )
-                    {
-                        itemQry = itemQry.Where( w =>
-                        !attributeValues.Any( v => v.EntityId == w.Id ) ||
-                        filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                    }
-                    else
-                    {
-                        itemQry = itemQry.Where( w =>
-                        filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                    }
+                    itemQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( itemQry, filterControl, attribute, contentChannelItemService, Rock.Reporting.FilterMode.SimpleFilter );
                 }
             }
 

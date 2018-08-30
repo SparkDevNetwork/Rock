@@ -288,6 +288,7 @@ namespace Rock.Web.Cache
         private static Dictionary<int, Type> _cacheableEntityTypeIds = null;
         private System.Reflection.MethodInfo _cachedItemGetMethod = null;
         private System.Reflection.MethodInfo _cachedItemFlushItemMethod = null;
+        private System.Reflection.MethodInfo _cachedItemClearMethod = null;
 
         /// <summary>
         /// Determines whether there is an IEntityCache associated with this EntityType
@@ -321,6 +322,16 @@ namespace Rock.Web.Cache
             _cachedItemFlushItemMethod = _cachedItemFlushItemMethod ?? GetEntityCacheType()?.GetMethod( "FlushItem", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy, null, new Type[] { typeof( Int32 ) }, null );
 
             _cachedItemFlushItemMethod?.Invoke( null, new object[] { entityId } );
+        }
+
+        /// <summary>
+        /// Clears all the cached items for this EntityType
+        /// </summary>
+        internal void ClearCachedItems()
+        {
+            _cachedItemClearMethod = _cachedItemClearMethod ?? GetEntityCacheType()?.GetMethod( "Clear", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy, null, new Type[] {}, null );
+
+            _cachedItemClearMethod?.Invoke( null, new object[] {} );
         }
 
         #endregion Cache Related Methods

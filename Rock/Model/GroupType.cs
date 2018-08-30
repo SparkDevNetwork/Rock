@@ -28,6 +28,7 @@ using Rock.Web.Cache;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Security;
+using Rock.Transactions;
 
 namespace Rock.Model
 {
@@ -419,7 +420,7 @@ namespace Rock.Model
             {% if Group.Schedule != null %}
 
             <dt> Schedule </dt>
-            <dd>{{ Group.Schedule.ToString() }}</ dd >
+            <dd>{{ Group.Schedule.FriendlyScheduleText }}</ dd >
             {% endif %}
             {% if Group.GroupCapacity != null and Group.GroupCapacity != '' %}
 
@@ -1019,44 +1020,43 @@ namespace Rock.Model
         #endregion
 
         #region Index Methods
+
         /// <summary>
-        /// Deletes the indexed documents by group type.
+        /// Queues groups of this type to have their indexes deleted
         /// </summary>
         /// <param name="groupTypeId">The group type identifier.</param>
         public void DeleteIndexedDocumentsByGroupType( int groupTypeId )
         {
-            var groups = new GroupService( new RockContext() ).Queryable()
-                                    .Where( i => i.GroupTypeId == groupTypeId );
+            var groupIds = new GroupService( new RockContext() ).Queryable()
+                .Where( i => i.GroupTypeId == groupTypeId )
+                .Select( a => a.Id ).ToList();
 
-            foreach ( var group in groups )
+            int groupEntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>().Value;
+
+            foreach ( var groupId in groupIds )
             {
-                var indexableGroup = GroupIndex.LoadByModel( group );
-                IndexContainer.DeleteDocument<GroupIndex>( indexableGroup );
+                var transaction = new DeleteIndexEntityTransaction { EntityId = groupId, EntityTypeId = groupEntityTypeId };
+                transaction.Enqueue();
             }
         }
 
         /// <summary>
-        /// Bulks the index documents by content channel.
+        /// Queues groups of this type to have their indexes updated
         /// </summary>
-        /// <param name="groupTypeId">The content channel identifier.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
         public void BulkIndexDocumentsByGroupType( int groupTypeId )
         {
-            List<GroupIndex> indexableGroups = new List<GroupIndex>();
+            var groupIds = new GroupService( new RockContext() ).Queryable()
+                .Where( i => i.GroupTypeId == groupTypeId )
+                .Select( a => a.Id ).ToList();
 
-            // return all approved content channel items that are in content channels that should be indexed
-            RockContext rockContext = new RockContext();
-            var groups = new GroupService( rockContext ).Queryable()
-                                            .Where( g =>
-                                                g.GroupTypeId == groupTypeId
-                                                && g.IsActive);
+            int groupEntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>().Value;
 
-            foreach ( var group in groups )
+            foreach ( var groupId in groupIds )
             {
-                var indexableChannelItem = GroupIndex.LoadByModel( group );
-                indexableGroups.Add( indexableChannelItem );
+                var transaction = new IndexEntityTransaction { EntityId = groupId, EntityTypeId = groupEntityTypeId };
+                transaction.Enqueue();
             }
-
-            IndexContainer.IndexDocuments( indexableGroups );
         }
         #endregion
 

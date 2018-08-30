@@ -134,7 +134,7 @@ namespace Rock.Field.Types
                     }
                     else
                     {
-                        addressControl.Country = addressControl.GetDefaultCountry();
+                        addressControl.Country = string.Empty;
                         addressControl.Street1 = string.Empty;
                         addressControl.Street2 = string.Empty;
                         addressControl.City = string.Empty;

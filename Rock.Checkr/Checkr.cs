@@ -67,7 +67,8 @@ namespace Rock.Checkr
                 if ( workflow == null )
                 {
                     errorMessages.Add( "The 'Checkr' background check provider requires a valid workflow." );
-                    return false;
+                    UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
+                    return true;
                 }
 
                 Person person;
@@ -76,7 +77,7 @@ namespace Rock.Checkr
                 {
                     errorMessages.Add( "Unable to get Person." );
                     UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
-                    return false;
+                    return true;
                 }
 
                 string packageName;
@@ -84,7 +85,7 @@ namespace Rock.Checkr
                 {
                     errorMessages.Add( "Unable to get Package." );
                     UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
-                    return false;
+                    return true;
                 }
 
                 string candidateId;
@@ -92,14 +93,14 @@ namespace Rock.Checkr
                 {
                     errorMessages.Add( "Unable to create candidate." );
                     UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
-                    return false;
+                    return true;
                 }
 
                 if ( !CreateInvitation( candidateId, packageName, errorMessages ) )
                 {
                     errorMessages.Add( "Unable to create invitation." );
                     UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
-                    return false;
+                    return true;
                 }
 
                 using ( var newRockContext = new RockContext() )
@@ -133,7 +134,8 @@ namespace Rock.Checkr
             {
                 ExceptionLogService.LogException( ex, null );
                 errorMessages.Add( ex.Message );
-                return false;
+                UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
+                return true;
             }
         }
 
