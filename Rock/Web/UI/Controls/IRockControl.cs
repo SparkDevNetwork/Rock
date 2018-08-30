@@ -50,6 +50,14 @@ namespace Rock.Web.UI.Controls
         string Warning { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="IRockControl" /> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        new bool Required { get; set; }
+
+        /// <summary>
         /// Gets or sets the required error message.  If blank, the LabelName name will be used
         /// </summary>
         /// <value>
