@@ -263,7 +263,7 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
-        /// Builds the detail page URL. This is needed so that it can pass along any url paramters that are in the
+        /// Builds the detail page URL. This is needed so that it can pass along any url parameters that are in the
         /// query string.
         /// </summary>
         /// <param name="detailPage">The detail page.</param>

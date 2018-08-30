@@ -21,7 +21,7 @@ using System.Web.UI.WebControls.Adapters;
 namespace Rock.Web.UI.Adapters
 {
     /// <summary>
-    /// Abstract adapter for checkboxlist and radiobuttonlist adaptors
+    /// Abstract adapter for checkboxlist and radiobuttonlist adapters
     /// </summary>
     public abstract class ListControlAdaptor : WebControlAdapter
     {

@@ -694,7 +694,7 @@ namespace Rock.Web.UI.Controls
             var rockBlock = this.RockBlock();
             if ( rockBlock != null )
             {
-                string preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.BlockCache.Id );
+                string preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.BlockCache?.Id );
                 pageSize = rockBlock.GetUserPreference( preferenceKey ).AsInteger();
                 if ( pageSize != 50 && pageSize != 500 && pageSize != 5000 )
                 {
@@ -1501,7 +1501,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 bool selectAll = !SelectedKeys.Any();
                 RebindGrid( e, selectAll, false, true );
 
-                // Create a dictionary of the additional merge fields that were created for the communicatoin
+                // Create a dictionary of the additional merge fields that were created for the communication
                 var communicationMergeFields = new Dictionary<string, string>();
                 foreach ( string mergeField in this.CommunicateMergeFields )
                 {
@@ -3090,6 +3090,13 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 additionalMergeProperties = dataSourceObjectType.GetProperties().ToList();
             }
 
+            // If this is a DotLiquid.Drop class, don't include any of the properties that are inherited from DotLiquid.Drop
+            if ( typeof( DotLiquid.Drop ).IsAssignableFrom( dataSourceObjectType ) )
+            {
+                var dropProperties = typeof( DotLiquid.Drop ).GetProperties().Select( a => a.Name );
+                additionalMergeProperties = additionalMergeProperties.Where( a => !dropProperties.Contains( a.Name ) ).ToList();
+            }
+
             var gridDataFields = this.Columns.OfType<BoundField>().ToList();
 
             Dictionary<int, Dictionary<string, object>> itemMergeFieldsList = new Dictionary<int, Dictionary<string, object>>( this.DataSourceAsList.Count );
@@ -4180,7 +4187,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
     }
 
     /// <summary>
-    /// Column Prioritiy Values
+    /// Column Priority Values
     /// </summary>
     public enum ColumnPriority
     {

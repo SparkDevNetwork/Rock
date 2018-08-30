@@ -69,7 +69,7 @@ namespace Rock.PayFlowPro
         }
 
         /// <summary>
-        /// Returnes a boolean value indicating if 'Saved Account' functionality is supported for the given currency type.
+        /// Returns a boolean value indicating if 'Saved Account' functionality is supported for the given currency type.
         /// </summary>
         /// <param name="currencyType">Type of the currency.</param>
         /// <returns></returns>

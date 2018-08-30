@@ -31,7 +31,7 @@ using Rock.Web.Cache;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Determines if any events have occured for the enitities that a person follows, and if so notifies them
+    /// Determines if any events have occurred for the enitities that a person follows, and if so notifies them
     /// </summary>
     [SystemEmailField( "Following Event Notification Email Template", required: true, order: 0, key: "EmailTemplate" )]
     [SecurityRoleField( "Eligible Followers", "The group that contains individuals who should receive following event notification", true, order: 1 )]
@@ -93,7 +93,7 @@ namespace Rock.Jobs
                             m.GroupMemberStatus == GroupMemberStatus.Active &&
                             m.Person != null &&
                             m.Person.Email != null &&
-                            m.Person.Email != "" &&
+                            m.Person.Email != string.Empty &&
                             m.Person.EmailPreference != EmailPreference.DoNotEmail &&
                             m.Person.IsEmailActive
                          )
@@ -169,7 +169,7 @@ namespace Rock.Jobs
                     {
                         // Get the entitytype
                         EntityTypeCache itemEntityType = EntityTypeCache.Get( keyVal.Key );
-                        if ( itemEntityType.AssemblyName != null )
+                        if ( itemEntityType != null && itemEntityType.AssemblyName != null )
                         {
                             // get the actual type of what is being followed 
                             Type entityType = itemEntityType.GetEntityType();
@@ -208,7 +208,7 @@ namespace Rock.Jobs
                                                     var eventComponent = eventType.GetEventComponent();
                                                     if ( eventComponent != null )
                                                     {
-                                                        // Get the previous notificatoins for this event type
+                                                        // Get the previous notifications for this event type
                                                         var previousNotifications = followingEventNotificationService
                                                             .Queryable()
                                                             .Where( n => n.FollowingEventTypeId == eventType.Id )
@@ -264,7 +264,7 @@ namespace Rock.Jobs
                         }
                     }
 
-                    // send notificatons
+                    // send notifications
                     var possibleRecipients = new PersonService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( p => personSubscriptions.Keys.Contains( p.Id ) )
@@ -331,9 +331,13 @@ namespace Rock.Jobs
 
                                         var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
                                         emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
-                                        emailMessage.Send();
-
-                                        followingEventsSent++;
+                                        var errors = new List<string>(); 
+                                        emailMessage.Send(out errors);
+                                        exceptionMsgs.AddRange( errors );
+                                        if ( !errors.Any() )
+                                        {
+                                            followingEventsSent++;
+                                        }
                                     }
                                 }
                             }

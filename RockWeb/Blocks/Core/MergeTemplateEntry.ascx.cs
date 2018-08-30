@@ -594,7 +594,7 @@ namespace RockWeb.Blocks.Core
         public class MergeTemplateCombinedPerson : Person
         {
             /// <summary>
-            /// Overide of FullName that should be set to whatever the FamilyTitle should be
+            /// Override of FullName that should be set to whatever the FamilyTitle should be
             /// </summary>
             /// <value>
             /// A <see cref="System.String" /> representing the Family Title of a combined person

@@ -321,7 +321,7 @@ namespace Rock.Lava.Blocks
             parms.Add( "duration", "3600" );
             parms.Add( "maxcachesize", "200000" );
 
-            var markupItems = Regex.Matches( markup, "(.*?:'[^']*')" )
+            var markupItems = Regex.Matches( markup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

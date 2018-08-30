@@ -656,7 +656,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// Loads a check-in block to determine if it will require a selection or not. This is used to find the
         /// next page/block that does require a selection so that user can be redirected once to that block, 
-        /// rather than just continuesly redirected to next/prev page blocks and possibly exceeding the maximum
+        /// rather than just continuously redirected to next/prev page blocks and possibly exceeding the maximum
         /// number of redirects.
         /// </summary>
         /// <param name="attributeKey">The attribute key.</param>

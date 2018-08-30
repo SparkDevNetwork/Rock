@@ -215,6 +215,15 @@ namespace Rock.Reporting
         }
 
         /// <summary>
+        /// Gets the comparison types typically used simple comparisons of: equal, not equal, blank or not blank.
+        /// </summary>
+        internal const ComparisonType EqualOrBlankFilterComparisonTypes =
+                        ComparisonType.EqualTo |
+                        ComparisonType.IsBlank |
+                        ComparisonType.IsNotBlank |
+                        ComparisonType.NotEqualTo;
+
+        /// <summary>
         /// Gets the comparison types typically used for string fields
         /// </summary>
         public const ComparisonType StringFilterComparisonTypes =

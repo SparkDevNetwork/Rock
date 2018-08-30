@@ -1169,7 +1169,7 @@ validity of the request before completing this merge." :
             List<object> heading = null;
             foreach ( var personProperty in Properties )
             {
-                // If this is a heading property, or this is a property with more than one disctict value build the row data
+                // If this is a heading property, or this is a property with more than one distinct value build the row data
                 if ( headingKeys.Contains( personProperty.Key ) ||
                     personProperty.Values.Select( v => v.Value ).Distinct().Count() > 1 )
                 {

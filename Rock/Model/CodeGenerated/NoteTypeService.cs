@@ -94,11 +94,13 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this NoteType target, NoteType source )
         {
             target.Id = source.Id;
+            target.AllowsAttachments = source.AllowsAttachments;
             target.AllowsReplies = source.AllowsReplies;
             target.AllowsWatching = source.AllowsWatching;
             target.ApprovalUrlTemplate = source.ApprovalUrlTemplate;
             target.AutoWatchAuthors = source.AutoWatchAuthors;
             target.BackgroundColor = source.BackgroundColor;
+            target.BinaryFileTypeId = source.BinaryFileTypeId;
             target.BorderColor = source.BorderColor;
             target.EntityTypeId = source.EntityTypeId;
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;

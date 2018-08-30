@@ -146,13 +146,13 @@ namespace Rock.Transactions
                                     .ToList();
                             }
 
-                            // Combine group and grouptype trigers
+                            // Combine group and grouptype triggers
                             var triggers = groupTriggers.Union( groupTypeTriggers ).ToList();
 
                             // If any triggers were found
                             if ( triggers.Any() )
                             {
-                                // Loop through triggers and lauch appropriate workflow
+                                // Loop through triggers and launch appropriate workflow
                                 foreach ( var trigger in triggers )
                                 {
                                     bool launchIt = true;

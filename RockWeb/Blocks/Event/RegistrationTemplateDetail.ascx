@@ -328,7 +328,7 @@
 
                         <Rock:PanelWidget ID="wpWaitListTransition" runat="server" Title="Wait List Transition Email">
                             <div class="alert alert-info">
-                                This email template will be used when the individual needs to be notified that they are no longer on the wait list and have been transtioned to a full registrant.
+                                This email template will be used when the individual needs to be notified that they are no longer on the wait list and have been transitioned to a full registrant.
                             </div>
                             <div class="row">
                                 <div class="col-md-6">

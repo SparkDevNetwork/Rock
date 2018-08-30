@@ -52,7 +52,7 @@ using UAParser;
 namespace Rock.Lava
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class RockFilters
     {
@@ -324,14 +324,14 @@ namespace Rock.Lava
             input = Regex.Replace( input, "-+", "-" );
 
             // ensure the class name is valid (starts with a letter or - or _ and is at least 2 characters
-            // if not add a x- to correct it and note that it is non-stanard
+            // if not add a x- to correct it and note that it is non-standard
 
             ex = new Regex( "-?[_a-zA-Z]+[_a-zA-Z0-9-]*");
             if ( !ex.IsMatch( input ) )
             {
                 input = "-x-" + input;
             }
-            
+
             return input;
         }
 
@@ -923,7 +923,7 @@ namespace Rock.Lava
                 input = RockDateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture );
             }
 
-            if ( string.IsNullOrWhiteSpace( format ) ) 
+            if ( string.IsNullOrWhiteSpace( format ) )
             {
                 return input.ToString();
             }
@@ -1669,7 +1669,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Addition - Overriding this to change the logic. The default filter will concat if the type is 
+        /// Addition - Overriding this to change the logic. The default filter will concat if the type is
         /// string. This one does the math if the input can be parsed as a int
         /// </summary>
         /// <param name="input"></param>
@@ -2029,7 +2029,7 @@ namespace Rock.Lava
 
             if (input is int )
             {
-                person = new PersonService( new RockContext() ).Get( (int)input ); 
+                person = new PersonService( new RockContext() ).Get( (int)input );
             }
             else if (input is Person )
             {
@@ -2453,7 +2453,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Gets the Spouse of the selected person 
+        /// Gets the Spouse of the selected person
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
@@ -2470,7 +2470,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Gets the Head of Household of the selected person 
+        /// Gets the Head of Household of the selected person
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
@@ -2769,7 +2769,7 @@ namespace Rock.Lava
             }
             catch
             {
-                // intentially blank
+                // intentionally blank
             }
 
             return string.Empty;
@@ -2933,10 +2933,10 @@ namespace Rock.Lava
             {
                 return new AttendanceService( GetRockContext( context ) ).Queryable()
                     .AsNoTracking()
-                    .Where( a => 
-                        a.Occurrence.Group != null && 
-                        a.Occurrence.Group.GroupTypeId == numericalGroupTypeId && 
-                        a.PersonAlias.PersonId == person.Id && 
+                    .Where( a =>
+                        a.Occurrence.Group != null &&
+                        a.Occurrence.Group.GroupTypeId == numericalGroupTypeId &&
+                        a.PersonAlias.PersonId == person.Id &&
                         a.DidAttend == true )
                     .Select( a => a.Occurrence.Group ).Distinct().ToList();
             }
@@ -2960,10 +2960,10 @@ namespace Rock.Lava
             {
                 var attendance = new AttendanceService( GetRockContext( context ) ).Queryable( "Group" )
                     .AsNoTracking()
-                    .Where( a => 
+                    .Where( a =>
                         a.Occurrence.Group != null &&
-                        a.Occurrence.Group.GroupTypeId == numericalGroupTypeId && 
-                        a.PersonAlias.PersonId == person.Id && 
+                        a.Occurrence.Group.GroupTypeId == numericalGroupTypeId &&
+                        a.PersonAlias.PersonId == person.Id &&
                         a.DidAttend == true )
                     .OrderByDescending( a => a.StartDateTime )
                     .FirstOrDefault();
@@ -2997,7 +2997,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Gets the groups of selected type that geofence the selected person 
+        /// Gets the groups of selected type that geofence the selected person
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
@@ -3072,7 +3072,7 @@ namespace Rock.Lava
             {
                 return person.GetCampus();
             }
-            
+
         }
 
         /// <summary>
@@ -3170,7 +3170,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Creates a Person Token (rckipid) for the specified Person (person can be specified by Person, Guid, or Id). Specify ExpireMinutes, UsageLimit and PageId to 
+        /// Creates a Person Token (rckipid) for the specified Person (person can be specified by Person, Guid, or Id). Specify ExpireMinutes, UsageLimit and PageId to
         /// limit the usage of the token for the specified number of minutes, usage count, and specific pageid
         /// </summary>
         /// <param name="context">The context.</param>
@@ -3224,7 +3224,7 @@ namespace Rock.Lava
             if ( !string.IsNullOrEmpty( encryptedPersonToken ) )
             {
                 var rockContext = new RockContext();
-                
+
 
                 return new PersonService( rockContext ).GetByImpersonationToken( encryptedPersonToken, incrementUsage, pageId );
             }
@@ -3408,7 +3408,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Froms the cache.
+        /// From the cache.
         /// </summary>
         /// <param name="input">The input.</param>
         /// <param name="cacheType">Type of the cache.</param>
@@ -3744,7 +3744,7 @@ namespace Rock.Lava
                 page.BrowserTitle = input;
                 page.PageTitle = input;
                 page.Title = input;
-                page.Header.Title = input;                
+                page.Header.Title = input;
             }
 
             return null;
@@ -3793,7 +3793,7 @@ namespace Rock.Lava
                 case "IP":
                     {
                         string address = string.Empty;
-                        
+
                         // http://stackoverflow.com/questions/735350/how-to-get-a-users-client-ip-address-in-asp-net
                         string ipAddress = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
 
@@ -4101,7 +4101,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string CreateShortLink( object input, string token = "", int? siteId = null, bool overwrite = false, int randomLength = 7 )
         {
-            // Notes: This filter attemtps to return a valid shortlink at all costs
+            // Notes: This filter attempts to return a valid shortlink at all costs
             //        this means that if the configuration passed to it is invalid
             //        it will try to correct it with reasonable defaults. For instance
             //        if you pass in an invalid siteId, the first active site will be used.
@@ -4296,7 +4296,7 @@ namespace Rock.Lava
                             result.Add( liquidObject[selectKey] );
                         }
                     }
-                    else if ( value is IDictionary<string, object> ) 
+                    else if ( value is IDictionary<string, object> )
                     {
                         var dictionaryObject = value as IDictionary<string, object>;
                         if ( dictionaryObject.ContainsKey( selectKey ) )
@@ -4323,7 +4323,7 @@ namespace Rock.Lava
         {
             return SortByAttribute( context, input, attributeKey, "asc" );
         }
-        
+
         /// <summary>
         /// Sorts the list of items by the specified attribute's value
         /// </summary>

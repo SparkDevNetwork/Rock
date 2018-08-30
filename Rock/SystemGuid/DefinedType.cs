@@ -130,7 +130,7 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_TRANSACTION_REFUND_REASON = "61FE3A58-9F4F-472F-A4E0-5116EB90A323";
 
         /// <summary>
-        /// Guid for Fundraising Opportunity Type (Trip, Project, Intership, etc)
+        /// Guid for Fundraising Opportunity Type (Trip, Project, Internship, etc)
         /// </summary>
         public const string FUNDRAISING_OPPORTUNITY_TYPE = "53C8FFF6-3022-4A2D-9BAE-FD3435BEA43D";
 

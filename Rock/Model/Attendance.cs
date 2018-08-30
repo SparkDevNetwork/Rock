@@ -265,7 +265,7 @@ namespace Rock.Model
         public virtual DefinedValue Qualifier { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether this attenance is currently checked in.
+        /// Gets a value indicating whether this attendance is currently checked in.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is currently checked in; otherwise, <c>false</c>.
@@ -584,7 +584,7 @@ namespace Rock.Model
                         {
                             var attendanceOccurrenceService = new AttendanceOccurrenceService( attendanceOccurrenceRockContext );
 
-                            // if GroupId,LocationId, or ScheduleId changed, use StartDateTime's Date as the OccurrenceDate to look up AttendanceOccurence since it is really a completely different Occurence if Group,Location or Schedule changes
+                            // if GroupId,LocationId, or ScheduleId changed, use StartDateTime's Date as the OccurrenceDate to look up AttendanceOccurence since it is really a completely different Occurrence if Group,Location or Schedule changes
                             var occurrenceDate = this.StartDateTime.Date;
 
                             var attendanceOccurrence = attendanceOccurrenceService.Queryable().Where( a => a.GroupId == this.GroupId && a.LocationId == this.LocationId && a.ScheduleId == this.ScheduleId && a.OccurrenceDate == occurrenceDate ).FirstOrDefault();

@@ -910,7 +910,7 @@ namespace Rock.Model
         /// inheritence tree.
         /// </summary>
         /// <param name="rockContext">The database context to operate in.</param>
-        /// <returns>A list of GroupType Ids, including our own Id, that identifies the inheritence tree.</returns>
+        /// <returns>A list of GroupType Ids, including our own Id, that identifies the inheritance tree.</returns>
         public List<int> GetInheritedGroupTypeIds( Rock.Data.RockContext rockContext )
         {
             rockContext = rockContext ?? new RockContext();
@@ -953,7 +953,7 @@ namespace Rock.Model
         /// <param name="rockContext">The database context to operate in.</param>
         /// <param name="entityTypeId">The Entity Type Id for which Attributes to load.</param>
         /// <param name="entityTypeQualifierColumn">The EntityTypeQualifierColumn value to match against.</param>
-        /// <returns>A list of attributes defined in the inheritence tree.</returns>
+        /// <returns>A list of attributes defined in the inheritance tree.</returns>
         public List<AttributeCache> GetInheritedAttributesForQualifier( Rock.Data.RockContext rockContext, int entityTypeId, string entityTypeQualifierColumn )
         {
             var groupTypeIds = GetInheritedGroupTypeIds( rockContext );
@@ -1078,12 +1078,12 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            var parentGroupTypes = GroupTypeCache.Get( this.Id, dbContext as RockContext )?.ParentGroupTypes;
-            if ( parentGroupTypes?.Any() == true )
+            var parentGroupTypeIds = new GroupTypeService( dbContext as RockContext ).GetParentGroupTypes( this.Id ).Select( a => a.Id ).ToList();
+            if ( parentGroupTypeIds?.Any() == true )
             {
-                foreach ( var parentGroupType in parentGroupTypes )
+                foreach ( var parentGroupTypeId in parentGroupTypeIds )
                 {
-                    GroupTypeCache.UpdateCachedEntity( parentGroupType.Id, EntityState.Detached );
+                    GroupTypeCache.UpdateCachedEntity( parentGroupTypeId, EntityState.Detached );
                 }
             }
 

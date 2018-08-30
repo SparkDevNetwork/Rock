@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Event
     [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 7 )]
     [TextField( "Family Term", "The term to use for specifying which household or family a person is a member of.", true, "immediate family", "", 8 )]
     [BooleanField( "Force Email Update", "Force the email to be updated on the person's record.", false, "", 9 )]
-    [BooleanField( "Show Field Descriptions", "Show the field description as help text", defaultValue: false, order: 10, key: "ShowFieldDescriptions" )]
+    [BooleanField( "Show Field Descriptions", "Show the field description as help text", defaultValue: true, order: 10, key: "ShowFieldDescriptions" )]
 
     public partial class RegistrationEntry : RockBlock
     {
@@ -1121,7 +1121,7 @@ namespace RockWeb.Blocks.Event
                 {
                     if ( string.IsNullOrWhiteSpace( txtUserName.Text ) || string.IsNullOrWhiteSpace( txtPassword.Text ) )
                     {
-                        nbSaveAccount.Title = "Missing Informaton";
+                        nbSaveAccount.Title = "Missing Information";
                         nbSaveAccount.Text = "A username and password are required when saving an account";
                         nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                         nbSaveAccount.Visible = true;
@@ -1327,7 +1327,7 @@ namespace RockWeb.Blocks.Event
 
                 // Only allow the person that was logged in when this registration was created. 
                 // If the logged in person, registered on someone elses behalf (for example, husband logged in, but entered wife's name as the Registrar), 
-                // also allow that person to access the regisratiuon
+                // also allow that person to access the registration
                 if ( ( registration.PersonAlias != null && registration.PersonAlias.PersonId == CurrentPersonId.Value ) ||
                     ( registration.CreatedByPersonAlias != null && registration.CreatedByPersonAlias.PersonId == CurrentPersonId.Value ) )
                 {
@@ -1573,7 +1573,7 @@ namespace RockWeb.Blocks.Event
                     RegistrationState.Registrants.Add( registrant );
                 }
 
-                // While the number of registrants belonging to registration is less than the selected count, addd another registrant
+                // While the number of registrants belonging to registration is less than the selected count, add another registrant
                 while ( RegistrationState.RegistrantCount < registrantCount )
                 {
                     var registrant = new RegistrantInfo { Cost = cost };
@@ -1637,7 +1637,8 @@ namespace RockWeb.Blocks.Event
                 validationErrors.Add( "Amount To Pay is greater than the amount due. Please check the amount you have selected to pay." );
             }
 
-            if ( minimumPayment.HasValue && minimumPayment > 0.0M )
+            // Validate payment information if there is a payment due or if there is a payment amount being provided
+            if ( minimumPayment.HasValue && minimumPayment > 0.0M || RegistrationState.PaymentAmount > 0.0M )
             {
                 if ( RegistrationState.PaymentAmount < minimumPayment )
                 {
@@ -2041,6 +2042,7 @@ namespace RockWeb.Blocks.Event
                         if ( person != null )
                         {
                             person.Email = registration.ConfirmationEmail;
+                            rockContext.SaveChanges();
                         }
                     }
                 }
@@ -2470,7 +2472,7 @@ namespace RockWeb.Blocks.Event
                     rockContext.SaveChanges();
                     registrantInfo.Id = registrant.Id;
 
-                    // Set any of the templat's registrant attributes
+                    // Set any of the template's registrant attributes
                     registrant.LoadAttributes();
                     foreach ( var field in RegistrationTemplate.Forms
                         .SelectMany( f => f.Fields
@@ -2538,7 +2540,7 @@ namespace RockWeb.Blocks.Event
                             true,
                             CurrentPersonAliasId ) );
 
-                    // Clear this registran't family guid so it's not updated again
+                    // Clear this registrant's family guid so it's not updated again
                     registrantInfo.FamilyGuid = Guid.Empty;
 
                     // Save the signed document
@@ -2630,7 +2632,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                // If we've created the family aready for this registrant, add them to it
+                // If we've created the family already for this registrant, add them to it
                 if (
                         ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask && multipleFamilyGroupIds.ContainsKey( familyGuid ) ) ||
                         ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes && singleFamilyId.HasValue )
@@ -3913,7 +3915,7 @@ namespace RockWeb.Blocks.Event
         #region Dynamic Control Methods
 
         /// <summary>
-        /// Creates the dynamic controls for currennt panel
+        /// Creates the dynamic controls for current panel
         /// </summary>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void CreateDynamicControls( bool setValues )
@@ -5208,7 +5210,7 @@ namespace RockWeb.Blocks.Event
                     hfMinimumDue.Value = minimumPayment.Value.ToString();
                     lMinimumDue.Text = minimumPayment.Value.FormatAsCurrency();
 
-                    // Make sure payment amount is within minumum due and balance due. If not, set to balance due
+                    // Make sure payment amount is within minimum due and balance due. If not, set to balance due
                     if ( !RegistrationState.PaymentAmount.HasValue ||
                         RegistrationState.PaymentAmount.Value < minimumPayment.Value ||
                         RegistrationState.PaymentAmount.Value > balanceDue )
@@ -5377,7 +5379,7 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Udpates RegistrationState props using info from the UI controls
+        /// Updates RegistrationState props using info from the UI controls
         /// </summary>
         private void ParseSummaryControls()
         {

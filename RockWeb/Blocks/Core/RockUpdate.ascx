@@ -50,10 +50,10 @@
                 <!-- Early Access Messages -->
                 <div class="well">
                     <div class="row margin-b-lg">
-                        <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2">
+                        <div class="col-sm-3 col-md-2 margin-b-md">
                             <Rock:HighlightLabel runat="server" ID="hlblEarlyAccess" LabelType="Warning" Text="Early Access: Not Enabled" CssClass="padding-all-sm"></Rock:Highlightlabel>
                         </div>
-                        <div class="col-xs-8 col-sm-10 col-md-10 col-lg-10">
+                        <div class="col-sm-9 col-md-10">
                             <!-- Early Access Not Enabled -->
                             <asp:Panel runat="server" ID="pnlEarlyAccessNotEnabled" Visible="true">
                                 <p>
@@ -137,7 +137,7 @@
                     <div class="well well-message well-message-danger">
                         <h1>Whoa... That Wasn't Suppose To Happen</h1>
                         <i class="fa fa-exclamation-circle"></i>
-                        <p>An error ocurred during the update process.</p>
+                        <p>An error occurred during the update process.</p>
                     </div>
 
                     <asp:Literal ID="lMessage" runat="server"></asp:Literal>

@@ -21,12 +21,12 @@ using System.Text;
 namespace Rock.Mailgun
 {
     /// <summary>
-    /// Static utilities needed to make the mailgun experience more pleasent
+    /// Static utilities needed to make the mailgun experience more pleasant
     /// </summary>
     public static class MailgunUtilities
     {
         /// <summary>
-        /// Authenicates the mailgun request.
+        /// Authenticates the mailgun request.
         /// </summary>
         /// <param name="timestamp">The timestamp.</param>
         /// <param name="token">The token.</param>
