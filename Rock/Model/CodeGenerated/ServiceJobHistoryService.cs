@@ -93,15 +93,16 @@ namespace Rock.Model
             target.ServiceJobId = source.ServiceJobId;
             target.ServiceWorker = source.ServiceWorker;
             target.StartDateTime = source.StartDateTime;
-            target.StopDateTime = source.StopDateTime;
             target.Status = source.Status;
             target.StatusMessage = source.StatusMessage;
+            target.StopDateTime = source.StopDateTime;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
+
         }
     }
 }
