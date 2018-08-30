@@ -126,7 +126,7 @@ namespace RockWeb.Blocks.Crm
         #region Events
 
         /// <summary>
-        /// Builds the image html for the person in the perticular row.
+        /// Builds the image html for the person in the particular row.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>

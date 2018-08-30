@@ -87,7 +87,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            // Create ddl to select search for selected phone type or absense of phone type
+            // Create ddl to select search for selected phone type or absence of phone type
             RockDropDownList ddlHasPhoneOfType = new RockDropDownList();
             ddlHasPhoneOfType.CssClass = "js-hasphoneoftype";
             ddlHasPhoneOfType.ID = $"{filterControl.ID}_ddlHasPhoneOfType";

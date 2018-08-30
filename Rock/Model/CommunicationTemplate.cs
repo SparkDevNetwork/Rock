@@ -595,7 +595,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// When checking for security, if a template does not have specific rules, first check the category it belongs to, but then check the default entity securit for templates.
+        /// When checking for security, if a template does not have specific rules, first check the category it belongs to, but then check the default entity security for templates.
         /// </summary>
         public override ISecured ParentAuthorityPre => this.Category ?? base.ParentAuthority;
 

@@ -46,6 +46,8 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     public class CalculateFamilyAnalytics : IJob
     {
+        private const string SOURCE_OF_CHANGE = "Calculate Family Analytics Job";
+
         /// <summary> 
         /// Empty constructor for job initialization
         /// <para>
@@ -92,19 +94,25 @@ namespace Rock.Jobs
             var eraStartAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_START_DATE.AsGuid() );
             var eraEndAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_END_DATE.AsGuid() );
 
+            if (eraAttribute == null || eraStartAttribute == null || eraEndAttribute == null)
+            {
+                throw new Exception( "Family analytic attributes could not be found" );
+            }
+
             resultContext.Database.CommandTimeout = commandTimeout;
 
             var results = resultContext.Database.SqlQuery<EraResult>( "spCrm_FamilyAnalyticsEraDataset" ).ToList();
 
             int personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
             int attributeEntityTypeId = EntityTypeCache.Get( "Rock.Model.Attribute" ).Id;
-            int eraAttributeId = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() ).Id;
+            int eraAttributeId = eraAttribute.Id;
             int personAnalyticsCategoryId = CategoryCache.Get( SystemGuid.Category.HISTORY_PERSON_ANALYTICS.AsGuid() ).Id;
 
             foreach (var result in results )
             {
                 // create new rock context for each family (https://weblog.west-wind.com/posts/2014/Dec/21/Gotcha-Entity-Framework-gets-slow-in-long-Iteration-Loops)
                 RockContext updateContext = new RockContext();
+                updateContext.SourceOfChange = SOURCE_OF_CHANGE;
                 updateContext.Database.CommandTimeout = commandTimeout;
                 var attributeValueService = new AttributeValueService( updateContext );
                 var historyService = new HistoryService( updateContext );
@@ -157,7 +165,7 @@ namespace Rock.Jobs
                                     historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
                                     historyRecord.RelatedEntityId = eraAttributeId;
                                     historyRecord.CategoryId = personAnalyticsCategoryId;
-                                    historyRecord.SourceOfChange = "Calculate Family Analytics Job";
+                                    historyRecord.SourceOfChange = SOURCE_OF_CHANGE;
                                 }
 
                                 updateContext.SaveChanges();
@@ -224,7 +232,7 @@ namespace Rock.Jobs
                                 historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
                                 historyRecord.RelatedEntityId = eraAttributeId;
                                 historyRecord.CategoryId = personAnalyticsCategoryId;
-                                historyRecord.SourceOfChange = "Calculate Family Analytics Job";
+                                historyRecord.SourceOfChange = SOURCE_OF_CHANGE;
                             }
 
                             updateContext.SaveChanges();

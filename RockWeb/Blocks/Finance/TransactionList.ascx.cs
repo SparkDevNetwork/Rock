@@ -1679,7 +1679,7 @@ namespace RockWeb.Blocks.Finance
             else
             {
 
-                // Default sort by Id if the transations are seen via the batch,
+                // Default sort by Id if the transactions are seen via the batch,
                 // otherwise sort by descending date time.
                 if ( ContextTypesRequired.Any( e => e.Id == batchEntityTypeId ) )
                 {

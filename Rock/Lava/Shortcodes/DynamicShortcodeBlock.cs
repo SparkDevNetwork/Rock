@@ -166,7 +166,7 @@ namespace Rock.Lava.Shortcodes
                 // add a unique id so shortcodes have easy access to one
                 parms.AddOrReplace( "uniqueid", "id-" + Guid.NewGuid().ToString() );
 
-                // keep track of the recurrsion depth
+                // keep track of the recursion depth
                 int currentRecurrsionDepth = 0;
                 if ( parms.ContainsKey( "RecursionDepth" ) )
                 {
@@ -174,7 +174,7 @@ namespace Rock.Lava.Shortcodes
 
                     if (currentRecurrsionDepth > _maxRecursionDepth )
                     {
-                        result.Write( "A recursive loop was dected and processing of this shortcode has stopped." );
+                        result.Write( "A recursive loop was detected and processing of this shortcode has stopped." );
                         return;
                     }
                 }
@@ -183,7 +183,7 @@ namespace Rock.Lava.Shortcodes
                 var lavaTemplate = shortcode.Markup;
                 var blockMarkup = _blockMarkup.ToString().ResolveMergeFields( _internalMergeFields, _enabledSecurityCommands );
 
-                // pull child paramters from block content
+                // pull child parameters from block content
                 Dictionary<string, object> childParamters;
                 blockMarkup = GetChildParameters( blockMarkup, out childParamters );
                 foreach(var item in childParamters )
@@ -254,7 +254,7 @@ namespace Rock.Lava.Shortcodes
                 {
                     int starTagStartIndex = match.Index;
 
-                    // get the name of the paramter
+                    // get the name of the parameter
                     var parmNameMatch = new Regex( @"[\w-]*" ).Match( blockContent, starTagStartIndex + match.Length );
                     if ( parmNameMatch.Success )
                     {
@@ -284,7 +284,7 @@ namespace Rock.Lava.Shortcodes
                             var dynamicParm = new Dictionary<string, Object>();
                             dynamicParm.Add( "content", parmContent );
 
-                            var parmItems = Regex.Matches( tagParms, "(.*?:'[^']*')" )
+                            var parmItems = Regex.Matches( tagParms, @"(\S*?:'[^']+')" )
                                 .Cast<Match>()
                                 .Select( m => m.Value )
                                 .ToList();
@@ -369,7 +369,7 @@ namespace Rock.Lava.Shortcodes
             // first run lava across the inputted markup
             var resolvedMarkup = markup.ResolveMergeFields( _internalMergeFields );
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']*')" )
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Prayer
 
                 if ( !Page.IsPostBack )
                 {
-                    // This will produce a complete list of related context entity notes with the editible one
+                    // This will produce a complete list of related context entity notes with the editable one
                     // inline (in the middle of the note stream).
                     ShowNotes();
                 }

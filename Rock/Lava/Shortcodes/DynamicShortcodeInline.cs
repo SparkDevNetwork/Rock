@@ -90,7 +90,7 @@ namespace Rock.Lava.Shortcodes
                 // add a unique id so shortcodes have easy access to one
                 parms.AddOrReplace( "uniqueid", "id-" + Guid.NewGuid().ToString() );
 
-                // keep track of the recurrsion depth
+                // keep track of the recursion depth
                 int currentRecurrsionDepth = 0;
                 if ( parms.ContainsKey( "RecursionDepth" ) )
                 {
@@ -98,7 +98,7 @@ namespace Rock.Lava.Shortcodes
 
                     if ( currentRecurrsionDepth > _maxRecursionDepth )
                     {
-                        result.Write( "A recursive loop was dected and processing of this shortcode has stopped." );
+                        result.Write( "A recursive loop was detected and processing of this shortcode has stopped." );
                         return;
                     }
                 }
@@ -161,7 +161,7 @@ namespace Rock.Lava.Shortcodes
                 }
             }
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']*')" )
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

@@ -195,7 +195,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the group member attributes combined with the inherited group type's group member attibutes.
+        /// Gets the group member attributes combined with the inherited group type's group member attributes.
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
@@ -206,7 +206,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the group member attributes combined with the inherited group type's group member attibutes.
+        /// Gets the group member attributes combined with the inherited group type's group member attributes.
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
         /// <param name="groupTypeId">The group type identifier.</param>

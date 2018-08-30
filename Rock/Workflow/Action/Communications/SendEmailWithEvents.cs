@@ -156,7 +156,7 @@ namespace Rock.Workflow.Action
             // Use the current action type' guid as the key for a 'DateTime Sent' attribute 
             string AttrKey = action.ActionTypeCache.Guid.ToString() + "_DateTimeSent";
 
-            // Check to see if the action's activity does not yet have the the 'DateTime Sent' attribute.
+            // Check to see if the action's activity does not yet have the 'DateTime Sent' attribute.
             // The first time this action runs on any workflow instance using this action instance, the 
             // attribute will not exist and need to be created
             if ( !action.Activity.Attributes.ContainsKey( AttrKey ) )
@@ -184,7 +184,7 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                // Check to see if this action instance has a value for the 'Delay Activated' attrbute
+                // Check to see if this action instance has a value for the 'Delay Activated' attribute
                 DateTime? dateSent = action.Activity.GetAttributeValue( AttrKey ).AsDateTime();
                 if ( dateSent.HasValue )
                 {
@@ -207,7 +207,7 @@ namespace Rock.Workflow.Action
             // Use the current action type' guid as the key for a 'Email Status' attribute 
             string AttrKey = action.ActionTypeCache.Guid.ToString() + "_EmailStatus";
 
-            // Check to see if the action's activity does not yet have the the 'Email Status' attribute.
+            // Check to see if the action's activity does not yet have the 'Email Status' attribute.
             // The first time this action runs on any workflow instance using this action instance, the 
             // attribute will not exist and need to be created
             if ( !action.Activity.Attributes.ContainsKey( AttrKey ) )

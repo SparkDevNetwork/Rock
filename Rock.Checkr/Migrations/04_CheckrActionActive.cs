@@ -21,7 +21,7 @@ using Rock.SystemGuid;
 namespace Rock.Migrations
 {
     [MigrationNumber( 4, "1.8.0" )]
-    class Checkr_ActionActive : Migration
+    public class Checkr_ActionActive : Migration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

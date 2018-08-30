@@ -159,7 +159,7 @@ namespace Rock.Transactions
                                     ( ConnectionTypeId.HasValue && w.ConnectionTypeId.HasValue && w.ConnectionTypeId.Value == ConnectionTypeId.Value ) )
                                 .ToList();
 
-                            // Loop through connectionWorkflows and lauch appropriate workflow
+                            // Loop through connectionWorkflows and launch appropriate workflow
                             foreach ( var connectionWorkflow in workflows )
                             {
                                 switch ( connectionWorkflow.TriggerType )

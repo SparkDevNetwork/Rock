@@ -418,7 +418,7 @@ namespace Rock.Field.Types
         {
             get
             {
-                return ComparisonHelper.StringFilterComparisonTypes;
+                return ComparisonHelper.EqualOrBlankFilterComparisonTypes;
             }
         }
 

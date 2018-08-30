@@ -228,7 +228,7 @@ namespace RockWeb.Blocks.Groups
                 BlockSetup();
             }
 
-            // add a navigate event to cature when someone presses the back button
+            // add a navigate event to capture when someone presses the back button
             var sm = ScriptManager.GetCurrent( Page );
             sm.EnableSecureHistoryState = false;
             sm.Navigate += sm_Navigate;
@@ -394,7 +394,7 @@ namespace RockWeb.Blocks.Groups
                 groupMember = new GroupMember { Id = 0 };
                 groupMember.GroupId = _groupId;
 
-                // check to see if the person is alread a member of the gorup/role
+                // check to see if the person is already a member of the group/role
                 var existingGroupMember = groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId(
                     _groupId, ppGroupMemberPerson.SelectedValue ?? 0, ddlGroupRole.SelectedValueAsId() ?? 0 );
 

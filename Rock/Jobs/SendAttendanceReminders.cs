@@ -18,7 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-
+using System.Text;
+using System.Web;
 using Quartz;
 
 using Rock.Attribute;
@@ -55,6 +56,9 @@ namespace Rock.Jobs
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             var groupType = GroupTypeCache.Get( dataMap.GetString( "GroupType" ).AsGuid() );
             int attendanceRemindersSent = 0;
+            int errorCount = 0;
+            var errorMessages = new List<string>();
+
             if ( groupType.TakesAttendance && groupType.SendAttendanceReminder )
             {
 
@@ -66,7 +70,7 @@ namespace Rock.Jobs
                     string[] reminderDays = dataMap.GetString( "SendReminders" ).Split( ',' );
                     foreach ( string reminderDay in reminderDays )
                     {
-                        if ( reminderDay.Trim() != string.Empty )
+                        if ( reminderDay.Trim().IsNotNullOrWhiteSpace() )
                         {
                             var reminderDate = RockDateTime.Today.AddDays( 0 - Convert.ToInt32( reminderDay ) );
                             if ( !dates.Contains( reminderDate ) )
@@ -99,7 +103,7 @@ namespace Rock.Jobs
                             m.GroupMemberStatus == GroupMemberStatus.Active &&
                             m.GroupRole.IsLeader &&
                             m.Person.Email != null &&
-                            m.Person.Email != "" ) ) )
+                            m.Person.Email != String.Empty ) ) )
                 {
                     // Add the group 
                     occurrences.Add( group.Id, new List<DateTime>() );
@@ -157,7 +161,7 @@ namespace Rock.Jobs
                     }
                 }
 
-                // Remove any 'occurrenes' that already have attendance data entered
+                // Remove any 'occurrences' that already have attendance data entered
                 foreach ( var occurrence in attendanceOccurrenceService
                     .Queryable().AsNoTracking()
                     .Where( a =>
@@ -189,7 +193,7 @@ namespace Rock.Jobs
                         m.GroupMemberStatus == GroupMemberStatus.Active &&
                         m.GroupRole.IsLeader &&
                         m.Person.Email != null &&
-                        m.Person.Email != "" )
+                        m.Person.Email != string.Empty )
                     .ToList();
 
                 // Loop through the leaders
@@ -207,14 +211,37 @@ namespace Rock.Jobs
 
                         var emailMessage = new RockEmailMessage( dataMap.GetString( "SystemEmail" ).AsGuid() );
                         emailMessage.SetRecipients( recipients );
-                        emailMessage.Send();
+                        var errors = new List<string>();
+                        emailMessage.Send(out errors);
 
-                        attendanceRemindersSent++;
+                        if (errors.Any())
+                        {
+                            errorCount += errors.Count;
+                            errorMessages.AddRange( errors );
+                        }
+                        else
+                        {
+                            attendanceRemindersSent++;
+                        }
+
                     }
                 }
             }
 
             context.Result = string.Format( "{0} attendance reminders sent", attendanceRemindersSent );
+            if (errorMessages.Any())
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine();
+                sb.Append( string.Format( "{0} Errors: ", errorCount ));
+                errorMessages.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
+                string errors = sb.ToString();
+                context.Result += errors;
+                var exception = new Exception( errors );
+                HttpContext context2 = HttpContext.Current;
+                ExceptionLogService.LogException( exception, context2 );
+                throw exception;
+            }
         }
     }
 }

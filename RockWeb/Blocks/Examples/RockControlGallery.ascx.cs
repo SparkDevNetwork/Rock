@@ -101,7 +101,7 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// Reads this block to find embedded examples and returns them in a indexed list.
         /// </summary>
-        /// <returns>code examples by postion index</returns>
+        /// <returns>code examples by position index</returns>
         private List<string> ReadExamples()
         {
             var list = new List<string>();

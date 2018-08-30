@@ -29,9 +29,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            // ED: Add ConnectionStatus and RecordStatus Security Actions to Bulk Update
-            Sql( MigrationSQL._201807191932379_Rollup_0719_Add_ConnectionStatus_and_RecordStatus_Security_Actions_to_Bulk_Update );
-
             // GJ: Fix Accordion Bug
             Sql( MigrationSQL._201807191932379_Rollup_0719_Fix_Accordion_Bug );
 

@@ -83,7 +83,10 @@ namespace Rock.Jobs
                         financialGateway.LoadAttributes( rockContext );
 
                         var gateway = financialGateway.GetGatewayComponent();
-                        if (gateway == null) continue;
+                        if ( gateway == null )
+                        {
+                            continue;
+                        }
 
                         int daysBack = dataMap.GetString( "DaysBack" ).AsIntegerOrNull() ?? 1;
 

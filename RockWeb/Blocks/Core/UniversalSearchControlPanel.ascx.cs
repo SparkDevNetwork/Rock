@@ -405,7 +405,7 @@ namespace RockWeb.Blocks.Core
             if ( !searchEnabled )
             {
                 nbMessages.NotificationBoxType = NotificationBoxType.Warning;
-                nbMessages.Text = "No universal search index components are currently enabled. You must enable a index component under <span class='navigation-tip'>Admin Tools &gt; System Settngs &gt; Universal Search Index Components</span>.";
+                nbMessages.Text = "No universal search index components are currently enabled. You must enable a index component under <span class='navigation-tip'>Admin Tools &gt; System Settings &gt; Universal Search Index Components</span>.";
             }
         }
 

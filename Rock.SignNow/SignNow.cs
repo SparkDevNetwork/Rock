@@ -232,7 +232,7 @@ namespace Rock.SignNow
                 return null;
             }
 
-            // Create a docuemnt from the template
+            // Create a document from the template
             JObject copyTemplateRes = SignNowSDK.Template.Copy( accessToken, documentTemplate.ProviderTemplateKey, documentName );
             string documentId = copyTemplateRes.Value<string>( "id" );
             if ( string.IsNullOrWhiteSpace( documentId ) )

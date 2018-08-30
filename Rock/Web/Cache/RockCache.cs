@@ -109,6 +109,8 @@ namespace Rock.Web.Cache
 
         #region Public Static Properties
 
+        private static bool? _isCacheSerialized = null;
+
         /// <summary>
         /// Gets an indicator of whether cache manager is configured in a way that items will be serialized (i.e. if using Redis)
         /// </summary>
@@ -119,13 +121,20 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.AsBoolean() == true )
+                if ( _isCacheSerialized == null )
                 {
-                    return true;
+                    if ( Rock.Web.SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.AsBoolean() == true )
+                    {
+                        _isCacheSerialized = true;
+                    }
+                    else
+                    {
+                        // not using Redis, so it is safe to cache non-serializable things (like CacheLavaTemplate)
+                        _isCacheSerialized = false;
+                    }
                 }
 
-                // not using Redis, so it is safe to cache non-serializable things (like CacheLavaTemplate)
-                return false;
+                return _isCacheSerialized.Value;
             }
         }
 
@@ -362,7 +371,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Removes all items from cache for comma seperated list of cache tags
+        /// Removes all items from cache for comma separated list of cache tags
         /// </summary>
         /// <param name="cacheTags">The cache tags.</param>
         public static void RemoveForTags( string cacheTags )
