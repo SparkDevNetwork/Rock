@@ -278,8 +278,8 @@ namespace Rock.Field.Types
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
                 if ( valueCount == 0 )
                 {
-                    // No Value specified, so return Expression.Constant(true) ( which means don't filter )
-                    return Expression.Constant( true );
+                    // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
+                    return new NoAttributeFilterExpression();
                 }
                 else if ( valueCount == 1 )
                 {

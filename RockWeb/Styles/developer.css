@@ -147,3 +147,18 @@ label.strikethrough {
     cursor: -webkit-zoom-in;
     cursor: -moz-zoom-in;
 }
+
+
+/*SK File Manager Modal*/
+.htmleditor-filebrowser .modal-title {
+    padding: 0px;
+    margin-top: 0;
+}
+
+.htmleditor-filebrowser .modal-footer {
+    margin-right: 0px;
+}
+
+.picker-files .zip-upload .fileupload-group {
+    display: table-cell;
+}

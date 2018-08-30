@@ -757,7 +757,7 @@ namespace RockWeb.Blocks.Groups
             phAttributes.Controls.Clear();
             phAttributes.Visible = false;
 
-            phAttributes.Controls.Clear();
+            phAttributesReadOnly.Controls.Clear();
             phAttributesReadOnly.Visible = false;
 
             var editableAttributes = !readOnly ? groupMember.Attributes.Where( a => a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList() : new List<string>();
@@ -773,7 +773,7 @@ namespace RockWeb.Blocks.Groups
             if ( viewableAttributes.Any() )
             {
                 var excludeKeys = groupMember.Attributes.Where( a => !viewableAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
-                Rock.Attribute.Helper.AddDisplayControls( groupMember, phAttributesReadOnly, excludeKeys );
+                Rock.Attribute.Helper.AddDisplayControls( groupMember, phAttributesReadOnly, excludeKeys, false, false );
                 phAttributesReadOnly.Visible = true;
             }
 

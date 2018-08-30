@@ -138,7 +138,12 @@ namespace Rock.Model
                 var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
                 if ( gateway != null )
                 {
-                    return gateway.GetScheduledPaymentStatus( scheduledTransaction, out errorMessages );
+                    var result = gateway.GetScheduledPaymentStatus( scheduledTransaction, out errorMessages );
+
+                    var lastTransactionDate = scheduledTransaction.Transactions.Max( t => t.TransactionDateTime );
+                    scheduledTransaction.NextPaymentDate = gateway.GetNextPaymentDate( scheduledTransaction, lastTransactionDate );
+
+                    return result;
                 }
             }
 

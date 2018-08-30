@@ -90,7 +90,7 @@ namespace Rock.Migrations
                         ,'Get National Change of Address (NCOA)'
                         ,'Job to get a National Change of Address (NCOA) report for all active people''s addresses.'
                         ,'Rock.Jobs.GetNcoa'
-                        ,'0 0/10 0 ? * * *'
+                        ,'0 0/25 * 1/1 * ? *'
                         ,1
                         ,'{Rock.SystemGuid.ServiceJob.GET_NCOA}');
                 END" );
@@ -145,7 +145,7 @@ namespace Rock.Migrations
             // MP - Fix for Inactive People showing up in Statement Generator Address when ExcludeInactive = True
             Sql( @"
                 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ufnCrm_GetFamilyTitleIncludeInactive]') AND type in (N'P', N'PC', N'TF'))
-                DROP PROCEDURE [dbo].[ufnCrm_GetFamilyTitleIncludeInactive]" );
+                DROP FUNCTION [dbo].[ufnCrm_GetFamilyTitleIncludeInactive]" );
 
             Sql( MigrationSQL._201808062254493_Rollup_0806_ufnCrm_GetFamilyTitleIncludeInactive );
             Sql( MigrationSQL._201808062254493_Rollup_0806_ufnCrm_GetFamilyTitle );

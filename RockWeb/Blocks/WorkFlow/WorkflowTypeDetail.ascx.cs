@@ -1487,7 +1487,14 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
                     foreach ( var actionType in activityType.ActionTypes.OrderBy( a => a.Order ) )
                     {
-                        actionTypeText += string.Format( "<li>{0} <small class='text-muted'>({1})</small></li>" + Environment.NewLine, actionType.Name, Rock.Workflow.ActionContainer.GetComponentName( actionType.WorkflowAction.ToString() ) );
+                        if ( actionType.WorkflowAction != null )
+                        {
+                            actionTypeText += string.Format( "<li>{0} <small class='text-muted'>({1})</small></li>" + Environment.NewLine, actionType.Name, Rock.Workflow.ActionContainer.GetComponentName( actionType.WorkflowAction.ToString() ) );
+                        }
+                        else
+                        {
+                            actionTypeText += string.Format( "<li>{0} <small class='text-muted'>({1})</small></li>" + Environment.NewLine, actionType.Name, "Missing Component" );
+                        }
                     }
 
                     string actionsTitle = activityType.ActionTypes.Count > 0 ? "Actions:" : "No Actions";
@@ -1659,7 +1666,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 // Remove any fields that were removed
                 foreach ( var formAttribute in formAttributes.ToList() )
                 {
-                    if ( !attributes.ContainsKey( formAttribute.Attribute.Guid ) )
+                    if ( formAttribute.Attribute != null && !attributes.ContainsKey( formAttribute.Attribute.Guid ) )
                     {
                         formAttributes.Remove( formAttribute );
                     }

@@ -381,12 +381,21 @@
     <Compile Include="Model\CodeGenerated\NoteAttachmentService.cs" />
     <Compile Include="Model\NoteAttachment.cs" />
     <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
+    <Compile Include="Data\NoAttributeFilterExpression.cs" />
     <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
+    <Compile Include="Plugin\HotFixes\054_MigrationRollupsForV8_2.cs" />
+    <Compile Include="Plugin\HotFixes\053_DuplicateDataIntegrityReports.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
     </Compile>
+    <Compile Include="Reporting\DataFilter\Person\HasDuplicateEmailFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\HasDuplicatePhoneFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\InteractionDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\InteractionsFilter.cs" />
+    <Compile Include="Reporting\DataSelect\Person\InteractionCountSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\InteractionDateSelect.cs" />
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentChannelCache.cs" />
@@ -793,6 +802,7 @@
     <Compile Include="Model\AnalyticsSourcePersonHistorical.cs" />
     <Compile Include="Model\AnalyticsFactFinancialTransaction.cs" />
     <Compile Include="Model\AnalyticsSourceFinancialTransaction.cs" />
+    <Compile Include="Model\CodeGenerated\ServiceJobHistoryService.cs" />
     <Compile Include="Model\ConnectionTypeService.Partial.cs" />
     <Compile Include="Model\AttendanceOccurrence.cs" />
     <Compile Include="Model\Attendance.cs" />
@@ -1221,6 +1231,8 @@
     <Compile Include="Model\RestControllerService.Partial.cs" />
     <Compile Include="Model\Schedule.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
+    <Compile Include="Model\ServiceJobHistory.cs" />
+    <Compile Include="Model\ServiceJobHistoryService.Partial.cs" />
     <Compile Include="Model\SignalType.cs" />
     <Compile Include="Model\SiteDomain.cs" />
     <Compile Include="Model\LavaShortCode.cs" />
@@ -1591,6 +1603,9 @@
     <Compile Include="Web\UI\Controls\Grid\EncryptedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\HtmlField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaField.cs" />
+    <Compile Include="Web\UI\Controls\HiddenFieldRangeValidator.cs" />
+    <Compile Include="Web\UI\Controls\HiddenFieldWithValidationProperty.cs" />
+    <Compile Include="Web\UI\Controls\IHasRequired.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\AdvanceInfo.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\AdvanceInfoRow.cs" />
     <Compile Include="Web\UI\Controls\NoteEditor.cs" />
@@ -2193,6 +2208,9 @@
     </Content>
     <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_spCrm_PersonMerge.sql">
       <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving.sql">
+      <DependentUpon>052_MigrationRollupsForV8_1.cs</DependentUpon>
     </Content>
     <Content Include="Plugin\HotFixes\052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle.sql">
       <DependentUpon>052_MigrationRollupsForV8_1.cs</DependentUpon>

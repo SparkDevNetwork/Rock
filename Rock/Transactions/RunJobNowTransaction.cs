@@ -108,6 +108,18 @@ namespace Rock.Transactions
                         job.LastStatusMessage = message;
                         job.LastStatus = "Error Loading Job";
                         rockContext.SaveChanges();
+
+                        var jobHistoryService = new ServiceJobHistoryService( rockContext );
+                        var jobHistory = new ServiceJobHistory()
+                        {
+                            ServiceJobId = job.Id,
+                            StartDateTime = RockDateTime.Now,
+                            StopDateTime = RockDateTime.Now,
+                            Status = job.LastStatus,
+                            StatusMessage = job.LastStatusMessage
+                        };
+                        jobHistoryService.Add( jobHistory );
+                        rockContext.SaveChanges();
                     }
                 }
             }

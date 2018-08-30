@@ -22,6 +22,7 @@
                             <Rock:RockBoundField DataField="LastStatusMessageAsHtml" HeaderText="Last Status Message" HtmlEncode="false" SortExpression="LastStatusMessage" TruncateLength="255" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
+                            <Rock:LinkButtonField OnClick="gScheduledJobs_History" CssClass="fa fa-history" HeaderText="History" ToolTip="History" />
                             <Rock:EditField OnClick="gScheduledJobs_RunNow" IconCssClass="fa fa-play" HeaderText="Run Now" ToolTip="Run Now" />
                             <Rock:DeleteField OnClick="gScheduledJobs_Delete" />
                         </Columns>

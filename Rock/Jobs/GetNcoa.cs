@@ -65,8 +65,8 @@ namespace Rock.Jobs
 
             try
             {
-                Guid? SparkDataApiKeyGuid = sparkDataConfig.SparkDataApiKey.AsGuidOrNull();
-                if ( SparkDataApiKeyGuid == null )
+                Guid? sparkDataApiKeyGuid = sparkDataConfig.SparkDataApiKey.AsGuidOrNull();
+                if ( sparkDataApiKeyGuid == null )
                 {
                     exception = new Exception( $"Spark Data Api Key '{sparkDataConfig.SparkDataApiKey.ToStringSafe()}' is empty or invalid. The Spark Data Api Key can be configured in System Settings > Spark Data Settings." );
                     return;
@@ -74,9 +74,15 @@ namespace Rock.Jobs
 
                 switch ( sparkDataConfig.NcoaSettings.CurrentReportStatus )
                 {
-                    case "Start":
                     case "":
                     case null:
+                        if ( sparkDataConfig.NcoaSettings.RecurringEnabled )
+                        {
+                            StatusStart( sparkDataConfig );
+                        }
+
+                        break;
+                    case "Start":
                         StatusStart( sparkDataConfig );
                         break;
                     case "Failed":

@@ -44,6 +44,7 @@ namespace Rock.Migrations
 
         public void CreateInteractionsForiegnKey()
         {
+            // (schedule for 9pm to avoid conflict with AppPoolRecycle)
             Sql( @"IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Class] = 'Rock.Jobs.PostV80DataMigrations' AND [Guid] = 'AF760EF9-66BD-4A4D-AF95-749AA789ACAA' )
                 BEGIN
                 INSERT INTO [ServiceJob] (
@@ -61,7 +62,7 @@ namespace Rock.Migrations
                     , 'Data Migrations for v8.0'
                     , 'This job will take care of any data migrations that need to occur after updating to v8.0. After all the operations are done, this job will delete itself.'
                     , 'Rock.Jobs.PostV80DataMigrations'
-                    , '0 0 3 1/1 * ? *'
+                    , '0 0 21 1/1 * ? *'
                     , 1
                     , 'AF760EF9-66BD-4A4D-AF95-749AA789ACAA' );
             END" );

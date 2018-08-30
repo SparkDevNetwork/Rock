@@ -272,7 +272,7 @@ namespace Rock.Web.Cache
             var allValues = new List<T>();
             foreach ( var key in cachedKeys.ToList() )
             {
-                var value = Get( key.AsInteger() );
+                var value = Get( key.AsInteger(), rockContext );
                 if ( value != null )
                 {
                     allValues.Add( value );

@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Refund Batch Name Suffix", "The suffix to append to new batch name when refunding transactions. If left blank, the batch name will be the same as the original transaction's batch name.", false, " - Refund", "", 3 )]
     [BooleanField( "Carry Over Account", "Keep Last Used Account when adding multiple transactions in the same session.", true, "", 4 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE, "Location Types", "The type of location type to display for person (if none are selected all addresses will be included ).", false, true, order: 5 )]
+    [BooleanField( "Transaction Source Required", "Determine if Transaction Source should be required.", false, "", 6 )]
     public partial class TransactionDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Properties
@@ -1547,6 +1548,7 @@ namespace RockWeb.Blocks.Finance
                 cbShowAsAnonymous.Checked = txn.ShowAsAnonymous;
                 dtTransactionDateTime.SelectedDateTime = txn.TransactionDateTime;
                 ddlTransactionType.SetValue( txn.TransactionTypeValueId );
+                ddlSourceType.Required = this.GetAttributeValue( "TransactionSourceRequired" ).AsBoolean();
                 ddlSourceType.SetValue( txn.SourceTypeValueId );
                 gpPaymentGateway.SetValue( txn.FinancialGatewayId );
                 tbTransactionCode.Text = txn.TransactionCode;

@@ -78,7 +78,7 @@ namespace Rock.Reporting.DataFilter.Person
                 {
                     // at least one item should be set for this to be valid (otherwise it's just data view bloat).
                     return LocationTypeGuid.HasValue || ! string.IsNullOrWhiteSpace( Street1 ) || !string.IsNullOrWhiteSpace( City )
-                        || !string.IsNullOrWhiteSpace( State ) || !string.IsNullOrWhiteSpace( PostalCode );
+                        || !string.IsNullOrWhiteSpace( State ) || !string.IsNullOrWhiteSpace( PostalCode ) || !string.IsNullOrWhiteSpace( Country );
                 }
             }
 
@@ -191,7 +191,13 @@ function() {
   var city = $('.js-addresscontrol > input[id$_tbCity""]', $content).text();
   var street = $('.js-addresscontrol > input[id$_tbStreet1""]', $content).text();
   var state = $('.js-addresscontrol > select[id$=""_ddlState""]', $content).find(':selected').text();
+
+  if (!state) {
+     state = $('.js-addresscontrol > select[id$=""_tbState""]', $content).find(':selected').text();
+  }
+
   var postalCode = $('.js-addresscontrol > input[id$=""_tbPostalCode""]', $content).text();
+  var country = $('.js-addresscontrol > input[id$=""_ddlCountry""]', $content).find(':selected').text();
   var result = 'Location';
 
   if (locationType) {
@@ -212,6 +218,10 @@ function() {
 
   if (postalCode) {
      result = result + ' zip ""' + postalCode + "";
+  }
+
+  if (country) {
+     result = result + ' country ""' + country + "";
   }
 
   return result;

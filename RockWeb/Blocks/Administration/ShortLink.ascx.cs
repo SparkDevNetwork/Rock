@@ -37,7 +37,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Administration
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Shortened Links" )]
     [Category( "Administration" )]
@@ -75,8 +75,8 @@ namespace RockWeb.Blocks.Administration
 
     $('#{1}').on('input', function() {{ updateClipboardText(); }});
 
-    new Clipboard('#btnSave');
-    new Clipboard('.js-copy-to-clipboard');
+    new ClipboardJS('#btnSave');
+    new ClipboardJS('.js-copy-to-clipboard');
     $('.js-copy-to-clipboard').tooltip();
 
     updateClipboardText();
