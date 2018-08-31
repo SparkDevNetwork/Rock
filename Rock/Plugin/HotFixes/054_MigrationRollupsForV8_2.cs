@@ -69,6 +69,11 @@ WHERE
             // NOTE: These do not have a well-known GUIDs so we will target them via their value and description.
             Sql( string.Format( "UPDATE [DefinedValue] SET [IsSystem] = 1 WHERE [IsSystem] = 0 AND [DefinedTypeId] = ( SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}' ) AND [Value] = 'Windows' AND [Description] = 'A Windows device'", Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM ) );
             Sql( string.Format( "UPDATE [DefinedValue] SET [IsSystem] = 1 WHERE [IsSystem] = 0 AND [DefinedTypeId] = ( SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}' ) AND [Value] = 'Mac' AND [Description] = 'A Macintosh device'", Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM ) );
+
+            // Fix for metrics that might have been added without a Created,Modified, or LastRunDateTime
+            Sql( @"UPDATE Metric
+SET ModifiedDateTime = SysDateTime()
+WHERE ModifiedDateTime IS NULL" );
         }
 
 
