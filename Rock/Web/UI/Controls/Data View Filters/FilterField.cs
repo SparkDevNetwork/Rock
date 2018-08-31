@@ -305,7 +305,7 @@ namespace Rock.Web.UI.Controls
         private void SetFilterControlsValidationGroup( string validationGroup )
         {
             var rockBlock = this.RockBlock();
-            if ( filterControls != null && rockBlock != null )
+            if ( filterControls != null && rockBlock != null && validationGroup != null )
             {
                 rockBlock.SetValidationGroup( filterControls, validationGroup );
             }
