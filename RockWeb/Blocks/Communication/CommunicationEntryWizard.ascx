@@ -207,7 +207,7 @@
                                     </div>
 
                                     <div class="js-email-sendtest-inputs" style="display: none">
-                                        <Rock:EmailBox ID="tbTestEmailAddress" runat="server" Label="Email" ValidationGroup="vgEmailEditorSendTest" Required="true" AllowMultiple="false" />
+                                        <Rock:EmailBox ID="tbTestEmailAddress" runat="server" Label="Email" ValidationGroup="vgEmailEditorSendTest" Required="true" AllowMultiple="false" Help="This will temporarily change your email address during the test, but it will be changed back after the test is complete." />
                                         <asp:LinkButton ID="btnEmailSendTest" runat="server" CssClass="btn btn-xs btn-primary js-saveeditorhtml" Text="Send Test" CausesValidation="true" ValidationGroup="vgEmailEditorSendTest" OnClick="btnEmailSendTest_Click" />
                                         <a class="btn btn-xs btn-link js-email-sendtest-cancel" href="#">Cancel</a>
                                     </div>
@@ -906,7 +906,7 @@
                                 <div class="actions margin-t-sm pull-right">
                                     <a class="btn btn-xs btn-default js-sms-sendtest" href="#">Send Test</a>
                                     <div class="js-sms-sendtest-inputs" style="display:none">
-                                        <Rock:RockTextBox ID="tbTestSMSNumber" runat="server" Label="SMS Number" ValidationGroup="vgMobileTextEditorSendTest" Required="true" />
+                                        <Rock:RockTextBox ID="tbTestSMSNumber" runat="server" Label="SMS Number" ValidationGroup="vgMobileTextEditorSendTest" Required="true" Help="This will temporarily change your SMS number during the test, but it will be changed back after the test is complete." />
                                         <asp:Button ID="btnSMSSendTest" runat="server" CssClass="btn btn-xs btn-primary" Text="Send" CausesValidation="true" ValidationGroup="vgMobileTextEditorSendTest" OnClick="btnSMSSendTest_Click" />
                                         <a class="btn btn-xs btn-link js-sms-sendtest-cancel" href="#">Cancel</a>
                                     </div>
