@@ -587,6 +587,9 @@ namespace RockWeb.Blocks.Fundraising
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gContributions_RowDataBound( object sender, GridViewRowEventArgs e )
         {
+			var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
+            int groupMemberId = hfGroupMemberId.Value.AsInteger();
+			
             FinancialTransaction financialTransaction = e.Row.DataItem as FinancialTransaction;
             if ( financialTransaction != null &&
                 financialTransaction.AuthorizedPersonAlias != null &&
@@ -605,6 +608,16 @@ namespace RockWeb.Blocks.Fundraising
 	            {
 	                lPersonName.Text = financialTransaction.ShowAsAnonymous ? "Anonymous" : financialTransaction.AuthorizedPersonAlias.Person.FullName;
 	            }
+				
+				Literal lTransactionDetailAmount = e.Row.FindControl( "lTransactionDetailAmount" ) as Literal;
+                if ( lTransactionDetailAmount != null )
+                {
+					var amount = financialTransaction.TransactionDetails
+                        .Where( d => d.EntityTypeId.HasValue && d.EntityTypeId == entityTypeIdGroupMember && d.EntityId == groupMemberId )
+                        .Sum( d => ( decimal? ) d.Amount )
+                        .ToString();
+                    lTransactionDetailAmount.Text = string.Format( "${0}", amount );
+                }
 	        }
         }
 
