@@ -1054,7 +1054,7 @@ namespace Rock.Web.UI
         /// <param name="validationGroup">A <see cref="System.String" /> representing the name of the validation group.</param>
         public void SetValidationGroup( Control[] controls, string validationGroup )
         {
-            if ( controls != null )
+            if ( controls != null && validationGroup != null )
             {
                 foreach ( Control control in controls )
                 {
