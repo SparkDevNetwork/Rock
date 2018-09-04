@@ -430,26 +430,33 @@ namespace RockWeb.Blocks.Security
                 .Where( p => p.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault().Number == mobilePhoneNumber )
                 .FirstOrDefault();
 
-            // If no known person record then create one
-            person = new Person
+            // If no known person record then create one if we have the minimum info required
+            if ( tbFirstName.Visible && tbLastName.Visible && ( tbMobilePhone.Visible || tbEmail.Visible ) )
             {
-                FirstName = tbFirstName.Text,
-                LastName = tbLastName.Text,
-                Email = tbEmail.Text
-            };
 
-            if ( tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters().IsNotNullOrWhiteSpace() )
-            {
-                person.PhoneNumbers = new List<PhoneNumber>() { new PhoneNumber { IsSystem = false, Number = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters(), NumberTypeValueId = mobilePhoneTypeId } };
+                person = new Person
+                {
+                    FirstName = tbFirstName.Text,
+                    LastName = tbLastName.Text,
+                    Email = tbEmail.Text
+                };
+
+                if ( tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters().IsNotNullOrWhiteSpace() )
+                {
+                    person.PhoneNumbers = new List<PhoneNumber>() { new PhoneNumber { IsSystem = false, Number = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters(), NumberTypeValueId = mobilePhoneTypeId } };
+                }
+
+                PersonService.SaveNewPerson( person, new RockContext() );
+
+                // Link new device to person alias
+                RockPage.LinkPersonAliasToDevice( person.PrimaryAlias.Id, hfMacAddress.Value );
+
+                Response.Redirect( CreateRedirectUrl( person.PrimaryAlias.Id ) );
+                return;
             }
 
-            PersonService.SaveNewPerson( person, new RockContext() );
-
-            // Link new device to person alias
-            RockPage.LinkPersonAliasToDevice( person.PrimaryAlias.Id, hfMacAddress.Value );
-
             // Send them back to Front Porch
-            Response.Redirect( CreateRedirectUrl( person.PrimaryAlias.Id ) );
+            Response.Redirect( CreateRedirectUrl( null ) );
             return;
         }
 
@@ -460,12 +467,16 @@ namespace RockWeb.Blocks.Security
         /// <returns></returns>
         protected string CreateRedirectUrl( int? primaryAliasId )
         {
+            string s = string.Empty;
+
             if ( primaryAliasId != null )
             {
-                return string.Format( "{0}?id={1}&{2}", GetAttributeValue( "ReleaseLink" ), primaryAliasId, Request.QueryString );
+                s = string.Format( "{0}?id={1}&{2}", GetAttributeValue( "ReleaseLink" ), primaryAliasId, Request.QueryString );
+                return s;
             }
 
-            return string.Format( "{0}?{1}", GetAttributeValue( "ReleaseLink" ), Request.QueryString );
+            s = string.Format( "{0}?{1}", GetAttributeValue( "ReleaseLink" ), Request.QueryString );
+            return s;
         }
 
         /// <summary>
