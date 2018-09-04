@@ -35,8 +35,9 @@
 
                 <%-- box here to display T&C --%>
                 <div>
-                    <div class="iframe-container">
-                        <iframe id="iframeLegalNotice" runat="server"></iframe>
+                    <div class="iframe-container document-scroll">
+                        <asp:Literal ID="litLegalNotice" runat="server"></asp:Literal>
+                        <%--<iframe id="iframeLegalNotice" runat="server"></iframe>--%>
                     </div>
                 </div>
 
