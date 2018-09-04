@@ -116,7 +116,7 @@ namespace Rock.Utility
             if ( !values.Any() )
             {
                 // if no filter parameter values where specified, don't filter
-                return Expression.Constant( true );
+                return new NoAttributeFilterExpression();
             }
 
             var service = new AttributeValueService( ( RockContext ) serviceInstance.Context );
