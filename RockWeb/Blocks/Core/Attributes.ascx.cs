@@ -644,6 +644,7 @@ namespace RockWeb.Blocks.Core
                 {
                     // entity type not configured in block or in filter, so get Global Attributes
                     query = attributeService.GetByEntityTypeId( null, true );
+                    query = query.Where( t => t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == "" );
                 }
                 else if ( _isEntityTypeConfigured )
                 {
