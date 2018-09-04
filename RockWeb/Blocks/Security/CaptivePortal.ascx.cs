@@ -469,8 +469,8 @@ namespace RockWeb.Blocks.Security
                 return person.PrimaryAlias.Id;
             }
 
-            // Just match off phone number
-            if ( tbMobilePhone.Visible )
+            // Just match off phone number if no other fields are showing.
+            if ( tbMobilePhone.Visible && !tbFirstName.Visible && !tbLastName.Visible && !tbEmail.Visible )
             {
                 mobilePhoneNumber = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters();
                 person = personService.Queryable().Where( p => p.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault().Number == mobilePhoneNumber ).FirstOrDefault();
