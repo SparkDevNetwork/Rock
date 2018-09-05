@@ -158,6 +158,10 @@ namespace Rock.Checkr
                 {
                     return getDocumentResponse.DownloadUri;
                 }
+                else
+                {
+                    LogErrors( errorMessages );
+                }
             }
             else
             {
@@ -170,6 +174,21 @@ namespace Rock.Checkr
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Logs the errors.
+        /// </summary>
+        /// <param name="errorMessages">The error messages.</param>
+        private static void LogErrors( List<string> errorMessages )
+        {
+            if ( errorMessages.Any() )
+            {
+                foreach ( string errorMsg in errorMessages )
+                {
+                    ExceptionLogService.LogException( new Exception( "Checkr Error: " + errorMsg ), null );
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the person that is currently logged in.
@@ -691,12 +710,14 @@ namespace Rock.Checkr
             GetReportResponse getReportResponse;
             if ( !CheckrApiUtility.GetReport( reportId, out getReportResponse, errorMessages ) )
             {
+                LogErrors( errorMessages );
                 return null;
             }
 
             if ( getReportResponse.DocumentIds == null || getReportResponse.DocumentIds.Count == 0 )
             {
                 errorMessages.Add( "No document found" );
+                LogErrors( errorMessages );
                 return null;
             }
 
@@ -704,6 +725,7 @@ namespace Rock.Checkr
             if ( documentId.IsNullOrWhiteSpace() )
             {
                 errorMessages.Add( "Empty document ID returned" );
+                LogErrors( errorMessages );
                 return null;
             }
 

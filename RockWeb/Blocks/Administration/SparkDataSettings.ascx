@@ -1,10 +1,17 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SparkDataSettings.ascx.cs" Inherits="RockWeb.Blocks.Administration.SparkDataSettings" %>
 
+<script type="text/javascript">
+    function clearActiveDialog() {
+        $('#<%=mdRunNcoa.ClientID %>').val('');
+    }
+</script>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
         <Rock:ModalDialog ID="mdRunNcoa" runat="server" Title="Run NCOA Manually" SaveButtonText="Run" OnSaveClick="mdRunNcoa_SaveClick" OnCancelScript="clearActiveDialog();">
             <Content>
+                <p><asp:Label ID="lbNcoaCount" runat="server"></asp:Label></p>
                 <p>Are you sure you want to run the NCOA service?</p>
                 <small>
                     Note:
