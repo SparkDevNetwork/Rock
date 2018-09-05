@@ -556,9 +556,14 @@ namespace Rock.Web.UI.Controls
             DropZone,
 
             /// <summary>
-            /// As a button
+            /// As a primary button
             /// </summary>
-            Button
+            Button,
+
+            /// <summary>
+            /// As a default button
+            /// </summary>
+            DefaultButton
         }
 
         /// <summary>
@@ -692,15 +697,22 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
-                writer.Write( @"
-                    <div class='js-upload-progress upload-progress' style='display:none;'>
-                        <i class='fa fa-refresh fa-3x fa-spin'></i>
+                string uploadClass = this.DisplayMode == UploaderDisplayMode.DefaultButton ? "upload-progress-sm" : "upload-progress";
+                string spinnerSize = this.DisplayMode == UploaderDisplayMode.DefaultButton ? "fa-lg" : "fa-3x";
+
+                writer.Write( $@"
+                    <div class='js-upload-progress {uploadClass}' style='display:none;'>
+                        <i class='fa fa-refresh {spinnerSize} fa-spin'></i>
                         <div class='js-upload-progress-percent'></div>
                     </div>" );
 
                 if (this.DisplayMode == UploaderDisplayMode.Button)
                 {
                     writer.AddAttribute(HtmlTextWriterAttribute.Class, "fileupload-button");
+                }
+                else if ( this.DisplayMode == UploaderDisplayMode.DefaultButton )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileuploaddefault-button" );
                 }
                 else
                 {

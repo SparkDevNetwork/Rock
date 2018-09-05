@@ -152,6 +152,7 @@
     }
   }
 
+  .fileuploaddefault-button,
   .fileupload-dropzone,
   .fileupload-button {
     position: relative;
@@ -206,10 +207,38 @@
     }
   }
 
+  .fileuploaddefault-button {
+    height: 25px;
+    width: 100px;
+    padding: 5px;
+    margin-top: 2px;
+    background-color: #fff;
+    border: 1px solid #dbdbdb;
+    border-radius: @border-radius-base;
+
+    &:hover {
+      color: #484848;
+      background-color: #e6e6e6;
+      border-color: #bcbcbc;
+    }
+
+    span {
+      color: #484848;
+    }
+  }
+
   .upload-progress {
     position: absolute;
     top: 8px;
     left: 35px;
+    z-index: 2;
+    opacity: .3;
+  }
+
+  .upload-progress-sm {
+    position: absolute;
+    top: 5px;
+    left: 5px;
     z-index: 2;
     opacity: .3;
   }
