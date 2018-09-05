@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web;
 using Quartz;
 using Rock.Data;
@@ -68,7 +69,7 @@ namespace Rock.Jobs
                 Guid? sparkDataApiKeyGuid = sparkDataConfig.SparkDataApiKey.AsGuidOrNull();
                 if ( sparkDataApiKeyGuid == null )
                 {
-                    exception = new Exception( $"Spark Data Api Key '{sparkDataConfig.SparkDataApiKey.ToStringSafe()}' is empty or invalid. The Spark Data Api Key can be configured in System Settings > Spark Data Settings." );
+                    exception = new NoRetryException( $"Spark Data Api Key '{sparkDataConfig.SparkDataApiKey.ToStringSafe()}' is empty or invalid. The Spark Data Api Key can be configured in System Settings > Spark Data Settings." );
                     return;
                 }
 
@@ -109,14 +110,30 @@ namespace Rock.Jobs
                 {
                     context.Result = $"NCOA Job failed: {exception.Message}";
 
-                    sparkDataConfig.NcoaSettings.CurrentReportStatus = "Failed";
-                    sparkDataConfig.Messages.Add( $"NOCA job failed: {RockDateTime.Now.ToString()} - {exception.Message}" );
+                    if ( exception is NoRetryException || exception is NoRetryAggregateException )
+                    {
+                        sparkDataConfig.NcoaSettings.CurrentReportStatus = "Complete";
+                    }
+                    else
+                    {
+                        sparkDataConfig.NcoaSettings.CurrentReportStatus = "Failed";
+                    }
+
+                    StringBuilder sb = new StringBuilder( $"NOCA job failed: {RockDateTime.Now.ToString()} - {exception.Message}" );
+                    Exception innerException = exception;
+                    while ( innerException.InnerException != null )
+                    {
+                        innerException = innerException.InnerException;
+                        sb.AppendLine( innerException.Message );
+                    }
+
+                    sparkDataConfig.Messages.Add( sb.ToString() );
                     Ncoa.SaveSettings( sparkDataConfig );
 
                     try
                     {
                         var ncoa = new Ncoa();
-                        ncoa.SentNotification( sparkDataConfig, "failed" );
+                        ncoa.SendNotification( sparkDataConfig, "failed" );
                     }
                     catch
                     {
@@ -162,8 +179,7 @@ namespace Rock.Jobs
         /// <param name="sparkDataConfig">The spark data configuration.</param>
         private void StatusFailed( SparkDataConfig sparkDataConfig )
         {
-            var ncoa = new Ncoa();
-            ncoa.Start( sparkDataConfig );
+            StatusStart( sparkDataConfig );
         }
 
         /// <summary>
@@ -181,15 +197,15 @@ namespace Rock.Jobs
             {
                 if ( !sparkDataConfig.NcoaSettings.IsAckPrice && !sparkDataConfig.NcoaSettings.IsAcceptedTerms )
                 {
-                    throw new Exception( "The NCOA terms of service have not been accepted." );
+                    throw new NoRetryException( "The NCOA terms of service have not been accepted." );
                 }
                 else if ( !sparkDataConfig.NcoaSettings.IsAcceptedTerms )
                 {
-                    throw new Exception( "The NCOA terms of service have not been accepted." );
+                    throw new NoRetryException( "The NCOA terms of service have not been accepted." );
                 }
                 else
                 {
-                    throw new Exception( "The price of the NCOA service has not been acknowledged." );
+                    throw new NoRetryException( "The price of the NCOA service has not been acknowledged." );
                 }
             }
         }
