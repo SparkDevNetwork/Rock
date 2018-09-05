@@ -395,6 +395,11 @@ namespace RockWeb.Blocks.Groups
                             // intentionally ignore
                         }
                     }
+                    else
+                    {
+                        // no filter control, so clear out the user preference
+                        rFilter.SaveUserPreference( attribute.Key, attribute.Name, null );
+                    }
                 }
             }
 

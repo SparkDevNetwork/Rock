@@ -113,6 +113,8 @@ namespace Rock.Field.Types
                     // serialize the time using culture-insensitive "constant" format
                     return picker.SelectedTime.Value.ToString( "c" );
                 }
+
+                return string.Empty;
             }
 
             return null;

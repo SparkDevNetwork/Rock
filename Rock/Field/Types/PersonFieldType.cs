@@ -269,7 +269,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return null;
+            return new NoAttributeFilterExpression();
         }
 
         #endregion

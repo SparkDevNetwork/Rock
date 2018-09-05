@@ -72,7 +72,7 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var mdpMonthDatePicker = control as MonthDayPicker;
-            return mdpMonthDatePicker?.SelectedDate?.ToString( "M/d" );
+            return mdpMonthDatePicker?.SelectedDate?.ToString( "M/d" ) ?? string.Empty;
         }
 
         /// <summary>
