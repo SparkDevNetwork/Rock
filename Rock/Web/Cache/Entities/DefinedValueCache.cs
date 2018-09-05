@@ -19,6 +19,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -76,6 +77,22 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public string Description { get; private set; }
+
+        /// <summary>
+        /// Gets the DefinedType of this DefinedVlaue
+        /// </summary>
+        /// <value>
+        /// The DefinedType
+        /// </value>
+        public DefinedTypeCache DefinedType => DefinedTypeCache.Get( DefinedTypeId );
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override ISecured ParentAuthority => DefinedType;
 
         #endregion
 
