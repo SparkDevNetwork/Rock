@@ -214,7 +214,7 @@ namespace Rock.Field.Types
         #region FilterControl
 
         /// <summary>
-        /// Gets the type of the filter comparison.
+        /// /*Get*/s the type of the filter comparison.
         /// </summary>
         /// <value>
         /// The type of the filter comparison.
