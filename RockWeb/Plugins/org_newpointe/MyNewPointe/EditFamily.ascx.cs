@@ -158,7 +158,7 @@ namespace RockWeb.Plugins.org_newpointe.MyNewpointe
                         GroupLocationTypeValueId = HomeLocationType.Id,
                         Location = MailingLocation,
                         IsMailingLocation = true,
-                        IsMappedLocation = cbHomeIsMailing.Checked
+                        IsMappedLocation = isHomeMailing
                     }
                 );
             }
