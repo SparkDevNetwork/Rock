@@ -179,7 +179,7 @@
             });
     }
     function uniqueSlug(slug, row) {
-        var encodedSlug = encodeURIComponent(slug.replace('&',''));
+        var encodedSlug = encodeURIComponent(slug.replace('&', '').replace('|',''));
         $.ajax({
             url: _uniqueSlug.restUrl + _uniqueSlug.restParams.replace('{slug}', encodedSlug),
             dataType: 'json',
