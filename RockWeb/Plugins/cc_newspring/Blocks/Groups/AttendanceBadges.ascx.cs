@@ -55,7 +55,7 @@ namespace RockWeb.Plugins.cc_newspring.Groups
     [ContextAware( typeof( Person ) )]
     public partial class AttendanceBadges : Rock.Web.UI.RockBlock
     {
-         
+
         #region Base Control Methods
 
         /// <summary>
@@ -150,9 +150,9 @@ namespace RockWeb.Plugins.cc_newspring.Groups
                     .Queryable().AsNoTracking()
                     .Where( a =>
                         a.PersonAlias != null &&
-                        a.GroupId.HasValue &&
+                        a.Occurrence.GroupId.HasValue &&
                         a.PersonAlias.PersonId == person.Id &&
-                        groupIds.Contains( a.GroupId.Value ) &&
+                        groupIds.Contains( a.Occurrence.GroupId.Value ) &&
                         a.DidAttend.HasValue &&
                         a.DidAttend.Value &&
                         a.StartDateTime >= dateRange.Start &&
@@ -164,11 +164,11 @@ namespace RockWeb.Plugins.cc_newspring.Groups
                         LastAttended = a.Max( b => b.StartDateTime )
                     } )
                     .ToList();
-                groupIds = groupAttendance.Select( a => a.GroupId ).ToList();
+                groupIds = groupAttendance.Select( a => a.Occurrence.GroupId ).ToList();
 
                 // Format the root url of each image
-                string imageRoot = string.Format( "{0}://{1}/GetImage.ashx?maxwidth={2}&maxheight={3}&guid=", 
-                    Request.Url.Scheme, Request.Url.Authority, 
+                string imageRoot = string.Format( "{0}://{1}/GetImage.ashx?maxwidth={2}&maxheight={3}&guid=",
+                    Request.Url.Scheme, Request.Url.Authority,
                     GetAttributeValue( "MaxImageWidth"), GetAttributeValue("MaxImageHeight") );
 
                 // Get the blank image's guid
@@ -178,7 +178,7 @@ namespace RockWeb.Plugins.cc_newspring.Groups
                 string iconAttributeKey = GetAttributeValue( "IconAttributeKey" );
                 foreach ( var group in groups.Where( g => groupIds.Contains( g.Id ) ) )
                 {
-                    var groupAttended = groupAttendance.Where( a => a.GroupId == group.Id ).First();
+                    var groupAttended = groupAttendance.Where( a => a.Occurrence.GroupId == group.Id ).First();
                     groupAttended.GroupName = group.Name;
 
                     group.LoadAttributes();
