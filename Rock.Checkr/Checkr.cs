@@ -114,7 +114,7 @@ namespace Rock.Checkr
 
                     if ( backgroundCheck == null )
                     {
-                        backgroundCheck = new Rock.Model.BackgroundCheck();
+                        backgroundCheck = new BackgroundCheck();
                         backgroundCheck.WorkflowId = workflow.Id;
                         backgroundCheckService.Add( backgroundCheck );
                     }
@@ -147,7 +147,7 @@ namespace Rock.Checkr
         /// <returns></returns>
         public override string GetReportUrl( string reportKey )
         {
-            var isAuthorized = this.IsAuthorized( Authorization.VIEW, this. GetCurrentPerson() );
+            var isAuthorized = this.IsAuthorized( Authorization.VIEW, this.GetCurrentPerson() );
 
             if ( isAuthorized )
             {
@@ -248,7 +248,7 @@ namespace Rock.Checkr
                     {
                         foreach ( var keyVal in qualifiers )
                         {
-                            var qualifier = new Rock.Model.AttributeQualifier();
+                            var qualifier = new AttributeQualifier();
                             qualifier.Key = keyVal.Key;
                             qualifier.Value = keyVal.Value;
                             attribute.AttributeQualifiers.Add( qualifier );
@@ -259,7 +259,7 @@ namespace Rock.Checkr
                 }
 
                 // Set the value for this attribute
-                var attributeValue = new Rock.Model.AttributeValue();
+                var attributeValue = new AttributeValue();
                 attributeValue.Attribute = attribute;
                 attributeValue.EntityId = workflow.Id;
                 attributeValue.Value = value;
@@ -315,7 +315,7 @@ namespace Rock.Checkr
                 // Save the report link
                 if ( documentId.IsNotNullOrWhiteSpace() )
                 {
-                    int entityTypeId = EntityTypeCache.Get( typeof(Checkr) ).Id;
+                    int entityTypeId = EntityTypeCache.Get( typeof( Checkr ) ).Id;
                     if ( SaveAttributeValue( workflow, "Report", $"{entityTypeId},{documentId}",
                         FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
                         new Dictionary<string, string> { { "ispassword", "false" } } ) )
@@ -543,34 +543,37 @@ namespace Rock.Checkr
                 return false;
             }
 
-            List<string> packages;
+            Dictionary<string, DefinedValue> packages;
             using ( var rockContext = new RockContext() )
             {
-                var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() );
+                var definedType = DefinedTypeCache.Get( SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() );
 
                 DefinedValueService definedValueService = new DefinedValueService( rockContext );
                 packages = definedValueService
-                    .GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() )
+                    .GetByDefinedTypeGuid( SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() )
                     .Where( v => v.ForeignId == 2 )
                     .ToList()
-                    .Select( v => { v.LoadAttributes( rockContext ); return v.GetAttributeValue( "PMMPackageName" ).ToString(); } ) // v => v.Value.Substring( CheckrConstants.TYPENAME_PREFIX.Length ) )
-                    .ToList();
+                    .Select( v => { v.LoadAttributes( rockContext ); return v; } ) // v => v.Value.Substring( CheckrConstants.TYPENAME_PREFIX.Length ) )
+                    .ToDictionary( v => v.GetAttributeValue( "PMMPackageName" ).ToString(), v => v );
 
                 foreach ( var packageRestResponse in getPackagesResponse.Data )
                 {
                     string packageName = packageRestResponse.Slug;
-                    if ( !packages.Contains( packageName ) )
+                    if ( !packages.ContainsKey( packageName ) )
                     {
                         DefinedValue definedValue = null;
 
-                        definedValue = new DefinedValue();
-                        definedValue.DefinedTypeId = definedType.Id;
-                        definedValue.ForeignId = 2;
+                        definedValue = new DefinedValue()
+                        {
+                            IsActive = true,
+                            DefinedTypeId = definedType.Id,
+                            ForeignId = 2,
+                            Value = CheckrConstants.CHECKR_TYPENAME_PREFIX + packageName.Replace( '_', ' ' ).FixCase(),
+                            Description = packageRestResponse.Name == "Educatio Report" ? "Education Report" : packageRestResponse.Name
+                        };
+
                         definedValueService.Add( definedValue );
 
-                        definedValue.Value = CheckrConstants.CHECKR_TYPENAME_PREFIX + packageName.Replace( '_', ' ' ).FixCase();
-
-                        definedValue.Description = packageRestResponse.Name == "Educatio Report" ? "Education Report" : packageRestResponse.Name;
                         rockContext.SaveChanges();
 
                         definedValue.LoadAttributes( rockContext );
@@ -585,6 +588,14 @@ namespace Rock.Checkr
                         definedValue.SaveAttributeValues( rockContext );
                     }
                 }
+
+                var packageRestResponseNames = getPackagesResponse.Data.Select( pr => pr.Slug );
+                foreach ( var package in packages )
+                {
+                    package.Value.IsActive = packageRestResponseNames.Contains( package.Key );
+                }
+
+                rockContext.SaveChanges();
             }
 
             DefinedValueCache.Clear();
@@ -667,7 +678,7 @@ namespace Rock.Checkr
                     return false;
                 }
 
-                return UpdateBackgroundCheckAndWorkFlow( invitationWebhook.Data.Object.CandidateId, genericWebhook.Type, invitationWebhook.Data.Object.Package, genericWebhook.Type.ConvertToString(false) );
+                return UpdateBackgroundCheckAndWorkFlow( invitationWebhook.Data.Object.CandidateId, genericWebhook.Type, invitationWebhook.Data.Object.Package, genericWebhook.Type.ConvertToString( false ) );
             } else if ( genericWebhook.Type == Enums.WebhookTypes.ReportCreated ||
                 genericWebhook.Type == Enums.WebhookTypes.ReportCompleted ||
                 genericWebhook.Type == Enums.WebhookTypes.ReportDisputed ||
