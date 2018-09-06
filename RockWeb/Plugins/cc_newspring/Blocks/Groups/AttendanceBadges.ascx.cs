@@ -112,7 +112,7 @@ namespace RockWeb.Plugins.cc_newspring.Groups
         {
             // Set the block title and icon
             string iconCss = GetAttributeValue( "BlockIconCSSClass" );
-            lBlockIcon.Text = iconCss.IsNotNullOrWhitespace() ? string.Format( "<i class='{0}'></i>", iconCss ) : string.Empty;
+            lBlockIcon.Text = iconCss.IsNotNullOrWhiteSpace() ? string.Format( "<i class='{0}'></i>", iconCss ) : string.Empty;
             lBlockTitle.Text = GetAttributeValue( "BlockTitle" );
 
             using ( var rockContext = new RockContext() )
@@ -157,14 +157,14 @@ namespace RockWeb.Plugins.cc_newspring.Groups
                         a.DidAttend.Value &&
                         a.StartDateTime >= dateRange.Start &&
                         a.StartDateTime <= dateRange.End )
-                    .GroupBy( a => a.GroupId.Value )
+                    .GroupBy( a => a.Occurrence.GroupId.Value )
                     .Select( a => new GroupAttended
                     {
                         GroupId = a.Key,
                         LastAttended = a.Max( b => b.StartDateTime )
                     } )
                     .ToList();
-                groupIds = groupAttendance.Select( a => a.Occurrence.GroupId ).ToList();
+                groupIds = groupAttendance.Select( a => a.GroupId ).ToList();
 
                 // Format the root url of each image
                 string imageRoot = string.Format( "{0}://{1}/GetImage.ashx?maxwidth={2}&maxheight={3}&guid=",
@@ -178,7 +178,7 @@ namespace RockWeb.Plugins.cc_newspring.Groups
                 string iconAttributeKey = GetAttributeValue( "IconAttributeKey" );
                 foreach ( var group in groups.Where( g => groupIds.Contains( g.Id ) ) )
                 {
-                    var groupAttended = groupAttendance.Where( a => a.Occurrence.GroupId == group.Id ).First();
+                    var groupAttended = groupAttendance.Where( a => a.GroupId == group.Id ).First();
                     groupAttended.GroupName = group.Name;
 
                     group.LoadAttributes();
