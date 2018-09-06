@@ -73,7 +73,7 @@
                                                 <input id="slugId" class="js-slug-id" type="hidden" value="<%# Eval("Id") %>" />
                                                 <span class="js-slug-literal"><%# Eval("Slug") %></span>
                                                 <div class="rollover-item actions pull-right">
-                                                    <a class="js-slug-edit" href="#"><i class="fa fa-pencil"></i></a>
+                                                    <a class="js-slug-edit margin-r-md" href="#"><i class="fa fa-pencil"></i></a>
                                                     <a class="js-slug-remove" href="#"><i class="fa fa-close"></i></a>
                                                 </div>
                                             </div>
