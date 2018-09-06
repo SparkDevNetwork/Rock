@@ -55,7 +55,7 @@ namespace RockWeb.Plugins.cc_newspring.Groups
     [ContextAware( typeof( Person ) )]
     public partial class AttendanceBadges : Rock.Web.UI.RockBlock
     {
-         
+
         #region Base Control Methods
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace RockWeb.Plugins.cc_newspring.Groups
         {
             // Set the block title and icon
             string iconCss = GetAttributeValue( "BlockIconCSSClass" );
-            lBlockIcon.Text = iconCss.IsNotNullOrWhitespace() ? string.Format( "<i class='{0}'></i>", iconCss ) : string.Empty;
+            lBlockIcon.Text = iconCss.IsNotNullOrWhiteSpace() ? string.Format( "<i class='{0}'></i>", iconCss ) : string.Empty;
             lBlockTitle.Text = GetAttributeValue( "BlockTitle" );
 
             using ( var rockContext = new RockContext() )
@@ -150,14 +150,14 @@ namespace RockWeb.Plugins.cc_newspring.Groups
                     .Queryable().AsNoTracking()
                     .Where( a =>
                         a.PersonAlias != null &&
-                        a.GroupId.HasValue &&
+                        a.Occurrence.GroupId.HasValue &&
                         a.PersonAlias.PersonId == person.Id &&
-                        groupIds.Contains( a.GroupId.Value ) &&
+                        groupIds.Contains( a.Occurrence.GroupId.Value ) &&
                         a.DidAttend.HasValue &&
                         a.DidAttend.Value &&
                         a.StartDateTime >= dateRange.Start &&
                         a.StartDateTime <= dateRange.End )
-                    .GroupBy( a => a.GroupId.Value )
+                    .GroupBy( a => a.Occurrence.GroupId.Value )
                     .Select( a => new GroupAttended
                     {
                         GroupId = a.Key,
@@ -167,8 +167,8 @@ namespace RockWeb.Plugins.cc_newspring.Groups
                 groupIds = groupAttendance.Select( a => a.GroupId ).ToList();
 
                 // Format the root url of each image
-                string imageRoot = string.Format( "{0}://{1}/GetImage.ashx?maxwidth={2}&maxheight={3}&guid=", 
-                    Request.Url.Scheme, Request.Url.Authority, 
+                string imageRoot = string.Format( "{0}://{1}/GetImage.ashx?maxwidth={2}&maxheight={3}&guid=",
+                    Request.Url.Scheme, Request.Url.Authority,
                     GetAttributeValue( "MaxImageWidth"), GetAttributeValue("MaxImageHeight") );
 
                 // Get the blank image's guid
