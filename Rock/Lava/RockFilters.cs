@@ -1977,6 +1977,27 @@ namespace Rock.Lava
                         }
                     }
 
+                    if ( qualifier.Equals( "Object", StringComparison.OrdinalIgnoreCase ) && field is Rock.Field.ICachedEntitiesFieldType )
+                    {
+                        var cachedEntitiesField = ( Rock.Field.ICachedEntitiesFieldType ) field;
+                        var values = cachedEntitiesField.GetCachedEntities( rawValue );
+
+                        if ( values == null || values.Count == 0 )
+                        {
+                            return null;
+                        }
+
+                        // If the attribute is configured to allow multiple then return a collection, otherwise just return a single value. You're welcome Lava developers :)
+                        if ( attribute.QualifierValues != null && attribute.QualifierValues.ContainsKey( "allowmultiple") && attribute.QualifierValues["allowmultiple"].Value.AsBoolean() )
+                        {
+                            return values;
+                        }
+                        else
+                        {
+                            return values.FirstOrDefault();
+                        }
+                    }
+
                     // Otherwise return the formatted value
                     return field.FormatValue( null, attribute.EntityTypeId, entityId, rawValue, attribute.QualifierValues, false );
                 }
