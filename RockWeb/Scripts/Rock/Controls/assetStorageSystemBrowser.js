@@ -34,7 +34,7 @@
         if ($folderTreeView.length == 0) {
           return;
         }
-        debugger
+
         // Some buttons need an asset selected in order to work
         var temp1 = $assetStorageId.text();
         if ($assetStorageId.text() == "-1") {
