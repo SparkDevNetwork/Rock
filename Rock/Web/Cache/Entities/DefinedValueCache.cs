@@ -79,6 +79,15 @@ namespace Rock.Web.Cache
         public string Description { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this DefinedValue is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsActive { get; private set; }
+
+        /// <summary>
         /// Gets the DefinedType of this DefinedVlaue
         /// </summary>
         /// <value>
@@ -114,6 +123,7 @@ namespace Rock.Web.Cache
             Order = definedValue.Order;
             Value = definedValue.Value;
             Description = definedValue.Description;
+            IsActive = definedValue.IsActive;
         }
 
         /// <summary>

@@ -293,6 +293,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
                     definedValue.Value = TYPENAME_PREFIX + tbTitle.Text;
                     definedValue.Description = tbDescription.Text;
+                    definedValue.IsActive = true;
                     rockContext.SaveChanges();
 
                     definedValue.LoadAttributes( rockContext );
@@ -373,6 +374,19 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 checkrWorkflowAction.Name = CheckrConstants.CHECKR_WORKFLOW_TYPE_NAME;
 
                 rockContext.SaveChanges();
+
+                // Enable PMM packages and disable Checkr packages
+                DefinedValueService definedValueService = new DefinedValueService( rockContext );
+                var packages = definedValueService
+                    .GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() )
+                    .ToList();
+
+                foreach ( var package in packages )
+                {
+                    package.IsActive = package.ForeignId == 1;
+                }
+
+                rockContext.SaveChanges();
             }
 
             ShowDetail();
@@ -430,6 +444,17 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 var settings = GetSettings( rockContext );
                 if ( settings != null )
                 {
+                    if ( HaveWorkflowAction( Rock.SystemGuid.WorkflowType.PROTECTMYMINISTRY ) )
+                    {
+                        btnDefault.Visible = false;
+                        lbEdit.Enabled = true;
+                    }
+                    else
+                    {
+                        btnDefault.Visible = true;
+                        lbEdit.Enabled = false;
+                    }
+
                     string username = GetSettingValue( settings, "UserName" );
                     string password = GetSettingValue( settings, "Password" );
                     if ( !string.IsNullOrWhiteSpace( username ) ||
@@ -481,7 +506,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             {
                 var packages = new DefinedValueService( rockContext )
                     .GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() )
-                    .Where( v => v.ForeignId == 1 )
+                    .Where( v => v.ForeignId == 1 && v.IsActive )
                     .Select( v => v.Value.Substring( TYPENAME_PREFIX.Length) )
                     .ToList();
                 lPackages.Text = packages.AsDelimited( "<br/>" );
@@ -496,15 +521,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             pnlPackages.Visible = false;
 
             HideSecondaryBlocks( false );
-
-            if ( HaveWorkflowAction( Rock.SystemGuid.WorkflowType.PROTECTMYMINISTRY ) )
-            {
-                btnDefault.Visible = false;
-            }
-            else
-            {
-                btnDefault.Visible = true;
-            }
         }
 
         /// <summary>
