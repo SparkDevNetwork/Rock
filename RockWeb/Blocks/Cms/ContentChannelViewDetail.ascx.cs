@@ -532,10 +532,11 @@ Guid - ContentChannelItem Guid
 
             if ( contentChannelItem != null && itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
             {
+                string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
                 var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY ) as HashSet<string> ?? new HashSet<string>();
                 cacheKeys.Add( itemCacheKey );
-                AddCacheItem( CACHEKEYS_CACHE_KEY, cacheKeys );
-                AddCacheItem( itemCacheKey, contentChannelItem, itemCacheDuration.Value );
+                AddCacheItem( CACHEKEYS_CACHE_KEY, cacheKeys, TimeSpan.MaxValue, cacheTags );
+                AddCacheItem( itemCacheKey, contentChannelItem, itemCacheDuration.Value, cacheTags );
             }
 
             return contentChannelItem;
