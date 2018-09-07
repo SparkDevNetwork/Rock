@@ -335,7 +335,9 @@ namespace RockWeb.Blocks.WorkFlow
                 }
 
                 if ( usePreviousValue
-                    && ( !string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValue ) || !string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValuePrevious ) ) )
+                    && ( !string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValue ) || !string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValuePrevious ) )
+                     && workflowTrigger.WorkflowTriggerValueChangeType == WorkflowTriggerValueChangeType.ChangeFromTo
+                    )
                 {
                     tbQualifierValueAlt.Text = workflowTrigger.EntityTypeQualifierValue;
                     tbPreviousQualifierValue.Text = workflowTrigger.EntityTypeQualifierValuePrevious;
