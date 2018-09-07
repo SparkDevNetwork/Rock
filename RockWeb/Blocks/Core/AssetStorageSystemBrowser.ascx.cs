@@ -18,7 +18,7 @@ using Newtonsoft.Json;
 
 namespace RockWeb.Blocks.Core
 {
-    [DisplayName( "Asset Storage System File Browser" )]
+    [DisplayName( "Asset Manager" )]
     [Category( "Core" )]
     [Description( "Manage files stored on a remote server or 3rd party cloud storage" )]
     public partial class AssetStorageSystemBrowser : RockBlock, IPickerBlock

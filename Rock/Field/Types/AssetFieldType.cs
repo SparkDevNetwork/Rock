@@ -35,19 +35,19 @@ namespace Rock.Field.Types
         /// </summary>
         /// <returns></returns>
         private readonly string pickerButtonTemplate = @"
-{% assign imageTypeUrl = '/Assets/Images/no-picture.svg' %}
+{% assign imageTypeUrl = '/Assets/Images/no-asset.svg' %}
 {% assign selectedFileName = SelectedValue | FromJSON | Property:'Key' | Escape %}
 {% if selectedFileName != '' %}
   {% assign imageType = selectedFileName | Split:'.' | Last | Trim %}
   {% capture imageTypeUrl %}/Assets/Icons/FileTypes/{{ imageType }}.png{% endcapture %}
 {% endif %}
 
-<div class='imageupload-thumbnail-image' style='height:100px; width:100px; background-image:url({{ imageTypeUrl }}); background-size:cover; background-position:50%'>
+<div class='imageupload-thumbnail-image' style='height:100px; width:100px; background-image:url({{ imageTypeUrl }}); background-size:40%; background-position:50%; background-repeat: no-repeat;'>
     <span class='file-link'><p style='width: 95px; overflow: hidden' title='{{ selectedFileName }}'>{{ selectedFileName }}</p></span>
 </div>
 <div class='imageupload-dropzone'>
     <span>
-        Choose File
+        Select Asset
     </span>
 </div>";
 
@@ -66,9 +66,10 @@ namespace Rock.Field.Types
                 ID = id,
                 BlockTypePath = "~/Blocks/Core/AssetStorageSystemBrowser.ascx",
                 ShowInModal = true,
-                CssClass = "btn btn-xs btn-default imageupload-group",
+                SelectControlCssClass = "btn btn-xs btn-default imageupload-group",
+                CssClass = "picker-asset",
                 ModalSaveButtonText = "Select",
-                ButtonTextTemplate = "Choose File",
+                ButtonTextTemplate = "Select Asset",
                 PickerButtonTemplate = pickerButtonTemplate,
                 ModalTitle = "Asset Manager"
             };

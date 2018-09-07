@@ -32,6 +32,28 @@ namespace Rock.Web.UI.Controls
     [ParseChildren( true, "PickerButtonTemplate" )]
     public class ItemFromBlockPicker : CompositeControl, IRockControl
     {
+        #region Public Properties
+
+        /// <summary>
+        /// Gets or sets the CSS class of the select control.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "CSS class of the select control." )
+        ]
+        public string SelectControlCssClass
+        {
+            get { return ViewState["SelectControlCssClass"] as string ?? string.Empty; }
+            set { ViewState["SelectControlCssClass"] = value; }
+        }
+
+        #endregion
+
         #region IRockControl implementation
 
         /// <summary>
@@ -256,6 +278,7 @@ namespace Rock.Web.UI.Controls
         #region Fields
 
         private Panel _pickerPanel;
+        private Panel _pnlRolloverContainer;
         private LinkButton _lbShowPicker;
         private LinkButton _btnSelectNone;
         private ModalDialog _pickerDialog;
@@ -441,22 +464,22 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
 
-            var pnlRolloverContainer = new Panel { CssClass = "rollover-container " };
-            this.Controls.Add( pnlRolloverContainer );
+            _pnlRolloverContainer = new Panel();
+            this.Controls.Add( _pnlRolloverContainer );
 
             _lbShowPicker = new LinkButton();
             _lbShowPicker.CausesValidation = false;
             _lbShowPicker.ID = this.ID + "_lbShowPicker";
             _lbShowPicker.Click += _lbShowPicker_Click;
-            pnlRolloverContainer.Controls.Add( _lbShowPicker );
+            _pnlRolloverContainer.Controls.Add( _lbShowPicker );
 
             _btnSelectNone = new LinkButton();
             _btnSelectNone.ID = this.ID + "_btnSelectNone";
-            _btnSelectNone.CssClass = "picker-select-none rollover-item";
+            _btnSelectNone.CssClass = "picker-select-none";
             _btnSelectNone.Text = "<i class='fa fa-times'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Click += _lbClearPicker_Click;
-            pnlRolloverContainer.Controls.Add( _btnSelectNone );
+            _pnlRolloverContainer.Controls.Add( _btnSelectNone );
 
             _pickerDialog = new ModalDialog();
             _pickerDialog.ID = this.ID + "_pickerDialog";
@@ -579,11 +602,12 @@ namespace Rock.Web.UI.Controls
 
             if ( this.ShowInModal )
             {
-                _lbShowPicker.CssClass = this.CssClass;
+                _lbShowPicker.CssClass = this.SelectControlCssClass;
+                _pnlRolloverContainer.CssClass = this.CssClass;
             }
             else
             {
-                base.CssClass = this.CssClass;
+                base.CssClass = this.SelectControlCssClass + " " + this.CssClass;
             }
 
             base.RenderControl( writer );
