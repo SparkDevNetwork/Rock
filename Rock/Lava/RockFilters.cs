@@ -3805,8 +3805,10 @@ namespace Rock.Lava
                                 address = addresses[0];
                             }
                         }
-
-                        address =  HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
+                        else
+                        {
+                            address =  HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
+                        }
 
                         // nicely format localhost
                         if (address == "::1" )
