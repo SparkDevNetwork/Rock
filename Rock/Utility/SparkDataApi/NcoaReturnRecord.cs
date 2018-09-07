@@ -122,7 +122,7 @@ namespace Rock.Utility.SparkDataApi
         /// The household position.
         /// </value>
         [JsonProperty( "Household Position" )]
-        public int HouseholdPosition { get; set; }
+        public int? HouseholdPosition { get; set; }
 
         /// <summary>
         /// Gets or sets the name identifier.
@@ -131,7 +131,7 @@ namespace Rock.Utility.SparkDataApi
         /// The name identifier.
         /// </value>
         [JsonProperty( "Name ID" )]
-        public int NameId { get; set; }
+        public int? NameId { get; set; }
 
         /// <summary>
         /// Gets or sets the street suffix.
@@ -230,7 +230,7 @@ namespace Rock.Utility.SparkDataApi
         /// The individual record identifier.
         /// </value>
         [JsonProperty( "Individual Record ID" )]
-        public int IndividualRecordId { get; set; }
+        public int? IndividualRecordId { get; set; }
 
         /// <summary>
         /// Gets or sets the Delivery Point Verification (DPV) error number.

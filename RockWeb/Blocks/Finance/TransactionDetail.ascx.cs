@@ -418,6 +418,13 @@ namespace RockWeb.Blocks.Finance
                     txn.RefundDetails.RefundReasonValueId = ddlRefundReasonEdit.SelectedValueAsId();
                     txn.RefundDetails.RefundReasonSummary = tbRefundSummaryEdit.Text;
                 }
+                else
+                {
+                    if ( txn.RefundDetails != null )
+                    {
+                        rockContext.FinancialTransactionRefunds.Remove( txn.RefundDetails );
+                    }
+                }
 
                 if ( !Page.IsValid || !txn.IsValid )
                 {
