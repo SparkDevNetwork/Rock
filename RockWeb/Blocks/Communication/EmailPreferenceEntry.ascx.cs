@@ -97,8 +97,6 @@ We have unsubscribed you from the following lists:
                 mergeFields.Add( "Communication", _communication );
             }
 
-            LoadDropdowns( mergeFields );
-
             var key = PageParameter( "Person" );
             if ( !string.IsNullOrWhiteSpace( key ) )
             {
@@ -110,6 +108,8 @@ We have unsubscribed you from the following lists:
             {
                 _person = CurrentPerson;
             }
+
+            LoadDropdowns( mergeFields );
 
             if ( _person != null )
             {
@@ -440,8 +440,9 @@ We have unsubscribed you from the following lists:
                 int communicationListGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
 
                 // Get a list of all the Active CommunicationLists that the person is an active member of
+                int? personId = _person != null ? (int?)_person.Id:null;
                 var communicationListQry = groupService.Queryable()
-                    .Where( a => a.GroupTypeId == communicationListGroupTypeId && a.IsActive && a.Members.Any( m => m.PersonId == this.CurrentPersonId && m.GroupMemberStatus == GroupMemberStatus.Active ) );
+                    .Where( a => a.GroupTypeId == communicationListGroupTypeId && a.IsActive && a.Members.Any( m => m.PersonId == personId && m.GroupMemberStatus == GroupMemberStatus.Active ) );
 
                 var categoryGuids = this.GetAttributeValue( "CommunicationListCategories" ).SplitDelimitedValues().AsGuidList();
 
@@ -453,7 +454,7 @@ We have unsubscribed you from the following lists:
                     if ( !categoryGuids.Any() )
                     {
                         // if no categories where specified, only show lists that the person has VIEW auth
-                        if ( communicationList.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                        if ( communicationList.IsAuthorized( Rock.Security.Authorization.VIEW, _person ) )
                         {
                             viewableCommunicationLists.Add( communicationList );
                         }
