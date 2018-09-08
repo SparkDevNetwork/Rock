@@ -106,9 +106,15 @@ namespace Rock.Web.UI.Controls
             get
             {
                 int? noteTypeId = ViewState["NoteTypeId"] as int?;
-                if ( !noteTypeId.HasValue && NoteOptions.NoteTypes.Any() )
+
+                if ( !noteTypeId.HasValue )
                 {
-                    noteTypeId = NoteOptions.NoteTypes.First().Id;
+                    var rockPage = ( this.Page as RockPage ) ?? System.Web.HttpContext.Current.Handler as RockPage;
+                    var editableNoteTypes = this.NoteOptions.GetEditableNoteTypes( rockPage?.CurrentPerson );
+                    if ( editableNoteTypes.Any() )
+                    {
+                        noteTypeId = editableNoteTypes.First().Id;
+                    }
                 }
 
                 return noteTypeId ?? 0;
