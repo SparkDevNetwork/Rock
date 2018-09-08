@@ -17,9 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Web.Cache;
-using Rock.Model;
 using System.Web.UI;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -128,13 +128,13 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the editable note types.
+        /// Gets the editable note types sorted by order,name
         /// </summary>
         /// <param name="currentPerson">The current person.</param>
         /// <returns></returns>
         public List<NoteTypeCache> GetEditableNoteTypes( Person currentPerson )
         {
-            return this.NoteTypes?.Where( a => a.UserSelectable && a.IsAuthorized( Security.Authorization.EDIT, currentPerson ) ).ToList();
+            return this.NoteTypes?.Where( a => a.UserSelectable && a.IsAuthorized( Security.Authorization.EDIT, currentPerson ) ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
         }
 
         /// <summary>
