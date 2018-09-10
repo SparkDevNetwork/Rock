@@ -16,13 +16,10 @@ ul.rocktree ul {
 .rocktree {
   .rocktree-item {
     white-space: nowrap;
+    color: @text-color;
+
     &.is-inactive {
       color: lighten(@text-color, 20%);
-      opacity: 1;
-    }
-
-    &:not(.is-inactive) {
-      color: @text-color;
     }
 
     & > i {
