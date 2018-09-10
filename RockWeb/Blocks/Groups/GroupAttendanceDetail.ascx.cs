@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Data;
 using Rock.MergeTemplates;
 using Rock.Model;
@@ -31,7 +32,6 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Communication;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -221,18 +221,20 @@ namespace RockWeb.Blocks.Groups
         {
             if ( _group != null && _occurrence != null )
             {
-                SaveAttendance();
-                EmailAttendanceSummary();
-
-                var qryParams = new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } };
-
-                var groupTypeIds = PageParameter( "GroupTypeIds" );
-                if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+                if ( SaveAttendance() )
                 {
-                    qryParams.Add( "GroupTypeIds", groupTypeIds );
-                }
+                    EmailAttendanceSummary();
 
-                NavigateToParentPage( qryParams );
+                    var qryParams = new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } };
+
+                    var groupTypeIds = PageParameter( "GroupTypeIds" );
+                    if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+                    {
+                        qryParams.Add( "GroupTypeIds", groupTypeIds );
+                    }
+
+                    NavigateToParentPage( qryParams );
+                }
             }
         }
 
@@ -444,13 +446,14 @@ namespace RockWeb.Blocks.Groups
                 // redirect to the add page provided
                 if ( _group != null && _occurrence != null )
                 {
-                    SaveAttendance();
-
-                    var queryParams = new Dictionary<string, string>();
-                    queryParams.Add( "GroupId", _group.Id.ToString() );
-                    queryParams.Add( "GroupName", _group.Name );
-                    queryParams.Add( "ReturnUrl", Request.QueryString["returnUrl"] ?? Server.UrlEncode( Request.RawUrl ) );
-                    NavigateToLinkedPage( "GroupMemberAddPage", queryParams );
+                    if ( SaveAttendance() )
+                    {
+                        var queryParams = new Dictionary<string, string>();
+                        queryParams.Add( "GroupId", _group.Id.ToString() );
+                        queryParams.Add( "GroupName", _group.Name );
+                        queryParams.Add( "ReturnUrl", Request.QueryString["returnUrl"] ?? Server.UrlEncode( Request.RawUrl ) );
+                        NavigateToLinkedPage( "GroupMemberAddPage", queryParams );
+                    }
                 }
             }
         }
@@ -517,6 +520,12 @@ namespace RockWeb.Blocks.Groups
             var locationId = PageParameter( "LocationId" ).AsIntegerOrNull();
             var scheduleId = PageParameter( "ScheduleId" ).AsIntegerOrNull();
 
+            if ( scheduleId == null )
+            {
+                // if no specific schedule was specified in the URL, use the group's scheduleId 
+                scheduleId = _group.ScheduleId;
+            }
+
             // If this is a postback, check to see if date/location/schedule were updated
             if ( Page.IsPostBack && _allowAdd )
             {
@@ -536,9 +545,15 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            if ( occurrence == null && occurrenceDate.HasValue )
+            {
+                // if no specific occurrenceId was specified, try to find a matching occurrence from Date, GroupId, Location, ScheduleId
+                occurrence = occurrenceService.Get( occurrenceDate.Value.Date, _group.Id, locationId, scheduleId );
+            }
+
             // If an occurrence date was included, but no occurrence was found with that date, and new 
             // occurrences can be added, create a new one
-            if ( _allowAdd )
+            if ( occurrence == null && _allowAdd )
             {
                 // Create a new occurrence record and return it
                 return new AttendanceOccurrence
@@ -551,7 +566,7 @@ namespace RockWeb.Blocks.Groups
                 };
             }
 
-            return null;
+            return occurrence;
 
         }
 
@@ -865,7 +880,7 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Method to save attendance for use in two separate areas.
         /// </summary>
-        protected void SaveAttendance()
+        protected bool SaveAttendance()
         {
             using ( var rockContext = new RockContext() )
             {
@@ -891,7 +906,7 @@ namespace RockWeb.Blocks.Groups
                         nbNotice.NotificationBoxType = NotificationBoxType.Danger;
                         nbNotice.Visible = true;
 
-                        return;
+                        return false;
                     }
                     else
                     {
@@ -961,7 +976,7 @@ namespace RockWeb.Blocks.Groups
                                     if ( !cvAttendance.IsValid )
                                     {
                                         cvAttendance.ErrorMessage = attendance.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
-                                        return;
+                                        return false;
                                     }
 
                                     occurrence.Attendees.Add( attendance );
@@ -1007,6 +1022,8 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
             }
+
+            return true;
         }
 
         /// <summary>
