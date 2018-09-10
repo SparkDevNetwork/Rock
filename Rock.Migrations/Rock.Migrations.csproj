@@ -82,6 +82,10 @@
     <Compile Include="Migrations\201808062254493_Rollup_0806.Designer.cs">
       <DependentUpon>201808062254493_Rollup_0806.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201808100023206_FundraisingParticipantShowAmount.cs" />
+    <Compile Include="Migrations\201808100023206_FundraisingParticipantShowAmount.Designer.cs">
+      <DependentUpon>201808100023206_FundraisingParticipantShowAmount.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -375,6 +379,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201808062254493_Rollup_0806.resx">
       <DependentUpon>201808062254493_Rollup_0806.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201808100023206_FundraisingParticipantShowAmount.resx">
+      <DependentUpon>201808100023206_FundraisingParticipantShowAmount.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
