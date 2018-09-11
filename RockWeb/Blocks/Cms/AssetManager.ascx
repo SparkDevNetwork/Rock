@@ -2,7 +2,7 @@
 
 <asp:Panel ID="pnlAssetManager" runat="server" CssClass="picker-wrapper clearfix">
 
-    <asp:UpdatePanel ID="upnlHiddenValues" runat="server" UpdateMode="Always" style="display:none">
+    <asp:UpdatePanel ID="upnlHiddenValues" runat="server" UpdateMode="Always" >
         <ContentTemplate>
             <asp:Label ID="lbAssetStorageId" CssClass="js-assetstorage-id" runat="server"></asp:Label><br />
             <asp:Label ID="lbSelectFolder" CssClass="js-selectfolder" runat="server"></asp:Label><br />

@@ -47,11 +47,11 @@
         }
 
         var folderTreeData = $folderTreeView.data('rockTree');
-
+        
         if (!folderTreeData) {
-          var selectedFolders = $selectFolder.text().split(',');
+          var selectedFolders = [$assetStorageId.text() + ',' + $selectFolder.text()];
           var expandedFolders = $expandedFolders.text().split('||');
-
+          debugger
           $folderTreeView.rockTree({
             selectedIds: selectedFolders,
             expandedIds: expandedFolders
@@ -94,24 +94,17 @@
         }
 
         $folderTreeView.off('rockTree:selected').on('rockTree:selected', function (e, data) {
-          var relativeFolderPath = data;
+          var storageId = data.split(",")[0];
+          var folder = data.split(",")[1];
           var postbackArg;
-          var previousStorageId = $assetStorageId.text();
           var expandedFolders = $expandedFolders.text();
 
           // Some buttons are only active if at least one folder is selected once the tree has been selected then a folder is always selected.
           $('.js-folderselect').removeClass('aspNetDisabled');
 
-          if (data.endsWith("/")) {
-            $selectFolder.text(data);
-            postbackArg = 'asset-selected:' + $assetStorageId.text() + ',folder-selected:' + relativeFolderPath.replace(/\\/g, "/") + ',previous-asset:' + previousStorageId + ',expanded-folders:' + expandedFolders;
-          }
-          else {
-            $assetStorageId.text(data);
-            $selectFolder.text('');
-            $expandedFolders.text('');
-            postbackArg = 'asset-selected:' + data + ',previous-asset:' + previousStorageId + ',folder-selected:,expanded-folders:';
-          }
+          $selectFolder.text(folder);
+          $assetStorageId.text(storageId);
+          postbackArg = 'storage-id:' + storageId + '?folder-selected:' + folder.replace(/\\/g, "/") + '?expanded-folders:' + expandedFolders;
 
           var jsPostback = "javascript:__doPostBack('" + options.filesUpdatePanelId + "','" +  postbackArg+ "');"
 
