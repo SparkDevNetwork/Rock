@@ -16,12 +16,12 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Newtonsoft.Json;
 
-namespace RockWeb.Blocks.Core
+namespace RockWeb.Blocks.Cms
 {
     [DisplayName( "Asset Manager" )]
     [Category( "Core" )]
     [Description( "Manage files stored on a remote server or 3rd party cloud storage" )]
-    public partial class AssetStorageSystemBrowser : RockBlock, IPickerBlock
+    public partial class AssetManager : RockBlock, IPickerBlock
     {
         #region IPicker Implementation
         /// <summary>
@@ -156,18 +156,18 @@ namespace RockWeb.Blocks.Core
 
             var folderTreeScript = string.Format( @"
 Sys.Application.add_load(function () {{
-    Rock.controls.assetStorageSystemBrowser.initialize({{
+    Rock.controls.assetManager.initialize({{
         controlId: '{0}',
         filesUpdatePanelId: '{1}'
     }});
 }});
-", pnlAssetStorageSystemBrowser.ClientID, upnlFiles.ClientID );
+", pnlAssetManager.ClientID, upnlFiles.ClientID );
 
             var scriptInitialized = this.Request.Params[hfScriptInitialized.UniqueID].AsBoolean();
 
             if ( !scriptInitialized )
             {
-                ScriptManager.RegisterStartupScript( this, this.GetType(), string.Format( "AssetStorageSystemBrowser_js_init_{0}", this.ClientID), folderTreeScript, true );
+                ScriptManager.RegisterStartupScript( this, this.GetType(), string.Format( "AssetManager_js_init_{0}", this.ClientID), folderTreeScript, true );
                 hfScriptInitialized.Value = true.ToString();
                 upnlFolders.Update();
             }
