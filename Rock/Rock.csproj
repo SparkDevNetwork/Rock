@@ -403,6 +403,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
     </Compile>
+    <Compile Include="Reporting\DataFilter\BenevolenceRequest\BenevolenceResultDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\BenevolenceResult\BenevolenceRequestDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasDuplicateEmailFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasDuplicatePhoneFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InteractionDataViewFilter.cs" />
