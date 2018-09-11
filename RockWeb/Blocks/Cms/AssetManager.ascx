@@ -72,7 +72,7 @@
                         </div>
                         <asp:LinkButton ID="lbDownload" runat="server" CssClass="btn btn-xs btn-default js-singleselect aspNetDisabled" OnClick="lbDownload_Click" CausesValidation="false" ToolTip="Download selected file"><i class="fa fa-download"></i> Download</asp:LinkButton>
                         
-                        <asp:LinkButton ID="lbRename" runat="server" CssClass="btn btn-xs btn-default js-singleselect js-renamefile aspNetDisabled" CausesValidation="false" ToolTip="Rename selected file">
+                        <asp:LinkButton ID="lbRename" runat="server" CssClass="btn btn-xs btn-default js-singleselect js-renamefile aspNetDisabled" CausesValidation="false" ToolTip="Rename selected file" OnClientClick="return false;">
                             <i class="fa fa-exchange"></i> Rename
                         </asp:LinkButton>
                         
