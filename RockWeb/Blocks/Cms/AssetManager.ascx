@@ -1,6 +1,6 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AssetStorageSystemBrowser.ascx.cs" Inherits="RockWeb.Blocks.Core.AssetStorageSystemBrowser" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AssetManager.ascx.cs" Inherits="RockWeb.Blocks.Cms.AssetManager" %>
 
-<asp:Panel ID="pnlAssetStorageSystemBrowser" runat="server" CssClass="picker-wrapper clearfix">
+<asp:Panel ID="pnlAssetManager" runat="server" CssClass="picker-wrapper clearfix">
 
     <asp:UpdatePanel ID="upnlHiddenValues" runat="server" UpdateMode="Always" style="display:none">
         <ContentTemplate>

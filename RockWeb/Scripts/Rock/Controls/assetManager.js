@@ -3,7 +3,7 @@
   window.Rock = window.Rock || {};
   Rock.controls = Rock.controls || {};
 
-  Rock.controls.assetStorageSystemBrowser = (function () {
+  Rock.controls.assetManager = (function () {
     var exports;
 
     exports = {

@@ -64,7 +64,7 @@ namespace Rock.Field.Types
             var pickerControl = new ItemFromBlockPicker
             {
                 ID = id,
-                BlockTypePath = "~/Blocks/Core/AssetStorageSystemBrowser.ascx",
+                BlockTypePath = "~/Blocks/CMS/AssetManager.ascx",
                 ShowInModal = true,
                 SelectControlCssClass = "btn btn-xs btn-default imageupload-group",
                 CssClass = "picker-asset",
