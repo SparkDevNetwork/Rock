@@ -223,8 +223,7 @@ Sys.Application.add_load(function () {{
                     }
                 }
 
-                // TODO: For now we have to rebuild the tree when a post back occurs because when in a modal we were losing expanded state.
-                //BuildFolderTreeView();
+                UpdateFolderTreeView();
                 ListFiles();
             }
         }
@@ -266,6 +265,23 @@ Sys.Application.add_load(function () {{
 
             lblFolders.Text = sb.ToString();
             upnlFolders.Update();
+        }
+
+        /// <summary>
+        /// Updates the folder TreeView HTML based on what is currently expanded
+        /// </summary>
+        private void UpdateFolderTreeView()
+        {
+            HtmlAgilityPack.HtmlDocument htmlDocument = new HtmlAgilityPack.HtmlDocument();
+            htmlDocument.LoadHtml( lblFolders.Text );
+            foreach(var node in htmlDocument.DocumentNode.Descendants( "li" ).ToList())
+            {
+                var idAndAssetKey = node.GetAttributeValue( "data-id", string.Empty );
+                string dataExpanded = lbExpandedFolders.Text != string.Empty ? lbExpandedFolders.Text.Contains( idAndAssetKey ).ToTrueFalse().ToLower() : "false";
+                node.SetAttributeValue( "data-expanded", dataExpanded );
+            }
+
+            lblFolders.Text = htmlDocument.DocumentNode.OuterHtml;
         }
 
         /// <summary>
