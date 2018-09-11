@@ -71,12 +71,11 @@
 
             $ul.children('li').each(function () {
                 var $li = $(this),
-                    node = {
+                  node = {
                         id: $li.attr('data-id'),
                         name: $li.children('span').first().html(),
                         hasChildren: $li.children('ul').length > 0,
-                        isOpen: $li.attr('data-expanded') === 'true',
-                        isTop: $li.attr('data-top') === 'true'
+                        isOpen: $li.attr('data-expanded') === 'true'
                     };
                 
                 if (attrs && typeof attrs.length === 'number') {
@@ -383,11 +382,11 @@
 				    var $li = $('<li/>'),
 						$childUl,
 						includeAttrs = self.options.mapping.include,
-                    folderCssClass = hasChildren || node.isTop ? ( node.isOpen ? self.options.iconClasses.branchOpen : self.options.iconClasses.branchClosed ) : "",
+                    folderCssClass = hasChildren ? ( node.isOpen ? self.options.iconClasses.branchOpen : self.options.iconClasses.branchClosed ) : "",
                     leafCssClass = node.iconCssClass || self.options.iconClasses.leaf;
                   
 				    $li.addClass('rocktree-item')
-						.addClass(hasChildren || node.isTop ? 'rocktree-folder' : 'rocktree-leaf')
+						.addClass(hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
             .addClass( ( !node.hasOwnProperty('isActive') || node.isActive )? '' : 'is-inactive')
 						.attr('data-id', node.id)
 						.attr('data-parent-id', node.parentId);
@@ -417,7 +416,7 @@
 				        }
 				    }
                   
-            if (hasChildren || node.isTop) {
+            if (hasChildren) {
 				        $li.prepend('<i class="rocktree-icon icon-fw ' + folderCssClass + '"></i>');
 
 				        if (node.iconCssClass) {
@@ -562,10 +561,11 @@
             this.$el.on('click', '.rocktree-item > span', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-
+              
                 var $rockTree = $(this).parents('.rocktree'),
                     $item = $(this),
                     id = $item.parent('li').attr('data-id'),
+                    //storageId = $item.parent('li').attr('data-storage-id') || "",
                     node = _findNodeById(id, self.nodes),
                     selectedNodes = [],
                     onSelected = self.options.onSelected,
@@ -598,7 +598,7 @@
                 }
 
                 for (i = 0; i < onSelected.length; i++) {
-                    $(document).trigger(onSelected[i], id);
+                  $(document).trigger(onSelected[i], id);
                 }
             });
 

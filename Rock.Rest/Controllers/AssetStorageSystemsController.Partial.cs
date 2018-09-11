@@ -48,21 +48,17 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/AssetStorageSystems/GetFolders" )]
-        public IQueryable<TreeViewItem> GetFolders(int assetStorageSystemId, string path )
+        public List<Asset> GetFolders(int assetStorageSystemId, string path )
         {
-            List<TreeViewItem> groupNameList = new List<TreeViewItem>();
-
             var assetStorageSystemService = ( AssetStorageSystemService ) Service;
             var assetStorageSystem = assetStorageSystemService.Get( assetStorageSystemId );
 
             assetStorageSystem.LoadAttributes();
             var component = assetStorageSystem.GetAssetStorageComponent();
 
-
-
             List<Asset> assets = component.ListFoldersInFolder( assetStorageSystem, new Asset { Key = path } );
 
-            return groupNameList.AsQueryable();
+            return assets;
         }
 
         /// <summary>
@@ -76,8 +72,6 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route("api/AssetStorageSystems/GetFiles")]
         public List<Asset> GetFiles(int assetStorageSystemId, string path)
         {
-
-            List<TreeViewItem> groupNameList = new List<TreeViewItem>();
 
             var assetStorageSystemService = ( AssetStorageSystemService ) Service;
             var assetStorageSystem = assetStorageSystemService.Get( assetStorageSystemId );
