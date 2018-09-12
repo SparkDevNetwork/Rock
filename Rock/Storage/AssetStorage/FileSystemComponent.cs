@@ -474,6 +474,7 @@ namespace Rock.Storage.AssetStorage
             if ( asset.Key.IsNotNullOrWhiteSpace() )
             {
                 invalidChars.Remove( '/' );
+                invalidChars.Remove( '~' );
                 if ( asset.Key.ToList().Any( c => invalidChars.Contains( c ) ) )
                 {
                     throw new Exception( "Invalid characters in Asset.Key" );
