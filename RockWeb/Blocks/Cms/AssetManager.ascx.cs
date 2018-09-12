@@ -325,10 +325,21 @@ upnlFiles.ClientID // {2}
         {
             AssetStorageSystem assetStorageSystem = GetAssetStorageSystem();
             var component = assetStorageSystem.GetAssetStorageComponent();
+            var asset = new Asset { Type = AssetType.Folder };
 
-            //TODO: put validation on the textbox, rename will need to use it as well
-            string name = lbSelectFolder.Text + tbCreateFolder.Text;
-            component.CreateFolder( assetStorageSystem, new Asset { Name = name, Type = AssetType.Folder } );
+            // Selecting the root does not put a value for the selected folder, so we have to make sure
+            // if it does not have a value that we use name instead of key so the root folder is used
+            // by the component.
+            if ( lbSelectFolder.Text.IsNotNullOrWhiteSpace() )
+            {
+                asset.Key = lbSelectFolder.Text + tbCreateFolder.Text;
+            }
+            else
+            {
+                asset.Name = tbCreateFolder.Text;
+            }
+
+            component.CreateFolder( assetStorageSystem, asset );
             upnlFolders.Update();
         }
 
