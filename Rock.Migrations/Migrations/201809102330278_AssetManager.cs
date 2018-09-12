@@ -57,6 +57,10 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonAliasId)
                 .Index(t => t.Guid, unique: true);
 
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.AssetStorageSystem", "Asset Storage System", "Rock.Model.AssetStorageSystem, Rock, Version=1.9.0.2, Culture=neutral, PublicKeyToken=null", true, true, "E0B4BE77-B29F-4BD4-AE45-CF833AC3A482" );
+            RockMigrationHelper.UpdateEntityType( "Rock.Storage.AssetStorage.AmazonS3Component", "Amazon S3 Component", "Rock.Storage.AssetStorage.AmazonS3Component, Rock, Version=1.9.0.2, Culture=neutral, PublicKeyToken=null", false, true, "FFE9C4A0-7AB7-48CA-8938-EC73DEC134E8" );
+            RockMigrationHelper.UpdateEntityType( "Rock.Storage.AssetStorage.FileSystemComponent", "File System Component", "Rock.Storage.AssetStorage.FileSystemComponent, Rock, Version=1.9.0.2, Culture=neutral, PublicKeyToken=null", false, true, "FFEA94EA-D394-4C1A-A3AE-23E6C50F047A" );
+
             AddLocalContentAsset();
 
             RockMigrationHelper.AddPage( true, "C831428A-6ACD-4D49-9B2D-046D399E3123", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Asset Storage Systems", "", "1F5D5991-C586-45FC-A5AC-B7CD4D533990", "fa fa-cloud" ); // Site:Rock RMS
