@@ -166,7 +166,7 @@ namespace Rock.Field.Types
 
                 if ( configurationValues.ContainsKey( EDITOR_HEIGHT ) )
                 {
-                    editor.EditorHeight = configurationValues[EDITOR_HEIGHT].Value.ToString();
+                    editor.EditorHeight = configurationValues[EDITOR_HEIGHT].Value;
                 }
             }
 
