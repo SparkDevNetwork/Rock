@@ -187,7 +187,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             dvpGroupStatus.DefinedTypeId = _groupType.GroupStatusDefinedTypeId;
-            dvpGroupStatus.DefinedTypeId = _groupType.GroupStatusDefinedTypeId;
             if ( _groupType.GroupStatusDefinedType != null )
             {
                 dvpGroupStatus.Label = _groupType.GroupStatusDefinedType.ToString();

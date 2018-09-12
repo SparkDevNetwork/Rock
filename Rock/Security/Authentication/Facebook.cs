@@ -484,15 +484,6 @@ namespace Rock.Security.ExternalAuthentication
                                 }
                             }
 
-                            // Save the facebook social media link
-                            var facebookAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_FACEBOOK.AsGuid() );
-                            if ( facebookAttribute != null )
-                            {
-                                person.LoadAttributes( rockContext );
-                                person.SetAttributeValue( facebookAttribute.Key, facebookLink );
-                                person.SaveAttributeValues( rockContext );
-                            }
-
                             if ( syncFriends && !string.IsNullOrWhiteSpace( accessToken ) )
                             {
                                 // Get the friend list (only includes friends who have also authorized this app)

@@ -250,7 +250,16 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnStartNcoa_Click( object sender, EventArgs e )
         {
-            mdRunNcoa.Show();
+            var addresses = new Ncoa().GetAddresses( dvpNcoaPersonDataView.SelectedValue.AsIntegerOrNull() );
+            if ( addresses == null || addresses.Count < SparkDataConfig.NCOA_MIN_ADDRESSES )
+            {
+                mdGridWarning.Show( string.Format( "Only {0} addresses were selected to be processed. NCOA will not run because it is below the minimum of {1} addresses.", addresses.Count, SparkDataConfig.NCOA_MIN_ADDRESSES ), ModalAlertType.Information );
+            }
+            else
+            {
+                lbNcoaCount.Text = addresses.Count.ToString() + " Addresses will be processed by NCOA.";
+                mdRunNcoa.Show();
+            }
         }
 
         protected void mdRunNcoa_SaveClick( object sender, EventArgs e)

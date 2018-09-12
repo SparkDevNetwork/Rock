@@ -1342,24 +1342,21 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
-            try
-            {
-                CleanupOrphanedTestCommunications();
-            }
-            catch ( Exception ex )
-            {
-                this.LogException( ex );
-            }
-
             Rock.Model.Communication communication = UpdateCommunication( new RockContext() );
-            var personToClone = CurrentPerson;
 
             if ( communication != null )
             {
+                // Using a new context (so that changes in the UpdateCommunication() are not persisted )
                 using ( var rockContext = new RockContext() )
                 {
-                    // Using a new context (so that changes in the UpdateCommunication() are not persisted )
-                    int? testPersonId = null;
+                    // store the CurrentPerson's current Email and SMS number so we can restore it after changing them to the Test Email/SMS Number
+                    int testPersonId = CurrentPerson.Id;
+                    string testPersonOriginalEmailAddress = CurrentPerson.Email;
+                    var testPersonOriginalSMSPhoneNumber = CurrentPerson.PhoneNumbers
+                                            .Where( p => p.IsMessagingEnabled )
+                                            .Select(a => a.Number)
+                                            .FirstOrDefault();
+
                     Rock.Model.Communication testCommunication = null;
                     CommunicationService communicationService = null;
 
@@ -1401,34 +1398,44 @@ namespace RockWeb.Blocks.Communication
 
                         testRecipient.Status = CommunicationRecipientStatus.Pending;
 
-                        var testPerson = personToClone.Clone( false );
-                        testPerson.Id = 0;
-                        testPerson.Guid = Guid.NewGuid();
+                        var sendTestToPerson = new PersonService( rockContext ).Get( CurrentPerson.Id );
                         if ( mediumEntityTypeId == EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Id )
                         {
-                            testPerson.Email = tbTestEmailAddress.Text;
+                            if ( sendTestToPerson.Email != tbTestEmailAddress.Text )
+                            {
+                                sendTestToPerson.Email = tbTestEmailAddress.Text;
+                            }
                         }
                         else if ( mediumEntityTypeId == EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ).Id )
                         {
-                            testPerson.PhoneNumbers = new List<Rock.Model.PhoneNumber>();
-                            testPerson.PhoneNumbers.Add( new PhoneNumber { IsMessagingEnabled = true, Number = tbTestSMSNumber.Text } );
+                            var smsPhoneNumber = sendTestToPerson.PhoneNumbers.FirstOrDefault( a => a.IsMessagingEnabled == true );
+                            if ( smsPhoneNumber == null )
+                            {
+                                var mobilePhoneValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+                                var testPhoneNumber = new PhoneNumber
+                                {
+                                    IsMessagingEnabled = true,
+                                    CountryCode = PhoneNumber.DefaultCountryCode(),
+                                    NumberTypeValueId = mobilePhoneValueId,
+                                    Number = tbTestSMSNumber.Text,
+                                    NumberFormatted = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), tbTestSMSNumber.Text ),
+                                    ForeignKey = "_ForTestCommunication_"
+                                };
+
+                                sendTestToPerson.PhoneNumbers.Add( testPhoneNumber );
+                            }
+                            else
+                            {
+                                if ( smsPhoneNumber.Number != tbTestSMSNumber.Text )
+                                {
+
+                                    smsPhoneNumber.Number = tbTestSMSNumber.Text;
+                                    smsPhoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( smsPhoneNumber.CountryCode, smsPhoneNumber.Number );
+                                }
+                            }
                         }
-
-                        testPerson.ForeignGuid = null;
-                        testPerson.ForeignId = null;
-
-                        // Just in case it doesn't get cleaned up, mark it so that we can try to clean it up next time
-                        testPerson.ForeignKey = "_ForTestCommunication_";
-
-                        var personService = new PersonService( rockContext );
-                        testPerson.Aliases.Add( new PersonAlias { AliasPerson = testPerson, AliasPersonGuid = testPerson.Guid, Guid = Guid.NewGuid() } );
-                        personService.Add( testPerson );
-
-                        // use disablePrePostProcessing for all the TestCommunication related SaveChanges since we are deleting all the stuff we add and we don't want any workflow triggers to fire (if any) 
-                        rockContext.SaveChanges( disablePrePostProcessing: true );
-                        testPersonId = testPerson.Id;
-                        testPerson = personService.Get( testPersonId.Value );
-                        testRecipient.PersonAliasId = testPerson.PrimaryAliasId.Value;
+                        
+                        testRecipient.PersonAliasId = sendTestToPerson.PrimaryAliasId.Value;
 
                         testRecipient.MediumEntityTypeId = mediumEntityTypeId;
 
@@ -1473,37 +1480,71 @@ namespace RockWeb.Blocks.Communication
                             // make sure we delete the test communication record we created to send the test 
                             if ( communicationService != null && testCommunication != null )
                             {
+                                var testCommunicationId = testCommunication.Id;
                                 communicationService.Delete( testCommunication );
                                 rockContext.SaveChanges( disablePrePostProcessing: true );
-                            }
 
-                            // make sure we delete the Person record we created to send the test 
-                            using ( var deleteRockContext = new RockContext() )
-                            {
-                                var personToDeleteService = new PersonService( deleteRockContext );
-                                var personAliasToDeleteService = new PersonAliasService( deleteRockContext );
-
-                                if ( testPersonId.HasValue )
+                                // Delete any Person History that was created for the Test Communication
+                                using ( var historyContext = new RockContext() )
                                 {
-                                    var personToDelete = personToDeleteService.Get( testPersonId.Value );
-
-                                    foreach ( var alias in personToDelete.Aliases.ToList() )
+                                    var categoryId = CategoryCache.Get( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid() ).Id;
+                                    var communicationEntityTypeId = EntityTypeCache.Get( "Rock.Model.Communication" ).Id;
+                                    var historyService = new HistoryService( historyContext );
+                                    var communicationHistoryQuery = historyService.Queryable().Where( a => a.CategoryId == categoryId && a.RelatedEntityTypeId == communicationEntityTypeId && a.RelatedEntityId == testCommunicationId );
+                                    foreach ( History communicationHistory in communicationHistoryQuery )
                                     {
-                                        string errorMessage;
-                                        if ( personAliasToDeleteService.CanDelete( alias, out errorMessage ) )
-                                        {
-                                            personAliasToDeleteService.Delete( alias );
-                                        }
-                                        else
-                                        {
-                                            // if we are unable to delete the personalias (maybe something referenced it in the brief window), just point it back to the person that was cloned
-                                            alias.PersonId = personToClone.Id;
-                                        }
+                                        historyService.Delete( communicationHistory );
                                     }
 
-                                    personToDelete.Aliases = null;
-                                    personToDeleteService.Delete( personToDelete );
-                                    deleteRockContext.SaveChanges( disablePrePostProcessing: true );
+                                    historyContext.SaveChanges( disablePrePostProcessing: true );
+                                }
+                            }
+                        }
+                        catch ( Exception ex )
+                        {
+                            // just log the exception, don't show it
+                            ExceptionLogService.LogException( ex );
+                        }
+
+                        try
+                        {
+                            // make sure we restore the CurrentPerson's email/SMS number if it was changed for the test
+                            using ( var restorePersonContext = new RockContext() )
+                            {
+                                var restorePersonService = new PersonService( restorePersonContext );
+                                var personToUpdate = restorePersonService.Get( testPersonId );
+                                if ( mediumEntityTypeId == EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Id )
+                                {
+                                    if ( personToUpdate.Email != testPersonOriginalEmailAddress )
+                                    {
+                                        personToUpdate.Email = testPersonOriginalEmailAddress;
+                                        restorePersonContext.SaveChanges( disablePrePostProcessing: true );
+                                    }
+                                }
+                                else if ( mediumEntityTypeId == EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ).Id )
+                                {
+                                    var defaultSMSNumber = personToUpdate.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
+                                    if ( defaultSMSNumber != null )
+                                    {
+                                        if ( defaultSMSNumber.Number != testPersonOriginalSMSPhoneNumber )
+                                        {
+                                            if ( testPersonOriginalSMSPhoneNumber == null )
+                                            {
+                                                if ( defaultSMSNumber.ForeignKey == "_ForTestCommunication_" )
+                                                {
+                                                    new PhoneNumberService( restorePersonContext ).Delete( defaultSMSNumber );
+                                                    restorePersonContext.SaveChanges( disablePrePostProcessing: true );
+                                                }
+                                            }
+                                            else
+                                            {
+                                                defaultSMSNumber.Number = testPersonOriginalSMSPhoneNumber;
+                                                defaultSMSNumber.NumberFormatted = PhoneNumber.FormattedNumber( defaultSMSNumber.CountryCode, defaultSMSNumber.Number );
+                                                restorePersonContext.SaveChanges( disablePrePostProcessing: true );
+                                            }
+                                        }
+                                    }
+                                    
                                 }
                             }
                         }
@@ -1513,63 +1554,6 @@ namespace RockWeb.Blocks.Communication
                             ExceptionLogService.LogException( ex );
                         }
                     }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Shouldn't happen, but just in case...
-        /// this will cleanup any orphaned test communications artifacts
-        /// </summary>
-        private void CleanupOrphanedTestCommunications()
-        {
-            using ( RockContext deleteRockContext = new RockContext() )
-            {
-                PersonService personToDeleteService = new PersonService( deleteRockContext );
-                PersonAliasService personAliasToDeleteService = new PersonAliasService( deleteRockContext );
-                PersonDuplicateService personDuplicateService = new PersonDuplicateService( deleteRockContext );
-
-                // check for any test communication artifacts that didn't clean up correctly
-                var forTestCommunicationPersonQry = personToDeleteService.Queryable().Where( a => a.ForeignKey == "_ForTestCommunication_" );
-                if ( forTestCommunicationPersonQry.Any() )
-                {
-                    var communicationToDeleteService = new Rock.Model.CommunicationService( deleteRockContext );
-                    var communicationToDeleteQry = communicationToDeleteService.Queryable().Where( a => a.Recipients.Any( r => forTestCommunicationPersonQry.Any( p => p.Id == r.PersonAlias.PersonId ) ) );
-                    foreach ( var testCommunicationToDelete in communicationToDeleteQry.ToList() )
-                    {
-                        try
-                        {
-                            communicationToDeleteService.Delete( testCommunicationToDelete );
-                        }
-                        catch ( Exception ex )
-                        {
-                            ExceptionLogService.LogException( ex );
-                        }
-                    }
-
-                    foreach ( var personToDelete in forTestCommunicationPersonQry )
-                    {
-                        try
-                        {
-                            foreach ( var personToDeleteAlias in personToDelete.Aliases.ToList() )
-                            {
-                                foreach ( var duplicatePerson in personDuplicateService.Queryable().Where( a => a.DuplicatePersonAliasId == personToDeleteAlias.Id || a.PersonAliasId == personToDeleteAlias.Id ) )
-                                {
-                                    personDuplicateService.Delete( duplicatePerson );
-                                }
-
-                                personAliasToDeleteService.Delete( personToDeleteAlias );
-                            }
-
-                            personToDeleteService.Delete( personToDelete );
-                        }
-                        catch ( Exception ex )
-                        {
-                            ExceptionLogService.LogException( ex );
-                        }
-                    }
-
-                    deleteRockContext.SaveChanges( disablePrePostProcessing: true );
                 }
             }
         }

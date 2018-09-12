@@ -975,6 +975,17 @@ namespace RockWeb.Blocks.Groups
                 newGroup.IsSystem = false;
                 newGroup.Name = group.Name + " - Copy";
 
+                if ( group.ScheduleId.HasValue && group.Schedule.ScheduleType != ScheduleType.Named )
+                {
+                    newGroup.Schedule = new Schedule();
+                    // NOTE: Schedule Name should be set to string.Empty to indicate that it is a Custom or Weekly schedule and not a "Named" schedule
+                    newGroup.Schedule.Name = string.Empty;
+                    newGroup.Schedule.iCalendarContent = group.Schedule.iCalendarContent;
+                    newGroup.Schedule.WeeklyDayOfWeek = group.Schedule.WeeklyDayOfWeek;
+                    newGroup.Schedule.WeeklyTimeOfDay = group.Schedule.WeeklyTimeOfDay;
+              
+                }
+
                 var auths = authService.GetByGroup( group.Id );
                 rockContext.WrapTransaction( () =>
                 {
@@ -1451,19 +1462,7 @@ namespace RockWeb.Blocks.Groups
             nbGroupCapacity.Visible = groupTypeCache != null && groupTypeCache.GroupCapacityRule != GroupCapacityRule.None;
             SetScheduleControls( groupTypeCache, group );
             ShowGroupTypeEditDetails( groupTypeCache, group, true );
-
-            if ( groupTypeCache != null )
-            {
-                dvpGroupStatus.DefinedTypeId = groupTypeCache.GroupStatusDefinedTypeId;
-                if ( groupTypeCache.GroupStatusDefinedType != null )
-                {
-                    dvpGroupStatus.Label = groupTypeCache.GroupStatusDefinedType.ToString();
-                }
-
-                dvpGroupStatus.Visible = groupTypeCache.GroupStatusDefinedTypeId.HasValue;
-                dvpGroupStatus.SetValue( group.StatusValueId );
-            }
-
+            
             // if this block's attribute limit group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
             if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean() )
             {
@@ -1519,6 +1518,22 @@ namespace RockWeb.Blocks.Groups
                             wpMemberWorkflowTriggers.Visible = selectedGroupType.AllowSpecificGroupMemberWorkflows || group.GroupMemberWorkflowTriggers.Any();
                         }
                     }
+                }
+
+                if ( groupType != null )
+                {
+                    dvpGroupStatus.DefinedTypeId = groupType.GroupStatusDefinedTypeId;
+                    if ( groupType.GroupStatusDefinedType != null )
+                    {
+                        dvpGroupStatus.Label = groupType.GroupStatusDefinedType.ToString();
+                    }
+
+                    dvpGroupStatus.Visible = groupType.GroupStatusDefinedTypeId.HasValue;
+                    dvpGroupStatus.SetValue( group.StatusValueId );
+                }
+                else
+                {
+                    dvpGroupStatus.Visible = false;
                 }
 
                 if ( groupType != null && groupType.LocationSelectionMode != GroupLocationPickerMode.None )

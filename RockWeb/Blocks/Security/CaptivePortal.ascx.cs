@@ -140,14 +140,11 @@ namespace RockWeb.Blocks.Security
                 macAddress = macAddress.RemoveAllNonAlphaNumericCharacters();
                 hfMacAddress.Value = macAddress;
 
-                RockContext rockContext = new RockContext();
-
                 // create or get device
-                PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
+                PersonalDeviceService personalDeviceService = new PersonalDeviceService( new RockContext() );
                 PersonalDevice personalDevice = null;
 
-                bool isAnExistingDevice = DoesPersonalDeviceExist( macAddress );
-                if ( isAnExistingDevice )
+                if ( DoesPersonalDeviceExist( macAddress ) )
                 {
                     personalDevice = VerifyDeviceInfo( macAddress );
                 }
@@ -160,29 +157,11 @@ namespace RockWeb.Blocks.Security
                 // and then deleted by the user/browser/software, then they'll never get the cookie again and won't automatically get linked by RockPage.
                 CreateDeviceCookie( macAddress );
 
-                // See if user is logged and link the alias to the device.
+                // See if user is logged in and link the alias to the device.
                 if ( CurrentPerson != null )
                 {
                     Prefill( CurrentPerson );
                     RockPage.LinkPersonAliasToDevice( ( int ) CurrentPersonAliasId, macAddress );
-                    hfPersonAliasId.Value = CurrentPersonAliasId.ToString();
-                }
-                else if ( isAnExistingDevice )
-                {
-                    // if the user is not logged in but we have the device lets try to get a person
-                    if ( personalDevice.PersonAliasId != null )
-                    {
-                        // Get the person
-                        PersonService personService = new PersonService( rockContext );
-                        Person person = personService.Get( personalDevice.PersonAlias.PersonId );
-
-                        if ( person != null )
-                        {
-                            Prefill( person );
-                            RockPage.LinkPersonAliasToDevice( ( int ) personalDevice.PersonAliasId, macAddress );
-                            hfPersonAliasId.Value = personalDevice.PersonAliasId.ToString();
-                        }
-                    }
                 }
 
                 // Direct connect if no controls are visible
@@ -399,10 +378,10 @@ namespace RockWeb.Blocks.Security
             // We know there is a device with the stored MAC
             // If we have an alias ID then we have all data needed and can redirect the user to frontporch
             // also if hfPersonAliasId has a value at this time it has already been linked to the device.
-            if ( hfPersonAliasId.Value != string.Empty)
+            if ( CurrentPerson != null )
             {
                 UpdatePersonInfo();
-                Response.Redirect( CreateRedirectUrl( int.Parse( hfPersonAliasId.Value ) ) );
+                Response.Redirect( CreateRedirectUrl( CurrentPersonAliasId ) );
                 return;
             }
 
@@ -469,8 +448,8 @@ namespace RockWeb.Blocks.Security
                 return person.PrimaryAlias.Id;
             }
 
-            // Just match off phone number
-            if ( tbMobilePhone.Visible )
+            // Just match off phone number if no other fields are showing.
+            if ( tbMobilePhone.Visible && !tbFirstName.Visible && !tbLastName.Visible && !tbEmail.Visible )
             {
                 mobilePhoneNumber = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters();
                 person = personService.Queryable().Where( p => p.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault().Number == mobilePhoneNumber ).FirstOrDefault();
@@ -569,21 +548,19 @@ namespace RockWeb.Blocks.Security
         }
 
         /// <summary>
-        /// Updates the person email and mobile phone number with the entered values if they are different
+        /// Updates the CurrentPerson email and mobile phone number with the entered values if they are different.
+        /// Does nothing if there is no CurrentPerson
         /// </summary>
         private void UpdatePersonInfo()
         {
+            if ( CurrentPerson == null )
+            {
+                return;
+            }
+
             using ( RockContext rockContext = new RockContext() )
             {
-                int? personId = CurrentPersonId ?? new PersonAliasService( rockContext ).GetPersonId( int.Parse( hfPersonAliasId.Value ) );
-
-                // If we can't get a person ID then just return
-                if( personId == null )
-                {
-                    return;
-                }
-
-                Person person = new PersonService( rockContext ).Get( ( int ) personId );
+                Person person = new PersonService( rockContext ).Get( ( int ) CurrentPersonId );
                 person.Email = tbEmail.Text;
 
                 int mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;

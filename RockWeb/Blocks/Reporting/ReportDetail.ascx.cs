@@ -1292,7 +1292,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="validationGroup">The validation group.</param>
         private void SetDataSelectControlsValidationGroup( Control[] dataSelectControls, string validationGroup )
         {
-            if ( dataSelectControls != null )
+            if ( dataSelectControls != null && validationGroup != null )
             {
                 this.SetValidationGroup( dataSelectControls, validationGroup );
             }
