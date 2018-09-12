@@ -43,10 +43,6 @@ namespace Rock.Migrations
             // Attrib for BlockType: Group Registration:Require Email
             RockMigrationHelper.UpdateBlockTypeAttribute( "9D0EF3AC-D0F7-4FA7-9C64-E7B0855648C7", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Require Email", "IsRequireEmail", "", @"Should email be required for registration?", 0, @"True", "37E22E5F-19C9-4F17-8E1D-8C0E5F52DE1D" );
 
-            // Attrib for BlockType: Person Bio:Communication Page
-            RockMigrationHelper.UpdateBlockTypeAttribute( "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Communication Page", "CommunicationPage", "", @"The communication page to use for when the person's email address is clicked. Leave this blank to use the default.", 15, @"", "D6088B1D-6D1F-4B3B-A864-D15155668A31" );
-
-
         }
 
         /// <summary>
@@ -54,9 +50,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            // Attrib for BlockType: Person Bio:Communication Page
-            RockMigrationHelper.DeleteAttribute( "D6088B1D-6D1F-4B3B-A864-D15155668A31" );
-
             // Attrib for BlockType: Group Registration:Require Email
             RockMigrationHelper.DeleteAttribute( "37E22E5F-19C9-4F17-8E1D-8C0E5F52DE1D" );
             // Attrib for BlockType: Group Registration:Require Mobile Phone

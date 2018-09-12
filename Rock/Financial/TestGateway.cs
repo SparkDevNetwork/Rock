@@ -242,6 +242,17 @@ namespace Rock.Financial
             return string.Empty;
         }
 
+        /// <summary>
+        /// Gets the next payment date.
+        /// </summary>
+        /// <param name="scheduledTransaction">The transaction.</param>
+        /// <param name="lastTransactionDate">The last transaction date.</param>
+        /// <returns></returns>
+        public override DateTime? GetNextPaymentDate( FinancialScheduledTransaction scheduledTransaction, DateTime? lastTransactionDate )
+        {
+            return CalculateNextPaymentDate( scheduledTransaction, lastTransactionDate );
+        }
+
         #endregion
 
         #region Private Methods

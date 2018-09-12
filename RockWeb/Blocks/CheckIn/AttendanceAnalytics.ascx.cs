@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.CheckIn
                 btnCopyToClipboard.Visible = true;
                 RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
                 string script = string.Format( @"
-    new Clipboard('#{0}');
+    new ClipboardJS('#{0}');
     $('#{0}').tooltip();
 ", btnCopyToClipboard.ClientID );
                 ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
