@@ -431,8 +431,8 @@ Sys.Application.add_load(function () {{
             var component = assetStorageSystem.GetAssetStorageComponent();
 
             //TODO: put validation on the textbox, rename will need to use it as well
-            string key = lbSelectFolder.Text + tbCreateFolder.Text + "/";
-            component.CreateFolder( assetStorageSystem, new Asset { Key = key, Type = AssetType.Folder } );
+            string name = lbSelectFolder.Text + tbCreateFolder.Text;
+            component.CreateFolder( assetStorageSystem, new Asset { Name = name, Type = AssetType.Folder } );
 
             BuildFolderTreeView();
         }
