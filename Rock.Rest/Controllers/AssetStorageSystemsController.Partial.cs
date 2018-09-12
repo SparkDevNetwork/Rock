@@ -55,7 +55,7 @@ namespace Rock.Rest.Controllers
             }
             else
             {
-                var assetFolderIdParts = assetFolderId.SplitDelimitedValues().ToArray();
+                var assetFolderIdParts = assetFolderId.Split(',').ToArray();
                 if ( assetFolderIdParts.Length > 0 )
                 {
                     int assetStorageSystemId = assetFolderIdParts[0].AsInteger();
