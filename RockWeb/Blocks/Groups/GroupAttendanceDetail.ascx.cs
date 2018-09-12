@@ -50,9 +50,8 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Restrict Future Occurrence Date", "Should user be prevented from selecting a future Occurrence date?", false, "", 8 )]
     [BooleanField( "Show Notes", "Should the notes field be displayed?", true, "", 9 )]
     [TextField( "Attendance Note Label", "The text to use to describe the notes", true, "Notes", "", 10 )]
-    [BooleanField( "Show Anonymous Count", "Should the anonymous count be displayed?", true, "", 11 )]
-    [EnumsField( "Send Summary Email To", "", typeof( SendSummaryEmailType ), false, "", "", 12 )]
-    [SystemEmailField( "Attendance Email", "The System Email to use to send the attendance", false, Rock.SystemGuid.SystemEmail.ATTENDANCE_NOTIFICATION, "", 13, "AttendanceEmailTemplate" )]
+    [EnumsField( "Send Summary Email To", "", typeof( SendSummaryEmailType ), false, "", "", 11 )]
+    [SystemEmailField( "Attendance Email", "The System Email to use to send the attendance", false, Rock.SystemGuid.SystemEmail.ATTENDANCE_NOTIFICATION, "", 12, "AttendanceEmailTemplate" )]
     public partial class GroupAttendanceDetail : RockBlock
     {
         #region Fields
