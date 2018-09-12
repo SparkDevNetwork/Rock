@@ -1,15 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using DDay.iCal;
 using DDay.iCal.Serialization.iCalendar;
 using Rock.Lava;
+using Subtext.TestLibrary;
 using Xunit;
 
 namespace Rock.Tests.Rock.Lava
 {
     public class RockFiltersTest
     {
+        // A fake webroot Content folder for any tests that use the HTTP Context simulator
+        private static string webContentFolder = string.Empty;
+
         private static readonly Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
         private static iCalendarSerializer serializer = new iCalendarSerializer();
         private static RecurrencePattern weeklyRecurrence = new RecurrencePattern( "RRULE:FREQ=WEEKLY;BYDAY=SA" );
@@ -628,6 +633,56 @@ namespace Rock.Tests.Rock.Lava
 
         #endregion
 
+        /// <summary>
+        /// For use in Lava -- should return the IP address of the Client
+        /// </summary>
+        [Fact]
+        public void Client_IP()
+        {
+            InitWebContentFolder();
+
+            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
+            {
+                var output = RockFilters.Client( "Global", "ip" );
+                Assert.Equal( "127.0.0.1", output );
+            }
+        }
+
+        /// <summary>
+        /// For use in Lava -- should return the IP address of the Client using the HTTP_X_FORWARDED_FOR header value
+        /// </summary>
+        [Fact]
+        public void Client_IP_ForwardedFor()
+        {
+            InitWebContentFolder();
+
+            NameValueCollection headers = new NameValueCollection();
+            headers.Add( "HTTP_X_FORWARDED_FOR", "77.7.7.77" );
+
+            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest( new Uri( "http://localhost/" ), new NameValueCollection(), headers ) )
+            {
+                var output = RockFilters.Client( "Global", "ip" );
+                Assert.Equal( "77.7.7.77", output );
+            }
+        }
+
+        /// <summary>
+        /// For use in Lava -- should return the user agent of the client (which is setup in the fake/mock HttpSimulator)
+        /// </summary>
+        [Fact]
+        public void Client_Browser()
+        {
+            InitWebContentFolder();
+
+            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
+            {
+                dynamic output = RockFilters.Client( "Global", "browser" );
+                Assert.Equal( "Chrome", output.UserAgent.Family );
+                Assert.Equal( "68", output.UserAgent.Major );
+                Assert.Equal( "Windows 10", output.OS.Family );
+            }
+        }
+
         #endregion
 
         #region Array filters
@@ -1077,8 +1132,22 @@ namespace Rock.Tests.Rock.Lava
         }
 
         #endregion
-    }
 
+        #region Helper methods to build web content folder for HttpSimulator
+
+        /// <summary>
+        /// Initializes the web content folder.
+        /// </summary>
+        private void InitWebContentFolder()
+        {
+            var codeBaseUrl = new Uri( System.Reflection.Assembly.GetExecutingAssembly().CodeBase );
+            var codeBasePath = Uri.UnescapeDataString( codeBaseUrl.AbsolutePath );
+            var dirPath = System.IO.Path.GetDirectoryName( codeBasePath );
+            webContentFolder = System.IO.Path.Combine( dirPath, "Content" );
+        }
+
+        #endregion
+    }
     #region Helper class to deal with comparing inexact dates (that are otherwise equal).
 
     public static class DateTimeAssert
