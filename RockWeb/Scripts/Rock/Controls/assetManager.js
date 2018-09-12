@@ -17,13 +17,14 @@
         var $assetStorageId = $assetBrowser.find('.js-assetstorage-id');
         var $treePort = $assetBrowser.find('.js-treeviewport');
         var $treeTrack = $assetBrowser.find('.js-treetrack');
+        //var $validCharInput = $assetBrowser.find('js-valid-char-input');
 
         var $createFolder = $assetBrowser.find('.js-createfolder');
         var $createFolderDiv = $assetBrowser.find('.js-createfolder-div');
         var $createFolderInput = $assetBrowser.find('.js-createfolder-input');
         var $createFolderCancel = $assetBrowser.find('.js-createfolder-cancel');
 
-        var $deleteFolder = $assetBrowser.find('.js-deletefolder')
+        var $deleteFolder = $assetBrowser.find('.js-deletefolder');
         var $fileCheckboxes = $assetBrowser.find('.js-checkbox');
 
         var $renameFile = $assetBrowser.find('.js-renamefile');
@@ -107,7 +108,7 @@
           $assetStorageId.text(storageId);
           postbackArg = 'storage-id:' + storageId + '?folder-selected:' + folder.replace(/\\/g, "/") + '?expanded-folders:' + expandedFolders;
 
-          var jsPostback = "javascript:__doPostBack('" + options.filesUpdatePanelId + "','" +  postbackArg+ "');"
+          var jsPostback = "javascript:__doPostBack('" + options.filesUpdatePanelId + "','" + postbackArg + "');";
 
           window.location = jsPostback;
         });
@@ -157,6 +158,15 @@
 
           Rock.dialogs.confirmDelete(e, 'folder and all its contents');
         });
+
+        //$validCharInput.off('keypress').on('keypress', function (event) {
+        //  var regex = new RegExp("^[a-zA-Z0-9]+$");
+        //  var key = String.fromCharCode(!event.charCode ? event.which : event.charCode);
+        //  if (!regex.test(key)) {
+        //    event.preventDefault();
+        //    return false;
+        //  }
+        //});
       }
     };
 
