@@ -69,11 +69,11 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         protected virtual string FixRootFolder( string rootFolder )
         {
-            if (rootFolder == null)
+            if ( rootFolder.IsNullOrWhiteSpace() )
             {
                 return string.Empty;
             }
-            else if ( rootFolder.EndsWith("/"))
+            else if ( rootFolder.EndsWith("/") )
             {
                 return rootFolder;
             }

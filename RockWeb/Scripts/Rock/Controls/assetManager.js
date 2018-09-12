@@ -42,7 +42,7 @@
         }
         var temp2 = $selectFolder.text();
         // Some buttons need a folder selected in order to work
-        if ($selectFolder.text() == "") {
+        if ($selectFolder.text() == "" && $assetStorageId.text() == "-1" ) {
           $('.js-folderselect').addClass('aspNetDisabled');
         }
 

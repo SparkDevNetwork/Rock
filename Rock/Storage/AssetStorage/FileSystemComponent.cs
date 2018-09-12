@@ -85,8 +85,8 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override bool CreateFolder( AssetStorageSystem assetStorageSystem, Asset asset )
         {
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageSystem, "RootFolder" ) );
             HasRequirementsFolder( asset );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageSystem, "RootFolder" ) );
             asset.Key = FixKey( asset, rootFolder );
             
             string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
