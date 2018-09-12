@@ -28,6 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourcePersonHistorical.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AssetStorageSystem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Attendance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttendanceCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttendanceOccurrence.cs" />

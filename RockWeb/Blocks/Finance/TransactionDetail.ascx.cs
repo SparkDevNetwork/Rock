@@ -418,6 +418,13 @@ namespace RockWeb.Blocks.Finance
                     txn.RefundDetails.RefundReasonValueId = ddlRefundReasonEdit.SelectedValueAsId();
                     txn.RefundDetails.RefundReasonSummary = tbRefundSummaryEdit.Text;
                 }
+                else
+                {
+                    if ( txn.RefundDetails != null )
+                    {
+                        rockContext.FinancialTransactionRefunds.Remove( txn.RefundDetails );
+                    }
+                }
 
                 if ( !Page.IsValid || !txn.IsValid )
                 {
@@ -1781,6 +1788,10 @@ namespace RockWeb.Blocks.Finance
                             .Sum();
 
                         totalAmount += otherAmounts;
+                        if ( totalAmount > 0 )
+                        {
+                            tbRefundAmount.MaximumValue = totalAmount.ToString();
+                        }
 
                         tbRefundAmount.Text = ( totalAmount > 0.0m ? totalAmount : 0.0m ).ToString( "N2" );
                         ddlRefundReason.SelectedIndex = -1;

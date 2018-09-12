@@ -437,30 +437,39 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected void RegisterJavaScript()
         {
-            string scriptFormat = @"
-if ($('#{0}').find('.js-modal-visible').val() == '1') {{
-    Rock.controls.modal.showModalDialog($('#{0}'), '{3}');
+            var parentPanel = this.ParentUpdatePanel();
+            var modalManager = parentPanel != null ? "#" + parentPanel.ClientID : "body";
+
+            // if this is Modal is a child of a another Modal, make sure the parent modal stays visible if this modal is closed
+            var parentModal = this.FirstParentControlOfType<ModalDialog>();
+            string showParentModalOnCloseScript = null;
+            if ( parentModal != null )
+            {
+                showParentModalOnCloseScript = $@"Rock.controls.modal.showModalDialog($('#{parentModal._dialogPanel.ClientID}'), '{modalManager}');";
+            }
+
+            string script = $@"
+if ($('#{_hfModalVisible.ClientID}').val() == '1') {{
+    Rock.controls.modal.showModalDialog($('#{_dialogPanel.ClientID}'), '{modalManager}');
 }} 
 else {{
-    Rock.controls.modal.closeModalDialog($('#{0}'));
+    Rock.controls.modal.closeModalDialog($('#{_dialogPanel.ClientID}'));
 }}
 
-$('#{0}').find('.js-modaldialog-close-link, .js-modaldialog-cancel-link').click(function () {{
-    {1}
-    $('#{0}').find('.js-modal-visible').val('0');
-    Rock.controls.modal.closeModalDialog($('#{0}'));
+$('#{_cancelLink.ClientID}, #{_closeLink.ClientID}').click(function () {{
+    {this.OnCancelScript}
+    $('#{_hfModalVisible.ClientID}').val('0');
+    Rock.controls.modal.closeModalDialog($('#{_dialogPanel.ClientID}'));
+    {showParentModalOnCloseScript}
 }});
 
-$('#{0}').find('.js-modaldialog-save-link').click(function () {{
-    {2}
-    $('#{0}').find('.js-modal-visible').val('0');
-    Rock.controls.modal.closeModalDialog($('#{0}'));
+$('#{_saveLink.ClientID}').click(function () {{
+    {this.OnOkScript}
+    $('#{_hfModalVisible.ClientID}').val('0');
+    Rock.controls.modal.closeModalDialog($('#{_dialogPanel.ClientID}'));
 }});
 
 ";
-            var parentPanel = this.ParentUpdatePanel();
-            var modalManager = parentPanel != null ? "#" + parentPanel.ClientID : "body";
-            var script = string.Format( scriptFormat, _dialogPanel.ClientID, this.OnCancelScript, this.OnOkScript, modalManager );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "modaldialog-show-" + this.ClientID, script, true );
         }
