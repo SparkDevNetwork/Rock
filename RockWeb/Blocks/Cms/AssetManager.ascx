@@ -2,7 +2,7 @@
 
 <asp:Panel ID="pnlAssetManager" runat="server" CssClass="picker-wrapper clearfix">
 
-    <asp:UpdatePanel ID="upnlHiddenValues" runat="server" UpdateMode="Always" >
+    <asp:UpdatePanel ID="upnlHiddenValues" runat="server" UpdateMode="Always" style="display:none;" >
         <ContentTemplate>
             <asp:Label ID="lbAssetStorageId" CssClass="js-assetstorage-id" runat="server"></asp:Label><br />
             <asp:Label ID="lbSelectFolder" CssClass="js-selectfolder" runat="server"></asp:Label><br />
@@ -26,7 +26,7 @@
 
                 <asp:Panel runat="server" ID="pnlCreateFolder" CssClass="actions well well-sm clearfix js-createfolder-div" style="display: none;">
                     <div class="pull-left margin-r-md">
-                        <Rock:RockTextBox ID="tbCreateFolder" runat="server" CssClass="js-createfolder-input input-sm" />
+                        <Rock:RockTextBox ID="tbCreateFolder" runat="server" CssClass="js-createfolder-input js-valid-char-input input-sm"  />
                     </div>
                     <div class="pull-left padding-v-sm">
                         <asp:LinkButton ID="lbCreateFolderAccept" runat="server" CssClass="btn btn-xs btn-default" OnClick="lbCreateFolderAccept_Click" >
@@ -84,7 +84,7 @@
                     <div class="actions well well-sm js-renamefile-div" id="divRenameFile" style="display: none;">
 
                         <div class="pull-left">
-                            <Rock:RockTextBox ID="tbRenameFile" runat="server" CssClass="js-renamefile-input input-sm" />
+                            <Rock:RockTextBox ID="tbRenameFile" runat="server" CssClass="js-renamefile-input js-valid-char-input input-sm" />
                         </div>
                         
                         <asp:LinkButton ID="lbRenameFileAccept" runat="server" CssClass="btn btn-xs btn-default" OnClick="lbRenameFileAccept_Click" >
