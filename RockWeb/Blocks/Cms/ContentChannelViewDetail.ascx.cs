@@ -175,7 +175,7 @@ Guid - ContentChannelItem Guid
         /// <summary>
         /// Shows or hides the workflow settings controls based on the selection in the workflowpicker.
         /// </summary>
-        protected void ShowHideContorls()
+        protected void ShowHideControls()
         {
             if ( wtpWorkflowType.SelectedValue == "0" )
             {
@@ -259,7 +259,7 @@ Guid - ContentChannelItem Guid
                 wtpWorkflowType.SetValue( null );
             }
 
-            ShowHideContorls();
+            ShowHideControls();
 
             cbLaunchWorkflowOnlyIfIndividualLoggedIn.Checked = this.GetAttributeValue( "LaunchWorkflowOnlyIfIndividualLoggedIn" ).AsBoolean();
             ddlLaunchWorkflowCondition.SetValue( this.GetAttributeValue( "LaunchWorkflowCondition" ) );
@@ -358,7 +358,7 @@ Guid - ContentChannelItem Guid
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void wtpWorkflowType_SelectItem( object sender, EventArgs e )
         {
-            ShowHideContorls();
+            ShowHideControls();
         }
 
         #endregion Events
