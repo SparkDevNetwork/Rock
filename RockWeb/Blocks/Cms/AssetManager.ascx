@@ -26,7 +26,7 @@
 
                 <asp:Panel runat="server" ID="pnlCreateFolder" CssClass="actions well well-sm clearfix js-createfolder-div" style="display: none;">
                     <div class="pull-left margin-r-md">
-                        <Rock:RockTextBox ID="tbCreateFolder" runat="server" CssClass="js-createfolder-input js-valid-char-input input-sm"  />
+                        <Rock:RockTextBox ID="tbCreateFolder" runat="server" CssClass="js-createfolder-input input-sm" />
                     </div>
                     <div class="pull-left padding-v-sm">
                         <asp:LinkButton ID="lbCreateFolderAccept" runat="server" CssClass="btn btn-xs btn-default" OnClick="lbCreateFolderAccept_Click" >
@@ -82,9 +82,8 @@
                     </div>
 
                     <div class="actions well well-sm js-renamefile-div" id="divRenameFile" style="display: none;">
-
                         <div class="pull-left">
-                            <Rock:RockTextBox ID="tbRenameFile" runat="server" CssClass="js-renamefile-input js-valid-char-input input-sm" />
+                            <Rock:RockTextBox ID="tbRenameFile" runat="server" CssClass="js-renamefile-input input-sm" />
                         </div>
                         
                         <asp:LinkButton ID="lbRenameFileAccept" runat="server" CssClass="btn btn-xs btn-default" OnClick="lbRenameFileAccept_Click" >
