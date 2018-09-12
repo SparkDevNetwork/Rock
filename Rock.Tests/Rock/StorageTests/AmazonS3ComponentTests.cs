@@ -25,7 +25,6 @@ namespace Rock.Tests.Rock.StorageTests
         //private RegionEndpoint AWSRegion = RegionEndpoint.USWest1;
         //private string Bucket = "rockphotostest0";
         //private string UnitTestRootFolder = "UnitTestFolder";
-
         private AssetStorageSystem GetAssetStorageSystem()
         {
             var assetStorageService = new AssetStorageSystemService( new Data.RockContext() );
@@ -54,7 +53,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// Create a folder in the bucket using a key (the full name);
         /// This folder is used for other tests.
         /// </summary>
-        [Fact]
+        [Fact(Skip ="Need mock")]
         public void TestAWSCreateRootFolderUsingKey()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -72,7 +71,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// These folders are used for other tests.
         /// Requires TestAWSCreateFolderByKey
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Need mock" )]
         public void TestAWSCreateFolderByName()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -93,7 +92,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// Upload a file using RootFolder and Asset.Name.
         /// Requires TestAWSCreateFolderByKey, TestAWSCreateFolderByName
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Need mock" )]
         public void TestUploadObjectByName()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -111,7 +110,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// Upload a file using Asset.Key.
         /// Requires TestAWSCreateFolderByKey, TestAWSCreateFolderByName
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Need mock" )]
         public void TestUploadObjectByKey()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -128,7 +127,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Get a recursive list of objects using Asset.Key
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Need mock" )]
         public void TestListObjectsByKey()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -148,7 +147,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Get a list of files and folders in a single folder using RootFolder
         /// </summary>
-        [Fact]
+        [Fact(Skip ="Need mock")]
         public void TestListObjectsInFolder()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -168,7 +167,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Upload > 2K objects. Used to test listing that requries more than one request.
         /// </summary>
-        [Fact]
+        [Fact(Skip ="Need mock")]
         public void TestUpload2kObjects()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -207,7 +206,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Get a list of keys that requires more than one request.
         /// </summary>
-        [Fact]
+        [Fact(Skip ="Need mock")]
         public void TestList2KObjectsInFolder()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -227,7 +226,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Create a download link for an asset on the fly.
         /// </summary>
-        [Fact]
+        [Fact(Skip ="Need mock")]
         public void TestCreateDownloadLink()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -259,7 +258,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Get a file from storage.
         /// </summary>
-        [Fact]
+        [Fact(Skip ="Need mock")]
         public void TestGetObject()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -291,7 +290,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// List only the folders.
         /// </summary>
-        [Fact]
+        [Fact(Skip ="Need mock")]
         public void TestListFolders()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -320,7 +319,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// List only the files.
         /// </summary>
-        [Fact]
+        [Fact(Skip ="Need mock")]
         public void TestListFiles()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -341,7 +340,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Rename an existing file.
         /// </summary>
-        [Fact]
+        [Fact(Skip ="Need mock")]
         public void TestRenameAsset()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -365,7 +364,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Delete a single file.
         /// </summary>
-        [Fact]
+        [Fact(Skip ="Need mock")]
         public void TestDeleteFile()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -382,7 +381,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Delete all of the test data.
         /// </summary>
-        [Fact]
+        [Fact(Skip ="Need mock")]
         public void TestDeleteFolder()
         {
             var assetStorageSystem = GetAssetStorageSystem();
