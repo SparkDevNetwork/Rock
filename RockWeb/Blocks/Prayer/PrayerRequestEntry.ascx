@@ -16,7 +16,7 @@
                         <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
                         <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="false" />
                         <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="false" />
-
+                        <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Mobile Phone" /> 
                         <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                     </asp:Panel>
                     

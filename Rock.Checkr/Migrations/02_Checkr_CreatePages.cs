@@ -26,7 +26,7 @@ namespace Rock.Migrations
         /// <summary>
         /// The new Protect My Ministry workflow name
         /// </summary>
-        public static readonly string NEW_PMM_WORKFLOW_TYPE_NAME = "Background Check (PMM)";
+        public const string NEW_PMM_WORKFLOW_TYPE_NAME = "Background Check (PMM)";
 
         /// <summary>
         /// Makes the Checkr the default workflow action in Bio block.

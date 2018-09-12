@@ -20,7 +20,7 @@ using System.Collections.Generic;
 namespace Rock.Web.UI
 {
     /// <summary>
-    /// A Block that can be used in an <see cref="Rock.Web.UI.Controls.ItemFromBlockPicker"
+    /// A Block that can be used in an <see cref="Rock.Web.UI.Controls.ItemFromBlockPicker"></see>
     /// </summary>
     public interface IPickerBlock
     {

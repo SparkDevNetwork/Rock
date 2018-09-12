@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -88,7 +88,7 @@ namespace Rock.Migrations
             AddColumn("dbo.Attendance", "OccurrenceId", c => c.Int(nullable: false, defaultValue: 1 ) );
             AddForeignKey( "dbo.Attendance", "OccurrenceId", "dbo.AttendanceOccurrence", "Id", cascadeDelete: false );
 
-            // Job for Migrating Interaction Data
+            // Job for Migrating Interaction Data (schedule for 9pm to avoid conflict with AppPoolRecycle)
             Sql( $@"
     INSERT INTO [dbo].[ServiceJob]
            ([IsSystem]
@@ -105,7 +105,7 @@ namespace Rock.Migrations
          ,'Move data from Attendance table to new Attendance Occurrence table'
          ,'Moves group/location/schedule/date information from the attendance table to a parent occurrence table. Once all data has been moved, it will drop those columns from the attendance table, and then the job will remove itself.'
          ,'Rock.Jobs.MigrateAttendanceOccurrenceData'
-         ,'0 0 4 1/1 * ? *'
+         ,'0 0 21 1/1 * ? *'
          ,3
          ,'{ SystemGuid.ServiceJob.MIGRATE_ATTENDANCE_OCCURRENCE }')" );
 

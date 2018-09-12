@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Connection
                 var connectionType = new ConnectionTypeService( rockContext ).Get( connectionTypeId );
                 var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
 
-                var qrySearch = connectionOpportunityService.Queryable().Where( a => a.ConnectionTypeId == connectionTypeId && a.IsActive == true ).ToList();
+                var qrySearch = connectionOpportunityService.Queryable().Where( a => a.ConnectionTypeId == connectionTypeId && a.IsActive == true );
 
                 if ( GetAttributeValue( "DisplayNameFilter" ).AsBoolean() )
                 {
@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         searchSelections.Add( "tbSearchName", tbSearchName.Text );
                         var searchTerms = tbSearchName.Text.ToLower().SplitDelimitedValues( true );
-                        qrySearch = qrySearch.Where( o => searchTerms.Any( t => t.Contains( o.Name.ToLower() ) || o.Name.ToLower().Contains( t ) ) ).ToList();
+                        qrySearch = qrySearch.Where( o => searchTerms.Any( t => t.Contains( o.Name.ToLower() ) || o.Name.ToLower().Contains( t ) ) );
                     }
                 }
 
@@ -184,7 +184,7 @@ namespace RockWeb.Blocks.Connection
                     if ( searchCampuses.Count > 0 )
                     {
                         searchSelections.Add( "cblCampus", searchCampuses.AsDelimited("|") );
-                        qrySearch = qrySearch.Where( o => o.ConnectionOpportunityCampuses.Any( c => searchCampuses.Contains( c.CampusId ) ) ).ToList();
+                        qrySearch = qrySearch.Where( o => o.ConnectionOpportunityCampuses.Any( c => searchCampuses.Contains( c.CampusId ) ) );
                     }
                 }
 
@@ -193,39 +193,11 @@ namespace RockWeb.Blocks.Connection
                     // Filter query by any configured attribute filters
                     if ( AvailableAttributes != null && AvailableAttributes.Any() )
                     {
-                        var attributeValueService = new AttributeValueService( rockContext );
-                        var parameterExpression = attributeValueService.ParameterExpression;
-
                         foreach ( var attribute in AvailableAttributes )
                         {
                             string filterControlId = "filter_" + attribute.Id.ToString();
                             var filterControl = phAttributeFilters.FindControl( filterControlId );
-                            if ( filterControl == null ) continue;
-
-                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                            var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                            var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                            if ( expression == null ) continue;
-
-                            searchSelections.Add( filterControlId, filterValues.ToJson() );
-                            var attributeValues = attributeValueService
-                                .Queryable()
-                                .Where( v => v.Attribute.Id == attribute.Id );
-
-                            var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                            if ( filterIsDefault )
-                            {
-                                qrySearch = qrySearch.Where( w =>
-                                     !attributeValues.Any( v => v.EntityId == w.Id ) ||
-                                     filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) ).ToList();
-                            }
-                            else
-                            {
-                                qrySearch = qrySearch.Where( w =>
-                                    filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) ).ToList();
-                            }
-                            
+                            qrySearch = attribute.FieldType.Field.ApplyAttributeQueryFilter( qrySearch, filterControl, attribute, connectionOpportunityService, Rock.Reporting.FilterMode.SimpleFilter );
                         }
                     }
                 }

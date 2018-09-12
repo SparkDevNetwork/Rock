@@ -66,10 +66,6 @@
     <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
     <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
     <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
-    <Compile Include="Migrations\201807200941565_Rollup_PreAlphaRelease_0719.cs" />
-    <Compile Include="Migrations\201807200941565_Rollup_PreAlphaRelease_0719.Designer.cs">
-      <DependentUpon>201807200941565_Rollup_PreAlphaRelease_0719.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\201807250211476_AddNoteAttachments.cs" />
     <Compile Include="Migrations\201807250211476_AddNoteAttachments.Designer.cs">
       <DependentUpon>201807250211476_AddNoteAttachments.cs</DependentUpon>
@@ -82,6 +78,14 @@
     <Compile Include="Migrations\201808062254493_Rollup_0806.Designer.cs">
       <DependentUpon>201808062254493_Rollup_0806.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201808091807164_ServiceJobHistory.cs" />
+    <Compile Include="Migrations\201808091807164_ServiceJobHistory.Designer.cs">
+      <DependentUpon>201808091807164_ServiceJobHistory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201808302049467_Rollup_0830.cs" />
+    <Compile Include="Migrations\201808302049467_Rollup_0830.Designer.cs">
+      <DependentUpon>201808302049467_Rollup_0830.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -89,6 +93,10 @@
     <Compile Include="Migrations\CreateDatabase\201707311527250_AddMetaData.cs" />
     <Compile Include="Migrations\CreateDatabase\201707311527250_AddMetaData.designer.cs">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.1\201807200941565_Rollup_PreAlphaRelease_0719.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.1\201807200941565_Rollup_PreAlphaRelease_0719.Designer.cs">
+      <DependentUpon>201807200941565_Rollup_PreAlphaRelease_0719.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806251757250_BackgroundCheckWarnOfRecent.cs" />
     <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806251757250_BackgroundCheckWarnOfRecent.Designer.cs">
@@ -364,9 +372,6 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201807200941565_Rollup_PreAlphaRelease_0719.resx">
-      <DependentUpon>201807200941565_Rollup_PreAlphaRelease_0719.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201807250211476_AddNoteAttachments.resx">
       <DependentUpon>201807250211476_AddNoteAttachments.cs</DependentUpon>
     </EmbeddedResource>
@@ -375,6 +380,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201808062254493_Rollup_0806.resx">
       <DependentUpon>201808062254493_Rollup_0806.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201808091807164_ServiceJobHistory.resx">
+      <DependentUpon>201808091807164_ServiceJobHistory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201808302049467_Rollup_0830.resx">
+      <DependentUpon>201808302049467_Rollup_0830.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -582,6 +593,9 @@
       <SubType>Designer</SubType>
       <LastGenOutput>RockMigrationSQL.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.1\201807200941565_Rollup_PreAlphaRelease_0719.resx">
+      <DependentUpon>201807200941565_Rollup_PreAlphaRelease_0719.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x64\msvcr100.dll">
@@ -615,9 +629,6 @@
     <Content Include="Migrations\CreateDatabase\201707311527250_FirstNameGender.txt">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\CreateDatabase\201707311527250_LastName.txt">
-      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
-    </Content>
     <Content Include="Migrations\CreateDatabase\201707311527250_NickName.txt">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Content>
@@ -628,6 +639,9 @@
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
+    <None Include="Migrations\CreateDatabase\201707311527250_LastName.gz">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </None>
     <None Include="Migrations\Version 8.0\Version 1.8.0\201802092340176_Rollup_0209_spCrm_PersonDuplicateFinder.sql">
       <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
     </None>

@@ -347,10 +347,8 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
 
-                string defaultState = GetDefaultState();
-                string state = value ?? defaultState;
-                _tbState.Text = state;
-                _ddlState.SetValue( value, defaultState );
+                _tbState.Text = value;
+                _ddlState.SetValue( value );
             }
         }
 
@@ -393,7 +391,7 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
 
-                string country = value ?? GetDefaultCountry();
+                string country = value;
                 _ddlCountry.SetValue( country );
                 BindStates( country );
             }
@@ -589,7 +587,6 @@ namespace Rock.Web.UI.Controls
             string defaultState = GetDefaultState();
 
             BindCountries();
-            _ddlCountry.SetValue( defaultCountry );
 
             BindStates( defaultCountry );
             _ddlState.SetValue( defaultState );
@@ -732,7 +729,7 @@ namespace Rock.Web.UI.Controls
         {
             EnsureChildControls();
 
-            if ( string.IsNullOrWhiteSpace( _ddlCountry.SelectedValue ) )
+            if ( _ddlCountry.SelectedValue == "------------------------" )
             {
                 _ddlCountry.SelectedIndex = 0;
             }
@@ -855,8 +852,9 @@ namespace Rock.Web.UI.Controls
                     .FirstOrDefault();
                 if ( defaultCountry != null )
                 {
+                    _ddlCountry.Items.Add( new ListItem( "Countries", string.Empty ) );
                     _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? defaultCountry.Value : defaultCountry.Description, defaultCountry.Value ) );
-                    _ddlCountry.Items.Add( new ListItem( "------------------------", string.Empty ) );
+                    _ddlCountry.Items.Add( new ListItem( "------------------------", "------------------------" ) );
                 }
             }
 
@@ -872,6 +870,10 @@ namespace Rock.Web.UI.Controls
             {
                 _ddlCountry.SetValue( currentValue );
             }
+            else
+            {
+                _ddlCountry.SetValue( string.Empty );
+            }
         }
 
         /// <summary>
@@ -880,6 +882,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="country">The country.</param>
         private void BindStates( string country )
         {
+            if (country.IsNullOrWhiteSpace())
+            {
+                country = GetDefaultCountry();
+            }
+
             string countryGuid = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                 .DefinedValues
                 .Where( v => v.Value.Equals( country, StringComparison.OrdinalIgnoreCase ) )
