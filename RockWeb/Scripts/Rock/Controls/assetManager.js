@@ -51,8 +51,8 @@
         if (!folderTreeData) {
           var selectedFolders = [$assetStorageId.text() + ',' + $selectFolder.text()];
           var expandedFolders = $expandedFolders.text().split('||');
-          debugger
           $folderTreeView.rockTree({
+            restUrl: options.restUrl,
             selectedIds: selectedFolders,
             expandedIds: expandedFolders
           });
@@ -94,8 +94,9 @@
         }
 
         $folderTreeView.off('rockTree:selected').on('rockTree:selected', function (e, data) {
-          var storageId = data.split(",")[0];
-          var folder = data.split(",")[1];
+          var assetFolderIdParts = unescape(data).split(",");
+          var storageId = assetFolderIdParts[0] || "";
+          var folder = assetFolderIdParts[1] || "";
           var postbackArg;
           var expandedFolders = $expandedFolders.text();
 

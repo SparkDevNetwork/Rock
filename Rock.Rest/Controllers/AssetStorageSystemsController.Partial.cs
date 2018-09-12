@@ -16,28 +16,78 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Spatial;
-using System.Dynamic;
 using System.Linq;
-using System.Net;
 using System.Web.Http;
-using System.Web.Http.OData;
 
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Storage.AssetStorage;
-using Rock.Web;
-using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
 {
     public partial class AssetStorageSystemsController
     {
+        /// <summary>
+        /// Gets the children.
+        /// </summary>
+        /// <param name="assetFolderId">The asset folder identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/AssetStorageSystems/GetChildren" )]
+        public IQueryable<TreeViewItem> GetChildren( string assetFolderId )
+        {
+            var assetStorageService = new AssetStorageSystemService( new RockContext() );
+            var treeViewItemList = new List<TreeViewItem>();
+            if ( assetFolderId == "0" )
+            {
+                foreach ( var assetStorageSystem in assetStorageService.GetActiveNoTracking() )
+                {
+                    var component = assetStorageSystem.GetAssetStorageComponent();
+                    var treeViewItem = new TreeViewItem();
+                    treeViewItem.Id = assetStorageSystem.Id.ToString();
+                    treeViewItem.IconCssClass = component.IconCssClass;
+                    treeViewItem.Name = assetStorageSystem.Name;
+                    treeViewItem.HasChildren = true;
+                    treeViewItemList.Add( treeViewItem );
+                }
+            }
+            else
+            {
+                var assetFolderIdParts = assetFolderId.SplitDelimitedValues().ToArray();
+                if ( assetFolderIdParts.Length > 0 )
+                {
+                    int assetStorageSystemId = assetFolderIdParts[0].AsInteger();
+                    var assetStorageSystem = assetStorageService.GetNoTracking( assetStorageSystemId );
 
+                    Asset asset = new Asset { Key = string.Empty, Type = AssetType.Folder };
+                    if ( assetFolderIdParts.Length > 1 )
+                    {
+                        asset.Key = assetFolderIdParts[1];
+                    }
 
+                    var component = assetStorageSystem.GetAssetStorageComponent();
+                    var folderAssets = component.ListFoldersInFolder( assetStorageSystem, asset );
+                    foreach ( Asset folderAsset in folderAssets )
+                    {
+                        var treeViewItem = new TreeViewItem();
+                        treeViewItem.Id = Uri.EscapeDataString( $"{assetStorageSystem.Id},{folderAsset.Key}" );
+                        treeViewItem.IconCssClass = "fa fa-folder";
+                        treeViewItem.Name = folderAsset.Name;
+
+                        // NOTE: For performance reasons, we'll just assume it has Child Folders
+                        // If we want it to be more accurate, change it to something like:
+                        // treeViewItem.HasChildren = component.ListFoldersInFolder( assetStorageSystem, folderAsset ).Any();
+                        treeViewItem.HasChildren = true;
+
+                        treeViewItemList.Add( treeViewItem );
+                    }
+                }
+            }
+
+            return treeViewItemList.AsQueryable();
+        }
 
         /// <summary>
         /// Gets the folders.
@@ -48,7 +98,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/AssetStorageSystems/GetFolders" )]
-        public List<Asset> GetFolders(int assetStorageSystemId, string path )
+        public List<Asset> GetFolders( int assetStorageSystemId, string path )
         {
             var assetStorageSystemService = ( AssetStorageSystemService ) Service;
             var assetStorageSystem = assetStorageSystemService.Get( assetStorageSystemId );
@@ -69,8 +119,8 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route("api/AssetStorageSystems/GetFiles")]
-        public List<Asset> GetFiles(int assetStorageSystemId, string path)
+        [System.Web.Http.Route( "api/AssetStorageSystems/GetFiles" )]
+        public List<Asset> GetFiles( int assetStorageSystemId, string path )
         {
 
             var assetStorageSystemService = ( AssetStorageSystemService ) Service;
@@ -83,21 +133,6 @@ namespace Rock.Rest.Controllers
 
 
             return assets;
-        }
-
-        /// <summary>
-        /// Gets the children.
-        /// </summary>
-        /// <param name="assetStorageSystemId">The asset storage system identifier.</param>
-        /// <param name="path">The path.</param>
-        /// <param name="isStorageSystem">if set to <c>true</c> [is storage system].</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route("api/AssetStoragesystems/GetChildren")]
-        public IQueryable GetChildren( int assetStorageSystemId, string path, bool isStorageSystem )
-        {
-            return null;
         }
     }
 }
