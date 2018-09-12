@@ -759,6 +759,7 @@ namespace Rock.Data
         /// <summary>
         /// State of entity being changed during a context save
         /// </summary>
+        [System.Diagnostics.DebuggerDisplay( "{Entity.GetType()}:{Entity}, State:{State}" )]
         protected class ContextItem
         {
             /// <summary>
