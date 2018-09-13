@@ -216,12 +216,14 @@ namespace Rock.Communication.Medium
             DateTime tokenStartDate = RockDateTime.Now.Subtract( new TimeSpan( TOKEN_REUSE_DURATION, 0, 0, 0 ) );
             int[] blacklist = new int[] { 666, 911 };
             int chunkSize = 100;
+            int smsEntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ).Id;
 
             //
             // Generate a list of codes that are currently active in the database.
             //
             var activeCodes = new CommunicationRecipientService( rockContext ).Queryable()
-                                    .Where( c => c.ResponseCode.StartsWith( "@" ) && c.CreatedDateTime > tokenStartDate )
+                                    .Where( c => c.MediumEntityTypeId == smsEntityTypeId )
+                                    .Where( c => System.Data.Entity.DbFunctions.Left( c.ResponseCode, 1 ) == "@" && c.CreatedDateTime > tokenStartDate )
                                     .Select( c => c.ResponseCode )
                                     .ToList();
 
