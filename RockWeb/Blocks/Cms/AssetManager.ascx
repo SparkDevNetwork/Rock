@@ -2,19 +2,17 @@
 
 <asp:Panel ID="pnlAssetManager" runat="server" CssClass="picker-wrapper clearfix">
 
-    <asp:UpdatePanel ID="upnlHiddenValues" runat="server" UpdateMode="Always" style="display:none;" >
-        <ContentTemplate>
-            <asp:Label ID="lbAssetStorageId" CssClass="js-assetstorage-id" runat="server"></asp:Label><br />
-            <asp:Label ID="lbSelectFolder" CssClass="js-selectfolder" runat="server"></asp:Label><br />
-            <asp:Label ID="lbExpandedFolders" CssClass="js-expandedFolders" runat="server"></asp:Label>
-        </ContentTemplate>
-    </asp:UpdatePanel>
-
     <div class="picker-folders js-pickerfolders">
         <asp:UpdatePanel ID="upnlFolders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
             <ContentTemplate>
                 <asp:HiddenField ID="hfScriptInitialized" runat="server" />
-                
+
+                <div style="display:none">
+                    <asp:Label ID="lbAssetStorageId" CssClass="js-assetstorage-id" runat="server"></asp:Label><br />
+                    <asp:Label ID="lbSelectFolder" CssClass="js-selectfolder" runat="server"></asp:Label><br />
+                    <asp:Label ID="lbExpandedFolders" CssClass="js-expandedFolders" runat="server"></asp:Label>
+                </div>
+
                 <div class="actions">
                     <a href="#" class="btn btn-xs btn-default js-createfolder js-folderselect" title="Create a new folder in the selected folder">
                         <i class="fa fa-folder"></i> Add Folder
@@ -110,7 +108,7 @@
                                 </tr>
                             </ItemTemplate>
                             <FooterTemplate>
-                                <tr><td><asp:Label ID="lbNoFilesFound" runat="server" Visible='<%# rptFiles.Items.Count == 0 %>' Text="No files found." CssClass="text-muted" /></td></tr>
+                                <asp:Label ID="lbNoFilesFound" runat="server" Visible='<%# rptFiles.Items.Count == 0 %>' Text="<tr><td>No files found.</td></tr>" CssClass="text-muted" />
                             </FooterTemplate>
                         </asp:Repeater>
                     </table>

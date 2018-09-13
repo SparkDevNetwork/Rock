@@ -51,8 +51,12 @@
         var folderTreeData = $folderTreeView.data('rockTree');
         
         if (!folderTreeData) {
-          var selectedFolders = [$assetStorageId.text() + ',' + $selectFolder.text()];
+          var selectedFolders = [$assetStorageId.text() + ',' + encodeURIComponent($selectFolder.text())];
           var expandedFolders = $expandedFolders.text().split('||');
+          expandedFolders.forEach(function (part, i, array) {
+            array[i] = encodeURIComponent(array[i]);
+          });
+          
           $folderTreeView.rockTree({
             restUrl: options.restUrl,
             selectedIds: selectedFolders,
@@ -87,12 +91,12 @@
 
           $folderTreeView.on('rockTree:expand rockTree:collapse', function (evt, data) {
             resizeScrollAreaHeight();
-
+            
             // get the data-id values of rock-tree items that are showing visible children (in other words, Expanded Nodes)
             var expandedDataIds = $(evt.currentTarget).find('.rocktree-children').filter(":visible").closest('.rocktree-item').map(function () {
               var dataId = $(this).attr('data-id');
               if (dataId != data) {
-                return dataId;
+                return decodeURIComponent(dataId);
               }
             }).get().join('||');
 
@@ -113,7 +117,7 @@
           var storageId = assetFolderIdParts[0] || "";
           var folder = assetFolderIdParts[1] || "";
           var postbackArg;
-          var expandedFolders = $expandedFolders.text();
+          var expandedFolders = encodeURIComponent($expandedFolders.text());
 
           // Some buttons are only active if at least one folder is selected once the tree has been selected then a folder is always selected.
           $('.js-folderselect').removeClass('aspNetDisabled');
@@ -123,7 +127,6 @@
           postbackArg = 'storage-id:' + storageId + '?folder-selected:' + folder.replace(/\\/g, "/") + '?expanded-folders:' + expandedFolders;
 
           var jsPostback = "javascript:__doPostBack('" + options.filesUpdatePanelId + "','" + postbackArg + "');";
-
           window.location = jsPostback;
         });
 
