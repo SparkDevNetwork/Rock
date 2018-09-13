@@ -21,7 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Quartz;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -36,8 +36,11 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     [DisplayName( "Data Migrations for v8.0" )]
     [Description( "This job will take care of any data migrations that need to occur after updating to v80. After all the operations are done, this job will delete itself." )]
+    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each SQL command to complete. Leave blank to use the default for this job (3600 seconds). Note that some of the tasks might take a while on larger databases, so you might need to set it higher.", false, 60 * 60, "General", 7, "CommandTimeout" )]
     public class PostV80DataMigrations : IJob
     {
+        private int? _commandTimeout = null;
+
         /// <summary>
         /// Executes the specified context. When updating large data sets SQL will burn a lot of time updating the indexes. If performing multiple inserts/updates
         /// consider dropping the related indexes first and re-creating them once the operation is complete.
@@ -47,6 +50,11 @@ namespace Rock.Jobs
         /// <exception cref="NotImplementedException"></exception>
         public void Execute( IJobExecutionContext context )
         {
+            JobDataMap dataMap = context.JobDetail.JobDataMap;
+
+            // get the configured timeout, or default to 60 minutes if it is blank
+            _commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;
+
             UpdateBulkUpdateSecurity();
 
             UpdateInteractionSummaryForPageViews();
@@ -81,10 +89,11 @@ namespace Rock.Jobs
         /// <summary>
         /// Add an index to help with performance of the Session List block
         /// </summary>
-        private static void CreateIndexInteractionPersonAliasSession()
+        private void CreateIndexInteractionPersonAliasSession()
         {
             using ( RockContext rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = _commandTimeout;
                 rockContext.Database.ExecuteSqlCommand( @"
     IF EXISTS ( SELECT * FROM sys.indexes WHERE NAME = 'IX_PersonAliasId_InteractionSessionId' AND object_id = OBJECT_ID('Interaction') )
 	DROP INDEX [IX_PersonAliasId_InteractionSessionId] ON [dbo].[Interaction]
@@ -100,40 +109,34 @@ namespace Rock.Jobs
         /// Creates the index on Interactions.ForeignKey.
         /// Includes were recommended by Query Analyzer
         /// </summary>
-        public static void CreateIndexInteractionsForeignKey()
+        public void CreateIndexInteractionsForeignKey()
         {
             using ( RockContext rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = 7200;
-                rockContext.Database.ExecuteSqlCommand( @"IF NOT EXISTS( SELECT * FROM sys.indexes WHERE name = 'IX_ForeignKey' AND object_id = OBJECT_ID( N'[dbo].[Interaction]' ) ) 
-                    BEGIN
-                    CREATE NONCLUSTERED INDEX [IX_ForeignKey]
-                    ON [dbo].[Interaction] ([ForeignKey])
-                    INCLUDE ([Id]
-	                    ,[InteractionDateTime]
-	                    ,[Operation]
-	                    ,[InteractionComponentId]
-	                    ,[EntityId]
-	                    ,[PersonAliasId]
-	                    ,[InteractionSessionId]
-	                    ,[InteractionSummary]
-	                    ,[InteractionData]
-	                    ,[CreatedDateTime]
-	                    ,[ModifiedDateTime]
-	                    ,[CreatedByPersonAliasId]
-	                    ,[ModifiedByPersonAliasId]
-	                    ,[Guid]
-	                    ,[ForeignId]
-	                    ,[ForeignGuid]
-	                    ,[PersonalDeviceId]
-	                    ,[RelatedEntityTypeId]
-	                    ,[RelatedEntityId]
-	                    ,[Source]
-	                    ,[Medium]
-	                    ,[Campaign]
-	                    ,[Content]
-	                    ,[InteractionEndDateTime])
-                    END" );
+                rockContext.Database.CommandTimeout = _commandTimeout;
+                rockContext.Database.ExecuteSqlCommand( @"
+IF EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_ForeignKey'
+			AND object_id = OBJECT_ID(N'[dbo].[Interaction]')
+			AND has_filter = 0
+		)
+BEGIN
+	DROP INDEX [IX_ForeignKey] ON [dbo].[Interaction]
+END
+
+IF NOT EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_ForeignKey'
+			AND object_id = OBJECT_ID(N'[dbo].[Interaction]')
+			AND has_filter = 1
+		)
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_ForeignKey] ON [dbo].[Interaction] ([ForeignKey]) WHERE [ForeignKey] IS NOT NULL
+END
+" );
             }
         }
 
@@ -241,11 +244,11 @@ namespace Rock.Jobs
         /// <summary>
         /// Updates the interaction summary on Interactions for page views.
         /// </summary>
-        public static void UpdateInteractionSummaryForPageViews()
+        private void UpdateInteractionSummaryForPageViews()
         {
             using ( RockContext rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = 7200;
+                rockContext.Database.CommandTimeout = _commandTimeout;
                 string sqlQuery = $@"DECLARE @ChannelMediumValueId INT = (SELECT [Id] FROM [DefinedValue] WHERE [Guid]='{SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE}')
 
                     UPDATE [Interaction]
@@ -261,7 +264,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Inserts the slug for Content Channel Items.
         /// </summary>
-        public static void UpdateSlugForContentChannelItems()
+        private void UpdateSlugForContentChannelItems()
         {
             int recordsToProcess = 1000;
             bool isProcess = true;
@@ -270,6 +273,7 @@ namespace Rock.Jobs
             {
                 using ( var rockContext = new RockContext() )
                 {
+                    rockContext.Database.CommandTimeout = _commandTimeout;
                     var contentChannelItems = new ContentChannelItemService( rockContext )
                                         .Queryable()
                                         .AsNoTracking()
