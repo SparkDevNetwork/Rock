@@ -42,7 +42,14 @@
                 <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" Text="Folder not found" Visible="false" CssClass="margin-v-md" />
 
                 <div>
-                    <div class="scroll-container scroll-container-vertical scroll-container-picker js-folder-treeview">
+                    <div class="treeview-scroll scroll-container scroll-container-horizontal scroll-container-picker js-folder-treeview">
+
+                        <asp:Panel ID="pnlTreeViewPort" runat="server" CssClass="viewport js-treeviewport">
+                            <div class="overview">
+                                <asp:Label ID="lblFolders" CssClass="treeview treeview-items" runat="server" />
+                            </div>
+                        </asp:Panel>
+
                         <div class="scrollbar">
                             <asp:Panel ID="pnlTreeTrack" runat="server" CssClass="track js-treetrack">
                                 <div class="thumb">
@@ -50,11 +57,7 @@
                                 </div>
                             </asp:Panel>
                         </div>
-                        <asp:Panel ID="pnlTreeViewPort" runat="server" CssClass="viewport js-treeviewport">
-                            <div class="overview">
-                                <asp:Label ID="lblFolders" CssClass="treeview treeview-items" runat="server" />
-                            </div>
-                        </asp:Panel>
+
                     </div>
                 </div>
 
