@@ -14,10 +14,10 @@
                 </div>
 
                 <div class="actions">
-                    <a href="#" class="btn btn-xs btn-default js-createfolder js-folderselect" title="Create a new folder in the selected folder">
+                    <a href="#" class="btn btn-xs btn-default js-createfolder" title="Create a new folder in the selected folder">
                         <i class="fa fa-folder"></i> Add Folder
                     </a>
-                    <asp:LinkButton ID="lbDeleteFolder" runat="server" CssClass="btn btn-xs btn-default js-deletefolder js-folderselect" OnClick="lbDeleteFolder_Click" CausesValidation="false" ToolTip="Delete the selected folder">
+                    <asp:LinkButton ID="lbDeleteFolder" runat="server" CssClass="btn btn-xs btn-default js-deletefolder" OnClick="lbDeleteFolder_Click" CausesValidation="false" ToolTip="Delete the selected folder">
                         <i class="fa fa-trash-alt"></i> Delete Folder
                     </asp:LinkButton>
                 </div>
