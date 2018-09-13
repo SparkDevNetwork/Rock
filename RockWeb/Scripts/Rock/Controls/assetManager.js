@@ -43,9 +43,20 @@
 
         var temp2 = $selectFolder.text();
 
-        // Some buttons need a folder selected in order to work
-        if ($selectFolder.text() == "" && $assetStorageId.text() == "-1" ) {
-          $('.js-folderselect').addClass('aspNetDisabled');
+        // Can only add if either an asset or folder is selected
+        if ($selectFolder.text() == "" && $assetStorageId.text() == "-1") {
+          $('.js-createfolder').addClass('aspNetDisabled');
+        }
+        else {
+          $('.js-createfolder').removeClass('aspNetDisabled');
+        }
+
+        // Can delete folder only if a folder is selected
+        if ($selectFolder.text() == "") {
+          $('.js-deletefolder').addClass('aspNetDisabled');
+        }
+        else {
+          $('.js-deletefolder').removeClass('aspNetDisabled');
         }
 
         var folderTreeData = $folderTreeView.data('rockTree');
@@ -120,7 +131,7 @@
           var expandedFolders = encodeURIComponent($expandedFolders.text());
 
           // Some buttons are only active if at least one folder is selected once the tree has been selected then a folder is always selected.
-          $('.js-folderselect').removeClass('aspNetDisabled');
+          //$('.js-folderselect').removeClass('aspNetDisabled');
 
           $selectFolder.text(folder);
           $assetStorageId.text(storageId);
