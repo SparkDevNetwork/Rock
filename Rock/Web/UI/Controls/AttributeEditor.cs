@@ -1736,7 +1736,8 @@ namespace Rock.Web.UI.Controls
                     qualifiers = this.AttributeQualifiers;
                 }
 
-                var defaultControl = field.EditControl( qualifiers, $"defaultValue_{fieldTypeId}" );
+                // make sure each default control has a unique/predictable ID to help avoid viewstate issues
+                var defaultControl = field.EditControl( qualifiers, $"defaultValue_{fieldTypeId}_{this.AttributeGuid.ToString("N")}" );
                 if ( defaultControl != null )
                 {
                     _phDefaultValue.Controls.Add( defaultControl );
