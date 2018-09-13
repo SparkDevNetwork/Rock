@@ -38,8 +38,6 @@
                         </a>
                     </div>
                 </asp:Panel>
-             
-                <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" Text="Folder not found" Visible="false" CssClass="margin-v-md" />
 
                 <div>
                     <div class="treeview-scroll scroll-container scroll-container-horizontal scroll-container-picker js-folder-treeview">
@@ -98,8 +96,6 @@
                         </a>
                     </div>
                     
-                    <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" Text="Error..." Visible="false" Title="Error" Dismissable="true" CssClass="margin-v-md" />
-
                     <table class="table table-striped table-responsive table-no-border">
                         <asp:Repeater ID="rptFiles" runat="server">
                             <ItemTemplate>
@@ -113,6 +109,9 @@
                                     <asp:Label ID="lbKey" runat="server" Text='<%# Eval("Key") %>' Visible="false"></asp:Label></td>
                                 </tr>
                             </ItemTemplate>
+                            <FooterTemplate>
+                                <tr><td><asp:Label ID="lbNoFilesFound" runat="server" Visible='<%# rptFiles.Items.Count == 0 %>' Text="No files found." CssClass="text-muted" /></td></tr>
+                            </FooterTemplate>
                         </asp:Repeater>
                     </table>
                 </asp:Panel>

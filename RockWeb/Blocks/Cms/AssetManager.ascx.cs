@@ -228,21 +228,18 @@ upnlFiles.ClientID // {2}
         protected void ListFiles()
         {
             AssetStorageSystem assetStorageSystem = GetAssetStorageSystem();
-
             if ( assetStorageSystem == null )
             {
                 return;
             }
 
             var component = assetStorageSystem.GetAssetStorageComponent();
-
             if ( component == null )
             {
                 return;
             }
 
             var files = component.ListFilesInFolder( assetStorageSystem, new Asset { Key = lbSelectFolder.Text, Type = AssetType.Folder } );
-
             rptFiles.DataSource = files;
             rptFiles.DataBind();
         }

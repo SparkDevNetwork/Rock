@@ -386,12 +386,8 @@ namespace RockWeb.Blocks.Utility
                 }
 
                 hfIsRestrictedFolder.Value = isRestricted.ToString();
-
                 hfIsUploadRestrictedFolder.Value = isUploadRestricted.ToString();
-
-                var sb = new StringBuilder();
-                sb.AppendLine( "<ul class='js-rocklist rocklist'>" );
-
+                
                 string imageFileTypeWhiteList = PageParameter( "imageFileTypeWhiteList" );
                 if ( string.IsNullOrWhiteSpace( imageFileTypeWhiteList ) )
                 {
@@ -408,7 +404,16 @@ namespace RockWeb.Blocks.Utility
                     fileList.AddRange( Directory.GetFiles( physicalFolder, filter ).OrderBy( a => a ).ToList() );
                 }
 
-                nbNoFilesInfo.Visible = !fileList.Any();
+                lbNoFilesFound.Visible = !fileList.Any();
+                if ( !fileList.Any() )
+                {
+                    lblFiles.Text = string.Empty;
+                    return;
+                }
+
+                var sb = new StringBuilder();
+                sb.AppendLine( "<ul class='js-rocklist rocklist'>" );
+
                 string editFilePage = PageParameter( "editFilePage" );
 
                 foreach ( var filePath in fileList )
