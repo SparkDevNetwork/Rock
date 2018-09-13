@@ -40,7 +40,9 @@
         if ($assetStorageId.text() == "-1") {
           $('.js-assetselect').addClass('aspNetDisabled');
         }
+
         var temp2 = $selectFolder.text();
+
         // Some buttons need a folder selected in order to work
         if ($selectFolder.text() == "" && $assetStorageId.text() == "-1" ) {
           $('.js-folderselect').addClass('aspNetDisabled');
@@ -58,28 +60,33 @@
           });
 
           var treePortIScroll = new IScroll($treePort[0], {
-            mouseWheel: true,
+            mouseWheel: false,
+            scrollX: true,
+            scrollY: false,
             indicators: {
               el: '#' + $treeTrack.attr('id'),
               interactive: true,
               resize: false,
-              listenY: true,
-              listenX: false
+              listenY: false,
+              listenX: true
             },
             click: false,
             preventDefaultException: { tagName: /.*/ }
           });
 
+          // resize scrollbar when the window resizes
+          $(document).ready(function () {
+            $(window).on('resize', function () {
+              resizeScrollAreaHeight();
+            });
+          });
+
           $folderTreeView.on('rockTree:dataBound rockTree:rendered', function (evt) {
-            if (treePortIScroll) {
-              treePortIScroll.refresh();
-            }
+            resizeScrollAreaHeight();
           });
 
           $folderTreeView.on('rockTree:expand rockTree:collapse', function (evt, data) {
-            if (treePortIScroll) {
-              treePortIScroll.refresh();
-            }
+            resizeScrollAreaHeight();
 
             // get the data-id values of rock-tree items that are showing visible children (in other words, Expanded Nodes)
             var expandedDataIds = $(evt.currentTarget).find('.rocktree-children').filter(":visible").closest('.rocktree-item').map(function () {
@@ -91,6 +98,14 @@
 
             $expandedFolders.text(expandedDataIds);
           });
+
+          function resizeScrollAreaHeight() {
+            var overviewHeight = $folderTreeView.height();
+            $treePort.height(overviewHeight)
+            if (treePortIScroll) {
+              treePortIScroll.refresh();
+            }
+          }
         }
 
         $folderTreeView.off('rockTree:selected').on('rockTree:selected', function (e, data) {
