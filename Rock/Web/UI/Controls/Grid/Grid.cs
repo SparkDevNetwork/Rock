@@ -1085,6 +1085,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
                 if ( !this.ShowActionsInHeader || !this.ShowActionRow )
                 {
+                    _actionHeaderRow.Visible = false;
                     _headerGridActionsMirror.Visible = false;
                 }
 
