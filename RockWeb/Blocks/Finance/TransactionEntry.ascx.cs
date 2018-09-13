@@ -526,6 +526,10 @@ TransactionAccountDetails: [
                             {
                                 SelectedAccounts[item.ItemIndex].Amount = amount;
                             }
+                            else
+                            {
+                                SelectedAccounts[item.ItemIndex].Amount = default( decimal );
+                            }
                         }
                     }
                 }
