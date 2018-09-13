@@ -149,8 +149,20 @@ namespace Rock.Web.UI.Controls
         /// <value>The save button text.</value>
         public string SaveButtonText
         {
-            get { return ViewState["SaveButtonText"] as string ?? "Save"; }
-            set { ViewState["SaveButtonText"] = value; }
+            get => ViewState["SaveButtonText"] as string ?? "Save";
+            set => ViewState["SaveButtonText"] = value;
+        }
+
+        /// <summary>
+        /// Gets the Control for the SaveButton
+        /// </summary>
+        /// <value>
+        /// The save button.
+        /// </value>
+        public bool SaveButtonCausesValidation
+        {
+            get => ViewState["SaveButtonCausesValidation"] as bool? ?? true;
+            set => ViewState["SaveButtonCausesValidation"] = value;
         }
 
         /// <summary>
@@ -221,7 +233,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [close link visible].
+        /// Gets or sets a value indicating whether the close button (The X in the Header) is visible
         /// </summary>
         /// <value>
         ///   <c>true</c> if [close link visible]; otherwise, <c>false</c>.
@@ -410,7 +422,16 @@ namespace Rock.Web.UI.Controls
 
             _serverSaveLink.Visible = !string.IsNullOrWhiteSpace( SaveButtonText ) && SaveClick != null;
             _serverSaveLink.InnerText = SaveButtonText;
-            _serverSaveLink.ValidationGroup = this.ValidationGroup;
+            if ( SaveButtonCausesValidation )
+            {
+                _serverSaveLink.CausesValidation = true;
+                _serverSaveLink.ValidationGroup = this.ValidationGroup;
+            }
+            else
+            {
+                _serverSaveLink.CausesValidation = false;
+                _serverSaveLink.ValidationGroup = "";
+            }
 
             _saveLink.Visible = !string.IsNullOrWhiteSpace( SaveButtonText ) && SaveClick == null && !string.IsNullOrWhiteSpace( OnOkScript );
             _saveLink.InnerText = SaveButtonText;
