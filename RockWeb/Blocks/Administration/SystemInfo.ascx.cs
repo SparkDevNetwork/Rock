@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
 
             // Get Version, database info and executing assembly location
-            lRockVersion.Text = string.Format("{0} <small>({1})</small>", VersionInfo.GetRockProductVersionFullName(), VersionInfo.GetRockProductVersionNumber() );
+            lRockVersion.Text = string.Format( "{0} <small>({1})</small>", VersionInfo.GetRockProductVersionFullName(), VersionInfo.GetRockProductVersionNumber() );
             lClientCulture.Text = System.Globalization.CultureInfo.CurrentCulture.ToString();
             lDatabase.Text = GetDbInfo();
             lSystemDateTime.Text = DateTime.Now.ToString( "G" ) + " " + DateTime.Now.ToString( "zzz" );
@@ -72,7 +72,11 @@ namespace RockWeb.Blocks.Administration
                 lProcessStartTime.Text = "-";
             }
 
-            lExecLocation.Text = Assembly.GetExecutingAssembly().Location;
+            try
+            {
+                lExecLocation.Text = Assembly.GetExecutingAssembly().Location + "<br/>" + HttpRuntime.AppDomainAppPath;
+            }
+            catch { }
             lLastMigrations.Text = GetLastMigrationData();
 
             var transactionQueueStats = RockQueue.TransactionQueue.ToList().GroupBy( a => a.GetType().Name ).ToList().Select( a => new { Name = a.Key, Count = a.Count() } );
