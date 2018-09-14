@@ -30,10 +30,13 @@
         var $renameFileDiv = $assetBrowser.find('.js-renamefile-div');
         var $renameFileInput = $assetBrowser.find('.js-renamefile-input');
         var $renameFileCancel = $assetBrowser.find('.js-renamefile-cancel');
-        
+        var $validationSummary = $assetBrowser.find('.js-validation-summary');
+
         if ($folderTreeView.length == 0) {
           return;
         }
+
+        
 
         // Some buttons need an asset selected in order to work
         var temp1 = $assetStorageId.text();
@@ -62,7 +65,7 @@
         var folderTreeData = $folderTreeView.data('rockTree');
         
         if (!folderTreeData) {
-          var selectedFolders = [$assetStorageId.text() + ',' + encodeURIComponent($selectFolder.text())];
+          var selectedFolders = [encodeURIComponent($assetStorageId.text() + ',' + $selectFolder.text())];
           var expandedFolders = $expandedFolders.text().split('||');
           expandedFolders.forEach(function (part, i, array) {
             array[i] = encodeURIComponent(array[i]);
