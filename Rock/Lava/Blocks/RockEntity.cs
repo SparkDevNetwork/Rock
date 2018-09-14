@@ -778,8 +778,7 @@ namespace Rock.Lava.Blocks
         {
             if ( !string.IsNullOrWhiteSpace( dynamicFilter ) && !string.IsNullOrWhiteSpace( dynamicFilterValue ) )
             {
-                var entityFields = EntityHelper.GetEntityFields( type );
-                var entityField = entityFields.FindFromFilterSelection( dynamicFilter );
+                var entityField = EntityHelper.FindFromFilterSelection( type, dynamicFilter );
                 if ( entityField != null )
                 {
                     var values = new List<string>();

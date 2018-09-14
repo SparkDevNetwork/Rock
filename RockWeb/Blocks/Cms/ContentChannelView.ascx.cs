@@ -32,6 +32,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -77,7 +78,7 @@ namespace RockWeb.Blocks.Cms
         private readonly string TEMPLATE_CACHE_KEY = "Template";
         private readonly string OUTPUT_CACHE_KEY = "Output";
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
@@ -119,29 +120,9 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
-        #endregion
+        #endregion Properties
 
         #region Base Control Methods
-
-        /// <summary>
-        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
-        /// </summary>
-        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
-        protected override void LoadViewState( object savedState )
-        {
-            base.LoadViewState( savedState );
-
-            ChannelGuid = ViewState["ChannelGuid"] as Guid?;
-
-            var rockContext = new RockContext();
-
-            var channel = new ContentChannelService( rockContext ).Queryable( "ContentChannelType" )
-                .FirstOrDefault( c => c.Guid.Equals( ChannelGuid.Value ) );
-            if ( channel != null )
-            {
-                CreateFilterControl( channel, DataViewFilter.FromJson( ViewState["DataViewFilter"].ToString() ), false, rockContext );
-            }
-        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -185,6 +166,26 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            ChannelGuid = ViewState["ChannelGuid"] as Guid?;
+
+            var rockContext = new RockContext();
+
+            var channel = new ContentChannelService( rockContext ).Queryable( "ContentChannelType" )
+                .FirstOrDefault( c => c.Guid.Equals( ChannelGuid.Value ) );
+            if ( channel != null )
+            {
+                CreateFilterControl( channel, DataViewFilter.FromJson( ViewState["DataViewFilter"].ToString() ), false, rockContext );
+            }
+        }
+
+        /// <summary>
         /// Saves any user control view-state changes that have occurred since the last page postback.
         /// </summary>
         /// <returns>
@@ -193,12 +194,12 @@ namespace RockWeb.Blocks.Cms
         protected override object SaveViewState()
         {
             ViewState["ChannelGuid"] = ChannelGuid;
-            ViewState["DataViewFilter"] = GetFilterControl().ToJson();
+            ViewState["DataViewFilter"] = ReportingHelper.GetFilterFromControls(phFilters).ToJson();
 
             return base.SaveViewState();
         }
 
-        #endregion
+        #endregion Base Control Methods
 
         #region Events
 
@@ -248,8 +249,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
-
-            var dataViewFilter = GetFilterControl();
+            var dataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
 
             // update Guids since we are creating a new dataFilter and children and deleting the old one
             SetNewDataFilterGuids( dataViewFilter );
@@ -321,6 +321,20 @@ namespace RockWeb.Blocks.Cms
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
+            Guid? channelGuid = GetAttributeValue( "Channel" ).AsGuidOrNull();
+            if ( channelGuid.HasValue )
+            {
+                var contentChannel = ContentChannelCache.Get( channelGuid.Value );
+                if ( contentChannel != null )
+                {
+                    filterField.Entity = new ContentChannelItem
+                    {
+                        ContentChannelId = contentChannel.Id,
+                        ContentChannelTypeId = contentChannel.ContentChannelTypeId
+                    };
+                }
+            }
+
             filterField.DataViewFilterGuid = Guid.NewGuid();
             groupControl.Controls.Add( filterField );
             filterField.ID = string.Format( "ff_{0}", filterField.DataViewFilterGuid.ToString( "N" ) );
@@ -375,7 +389,7 @@ namespace RockWeb.Blocks.Cms
             groupControl.Parent.Controls.Remove( groupControl );
         }
 
-        #endregion
+        #endregion Events
 
         #region Internal Methods
 
@@ -765,8 +779,6 @@ $(document).ready(function() {
                     var contentChannel = new ContentChannelService( rockContext ).Get( channelGuid.Value );
                     if ( contentChannel != null )
                     {
-                        var entityFields = HackEntityFields( contentChannel, rockContext );
-
                         items = new List<ContentChannelItem>();
 
                         var qry = service
@@ -925,7 +937,7 @@ $(document).ready(function() {
                                     var selection = new List<string>();
                                     selection.Add( key );
 
-                                    var entityField = entityFields.FirstOrDefault( f => f.Name.Equals( key, StringComparison.OrdinalIgnoreCase ) );
+                                    var entityField = Rock.Reporting.EntityHelper.FindFromFilterSelection( contentChannel.GetType(), key );
                                     if ( entityField != null )
                                     {
                                         string value = PageParameter( key );
@@ -1091,102 +1103,6 @@ $(document).ready(function() {
         }
 
         /// <summary>
-        /// **The PropertyFilter checks for it's property/attribute list in a cached items object before recreating
-        /// them using reflection and loading of generic attributes. Because of this, we're going to load them here
-        /// and exclude some properties and add additional attributes specific to the channel type, and then save
-        /// list to same cached object so that property filter lists our collection of properties/attributes
-        /// instead.
-        /// </summary>
-        /// <param name="channel">The channel.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        /// <returns> a list of <see cref="Rock.Reporting.EntityField">entity fields</see></returns>
-        private List<Rock.Reporting.EntityField> HackEntityFields( ContentChannel channel, RockContext rockContext )
-        {
-            if ( channel != null )
-            {
-                var entityTypeCache = EntityTypeCache.Get( ITEM_TYPE_NAME );
-                if ( entityTypeCache != null )
-                {
-                    var entityType = entityTypeCache.GetEntityType();
-
-                    /// See above comments on HackEntityFields** to see why we are doing this
-                    HttpContext.Current.Items.Remove( Rock.Reporting.EntityHelper.GetCacheKey( entityType ) );
-
-                    var entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
-                    foreach ( var entityField in entityFields
-                        .Where( f =>
-                            f.FieldKind == Rock.Reporting.FieldKind.Attribute &&
-                            f.AttributeGuid.HasValue )
-                        .ToList() )
-                    {
-                        // remove EntityFields that aren't attributes for this ContentChannelType or ChannelChannel (to avoid duplicate Attribute Keys)
-                        var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
-                        if ( attribute != null &&
-                            attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" &&
-                            attribute.EntityTypeQualifierValue.AsInteger() != channel.ContentChannelTypeId )
-                        {
-                            entityFields.Remove( entityField );
-                        }
-
-                        if ( attribute != null &&
-                            attribute.EntityTypeQualifierColumn == "ContentChannelId" &&
-                            attribute.EntityTypeQualifierValue.AsInteger() != channel.Id )
-                        {
-                            entityFields.Remove( entityField );
-                        }
-                    }
-
-                    if ( entityFields != null )
-                    {
-                        // Remove the status field
-                        var ignoreFields = new List<string>();
-                        ignoreFields.Add( "ContentChannelId" );
-                        ignoreFields.Add( "Status" );
-
-                        entityFields = entityFields.Where( f => !ignoreFields.Contains( f.Name ) ).ToList();
-
-                        // Add any additional attributes that are specific to channel/type
-                        var item = new ContentChannelItem();
-                        item.ContentChannel = channel;
-                        item.ContentChannelId = channel.Id;
-                        item.ContentChannelType = channel.ContentChannelType;
-                        item.ContentChannelTypeId = channel.ContentChannelTypeId;
-                        item.LoadAttributes( rockContext );
-                        foreach ( var attribute in item.Attributes
-                            .Where( a =>
-                                a.Value.EntityTypeQualifierColumn != "" &&
-                                a.Value.EntityTypeQualifierValue != "" )
-                            .Select( a => a.Value ) )
-                        {
-                            if ( !entityFields.Any( f => f.AttributeGuid.Equals( attribute.Guid ) ) )
-                            {
-                                Rock.Reporting.EntityHelper.AddEntityFieldForAttribute( entityFields, attribute );
-                            }
-                        }
-
-                        // Re-sort fields
-                        int index = 0;
-                        var sortedFields = new List<Rock.Reporting.EntityField>();
-                        foreach ( var entityProperty in entityFields.OrderBy( p => p.Title ).ThenBy( p => p.Name ) )
-                        {
-                            entityProperty.Index = index;
-                            index++;
-                            sortedFields.Add( entityProperty );
-                        }
-
-                        // Save new fields to cache ( which report field will use instead of reading them again )
-                        HttpContext.Current.Items[Rock.Reporting.EntityHelper.GetCacheKey( entityType )] = sortedFields;
-                    }
-
-                    return entityFields;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Creates the filter control.
         /// </summary>
         /// <param name="channel">The channel.</param>
@@ -1195,12 +1111,10 @@ $(document).ready(function() {
         /// <param name="rockContext">The rock context.</param>
         private void CreateFilterControl( ContentChannel channel, DataViewFilter filter, bool setSelection, RockContext rockContext )
         {
-            HackEntityFields( channel, rockContext );
-
             phFilters.Controls.Clear();
             if ( filter != null )
             {
-                CreateFilterControl( phFilters, filter, setSelection, rockContext );
+                CreateFilterControl( phFilters, filter, setSelection, rockContext, channel );
             }
         }
 
@@ -1211,13 +1125,19 @@ $(document).ready(function() {
         /// <param name="filter">The filter.</param>
         /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
         /// <param name="rockContext">The rock context.</param>
-        private void CreateFilterControl( Control parentControl, DataViewFilter filter, bool setSelection, RockContext rockContext )
+        /// <param name="contentChannel">The content channel.</param>
+        private void CreateFilterControl( Control parentControl, DataViewFilter filter, bool setSelection, RockContext rockContext, ContentChannel contentChannel )
         {
             try
             {
                 if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
                     var filterControl = new FilterField();
+                    filterControl.Entity = new ContentChannelItem
+                    {
+                        ContentChannelId = contentChannel.Id,
+                        ContentChannelTypeId = contentChannel.ContentChannelTypeId
+                    };
 
                     parentControl.Controls.Add( filterControl );
                     filterControl.DataViewFilterGuid = filter.Guid;
@@ -1269,7 +1189,7 @@ $(document).ready(function() {
                     groupControl.DeleteGroupClick += groupControl_DeleteGroupClick;
                     foreach ( var childFilter in filter.ChildFilters )
                     {
-                        CreateFilterControl( groupControl, childFilter, setSelection, rockContext );
+                        CreateFilterControl( groupControl, childFilter, setSelection, rockContext, contentChannel );
                     }
                 }
             }
@@ -1277,65 +1197,6 @@ $(document).ready(function() {
             {
                 this.LogException( new Exception( "Exception creating FilterControl for DataViewFilter: " + filter.Guid, ex ) );
             }
-        }
-
-        private DataViewFilter GetFilterControl()
-        {
-            if ( phFilters.Controls.Count > 0 )
-            {
-                return GetFilterControl( phFilters.Controls[0] );
-            }
-
-            return null;
-        }
-
-        private DataViewFilter GetFilterControl( Control control )
-        {
-            FilterGroup groupControl = control as FilterGroup;
-            if ( groupControl != null )
-            {
-                return GetFilterGroupControl( groupControl );
-            }
-
-            FilterField filterControl = control as FilterField;
-            if ( filterControl != null )
-            {
-                return GetFilterFieldControl( filterControl );
-            }
-
-            return null;
-        }
-
-        private DataViewFilter GetFilterGroupControl( FilterGroup filterGroup )
-        {
-            DataViewFilter filter = new DataViewFilter();
-            filter.Guid = filterGroup.DataViewFilterGuid;
-            filter.ExpressionType = filterGroup.FilterType;
-            foreach ( Control control in filterGroup.Controls )
-            {
-                DataViewFilter childFilter = GetFilterControl( control );
-                if ( childFilter != null )
-                {
-                    filter.ChildFilters.Add( childFilter );
-                }
-            }
-
-            return filter;
-        }
-
-        private DataViewFilter GetFilterFieldControl( FilterField filterField )
-        {
-            DataViewFilter filter = new DataViewFilter();
-            filter.Guid = filterField.DataViewFilterGuid;
-            filter.ExpressionType = FilterExpressionType.Filter;
-            filter.Expanded = filterField.Expanded;
-            if ( filterField.FilterEntityTypeName != null )
-            {
-                filter.EntityTypeId = EntityTypeCache.Get( filterField.FilterEntityTypeName ).Id;
-                filter.Selection = filterField.GetSelection();
-            }
-
-            return filter;
         }
 
         private void SetNewDataFilterGuids( DataViewFilter dataViewFilter )

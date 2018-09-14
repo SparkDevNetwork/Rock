@@ -421,9 +421,6 @@ namespace Rock.Attribute
 
             if ( allAttributes.Any() )
             {
-                rockContext = rockContext ?? new RockContext();
-                var attributeValueService = new Rock.Model.AttributeValueService( rockContext );
-
                 foreach ( var attribute in allAttributes )
                 {
                     // Add a placeholder for this item's value for each attribute
@@ -433,6 +430,9 @@ namespace Rock.Attribute
                 // If loading attributes for a saved item, read the item's value(s) for each attribute 
                 if ( !entityTypeCache.IsEntity || entity.Id != 0 )
                 {
+                    rockContext = rockContext ?? new RockContext();
+                    var attributeValueService = new Rock.Model.AttributeValueService( rockContext );
+
                     List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
                     IQueryable<AttributeValue> attributeValueQuery;
 
