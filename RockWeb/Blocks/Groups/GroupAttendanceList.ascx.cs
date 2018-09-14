@@ -637,10 +637,35 @@ namespace RockWeb.Blocks.Groups
             Id = occurrence.Id;
             OccurrenceDate = occurrence.OccurrenceDate;
             LocationId = occurrence.LocationId;
+
+            if ( occurrence.Location != null )
+            {
+                if ( occurrence.Location.Name.IsNotNullOrWhiteSpace() )
+                {
+                    LocationName = occurrence.Location.Name;
+                }
+                else
+                {
+                    LocationName = occurrence.Location.ToString();
+                }
+            }
+
             LocationName = occurrence.Location != null ? occurrence.Location.Name : string.Empty;
             ParentLocationId = occurrence.Location != null ? occurrence.Location.ParentLocationId : (int?)null;
             ScheduleId = occurrence.ScheduleId;
-            ScheduleName = occurrence.Schedule != null ? occurrence.Schedule.Name : string.Empty;
+
+            if ( occurrence.Schedule != null )
+            {
+                if ( occurrence.Schedule.Name.IsNotNullOrWhiteSpace() )
+                {
+                    ScheduleName = occurrence.Schedule.Name;
+                }
+                else
+                {
+                    ScheduleName = occurrence.Schedule.ToString();
+                }
+            }
+
             StartTime = occurrence.Schedule != null ? occurrence.Schedule.StartTimeOfDay : new TimeSpan();
             AttendanceEntered = occurrence.AttendanceEntered;
             DidNotOccur = occurrence.DidNotOccur ?? false;
