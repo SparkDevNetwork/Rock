@@ -231,6 +231,24 @@ namespace RockWeb.Blocks.Communication
                             communicationTemplate.AllowPerson( Authorization.EDIT, CurrentPerson );
                         }
                     }
+
+                    // Always make sure RSR-Admin and Communication Admin can see
+                    var groupService = new GroupService( rockContext );
+                    var communicationAdministrators = groupService.Get( Rock.SystemGuid.Group.GROUP_COMMUNICATION_ADMINISTRATORS.AsGuid() );
+                    if ( communicationAdministrators != null )
+                    {
+                        communicationTemplate.AllowSecurityRole( Authorization.VIEW, communicationAdministrators, rockContext );
+                        communicationTemplate.AllowSecurityRole( Authorization.EDIT, communicationAdministrators, rockContext );
+                        communicationTemplate.AllowSecurityRole( Authorization.ADMINISTRATE, communicationAdministrators, rockContext );
+                    }
+
+                    var rockAdministrators = groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() );
+                    if ( rockAdministrators != null )
+                    {
+                        communicationTemplate.AllowSecurityRole( Authorization.VIEW, rockAdministrators, rockContext );
+                        communicationTemplate.AllowSecurityRole( Authorization.EDIT, rockAdministrators, rockContext );
+                        communicationTemplate.AllowSecurityRole( Authorization.ADMINISTRATE, rockAdministrators, rockContext );
+                    }
                 }
             }
 
