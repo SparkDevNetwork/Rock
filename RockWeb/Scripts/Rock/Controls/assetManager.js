@@ -7,6 +7,36 @@
     var exports;
 
     exports = {
+      isValidName: function (name) {
+        var regex = new RegExp("^[^*/><?\\|:,~]+$");
+        return regex.test(name);
+      },
+      createFolderAccept_click: function () {
+        var name = $('.js-createfolder-input').val();
+
+        if (name === "") {
+          $('.js-createfolder-notification').show().text('Folder name is required.');
+          return false;
+        }
+
+        if (!this.isValidName(name)) {
+          $('.js-createfolder-notification').show().text('Invalid characters in path');
+          return false;
+        } 
+      },
+      renameFileAccept_click: function () {
+        var name = $('.js-renamefile-input').val();
+
+        if (name === "") {
+          $('.js-renamefile-notification').show().text('File name is required.');
+          return false;
+        }
+
+        if (!this.isValidName(name)) {
+          $('.js-renamefile-notification').show().text('Invalid characters in file name.');
+          return false;
+        }
+      },
       initialize: function (options) {
         var self = this;
 
@@ -22,21 +52,20 @@
         var $createFolderDiv = $assetBrowser.find('.js-createfolder-div');
         var $createFolderInput = $assetBrowser.find('.js-createfolder-input');
         var $createFolderCancel = $assetBrowser.find('.js-createfolder-cancel');
-
+        var $createFolderAccept = $assetBrowser.find('.js-createfolder-accept');
         var $deleteFolder = $assetBrowser.find('.js-deletefolder');
+
         var $fileCheckboxes = $assetBrowser.find('.js-checkbox');
 
         var $renameFile = $assetBrowser.find('.js-renamefile');
         var $renameFileDiv = $assetBrowser.find('.js-renamefile-div');
         var $renameFileInput = $assetBrowser.find('.js-renamefile-input');
         var $renameFileCancel = $assetBrowser.find('.js-renamefile-cancel');
-        var $validationSummary = $assetBrowser.find('.js-validation-summary');
+        var $renameFileAccept = $assetBrowser.find('.js-renamefile-accept');
 
         if ($folderTreeView.length == 0) {
           return;
         }
-
-        
 
         // Some buttons need an asset selected in order to work
         var temp1 = $assetStorageId.text();
@@ -170,6 +199,7 @@
         $createFolderCancel.off('click').on('click', function () {
           $createFolderDiv.fadeOut();
           $createFolderInput.val('');
+          $('.js-createfolder-notification').hide().text('');
         });
 
         $renameFile.off('click').on('click', function () {
@@ -180,6 +210,7 @@
         $renameFileCancel.off('click').on('click', function () {
           $renameFileDiv.fadeOut();
           $renameFileInput.val('');
+          $('.js-renamefile-notification').hide().text('');
         });
 
         $deleteFolder.off('click').on('click', function (e) {

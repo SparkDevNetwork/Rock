@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -115,6 +116,7 @@ namespace RockWeb.Blocks.Cms
 
         #endregion IPicker Implementation
 
+        #region Control Overrides
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -222,28 +224,9 @@ upnlFiles.ClientID // {2}
             }
         }
 
-        /// <summary>
-        /// Lists the files for the selected folder.
-        /// </summary>
-        protected void ListFiles()
-        {
-            AssetStorageSystem assetStorageSystem = GetAssetStorageSystem();
-            if ( assetStorageSystem == null )
-            {
-                return;
-            }
+        #endregion Control Overrides
 
-            var component = assetStorageSystem.GetAssetStorageComponent();
-            if ( component == null )
-            {
-                return;
-            }
-
-            var files = component.ListFilesInFolder( assetStorageSystem, new Asset { Key = lbSelectFolder.Text, Type = AssetType.Folder } );
-            rptFiles.DataSource = files;
-            rptFiles.DataBind();
-        }
-
+        #region control events
         /// <summary>
         /// Handles the Click event of the lbDownload control.
         /// Downloads the file and propts user to save or open.
@@ -320,6 +303,11 @@ upnlFiles.ClientID // {2}
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCreateFolderAccept_Click( object sender, EventArgs e )
         {
+            if ( !IsValidName(tbCreateFolder.Text) || tbCreateFolder.Text.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
             AssetStorageSystem assetStorageSystem = GetAssetStorageSystem();
             var component = assetStorageSystem.GetAssetStorageComponent();
             var asset = new Asset { Type = AssetType.Folder };
@@ -357,6 +345,70 @@ upnlFiles.ClientID // {2}
         }
 
         /// <summary>
+        /// Handles the Click event of the lbRenameFileAccept control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbRenameFileAccept_Click( object sender, EventArgs e )
+        {
+            if ( !IsValidName( tbRenameFile.Text ) || tbRenameFile.Text.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            AssetStorageSystem assetStorageSystem = GetAssetStorageSystem();
+            var component = assetStorageSystem.GetAssetStorageComponent();
+
+            foreach ( RepeaterItem repeaterItem in rptFiles.Items )
+            {
+                var cbEvent = repeaterItem.FindControl( "cbSelected" ) as RockCheckBox;
+                if ( cbEvent.Checked == true )
+                {
+                    var keyControl = repeaterItem.FindControl( "lbKey" ) as Label;
+                    string key = keyControl.Text;
+                    component.RenameAsset( assetStorageSystem, new Asset { Key = key, Type = AssetType.File }, tbRenameFile.Text );
+                }
+            }
+
+            ListFiles();
+        }
+
+        /// <summary>
+        /// Handles the FileUploaded event of the fupUpload control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void fupUpload_FileUploaded( object sender, EventArgs e )
+        {
+            ListFiles();
+        }
+
+        #endregion control events
+
+        #region private methods
+        /// <summary>
+        /// Lists the files for the selected folder.
+        /// </summary>
+        private void ListFiles()
+        {
+            AssetStorageSystem assetStorageSystem = GetAssetStorageSystem();
+            if ( assetStorageSystem == null )
+            {
+                return;
+            }
+
+            var component = assetStorageSystem.GetAssetStorageComponent();
+            if ( component == null )
+            {
+                return;
+            }
+
+            var files = component.ListFilesInFolder( assetStorageSystem, new Asset { Key = lbSelectFolder.Text, Type = AssetType.Folder } );
+            rptFiles.DataSource = files;
+            rptFiles.DataBind();
+        }
+
+        /// <summary>
         /// Gets the asset storage system using the ID stored in the hidden field, otherwise returns a new AssetStorageSystem.
         /// </summary>
         /// <returns></returns>
@@ -376,37 +428,16 @@ upnlFiles.ClientID // {2}
         }
 
         /// <summary>
-        /// Handles the FileUploaded event of the fupUpload control.
+        /// Determines whether [is valid folder name] [the specified rename folder name].
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void fupUpload_FileUploaded( object sender, EventArgs e )
+        /// <param name="renameFolderName">Name of the rename folder.</param>
+        /// <returns></returns>
+        private bool IsValidName( string renameFolderName )
         {
-            ListFiles();
+            Regex regularExpression = new Regex( "^([^*/><?\\|:,]).*$" );
+            return regularExpression.IsMatch( renameFolderName );
         }
 
-        /// <summary>
-        /// Handles the Click event of the lbRenameFileAccept control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbRenameFileAccept_Click( object sender, EventArgs e )
-        {
-            AssetStorageSystem assetStorageSystem = GetAssetStorageSystem();
-            var component = assetStorageSystem.GetAssetStorageComponent();
-
-            foreach ( RepeaterItem repeaterItem in rptFiles.Items )
-            {
-                var cbEvent = repeaterItem.FindControl( "cbSelected" ) as RockCheckBox;
-                if ( cbEvent.Checked == true )
-                {
-                    var keyControl = repeaterItem.FindControl( "lbKey" ) as Label;
-                    string key = keyControl.Text;
-                    component.RenameAsset( assetStorageSystem, new Asset { Key = key, Type = AssetType.File }, tbRenameFile.Text );
-                }
-            }
-
-            ListFiles();
-        }
+        #endregion private methods
     }
 }
