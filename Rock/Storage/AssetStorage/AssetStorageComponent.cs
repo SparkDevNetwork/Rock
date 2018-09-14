@@ -27,10 +27,14 @@ using Rock.Web.Cache;
 
 namespace Rock.Storage.AssetStorage
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.Extension.Component" />
     public abstract class AssetStorageComponent : Component
     {
-
         #region Constructors
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AssetStorageComponent"/> class.
         /// </summary>
@@ -210,12 +214,13 @@ namespace Rock.Storage.AssetStorage
         }
 
         #endregion Public Methods
-                
+
         #region Abstract Methods
 
         /// <summary>
         /// Gets the object as an Asset.
         /// </summary>
+        /// <param name="assetStorageSystem">The asset storage system.</param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
         public abstract Asset GetObject( AssetStorageSystem assetStorageSystem, Asset asset );
@@ -234,7 +239,8 @@ namespace Rock.Storage.AssetStorage
         /// files starting with 'mr' in folder 'pictures/cats/' set key = 'pictures/cats/mr' to get 'mr. whiskers'
         /// and 'mrs. whiskers' but not 'fluffy' or 'carnage the attack cat'.
         /// </summary>
-        /// <param name="folder">The folder.</param>
+        /// <param name="assetStorageSystem">The asset storage system.</param>
+        /// <param name="asset">The asset.</param>
         /// <returns></returns>
         public abstract List<Asset> ListObjects( AssetStorageSystem assetStorageSystem, Asset asset );
 
@@ -245,6 +251,7 @@ namespace Rock.Storage.AssetStorage
         /// If a key is provided it MUST use the full path, RootFolder and Name are not used.
         /// The last segment in key is the folder name.
         /// </summary>
+        /// <param name="assetStorageSystem">The asset storage system.</param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
         public abstract List<Asset> ListObjectsInFolder( AssetStorageSystem assetStorageSystem, Asset asset );
@@ -278,6 +285,7 @@ namespace Rock.Storage.AssetStorage
         /// If a key is provided it MUST use the full path, RootFolder and Name are not used.
         /// The last segment in the key is the folder name.
         /// </summary>
+        /// <param name="assetStorageSystem">The asset storage system.</param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
         public abstract List<Asset> ListFoldersInFolder( AssetStorageSystem assetStorageSystem, Asset asset );
@@ -286,8 +294,8 @@ namespace Rock.Storage.AssetStorage
         /// Uploads a file. If Asset.Key is not provided then one is created using the RootFolder and Asset.Name.
         /// If a key is provided it MUST use the full path, RootFolder is not used.
         /// </summary>
+        /// <param name="assetStorageSystem">The asset storage system.</param>
         /// <param name="asset">The asset.</param>
-        /// <param name="file">The file.</param>
         /// <returns></returns>
         public abstract bool UploadObject( AssetStorageSystem assetStorageSystem, Asset asset );
 
@@ -295,7 +303,8 @@ namespace Rock.Storage.AssetStorage
         /// Creates a folder. If Asset.Key is not provided then one is created using the RootFolder and Asset.Name.
         /// If Key is provided it MUST use the full path, RootFolder is not used.
         /// </summary>
-        /// <param name="folderName">Name of the folder.</param>
+        /// <param name="assetStorageSystem">The asset storage system.</param>
+        /// <param name="asset">The asset.</param>
         /// <returns></returns>
         public abstract bool CreateFolder( AssetStorageSystem assetStorageSystem, Asset asset );
 
@@ -303,6 +312,7 @@ namespace Rock.Storage.AssetStorage
         /// Deletes the asset. If Asset.Key is not provided then one is created using the RootFolder and Asset.Name.
         /// If Key is provided then it MUST use the full path, RootFolder is not used.
         /// </summary>
+        /// <param name="assetStorageSystem">The asset storage system.</param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
         public abstract bool DeleteAsset( AssetStorageSystem assetStorageSystem, Asset asset );
@@ -310,6 +320,7 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Renames the asset.
         /// </summary>
+        /// <param name="assetStorageSystem">The asset storage system.</param>
         /// <param name="asset">The asset.</param>
         /// <param name="newName">The new name.</param>
         /// <returns></returns>
@@ -318,6 +329,7 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Creates the download link.
         /// </summary>
+        /// <param name="assetStorageSystem">The asset storage system.</param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
         public abstract string CreateDownloadLink( AssetStorageSystem assetStorageSystem, Asset asset );

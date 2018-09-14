@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -19,6 +35,10 @@ using System.Threading.Tasks;
 
 namespace Rock.Storage.AssetStorage
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.Storage.AssetStorage.AssetStorageComponent" />
     [Description( "Amazon S3 Storage Service" )]
     [Export( typeof( AssetStorageComponent ) )]
     [ExportMetadata( "ComponentName", "AmazonS3" )]
@@ -36,6 +56,13 @@ namespace Rock.Storage.AssetStorage
 
         #region Properties
 
+        /// <summary>
+        /// Specify the icon for the AssetStorageComponent here. It will display in the folder tree.
+        /// Default is server.png.
+        /// </summary>
+        /// <value>
+        /// The component icon path.
+        /// </value>
         public override string IconCssClass
         {
             get
@@ -46,7 +73,11 @@ namespace Rock.Storage.AssetStorage
 
         #endregion Properties
 
-        #region Contstructors
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AmazonS3Component"/> class.
+        /// </summary>
         public AmazonS3Component() : base()
         {
         }
@@ -83,7 +114,7 @@ namespace Rock.Storage.AssetStorage
 
             try
             {
-                AmazonS3Client Client = GetAmazonS3Client( assetStorageSystem );
+                AmazonS3Client client = GetAmazonS3Client( assetStorageSystem );
 
                 ListObjectsV2Request request = new ListObjectsV2Request();
                 request.BucketName = GetAttributeValue( assetStorageSystem, "Bucket" );
@@ -95,7 +126,7 @@ namespace Rock.Storage.AssetStorage
 
                 do
                 {
-                    response = Client.ListObjectsV2( request );
+                    response = client.ListObjectsV2( request );
                     foreach ( S3Object s3Object in response.S3Objects )
                     {
                         if ( s3Object.Key == null )
@@ -103,7 +134,7 @@ namespace Rock.Storage.AssetStorage
                             continue;
                         }
 
-                        var responseAsset = CreateAssetFromS3Object( s3Object, Client.Config.RegionEndpoint.SystemName );
+                        var responseAsset = CreateAssetFromS3Object( s3Object, client.Config.RegionEndpoint.SystemName );
                         assets.Add( responseAsset );
                     }
 
@@ -147,7 +178,7 @@ namespace Rock.Storage.AssetStorage
             
             try
             {
-                AmazonS3Client Client = GetAmazonS3Client( assetStorageSystem );
+                AmazonS3Client client = GetAmazonS3Client( assetStorageSystem );
 
                 ListObjectsV2Request request = new ListObjectsV2Request();
                 request.BucketName = GetAttributeValue( assetStorageSystem, "Bucket" );
@@ -161,7 +192,7 @@ namespace Rock.Storage.AssetStorage
                 // S3 will only return 1,000 keys per response and sets IsTruncated = true, the do-while loop will run and fetch keys until IsTruncated = false.
                 do
                 {
-                    response = Client.ListObjectsV2( request );
+                    response = client.ListObjectsV2( request );
                     foreach ( S3Object s3Object in response.S3Objects )
                     {
                         if ( s3Object.Key == null || s3Object.Key.EndsWith("/") )
@@ -169,7 +200,7 @@ namespace Rock.Storage.AssetStorage
                             continue;
                         }
 
-                        var responseAsset = CreateAssetFromS3Object( s3Object, Client.Config.RegionEndpoint.SystemName );
+                        var responseAsset = CreateAssetFromS3Object( s3Object, client.Config.RegionEndpoint.SystemName );
                         assets.Add( responseAsset );
                     }
 
@@ -216,7 +247,7 @@ namespace Rock.Storage.AssetStorage
             
             try
             {
-                AmazonS3Client Client = GetAmazonS3Client( assetStorageSystem );
+                AmazonS3Client client = GetAmazonS3Client( assetStorageSystem );
 
                 ListObjectsV2Request request = new ListObjectsV2Request();
                 request.BucketName = bucketName;
@@ -231,7 +262,7 @@ namespace Rock.Storage.AssetStorage
                 // S3 will only return 1,000 keys per response and sets IsTruncated = true, the do-while loop will run and fetch keys until IsTruncated = false.
                 do
                 {
-                    response = Client.ListObjectsV2( request );
+                    response = client.ListObjectsV2( request );
 
                     foreach ( string subFolder in response.CommonPrefixes )
                     {
@@ -248,7 +279,7 @@ namespace Rock.Storage.AssetStorage
                 // Add the subfolders to the asset collection
                 foreach ( string subFolder in subFolders )
                 {
-                    var subFolderAsset = CreateAssetFromCommonPrefix( subFolder, Client.Config.RegionEndpoint.SystemName, bucketName );
+                    var subFolderAsset = CreateAssetFromCommonPrefix( subFolder, client.Config.RegionEndpoint.SystemName, bucketName );
                     assets.Add( subFolderAsset );
                 }
 
@@ -264,6 +295,7 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Returns a stream of the specified file.
         /// </summary>
+        /// <param name="assetStorageSystem"></param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
         public override Asset GetObject( AssetStorageSystem assetStorageSystem, Asset asset )
@@ -274,10 +306,10 @@ namespace Rock.Storage.AssetStorage
 
             try
             {
-                AmazonS3Client Client = GetAmazonS3Client( assetStorageSystem );
+                AmazonS3Client client = GetAmazonS3Client( assetStorageSystem );
 
-                GetObjectResponse response = Client.GetObject( GetAttributeValue( assetStorageSystem, "Bucket" ), asset.Key );
-                return CreateAssetFromGetObjectResponse( response, Client.Config.RegionEndpoint.SystemName );
+                GetObjectResponse response = client.GetObject( GetAttributeValue( assetStorageSystem, "Bucket" ), asset.Key );
+                return CreateAssetFromGetObjectResponse( response, client.Config.RegionEndpoint.SystemName );
                 
             }
             catch ( Exception ex )
@@ -301,14 +333,14 @@ namespace Rock.Storage.AssetStorage
 
             try
             {
-                AmazonS3Client Client = GetAmazonS3Client( assetStorageSystem );
+                AmazonS3Client client = GetAmazonS3Client( assetStorageSystem );
 
                 PutObjectRequest request = new PutObjectRequest();
                 request.BucketName = GetAttributeValue( assetStorageSystem, "Bucket" );
                 request.Key = asset.Key;
                 request.InputStream = asset.AssetStream;
 
-                PutObjectResponse response = Client.PutObject( request );
+                PutObjectResponse response = client.PutObject( request );
                 if ( response.HttpStatusCode == System.Net.HttpStatusCode.OK )
                 {
                     return true;
@@ -337,13 +369,13 @@ namespace Rock.Storage.AssetStorage
 
             try
             {
-                AmazonS3Client Client = GetAmazonS3Client( assetStorageSystem );
+                AmazonS3Client client = GetAmazonS3Client( assetStorageSystem );
 
                 PutObjectRequest request = new PutObjectRequest();
                 request.BucketName = GetAttributeValue( assetStorageSystem, "Bucket" );
                 request.Key = asset.Key;
 
-                PutObjectResponse response = Client.PutObject( request );
+                PutObjectResponse response = client.PutObject( request );
                 if ( response.HttpStatusCode == System.Net.HttpStatusCode.OK )
                 {
                     return true;
@@ -418,14 +450,14 @@ namespace Rock.Storage.AssetStorage
             string bucket = GetAttributeValue( assetStorageSystem, "Bucket" );
             try
             {
-                AmazonS3Client Client = GetAmazonS3Client( assetStorageSystem );
+                AmazonS3Client client = GetAmazonS3Client( assetStorageSystem );
 
                 CopyObjectRequest copyRequest = new CopyObjectRequest();
                 copyRequest.SourceBucket = bucket;
                 copyRequest.DestinationBucket = bucket;
                 copyRequest.SourceKey = asset.Key;
                 copyRequest.DestinationKey = GetPathFromKey( asset.Key ) + newName;
-                CopyObjectResponse copyResponse = Client.CopyObject( copyRequest );
+                CopyObjectResponse copyResponse = client.CopyObject( copyRequest );
                 if ( copyResponse.HttpStatusCode != System.Net.HttpStatusCode.OK )
                 {
                     return false;
@@ -448,6 +480,7 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Creates the download link.
         /// </summary>
+        /// <param name="assetStorageSystem"></param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
         public override string CreateDownloadLink( AssetStorageSystem assetStorageSystem, Asset asset )
@@ -457,7 +490,7 @@ namespace Rock.Storage.AssetStorage
 
             try
             {
-                AmazonS3Client Client = GetAmazonS3Client( assetStorageSystem );
+                AmazonS3Client client = GetAmazonS3Client( assetStorageSystem );
 
                 GetPreSignedUrlRequest request = new GetPreSignedUrlRequest
                 {
@@ -466,7 +499,7 @@ namespace Rock.Storage.AssetStorage
                     Expires = DateTime.Now.AddMinutes( GetAttributeValue( assetStorageSystem, "Expiration" ).AsDouble() )
                 };
 
-                return Client.GetPreSignedURL( request );
+                return client.GetPreSignedURL( request );
             }
             catch( Exception ex )
             {
@@ -481,6 +514,7 @@ namespace Rock.Storage.AssetStorage
         /// will not have the ModifiedDate prop filled in as Amazon doesn't provide it in
         /// this context.
         /// </summary>
+        /// <param name="assetStorageSystem">The asset storage system.</param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
         public override List<Asset> ListObjectsInFolder( AssetStorageSystem assetStorageSystem, Asset asset )
@@ -492,7 +526,7 @@ namespace Rock.Storage.AssetStorage
             
             try
             {
-                AmazonS3Client Client = GetAmazonS3Client( assetStorageSystem );
+                AmazonS3Client client = GetAmazonS3Client( assetStorageSystem );
                 
                 ListObjectsV2Request request = new ListObjectsV2Request();
                 request.BucketName = bucketName;
@@ -507,7 +541,7 @@ namespace Rock.Storage.AssetStorage
                 // S3 will only return 1,000 keys per response and sets IsTruncated = true, the do-while loop will run and fetch keys until IsTruncated = false.
                 do
                 {
-                    response = Client.ListObjectsV2( request );
+                    response = client.ListObjectsV2( request );
                     foreach ( S3Object s3Object in response.S3Objects )
                     {
                         if ( s3Object.Key == null )
@@ -515,7 +549,7 @@ namespace Rock.Storage.AssetStorage
                             continue;
                         }
 
-                        var responseAsset = CreateAssetFromS3Object( s3Object, Client.Config.RegionEndpoint.SystemName );
+                        var responseAsset = CreateAssetFromS3Object( s3Object, client.Config.RegionEndpoint.SystemName );
                         assets.Add( responseAsset );
                     }
 
@@ -536,7 +570,7 @@ namespace Rock.Storage.AssetStorage
                 // Add the subfolders to the asset collection
                 foreach ( string subFolder in subFolders )
                 {
-                    var subFolderAsset = CreateAssetFromCommonPrefix( subFolder, Client.Config.RegionEndpoint.SystemName, bucketName );
+                    var subFolderAsset = CreateAssetFromCommonPrefix( subFolder, client.Config.RegionEndpoint.SystemName, bucketName );
                     assets.Add( subFolderAsset );
                 }
 

@@ -95,8 +95,10 @@ namespace Rock.Reporting
         /// <summary>
         /// Finds from field selection in a way that is backwards compatible with filters saved using pre-v1.7 and pre-v1.1 versions of Rock
         /// </summary>
-        /// <param name="entityFields">The entity fields.</param>
-        /// <param name="filterFieldSelection">The filter field selection.</param>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="fieldSelection">The field selection.</param>
+        /// <param name="includeOnlyReportingFields">if set to <c>true</c> [include only reporting fields].</param>
+        /// <param name="limitToFilterableFields">if set to <c>true</c> [limit to filterable fields].</param>
         /// <returns></returns>
         public static EntityField FindFromFilterSelection( Type entityType, string fieldSelection, bool includeOnlyReportingFields = true, bool limitToFilterableFields = true )
         {

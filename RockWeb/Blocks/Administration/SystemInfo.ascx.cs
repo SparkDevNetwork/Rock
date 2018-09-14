@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Administration
         // method from Rick Strahl http://weblog.west-wind.com/posts/2006/Oct/08/Recycling-an-ASPNET-Application-from-within
         private bool RestartWebApplication()
         {
-            bool Error = false;
+            bool error = false;
             try
             {
                 // *** This requires full trust so this will fail
@@ -388,18 +388,18 @@ namespace RockWeb.Blocks.Administration
             }
             catch
             {
-                Error = true;
+                error = true;
             }
 
-            if ( !Error )
+            if ( !error )
                 return true;
 
             // *** Couldn't unload with Runtime - let's try modifying web.config
-            string ConfigPath = HttpContext.Current.Request.PhysicalApplicationPath + "\\web.config";
+            string configPath = HttpContext.Current.Request.PhysicalApplicationPath + "\\web.config";
 
             try
             {
-                File.SetLastWriteTimeUtc( ConfigPath, DateTime.UtcNow );
+                File.SetLastWriteTimeUtc( configPath, DateTime.UtcNow );
             }
             catch
             {
