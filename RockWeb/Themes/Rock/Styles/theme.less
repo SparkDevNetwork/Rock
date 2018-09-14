@@ -1455,15 +1455,18 @@ body.navbar-side-open {
 }
 
 .note-editor.note-frame {
-  margin-bottom: 0;
+  margin: 0;
   border: 0;
+  .box-shadow(none);
+  &:focus-within {
+    box-shadow: @input-focus-box-shadow;
+  }
 }
 
 .note-editor .note-toolbar {
   padding: 0;
-  margin: 0;
-  border: 0;
-  border-top: 1px solid #eaeaea !important;
+  border: 1px solid @input-border;
+  border-bottom: 0;
 }
 
 .note-btn {
@@ -1494,7 +1497,8 @@ body.navbar-side-open {
 }
 
 .note-editor .note-editable {
-  border: 1px solid #eaeaea;
+  border: 1px solid @input-border;
+  border-radius: 0;
 }
 
 .picker-menu {

@@ -394,6 +394,7 @@
     <Compile Include="Field\ICachedEntitiesFieldType.cs" />
     <Compile Include="Jobs\NoRetryAggregateException.cs" />
     <Compile Include="Jobs\NoRetryException.cs" />
+    <Compile Include="Jobs\PostV84DataMigrations.cs" />
     <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
     <Compile Include="Plugin\HotFixes\056_MigrationRollupsForV8_4.cs" />
     <Compile Include="Plugin\HotFixes\055_MigrationRollupsForV8_3.cs" />
