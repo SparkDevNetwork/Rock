@@ -64,6 +64,11 @@ namespace Rock.SystemGuid
         public const string CONTENT_CHANNEL_ITEM_VIEW = "63659EBE-C5AF-4157-804A-55C7D565110E";
 
         /// <summary>
+        /// Content Channel Navigation Block Type Guid
+        /// </summary>
+        public const string CONTENT_CHANNEL_NAVIGATION = "0E023AE3-BF08-48E0-93F8-08C32EB5CAFA";
+
+        /// <summary>
         /// Content Component Block Type Guid
         /// </summary>
         public const string CONTENT_COMPONENT = "AD802CA1-842C-47F0-B5E9-739FE2B4A2BD";
