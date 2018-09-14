@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Cms
     /// <summary>
     /// Block to display a specific content channel item.
     /// </summary>
-    [DisplayName( "Content Channel View Detail" )]
+    [DisplayName( "Content Channel Item View" )]
     [Category( "CMS" )]
     [Description( "Block to display a specific content channel item." )]
 
@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Cms
     [TextField( "Twitter Description Attribute", required: false, category: "CustomSetting" )]
     [TextField( "Twitter Image Attribute", required: false, category: "CustomSetting" )]
     [TextField( "Twitter Card", required: false, defaultValue: "none", category: "CustomSetting" )]
-    public partial class ContentChannelViewDetail : RockBlockCustomSettings
+    public partial class ContentChannelItemView : RockBlockCustomSettings
     {
         #region Block Property Constants
         private const string CONTENT_CHANNEL_QUERY_PARAMETER_DESCRIPTION = @"
