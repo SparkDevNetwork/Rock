@@ -55,15 +55,62 @@ namespace Rock.Jobs
             // get the configured timeout, or default to 60 minutes if it is blank
             _commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;
 
-            UpdateBulkUpdateSecurity();
+            List<Exception> exceptions = new List<Exception>();
 
-            UpdateInteractionSummaryForPageViews();
-            UpdateSlugForContentChannelItems();
-            CreateIndexInteractionPersonAliasSession();
+            try
+            {
+                UpdateBulkUpdateSecurity();
+            }
+            catch ( Exception ex )
+            {
+                exceptions.Add( new Exception( "Exception running UpdateBulkUpdateSecurity", ex ) );
+            }
+
+            try
+            {
+                UpdateInteractionSummaryForPageViews();
+            }
+            catch ( Exception ex )
+            {
+                exceptions.Add( new Exception( "Exception running UpdateInteractionSummaryForPageViews", ex ) );
+            }
+
+            try
+            {
+                UpdateSlugForContentChannelItems();
+            }
+            catch ( Exception ex )
+            {
+                exceptions.Add( new Exception( "Exception running UpdateSlugForContentChannelItems", ex ) );
+            }
+
+            try
+            {
+                CreateIndexInteractionPersonAliasSession();
+            }
+            catch ( Exception ex )
+            {
+                exceptions.Add( new Exception( "Exception running CreateIndexInteractionPersonAliasSession", ex ) );
+            }
 
             // Keep these two last.
-            CreateIndexInteractionsForeignKey();
-            DeleteJob( context.GetJobId() );
+            try
+            {
+                CreateIndexInteractionsForeignKey();
+            }
+            catch ( Exception ex )
+            {
+                exceptions.Add( new Exception( "Exception running CreateIndexInteractionsForeignKey", ex ) );
+            }
+
+            if ( !exceptions.Any() )
+            {
+                DeleteJob( context.GetJobId() );
+            }
+            else
+            {
+                throw new AggregateException( exceptions.ToArray() );
+            }
         }
 
         /// <summary>
@@ -95,12 +142,12 @@ namespace Rock.Jobs
             {
                 rockContext.Database.CommandTimeout = _commandTimeout;
                 rockContext.Database.ExecuteSqlCommand( @"
-    IF EXISTS ( SELECT * FROM sys.indexes WHERE NAME = 'IX_PersonAliasId_InteractionSessionId' AND object_id = OBJECT_ID('Interaction') )
-	DROP INDEX [IX_PersonAliasId_InteractionSessionId] ON [dbo].[Interaction]
-
-    CREATE NONCLUSTERED INDEX [IX_PersonAliasId_InteractionSessionId]
-    ON [dbo].[Interaction] ([PersonAliasId],[InteractionSessionId])
-    INCLUDE ([InteractionDateTime],[InteractionComponentId])
+    IF NOT EXISTS ( SELECT * FROM sys.indexes WHERE NAME = 'IX_PersonAliasId_InteractionSessionId' AND object_id = OBJECT_ID('Interaction') )
+    BEGIN
+        CREATE NONCLUSTERED INDEX [IX_PersonAliasId_InteractionSessionId]
+        ON [dbo].[Interaction] ([PersonAliasId],[InteractionSessionId])
+        INCLUDE ([InteractionDateTime],[InteractionComponentId])
+    END
 " );
             };
         }
@@ -179,7 +226,7 @@ END
                     {
                         if ( rule.GroupId.HasValue )
                         {
-                            if ( !groupIdAuthRules.Contains(rule.GroupId.Value ) )
+                            if ( !groupIdAuthRules.Contains( rule.GroupId.Value ) )
                             {
                                 groupIdAuthRules.Add( rule.GroupId.Value );
                                 authRulesToAdd.Add( rule );
@@ -255,7 +302,8 @@ END
                     SET [Interaction].[InteractionSummary] = [InteractionComponent].[Name]
                     FROM [Interaction]
                     INNER JOIN [InteractionComponent] ON [Interaction].[InteractionComponentId] = [InteractionComponent].[Id]
-                    WHERE [InteractionComponent].[ChannelId] IN (SELECT [Id] FROM [InteractionChannel] WHERE [ChannelTypeMediumValueId] = @ChannelMediumValueId)";
+                    WHERE [InteractionComponent].[ChannelId] IN (SELECT [Id] FROM [InteractionChannel] WHERE [ChannelTypeMediumValueId] = @ChannelMediumValueId)
+                    AND [Interaction].[InteractionSummary] != [InteractionComponent].[Name]";
 
                 rockContext.Database.ExecuteSqlCommand( sqlQuery );
             }
