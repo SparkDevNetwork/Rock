@@ -94,6 +94,10 @@
     <Compile Include="Migrations\201809122127196_Rollup_0912.Designer.cs">
       <DependentUpon>201809122127196_Rollup_0912.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201809142151587_ContentComponents.cs" />
+    <Compile Include="Migrations\201809142151587_ContentComponents.Designer.cs">
+      <DependentUpon>201809142151587_ContentComponents.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -401,6 +405,9 @@
     <EmbeddedResource Include="Migrations\201809122127196_Rollup_0912.resx">
       <DependentUpon>201809122127196_Rollup_0912.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809142151587_ContentComponents.resx">
+      <DependentUpon>201809142151587_ContentComponents.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
     </EmbeddedResource>
@@ -637,6 +644,9 @@
     <Content Include="Migrations\201808062254493_Rollup_0806_ufnCrm_GetFamilyTitleIncludeInactive.sql">
       <DependentUpon>201808062254493_Rollup_0806.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\201809142151587_ContentComponents_CreateContentComponentChannelType.sql">
+      <DependentUpon>201809142151587_ContentComponents.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.sql">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
     </Content>
@@ -653,6 +663,18 @@
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
+    <None Include="Migrations\201809142151587_ContentComponents_AdUnit.Lava">
+      <DependentUpon>201809142151587_ContentComponents.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\201809142151587_ContentComponents_Card.Lava">
+      <DependentUpon>201809142151587_ContentComponents.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\201809142151587_ContentComponents_Hero.Lava">
+      <DependentUpon>201809142151587_ContentComponents.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\201809142151587_ContentComponents_SideBySide.Lava">
+      <DependentUpon>201809142151587_ContentComponents.cs</DependentUpon>
+    </None>
     <None Include="Migrations\CreateDatabase\201707311527250_LastName.gz">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </None>
