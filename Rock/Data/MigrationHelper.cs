@@ -244,7 +244,7 @@ namespace Rock.Data
         #region Block Type Methods
 
         /// <summary>
-        /// Updates the BlockType by path (if it exists);
+        /// Updates the BlockType by Path (if it exists).
         /// otherwise it inserts a new record. In either case it will be marked IsSystem.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -287,6 +287,46 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Updates the BlockType by Guid (if it exists).
+        /// otherwise it inserts a new record. In either case it will be marked IsSystem.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="path">The path.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void UpdateBlockTypeByGuid( string name, string description, string path, string category, string guid )
+        {
+            Migration.Sql( $@"
+                -- delete just in case Rock added it automatically before it was migrated
+                DELETE FROM [BlockType] 
+	            WHERE [Path] = '{1}' AND [Guid] != '{guid}';
+
+                -- look up existing block by guid and insert/update as needed
+                DECLARE @Id int
+                SET @Id = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '{guid}')
+                IF @Id IS NULL
+                BEGIN
+                    INSERT INTO [BlockType] (
+                        [IsSystem],[Path],[Category],[Name],[Description],
+                        [Guid])
+                    VALUES(
+                        1,'{path}','{category}','{name}','{description}',
+                        '{guid}')
+                END
+                ELSE
+                BEGIN
+                    UPDATE [BlockType] SET
+                        [IsSystem] = 1,
+                        [Category] = '{category}',
+                        [Name] = '{name}',
+                        [Description] = '{description}',
+                        [Path] = '{path}'
+                    WHERE [Guid] = '{guid}'
+                END");
+        }
+
+        /// <summary>
         /// Adds a new BlockType.
         /// </summary>
         /// <param name="name"></param>
@@ -323,7 +363,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Renames the type of the block.
+        /// Updates the Path of a BlockType
         /// </summary>
         /// <param name="oldPath">The old path.</param>
         /// <param name="newPath">The new path.</param>
