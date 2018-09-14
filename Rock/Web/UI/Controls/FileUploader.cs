@@ -254,6 +254,9 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
 
+        /// <summary>
+        /// Gets or sets the text displayed when the mouse pointer hovers over the Web server control.
+        /// </summary>
         public override string ToolTip
         {
             get

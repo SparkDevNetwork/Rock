@@ -46,9 +46,9 @@ namespace Rock.Plugin.HotFixes
         }
 
 
-        /// <summary>
-        /// ED: Add DetailPage block attribute to ContentChannelViewDetail and correct example
-        /// </summary>
+//        /// <summary>
+//        /// ED: Add DetailPage block attribute to ContentChannelViewDetail and correct example
+//        /// </summary>
 //        private void CorrectContentChannelSeries()
 //        {
 //            string oldValue = @"<style>

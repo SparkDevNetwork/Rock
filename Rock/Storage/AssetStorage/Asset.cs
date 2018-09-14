@@ -25,8 +25,17 @@ using Newtonsoft.Json;
 
 namespace Rock.Storage.AssetStorage
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class Asset
     {
+        /// <summary>
+        /// Gets or sets the asset storage system identifier.
+        /// </summary>
+        /// <value>
+        /// The asset storage system identifier.
+        /// </value>
         [JsonProperty( "AssetStorageSystemId" )]
         public int AssetStorageSystemId { get; set; }
 
@@ -79,6 +88,12 @@ namespace Rock.Storage.AssetStorage
         /// </value>
         public long FileSize { get; set; }
 
+        /// <summary>
+        /// Gets the size of the formatted file.
+        /// </summary>
+        /// <value>
+        /// The size of the formatted file.
+        /// </value>
         public string FormattedFileSize
         {
             get
@@ -112,9 +127,19 @@ namespace Rock.Storage.AssetStorage
         public Stream AssetStream { get; set; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public enum AssetType
     {
+        /// <summary>
+        /// file
+        /// </summary>
         File,
+
+        /// <summary>
+        /// folder
+        /// </summary>
         Folder
     }
 }
