@@ -36,22 +36,22 @@ using System.Data.Entity;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// Block to display the content channels/items that user is authorized to view.
+    /// Block a menu of content channels/items that user is authorized to view.
     /// </summary>
-    [DisplayName( "Content Channel Items View" )]
+    [DisplayName( "Content Channel Navigation" )]
     [Category( "CMS" )]
-    [Description( "Block to display the content channels/items that user is authorized to view." )]
+    [Description( "Block to display a menu of content channels/items that user is authorized to view." )]
 
     [LinkedPage( "Detail Page", "Page used to view a content item.", order: 1 )]
 
     [ContentChannelTypesField( "Content Channel Types Include", "Select any specific content channel types to show in this block. Leave all unchecked to show all content channel types ( except for excluded content channel types )", false, key: "ContentChannelTypesInclude", order: 2 )]
     [ContentChannelTypesField( "Content Channel Types Exclude", "Select content channel types to exclude from this block. Note that this setting is only effective if 'Content Channel Types Include' has no specific content channel types selected.", false, key: "ContentChannelTypesExclude", order: 3 )]
-    public partial class ContentChannelItemView : Rock.Web.UI.RockBlock
+    public partial class ContentChannelNavigation : Rock.Web.UI.RockBlock
     {
         #region Fields
 
-        private const string STATUS_FILTER_SETTING = "ContentChannelItemView_StatusFilter";
-        private const string SELECTED_CHANNEL_SETTING = "ContentChannelItemView_SelectedChannelId";
+        private const string STATUS_FILTER_SETTING = "ContentChannelNavigation_StatusFilter";
+        private const string SELECTED_CHANNEL_SETTING = "ContentChannelNavigation_SelectedChannelId";
 
         #endregion
 
