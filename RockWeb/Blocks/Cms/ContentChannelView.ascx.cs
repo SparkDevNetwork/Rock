@@ -416,6 +416,7 @@ $(document).ready(function() {
             var rockContext = new RockContext();
             ddlChannel.DataSource = new ContentChannelService( rockContext ).Queryable()
                 .OrderBy( c => c.Name )
+                .Where(a => a.ContentChannelType.ShowInChannelList == true)
                 .Select( c => new { c.Guid, c.Name } )
                 .ToList();
             ddlChannel.DataBind();
