@@ -51,10 +51,6 @@ namespace Rock.Migrations
             RockMigrationHelper.AddDefinedValue( Rock.SystemGuid.DefinedType.CONTENT_COMPONENT_TEMPLATE, "Card", "", "54A6FE8C-B38F-46DB-81F7-A7648886B592" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "54A6FE8C-B38F-46DB-81F7-A7648886B592", "FF5C0A7E-F3CD-46F0-934D-7C73B7CC35EE", MigrationSQL._201809142151587_ContentComponents_Card );
 
-            /* Set Content Component and Content Channel Item View as 'Common' block types */
-            Sql( $"UPDATE [BlockType] SET [IsCommon] = 1 WHERE [Guid] in ('{Rock.SystemGuid.BlockType.CONTENT_COMPONENT}','{Rock.SystemGuid.BlockType.CONTENT_CHANNEL_ITEM_VIEW}')" );
-
-
             /* Add Content Component Templates page to CMS Config page*/
             RockMigrationHelper.AddPage( true, "B4A24AB7-9369-4055-883F-4F4892C39AE3", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Content Component Templates", "", "F1ED10C2-A17D-4310-9F86-76E11A4A7ED2", "fa fa-list-alt" ); // Site:Rock RMS
             // Add Block to Page: Content Component Templates, Site: Rock RMS
@@ -83,6 +79,8 @@ namespace Rock.Migrations
             // Attrib for BlockType: Content Component:Output Cache Duration
             RockMigrationHelper.UpdateBlockTypeAttribute( "AD802CA1-842C-47F0-B5E9-739FE2B4A2BD", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Output Cache Duration", "OutputCacheDuration", "", @"Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.", 0, @"", "1344878E-D977-489F-BE0D-5AA761521145" );
 
+            /* Set Content Component and Content Channel Item View as 'Common' block types */
+            Sql( $"UPDATE [BlockType] SET [IsCommon] = 1 WHERE [Guid] in ('AD802CA1-842C-47F0-B5E9-739FE2B4A2BD{Rock.SystemGuid.BlockType.CONTENT_COMPONENT}','{Rock.SystemGuid.BlockType.CONTENT_CHANNEL_ITEM_VIEW}')" );
 
             /* Do a Switch-a-roo to get a couple of CMS blocks renamed to Content Channel Item View and Content Channel Navigation blocks so they make more sense */
 
