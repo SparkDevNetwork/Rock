@@ -118,7 +118,7 @@ namespace Rock.Field.Types
             {
                 foreach ( Guid guid in value.SplitDelimitedValues().AsGuidList() )
                 {
-                    var entityType = EntityTypeCache.Read( guid );
+                    var entityType = EntityTypeCache.Get( guid );
                     if ( entityType != null )
                     {
                         names.Add( entityType.FriendlyName );

@@ -34,7 +34,7 @@ WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 999 )]
     public abstract class PbxComponent : Component
     {
         /// <summary>
-        /// Gets a value indicating whether [supports origination].
+        /// Gets a value indicating whether the PBX supports originating calls.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [supports origination]; otherwise, <c>false</c>.
@@ -42,7 +42,7 @@ WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 999 )]
         public abstract bool SupportsOrigination { get; }
 
         /// <summary>
-        /// Originates the specified from phone.
+        /// Originates a call from the specified phone.
         /// </summary>
         /// <param name="fromPhone">From phone.</param>
         /// <param name="toPhone">To phone.</param>
@@ -52,7 +52,7 @@ WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 999 )]
         public abstract bool Originate( string fromPhone, string toPhone, string callerId, out string message );
 
         /// <summary>
-        /// Originates the specified from person.
+        /// Originates a call from the specified person.
         /// </summary>
         /// <param name="fromPerson">From person.</param>
         /// <param name="toPhone">To phone.</param>
@@ -62,11 +62,12 @@ WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 999 )]
         public abstract bool Originate( Person fromPerson, string toPhone, string callerId, out string message );
 
         /// <summary>
-        /// Downloads the CDR.
+        /// Downloads CDR Information
         /// </summary>
         /// <param name="downloadSuccessful">if set to <c>true</c> [download successful].</param>
         /// <param name="startDate">The start date.</param>
         /// <returns></returns>
         public abstract string DownloadCdr( out bool downloadSuccessful, DateTime? startDate = null );
     }
+
 }

@@ -29,20 +29,22 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.UpdateFieldType( "Label", "Labels that can be printed during check-in", "Rock", "Rock.Field.Types.LabelFieldType", Rock.SystemGuid.FieldType.LABEL );
+            // Moved to core migration: 201712201338096_V8Features
 
-            Sql( $@"
-    DECLARE @BinaryFileFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Guid] = '{Rock.SystemGuid.FieldType.BINARY_FILE}' )
-    DECLARE @LabelFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Guid] = '{Rock.SystemGuid.FieldType.LABEL}' )
-    
-    UPDATE A SET [FieldTypeId] = @LabelFieldTypeId
-    FROM [Attribute] A 
-	INNER JOIN [AttributeQualifier] Q 
-		ON Q.[AttributeId] = A.[Id]
-		AND Q.[Key] = 'binaryFileType'
-		AND Q.[Value] = '{Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL}'
-	WHERE A.[FieldTypeId] = @BinaryFileFieldTypeId
-" );
+            //            RockMigrationHelper.UpdateFieldType( "Label", "Labels that can be printed during check-in", "Rock", "Rock.Field.Types.LabelFieldType", Rock.SystemGuid.FieldType.LABEL );
+
+            //            Sql( $@"
+            //    DECLARE @BinaryFileFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Guid] = '{Rock.SystemGuid.FieldType.BINARY_FILE}' )
+            //    DECLARE @LabelFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Guid] = '{Rock.SystemGuid.FieldType.LABEL}' )
+
+            //    UPDATE A SET [FieldTypeId] = @LabelFieldTypeId
+            //    FROM [Attribute] A 
+            //	INNER JOIN [AttributeQualifier] Q 
+            //		ON Q.[AttributeId] = A.[Id]
+            //		AND Q.[Key] = 'binaryFileType'
+            //		AND Q.[Value] = '{Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL}'
+            //	WHERE A.[FieldTypeId] = @BinaryFileFieldTypeId
+            //" );
         }
 
         /// <summary>

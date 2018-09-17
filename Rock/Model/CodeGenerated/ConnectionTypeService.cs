@@ -101,6 +101,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
+            target.IsActive = source.IsActive;
             target.Name = source.Name;
             target.OwnerPersonAliasId = source.OwnerPersonAliasId;
             target.RequiresPlacementGroupToConnect = source.RequiresPlacementGroupToConnect;

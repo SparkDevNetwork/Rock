@@ -21,11 +21,10 @@ using System.Linq;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Text.RegularExpressions;
-
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
-using Rock.Web.Cache;
 
 namespace Rock.Communication.Transport
 {
@@ -145,9 +144,9 @@ namespace Rock.Communication.Transport
                 // Resolve any possible merge fields in the from address
                 fromAddress = fromAddress.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
                 fromName = fromName.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
-                
+
                 // From - if none is set, use the one in the Organization's GlobalAttributes.
-                var globalAttributes = GlobalAttributesCache.Read();
+                var globalAttributes = GlobalAttributesCache.Get();
                 if ( string.IsNullOrWhiteSpace( fromAddress ) )
                 {
                     fromAddress = globalAttributes.GetValue( "OrganizationEmail" );
@@ -160,7 +159,7 @@ namespace Rock.Communication.Transport
 
                 if ( fromAddress.IsNullOrWhiteSpace() )
                 {
-                    errorMessages.Add( "A From address was not provided and no Orgnaization email address is configured." );
+                    errorMessages.Add( "A From address was not provided and no Organization email address is configured." );
                     return false;
                 }
                 
@@ -169,7 +168,7 @@ namespace Rock.Communication.Transport
                 // Reply To
                 try
                 {
-                    if ( emailMessage.ReplyToEmail.IsNotNullOrWhitespace() )
+                    if ( emailMessage.ReplyToEmail.IsNotNullOrWhiteSpace() )
                     {
                         // Resolve any possible merge fields in the replyTo address
                         message.ReplyToList.Add( new MailAddress( emailMessage.ReplyToEmail.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ) ) );
@@ -231,7 +230,7 @@ namespace Rock.Communication.Transport
 
                             var metaData = new Dictionary<string, string>( emailMessage.MessageMetaData );
 
-                            // If a communicatoin is going to get created, create a guid for tracking the opens/clicks
+                            // If a communication is going to get created, create a guid for tracking the opens/clicks
                             Guid? recipientGuid = null;
                             if ( emailMessage.CreateCommunicationRecord )
                             {
@@ -323,7 +322,7 @@ namespace Rock.Communication.Transport
                 }
 
                 var currentPerson = communication.CreatedByPersonAlias?.Person;
-                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                var globalAttributes = GlobalAttributesCache.Get();
                 string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
                 var cssInliningEnabled = communication.CommunicationTemplate?.CssInliningEnabled ?? false;
@@ -365,9 +364,9 @@ namespace Rock.Communication.Transport
 
                 using ( var smtpClient = GetSmtpClient() )
                 {
-                    var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-                    var communicationEntityTypeId = EntityTypeCache.Read( "Rock.Model.Communication" ).Id;
-                    var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), communicationRockContext ).Id;
+                    var personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
+                    var communicationEntityTypeId = EntityTypeCache.Get( "Rock.Model.Communication" ).Id;
+                    var communicationCategoryGuid = Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid();
 
                     bool recipientFound = true;
                     while ( recipientFound )
@@ -498,18 +497,15 @@ namespace Rock.Communication.Transport
 
                                     try
                                     {
-                                        var historyService = new HistoryService( recipientRockContext );
-                                        historyService.Add( new History
-                                        {
-                                            CreatedByPersonAliasId = communication.SenderPersonAliasId,
-                                            EntityTypeId = personEntityTypeId,
-                                            CategoryId = communicationCategoryId,
-                                            EntityId = recipient.PersonAlias.PersonId,
-                                            Summary = string.Format( "Sent communication from <span class='field-value'>{0}</span>.", message.From.DisplayName ),
-                                            Caption = message.Subject,
-                                            RelatedEntityTypeId = communicationEntityTypeId,
-                                            RelatedEntityId = communication.Id
-                                        } );
+                                        var historyChangeList = new History.HistoryChangeList();
+                                        historyChangeList.AddChange(
+                                            History.HistoryVerb.Sent,
+                                            History.HistoryChangeType.Record,
+                                            $"Communication" )
+                                            .SetRelatedData( message.From.DisplayName, communicationEntityTypeId, communication.Id )
+                                            .SetCaption( message.Subject );
+
+                                        HistoryService.SaveChanges( recipientRockContext, typeof( Rock.Model.Person ), communicationCategoryGuid, recipient.PersonAlias.PersonId, historyChangeList, false, communication.SenderPersonAliasId );
                                     }
                                     catch ( Exception ex )
                                     {
@@ -627,7 +623,7 @@ namespace Rock.Communication.Transport
                 string fromName = message.From.DisplayName;
 
                 // Get the safe sender domains
-                var safeDomainValues = DefinedTypeCache.Read( SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues;
+                var safeDomainValues = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues;
                 var safeDomains = safeDomainValues.Select( v => v.Value ).ToList();
 
                 // Check to make sure the From email domain is a safe sender

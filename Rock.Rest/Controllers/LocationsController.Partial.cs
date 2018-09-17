@@ -69,7 +69,7 @@ namespace Rock.Rest.Controllers
         public Location Get( string street, string city, string state, string postalCode )
         {
             string street2 = string.Empty;
-            string country = GlobalAttributesCache.Read().OrganizationCountry;
+            string country = GlobalAttributesCache.Get().OrganizationCountry;
 
             // Get a new location record for the address
             var location = ( (LocationService)Service ).Get( street, street2, city, state, postalCode, country );

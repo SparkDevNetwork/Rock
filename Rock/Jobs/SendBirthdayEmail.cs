@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Quartz;
 using Rock.Attribute;
 using Rock.Communication;
@@ -101,7 +102,7 @@ namespace Rock.Jobs
             }
 
             // only include people that have an email address and want an email
-            personQry = personQry.Where( a => ( a.Email != null ) && ( a.Email != "" ) && ( a.EmailPreference == EmailPreference.EmailAllowed ) );
+            personQry = personQry.Where( a => ( a.Email != null ) && ( a.Email != string.Empty ) && ( a.EmailPreference != EmailPreference.DoNotEmail ) && (a.IsEmailActive) );
 
             var recipients = new List<RecipientData>();
 
@@ -116,9 +117,24 @@ namespace Rock.Jobs
 
             var emailMessage = new RockEmailMessage( systemEmail.Guid );
             emailMessage.SetRecipients( recipients );
-            emailMessage.Send();
+            var errors = new List<string>();
 
+            emailMessage.Send(out errors);
             context.Result = string.Format( "{0} birthday emails sent", recipients.Count() );
+
+            if (errors.Any())
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine();
+                sb.Append( string.Format( "{0} Errors: ", errors.Count() ) );
+                errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
+                string errorMessage = sb.ToString();
+                context.Result += errorMessage;
+                var exception = new Exception( errorMessage);
+                HttpContext context2 = HttpContext.Current;
+                ExceptionLogService.LogException( exception, context2 );
+                throw exception;
+            }
         }
     }
 }

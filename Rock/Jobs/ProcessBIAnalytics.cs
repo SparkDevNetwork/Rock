@@ -170,7 +170,7 @@ namespace Rock.Jobs
             // "Refresh Power BI Account Tokens"
             if ( dataMap.GetString( "RefreshPowerBIAccountTokens" ).AsBoolean() )
             {
-                var powerBiAccountsDefinedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() );
+                var powerBiAccountsDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() );
                 if ( powerBiAccountsDefinedType?.DefinedValues?.Any() == true )
                 {
                     foreach ( var powerBiAccount in powerBiAccountsDefinedType.DefinedValues )
@@ -440,7 +440,7 @@ UPDATE [{analyticsTableName}]
 
             List<AttributeCache> personAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Person ) )
                 .Where( a => a.FieldKind == FieldKind.Attribute && a.AttributeGuid.HasValue )
-                .Select( a => AttributeCache.Read( a.AttributeGuid.Value ) )
+                .Select( a => AttributeCache.Get( a.AttributeGuid.Value ) )
                 .Where( a => a != null )
                 .Where( a => a.IsAnalytic )
                 .ToList();
@@ -891,7 +891,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
 
             List<AttributeCache> familyAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Group ), false, false )
                 .Where( a => a.FieldKind == FieldKind.Attribute && a.AttributeGuid.HasValue )
-                .Select( a => AttributeCache.Read( a.AttributeGuid.Value ) )
+                .Select( a => AttributeCache.Get( a.AttributeGuid.Value ) )
                 .Where( a => a != null )
                 .Where( a => a.EntityTypeQualifierColumn == "GroupTypeId" && a.EntityTypeQualifierValue == groupTypeIdFamilyQualifier )
                 .Where( a => a.IsAnalytic )
@@ -1007,7 +1007,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
 
             List<AttributeCache> campusAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Campus ), false, false )
                 .Where( a => a.FieldKind == FieldKind.Attribute && a.AttributeGuid.HasValue )
-                .Select( a => AttributeCache.Read( a.AttributeGuid.Value ) )
+                .Select( a => AttributeCache.Get( a.AttributeGuid.Value ) )
                 .Where( a => a != null )
                 .Where( a => a.IsAnalytic )
                 .ToList();

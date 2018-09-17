@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -42,7 +43,7 @@ namespace Rock.Model
             PrayerRequest prayerRequest = new PrayerRequest();
             Type type = prayerRequest.GetType();
 
-            var prayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type );
+            var prayerRequestEntityTypeId = EntityTypeCache.GetId( type );
 
             // Get all PrayerRequest category Ids that are the **parent or child** of the given categoryIds.
             CategoryService categoryService = new CategoryService( (RockContext)Context );

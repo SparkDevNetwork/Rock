@@ -145,7 +145,7 @@ namespace Rock.Web.UI.Controls
 
         private void RenderHomePhone( HtmlTextWriter writer )
         {
-            var homePhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+            var homePhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Style, "width:20%" );
             writer.RenderBeginTag( HtmlTextWriterTag.Th );
@@ -155,7 +155,7 @@ namespace Rock.Web.UI.Controls
 
         private void RenderCellPhone( HtmlTextWriter writer )
         {
-            var cellPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+            var cellPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Style, "width:20%" );
             writer.RenderBeginTag( HtmlTextWriterTag.Th );

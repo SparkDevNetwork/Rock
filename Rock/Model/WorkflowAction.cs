@@ -120,11 +120,11 @@ namespace Rock.Model
             {
                 if ( ActionTypeId > 0 )
                 {
-                    return WorkflowActionTypeCache.Read( ActionTypeId );
+                    return WorkflowActionTypeCache.Get( ActionTypeId );
                 }
                 else if ( ActionType != null )
                 {
-                    return WorkflowActionTypeCache.Read( ActionType.Id );
+                    return WorkflowActionTypeCache.Get( ActionType.Id );
                 }
                 return null;
             }
@@ -294,7 +294,7 @@ namespace Rock.Model
         /// <returns></returns>
         public string GetWorklowAttributeValue( Guid guid, bool formatted = false, bool condensed = false )
         {
-            var attribute = AttributeCache.Read( guid );
+            var attribute = AttributeCache.Get( guid );
             if ( attribute != null && Activity != null )
             {
                 string value = string.Empty;
@@ -336,7 +336,7 @@ namespace Rock.Model
             if ( guid.HasValue )
             {
                 // Check to see if attribute exists with selected guid
-                var attribute = AttributeCache.Read( guid.Value );
+                var attribute = AttributeCache.Get( guid.Value );
 
                 // If so, check to see if the current workflow or activity contains that attribute
                 if ( attribute != null && Activity != null )
@@ -417,7 +417,7 @@ namespace Rock.Model
                 {
                     foreach ( var formAttribute in actionType.WorkflowForm.FormAttributes.OrderBy( a => a.Order ) )
                     {
-                        var attribute = AttributeCache.Read( formAttribute.AttributeId );
+                        var attribute = AttributeCache.Get( formAttribute.AttributeId );
                         if ( attribute != null && Activity != null )
                         {
                             string value = string.Empty;
@@ -513,7 +513,7 @@ namespace Rock.Model
         {
             if ( actionType != null )
             {
-                var actionTypeCache = WorkflowActionTypeCache.Read( actionType.Id );
+                var actionTypeCache = WorkflowActionTypeCache.Get( actionType.Id );
                 var action = Activate( actionTypeCache, activity, rockContext );
                 if ( action != null )
                 {

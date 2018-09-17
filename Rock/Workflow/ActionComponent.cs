@@ -141,17 +141,17 @@ namespace Rock.Workflow
                 Guid? attributeGuid = value.AsGuidOrNull();
                 if ( attributeGuid.HasValue )
                 {
-                    var attribute = AttributeCache.Read( attributeGuid.Value );
+                    var attribute = AttributeCache.Get( attributeGuid.Value );
                     if ( attribute != null )
                     {
                         value = action.GetWorklowAttributeValue( attributeGuid.Value );
                         if ( !string.IsNullOrWhiteSpace( value ) )
                         {
-                            if ( attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid() ).Id )
+                            if ( attribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid() ).Id )
                             {
                                 value = Security.Encryption.DecryptString( value );
                             }
-                            else if ( attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.SSN.AsGuid() ).Id )
+                            else if ( attribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.SSN.AsGuid() ).Id )
                             {
                                 value = Rock.Field.Types.SSNFieldType.UnencryptAndClean( value );
                             }
@@ -258,7 +258,7 @@ namespace Rock.Workflow
         /// <param name="value">The value.</param>
         protected AttributeCache SetWorkflowAttributeValue( WorkflowAction action, Guid guid, string value )
         {
-            var attr = AttributeCache.Read( guid );
+            var attr = AttributeCache.Get( guid );
             if ( attr != null )
             {
                 if ( attr.EntityTypeId == new Rock.Model.Workflow().TypeId )

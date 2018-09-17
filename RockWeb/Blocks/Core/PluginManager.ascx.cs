@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( nuGetService == null )
                 {
-                    var globalAttributesCache = GlobalAttributesCache.Read();
+                    var globalAttributesCache = GlobalAttributesCache.Get();
                     string packageSource = globalAttributesCache.GetValue( "UpdateServerUrl" );
                     string siteRoot = Request.MapPath( "~/" );
 

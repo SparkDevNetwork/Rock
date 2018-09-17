@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Prayer
         protected void gPrayerComments_Edit( object sender, RowEventArgs e )
         {
             // NOTE: DataKeys for Grid has two fields "id,entityId"
-            NavigateToLinkedPage( "DetailPage", "noteId", (int)e.RowKeyValues["id"], "prayerRequestId", (int)e.RowKeyValues["entityid"] );
+            NavigateToLinkedPage( "DetailPage", "noteId", (int)e.RowKeyValues["id"], "PrayerRequestId", (int)e.RowKeyValues["entityid"] );
         }
 
         /// <summary>
@@ -247,7 +247,7 @@ namespace RockWeb.Blocks.Prayer
                     }
                     else
                     {
-                        var category = Rock.Web.Cache.CategoryCache.Read( categoryId );
+                        var category = CategoryCache.Get( categoryId );
                         if ( category != null )
                         {
                             e.Value = category.Name;
@@ -281,7 +281,7 @@ namespace RockWeb.Blocks.Prayer
             var blockCategoryGuid = GetAttributeValue( "PrayerRequestCategory" ).AsGuidOrNull();
             if ( blockCategoryGuid.HasValue )
             {
-                categoryFilter = CategoryCache.Read( blockCategoryGuid.Value );
+                categoryFilter = CategoryCache.Get( blockCategoryGuid.Value );
             }
 
             if ( categoryFilter == null && catpPrayerCategoryFilter.Visible )
@@ -289,7 +289,7 @@ namespace RockWeb.Blocks.Prayer
                 int? filterCategoryId = catpPrayerCategoryFilter.SelectedValue.AsIntegerOrNull();
                 if ( filterCategoryId.HasValue )
                 {
-                    categoryFilter = CategoryCache.Read( filterCategoryId.Value );
+                    categoryFilter = CategoryCache.Get( filterCategoryId.Value );
                 }
             }
 
@@ -351,7 +351,7 @@ namespace RockWeb.Blocks.Prayer
             var blockCategoryGuid = GetAttributeValue( "PrayerRequestCategory" ).AsGuidOrNull();
             if ( blockCategoryGuid.HasValue )
             {
-                blockCategory = CategoryCache.Read( blockCategoryGuid.Value );
+                blockCategory = CategoryCache.Get( blockCategoryGuid.Value );
             }
 
             catpPrayerCategoryFilter.Visible = blockCategory == null;

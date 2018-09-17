@@ -5,7 +5,7 @@
 <!DOCTYPE html>
 
 <script runat="server">
-    
+
     /// <summary>
     /// An optional subtitle
     /// </summary>
@@ -29,7 +29,7 @@
     /// </summary>
     /// <value>
     /// The close message.
-    /// </value>    
+    /// </value>
     public override string CloseMessage
     {
         get
@@ -71,8 +71,8 @@
         {
             btnCancel.AddCssClass( "btn-primary" );
         }
-    }    
-    
+    }
+
 </script>
 
 <html class="no-js">
@@ -116,7 +116,7 @@
                     <div class="modal-body">
 
                         <!-- Ajax Error -->
-                        <div class="alert alert-danger ajax-error" style="display:none">
+                        <div class="alert alert-danger ajax-error no-index" style="display:none">
                             <p><strong>Error</strong></p>
                             <span class="ajax-error-message"></span>
                         </div>

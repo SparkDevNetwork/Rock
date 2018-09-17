@@ -29,14 +29,14 @@
 
                     <Rock:Grid ID="gCommunicationTemplates" runat="server" AllowSorting="true" TooltipField="Description" OnRowSelected="gCommunicationTemplates_RowSelected" OnRowDataBound="gCommunicationTemplates_RowDataBound" CssClass="js-grid-communicationtemplate-list">
                         <Columns>
-                            <Rock:RockBoundField DataField="Name" SortExpression="Subject" HeaderText="Name" />
+                            <Rock:RockBoundField DataField="Name" SortExpression="Name" HeaderText="Name" />
                             <Rock:RockBoundField DataField="Subject" SortExpression="Subject" HeaderText="Subject" />
                             <Rock:RockBoundField DataField="Category" HeaderText="Category" SortExpression="Category.Name" />
                             <Rock:RockLiteralField ID="lSupports" HeaderText="Supports" />
-                            <Rock:RockBoundField DataField="CreatedByPersonAlias.Person.FullName" SortExpression="CreatedByPersonAlias.Person.FullName" HeaderText="Created By" />
+                            <Rock:RockBoundField DataField="CreatedByPersonAlias.Person.FullName" SortExpression="CreatedByPersonAlias.Person.NickName, CreatedByPersonAlias.Person.LastName" HeaderText="Created By" />
                             <Rock:BoolField DataField="IsActive" SortExpression="IsActive" HeaderText="Active" />
                             <Rock:SecurityField TitleField="Name" />
-                            <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="gCommunicationTemplates_Copy" HeaderStyle-HorizontalAlign="Center" />
+                            <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="gCommunicationTemplates_Copy" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                             <Rock:DeleteField OnClick="gCommunicationTemplates_Delete" />
                         </Columns>
                     </Rock:Grid>

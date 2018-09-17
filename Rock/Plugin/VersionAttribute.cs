@@ -19,7 +19,7 @@ using System;
 namespace Rock.Plugin
 {
     /// <summary>
-    /// Attribute for defining the a plugin migrations' number.  Migrations are execued in sequential order based on migration number
+    /// Attribute for defining the a plugin migrations' number.  Migrations are executed in sequential order based on migration number
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = false )]
     public class MigrationNumberAttribute : System.Attribute

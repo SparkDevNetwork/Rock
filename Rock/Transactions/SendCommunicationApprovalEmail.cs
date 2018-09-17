@@ -77,10 +77,10 @@ namespace Rock.Transactions
 
                     if ( approvers.Any() )
                     {
-                        string fromName = Rock.Web.Cache.GlobalAttributesCache.Value("OrganizationName");
-                        string fromEmail = Rock.Web.Cache.GlobalAttributesCache.Value( "OrganizationEmail" );
+                        string fromName = GlobalAttributesCache.Value("OrganizationName");
+                        string fromEmail = GlobalAttributesCache.Value( "OrganizationEmail" );
                         string subject = "Pending Communication Requires Approval";
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
+                        var appRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
                         string communicationDetails = string.Empty;
                         string typeName = communication.CommunicationType.ConvertToString();
 
@@ -107,7 +107,7 @@ namespace Rock.Transactions
                         // create approval link if one was not provided
                         if ( string.IsNullOrEmpty( ApprovalPageUrl ) )
                         {
-                            var internalApplicationRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" ).EnsureTrailingForwardslash();
+                            var internalApplicationRoot = GlobalAttributesCache.Value( "InternalApplicationRoot" ).EnsureTrailingForwardslash();
                             ApprovalPageUrl = $"{internalApplicationRoot}Communication/{communication.Id}";
                         }
 

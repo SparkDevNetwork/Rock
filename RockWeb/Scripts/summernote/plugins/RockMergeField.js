@@ -5,6 +5,7 @@
     var button = ui.button({
         contents: '{ }',
         tooltip: 'Merge Field',
+        className: 'btn-mergefield',
         click: function () {
             context.invoke('editor.saveRange');
             var iframeUrl = Rock.settings.get('baseUrl') + "htmleditorplugins/RockMergeField?mergeFields=" + encodeURIComponent(context.options.rockMergeFieldOptions.mergeFields);

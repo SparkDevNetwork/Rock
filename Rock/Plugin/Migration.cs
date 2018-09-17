@@ -99,6 +99,26 @@ namespace Rock.Plugin
         }
 
         /// <summary>
+        /// Executes a sql statement
+        /// </summary>
+        /// <param name="sql">The SQL.</param>
+        public object SqlScalar( string sql )
+        {
+            if ( SqlConnection != null || SqlTransaction != null )
+            {
+                using ( SqlCommand sqlCommand = new SqlCommand( sql, SqlConnection, SqlTransaction ) )
+                {
+                    sqlCommand.CommandType = CommandType.Text;
+                    return sqlCommand.ExecuteScalar();
+                }
+            }
+            else
+            {
+                throw new NullReferenceException( "The Plugin Migration requires valid SqlConnection and SqlTransaction values when executing SQL" );
+            }
+        }
+
+        /// <summary>
         ///     Adds an operation to create a new table.  This is a wrapper for the default DBMigration CreateTable.
         /// </summary>
         /// <typeparam name="TColumns"> The columns in this create table operation. You do not need to specify this type, it will be inferred from the columnsAction parameter you supply. </typeparam>
@@ -261,9 +281,9 @@ namespace Rock.Plugin
             /// <summary>
             /// Get the migration operation's Sql.  This iterates through the DbMigrations operations list and pulls out the sql.
             /// </summary>
-            /// <param name="SqlConnection">The SqlConnection object from the Plugin Migration class.</param>
+            /// <param name="sqlConnection">The SqlConnection object from the Plugin Migration class.</param>
             /// <returns>A string containing the SQL generated from the current migration.</returns>
-            internal string GetMigrationSql( SqlConnection SqlConnection )
+            internal string GetMigrationSql( SqlConnection sqlConnection )
             {
                 StringBuilder sql = new StringBuilder();
                 var prop = this.GetType().GetProperty( "Operations", BindingFlags.NonPublic | BindingFlags.Instance );
@@ -279,7 +299,7 @@ namespace Rock.Plugin
                         }
                     }
                     var generator = new SqlServerMigrationSqlGenerator();
-                    var statements = generator.Generate( operations, SqlConnection.ServerVersion.AsInteger() > 10 ? "2008" : "2005" );
+                    var statements = generator.Generate( operations, sqlConnection.ServerVersion.AsInteger() > 10 ? "2008" : "2005" );
                     foreach ( MigrationStatement item in statements )
                     {
                         sql.Append( item.Sql );

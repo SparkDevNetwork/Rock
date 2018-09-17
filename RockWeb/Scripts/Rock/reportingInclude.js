@@ -141,6 +141,12 @@ $(document).ready(function () {
                     return title + ' is ' + selectedItems
                 },
 
+                // NOTE: this is specifically for the Rock.Reporting.DataFilter.OtherDataViewFilter (and similar) components
+                formatFilterForOtherDataViewFilter: function (title, $selectedContent) {
+                    var dataViewName = $('.js-dataview .js-item-name-value', $selectedContent).val();
+                    return title + ' ' + dataViewName;
+                },
+
                 //
                 formatFilterForSelectSingleField: function (title, $selectedContent) {
                     var selectedItems = '';
@@ -203,6 +209,31 @@ $(document).ready(function () {
                     if (lastAttendanceDateRangeText) {
                       result = result + ', last attendance to group in Date Range: ' + lastAttendanceDateRangeText;
                     }
+
+                    return result;
+                },
+
+                // NOTE: this is specifically for the Rock.Reporting.DataFilter.Person.HasPhoneFilter component
+                formatFilterForHasPhoneFilter: function ($content) {
+
+                    var has;
+                    if ($('.js-hasphoneoftype', $content).find(':selected').val() == "True") {
+                        has = "Has ";
+                    } else {
+                        has = "Doesn't have ";
+                    }
+
+                    var phoneType = $('.js-phonetype', $content).find(':selected').text();
+                    var sms = $('.js-hassms', $content).find(':selected').text();
+
+                    if (sms == 'Yes') {
+                        sms = ' and Has SMS Enabled';
+                    }
+                    else if (sms == 'No') {
+                        sms = " and Doesn't have SMS Enabled";
+                    }
+
+                    var result = has + phoneType + sms;
 
                     return result;
                 },

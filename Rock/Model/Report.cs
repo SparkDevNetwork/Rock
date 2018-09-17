@@ -533,7 +533,7 @@ namespace Rock.Model
 
             Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( AttributeValue ) }, match );
 
-            var attributeCache = AttributeCache.Read( attributeId );
+            var attributeCache = AttributeCache.Get( attributeId );
             var attributeValueFieldName = "Value";
             Type attributeValueFieldType = typeof( string );
             if ( attributeCache != null )

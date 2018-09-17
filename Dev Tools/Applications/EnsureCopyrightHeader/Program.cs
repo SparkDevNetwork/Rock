@@ -30,6 +30,7 @@ namespace EnsureCopyrightHeader
             int updatedFileCount = 0;
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "RockWeb\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Checkr\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Mailgun\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Mandrill\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Migrations\\" );
@@ -43,7 +44,7 @@ namespace EnsureCopyrightHeader
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Slingshot.Model\\" );
             //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Tests\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Version\\" );
-
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.WebStartup\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "RockJobSchedulerService\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Applications\\" );
 
@@ -99,7 +100,7 @@ namespace EnsureCopyrightHeader
 ";
 
             // standard copyright badge starting 5/23/2016
-            const string newCopyrightBadge = @"// <copyright>
+            const string newCopyrightBadgeStart = @"// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the ""License"");
@@ -113,11 +114,11 @@ namespace EnsureCopyrightHeader
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// </copyright>
+// </copyright>";
+
+            const string newCopyrightBadge = newCopyrightBadgeStart + @"
 //
 ";
-
-
             foreach ( string fileName in sourceFilenames )
             {
                 bool skipFile = false;
@@ -150,7 +151,7 @@ namespace EnsureCopyrightHeader
                     continue;
                 }
 
-                if ( origFileContents.StartsWith( newCopyrightBadge ) )
+                if ( origFileContents.StartsWith( newCopyrightBadgeStart ) )
                 {
                     continue;
                 }

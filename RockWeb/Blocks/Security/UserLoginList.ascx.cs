@@ -131,7 +131,7 @@ namespace RockWeb.Blocks.Security
             {
                 case "Authentication Provider":
                     {
-                        var entityType = EntityTypeCache.Read( compProviderFilter.SelectedValue.AsGuid() );
+                        var entityType = EntityTypeCache.Get( compProviderFilter.SelectedValue.AsGuid() );
                         if ( entityType != null )
                         {
                             e.Value = entityType.FriendlyName;
@@ -316,7 +316,7 @@ namespace RockWeb.Blocks.Security
                 userLogin.IsLockedOut = cbIsLockedOut.Checked;
                 userLogin.IsPasswordChangeRequired = cbIsRequirePasswordChange.Checked;
 
-                var entityType = EntityTypeCache.Read( compProvider.SelectedValue.AsGuid() );
+                var entityType = EntityTypeCache.Get( compProvider.SelectedValue.AsGuid() );
                 if ( entityType != null )
                 {
                     userLogin.EntityTypeId = entityType.Id;
@@ -398,7 +398,7 @@ namespace RockWeb.Blocks.Security
         /// </summary>
         private void BindGrid()
         {
-            int personEntityTypeId = EntityTypeCache.Read<Rock.Model.Person>().Id;
+            int personEntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
             if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && ContextEntity<Person>() == null )
             {
                 return;
@@ -470,7 +470,7 @@ namespace RockWeb.Blocks.Security
                 sortProperty = new SortProperty( new GridViewSortEventArgs( "UserName", SortDirection.Ascending ) );
             }
 
-            gUserLogins.EntityTypeId = EntityTypeCache.Read<UserLogin>().Id;
+            gUserLogins.EntityTypeId = EntityTypeCache.Get<UserLogin>().Id;
             gUserLogins.DataSource = qry.Sort( sortProperty ).ToList();
             gUserLogins.DataBind();
         }
@@ -490,7 +490,7 @@ namespace RockWeb.Blocks.Security
                 lUserNameOrRemoteProvider.Text = userLogin.UserName;
                 if ( userLogin.EntityTypeId.HasValue )
                 {
-                    var entityType = EntityTypeCache.Read( userLogin.EntityTypeId.Value );
+                    var entityType = EntityTypeCache.Get( userLogin.EntityTypeId.Value );
                     if ( entityType != null )
                     {
                         var component = AuthenticationContainer.GetComponent( entityType.Name );
@@ -562,7 +562,7 @@ namespace RockWeb.Blocks.Security
             tbPassword.Required = false;
             tbPasswordConfirm.Required = false;
 
-            var entityType = EntityTypeCache.Read( compProvider.SelectedValue.AsGuid() );
+            var entityType = EntityTypeCache.Get( compProvider.SelectedValue.AsGuid() );
             if ( entityType != null )
             {
                 var component = AuthenticationContainer.GetComponent( entityType.Name );

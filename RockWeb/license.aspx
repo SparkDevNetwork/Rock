@@ -4,6 +4,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head id="Head1" runat="server">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Rock - License</title>
 
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Rock/Styles/bootstrap.css") %>"/>
@@ -19,16 +20,17 @@
             <div id="logo">
                 <asp:Literal ID="lLogoSvg" runat="server" />
             </div>
+        </div>
 
-            <div id="content-box">
+            <div class="container">
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-2">
 
 
                         <h1>Rock Relationship Management System License</h1>
 
                         <h3>Rock Community License</h3>
-                        <p>Copyright 2016 Spark Development Network</p>
+                        <p>Copyright 2018 Spark Development Network</p>
 
                         <p>
                             Licensed under the Rock Community License (the "License");
@@ -123,7 +125,7 @@
                             <li><a href="http://bcrypt.codeplex.com/">BCrypt</a> (BSD)</li>
                             <li><a href="https://github.com/MikaelEliasson/EntityFramework.Utilities/blob/master/EntityFramework.Utilities">EFUtilities</a> (MIT)</li>
                             <li><a href="https://harvesthq.github.io/chosen/">Chosen</a> (MIT)</li>
-                            <li><a href="https://github.com/alxlit/bootstrap-chosen">Bootstrap Stylsheet for Chosen</a> (MIT)</li>
+                            <li><a href="https://github.com/alxlit/bootstrap-chosen">Bootstrap Stylesheet for Chosen</a> (MIT)</li>
                             <li><a href="https://github.com/elastic/elasticsearch-net">Elasticsearch NEST Client</a> (Apache 2)</li>
                             <li><a href="https://github.com/bcuff/elasticsearch-net-aws">Elasticsearch Net for Amazon AWS</a> (Apache 2)</li>
                             <li><a href="https://github.com/d3/d3">D3 (Data-Driven Documents)</a> (Custom)</li>
@@ -137,7 +139,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+
 
     </form>
 </body>

@@ -39,7 +39,7 @@ using Rock.Security;
 namespace Rock.Lava.Blocks
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="DotLiquid.Block" />
     public class RockEntity : RockLavaBlockBase
@@ -300,7 +300,7 @@ namespace Rock.Lava.Blocks
                                     int? attributeId = null;
                                     foreach ( var id in AttributeCache.GetByEntity( entityTypeCache.Id ).SelectMany( a => a.AttributeIds ) )
                                     {
-                                        var attribute = AttributeCache.Read( id );
+                                        var attribute = AttributeCache.Get( id );
                                         if ( attribute.Key == propertyName )
                                         {
                                             attributeId = id;
@@ -406,7 +406,7 @@ namespace Rock.Lava.Blocks
         private IQueryable<IEntity> PersonFilters(IQueryable<Person> query, Dictionary<string,string> parms)
         {
             // limit to record type of person
-            var personRecordTypeId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ).Id;
+            var personRecordTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ).Id;
 
             query = query.Where( p => p.RecordTypeValueId == personRecordTypeId );
 
@@ -435,7 +435,7 @@ namespace Rock.Lava.Blocks
         private IQueryable<IEntity> BusinessFilters( IQueryable<Person> query, Dictionary<string, string> parms )
         {
             // limit to record type of business
-            var businessRecordTypeId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS ).Id;
+            var businessRecordTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS ).Id;
 
             query = query.Where( p => p.RecordTypeValueId == businessRecordTypeId );
             return query;
@@ -542,7 +542,6 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
         private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup
@@ -570,7 +569,7 @@ namespace Rock.Lava.Blocks
             var parms = new Dictionary<string, string>();
             parms.Add( "iterator", string.Format( "{0}Items", _entityName ) );
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();
@@ -725,7 +724,7 @@ namespace Rock.Lava.Blocks
                         AttributeCache filterAttribute = null;
                         foreach ( var id in AttributeCache.GetByEntity( entityTypeCache.Id ).SelectMany( a => a.AttributeIds ) )
                         {
-                            var attribute = AttributeCache.Read( id );
+                            var attribute = AttributeCache.Get( id );
                             if ( attribute.Key == property )
                             {
                                 filterAttribute = attribute;
@@ -806,7 +805,7 @@ namespace Rock.Lava.Blocks
         }
 
         /// <summary>
-        /// Properties the comparison converstion.
+        /// Properties the comparison conversion.
         /// </summary>
         /// <param name="comparisonOperator">The comparison operator.</param>
         /// <returns></returns>

@@ -64,7 +64,7 @@ namespace Rock.Model
             var dataView = Queryable().AsNoTracking().FirstOrDefault( d => d.Id == dataViewId );
             if ( dataView != null && dataView.EntityTypeId.HasValue )
             {
-                var cachedEntityType = EntityTypeCache.Read( dataView.EntityTypeId.Value );
+                var cachedEntityType = EntityTypeCache.Get( dataView.EntityTypeId.Value );
                 if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
                 {
                     Type entityType = cachedEntityType.GetEntityType();

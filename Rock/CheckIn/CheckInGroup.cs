@@ -101,6 +101,15 @@ namespace Rock.CheckIn
         public List<CheckInLocation> Locations { get; set; }
 
         /// <summary>
+        /// Gets or sets the notes.
+        /// </summary>
+        /// <value>
+        /// The notes.
+        /// </value>
+        [DataMember]
+        public string Notes { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CheckInGroup" /> class.
         /// </summary>
         public CheckInGroup()
@@ -187,7 +196,7 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Gets the available keys (for debuging info).
+        /// Gets the available keys (for debugging info).
         /// </summary>
         /// <value>
         /// The available keys.

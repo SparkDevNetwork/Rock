@@ -13,8 +13,8 @@
   color: @autocomplete-text;
   background-color: @autocomplete-bg;
   -webkit-background-clip: padding-box;
-     -moz-background-clip: padding;
-          background-clip: padding-box;
+  -moz-background-clip: padding;
+  background-clip: padding-box;
   border: 1px solid @autocomplete-border;
   border-radius: 0 0 @border-radius-base @border-radius-base;
   .box-shadow(0 5px 10px rgba(0,0,0,.2));
@@ -25,24 +25,22 @@
 
   p {
     padding: 4px;
+    margin: 0;
     border-radius: @border-radius-base;
 
     &:hover {
       background-color: @autocomplete-rollover-bg;
+      color: @autocomplete-rollover-color;
     }
   }
 }
 
 .tt-suggestion.tt-is-under-cursor {
   color: lighten(@autocomplete-text, 30%);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0077b3', GradientType=0);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#ff0088cc", endColorstr="#ff0077b3", GradientType=0);
   background-repeat: repeat-x;
 }
 
 .tt-suggestion.tt-is-under-cursor a {
   color: @autocomplete-text;
-}
-
-.tt-suggestion p {
-  margin: 0;
 }

@@ -36,6 +36,17 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<Attribute> GetByEntityTypeId( int? entityTypeId )
         {
+            return GetByEntityTypeId( entityTypeId, true );
+        }
+
+        /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Model.Attribute">Attributes</see> by <see cref="Rock.Model.EntityType"/>.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <returns></returns>
+        public IQueryable<Attribute> GetByEntityTypeId( int? entityTypeId, bool includeInactive )
+        {
             var query = Queryable();
 
             if ( entityTypeId.HasValue )
@@ -45,6 +56,11 @@ namespace Rock.Model
             else
             {
                 query = query.Where( t => !t.EntityTypeId.HasValue );
+            }
+
+            if ( !includeInactive )
+            {
+                query = query.Where( a => a.IsActive == true );
             }
 
             return query.OrderBy( t => t.Order ).ThenBy( t => t.Name );
@@ -57,7 +73,24 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Attribute">Attributes</see> that are part of the specified <see cref="Rock.Model.Category"/></returns>
         public IQueryable<Attribute> GetByCategoryId( int categoryId )
         {
-            return Queryable().Where( a => a.Categories.Any( c => c.Id == categoryId ) );
+            return GetByCategoryId( categoryId, true );
+        }
+
+        /// <summary>
+        /// Gets the by category identifier.
+        /// </summary>
+        /// <param name="categoryId">The category identifier.</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <returns></returns>
+        public IQueryable<Attribute> GetByCategoryId( int categoryId, bool includeInactive )
+        {
+            var queryable = Queryable().Where( a => a.Categories.Any( c => c.Id == categoryId ) );
+            if ( !includeInactive )
+            {
+                queryable = queryable.Where( a => a.IsActive == true );
+            }
+
+            return queryable;
         }
 
         /// <summary>
@@ -68,6 +101,19 @@ namespace Rock.Model
         /// <param name="entityQualifierValue">A <see cref="System.String"/> that represents the qualifier value to search by.</param>
         /// <returns>A queryable collection of <see cref="Rock.Model.Attribute">Attributes</see> that matches the specified value.</returns>
         public IQueryable<Attribute> Get( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue )
+        {
+            return GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true );
+        }
+
+        /// <summary>
+        /// Gets a queryable collection of <see cref="Rock.Model.Attribute">Attributes</see> by <see cref="Rock.Model.EntityType"/>, EntityQualifierColumn and EntityQualifierValue.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityQualifierColumn">The entity qualifier column.</param>
+        /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <returns></returns>
+        public IQueryable<Attribute> GetByEntityTypeQualifier( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, bool includeInactive )
         {
             var query = Queryable();
 
@@ -98,6 +144,11 @@ namespace Rock.Model
                 query = query.Where( t => t.EntityTypeQualifierValue == entityQualifierValue );
             }
 
+            if ( !includeInactive )
+            {
+                query = query.Where( a => a.IsActive == true );
+            }
+
             return query;
 
         }
@@ -114,7 +165,7 @@ namespace Rock.Model
         /// </returns>
         public Attribute Get( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, string key )
         {
-            var query = Get(entityTypeId, entityQualifierColumn, entityQualifierValue);
+            var query = GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true);
             return query.Where( t => t.Key == key ).FirstOrDefault();
         }
         
@@ -144,18 +195,30 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the group member attributes combined with the inherited group type's group member attibutes.
+        /// Gets the group member attributes combined with the inherited group type's group member attributes.
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <returns></returns>
         public IQueryable<Attribute> GetGroupMemberAttributesCombined( int groupId, int groupTypeId )
         {
-            var queryInherited = Get(new GroupMember().TypeId, "GroupTypeId", groupTypeId.ToString() );
+            return GetGroupMemberAttributesCombined( groupId, groupTypeId, true );
+        }
+
+        /// <summary>
+        /// Gets the group member attributes combined with the inherited group type's group member attributes.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <returns></returns>
+        public IQueryable<Attribute> GetGroupMemberAttributesCombined( int groupId, int groupTypeId, bool includeInactive )
+        {
+            var queryInherited = GetByEntityTypeQualifier( new GroupMember().TypeId, "GroupTypeId", groupTypeId.ToString(), includeInactive );
             queryInherited.OrderBy( a => a.Order )
                 .ThenBy( a => a.Name );
 
-            var query = Get( new GroupMember().TypeId, "GroupId", groupId.ToString() );
+            var query = GetByEntityTypeQualifier( new GroupMember().TypeId, "GroupId", groupId.ToString(), includeInactive );
             query.OrderBy( a => a.Order )
                 .ThenBy( a => a.Name );
 
@@ -179,7 +242,7 @@ namespace Rock.Model
         /// <returns>A queryable collection containing the Global <see cref="Rock.Model.Attribute">Attributes</see>.</returns>
         public IQueryable<Attribute> GetSystemSettings()
         {
-            return this.Get( null, Attribute.SYSTEM_SETTING_QUALIFIER, string.Empty );
+            return this.GetByEntityTypeQualifier( null, Attribute.SYSTEM_SETTING_QUALIFIER, string.Empty, true );
         }
 
         /// <summary>
@@ -193,13 +256,23 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the system setting value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public string GetSystemSettingValue(string key)
+        {
+            return this.GetByEntityTypeQualifier( null, Attribute.SYSTEM_SETTING_QUALIFIER, string.Empty, true ).Where( t => t.Key == key ).Select( a => a.DefaultValue ).FirstOrDefault();
+        }
+
+        /// <summary>
         /// Gets the Guid for the Attribute that has the specified Id
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
         public override Guid? GetGuid( int id )
         {
-            var cacheItem = Rock.Web.Cache.AttributeCache.Read( id );
+            var cacheItem = Rock.Web.Cache.AttributeCache.Get( id );
             if ( cacheItem != null )
             {
                 return cacheItem.Guid;

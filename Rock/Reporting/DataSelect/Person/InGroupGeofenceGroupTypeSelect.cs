@@ -131,7 +131,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            var groupType = GroupTypeCache.Read( selection.AsGuid() );
+            var groupType = GroupTypeCache.Get( selection.AsGuid() );
             int groupTypeId = ( groupType != null ) ? groupType.Id : 0;
 
             var qry = new PersonService( context ).Queryable()
@@ -190,7 +190,7 @@ namespace Rock.Reporting.DataSelect.Person
             var groupTypeId = ( controls[0] as GroupTypePicker ).SelectedValueAsId().GetValueOrDefault(0);
             if (groupTypeId > 0)
             {
-                var groupType = GroupTypeCache.Read(groupTypeId);
+                var groupType = GroupTypeCache.Get(groupTypeId);
                 return (groupType == null) ? string.Empty : groupType.Guid.ToString();
             }
 

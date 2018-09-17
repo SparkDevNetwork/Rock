@@ -127,13 +127,6 @@ namespace RockInstaller
             this.SendConsoleMessage( String.Format( "Internal Url: {0}", installData.HostingInfo.InternalUrl ) );
             this.SendConsoleMessage( String.Format( "External Url: {0}", installData.HostingInfo.ExternalUrl ) );
             this.SendConsoleMessage( String.Format( "Timezone: {0}", installData.HostingInfo.Timezone + " (sounds like a nice place)" ) );
-
-            this.SendConsoleMessage( new ConsoleMessage( "Email Settings", ConsoleMessageType.Highlight ) );
-            this.SendConsoleMessage( String.Format( "Server: {0}", installData.EmailSettings.Server ) );
-            this.SendConsoleMessage( String.Format( "Port: {0}", installData.EmailSettings.Port ) );
-            this.SendConsoleMessage( String.Format( "Use SSL: {0}", installData.EmailSettings.UseSsl.ToString() ) );
-            this.SendConsoleMessage( String.Format( "Relay Username: {0}", installData.EmailSettings.RelayUsername ) );
-            this.SendConsoleMessage( String.Format( "Relay Password: {0}", "*****" ) );
         }
 
         // test the database login that was given
@@ -283,11 +276,21 @@ namespace RockInstaller
             this.SendConsoleMessage( new ConsoleMessage( "--= Download SQL Step =--", ConsoleMessageType.Highlight ) );
 
             string serverDir = baseStorageUrl + installData.InstallerProperties.InstallVersion;
-            this.SendConsoleMessage( "Downloading file: " + serverDir + "/Data/" + sqlScripts );
 
-            result = DownloadFile( serverDir + "/Data/" + sqlScripts, serverPath + @"\" + sqlScripts, 10, 1 );
-
-            this.SendConsoleMessage( "File Download Complete!" );
+            if ( !File.Exists( serverPath + @"\" + sqlScripts ) )
+            {
+                this.SendConsoleMessage( "Downloading file: " + serverDir + "/Data/" + sqlScripts );
+                result = DownloadFile( serverDir + "/Data/" + sqlScripts, serverPath + @"\" + sqlScripts, 10, 1 );
+                if ( result.Success )
+                {
+                    this.SendConsoleMessage( "File Download Complete!" );
+                }
+            }
+            else
+            {
+                this.SendConsoleMessage( "File already existed." );
+                result.Success = true;
+            }
 
             return result;
         }
@@ -299,13 +302,20 @@ namespace RockInstaller
             this.SendConsoleMessage( new ConsoleMessage( "--= Download Rock Step =--", ConsoleMessageType.Highlight ) );
 
             string rockURL = baseStorageUrl + installData.InstallerProperties.InstallVersion;
-            this.SendConsoleMessage( "Downloading file: " + rockURL + "/Data/" + rockSource );
 
-            result = DownloadFile( rockURL + "/Data/" + rockSource, serverPath + @"\" + rockSource, 10, 1 );
-
-            if ( result.Success )
+            if ( !File.Exists( serverPath + @"\" + rockSource ) )
             {
-                this.SendConsoleMessage( "File Download Complete!" );
+                this.SendConsoleMessage( "Downloading file: " + rockURL + "/Data/" + rockSource );
+                result = DownloadFile( rockURL + "/Data/" + rockSource, serverPath + @"\" + rockSource, 10, 1 );
+                if ( result.Success )
+                {
+                    this.SendConsoleMessage( "File Download Complete!" );
+                }
+            }
+            else
+            {
+                this.SendConsoleMessage( "File already existed." );
+                result.Success = true;
             }
 
             return result;
@@ -485,6 +495,7 @@ namespace RockInstaller
                 {
                     result.Success = false;
                     result.Message = ex.Message;
+                    return result;
                 }
             }
 
@@ -642,7 +653,7 @@ namespace RockInstaller
             catch ( Exception ex )
             {
                 result.Success = false;
-                result.Message = ex.Message + " Current Script: " + currentScript;
+                result.Message = ex.Message + string.Format( " Current Script: <pre>{0}</pre>", System.Web.HttpUtility.HtmlEncode( currentScript ) );
             }
             finally
             {
@@ -771,7 +782,7 @@ namespace RockInstaller
                     client.Dispose();
                 }
             }
-            catch ( OutOfMemoryException mex )
+            catch ( OutOfMemoryException )
             {
                 result.Success = false;
                 result.Message = @"The server ran out of memory while downloading Rock. You may want to consider using a server with more available resources or

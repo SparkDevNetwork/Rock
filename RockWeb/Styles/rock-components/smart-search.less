@@ -5,7 +5,7 @@
 
 .smartsearch {
   position: relative;
-  width: 290px;
+  width: 298px;
   padding: 2px 6px;
   margin-top: 6px;
   font-size: 12px;
@@ -19,15 +19,15 @@
     color: darken(@smartsearch-input-text-color, 25%);
   }
 
-    .nav > li > a {
-      padding: 4px 15px;
-    }
+  .nav > li > a {
+    padding: 4px 15px;
+  }
 
-      input::selection,
-      input::-moz-selection {
-        color: @smartsearch-input-selection-text-color;
-        background: @smartsearch-input-selection-background;
-      }
+  input::selection,
+  input::-moz-selection {
+    color: @smartsearch-input-selection-text-color;
+    background: @smartsearch-input-selection-background;
+  }
 
   &:focus {
     border-color: #595959;
@@ -35,11 +35,11 @@
 
   .twitter-typeahead {
     display: block !important;
-    margin-right: 120px;
+    margin-right: 128px;
   }
 
   .smartsearch-type {
-    width: 120px;
+    width: 128px;
   }
 
   > i {
@@ -61,7 +61,7 @@
 
     &:focus {
       outline: 0; // get rid of orange box in chrome
-      box-shadow: 0 0 0 0;
+      box-shadow: 0;
     }
   }
 
@@ -71,8 +71,9 @@
 
   .tt-dropdown-menu {
     min-width: 290px;
+    max-width: 100vw;
     margin-top: 2px;
-    margin-left: -6px;
+    margin-left: 0;
     border: 0;
   }
 
@@ -86,8 +87,10 @@
 
   .dropdown {
     .navbar-link {
+      width: 100%;
       color: @smartsearch-text-color;
       text-align: right;
+      cursor: pointer;
 
       span {
         padding-right: 4px;
@@ -106,10 +109,12 @@
     }
 
     .dropdown-menu {
+      top: 35px;
       right: 0;
       left: auto;
       // smart search type menu
       font-size: 12px;
+      cursor: pointer;
     }
   }
 }

@@ -112,7 +112,7 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 int noteTypeId = selectionValues[0].AsInteger();
-                var selectedNoteType = NoteTypeCache.Read( noteTypeId );
+                var selectedNoteType = NoteTypeCache.Get( noteTypeId );
                 if ( selectedNoteType != null )
                 {
                     result = $"Has a {selectedNoteType.Name} note";
@@ -123,7 +123,7 @@ function() {
                 }
 
                 var containingText = selectionValues[1];
-                if ( containingText.IsNotNullOrWhitespace() )
+                if ( containingText.IsNotNullOrWhiteSpace() )
                 {
                     result += $" containing '{containingText}'";
                 }
@@ -244,7 +244,7 @@ function() {
                     noteQry = noteQry.Where( x => x.NoteTypeId == noteTypeId );
                 }
 
-                if ( containsText.IsNotNullOrWhitespace() )
+                if ( containsText.IsNotNullOrWhiteSpace() )
                 {
                     noteQry = noteQry.Where( a => a.Text.Contains( containsText ) );
                 }

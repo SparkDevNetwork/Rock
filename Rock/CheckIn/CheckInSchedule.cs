@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+
+using Rock.Web.Cache;
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -35,6 +37,15 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public Schedule Schedule { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus identifier.
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
+        [DataMember]
+        public int? CampusId { get; set; }
 
         /// <summary>
         /// Gets the start time.
@@ -91,6 +102,27 @@ namespace Rock.CheckIn
         public bool Processed { get; set; }
 
         /// <summary>
+        /// Gets the campus current date time.
+        /// </summary>
+        /// <value>
+        /// The campus current date time.
+        /// </value>
+        public DateTime CampusCurrentDateTime
+        {
+            get
+            {
+                if ( CampusId.HasValue )
+                {
+                    var campus = CampusCache.Get( CampusId.Value );
+                    if ( campus != null )
+                    {
+                        return campus.CurrentDateTime;
+                    }
+                }
+                return RockDateTime.Now;
+            }
+        }
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -112,7 +144,7 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Gets the available keys (for debuging info).
+        /// Gets the available keys (for debugging info).
         /// </summary>
         /// <value>
         /// The available keys.

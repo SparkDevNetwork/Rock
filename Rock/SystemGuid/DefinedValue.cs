@@ -50,12 +50,12 @@ namespace Rock.SystemGuid
         public const string CHECKIN_SEARCH_TYPE_NAME_AND_PHONE = "93773B0A-6E7F-1AA0-4F1D-9A4D6ACE930F";
 
         /// <summary>
-        /// Scanned Id Search Type
+        /// Scanned Id Search Type. This type is always supported and if a barcode or bio id is scanned, the attendance will be updated to reflect this type os search was used.
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_SCANNED_ID = "7668CE15-E372-47EE-8FF8-6FEE09F7C858";
 
         /// <summary>
-        /// Family Id Search Type
+        /// Family Id Search Type. This type is for future (face recognition) support and is not currently being used.
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_FAMILY_ID = "111385BB-DAEB-4CE3-A945-0B50DC15EE02";
 
@@ -120,6 +120,11 @@ namespace Rock.SystemGuid
         /// Unknown Currency Type
         /// </summary>
         public const string CURRENCY_TYPE_UNKNOWN = "56C9AE9C-B5EB-46D5-9650-2EF86B14F856";
+
+        /// <summary>
+        /// Other Currency Type
+        /// </summary>
+        public const string CURRENCY_TYPE_OTHER = "0FDF0BB3-B483-4C0A-9DFF-A35ABE3B688D";
 
         #endregion
 
@@ -359,7 +364,12 @@ namespace Rock.SystemGuid
         /// Inactive record status reason of No Activity 
         /// </summary>
         public const string PERSON_RECORD_STATUS_REASON_NO_ACTIVITY = "64014FE6-943D-4ACF-8014-FED9F9169AE8";
-        
+
+        /// <summary>
+        /// Inactive record status reason of Moved
+        /// </summary>
+        public const string PERSON_RECORD_STATUS_REASON_MOVED = "3684CF84-F30F-4CE0-9EB9-D6AFFEA9B99B";
+
         #endregion
 
         #region Person Record Type
@@ -423,18 +433,33 @@ namespace Rock.SystemGuid
         #region Personal Device Type
 
         /// <summary>
-        /// Personal device types for notifications
+        /// Mobile Personal device type
         /// </summary>
         public const string PERSONAL_DEVICE_TYPE_MOBILE = "5A8F264F-3BE6-4F15-912A-3CE93A98E8F6";
+
+        /// <summary>
+        /// Computer personal device type
+        /// </summary>
+        public const string PERSONAL_DEVICE_TYPE_COMPUTER = "828ADECE-EFE7-49DF-BA8C-B3F132509A95";
 
         #endregion
 
         #region Personal Device Platform
 
         /// <summary>
-        /// A default personal device platform
+        /// Other platform
         /// </summary>
         public const string PERSONAL_DEVICE_PLATFORM_OTHER = "13091A2D-C483-46FA-B489-E5D230B353C8";
+
+        /// <summary>
+        /// IOS platform
+        /// </summary>        
+        public const string PERSONAL_DEVICE_PLATFORM_IOS = "F00515E7-4EF3-480D-A45D-372CE3D80E69";
+
+        /// <summary>
+        /// Android platform
+        /// </summary>       
+        public const string PERSONAL_DEVICE_PLATFORM_ANDROID = "63464BB8-83E2-4914-B922-5075311758F9";
 
         #endregion
 
@@ -472,6 +497,12 @@ namespace Rock.SystemGuid
         /// Default RSS Channel Template
         /// </summary>
         public const string DEFAULT_RSS_CHANNEL = "D6149581-9EFC-40D8-BD38-E92C0717BEDA";
+
+
+        /// <summary>
+        /// The default ical description
+        /// </summary>
+        public const string DEFAULT_ICAL_DESCRIPTION = "DCBA4862-73E9-49B5-8AD5-08E17BE68025";
 
         #endregion
 
@@ -523,6 +554,21 @@ namespace Rock.SystemGuid
         /// The PBX CDR medium value
         /// </summary>
         public const string PBX_CDR_MEDIUM_VALUE = "B3904B57-62A2-57AC-43EA-94D4DEBA3D51";
+
+        #endregion
+
+        #region Person Search Keys
+
+        /// <summary>
+        /// Person Search Type: Email
+        /// </summary>
+        public const string PERSON_SEARCH_KEYS_EMAIL = "D6CFD200-B33B-4D01-B49F-24325E47D8B8";
+
+
+        /// <summary>
+        /// Person Search Type: Alternate Id
+        /// </summary>
+        public const string PERSON_SEARCH_KEYS_ALTERNATE_ID = "AD77CF28-E42B-44C2-8D5C-F6A0A6EE8022";
 
         #endregion
 

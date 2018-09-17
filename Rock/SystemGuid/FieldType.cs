@@ -34,6 +34,11 @@ namespace Rock.SystemGuid
         public const string AUDIO = "0D842975-7439-4D2E-BB94-BAD8DDF22260";
 
         /// <summary>
+        /// Backgroundcheck field type
+        /// </summary>
+        public const string BACKGROUNDCHECK = "d05b3808-803a-4531-9680-dd4aab8adf1a";
+
+        /// <summary>
         /// Binary File field type
         /// </summary>
         public const string BINARY_FILE = "C403E219-A56B-439E-9D50-9302DFE760CF";
@@ -362,6 +367,11 @@ namespace Rock.SystemGuid
         /// Sliding Date Range field type
         /// </summary>
         public const string SLIDING_DATE_RANGE = "55810BC5-45EA-4044-B783-0CCE0A445C6F";
+
+        /// <summary>
+        /// Social Media Account field type
+        /// </summary>
+        public const string SOCIAL_MEDIA_ACCOUNT = "92C0E3A1-9F63-49D4-B23B-73624AC42546";
 
         /// <summary>
         /// Social Security Number

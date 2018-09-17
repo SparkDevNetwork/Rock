@@ -365,6 +365,12 @@ namespace Rock.Security.ExternalAuthentication
         /// <returns></returns>
         public static string GetGoogleUser( GoogleUser googleUser, string accessToken = "" )
         {
+            // accessToken is required
+            if ( accessToken.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
             string username = string.Empty;
             string googleId = googleUser.id;
             string googleLink = googleUser.link;
@@ -395,15 +401,11 @@ namespace Rock.Security.ExternalAuthentication
                     if ( !string.IsNullOrWhiteSpace(email) )
                     {
                         var personService = new PersonService(rockContext);
-                        var people = personService.GetByMatch(firstName, lastName, email);
-                        if ( people.Count() == 1 )
-                        {
-                            person = people.First();
-                        }
+                        person = personService.FindPerson( firstName, lastName, email, true );
                     }
 
-                    var personRecordTypeId = DefinedValueCache.Read(SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid()).Id;
-                    var personStatusPending = DefinedValueCache.Read(SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid()).Id;
+                    var personRecordTypeId = DefinedValueCache.Get(SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid()).Id;
+                    var personStatusPending = DefinedValueCache.Get(SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid()).Id;
 
                     rockContext.WrapTransaction(( ) =>
                     {
@@ -443,7 +445,7 @@ namespace Rock.Security.ExternalAuthentication
 
                         if ( person != null )
                         {
-                            int typeId = EntityTypeCache.Read(typeof(Google)).Id;
+                            int typeId = EntityTypeCache.Get(typeof(Google)).Id;
                             user = UserLoginService.Create(rockContext, person, AuthenticationServiceType.External, typeId, userName, "goog", true);
                         }
 

@@ -445,27 +445,22 @@ namespace RockWeb.Blocks.Event
                     }
 
                     // Add attribute columns
-                    int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
+                    int entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
                     string qualifier = contentChannel.ContentChannelTypeId.ToString();
-                    foreach ( var attribute in new AttributeService( rockContext ).Queryable()
-                        .Where( a =>
-                            a.EntityTypeId == entityTypeId &&
-                            a.IsGridColumn &&
-                            a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                            a.EntityTypeQualifierValue.Equals( qualifier ) )
+                    foreach ( var attributeCache in new AttributeService( rockContext ).GetByEntityTypeQualifier(entityTypeId, "ContentChannelTypeId", qualifier, false )
+                        .Where( a => a.IsGridColumn )
                         .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Name ) )
+                        .ThenBy( a => a.Name ).ToCacheAttributeList() )
                     {
-                        string dataFieldExpression = attribute.Key;
+                        string dataFieldExpression = attributeCache.Key;
                         bool columnExists = gItems.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
                         if ( !columnExists )
                         {
                             AttributeField boundField = new AttributeField();
                             boundField.DataField = dataFieldExpression;
-                            boundField.AttributeId = attribute.Id;
-                            boundField.HeaderText = attribute.Name;
-
-                            var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                            boundField.AttributeId = attributeCache.Id;
+                            boundField.HeaderText = attributeCache.Name;
+                            
                             if ( attributeCache != null )
                             {
                                 boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -539,7 +534,7 @@ namespace RockWeb.Blocks.Event
 
                             gItems.ObjectList = new Dictionary<string, object>();
                             items.ForEach( i => gItems.ObjectList.Add( i.Id.ToString(), i ) );
-                            gItems.EntityTypeId = EntityTypeCache.Read<ContentChannelItem>().Id;
+                            gItems.EntityTypeId = EntityTypeCache.Get<ContentChannelItem>().Id;
 
                             gItems.DataSource = items.Select( i => new
                             {

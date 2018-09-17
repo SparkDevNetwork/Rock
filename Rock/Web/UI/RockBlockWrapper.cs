@@ -105,8 +105,8 @@ namespace Rock.Web.UI
                 if ( preHtml.HasMergeFields() || postHtml.HasMergeFields() )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( _rockBlock.RockPage );
-                    preHtml = preHtml.ResolveMergeFields( mergeFields );
-                    postHtml = postHtml.ResolveMergeFields( mergeFields );
+                    preHtml = preHtml.ResolveMergeFields( mergeFields, "All" );
+                    postHtml = postHtml.ResolveMergeFields( mergeFields, "All" );
                 }
             }
 
@@ -198,12 +198,9 @@ namespace Rock.Web.UI
                 twOutput.RenderEndTag();  // block-instance
                 twOutput.Write( postHtml );
 
-                CacheItemPolicy cacheDuration = new CacheItemPolicy();
-                cacheDuration.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( blockCache.OutputCacheDuration );
-
-                RockMemoryCache cache = RockMemoryCache.Default;
+                var expiration  = RockDateTime.Now.AddSeconds( blockCache.OutputCacheDuration );
                 string _blockCacheKey = string.Format( "Rock:BlockOutput:{0}", blockCache.Id );
-                cache.Set( _blockCacheKey, sbOutput.ToString(), cacheDuration );
+                RockCache.AddOrUpdate( _blockCacheKey, sbOutput.ToString(), expiration );
             }
         }
     }

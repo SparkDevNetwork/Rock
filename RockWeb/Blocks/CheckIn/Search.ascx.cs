@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Linq;
+using System.Web;
 using System.Web.UI.HtmlControls;
 
 using Rock;
@@ -62,6 +63,12 @@ namespace RockWeb.Blocks.CheckIn
             {
                 this.Page.Form.DefaultButton = lbSearch.UniqueID;
                 string searchType = "Phone";
+
+                // If mobile and the last phone number is saved in the cookie
+                if ( Request.Cookies[CheckInCookie.ISMOBILE] != null && Request.Cookies[CheckInCookie.PHONENUMBER] != null )
+                {
+                    tbPhone.Text = Request.Cookies[CheckInCookie.PHONENUMBER].Value;
+                }
 
                 if ( CurrentCheckInType == null || CurrentCheckInType.SearchType.Guid == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER.AsGuid() )
                 {
@@ -111,7 +118,7 @@ namespace RockWeb.Blocks.CheckIn
                         tbPhone.Text = txtName.Text;
                         SearchByPhone();
                     }
-                }               
+                }
             }
         }
 
@@ -119,7 +126,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             CurrentCheckInState.CheckIn.UserEnteredSearch = true;
             CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
-            CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME );
+            CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME );
             CurrentCheckInState.CheckIn.SearchValue = txtName.Text;
 
             ProcessSelection();
@@ -150,10 +157,13 @@ namespace RockWeb.Blocks.CheckIn
 
                 CurrentCheckInState.CheckIn.UserEnteredSearch = true;
                 CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
-                CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
+                CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
                 CurrentCheckInState.CheckIn.SearchValue = searchInput;
 
-                ProcessSelection();
+                if ( ProcessSelection() && Request.Cookies[CheckInCookie.ISMOBILE] != null )
+                {
+                    SavePhoneCookie( tbPhone.Text );
+                }
             }
             else
             {
@@ -165,9 +175,23 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
-        protected void ProcessSelection()
+        /// <summary>
+        /// Processes the selection returning true if it was successful; false otherwise.
+        /// </summary>
+        /// <returns>true if it was successful; false otherwise.</returns>
+        protected bool ProcessSelection()
         {
-            ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.Count <= 0 , string.Format( "<p>{0}</p>", GetAttributeValue("NoOptionMessage") ) );
+            return ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.Count <= 0, string.Format( "<p>{0}</p>", GetAttributeValue( "NoOptionMessage" ) ) );
+        }
+
+        /// <summary>
+        /// Save the phone number in a cookie.
+        /// </summary>
+        /// <param name="kiosk"></param>
+        private void SavePhoneCookie( string phoneNumber )
+        {
+            HttpCookie phoneCookie = new HttpCookie( CheckInCookie.PHONENUMBER, phoneNumber );
+            Response.Cookies.Set( phoneCookie );
         }
 
         protected void lbBack_Click( object sender, EventArgs e )

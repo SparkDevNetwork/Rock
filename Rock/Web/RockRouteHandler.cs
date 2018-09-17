@@ -84,7 +84,7 @@ namespace Rock.Web
                             int? siteId = httpRequest.QueryString["SiteId"].AsIntegerOrNull();
                             if ( siteId.HasValue )
                             {
-                                site = SiteCache.Read( siteId.Value );
+                                site = SiteCache.Get( siteId.Value );
                             }
 
                             // Then check to see if site can be determined by domain
@@ -98,7 +98,7 @@ namespace Rock.Web
                             {
                                 if ( siteCookie != null && siteCookie.Value != null )
                                 {
-                                    site = SiteCache.Read( siteCookie.Value.AsInteger() );
+                                    site = SiteCache.Get( siteCookie.Value.AsInteger() );
                                 }
                             }
 
@@ -106,7 +106,7 @@ namespace Rock.Web
                             {
                                 foreach ( var pageAndRouteId in pageAndRouteIds )
                                 {
-                                    var pageCache = PageCache.Read( pageAndRouteId.PageId );
+                                    var pageCache = PageCache.Get( pageAndRouteId.PageId );
                                     if ( pageCache != null && pageCache.Layout != null && pageCache.Layout.SiteId == site.Id )
                                     {
                                         pageId = pageAndRouteId.PageId.ToJson();
@@ -133,14 +133,14 @@ namespace Rock.Web
                         // Use last site
                         if ( siteCookie != null && siteCookie.Value != null )
                         {
-                            site = SiteCache.Read( siteCookie.Value.AsInteger() );
+                            site = SiteCache.Get( siteCookie.Value.AsInteger() );
                         }
                     }
 
                     // if not found use the default site
                     if ( site == null )
                     {
-                        site = SiteCache.Read( SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid() );
+                        site = SiteCache.Get( SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid() );
                     }
 
                     if ( site != null )
@@ -244,7 +244,7 @@ namespace Rock.Web
                     int pageIdNumber = 0;
                     if ( Int32.TryParse( pageId, out pageIdNumber ) )
                     {
-                        page = PageCache.Read( pageIdNumber );
+                        page = PageCache.Get( pageIdNumber );
                     }
                 }
 
@@ -257,20 +257,20 @@ namespace Rock.Web
                         // Use last site
                         if ( siteCookie != null && siteCookie.Value != null )
                         {
-                            site = SiteCache.Read( siteCookie.Value.AsInteger() );
+                            site = SiteCache.Get( siteCookie.Value.AsInteger() );
                         }
                     }
 
                     if ( site != null && site.PageNotFoundPageId != null )
                     {
-                        if ( Convert.ToBoolean( GlobalAttributesCache.Read().GetValue( "Log404AsException" ) ) )
+                        if ( Convert.ToBoolean( GlobalAttributesCache.Get().GetValue( "Log404AsException" ) ) )
                         {
                             Rock.Model.ExceptionLogService.LogException(
                                 new Exception( string.Format( "404 Error: {0}", httpRequest.Url.AbsoluteUri ) ),
                                 requestContext.HttpContext.ApplicationInstance.Context );
                         }
 
-                        page = PageCache.Read( site.PageNotFoundPageId ?? 0 );
+                        page = PageCache.Get( site.PageNotFoundPageId ?? 0 );
                         requestContext.HttpContext.Response.StatusCode = 404;
                         requestContext.HttpContext.Response.TrySkipIisCustomErrors = true;
                     }
@@ -364,7 +364,7 @@ namespace Rock.Web
     }
 
     /// <summary>
-    /// Handler used when an error occurrs
+    /// Handler used when an error occurs
     /// </summary>
     public class HttpHandlerError : System.Web.IHttpHandler
     {

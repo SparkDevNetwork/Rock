@@ -11,14 +11,16 @@
             <div class="panel-body">
 
                 <div class="grid grid-panel">
+                      <Rock:GridFilter ID="gFilter" runat="server">
+                          <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" />
+                    </Rock:GridFilter>
                     <Rock:Grid ID="gPageRoutes" runat="server" AllowSorting="true" RowItemText="Route" OnRowSelected="gPageRoutes_Edit">
                         <Columns>
                             <Rock:RockBoundField DataField="Route" HeaderText="Route" SortExpression="Route" />
-                            <Rock:RockBoundField DataField="Site" HeaderText="Site" SortExpression="Site" />
-                            <Rock:RockBoundField DataField="PageName" HeaderText="Page Name" SortExpression="PageName" />
-                            <Rock:RockBoundField DataField="PageId" HeaderText="Page Id" SortExpression="PageId" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                            <Rock:RockBoundField DataField="Page.Layout.Site.Name" HeaderText="Site" SortExpression="Page.Layout.Site.Name" />
+                            <Rock:RockBoundField DataField="Page.InternalName" HeaderText="Page Name" SortExpression="Page.InternalName" />
+                            <Rock:RockBoundField DataField="Page.Id" HeaderText="Page Id" SortExpression="Page.Id" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
-                            <Rock:DeleteField OnClick="gPageRoutes_Delete" />
                         </Columns>
                     </Rock:Grid>
                 </div>

@@ -81,9 +81,9 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var daysOfWeekPicker = control as DaysOfWeekPicker;
-            if (daysOfWeekPicker != null)
+            if ( daysOfWeekPicker != null )
             {
-                return daysOfWeekPicker.SelectedDaysOfWeek.Select( a => a.ConvertToInt().ToString()).ToList().AsDelimited( "," );
+                return daysOfWeekPicker.SelectedDaysOfWeek.Select( a => a.ConvertToInt().ToString() ).ToList().AsDelimited( "," );
             }
 
             return null;
@@ -98,9 +98,10 @@ namespace Rock.Field.Types
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             var daysOfWeekPicker = control as DaysOfWeekPicker;
-            if (daysOfWeekPicker != null)
+            if ( daysOfWeekPicker != null )
             {
-                daysOfWeekPicker.SelectedDaysOfWeek = (value ?? string.Empty).Split( ',' ).Select( a => (DayOfWeek)( a.AsInteger() ) ).ToList();
+                var selectedDaysOfWeek = ( value ?? string.Empty ).SplitDelimitedValues().AsIntegerList().Select( a => ( DayOfWeek ) a ).ToList();
+                daysOfWeekPicker.SelectedDaysOfWeek = selectedDaysOfWeek;
             }
         }
 

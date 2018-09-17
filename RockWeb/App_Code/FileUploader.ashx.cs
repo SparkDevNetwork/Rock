@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
@@ -41,8 +42,7 @@ namespace RockWeb
         /// Gets a value indicating whether another request can use the <see cref="T:System.Web.IHttpHandler" /> instance.
         /// </summary>
         /// <returns>true if the <see cref="T:System.Web.IHttpHandler" /> instance is reusable; otherwise, false.</returns>
-        public bool IsReusable
-        {
+        public bool IsReusable {
             get { return false; }
         }
 
@@ -112,13 +112,13 @@ namespace RockWeb
             {
                 ExceptionLogService.LogException( fex, context );
                 context.Response.TrySkipIisCustomErrors = true;
-                context.Response.StatusCode = (int)fex.StatusCode;
+                context.Response.StatusCode = ( int ) fex.StatusCode;
                 context.Response.Write( fex.Detail );
             }
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, context );
-                context.Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                context.Response.StatusCode = ( int ) System.Net.HttpStatusCode.InternalServerError;
                 context.Response.Write( "error: " + ex.Message );
             }
         }
@@ -239,7 +239,7 @@ namespace RockWeb
 
             if ( uploadedFile.FileName.IndexOfAny( illegalCharacters ) >= 0 )
             {
-                throw new Rock.Web.FileUploadException( "Invalid Filename.  Please remove any special characters (" + string.Join(" ", illegalCharacters) + ").", System.Net.HttpStatusCode.UnsupportedMediaType );
+                throw new Rock.Web.FileUploadException( "Invalid Filename.  Please remove any special characters (" + string.Join( " ", illegalCharacters ) + ").", System.Net.HttpStatusCode.UnsupportedMediaType );
             }
 
             // always create a new BinaryFile record of IsTemporary when a file is uploaded
@@ -292,7 +292,7 @@ namespace RockWeb
         public virtual void ValidateFileType( HttpContext context, HttpPostedFile uploadedFile )
         {
             // validate file type (applies to all uploaded files)
-            var globalAttributesCache = GlobalAttributesCache.Read();
+            var globalAttributesCache = GlobalAttributesCache.Get();
             IEnumerable<string> contentFileTypeBlackList = ( globalAttributesCache.GetValue( "ContentFiletypeBlacklist" ) ?? string.Empty ).Split( new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries );
 
             // clean up list

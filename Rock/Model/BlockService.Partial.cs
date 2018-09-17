@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -155,7 +156,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override Guid? GetGuid( int id )
         {
-            var cacheItem = Rock.Web.Cache.BlockCache.Read( id );
+            var cacheItem = BlockCache.Get( id );
             if ( cacheItem != null )
             {
                 return cacheItem.Guid;

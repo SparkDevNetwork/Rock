@@ -75,11 +75,13 @@ namespace Rock.Reporting
             }
 
             // Find all non-virtual properties or properties that have the [IncludeForReporting] attribute
-            var entityProperties = entityType.GetProperties().ToList();
+            List<PropertyInfo> entityProperties = entityType.GetProperties().ToList();
+
             var filteredEntityProperties = entityProperties
                 .Where( p =>
-                    !p.GetGetMethod().IsVirtual ||
+                    ( p.GetGetMethod() != null && !p.GetGetMethod().IsVirtual ) ||
                     p.GetCustomAttributes( typeof( IncludeForReportingAttribute ), true ).Any() ||
+                    p.GetCustomAttributes( typeof( IncludeAsEntityProperty ), true ).Any() ||
                     p.Name == "Order" || p.Name == "IsActive" )
                 .ToList();
 
@@ -97,13 +99,13 @@ namespace Rock.Reporting
                     // check if we can set it from the fieldTypeAttribute
                     if ( ( fieldTypeAttribute != null ) && SetEntityFieldFromFieldTypeAttribute( entityField, fieldTypeAttribute ) )
                     {
-                        // intentially blank, entity field is already setup
+                        // intentionally blank, entity field is already setup
                     }
 
                     // Enum Properties
                     else if ( property.PropertyType.IsEnum )
                     {
-                        entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.SINGLE_SELECT.AsGuid() );
+                        entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.SINGLE_SELECT.AsGuid() );
 
                         var list = new List<string>();
                         foreach ( var value in Enum.GetValues( property.PropertyType ) )
@@ -119,7 +121,7 @@ namespace Rock.Reporting
                     // Boolean properties
                     else if ( property.PropertyType == typeof( bool ) || property.PropertyType == typeof( bool? ) )
                     {
-                        entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.BOOLEAN.AsGuid() );
+                        entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.BOOLEAN.AsGuid() );
                     }
 
                     // Datetime properties
@@ -128,30 +130,30 @@ namespace Rock.Reporting
                         var colAttr = property.GetCustomAttributes( typeof( ColumnAttribute ), true ).FirstOrDefault();
                         if ( colAttr != null && ( (ColumnAttribute)colAttr ).TypeName == "Date" )
                         {
-                            entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.DATE.AsGuid() );
+                            entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DATE.AsGuid() );
                         }
                         else
                         {
-                            entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.DATE_TIME.AsGuid() );
+                            entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DATE_TIME.AsGuid() );
                         }
                     }
 
                     // Decimal properties
                     else if ( property.PropertyType == typeof( decimal ) || property.PropertyType == typeof( decimal? ) )
                     {
-                        entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.DECIMAL.AsGuid() );
+                        entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DECIMAL.AsGuid() );
                     }
 
                     // Text Properties
                     else if ( property.PropertyType == typeof( string ) )
                     {
-                        entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.TEXT.AsGuid() );
+                        entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.TEXT.AsGuid() );
                     }
 
                     // Integer Properties (which may be a DefinedValue)
                     else if ( property.PropertyType == typeof( int ) || property.PropertyType == typeof( int? ) )
                     {
-                        entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.INTEGER.AsGuid() );
+                        entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.INTEGER.AsGuid() );
 
                         var definedValueAttribute = property.GetCustomAttribute<Rock.Data.DefinedValueAttribute>();
                         if ( definedValueAttribute != null )
@@ -160,11 +162,11 @@ namespace Rock.Reporting
                             Guid? definedTypeGuid = ( (Rock.Data.DefinedValueAttribute)definedValueAttribute ).DefinedTypeGuid;
                             if ( definedTypeGuid.HasValue )
                             {
-                                var definedType = DefinedTypeCache.Read( definedTypeGuid.Value );
+                                var definedType = DefinedTypeCache.Get( definedTypeGuid.Value );
                                 entityField.Title = definedType != null ? definedType.Name : property.Name.Replace( "ValueId", string.Empty ).SplitCase();
                                 if ( definedType != null )
                                 {
-                                    entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.DEFINED_VALUE.AsGuid() );
+                                    entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DEFINED_VALUE.AsGuid() );
                                     entityField.FieldConfig.Add( "definedtype", new Field.ConfigurationValue( definedType.Id.ToString() ) );
                                 }
                             }
@@ -179,13 +181,13 @@ namespace Rock.Reporting
             }
 
             // Get Attributes
-            var entityTypeCache = EntityTypeCache.Read( entityType, true );
+            var entityTypeCache = EntityTypeCache.Get( entityType, true );
             if ( entityTypeCache != null )
             {
                 int entityTypeId = entityTypeCache.Id;
                 using ( var rockContext = new RockContext() )
                 {
-                    var qryAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeId );
+                    var qryAttributes = new AttributeService( rockContext ).GetByEntityTypeId( entityTypeId );
                     if ( entityType == typeof( Group ) || entityType == typeof( GroupMember ) )
                     {
                         // in the case of Group or GroupMember, show attributes that are entity global, but also ones that are qualified by GroupTypeId
@@ -221,11 +223,11 @@ namespace Rock.Reporting
                         qryAttributes = qryAttributes.Where( a => string.IsNullOrEmpty( a.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( a.EntityTypeQualifierValue ) );
                     }
 
-                    var attributeIdList = qryAttributes.Select( a => a.Id ).ToList();
+                    var cacheAttributeList = qryAttributes.ToCacheAttributeList();
 
-                    foreach ( var attributeId in attributeIdList )
+                    foreach ( var attributeCache in cacheAttributeList )
                     {
-                        AddEntityFieldForAttribute( entityFields, AttributeCache.Read( attributeId ), limitToFilterableFields );
+                        AddEntityFieldForAttribute( entityFields, attributeCache, limitToFilterableFields );
                     }
                 }
             }
@@ -258,7 +260,7 @@ namespace Rock.Reporting
         {
             if ( fieldTypeAttribute != null )
             {
-                var fieldTypeCache = FieldTypeCache.Read( fieldTypeAttribute.FieldTypeGuid );
+                var fieldTypeCache = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid );
                 if ( fieldTypeCache != null && fieldTypeCache.Field != null )
                 {
                     if ( fieldTypeCache.Field.HasFilterControl() )
@@ -297,7 +299,7 @@ namespace Rock.Reporting
                 return;
 
 
-            var entityType = EntityTypeCache.Read( attribute.EntityTypeId ?? 0 );
+            var entityType = EntityTypeCache.Get( attribute.EntityTypeId ?? 0 );
 
             string legacyFieldName = entityField.Name;
             if ( entityType != null )
@@ -311,7 +313,7 @@ namespace Rock.Reporting
                 }
             }
 
-            // NOTE: This method of naming the field isn't predictable, but for backwards compability, keep doing it this way so that old datafilter settings will still match up
+            // NOTE: This method of naming the field isn't predictable, but for backwards compatibility, keep doing it this way so that old datafilter settings will still match up
             int i = 1;
             while ( entityFields.Any( p => p.LegacyName.Equals( legacyFieldName, StringComparison.CurrentCultureIgnoreCase ) ) )
             {
@@ -336,11 +338,11 @@ namespace Rock.Reporting
             EntityField entityField = null;
 
             // Make sure that the attributes field type actually renders a filter control if limitToFilterableAttributes
-            var fieldType = FieldTypeCache.Read( attribute.FieldTypeId );
+            var fieldType = FieldTypeCache.Get( attribute.FieldTypeId );
             if ( fieldType != null && ( !limitToFilterableAttributes || fieldType.Field.HasFilterControl() ) )
             {
                 entityField = new EntityField( fieldName, FieldKind.Attribute, typeof( string ), attribute.Guid, fieldType );
-                entityField.Title = attribute.Name.SplitCase();
+                entityField.Title = attribute.Name;
                 entityField.TitleWithoutQualifier = entityField.Title;
 
                 foreach ( var config in attribute.QualifierValues )
@@ -353,7 +355,7 @@ namespace Rock.Reporting
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        var groupType = GroupTypeCache.Read( attribute.EntityTypeQualifierValue.AsInteger(), rockContext );
+                        var groupType = GroupTypeCache.Get( attribute.EntityTypeQualifierValue.AsInteger(), rockContext );
                         if ( groupType != null )
                         {
                             // Append the Qualifier to the title
@@ -427,7 +429,7 @@ namespace Rock.Reporting
     public class EntityField
     {
         /// <summary>
-        /// Gets the consistantly unique name of the field in the form of "Property: {{ Name }}" for properties and "Attribute:{{ Name }} (Guid:{{ Guid }}})" for attributes
+        /// Gets the consistently unique name of the field in the form of "Property: {{ Name }}" for properties and "Attribute:{{ Name }} (Guid:{{ Guid }}})" for attributes
         /// </summary>
         /// <value>
         /// Unique Name

@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             // configure the pbx call origination features
-            var phoneTypeDefinedTypeId = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).Id;
+            var phoneTypeDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).Id;
             dvpOriginateCallSource.DefinedTypeId = phoneTypeDefinedTypeId;
 
             var preferredOriginationPhoneTypeId = PersonService.GetUserPreference( CurrentPerson, UserPreference.ORIGINATE_CALL_SOURCE ).AsIntegerOrNull();

@@ -26,7 +26,7 @@ using Rock.Web.Cache;
 namespace Rock.PersonProfile
 {
     /// <summary>
-    /// MEF Container class for Person Badge Componenets
+    /// MEF Container class for Person Badge Components
     /// </summary>
     public class BadgeContainer : Container<BadgeComponent, IComponentData>
     {
@@ -55,13 +55,13 @@ namespace Rock.PersonProfile
             base.Refresh();
 
             // Create any attributes that need to be created
-            int personBadgeEntityTypeId = EntityTypeCache.Read( typeof( PersonBadge ) ).Id;
+            int personBadgeEntityTypeId = EntityTypeCache.Get( typeof( PersonBadge ) ).Id;
             using ( var rockContext = new RockContext() )
             {
                 foreach ( var badge in this.Components )
                 {
                     Type badgeType = badge.Value.Value.GetType();
-                    int badgeComponentEntityTypeId = EntityTypeCache.Read( badgeType ).Id;
+                    int badgeComponentEntityTypeId = EntityTypeCache.Get( badgeType ).Id;
                     Rock.Attribute.Helper.UpdateAttributes( badgeType, personBadgeEntityTypeId, "EntityTypeId", badgeComponentEntityTypeId.ToString(), rockContext );
                 }
             }

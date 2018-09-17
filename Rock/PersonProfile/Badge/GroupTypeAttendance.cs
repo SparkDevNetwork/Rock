@@ -84,7 +84,7 @@ namespace Rock.PersonProfile.Badge
                 mergeFields.Add( "Person", this.Person );
                 using ( var rockContext = new RockContext() )
                 {
-                    var groupType = GroupTypeCache.Read( groupTypeGuid.Value );
+                    var groupType = GroupTypeCache.Get( groupTypeGuid.Value );
                     int groupTypeId = groupType?.Id ?? 0;
                     mergeFields.Add( "GroupType", groupType );
                     mergeFields.Add( "Badge", badge );
@@ -92,9 +92,13 @@ namespace Rock.PersonProfile.Badge
 
                     var personAliasIds = Person.Aliases.Select( a => a.Id ).ToList();
 
-                    var attendanceQuery = new AttendanceService( rockContext ).Queryable().Where( a =>
-                        a.Group.GroupTypeId == groupTypeId && a.DidAttend == true
-                        && personAliasIds.Contains( a.PersonAliasId.Value ) );
+                    var attendanceQuery = new AttendanceService( rockContext )
+                        .Queryable()
+                        .Where( a =>
+                            a.Occurrence.Group != null &&
+                            a.Occurrence.Group.GroupTypeId == groupTypeId && 
+                            a.DidAttend == true && 
+                            personAliasIds.Contains( a.PersonAliasId.Value ) );
 
                     if ( dateRange.Start.HasValue )
                     {

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -34,7 +35,7 @@ namespace RockWeb.Blocks.Groups
 {
     [DisplayName( "Group List" )]
     [Category( "Groups" )]
-    [Description( "Lists all groups for the configured group types. Query string parameters: <ul><li>GroupTypeId - Filters to a specific group type.</li></ui>" )]
+    [Description( "Lists all groups for the configured group types or all groups for the specified person context. Query string parameters: <ul><li>GroupTypeId - Filters to a specific group type.</li></ui>" )]
 
     [LinkedPage( "Detail Page", "", true, "", "", 0 )]
     [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 1 )]
@@ -51,11 +52,25 @@ namespace RockWeb.Blocks.Groups
     [CustomDropdownListField( "Limit to Active Status", "Select which groups to show, based on active status. Select [All] to let the user filter by active status.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 12 )]
     [TextField( "Set Panel Title", "The title to display in the panel header. Leave empty to have the title be set automatically based on the group type or block name.", required: false, order: 13 )]
     [TextField( "Set Panel Icon", "The icon to display in the panel header. Leave empty to have the icon be set automatically based on the group type or default icon.", required: false, order: 14 )]
+    [BooleanField( "Allow Add", "Should block support adding new group?", true, "",  15)]
     [ContextAware]
     public partial class GroupList : RockBlock, ICustomGridColumns
     {
         private int _groupTypesCount = 0;
         private bool _showGroupPath = false;
+
+        private HashSet<int> _groupsWithGroupHistory = null;
+
+        public enum GridListGridMode
+        {
+            // Block has a Context of Person, so the grid is a list of groups that the person is a member of
+            GroupsPersonMemberOf = 0,
+
+            // Block doesn't have a context of person, so it is just a normal list of groups
+            GroupList = 1
+        }
+
+        public GridListGridMode GroupListGridMode = GridListGridMode.GroupList;
 
         #region Control Methods
 
@@ -75,7 +90,7 @@ namespace RockWeb.Blocks.Groups
             this.AddConfigurationUpdateTrigger( upnlGroupList );
 
             SecurityField securityField = gGroups.Columns.OfType<SecurityField>().FirstOrDefault();
-            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Group ) ).Id;
+            securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Group ) ).Id;
         }
 
         /// <summary>
@@ -105,11 +120,10 @@ namespace RockWeb.Blocks.Groups
             ddlActiveFilter.Visible = GetAttributeValue( "LimittoActiveStatus" ) == "all";
 
             gGroups.DataKeyNames = new string[] { "Id" };
-            gGroups.Actions.ShowAdd = true;
             gGroups.Actions.AddClick += gGroups_Add;
             gGroups.GridRebind += gGroups_GridRebind;
-            gGroups.RowDataBound += gGroups_RowDataBound;
             gGroups.ExportSource = ExcelExportSource.DataSource;
+            gGroups.ShowConfirmDeleteDialog = false;
 
             // set up Grid based on Block Settings and Context
             bool showDescriptionColumn = GetAttributeValue( "DisplayDescriptionColumn" ).AsBoolean();
@@ -144,9 +158,21 @@ namespace RockWeb.Blocks.Groups
                 securityField.Visible = showSecurityColumn;
             }
 
-            int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+            int personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
+            bool allowAdd = GetAttributeValue( "AllowAdd" ).AsBooleanOrNull() ?? true;
+
             if ( ContextTypesRequired.Any( a => a.Id == personEntityTypeId ) )
             {
+                // Grid is in 'Groups that Person is member of' mode
+                GroupListGridMode = GridListGridMode.GroupsPersonMemberOf;
+            }
+            else
+            {
+                GroupListGridMode = GridListGridMode.GroupList;
+            }
+
+            if ( GroupListGridMode == GridListGridMode.GroupsPersonMemberOf )
+            { 
                 var personContext = ContextEntity<Person>();
                 if ( personContext != null )
                 {
@@ -154,14 +180,19 @@ namespace RockWeb.Blocks.Groups
                     boundFields["DateAdded"].Visible = true;
                     boundFields["MemberCount"].Visible = false;
                     gGroups.IsDeleteEnabled = true;
+                    gGroups.Actions.ShowAdd = allowAdd;
                     gGroups.HideDeleteButtonForIsSystem = false;
                 }
+
+                gGroups.DataKeyNames = new string[] { "GroupMemberId" };
             }
             else
             {
+                // Grid is in normal 'Group List' mode
                 bool canEdit = IsUserAuthorized( Authorization.EDIT );
-                gGroups.Actions.ShowAdd = canEdit;
+                gGroups.Actions.ShowAdd = canEdit && allowAdd;
                 gGroups.IsDeleteEnabled = canEdit;
+                gGroups.DataKeyNames = new string[] { "Id" };
 
                 boundFields["GroupRole"].Visible = false;
                 boundFields["DateAdded"].Visible = false;
@@ -183,19 +214,34 @@ namespace RockWeb.Blocks.Groups
                 var groupInfo = (GroupListRowInfo)e.Row.DataItem;
 
                 // Show inactive entries in a lighter font.
-                if ( !groupInfo.IsActive )
+                if ( !groupInfo.IsActive || groupInfo.IsArchived )
                 {
                     e.Row.AddCssClass( "is-inactive" );
                 }
 
-                if ( groupInfo.IsSynced )
+                var deleteOrArchiveField = gGroups.ColumnsOfType<DeleteField>().FirstOrDefault();
+                if ( deleteOrArchiveField != null && deleteOrArchiveField.Visible )
                 {
-                    var deleteField = gGroups.ColumnsOfType<DeleteField>().FirstOrDefault();
-                    if ( deleteField != null && deleteField.Visible )
+                    var deleteFieldColumnIndex = gGroups.GetColumnIndex( deleteOrArchiveField );
+                    var deleteButton = e.Row.Cells[deleteFieldColumnIndex].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
+                    if ( deleteButton != null )
                     {
-                        TableCell cell = e.Row.Cells[gGroups.Columns.IndexOf( deleteField )];
-                        cell.Text = "<span class=\"btn btn-info btn-sm disabled\" ><i class=\"fa fa-exchange\"></i></span>";
-                        cell.ToolTip = "Managed by group sync";
+                        var buttonIcon = deleteButton.ControlsOfTypeRecursive<HtmlGenericControl>().FirstOrDefault();
+
+                        if ( groupInfo.IsSynced )
+                        {
+                            deleteButton.Enabled = false;
+                            buttonIcon.Attributes["class"] = "fa fa-exchange";
+
+                            deleteButton.ToolTip = string.Format( "Managed by group sync for role \"{0}\".", groupInfo.GroupRole );
+                        }
+                        else if ( groupInfo.GroupType.EnableGroupHistory && _groupsWithGroupHistory.Contains( groupInfo.Id ) )
+                        {
+                            buttonIcon.Attributes["class"] = "fa fa-archive";
+                            deleteButton.AddCssClass( "btn-danger" );
+                            deleteButton.ToolTip = "Archive";
+                            e.Row.AddCssClass( "js-has-grouphistory" );
+                        }
                     }
                 }
             }
@@ -251,7 +297,7 @@ namespace RockWeb.Blocks.Groups
 
                     int id = e.Value.AsInteger();
 
-                    var groupType = GroupTypeCache.Read( id );
+                    var groupType = GroupTypeCache.Get( id );
                     if ( groupType != null )
                     {
                         e.Value = groupType.Name;
@@ -273,7 +319,7 @@ namespace RockWeb.Blocks.Groups
                     var groupTypePurposeTypeValueId = e.Value.AsIntegerOrNull();
                     if ( groupTypePurposeTypeValueId.HasValue )
                     {
-                        var groupTypePurpose = DefinedValueCache.Read( groupTypePurposeTypeValueId.Value );
+                        var groupTypePurpose = DefinedValueCache.Get( groupTypePurposeTypeValueId.Value );
                         e.Value = groupTypePurpose != null ? groupTypePurpose.ToString() : string.Empty;
                     }
                     else
@@ -292,9 +338,9 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gGroups_Add( object sender, EventArgs e )
         {
-            int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-            if ( ContextTypesRequired.Any( a => a.Id == personEntityTypeId ) )
+            if ( GroupListGridMode == GridListGridMode.GroupsPersonMemberOf )
             {
+                // Grid is in 'Groups that Person is member of' mode
                 BindModelDropDown();
                 modalDetails.Show();
             }
@@ -311,93 +357,139 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroups_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "GroupId", e.RowKeyId );
+            int groupId;
+            if ( gGroups.DataKeyNames[0] == "GroupMemberId" )
+            {
+                int groupMemberId = e.RowKeyId;
+                groupId = new GroupMemberService( new RockContext() ).GetSelect( groupMemberId, a => a.GroupId );
+            }
+            else
+            {
+                groupId = e.RowKeyId;
+            }
+
+            NavigateToLinkedPage( "DetailPage", "GroupId", groupId );
         }
 
         /// <summary>
-        /// Handles the Delete event of the gGroups control.
+        /// Handles the Click event of the delete/archive button in the grid
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gGroups_Delete( object sender, RowEventArgs e )
+        protected void gGroups_DeleteOrArchive( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
             GroupService groupService = new GroupService( rockContext );
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
             AuthService authService = new AuthService( rockContext );
-            Group group = groupService.Get( e.RowKeyId );
+            Group group = null;
+            GroupMember groupMember = null;
+            if ( GroupListGridMode == GridListGridMode.GroupsPersonMemberOf )
+            {
+                // the DataKey Id of the grid is GroupMemberId
+                groupMember = groupMemberService.Get( e.RowKeyId );
+                if ( groupMember != null )
+                {
+                    group = groupMember.Group;
+                }
+            }
+            else
+            {
+                // the DataKey Id of the grid is GroupId
+                group = groupService.Get( e.RowKeyId );
+            }
 
             if ( group != null )
             {
-                string errorMessage;
                 bool isSecurityRoleGroup = group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
-                int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
 
-                if ( ContextTypesRequired.Any( a => a.Id == personEntityTypeId ) )
+                if ( GroupListGridMode == GridListGridMode.GroupsPersonMemberOf )
                 {
-                    var personContext = ContextEntity<Person>();
-                    GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-                    RegistrationRegistrantService registrantService = new RegistrationRegistrantService( rockContext );
-                    GroupMember groupMember = group.Members.SingleOrDefault( a => a.PersonId == personContext.Id );
+                    // Grid is in 'Groups that Person is member of' mode
+                    GroupMemberHistoricalService groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
 
-                    if ( !( group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) ) )
+                    bool archive = false;
+                    if ( group.GroupType.EnableGroupHistory == true && groupMemberHistoricalService.Queryable().Any( a => a.GroupMemberId == groupMember.Id ) )
                     {
-                        mdGridWarning.Show( "You are not authorized to delete members from this group", ModalAlertType.Information );
-                        return;
+                        // if the group has GroupHistory enabled, and this group member has group member history snapshots, they were prompted to Archive
+                        archive = true;
                     }
-
-                    if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )
+                    else
                     {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
+						if ( !( group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) ) )
+	                    {
+	                        mdGridWarning.Show( "You are not authorized to delete members from this group", ModalAlertType.Information );
+	                        return;
+	                    }
 
-                    foreach ( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId == groupMember.Id ) )
-                    {
-                        registrant.GroupMemberId = null;
-                    }
-
-                    if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-                    {
-                        // person removed from SecurityRole, Flush
-                        Rock.Security.Role.Flush( group.Id );
-                    }
-
-                    groupMemberService.Delete( groupMember );
-
-                }
-                else
-                {
-                    if ( !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
-                    {
-                        mdGridWarning.Show( "You are not authorized to delete this group", ModalAlertType.Information );
-                        return;
-                    }
-
-
-                    if ( !groupService.CanDelete( group, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-
-                    if ( isSecurityRoleGroup )
-                    {
-                        Rock.Security.Role.Flush( group.Id );
-                        foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
+                        string errorMessage;
+                        if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )
                         {
-                            authService.Delete( auth );
+                            mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                            return;
                         }
                     }
 
-                    groupService.Delete( group );
+                    int groupId = groupMember.GroupId;
+
+                    if ( archive )
+                    {
+                        // NOTE: Delete will AutoArchive, but since we know that we need to archive, we can call .Archive directly 
+                        groupMemberService.Archive( groupMember, this.CurrentPersonAliasId, true );
+                    }
+                    else
+                    {
+                        groupMemberService.Delete( groupMember, true );
+                    }
+
+                    rockContext.SaveChanges();
+                }
+                else
+                {
+                    // Grid is in 'Group List' mode
+                    bool archive = false;
+                    var groupMemberHistoricalService = new GroupHistoricalService( rockContext );
+                    if ( group.GroupType.EnableGroupHistory == true && groupMemberHistoricalService.Queryable().Any( a => a.GroupId == group.Id ) )
+                    {
+                        // if the group has GroupHistory enabled and has history snapshots, and they were prompted to Archive
+                        archive = true;
+                    }
+
+                    if ( archive )
+                    {
+                        if ( !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                        {
+                            mdGridWarning.Show( "You are not authorized to archive this group", ModalAlertType.Information );
+                            return;
+                        }
+
+                        // NOTE: groupService.Delete will automatically Archive instead Delete if this Group has GroupHistory enabled, but since this block has UI logic for Archive vs Delete, we can do a direct Archive
+                        groupService.Archive( group, this.CurrentPersonAliasId, true );
+                    }
+                    else
+                    {
+                        if ( !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                        {
+                            mdGridWarning.Show( "You are not authorized to delete this group", ModalAlertType.Information );
+                            return;
+                        }
+
+                        string errorMessage;
+                        if ( !groupService.CanDelete( group, out errorMessage ) )
+                        {
+                            mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                            return;
+                        }
+                        
+                        groupService.Delete( group, true );
+                    }
                 }
 
                 rockContext.SaveChanges();
 
                 if ( isSecurityRoleGroup )
                 {
-                    Rock.Security.Authorization.Flush();
+                    Rock.Security.Authorization.Clear();
                 }
             }
 
@@ -468,11 +560,6 @@ namespace RockWeb.Blocks.Groups
             groupMemberService.Add( groupMember );
             rockContext.SaveChanges();
 
-            if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-            {
-                Rock.Security.Role.Flush( group.Id );
-            }
-
             modalDetails.Hide();
             BindFilter();
             BindGrid();
@@ -504,7 +591,7 @@ namespace RockWeb.Blocks.Groups
                 gtpGroupType.SelectedValue = gfSettings.GetUserPreference( "Group Type" );
             }
 
-            ddlGroupTypePurpose.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid() ), true );
+            ddlGroupTypePurpose.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid() ), true );
             ddlGroupTypePurpose.SetValue( gfSettings.GetUserPreference( "Group Type Purpose" ) );
 
             // Set the Active Status
@@ -588,15 +675,13 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-
             var groupTypePurposeValue = gfSettings.GetUserPreference( "Group Type Purpose" ).AsIntegerOrNull();
 
             var groupList = new List<GroupListRowInfo>();
 
-            // Person context will exist if used on a person detail page
-            int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-            if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) )
+            if ( GroupListGridMode == GridListGridMode.GroupsPersonMemberOf )
             {
+                // Grid is in 'Groups that Person is member of' mode
                 var personContext = ContextEntity<Person>();
                 if ( personContext != null )
                 {
@@ -622,24 +707,28 @@ namespace RockWeb.Blocks.Groups
                         qry = qry.Where( t => t.Group.GroupType.GroupTypePurposeValueId == groupTypePurposeValue );
                     }
 
+                    // load with Groups where the current person has GroupMemberHistory for
+                    _groupsWithGroupHistory = new HashSet<int>( new GroupMemberHistoricalService( rockContext ).Queryable().Where( a => qry.Any( x => x.GroupMember.Id == a.GroupMemberId )).Select( a => a.GroupId ).ToList() );
+
                     groupList = qry
                         .AsEnumerable()
                         .Where( gm => gm.Group.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                         .Select( m => new GroupListRowInfo
                             {
                                 Id = m.Group.Id,
+                                GroupMemberId = m.GroupMember.Id,
                                 Path = string.Empty,
                                 Name = m.Group.Name,
-                                GroupTypeName = m.Group.GroupType.Name,
+                                GroupType = GroupTypeCache.Get( m.Group.GroupTypeId ),
                                 GroupOrder = m.Group.Order,
-                                GroupTypeOrder = m.Group.GroupType.Order,
                                 Description = m.Group.Description,
                                 IsSystem = m.Group.IsSystem,
                                 GroupRole = m.GroupMember.GroupRole.Name,
                                 DateAdded = m.GroupMember.DateTimeAdded ?? m.GroupMember.CreatedDateTime,
                                 IsActive = m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ),
+                                IsArchived = m.Group.IsArchived || m.GroupMember.IsArchived,
                                 IsActiveOrder = ( m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ) ? 1 : 2 ),
-                                IsSynced = m.Group.SyncDataViewId.HasValue,
+                                IsSynced = m.Group.GroupSyncs.Any(),
                                 MemberCount = 0
                             } )
                         .AsQueryable()
@@ -649,7 +738,8 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                var roleGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+				// Grid is in normal 'Group List' mode
+                var roleGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
                 int roleGroupTypeId = roleGroupType != null ? roleGroupType.Id : 0;
                 bool useRolePrefix = onlySecurityGroups || groupTypeIds.Contains( roleGroupTypeId );
 
@@ -667,6 +757,9 @@ namespace RockWeb.Blocks.Groups
                     qryGroups = qryGroups.Where( t => t.GroupType.GroupTypePurposeValueId == groupTypePurposeValue );
                 }
 
+                // load with groups that have Group History
+                _groupsWithGroupHistory = new HashSet<int>( new GroupHistoricalService( rockContext ).Queryable().Where( a => qryGroups.Any( g => g.Id == a.GroupId ) ).Select( a => a.GroupId ).ToList() );
+
                 groupList = qryGroups
                     .AsEnumerable()
                     .Where(g => g.IsAuthorized(Rock.Security.Authorization.VIEW, CurrentPerson))
@@ -675,16 +768,16 @@ namespace RockWeb.Blocks.Groups
                         Id = g.Id,
                         Path = string.Empty,
                         Name = ( ( useRolePrefix && g.GroupType.Id != roleGroupTypeId ) ? "GROUP - " : "" ) + g.Name,
-                        GroupTypeName = g.GroupType.Name,
+                        GroupType = GroupTypeCache.Get( g.GroupTypeId ),
                         GroupOrder = g.Order,
-                        GroupTypeOrder = g.GroupType.Order,
                         Description = g.Description,
                         IsSystem = g.IsSystem,
                         IsActive = g.IsActive,
+                        IsArchived = g.IsArchived,
                         IsActiveOrder = g.IsActive ? 1 : 2,
                         GroupRole = string.Empty,
                         DateAdded = DateTime.MinValue,
-                        IsSynced = g.SyncDataViewId.HasValue,
+                        IsSynced = g.GroupSyncs.Any(),
                         MemberCount = g.Members.Count()
                     } )
                     .AsQueryable()
@@ -701,7 +794,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             gGroups.DataSource = groupList;
-            gGroups.EntityTypeId = EntityTypeCache.Read<Group>().Id;
+            gGroups.EntityTypeId = EntityTypeCache.Get<Group>().Id;
             gGroups.DataBind();
 
             // hide the group type column if there's only one type; must come after DataBind()
@@ -738,7 +831,7 @@ namespace RockWeb.Blocks.Groups
 
             foreach ( int groupTypeId in qry.Select( t => t.Id ) )
             {
-                var groupType = GroupTypeCache.Read( groupTypeId );
+                var groupType = GroupTypeCache.Get( groupTypeId );
                 if ( groupType != null && groupType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     groupTypeIds.Add( groupTypeId );
@@ -761,7 +854,7 @@ namespace RockWeb.Blocks.Groups
             // If there's only one group type, use it's 'group term' in the panel title.
             if ( groupTypeIds.Count == 1 )
             {
-                var singleGroupType = GroupTypeCache.Read( groupTypeIds.FirstOrDefault() );
+                var singleGroupType = GroupTypeCache.Get( groupTypeIds.FirstOrDefault() );
                 lTitle.Text = string.Format( "{0}", singleGroupType.GroupTerm.Pluralize() );
                 iIcon.AddCssClass( singleGroupType.IconCssClass );
             }
@@ -829,22 +922,41 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
-        private class GroupListRowInfo: DotLiquid.Drop
+        private class GroupListRowInfo : DotLiquid.Drop
         {
             public int Id { get; set; }
+            public int? GroupMemberId { get; set; }
             public string Path { get; set; }
             public string Name { get; set; }
-            public string GroupTypeName { get; set; }
+            public GroupTypeCache GroupType { get; set; }
+
+            public string GroupTypeName
+            {
+                get
+                {
+                    return GroupType.Name;
+                }
+            }
+
+            public int GroupTypeOrder
+            {
+                get
+                {
+                    return GroupType.Order;
+                }
+            }
+
             public int GroupOrder { get; set; }
-            public int GroupTypeOrder { get; set; }
             public string Description { get; set; }
             public bool IsSystem { get; set; }
             public string GroupRole { get; set; }
             public DateTime? DateAdded { get; set; }
             public bool IsActive { get; set; }
+            public bool IsArchived { get; set; }
             public int IsActiveOrder { get; set; }
             public bool IsSynced { get; set; }
             public int MemberCount { get; set; }
+            
         }
     }
 }

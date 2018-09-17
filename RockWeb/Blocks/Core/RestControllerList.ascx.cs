@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Administration
             var securityField = gControllers.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RestController ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.RestController ) ).Id;
             }
         }
 
@@ -142,7 +142,7 @@ namespace RockWeb.Blocks.Administration
                 qry = qry.OrderBy( c => c.Name);
             }
 
-            gControllers.EntityTypeId = EntityTypeCache.Read<RestController>().Id;
+            gControllers.EntityTypeId = EntityTypeCache.Get<RestController>().Id;
             gControllers.DataSource = qry.ToList();
             gControllers.DataBind();
         }

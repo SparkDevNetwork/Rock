@@ -38,9 +38,7 @@ public class SyndicationFeedHelper
     /// <param name="feedUrl">A <see cref="System.String"/> representing the URL of the feed.</param>
     public static void ClearCachedFeed( string feedUrl )
     {
-        RockMemoryCache cache = RockMemoryCache.Default;
-        string cacheKey = GetFeedCacheKey( feedUrl );
-        cache.Remove( cacheKey );
+        RockCache.Remove( GetFeedCacheKey( feedUrl ) );
     }
 
     /// <summary>
@@ -73,13 +71,10 @@ public class SyndicationFeedHelper
             return feedDictionary;
         }
 
-        ObjectCache feedCache = RockMemoryCache.Default;
+        string cacheKey = GetFeedCacheKey( feedUrl );
+        feedDictionary = RockCache.Get( cacheKey ) as Dictionary<string, object>;
 
-        if ( feedCache[GetFeedCacheKey( feedUrl )] != null )
-        {
-            feedDictionary = (Dictionary<string, object>)feedCache[GetFeedCacheKey( feedUrl )];
-        }
-        else
+        if ( feedDictionary == null )
         {
             XDocument feed = null;
 
@@ -213,7 +208,8 @@ public class SyndicationFeedHelper
 
             if ( feedDictionary != null )
             {
-                feedCache.Set( GetFeedCacheKey( feedUrl ), feedDictionary, DateTimeOffset.Now.AddMinutes( cacheDuration ) );
+                var expiration = Rock.RockDateTime.Now.AddMinutes( cacheDuration );
+                RockCache.AddOrUpdate( cacheKey, null, feedDictionary, expiration );
             }
 
         }

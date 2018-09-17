@@ -120,7 +120,7 @@ namespace RockWeb
                 int? siteId = ( GetSavedValue( "Rock:SiteId" ) ?? string.Empty ).ToString().AsIntegerOrNull();
                 if ( !partialPostback && siteId.HasValue )
                 {
-                    var site = SiteCache.Read( siteId.Value );
+                    var site = SiteCache.Get( siteId.Value );
                     if ( site != null && !string.IsNullOrWhiteSpace( site.ErrorPage ) )
                     {
                         Context.Response.Redirect( site.ErrorPage, false );

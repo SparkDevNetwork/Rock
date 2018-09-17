@@ -391,7 +391,7 @@ namespace Rock.Web.UI.Controls
             {
                 valueHtml.AppendFormat( @"<input class=""form-control input-width-lg js-value-list-input"" type=""text"" placeholder=""{0}""></input>", ValuePrompt );
             }
-            valueHtml.Append( @"<a href=""#"" class=""btn btn-sm btn-danger value-list-remove""><i class=""fa fa-minus-circle""></i></a></div>" );
+            valueHtml.Append( @"<a href=""#"" class=""btn btn-sm btn-danger value-list-remove""><i class=""fa fa-times""></i></a></div>" );
 
             var hfValueHtml = new HtmlInputHidden();
             hfValueHtml.AddCssClass( "js-value-list-html" );
@@ -438,7 +438,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-danger value-list-remove" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute(HtmlTextWriterAttribute.Class, "fa fa-minus-circle");
+                writer.AddAttribute(HtmlTextWriterAttribute.Class, "fa fa-times" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
@@ -455,7 +455,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            var addButtonCssClass = "btn btn-action btn-xs value-list-add";
+            var addButtonCssClass = "btn btn-action btn-xs btn-square value-list-add";
             if ( !this.Enabled )
             {
                 addButtonCssClass += " aspNetDisabled disabled";

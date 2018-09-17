@@ -38,7 +38,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
-            var globalAttributes = GlobalAttributesCache.Read();
+            var globalAttributes = GlobalAttributesCache.Get();
             if (globalAttributes != null)
             {
                 this.PrependText = "<i class='fa fa-envelope'></i>";

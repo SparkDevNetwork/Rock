@@ -64,7 +64,7 @@ namespace Rock.Utility
             sparkLinkRequest.VersionIds = installedPackages.Select( i => i.VersionId ).ToList();
             sparkLinkRequest.RockVersion = VersionInfo.VersionInfo.GetRockSemanticVersionNumber();
 
-            var globalAttributes = GlobalAttributesCache.Read();
+            var globalAttributes = GlobalAttributesCache.Get();
             sparkLinkRequest.OrganizationName = globalAttributes.GetValue( "OrganizationName" );
             sparkLinkRequest.PublicUrl = globalAttributes.GetValue( "PublicApplicationRoot" );
 

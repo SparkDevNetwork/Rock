@@ -248,7 +248,7 @@ namespace RockWeb.Blocks.Reporting
                     mergeFields.Add( "InteractionComponent", component );
                     mergeFields.Add( "Interactions", interactions.ToList().Take( pageSize ) );
 
-                    lContent.Text = component.Channel.InteractionListTemplate.IsNotNullOrWhitespace() ?
+                    lContent.Text = component.Channel.InteractionListTemplate.IsNotNullOrWhiteSpace() ?
                         component.Channel.InteractionListTemplate.ResolveMergeFields( mergeFields ) :
                         GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
 

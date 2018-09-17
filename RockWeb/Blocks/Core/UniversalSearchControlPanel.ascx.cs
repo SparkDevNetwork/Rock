@@ -210,9 +210,6 @@ namespace RockWeb.Blocks.Core
                 {
                     IndexContainer.DeleteIndex( entityType.IndexModelType );
                 }
-
-                // flush item from cache
-                EntityTypeCache.Flush( entityType.Id );
             }
 
             mdEditEntityType.Hide();
@@ -261,7 +258,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gEntityList_RowSelected( object sender, RowEventArgs e )
         {
-            var entityType = EntityTypeCache.Read( e.RowKeyId );
+            var entityType = EntityTypeCache.Get( e.RowKeyId );
 
             hfIdValue.Value = e.RowKeyId.ToString();
 
@@ -279,7 +276,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gBulkLoad_Click( object sender, RowEventArgs e )
         {
-            var entityType = EntityTypeCache.Read( e.RowKeyId );
+            var entityType = EntityTypeCache.Get( e.RowKeyId );
 
             if (entityType != null )
             {
@@ -303,7 +300,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gClearIndex_Click( object sender, RowEventArgs e )
         {
-            var entityType = EntityTypeCache.Read( e.RowKeyId );
+            var entityType = EntityTypeCache.Get( e.RowKeyId );
             Type type = entityType.GetEntityType();
 
             if ( type != null )
@@ -408,7 +405,7 @@ namespace RockWeb.Blocks.Core
             if ( !searchEnabled )
             {
                 nbMessages.NotificationBoxType = NotificationBoxType.Warning;
-                nbMessages.Text = "No universal search index components are currently enabled. You must enable a index component under <span class='navigation-tip'>Admin Tools &gt; System Settngs &gt; Universal Search Index Components</span>.";
+                nbMessages.Text = "No universal search index components are currently enabled. You must enable a index component under <span class='navigation-tip'>Admin Tools &gt; System Settings &gt; Universal Search Index Components</span>.";
             }
         }
 

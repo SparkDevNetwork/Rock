@@ -205,7 +205,7 @@ namespace Rock.Web.UI.Controls
         {
             set
             {
-                EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( value ).Id;
+                EntityTypeId = EntityTypeCache.Get( value ).Id;
             }
         }
 
@@ -282,7 +282,7 @@ namespace Rock.Web.UI.Controls
 
             if ( RootCategoryId.HasValue )
             {
-                var rootCategory = CategoryCache.Read( RootCategoryId.Value );
+                var rootCategory = CategoryCache.Get( RootCategoryId.Value );
                 if ( rootCategory.EntityTypeId == this.EntityTypeId )
                 {
                     parms += string.Format( "&rootCategoryId={0}", rootCategory.Id );
