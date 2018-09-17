@@ -33,7 +33,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
 {
-    [DisplayName( "Report Data" )]
+    [DisplayName( "Dynamic Report" )]
     [Category( "Reporting" )]
     [Description( "Block to display a report with options to edit the filter" )]
     [BooleanField( "Show 'Merge Template' action on grid", "", defaultValue: true, key: "ShowGridMergeTemplateAction" )]

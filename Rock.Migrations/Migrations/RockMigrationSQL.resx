@@ -238,9 +238,6 @@
   <data name="_201805171836577_Rollup_0517_vCheckin_Attendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 8.0\version 1.8.0\201805171836577_rollup_0517_vcheckin_attendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
-  <data name="_201807191932379_Rollup_0719_Add_ConnectionStatus_and_RecordStatus_Security_Actions_to_Bulk_Update" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 8.0\version 1.8.0\201807191932379_rollup_0719_add connectionstatus and recordstatus security actions to bulk update.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
   <data name="_201807191932379_Rollup_0719_Fix_Accordion_Bug" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 8.0\version 1.8.0\201807191932379_rollup_0719_fix accordion bug.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
@@ -250,9 +247,6 @@
   <data name="_201707311527250_FirstNameGender" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>createdatabase\201707311527250_firstnamegender.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
-  <data name="_201707311527250_LastName" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>createdatabase\201707311527250_lastname.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
   <data name="_201707311527250_NickName" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>createdatabase\201707311527250_nickname.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
@@ -261,5 +255,17 @@
   </data>
   <data name="_201707311527250_PersonicxGroup" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>createdatabase\201707311527250_personicxgroup.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201808062254493_Rollup_0806_ufnCrm_GetFamilyTitle" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201808062254493_rollup_0806_ufncrm_getfamilytitle.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201808062254493_Rollup_0806_ufnCrm_GetFamilyTitleIncludeInactive" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201808062254493_rollup_0806_ufncrm_getfamilytitleincludeinactive.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201808062254493_Rollup_0806_spCrm_FamilyAnalyticsGiving" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201808062254493_rollup_0806_spcrm_familyanalyticsgiving.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201707311527250_LastName" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>createdatabase\201707311527250_lastname.gz;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

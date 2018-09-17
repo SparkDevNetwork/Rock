@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             using ( var rockContext = new RockContext() )
             {
                 var settings = GetSettings( rockContext );
-                SetSettingValue( rockContext, settings, "AccessToken", tbAccessToken.Text );
+                SetSettingValue( rockContext, settings, "AccessToken", tbAccessToken.Text, true );
 
                 rockContext.SaveChanges();
 
@@ -245,7 +245,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 if ( settings != null )
                 {
 
-                    accessToken = GetSettingValue( settings, "AccessToken" );//Rock.Web.SystemSettings.GetValue( SystemSetting.ACCESS_TOKEN );
+                    accessToken = GetSettingValue( settings, "AccessToken", true );//Rock.Web.SystemSettings.GetValue( SystemSetting.ACCESS_TOKEN );
                 }
             }
 

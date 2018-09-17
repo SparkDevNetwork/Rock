@@ -84,10 +84,10 @@ namespace Rock.Communication
         public Dictionary<string, object> AdditionalMergeFields { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// Gets or sets a value indicating whether the message should be sent seperately to each recipient. If merge fields are used, this is required.
+        /// Gets or sets a value indicating whether the message should be sent separately to each recipient. If merge fields are used, this is required.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [send seperately to each recipient]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [send separately to each recipient]; otherwise, <c>false</c>.
         /// </value>
         public bool SendSeperatelyToEachRecipient { get; set; } = true;
 

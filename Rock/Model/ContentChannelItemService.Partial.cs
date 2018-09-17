@@ -37,7 +37,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the next Order value for the content channel.
         /// </summary>
-        /// <param name="contenctChannelId">The contenct channel identifier.</param>
+        /// <param name="contenctChannelId">The content channel identifier.</param>
         /// <returns></returns>
         public int GetNextItemOrderValueForContentChannel( int contenctChannelId )
         {

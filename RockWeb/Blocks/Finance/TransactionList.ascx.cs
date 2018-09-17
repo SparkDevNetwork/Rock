@@ -1309,55 +1309,21 @@ namespace RockWeb.Blocks.Finance
 
             SortProperty sortProperty = gTransactions.SortProperty;
 
-            // Filter query by any configured attribute filters
-            IQueryable<AttributeValue> attributeValues = null;
-            IQueryable<AttributeValue> filteredAttributeValues = null;
-            bool filterIsDefault = false;
-            if ( _availableAttributes != null && _availableAttributes.Any() )
-            {
-                var attributeValueService = new AttributeValueService( rockContext );
-                var parameterExpression = attributeValueService.ParameterExpression;
-
-                foreach ( var attribute in _availableAttributes )
-                {
-                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                    if ( filterControl == null ) continue;
-
-                    var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                    filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                    var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                    if ( expression == null ) continue;
-
-                    attributeValues = attributeValueService
-                        .Queryable()
-                        .Where( v => v.Attribute.Id == attribute.Id );
-
-                    filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                    
-                }
-            }
-
             // Qry
             IQueryable<FinancialTransactionRow> qry;
             if ( hfTransactionViewMode.Value == "Transaction Details" )
             {
                 gTransactions.RowItemText = "Transaction Detail";
-                var financialTransactionDetailQry = new FinancialTransactionDetailService( rockContext ).Queryable()
+                var financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
+                var financialTransactionDetailQry = financialTransactionDetailService.Queryable()
                     .Where( a => a.Transaction.TransactionDateTime.HasValue );
 
-                if ( attributeValues != null )
+                if ( _availableAttributes != null && _availableAttributes.Any() )
                 {
-                    if ( filterIsDefault )
+                    foreach ( var attribute in _availableAttributes )
                     {
-                        financialTransactionDetailQry = financialTransactionDetailQry.Where( w =>
-                             !attributeValues.Any( v => v.EntityId == w.Transaction.Id ) ||
-                             filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Transaction.Id ) );
-                    }
-                    else
-                    {
-                        financialTransactionDetailQry = financialTransactionDetailQry.Where( w =>
-                            filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Transaction.Id ) );
+                        var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                        financialTransactionDetailQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( financialTransactionDetailQry, filterControl, attribute, financialTransactionDetailService, Rock.Reporting.FilterMode.SimpleFilter );
                     }
                 }
 
@@ -1409,7 +1375,8 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 gTransactions.RowItemText = "Transactions";
-                var financialTransactionQry = new FinancialTransactionService( rockContext ).Queryable();
+                var financialTransactionService = new FinancialTransactionService( rockContext );
+                var financialTransactionQry = financialTransactionService.Queryable();
 
                 // Filter to configured accounts.
                 var accountGuids = GetAttributeValue( "Accounts" ).SplitDelimitedValues().AsGuidList();
@@ -1419,18 +1386,12 @@ namespace RockWeb.Blocks.Finance
                         .Where( t => t.TransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
                 }
 
-                if ( attributeValues != null )
+                if ( _availableAttributes != null && _availableAttributes.Any() )
                 {
-                    if ( filterIsDefault )
+                    foreach ( var attribute in _availableAttributes )
                     {
-                        financialTransactionQry = financialTransactionQry.Where( w =>
-                             !attributeValues.Any( v => v.EntityId == w.Id ) ||
-                             filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                    }
-                    else
-                    {
-                        financialTransactionQry = financialTransactionQry.Where( w =>
-                            filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
+                        var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                        financialTransactionQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( financialTransactionQry, filterControl, attribute, financialTransactionService, Rock.Reporting.FilterMode.SimpleFilter );
                     }
                 }
 
@@ -1679,7 +1640,7 @@ namespace RockWeb.Blocks.Finance
             else
             {
 
-                // Default sort by Id if the transations are seen via the batch,
+                // Default sort by Id if the transactions are seen via the batch,
                 // otherwise sort by descending date time.
                 if ( ContextTypesRequired.Any( e => e.Id == batchEntityTypeId ) )
                 {

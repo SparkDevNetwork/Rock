@@ -143,7 +143,7 @@ TransactionAccountDetails: [
 ]</pre>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, "Online Contribution", "", 28 )]
     [BooleanField( "Enable Comment Entry", "Allows the guest to enter the value that's put into the comment field (will be appended to the 'Payment Comment' setting)", false, "", 29 )]
     [TextField( "Comment Entry Label", "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).", false, "Comment", "", 30 )]
-    [BooleanField( "Enable Business Giving", "Should the option to give as as a business be displayed", true, "", 31 )]
+    [BooleanField( "Enable Business Giving", "Should the option to give as a business be displayed", true, "", 31 )]
     [BooleanField( "Enable Anonymous Giving", "Should the option to give anonymously be displayed. Giving anonymously will display the transaction as 'Anonymous' in places where it is shown publicly, for example, on a list of fundraising contributors.", false, "", 32 )]
     [TextField( "Anonymous Giving Tooltip", "The tooltip for the 'Give Anonymously' checkbox.", false, "", order: 33 )]
 
@@ -809,7 +809,7 @@ TransactionAccountDetails: [
                 {
                     if ( string.IsNullOrWhiteSpace( txtUserName.Text ) || string.IsNullOrWhiteSpace( txtPassword.Text ) )
                     {
-                        nbSaveAccount.Title = "Missing Informaton";
+                        nbSaveAccount.Title = "Missing Information";
                         nbSaveAccount.Text = "A username and password are required when saving an account";
                         nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                         nbSaveAccount.Visible = true;
@@ -1090,6 +1090,15 @@ TransactionAccountDetails: [
                     btnFrequency.SelectedValue = oneTimeFrequency.Id.ToString();
                     dtpStartDate.SelectedDate = RockDateTime.Today;
 
+                    if ( !string.IsNullOrWhiteSpace( PageParameter( "StartDate" ) ) )
+                    {
+                        dtpStartDate.SelectedDate = PageParameter( "StartDate" ).AsDateTime() ?? RockDateTime.Today;
+                        if ( dtpStartDate.SelectedDate < RockDateTime.Today )
+                        {
+                            dtpStartDate.SelectedDate = RockDateTime.Today;
+                        }
+                    }
+
                     if ( !string.IsNullOrWhiteSpace( PageParameter( "Frequency" ) ) )
                     {
                         var frequencyValues = PageParameter( "Frequency" ).Split( new char[] { '^' } );
@@ -1341,7 +1350,7 @@ TransactionAccountDetails: [
             txtCommentEntry.Label = GetAttributeValue( "CommentEntryLabel" );
             txtCommentEntry.Visible = GetAttributeValue( "EnableCommentEntry" ).AsBoolean();
 
-            // Se the payment method tabs
+            // Set the payment method tabs
             bool ccEnabled = _ccGatewayComponent != null;
             bool achEnabled = _achGatewayComponent != null;
             divCCPaymentInfo.Visible = ccEnabled;
@@ -1711,8 +1720,9 @@ TransactionAccountDetails: [
                         !string.IsNullOrWhiteSpace( txtFirstName.Text ) &&
                         !string.IsNullOrWhiteSpace( txtLastName.Text ) )
                     {
-                        // Same logic as CreatePledge.ascx.cs
-                        person = personService.FindPerson( txtFirstName.Text, txtLastName.Text, txtEmail.Text, true );
+                        // Same logic as PledgeEntry.ascx.cs
+                        var personQuery = new PersonService.PersonMatchQuery( txtFirstName.Text, txtLastName.Text, txtEmail.Text, pnbPhone.Text.Trim());
+                        person = personService.FindPerson( personQuery, true );
                     }
 
                     if ( person == null )
@@ -1810,9 +1820,9 @@ TransactionAccountDetails: [
                 !string.IsNullOrWhiteSpace( txtBusinessContactFirstName.Text ) &&
                 !string.IsNullOrWhiteSpace( txtBusinessContactLastName.Text ) )
             {
-                // Find matching person. Intentionally not updating their primary email address as in this rare case it is likely to be their 
+                // Find matching person. Intentionally not updating their primary email address as in this rare case it is likely to be their
                 // business email which is more likely that they don't want updated
-                person = personService.FindPerson( txtBusinessContactFirstName.Text, txtBusinessContactLastName.Text, txtBusinessContactEmail.Text, false ); 
+                person = personService.FindPerson( txtBusinessContactFirstName.Text, txtBusinessContactLastName.Text, txtBusinessContactEmail.Text, false );
             }
 
             if ( person == null )
@@ -2157,7 +2167,7 @@ TransactionAccountDetails: [
             {
                 errorMessages.Add( "Make sure to enter a valid address.  An address is required for us to process this transaction" );
             }
-            
+
             if ( DisplayPhone && string.IsNullOrWhiteSpace( pnbPhone.Number ) )
             {
                 errorMessages.Add( "Make sure to enter a valid phone number.  A phone number is required for us to process this transaction" );
@@ -2862,7 +2872,7 @@ TransactionAccountDetails: [
                 }
                 else
                 {
-                    //content.Text = String.Format( "<div class='alert alert-danger'>An error occured while deleting your scheduled transation. Message: {0}</div>", errorMessage );
+                    //content.Text = String.Format( "<div class='alert alert-danger'>An error occurred while deleting your scheduled transaction. Message: {0}</div>", errorMessage );
                 }
             }
         }
@@ -3159,16 +3169,16 @@ TransactionAccountDetails: [
 
         if ( typeof {21} != 'undefined' ) {{
             //// Toggle credit card display if saved card option is available
-            $({21}).unbind('click').on('click', function () {{
+            $('input[name=""{22}""]').change(function () {{
 
-                var radioDisplay = $({22}).css('display');
-                var selectedVal = $({21}).val();
+                var radioDisplay = $('#{23}').css('display');
+                var selectedVal = $('input[name=""{22}""]:checked').val();
 
                 if ( selectedVal == 0 && radioDisplay == 'none') {{
-                    $({22}).slideToggle();
+                    $('#{23}').slideDown();
                 }}
                 else if (selectedVal != 0 && radioDisplay != 'none') {{
-                    $({22}).slideToggle();
+                    $('#{23}').slideUp();
                 }}
             }});
         }}
@@ -3292,7 +3302,8 @@ TransactionAccountDetails: [
                 txtCardLastName.ClientID,       // {19}
                 txtCardName.ClientID,           // {20}
                 rblSavedAccount.ClientID,       // {21}
-                divNewPayment.ClientID         // {22}
+                rblSavedAccount.UniqueID,       // {22}
+                divNewPayment.ClientID          // {23}
             );
 
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );

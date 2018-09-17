@@ -93,6 +93,14 @@ namespace RockWeb
             string allowedDomains = string.Empty;
 
             int? siteId = ( Context.Items["Rock:SiteId"] ?? "" ).ToString().AsIntegerOrNull();
+
+            // We only care about protecting content served up through Rock, not the static
+            // content assets on the file system. Only Rock pages would have a site.
+            if ( !siteId.HasValue )
+            {
+                return;
+            }
+
             try
             {
                 if ( siteId.HasValue )
@@ -110,15 +118,14 @@ namespace RockWeb
 
             if ( useFrameDomains )
             {
-                // string concat is 5x faster than String.Format in this senario
+                // string concat is 5x faster than String.Format in this scenario
                 Response.AddHeader( "Content-Security-Policy", "frame-ancestors " + allowedDomains );
             }
             else
             {
                 Response.AddHeader( "X-Frame-Options", "SAMEORIGIN" );
                 Response.AddHeader( "Content-Security-Policy", "frame-ancestors 'self'" );
-            }
-            
+            }            
         }
 
         /// <summary>
@@ -260,6 +267,19 @@ namespace RockWeb
                                 job.LastStatusMessage = message;
                                 job.LastStatus = errorLoadingStatus;
                                 rockContext.SaveChanges();
+
+                                var jobHistoryService = new ServiceJobHistoryService( rockContext );
+                                var jobHistory = new ServiceJobHistory()
+                                {
+                                    ServiceJobId = job.Id,
+                                    StartDateTime = RockDateTime.Now,
+                                    StopDateTime = RockDateTime.Now,
+                                    Status = job.LastStatus,
+                                    StatusMessage = job.LastStatusMessage
+                                };
+                                jobHistoryService.Add( jobHistory );
+                                rockContext.SaveChanges();
+
                             }
                         }
 

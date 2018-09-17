@@ -37,7 +37,6 @@
                                 <Rock:DefinedValueField DataField="FinancialPaymentDetail.CurrencyTypeValueId" HeaderText="Currency Type" SortExpression="FinancialPaymentDetail.CurrencyTypeValue.Value" />
                                 <Rock:RockBoundField DataField="GatewayScheduleId" HeaderText="Schedule ID" SortExpression="GatewayScheduleId" />
                                 <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
-                                <Rock:DateTimeField DataField="LastStatusUpdateDateTime" HeaderText="Last Refresh" SortExpression="LastStatusUpdateDateTime" />
                             </Columns>
                         </Rock:Grid>
                     </div>

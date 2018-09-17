@@ -160,10 +160,20 @@ namespace Rock.Web.Cache
         {
             base.PostCached();
 
+            string physicalPath;
+
             // This will add a file system watcher so that when the block on the file system changes, this 
             // object will be removed from cache. This is to force the cmsPage object to revalidate any
             // BlockPropery attributes that may have been added or modified.
-            var physicalPath = System.Web.HttpContext.Current.Request.MapPath( Path );
+            if ( System.Web.HttpContext.Current != null )
+            {
+                physicalPath = System.Web.HttpContext.Current.Request.MapPath( Path );
+            }
+            else
+            {
+                physicalPath = System.Web.Hosting.HostingEnvironment.MapPath( Path );
+            }
+
             var fileinfo = new FileInfo( physicalPath );
             if ( !fileinfo.Exists ) return;
 

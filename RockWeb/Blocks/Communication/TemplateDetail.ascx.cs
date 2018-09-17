@@ -606,7 +606,7 @@ namespace RockWeb.Blocks.Communication
             templateDoc.LoadHtml( ceEmailTemplate.Text );
 
             // only show the template logo uploader if there is a div with id='template-logo'
-            // then update the help-message on the loader based on the template-logo's data-instuctions attribute and width and height
+            // then update the help-message on the loader based on the template-logo's data-instructions attribute and width and height
             // this gets called when the codeeditor is done initializing and when the cursor blurs out of the template code editor
             var templateLogoNode = templateDoc.GetElementbyId( "template-logo" );
             if ( templateLogoNode != null )

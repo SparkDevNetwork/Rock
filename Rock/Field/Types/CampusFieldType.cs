@@ -364,9 +364,21 @@ namespace Rock.Field.Types
             if ( filterValues.Count == 1 )
             {
                 List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                if ( selectedValues.Any() )
+                int valueCount = selectedValues.Count();
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                if ( valueCount == 0 )
                 {
-                    MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                    // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
+                    return new NoAttributeFilterExpression();
+                }
+                else if ( valueCount == 1 )
+                {
+                    // only one value, so do an Equal instead of Contains which might compile a little bit faster
+                    ComparisonType comparisonType = ComparisonType.EqualTo;
+                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( selectedValues[0] ) );
+                }
+                else
+                {
                     ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
                     return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
                 }

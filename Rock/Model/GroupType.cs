@@ -28,6 +28,7 @@ using Rock.Web.Cache;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Security;
+using Rock.Transactions;
 
 namespace Rock.Model
 {
@@ -419,7 +420,7 @@ namespace Rock.Model
             {% if Group.Schedule != null %}
 
             <dt> Schedule </dt>
-            <dd>{{ Group.Schedule.ToString() }}</ dd >
+            <dd>{{ Group.Schedule.FriendlyScheduleText }}</ dd >
             {% endif %}
             {% if Group.GroupCapacity != null and Group.GroupCapacity != '' %}
 
@@ -910,7 +911,7 @@ namespace Rock.Model
         /// inheritence tree.
         /// </summary>
         /// <param name="rockContext">The database context to operate in.</param>
-        /// <returns>A list of GroupType Ids, including our own Id, that identifies the inheritence tree.</returns>
+        /// <returns>A list of GroupType Ids, including our own Id, that identifies the inheritance tree.</returns>
         public List<int> GetInheritedGroupTypeIds( Rock.Data.RockContext rockContext )
         {
             rockContext = rockContext ?? new RockContext();
@@ -953,7 +954,7 @@ namespace Rock.Model
         /// <param name="rockContext">The database context to operate in.</param>
         /// <param name="entityTypeId">The Entity Type Id for which Attributes to load.</param>
         /// <param name="entityTypeQualifierColumn">The EntityTypeQualifierColumn value to match against.</param>
-        /// <returns>A list of attributes defined in the inheritence tree.</returns>
+        /// <returns>A list of attributes defined in the inheritance tree.</returns>
         public List<AttributeCache> GetInheritedAttributesForQualifier( Rock.Data.RockContext rockContext, int entityTypeId, string entityTypeQualifierColumn )
         {
             var groupTypeIds = GetInheritedGroupTypeIds( rockContext );
@@ -1019,44 +1020,43 @@ namespace Rock.Model
         #endregion
 
         #region Index Methods
+
         /// <summary>
-        /// Deletes the indexed documents by group type.
+        /// Queues groups of this type to have their indexes deleted
         /// </summary>
         /// <param name="groupTypeId">The group type identifier.</param>
         public void DeleteIndexedDocumentsByGroupType( int groupTypeId )
         {
-            var groups = new GroupService( new RockContext() ).Queryable()
-                                    .Where( i => i.GroupTypeId == groupTypeId );
+            var groupIds = new GroupService( new RockContext() ).Queryable()
+                .Where( i => i.GroupTypeId == groupTypeId )
+                .Select( a => a.Id ).ToList();
 
-            foreach ( var group in groups )
+            int groupEntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>().Value;
+
+            foreach ( var groupId in groupIds )
             {
-                var indexableGroup = GroupIndex.LoadByModel( group );
-                IndexContainer.DeleteDocument<GroupIndex>( indexableGroup );
+                var transaction = new DeleteIndexEntityTransaction { EntityId = groupId, EntityTypeId = groupEntityTypeId };
+                transaction.Enqueue();
             }
         }
 
         /// <summary>
-        /// Bulks the index documents by content channel.
+        /// Queues groups of this type to have their indexes updated
         /// </summary>
-        /// <param name="groupTypeId">The content channel identifier.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
         public void BulkIndexDocumentsByGroupType( int groupTypeId )
         {
-            List<GroupIndex> indexableGroups = new List<GroupIndex>();
+            var groupIds = new GroupService( new RockContext() ).Queryable()
+                .Where( i => i.GroupTypeId == groupTypeId )
+                .Select( a => a.Id ).ToList();
 
-            // return all approved content channel items that are in content channels that should be indexed
-            RockContext rockContext = new RockContext();
-            var groups = new GroupService( rockContext ).Queryable()
-                                            .Where( g =>
-                                                g.GroupTypeId == groupTypeId
-                                                && g.IsActive);
+            int groupEntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>().Value;
 
-            foreach ( var group in groups )
+            foreach ( var groupId in groupIds )
             {
-                var indexableChannelItem = GroupIndex.LoadByModel( group );
-                indexableGroups.Add( indexableChannelItem );
+                var transaction = new IndexEntityTransaction { EntityId = groupId, EntityTypeId = groupEntityTypeId };
+                transaction.Enqueue();
             }
-
-            IndexContainer.IndexDocuments( indexableGroups );
         }
         #endregion
 
@@ -1078,12 +1078,12 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            var parentGroupTypes = GroupTypeCache.Get( this.Id, dbContext as RockContext )?.ParentGroupTypes;
-            if ( parentGroupTypes?.Any() == true )
+            var parentGroupTypeIds = new GroupTypeService( dbContext as RockContext ).GetParentGroupTypes( this.Id ).Select( a => a.Id ).ToList();
+            if ( parentGroupTypeIds?.Any() == true )
             {
-                foreach ( var parentGroupType in parentGroupTypes )
+                foreach ( var parentGroupTypeId in parentGroupTypeIds )
                 {
-                    GroupTypeCache.UpdateCachedEntity( parentGroupType.Id, EntityState.Detached );
+                    GroupTypeCache.UpdateCachedEntity( parentGroupTypeId, EntityState.Detached );
                 }
             }
 

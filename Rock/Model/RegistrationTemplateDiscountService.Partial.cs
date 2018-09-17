@@ -220,7 +220,7 @@ namespace Rock.Model
         public decimal TotalCost { get; set; }
 
         /// <summary>
-        /// Gets or sets the total amount that is eligable for the discount
+        /// Gets or sets the total amount that is eligible for the discount
         /// </summary>
         /// <value>
         /// The discount qualified cost.

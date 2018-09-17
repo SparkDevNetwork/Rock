@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -201,7 +201,8 @@ namespace RockWeb.Blocks.Groups
                 // Try to find person by name/email 
                 if ( person == null )
                 {
-                    person = personService.FindPerson( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim(), true );
+                    var personQuery = new PersonService.PersonMatchQuery( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim(), pnCell.Text.Trim() );
+                    person = personService.FindPerson( personQuery, true );
                     if ( person != null )
                     {
                         isMatch = true;
@@ -378,7 +379,7 @@ namespace RockWeb.Blocks.Groups
                 string template = GetAttributeValue( "ResultLavaTemplate" );
                 lResult.Text = template.ResolveMergeFields( mergeFields );
 
-                // Will only redirect if a value is specifed
+                // Will only redirect if a value is specified
                 NavigateToLinkedPage( "ResultPage" );
             }
         }
@@ -420,6 +421,11 @@ namespace RockWeb.Blocks.Groups
                 pnlHomePhone.Visible = !IsSimple;
                 pnlCellPhone.Visible = !IsSimple;
                 acAddress.Visible = !IsSimple;
+
+                string phoneLabel = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Value;
+                phoneLabel = phoneLabel.Trim().EndsWith( "Phone" ) ? phoneLabel : phoneLabel + " Phone";
+                pnCell.Label = phoneLabel;
+                pnSpouseCell.Label = "Spouse " + phoneLabel;
 
                 if ( CurrentPersonId.HasValue && _autoFill )
                 {

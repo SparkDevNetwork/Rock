@@ -667,13 +667,18 @@ namespace RockWeb.Blocks.Groups
                     .ThenBy( a => a.Order )
                     .ThenBy( a => a.Name ).ToCacheAttributeList() )
                 {
-                    AvailableAttributes.Add( attribute );
+                    if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        AvailableAttributes.Add( attribute );
+                    }
                 }
 
-                var inheritedGridColumnAttributes = ( new GroupMember() { GroupId = _group.Id } ).GetInheritedAttributes( rockContext ).Where( a => a.IsGridColumn == true && a.IsActive == true ).ToList();
-                if ( inheritedGridColumnAttributes.Any() )
-                {
-                    AvailableAttributes.AddRange( inheritedGridColumnAttributes );
+                foreach ( var inheritedGridColumnAttribute in ( new GroupMember() { GroupId = _group.Id } ).GetInheritedAttributes( rockContext ).Where( a => a.IsGridColumn == true && a.IsActive == true ).ToList() )
+                { 
+                    if ( inheritedGridColumnAttribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        AvailableAttributes.Add( inheritedGridColumnAttribute );
+                    }
                 }
             }
         }
@@ -1120,37 +1125,10 @@ namespace RockWeb.Blocks.Groups
                     // Filter query by any configured attribute filters
                     if ( AvailableAttributes != null && AvailableAttributes.Any() )
                     {
-                        var attributeValueService = new AttributeValueService( rockContext );
-                        var parameterExpression = attributeValueService.ParameterExpression;
-
                         foreach ( var attribute in AvailableAttributes )
                         {
                             var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                            if ( filterControl == null ) continue;
-
-                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                            var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                            var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                            if ( expression == null ) continue;
-
-                            var attributeValues = attributeValueService
-                                        .Queryable()
-                                        .Where( v => v.Attribute.Id == attribute.Id );
-
-
-                            var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                            if ( filterIsDefault )
-                            {
-                                qry = qry.Where( w =>
-                                     !attributeValues.Any( v => v.EntityId == w.Id ) ||
-                                     filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                            }
-                            else
-                            {
-                                qry = qry.Where( w =>
-                                    filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                            }
+                            qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );
                         }
                     }
 

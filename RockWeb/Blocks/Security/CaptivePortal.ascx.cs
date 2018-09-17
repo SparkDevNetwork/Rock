@@ -46,22 +46,11 @@ namespace RockWeb.Blocks.Security
     public partial class CaptivePortal : RockBlock
     {
         #region Block Setting Strings
-        protected const string DEFAULT_LEGAL_NOTE = @"<!DOCTYPE html>
-<html>
-<head>
-    <meta charset=""utf-8"" />
-    <title></title>
+        protected const string DEFAULT_LEGAL_NOTE = @"<div>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Helvetica, Arial, sans-serif, ""Apple Color Emoji"", ""Segoe UI Emoji"", ""Segoe UI Symbol"";
-            padding: 0 12px;
-        }
-        li {
-            padding-bottom: 8px;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Helvetica, Arial, sans-serif, ""Apple Color Emoji"", ""Segoe UI Emoji"", ""Segoe UI Symbol""; padding: 0 12px; }
+        li { padding-bottom: 8px; }
     </style>
-</head>
-<body>
     <h1>Terms & Conditions</h1>
     <p>
         This free Wi-Fi service(""Service"") is provided by {{ 'Global' | Attribute:'OrganizationName' }}
@@ -98,8 +87,7 @@ namespace RockWeb.Blocks.Security
             provisioning of the Service in the event the same is being substantially affected by reasons beyond the control of the Organization.
         </li>
     </ol>
-</body>
-</html>";
+</div>";
         #endregion
 
         /// <summary>
@@ -410,6 +398,7 @@ namespace RockWeb.Blocks.Security
 
             // We know there is a device with the stored MAC
             // If we have an alias ID then we have all data needed and can redirect the user to frontporch
+            // also if hfPersonAliasId has a value at this time it has already been linked to the device.
             if ( hfPersonAliasId.Value != string.Empty)
             {
                 UpdatePersonInfo();
@@ -417,12 +406,35 @@ namespace RockWeb.Blocks.Security
                 return;
             }
 
+            int? primaryAliasId = LinkDeviceToPerson();
+            if ( primaryAliasId != null )
+            {
+                Response.Redirect( CreateRedirectUrl( primaryAliasId ) );
+                return;
+            }
+
+            // Send them back to Front Porch without user info
+            Response.Redirect( CreateRedirectUrl( null ) );
+        }
+
+        /// <summary>
+        /// Try to link the device to a person and return the primary alias ID if successful
+        /// </summary>
+        /// <returns>true if device successfully linked to a person</returns>
+        protected int? LinkDeviceToPerson()
+        {
+            // At this point the user is not logged in and not found by looking up the device
+            // So lets try to find the user using entered info and then link them to the device.
             PersonService personService = new PersonService( new RockContext() );
             int mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
-            
-            // Use the entered info to try and find an existing user
-            string mobilePhoneNumber = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters();
-            Person person = personService
+            Person person = null;
+            string mobilePhoneNumber = string.Empty;
+
+            // Looking for a 100% match
+            if ( tbFirstName.Visible && tbLastName.Visible && tbEmail.Visible && tbMobilePhone.Visible )
+            {
+                mobilePhoneNumber = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters();
+                person = personService
                 .Queryable()
                 .Where( p => p.FirstName == tbFirstName.Text )
                 .Where( p => p.LastName == tbLastName.Text )
@@ -430,8 +442,56 @@ namespace RockWeb.Blocks.Security
                 .Where( p => p.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault().Number == mobilePhoneNumber )
                 .FirstOrDefault();
 
-            // If no known person record then create one
-            person = new Person
+                if ( person != null )
+                {
+                    RockPage.LinkPersonAliasToDevice( person.PrimaryAlias.Id, hfMacAddress.Value );
+                    return person.PrimaryAliasId;
+                }
+                else
+                {
+                    // If no known person record then create one since we have the minimum info required
+                    person = CreateAndSaveNewPerson();
+
+                    // Link new device to person alias
+                    RockPage.LinkPersonAliasToDevice( person.PrimaryAlias.Id, hfMacAddress.Value );
+                    return person.PrimaryAlias.Id;
+                }
+            }
+
+            // Look for minimum info
+            if ( tbFirstName.Visible && tbLastName.Visible && ( tbMobilePhone.Visible || tbEmail.Visible ) )
+            {
+                // If no known person record then create one since we have the minimum info required
+                person = CreateAndSaveNewPerson();
+                
+                // Link new device to person alias
+                RockPage.LinkPersonAliasToDevice( person.PrimaryAlias.Id, hfMacAddress.Value );
+                return person.PrimaryAlias.Id;
+            }
+
+            // Just match off phone number
+            if ( tbMobilePhone.Visible )
+            {
+                mobilePhoneNumber = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters();
+                person = personService.Queryable().Where( p => p.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault().Number == mobilePhoneNumber ).FirstOrDefault();
+                if ( person != null )
+                {
+                    RockPage.LinkPersonAliasToDevice( person.PrimaryAlias.Id, hfMacAddress.Value );
+                    return person.PrimaryAliasId;
+                }
+            }
+
+            // Unable to find an existing user and we don't have the minimium info to create one.
+            // We'll let Rock.Page and the cookie created in OnLoad() link the device to a user when they are logged in.
+            // This will not work if this page is loaded into a Captive Network Assistant page as the cookie will not persist.
+            return null;
+        }
+
+        protected Person CreateAndSaveNewPerson()
+        {
+            int mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+
+            var person = new Person
             {
                 FirstName = tbFirstName.Text,
                 LastName = tbLastName.Text,
@@ -444,13 +504,7 @@ namespace RockWeb.Blocks.Security
             }
 
             PersonService.SaveNewPerson( person, new RockContext() );
-
-            // Link new device to person alias
-            RockPage.LinkPersonAliasToDevice( person.PrimaryAlias.Id, hfMacAddress.Value );
-
-            // Send them back to Front Porch
-            Response.Redirect( CreateRedirectUrl( person.PrimaryAlias.Id ) );
-            return;
+            return person;
         }
 
         /// <summary>
@@ -460,12 +514,16 @@ namespace RockWeb.Blocks.Security
         /// <returns></returns>
         protected string CreateRedirectUrl( int? primaryAliasId )
         {
+            string s = string.Empty;
+
             if ( primaryAliasId != null )
             {
-                return string.Format( "{0}?id={1}&{2}", GetAttributeValue( "ReleaseLink" ), primaryAliasId, Request.QueryString );
+                s = string.Format( "{0}?id={1}&{2}", GetAttributeValue( "ReleaseLink" ), primaryAliasId, Request.QueryString );
+                return s;
             }
 
-            return string.Format( "{0}?{1}", GetAttributeValue( "ReleaseLink" ), Request.QueryString );
+            s = string.Format( "{0}?{1}", GetAttributeValue( "ReleaseLink" ), Request.QueryString );
+            return s;
         }
 
         /// <summary>
@@ -497,13 +555,12 @@ namespace RockWeb.Blocks.Security
             btnConnect.Text = isEnabled ? GetAttributeValue( "ButtonText" ) : "Unable to connect to Wi-Fi due to errors";
             btnConnect.Enabled = isEnabled;
 
-            if ( iframeLegalNotice.Visible = GetAttributeValue( "ShowLegalNote" ).AsBoolean() )
+            if ( litLegalNotice.Visible = GetAttributeValue( "ShowLegalNote" ).AsBoolean() )
             {
-                iframeLegalNotice.Attributes["srcdoc"] = GetAttributeValue( "LegalNote" ).ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage ) );
-                iframeLegalNotice.Src = "javascript: window.frameElement.getAttribute('srcdoc');";
+                litLegalNotice.Text = GetAttributeValue( "LegalNote" ).ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage ) );
             }
 
-            if ( tbFirstName.Visible || tbLastName.Visible || tbMobilePhone.Visible || tbEmail.Visible || cbAcceptTAC.Visible || iframeLegalNotice.Visible )
+            if ( tbFirstName.Visible || tbLastName.Visible || tbMobilePhone.Visible || tbEmail.Visible || cbAcceptTAC.Visible || litLegalNotice.Visible )
             {
                 return true;
             }

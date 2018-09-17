@@ -280,7 +280,7 @@ namespace Rock.Model
         /// <see cref="System.Collections.Generic.List{String}" /> that will contain any error messages that are
         /// returned while processing this WorkflowActivity</param>
         /// <returns>
-        /// A <see cref="System.Boolean" /> vlaue that is <c>true</c> if the WorkflowActivity processes successfully; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean" /> value that is <c>true</c> if the WorkflowActivity processes successfully; otherwise <c>false</c>.
         /// </returns>
         internal virtual bool Process( RockContext rockContext, Object entity, out List<string> errorMessages )
         {

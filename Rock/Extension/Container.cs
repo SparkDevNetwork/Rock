@@ -34,7 +34,7 @@ namespace Rock.Extension
         private bool IsDisposed;
 
         /// <summary>
-        /// Gets the componentss.
+        /// Gets the components.
         /// </summary>
         public Dictionary<int, Lazy<T, TData>> Components { get; private set; }
 

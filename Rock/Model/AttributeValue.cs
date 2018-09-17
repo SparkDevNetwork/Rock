@@ -489,11 +489,11 @@ namespace Rock.Model
             {
                 if ( HistoryEntityTypeId.Value == EntityTypeCache.Get( typeof( Person ) ).Id )
                 {
-                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), historyEntityId.Value, HistoryChanges, string.Empty, typeof( Attribute ), AttributeId, true, this.ModifiedByPersonAliasId );
+                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), historyEntityId.Value, HistoryChanges, string.Empty, typeof( Attribute ), AttributeId, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                 }
                 else
                 {
-                    HistoryService.SaveChanges( rockContext, typeof( Group ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(), historyEntityId.Value, HistoryChanges, string.Empty, typeof( Attribute ), AttributeId, true, this.ModifiedByPersonAliasId );
+                    HistoryService.SaveChanges( rockContext, typeof( Group ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(), historyEntityId.Value, HistoryChanges, string.Empty, typeof( Attribute ), AttributeId, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                 }
             }
 
@@ -559,7 +559,7 @@ namespace Rock.Model
 
             if ( this.EntityId.HasValue && cacheAttribute.EntityTypeId.HasValue )
             {
-                EntityTypeCache entityType = EntityTypeCache.Get( cacheAttribute.EntityTypeId.Value );
+                EntityTypeCache entityType = EntityTypeCache.Get( cacheAttribute.EntityTypeId.Value, dbContext as RockContext );
 
                 if ( entityType?.HasEntityCache() == true )
                 {

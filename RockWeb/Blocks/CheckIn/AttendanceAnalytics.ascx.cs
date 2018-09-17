@@ -112,11 +112,11 @@ namespace RockWeb.Blocks.CheckIn
                 btnCopyToClipboard.Visible = false;
             }
             else
-            { 
+            {
                 btnCopyToClipboard.Visible = true;
                 RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
                 string script = string.Format( @"
-    new Clipboard('#{0}');
+    new ClipboardJS('#{0}');
     $('#{0}').tooltip();
 ", btnCopyToClipboard.ClientID );
                 ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
@@ -402,7 +402,7 @@ namespace RockWeb.Blocks.CheckIn
                         .ToList();
 
                     foreach ( var groupType in groupTypes.ToList() )
-                    { 
+                    {
                         foreach ( var childGroupType in groupTypeService.GetAllAssociatedDescendentsOrdered( groupType.Id ) )
                         {
                             if ( !groupTypes.Any( t => t.Id == childGroupType.Id ) )
@@ -743,7 +743,7 @@ function(item) {
                 }
             }
             else
-            { 
+            {
                 clbCampuses.Visible = false;
             }
 
@@ -1086,14 +1086,14 @@ function(item) {
             }
             nbMissedDateRangeRequired.Visible = false;
 
-            // Determine how dates shold be grouped
+            // Determine how dates should be grouped
             ChartGroupBy groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
 
             // Determine if parents or children are being included with results
             var includeParents = hfViewBy.Value.ConvertToEnumOrNull<ViewBy>().GetValueOrDefault( ViewBy.Attendees ) == ViewBy.ParentsOfAttendees;
             var includeChildren = hfViewBy.Value.ConvertToEnumOrNull<ViewBy>().GetValueOrDefault( ViewBy.Attendees ) == ViewBy.ChildrenOfAttendees;
 
-            // Atttendance results
+            // Attendance results
             var allAttendeeVisits = new Dictionary<int, AttendeeVisits>();
             var allResults = new List<AttendeeResult>();
 
@@ -1161,7 +1161,7 @@ function(item) {
 
                 } ) );
 
-                // Call the stored procedure to get the names/demographic info for attendess
+                // Call the stored procedure to get the names/demographic info for attendees
                 qryTasks.Add( Task.Run( () =>
                 {
                     var ti = new TaskInfo { name = "Get Name/Demographic Data", start = DateTime.Now };
@@ -1853,7 +1853,7 @@ function(item) {
         {
             var result = new List<DateTime>();
 
-            // Attendance is grouped by Sunday dates between the start/end dates. 
+            // Attendance is grouped by Sunday dates between the start/end dates.
             // The possible dates (columns) should be calculated the same way.
             var startSunday = dateRange.Start.Value.SundayDate();
             var endDate = dateRange.End.Value;

@@ -30,7 +30,7 @@ namespace Rock.Attribute
         private const string CUSTOM_VALUES = "customvalues";
         private const string ALLOW_HTML = "allowhtml";
 
-        /* Developer Note: When adding new params to a Field Attribute, we could just add new Properties instead to avoid backwards compatibily issues. 
+        /* Developer Note: When adding new params to a Field Attribute, we could just add new Properties instead to avoid backwards compatibility issues. 
          * See AllowHtml below as an example, and the GroupList block for how to initialize it
          */
 

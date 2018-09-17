@@ -335,7 +335,7 @@ namespace Rock.Model
             }
 
             // If metric belongs to any categories, give them access if they have access to any of the categories (even if 
-            // one or more denies them access). If not granted acess by a category, check to see if any category denies 
+            // one or more denies them access). If not granted access by a category, check to see if any category denies 
             // them access.
             if ( this.MetricCategories != null )
             {

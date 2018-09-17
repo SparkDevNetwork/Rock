@@ -32,7 +32,8 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Job that executes routine cleanup tasks on Rock
+    /// Job that executes routine cleanup tasks on Rock.
+    /// Cleanup tasks are tasks that fixes (add, update or purge) invalid, missing or obsolete data.
     /// </summary>
     [IntegerField( "Days to Keep Exceptions in Log", "The number of days to keep exceptions in the exception log (default is 14 days.)", false, 14, "General", 1, "DaysKeepExceptions" )]
     [IntegerField( "Audit Log Expiration Days", "The number of days to keep items in the audit log (default is 14 days.)", false, 14, "General", 2, "AuditLogExpirationDays" )]
@@ -197,6 +198,16 @@ namespace Rock.Jobs
                 rockCleanupExceptions.Add( new Exception( "Exception in CleanupPersonTokens", ex ) );
             }
 
+            try
+            {
+                // Reduce the job history to max size
+                CleanupJobHistory();
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupJobHistory", ex ) );
+            }
+
             if ( databaseRowsCleanedUp.Any( a => a.Value > 0 ) )
             {
                 context.Result = string.Format( "Rock Cleanup cleaned up {0}", databaseRowsCleanedUp.Where( a => a.Value > 0 ).Select( a => $"{a.Value} {a.Key.PluralizeIf( a.Value != 1 )}" ).ToList().AsDelimited( ", ", " and " ) );
@@ -209,6 +220,17 @@ namespace Rock.Jobs
             if ( rockCleanupExceptions.Count > 0 )
             {
                 throw new AggregateException( "One or more exceptions occurred in RockCleanup.", rockCleanupExceptions );
+            }
+
+            try
+            {
+                // Search for locations with no country and assign USA or Canada if it match any of the country's states
+
+                LocationCleanup( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in LocationCleanup", ex ) );
             }
         }
 
@@ -381,7 +403,7 @@ namespace Rock.Jobs
             if ( relationshipGroupType != null )
             {
                 var ownerRoleId = relationshipGroupType.Roles
-                    .Where( r => r.Guid.Equals( ownerRoleGuid ) ).Select( a => ( int? ) a.Id ).FirstOrDefault();
+                    .Where( r => r.Guid.Equals( ownerRoleGuid ) ).Select( a => (int?)a.Id ).FirstOrDefault();
                 if ( ownerRoleId.HasValue )
                 {
                     var rockContext = new RockContext();
@@ -495,7 +517,7 @@ namespace Rock.Jobs
             foreach ( var workflow in completedWorkflows )
             {
                 var retentionPeriod = workflow.WorkflowType.CompletedWorkflowRetentionPeriod;
-                if ( retentionPeriod.HasValue && workflow.ModifiedDateTime < RockDateTime.Now.AddDays( -1 * ( int ) retentionPeriod ) )
+                if ( retentionPeriod.HasValue && workflow.ModifiedDateTime < RockDateTime.Now.AddDays( -1 * (int)retentionPeriod ) )
                 {
                     string errorMessage;
                     if ( workflowService.CanDelete( workflow, out errorMessage ) )
@@ -527,7 +549,7 @@ namespace Rock.Jobs
 
             foreach ( var workflow in workflowsWithExpirationPeriod )
             {
-                if ( workflow.ModifiedDateTime < RockDateTime.Now.AddDays( -1 * ( int ) workflow.WorkflowType.LogRetentionPeriod ) )
+                if ( workflow.ModifiedDateTime < RockDateTime.Now.AddDays( -1 * (int)workflow.WorkflowType.LogRetentionPeriod ) )
                 {
                     // WorkflowLogService.CanDelete( log ) always returns true, so no need to check
                     bool keepDeleting = true;
@@ -638,7 +660,7 @@ namespace Rock.Jobs
             if ( exceptionExpireDays.HasValue )
             {
                 var exceptionLogRockContext = new Rock.Data.RockContext();
-                exceptionLogRockContext.Database.CommandTimeout = ( int ) TimeSpan.FromMinutes( 10 ).TotalSeconds;
+                exceptionLogRockContext.Database.CommandTimeout = (int)TimeSpan.FromMinutes( 10 ).TotalSeconds;
                 DateTime exceptionExpireDate = RockDateTime.Now.Add( new TimeSpan( exceptionExpireDays.Value * -1, 0, 0, 0 ) );
                 var exceptionLogsToDelete = new ExceptionLogService( exceptionLogRockContext ).Queryable().Where( a => a.CreatedDateTime < exceptionExpireDate );
 
@@ -792,7 +814,7 @@ WHERE ic.ChannelId = @channelId
                         bool ignore = false;
                         if ( entityType.Assembly != rockContextType.Assembly )
                         {
-                            // If the model is from a custom project, verify that it is using RockContext, if not, ignore it since an 
+                            // If the model is from a custom project, verify that it is using RockContext, if not, ignore it since an
                             // exception will occur due to the AttributeValue query using RockContext.
                             var entityContextType = Reflection.SearchAssembly( entityType.Assembly, typeof( System.Data.Entity.DbContext ) );
                             ignore = ( entityContextType.Any() && !entityContextType.First().Value.Equals( rockContextType ) );
@@ -806,7 +828,7 @@ WHERE ic.ChannelId = @channelId
                             var result = genericMethod.Invoke( this, null ) as int?;
                             if ( result.HasValue )
                             {
-                                recordsDeleted += ( int ) result;
+                                recordsDeleted += (int)result;
                             }
                         }
                     }
@@ -822,7 +844,7 @@ WHERE ic.ChannelId = @channelId
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        private int CleanupOrphanedAttributeValuesForEntityType<T>() where T : Rock.Data.Entity<T>,  Attribute.IHasAttributes, new()
+        private int CleanupOrphanedAttributeValuesForEntityType<T>() where T : Rock.Data.Entity<T>, Attribute.IHasAttributes, new()
         {
             int recordsDeleted = 0;
 
@@ -852,7 +874,7 @@ WHERE ic.ChannelId = @channelId
             int totalRowsDeleted = 0;
             int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
             var rockContext = new Rock.Data.RockContext();
-            rockContext.Database.CommandTimeout = ( int ) TimeSpan.FromMinutes( 10 ).TotalSeconds;
+            rockContext.Database.CommandTimeout = (int)TimeSpan.FromMinutes( 10 ).TotalSeconds;
             DateTime transientCommunicationExpireDate = RockDateTime.Now.Add( new TimeSpan( 7 * -1, 0, 0, 0 ) );
             var communicationsToDelete = new CommunicationService( rockContext ).Queryable().Where( a => a.CreatedDateTime < transientCommunicationExpireDate && a.Status == CommunicationStatus.Transient );
 
@@ -984,7 +1006,7 @@ WHERE ExpireDateTime IS NOT NULL
         {
             try
             {
-                // if the directory exixts
+                // if the directory exists
                 if ( Directory.Exists( directoryPath ) )
                 {
                     // delete the directory
@@ -1028,6 +1050,55 @@ WHERE ExpireDateTime IS NOT NULL
                     System.Threading.Tasks.Task.Delay( 10 ).Wait();
                     DeleteFile( filePath, true );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Cleanups the job history
+        /// </summary>
+        private void CleanupJobHistory()
+        {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                ServiceJobHistoryService serviceJobHistoryService = new ServiceJobHistoryService( rockContext );
+                serviceJobHistoryService.DeleteMoreThanMax();
+            }
+        }
+
+        /// <summary>
+        /// Does cleanup of Locations
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        private void LocationCleanup( JobDataMap dataMap )
+        {
+            // Add any missing person aliases
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                var definedType = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
+                var stateList = definedType
+                    .DefinedValues
+                    .Where( v => v.ContainsKey( "Country" ) && v["Country"] != null )
+                    .Select( v => new { State = v.Value, Country = v["Country"] } ).ToLookup( v => v.State );
+
+                LocationService locationService = new LocationService( rockContext );
+                var locations = locationService
+                    .Queryable()
+                    .Where( l => ( l.Country == null || l.Country == string.Empty ) && l.State != null && l.State != string.Empty )
+                    .ToList();
+
+                foreach ( var location in locations )
+                {
+                    if ( stateList.Contains( location.State ) )
+                    {
+                        var state = stateList[location.State];
+                        if ( state.Count() == 1 )
+                        {
+                            location.Country = state.First().Country.ToStringSafe();
+                        }
+                    }
+                }
+
+                rockContext.SaveChanges();
             }
         }
     }

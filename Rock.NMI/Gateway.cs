@@ -135,7 +135,7 @@ namespace Rock.NMI
         }
 
         /// <summary>
-        /// Returnes a boolean value indicating if 'Saved Account' functionality is supported for frequency (i.e. one-time vs repeating )
+        /// Returns a boolean value indicating if 'Saved Account' functionality is supported for frequency (i.e. one-time vs repeating )
         /// </summary>
         /// <param name="isRepeating">if set to <c>true</c> [is repeating].</param>
         /// <returns></returns>
@@ -827,6 +827,17 @@ namespace Rock.NMI
         {
             errorMessage = string.Empty;
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the next payment date.
+        /// </summary>
+        /// <param name="scheduledTransaction">The transaction.</param>
+        /// <param name="lastTransactionDate">The last transaction date.</param>
+        /// <returns></returns>
+        public override DateTime? GetNextPaymentDate( FinancialScheduledTransaction scheduledTransaction, DateTime? lastTransactionDate )
+        {
+            return CalculateNextPaymentDate( scheduledTransaction, lastTransactionDate );
         }
 
         private XElement GetRoot( FinancialGateway financialGateway, string elementName )

@@ -418,9 +418,9 @@ namespace RockWeb.Blocks.Cms
             drpDateRange.DelimitedValues = gfFilter.GetUserPreference( "Date Range" );
             ddlStatus.BindToEnum<ContentChannelItemStatus>( true );
             int? statusID = gfFilter.GetUserPreference( "Status" ).AsIntegerOrNull();
-            if (statusID.HasValue)
+            if ( statusID.HasValue )
             {
-                ddlStatus.SetValue(statusID.Value.ToString());
+                ddlStatus.SetValue( statusID.Value.ToString() );
             }
 
             tbTitle.Text = gfFilter.GetUserPreference( "Title" );
@@ -441,7 +441,7 @@ namespace RockWeb.Blocks.Cms
         private void GetData()
         {
             var rockContext = new RockContext();
-            var itemService = new ContentChannelItemService(rockContext);
+            var itemService = new ContentChannelItemService( rockContext );
 
             // Get all of the content channels
             var contentChannelsQry = new ContentChannelService( rockContext ).Queryable( "ContentChannelType" );
@@ -453,11 +453,15 @@ namespace RockWeb.Blocks.Cms
             {
                 // if contentChannelTypeGuidsInclude is specified, only get contentChannelTypes that are in the contentChannelTypeGuidsInclude
                 // NOTE: no need to factor in contentChannelTypeGuidsExclude since included would take precendance and the excluded ones would already not be included
-                contentChannelsQry = contentChannelsQry.Where( a => contentChannelTypeGuidsInclude.Contains( a.ContentChannelType.Guid ) );
+                contentChannelsQry = contentChannelsQry.Where( a => contentChannelTypeGuidsInclude.Contains( a.ContentChannelType.Guid ) || a.ContentChannelType.ShowInChannelList );
             }
             else if ( contentChannelTypeGuidsExclude.Any() )
             {
-                contentChannelsQry = contentChannelsQry.Where( a => !contentChannelTypeGuidsExclude.Contains( a.ContentChannelType.Guid ) );
+                contentChannelsQry = contentChannelsQry.Where( a => !contentChannelTypeGuidsExclude.Contains( a.ContentChannelType.Guid ) && a.ContentChannelType.ShowInChannelList );
+            }
+            else
+            {
+                contentChannelsQry = contentChannelsQry.Where( a => a.ContentChannelType.ShowInChannelList );
             }
 
             var contentChannelsList = contentChannelsQry.OrderBy( w => w.Name ).ToList();
@@ -466,9 +470,9 @@ namespace RockWeb.Blocks.Cms
             var channelCounts = new Dictionary<int, int>();
             foreach ( var channel in contentChannelsList )
             {
-                if ( channel.IsAuthorized( Authorization.VIEW, CurrentPerson))
+                if ( channel.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
-                    channelCounts.Add( channel.Id, 0);
+                    channelCounts.Add( channel.Id, 0 );
                 }
             }
 
@@ -478,10 +482,11 @@ namespace RockWeb.Blocks.Cms
                     channelCounts.Keys.Contains( i.ContentChannelId ) &&
                     i.Status == ContentChannelItemStatus.PendingApproval && i.ContentChannel.RequiresApproval )
                 .GroupBy( i => i.ContentChannelId )
-                .Select( i => new {
+                .Select( i => new
+                {
                     Id = i.Key,
                     Count = i.Count()
-                })
+                } )
                 .ToList()
                 .ForEach( i => channelCounts[i.Id] = i.Count );
 
@@ -623,7 +628,9 @@ namespace RockWeb.Blocks.Cms
 
             var items = new List<ContentChannelItem>();
 
-            var itemQry = new ContentChannelItemService( rockContext ).Queryable()
+            var contentChannelItemService = new ContentChannelItemService( rockContext );
+
+            var itemQry = contentChannelItemService.Queryable()
                 .Where( i => i.ContentChannelId == selectedChannel.Id );
 
             var drp = new DateRangePicker();
@@ -671,38 +678,10 @@ namespace RockWeb.Blocks.Cms
             // Filter query by any configured attribute filters
             if ( AvailableAttributes != null && AvailableAttributes.Any() )
             {
-                var attributeValueService = new AttributeValueService( rockContext );
-                var parameterExpression = attributeValueService.ParameterExpression;
-
                 foreach ( var attribute in AvailableAttributes )
                 {
                     var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                    if ( filterControl == null ) continue;
-
-                    var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                    var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                    var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                    if ( expression == null ) continue;
-
-                    var attributeValues = attributeValueService
-                        .Queryable()
-                        .Where( v => v.Attribute.Id == attribute.Id );
-
-                    var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                    isFiltered = true;
-
-                    if ( filterIsDefault )
-                    {
-                        itemQry = itemQry.Where( w =>
-                        !attributeValues.Any( v => v.EntityId == w.Id ) ||
-                        filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                    }
-                    else
-                    {
-                        itemQry = itemQry.Where( w =>
-                        filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                    }
+                    itemQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( itemQry, filterControl, attribute, contentChannelItemService, Rock.Reporting.FilterMode.SimpleFilter );
                 }
             }
 
@@ -747,11 +726,11 @@ namespace RockWeb.Blocks.Cms
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {
-                AvailableAttributes.Add( Rock.Web.Cache.AttributeCache.Get( attributeModel ) );       
+                AvailableAttributes.Add( Rock.Web.Cache.AttributeCache.Get( attributeModel ) );
             }
         }
 
-        protected void AddDynamicControls ( ContentChannel channel)
+        protected void AddDynamicControls( ContentChannel channel )
         {
             // Remove all columns
             gContentChannelItems.Columns.Clear();
@@ -781,7 +760,7 @@ namespace RockWeb.Blocks.Cms
                     {
                         if ( control is IRockControl )
                         {
-                            var rockControl = (IRockControl)control;
+                            var rockControl = ( IRockControl ) control;
                             rockControl.Label = attribute.Name;
                             rockControl.Help = attribute.Description;
                             phAttributeFilters.Controls.Add( control );
@@ -918,7 +897,7 @@ namespace RockWeb.Blocks.Cms
             return string.Format( "{0}-{1}", channelId, key );
         }
 
-        protected string DisplayStatus (ContentChannelItemStatus contentItemStatus)
+        protected string DisplayStatus( ContentChannelItemStatus contentItemStatus )
         {
             string labelType = "default";
             if ( contentItemStatus == ContentChannelItemStatus.Approved )

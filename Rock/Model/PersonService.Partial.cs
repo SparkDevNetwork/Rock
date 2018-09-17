@@ -32,6 +32,11 @@ namespace Rock.Model
     public partial class PersonService
     {
         /// <summary>
+        /// The cut off (inclusive) score 
+        /// </summary>
+        private const int MATCH_SCORE_CUTOFF = 35;
+
+        /// <summary>
         /// Gets the specified unique identifier.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
@@ -166,19 +171,418 @@ namespace Rock.Model
         /// <returns></returns>
         public IEnumerable<Person> FindPersons( string firstName, string lastName, string email, bool includeDeceased = false, bool includeBusinesses = false )
         {
-            firstName = firstName ?? string.Empty;
-            lastName = lastName ?? string.Empty;
-            email = email ?? string.Empty;
-
-            var previousEmailQry = new PersonSearchKeyService( this.Context as RockContext ).Queryable();
-
-            return Queryable( includeDeceased, includeBusinesses )
-                .Where( p =>
-                    ( ( email != "" && p.Email == email ) || previousEmailQry.Any( a => a.PersonAlias.PersonId == p.Id && a.SearchValue == email ) ) &&
-                    firstName != "" && ( p.FirstName == firstName || p.NickName == firstName ) &&
-                    lastName != "" && p.LastName == lastName )
-                .ToList();
+            return FindPersons( new PersonMatchQuery( firstName, lastName, email, string.Empty ) );
         }
+
+
+        /// <summary>
+        /// Finds people who are considered to be good matches based on the query provided.
+        /// </summary>
+        /// <param name="searchParameters">The search parameters.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
+        /// <returns>A IEnumerable of person, ordered by the likelihood they are a good match for the query.</returns>
+        public IEnumerable<Person> FindPersons( PersonMatchQuery searchParameters, bool includeDeceased = false, bool includeBusinesses = false )
+        {
+            // Because we are search different tables (PhoneNumber, PreviousName, etc.) we do multiple queries, store the results in a dictionary, and then find good matches by scoring the results of the dictionary.
+            // The large query we're building is: (email matches AND suffix matches AND DoB loose matches AND gender matches) OR last name matches OR phone number matches OR previous name matches
+            // The dictionary is PersonId => PersonMatchResult, a class that stores the items that match and calculates the score
+
+            // Query by last name, suffix, dob, and gender
+            var query = Queryable( includeDeceased, includeBusinesses )
+                .AsNoTracking()
+                .Where( p => p.LastName == searchParameters.LastName );
+
+
+            if ( searchParameters.SuffixValueId.HasValue )
+            {
+                query = query.Where( a => a.SuffixValueId == searchParameters.SuffixValueId.Value || a.SuffixValueId == null );
+            }
+
+            // Check for a DOB match here ignoring year and we award higher points if the year *does* match later, this allows for two tiers of scoring for birth dates
+            if ( searchParameters.BirthDate.HasValue )
+            {
+                query = query.Where( a => ( a.BirthMonth == searchParameters.BirthDate.Value.Month && a.BirthDay == searchParameters.BirthDate.Value.Day ) || a.BirthDate == null );
+            }
+
+            if ( searchParameters.Gender.HasValue )
+            {
+                query = query.Where( a => a.Gender == searchParameters.Gender.Value || a.Gender == Gender.Unknown );
+            }
+
+            // Create dictionary
+            var foundPeople = query
+                .Select( p => new PersonSummary()
+                {
+                    Id = p.Id,
+                    FirstName = p.FirstName,
+                    NickName = p.NickName,
+                    Gender = p.Gender,
+                    BirthDate = p.BirthDate,
+                    SuffixValueId = p.SuffixValueId
+                } )
+                .ToList()
+                .ToDictionary(
+                    p => p.Id,
+                    p => {
+                        var result = new PersonMatchResult( searchParameters, p )
+                        {
+                            LastNameMatched = true
+                        };
+                        return result;
+                    }
+                );
+
+            if ( searchParameters.Email.IsNotNullOrWhiteSpace() )
+            {
+                var searchTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() ).Id;
+
+                // OR query for email or previous email
+                var previousEmailQry = new PersonSearchKeyService( this.Context as RockContext ).Queryable();
+                Queryable( includeDeceased, includeBusinesses )
+                    .AsNoTracking()
+                    .Where(
+                        p => p.Email != String.Empty && p.Email != null && p.Email == searchParameters.Email ||
+                        previousEmailQry.Any( a => a.PersonAlias.PersonId == p.Id && a.SearchValue == searchParameters.Email && a.SearchTypeValueId == searchTypeValueId )
+                    )
+                    .Select( p => new PersonSummary()
+                    {
+                        Id = p.Id,
+                        FirstName = p.FirstName,
+                        NickName = p.NickName,
+                        Gender = p.Gender,
+                        BirthDate = p.BirthDate,
+                        SuffixValueId = p.SuffixValueId
+                    } )
+                    .ToList()
+                    .ForEach( p =>
+                    {
+                        if ( foundPeople.ContainsKey( p.Id ) )
+                        {
+                            foundPeople[p.Id].EmailMatched = true;
+                        }
+                        else
+                        {
+                            foundPeople[p.Id] = new PersonMatchResult( searchParameters, p )
+                            {
+                                EmailMatched = true
+                            };
+                        }
+                    } );
+            }
+
+            var rockContext = new RockContext();
+
+            // OR query for previous name matches
+            var previousNameService = new PersonPreviousNameService( rockContext );
+            previousNameService.Queryable( "PersonAlias.Person" )
+                .AsNoTracking()
+                .Where( n => n.LastName == searchParameters.LastName )
+                .Select( n => new PersonSummary()
+                {
+                    Id = n.PersonAlias.Person.Id,
+                    FirstName = n.PersonAlias.Person.FirstName,
+                    NickName = n.PersonAlias.Person.NickName,
+                    Gender = n.PersonAlias.Person.Gender,
+                    BirthDate = n.PersonAlias.Person.BirthDate,
+                    SuffixValueId = n.PersonAlias.Person.SuffixValueId
+                } )
+                .ToList()
+                .ForEach( p =>
+                {
+                    if ( foundPeople.ContainsKey( p.Id ) )
+                    {
+                        foundPeople[p.Id].PreviousNameMatched = true;
+                    }
+                    else
+                    {
+                        foundPeople[p.Id] = new PersonMatchResult( searchParameters, p )
+                        {
+                            PreviousNameMatched = true
+                        };
+                    }
+                } );
+
+            // OR query for mobile phone numbers
+            if ( searchParameters.MobilePhone.IsNotNullOrWhiteSpace() )
+            {
+                var mobilePhoneTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+                var phoneNumberService = new PhoneNumberService( rockContext );
+                phoneNumberService.Queryable( "Person" )
+                    .AsNoTracking()
+                    .Where( n => n.Number == searchParameters.MobilePhone && n.NumberTypeValueId == mobilePhoneTypeId )
+                    .Select( n => new PersonSummary()
+                    {
+                        Id = n.Person.Id,
+                        FirstName = n.Person.FirstName,
+                        NickName = n.Person.NickName,
+                        Gender = n.Person.Gender,
+                        BirthDate = n.Person.BirthDate,
+                        SuffixValueId = n.Person.SuffixValueId
+                    } )
+                    .ToList()
+                    .ForEach( p =>
+                    {
+                        if ( foundPeople.ContainsKey( p.Id ) )
+                        {
+                            foundPeople[p.Id].MobileMatched = true;
+                        }
+                        else
+                        {
+                            foundPeople[p.Id] = new PersonMatchResult( searchParameters, p )
+                            {
+                                MobileMatched = true
+                            };
+                        }
+                    } );
+            }
+
+            // Find people who have a good confidence score
+            var goodMatches = foundPeople.Values
+                .Where( match => match.ConfidenceScore >= MATCH_SCORE_CUTOFF )
+                .OrderByDescending( match => match.ConfidenceScore );
+
+            return GetByIds( goodMatches.Select( a => a.PersonId ).ToList() );
+        }
+
+        #region FindPersonClasses
+
+        /// <summary>
+        /// Contains the properties that can be searched for when performing a GetBestMatch query
+        /// </summary>
+        public class PersonMatchQuery
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="PersonMatchQuery"/> class.
+            /// </summary>
+            /// <param name="firstName">The first name.</param>
+            /// <param name="lastName">The last name.</param>
+            /// <param name="email">The email.</param>
+            /// <param name="mobilePhone">The mobile phone.</param>
+            public PersonMatchQuery( string firstName, string lastName, string email, string mobilePhone )
+            {
+                FirstName = firstName ?? string.Empty;
+                LastName = lastName ?? string.Empty;
+                Email = email ?? string.Empty;
+                MobilePhone = mobilePhone.IsNotNullOrWhiteSpace() ? PhoneNumber.CleanNumber( mobilePhone ) : string.Empty;
+                Gender = null;
+                BirthDate = null;
+                SuffixValueId = null;
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="PersonMatchQuery" /> class. Use this constructor when the person may not have a birth year.
+            /// </summary>
+            /// <param name="firstName">The first name.</param>
+            /// <param name="lastName">The last name.</param>
+            /// <param name="email">The email.</param>
+            /// <param name="mobilePhone">The mobile phone.</param>
+            /// <param name="gender">The gender.</param>
+            /// <param name="birthMonth">The birth month.</param>
+            /// <param name="birthDay">The birth day.</param>
+            /// <param name="birthYear">The birth year.</param>
+            /// <param name="suffixValueId">The suffix value identifier.</param>
+            public PersonMatchQuery( string firstName, string lastName, string email, string mobilePhone, Gender? gender = null, int? birthMonth = null, int? birthDay = null, int? birthYear = null, int? suffixValueId = null )
+            {
+                FirstName = firstName ?? string.Empty;
+                LastName = lastName ?? string.Empty;
+                Email = email ?? string.Empty;
+                MobilePhone = mobilePhone.IsNotNullOrWhiteSpace() ? PhoneNumber.CleanNumber( mobilePhone ) : string.Empty;
+                Gender = gender;
+                BirthDate = birthDay.HasValue && birthMonth.HasValue ? new DateTime( birthYear ?? DateTime.MinValue.Year, birthMonth.Value, birthDay.Value ) : ( DateTime? ) null;
+                SuffixValueId = suffixValueId;
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="PersonMatchQuery"/> class.
+            /// </summary>
+            /// <param name="firstName">The first name.</param>
+            /// <param name="lastName">The last name.</param>
+            /// <param name="email">The email.</param>
+            /// <param name="mobilePhone">The mobile phone.</param>
+            /// <param name="gender">The gender.</param>
+            /// <param name="birthDate">The birth date.</param>
+            /// <param name="suffixValueId">The suffix value identifier.</param>
+            public PersonMatchQuery( string firstName, string lastName, string email, string mobilePhone, Gender? gender = null, DateTime? birthDate = null, int? suffixValueId = null )
+            {
+                FirstName = firstName ?? string.Empty;
+                LastName = lastName ?? string.Empty;
+                Email = email ?? string.Empty;
+                MobilePhone = mobilePhone.IsNotNullOrWhiteSpace() ? PhoneNumber.CleanNumber( mobilePhone ) : string.Empty;
+                Gender = gender;
+                BirthDate = birthDate;
+                SuffixValueId = suffixValueId;
+            }
+
+            /// <summary>
+            /// Gets or sets the first name.
+            /// </summary>
+            /// <value>
+            /// The first name.
+            /// </value>
+            public string FirstName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the last name.
+            /// </summary>
+            /// <value>
+            /// The last name.
+            /// </value>
+            public string LastName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the email.
+            /// </summary>
+            /// <value>
+            /// The email.
+            /// </value>
+            public string Email { get; set; }
+
+            /// <summary>
+            /// Gets or sets the mobile phone.
+            /// </summary>
+            /// <value>
+            /// The mobile phone.
+            /// </value>
+            public string MobilePhone { get; set; }
+
+            /// <summary>
+            /// Gets or sets the gender.
+            /// </summary>
+            /// <value>
+            /// The gender.
+            /// </value>
+            public Gender? Gender { get; set; }
+
+            /// <summary>
+            /// Gets or sets the birth date.
+            /// </summary>
+            /// <value>
+            /// The birth date.
+            /// </value>
+            public DateTime? BirthDate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the suffix value identifier.
+            /// </summary>
+            /// <value>
+            /// The suffix value identifier.
+            /// </value>
+            public int? SuffixValueId { get; set;  }
+        }
+
+        /// <summary>
+        /// A class to summarise the components of a Person which matched a PersonMatchQuery and produce a score representing the likelihood this match is the correct match.
+        /// </summary>
+        private class PersonMatchResult
+        {
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="PersonMatchResult"/> class.
+            /// </summary>
+            /// <param name="query">The person match query.</param>
+            /// <param name="person">The person summary.</param>
+            public PersonMatchResult( PersonMatchQuery query, PersonSummary person )
+            {
+                PersonId = person.Id;
+                FirstNameMatched = ( person.FirstName != null && person.FirstName != String.Empty && person.FirstName == query.FirstName ) || ( person.NickName != null && person.NickName != String.Empty && person.NickName == query.FirstName );
+                SuffixMatched = query.SuffixValueId.HasValue && person.SuffixValueId != null && query.SuffixValueId == person.SuffixValueId;
+                GenderMatched = query.Gender.HasValue & query.Gender == person.Gender;
+
+                if ( query.BirthDate.HasValue && person.BirthDate.HasValue )
+                {
+                    BirthDate = query.BirthDate.Value.Month == person.BirthDate.Value.Month && query.BirthDate.Value.Day == person.BirthDate.Value.Day;
+                    BirthDateYearMatched = BirthDate && person.BirthDate.Value.Year == query.BirthDate.Value.Year;
+                }
+            }
+
+            public int PersonId { get; set; }
+
+            public bool FirstNameMatched { get; set; }
+
+            public bool LastNameMatched { get; set; }
+
+            public bool EmailMatched { get; set; }
+
+            public bool MobileMatched { get; set; }
+
+            public bool PreviousNameMatched { get; set; }
+
+            public bool SuffixMatched { get; set; }
+
+            public bool GenderMatched { get; set; }
+
+            public bool BirthDate { get; set; }
+
+            public bool BirthDateYearMatched { get; set; }
+
+
+            /// <summary>
+            /// Calculates a score representing the likelihood this match is the correct match. Higher is better.
+            /// </summary>
+            /// <returns></returns>
+            public int ConfidenceScore { get
+                {
+                    int total = 0;
+
+                    if ( FirstNameMatched )
+                    {
+                        total += 15;
+                    }
+
+                    if ( LastNameMatched )
+                    {
+                        total += 15;
+                    }
+
+                    if ( MobileMatched || EmailMatched )
+                    {
+                        total += 15;
+                    }
+
+                    if ( BirthDate )
+                    {
+                        total += 10;
+                    }
+
+                    if ( BirthDateYearMatched )
+                    {
+                        total += 5;
+                    }
+
+                    if ( GenderMatched )
+                    {
+                        total += 3;
+                    }
+
+                    if ( SuffixMatched )
+                    {
+                        total += 10;
+                    }
+
+                    return total;
+                } }
+        }
+
+        /// <summary>
+        /// Used to avoid bringing a whole Person into memory
+        /// </summary>
+        private class PersonSummary
+        {
+            public int Id { get; set; }
+            public string FirstName { get; set; }
+
+            public string NickName { get; set; }
+
+            public Gender Gender { get; set; }
+
+            public DateTime? BirthDate { get; set; }
+
+            public int? SuffixValueId { get; set; }
+        }
+
+        #endregion
+
 
         /// <summary>
         /// Looks for a single exact match based on the critieria provided. If more than one person is found it will return null (consider using FindPersons).
@@ -192,39 +596,57 @@ namespace Rock.Model
         /// <returns></returns>
         public Person FindPerson( string firstName, string lastName, string email, bool updatePrimaryEmail, bool includeDeceased = false, bool includeBusinesses = false )
         {
-            var matches = this.FindPersons( firstName, lastName, email, includeDeceased, includeBusinesses ).ToList();
+            return FindPerson( new PersonMatchQuery( firstName, lastName, email, string.Empty ), updatePrimaryEmail, includeDeceased, includeBusinesses );
+        }
 
-            // We're looking for a single exact match
-            if ( matches.Count != 1 )
-            {
-                return null;
-            }
-
-            var exactMatch = matches.First();
+        /// <summary>
+        /// Finds the person.
+        /// </summary>
+        /// <param name="personMatchQuery">The person match query.</param>
+        /// <param name="updatePrimaryEmail">if set to <c>true</c> [update primary email].</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
+        /// <returns></returns>
+        public Person FindPerson( PersonMatchQuery personMatchQuery, bool updatePrimaryEmail, bool includeDeceased = false, bool includeBusinesses = false )
+        {
+            var matches = this.FindPersons( personMatchQuery, includeDeceased, includeBusinesses ).ToList();
+            
+            var match = matches.FirstOrDefault();
 
             // Check if we care about updating the person's primary email
-            if ( !updatePrimaryEmail )
+            if (updatePrimaryEmail && match != null)
             {
-                return exactMatch;
+                return UpdatePrimaryEmail( personMatchQuery.Email, match );
             }
 
-            // OK we care, but are the emails the same already
-            if ( string.Equals( exactMatch.Email, email, StringComparison.CurrentCultureIgnoreCase ) )
+            return match;
+        }
+
+        /// <summary>
+        /// Updates the primary email address of a person if they were found using an alternate email address
+        /// </summary>
+        /// <param name="email">The email.</param>
+        /// <param name="match">The person to update.</param>
+        /// <returns></returns>
+        private Person UpdatePrimaryEmail( string email, Person match )
+        {
+            // Emails are already the same
+            if ( string.Equals( match.Email, email, StringComparison.CurrentCultureIgnoreCase ) )
             {
-                return exactMatch;
+                return match;
             }
 
             // The emails don't match and we've been instructed to update them
             using ( var privateContext = new RockContext() )
             {
                 var privatePersonService = new PersonService( privateContext );
-                var updatePerson = privatePersonService.Get( exactMatch.Id );
+                var updatePerson = privatePersonService.Get( match.Id );
                 updatePerson.Email = email;
                 privateContext.SaveChanges();
             }
 
             // Return a freshly queried person
-            return this.Get( exactMatch.Id );
+            return this.Get( match.Id );
         }
 
         /// <summary>
@@ -2099,7 +2521,10 @@ namespace Rock.Model
                 typeof( Person ),
                 Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                 groupMember.Person.Id,
-                demographicChanges );
+                demographicChanges,
+                false,
+                null,
+                rockContext.SourceOfChange);
 
             if ( isFamilyGroup )
             {
@@ -2111,7 +2536,10 @@ namespace Rock.Model
                     memberChanges,
                     group.Name,
                     typeof( Group ),
-                    groupId );
+                    groupId,
+                    false,
+                    null,
+                    rockContext.SourceOfChange);
             }
         }
 
@@ -2164,7 +2592,10 @@ namespace Rock.Model
                         typeof( Person ),
                         Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                         person.Id,
-                        demographicChanges );
+                        demographicChanges,
+                        false,
+                        null,
+                        rockContext.SourceOfChange);
 
                     person.GivingGroupId = groupId;
                     rockContext.SaveChanges();

@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Cms
         #region Events
 
         /// <summary>
-        /// Handles the BlockUpdated event of the block for when setings are changed.
+        /// Handles the BlockUpdated event of the block for when settings are changed.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
@@ -329,6 +329,8 @@ namespace RockWeb.Blocks.Cms
             filterField.ExcludedFilterTypes = new string[] { typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ).FullName };
             filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             filterField.Expanded = true;
+
+            filterField.DeleteClick += filterControl_DeleteClick;
         }
 
         /// <summary>
@@ -345,6 +347,10 @@ namespace RockWeb.Blocks.Cms
             childGroupControl.ID = string.Format( "fg_{0}", childGroupControl.DataViewFilterGuid.ToString( "N" ) );
             childGroupControl.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             childGroupControl.FilterType = FilterExpressionType.GroupAll;
+
+            childGroupControl.AddFilterClick += groupControl_AddFilterClick;
+            childGroupControl.AddGroupClick += groupControl_AddGroupClick;
+            childGroupControl.DeleteGroupClick += groupControl_DeleteGroupClick;
         }
 
         /// <summary>
@@ -379,7 +385,7 @@ namespace RockWeb.Blocks.Cms
         protected override void ShowSettings()
         {
             // Switch does not automatically initialize again after a partial-postback.  This script 
-            // looks for any switch elements that have not been initialized and re-intializes them.
+            // looks for any switch elements that have not been initialized and re-initializes them.
             string script = @"
 $(document).ready(function() {
     $('.switch > input').each( function () {

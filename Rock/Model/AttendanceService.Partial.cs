@@ -57,7 +57,7 @@ namespace Rock.Model
         public Attendance AddOrUpdate( int personAliasId, DateTime occurrenceDate,
                     int? groupId, int? locationId, int? scheduleId, int? campusId )
         {
-            return AddOrUpdate( personAliasId, occurrenceDate, groupId, null, null, null, null, null, null, null, null );
+            return AddOrUpdate( personAliasId, occurrenceDate, groupId, locationId, scheduleId, campusId, null, null, null, null, null );
         }
 
         /// <summary>
@@ -171,7 +171,7 @@ namespace Rock.Model
         /// <summary>
         /// Returns a specific <see cref="Rock.Model.Attendance"/> record.
         /// </summary>
-        /// <param name="date">A <see cref="System.DateTime"/> representing the the date attended.</param>
+        /// <param name="date">A <see cref="System.DateTime"/> representing the date attended.</param>
         /// <param name="locationId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/> </param>
         /// <param name="scheduleId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Schedule"/></param>
         /// <param name="groupId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/>.</param>

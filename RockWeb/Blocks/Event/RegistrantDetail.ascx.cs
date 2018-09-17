@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -720,34 +720,29 @@ namespace RockWeb.Blocks.Event
         {
             phFields.Controls.Clear();
 
-            if ( TemplateState.Forms != null )
+            if ( TemplateState.Forms == null )
             {
-                foreach ( var form in TemplateState.Forms.OrderBy( f => f.Order ) )
+                return;
+            }
+
+            foreach ( var form in TemplateState.Forms.OrderBy( f => f.Order ) )
+            {
+                if ( form.Fields == null )
                 {
-                    if ( form.Fields != null )
+                    continue;
+                }
+
+                foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
+                {
+                    if ( field.FieldSource == RegistrationFieldSource.RegistrationAttribute )
                     {
-                        foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
+                        if ( field.AttributeId.HasValue )
                         {
-                            if ( field.FieldSource == RegistrationFieldSource.RegistrationAttribute )
-                            {
-                                object fieldValue = null;
-                                if ( RegistrantState.FieldValues.ContainsKey( field.Id ) )
-                                {
-                                    fieldValue = RegistrantState.FieldValues[field.Id].FieldValue;
-                                }
+                            object fieldValue = RegistrantState.FieldValues.ContainsKey( field.Id ) ? RegistrantState.FieldValues[field.Id].FieldValue : null;
+                            string value = setValues && fieldValue != null ? fieldValue.ToString() : string.Empty;
 
-                                if ( field.AttributeId.HasValue )
-                                {
-                                    var attribute = AttributeCache.Get( field.AttributeId.Value );
-                                    string value = string.Empty;
-                                    if ( setValues && fieldValue != null )
-                                    {
-                                        value = fieldValue.ToString();
-                                    }
-
-                                    attribute.AddControl( phFields.Controls, value, BlockValidationGroup, setValues, true, field.IsRequired, null, string.Empty );
-                                }
-                            }
+                            var attribute = AttributeCache.Get( field.AttributeId.Value );
+                            attribute.AddControl( phFields.Controls, value, BlockValidationGroup, setValues, true, field.IsRequired, null, field.Attribute.Description );
                         }
                     }
                 }
@@ -805,7 +800,7 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Builds the DropDownList contorl for multi-option single-quantity fees.
+        /// Builds the DropDownList control for multi-option single-quantity fees.
         /// </summary>
         /// <param name="fee">The fee.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>

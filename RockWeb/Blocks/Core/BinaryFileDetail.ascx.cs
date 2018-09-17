@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Core
                             binaryFile = binaryFileService.Get( binaryFile.Id );
                         }
 
-                        nbWorkflowSuccess.Text = string.Format( "Succesfully processed a <strong>{0}</strong> workflow!", workflowType.Name );
+                        nbWorkflowSuccess.Text = string.Format( "Successfully processed a <strong>{0}</strong> workflow!", workflowType.Name );
                         nbWorkflowSuccess.Visible = true;
                     }
                 }

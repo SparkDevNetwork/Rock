@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Detail Page", "", true, "", "", 0 )]
     [BooleanField( "Allow Add", "Should block support adding new attendance dates outside of the group's configured schedule and group type's exclusion dates?", true, "", 1 )]
     [BooleanField( "Allow Campus Filter", "Should block add an option to allow filtering attendance counts and percentage by campus?", false, "", 2 )]
+    [BooleanField( "Display Notes", "Should the Notes column be displayed?", true, "", 3 )]
     public partial class GroupAttendanceList : RockBlock, ICustomGridColumns
     {
         #region Private Variables
@@ -80,6 +81,12 @@ namespace RockWeb.Blocks.Groups
                 bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
                 gOccurrences.Actions.ShowAdd = canEditBlock && GetAttributeValue( "AllowAdd" ).AsBoolean();
                 gOccurrences.IsDeleteEnabled = canEditBlock;
+
+                var notesColumn = gOccurrences.Columns.OfType<BoundField>().Where( a => a.DataField == "Notes" ).FirstOrDefault();
+                if ( notesColumn != null )
+                {
+                    notesColumn.Visible = GetAttributeValue( "DisplayNotes" ).AsBoolean();
+                }
             }
 
             _allowCampusFilter = GetAttributeValue( "AllowCampusFilter" ).AsBoolean();
@@ -533,7 +540,7 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
 
-                    // Remove the occurrenced that are associated with another campus
+                    // Remove the occurrences that are associated with another campus
                     occurrences = occurrences
                         .Where( o =>
                             !o.CampusId.HasValue ||
@@ -623,6 +630,7 @@ namespace RockWeb.Blocks.Groups
         public int DidAttendCount { get; set; }
         public double AttendanceRate { get; set; }
         public bool CanDelete { get; set; }
+        public string Notes { get; set; }
 
         public AttendanceListOccurrence ( AttendanceOccurrence occurrence )
         {
@@ -638,6 +646,7 @@ namespace RockWeb.Blocks.Groups
             DidNotOccur = occurrence.DidNotOccur ?? false;
             DidAttendCount = occurrence.DidAttendCount;
             AttendanceRate = occurrence.AttendanceRate;
+            Notes = occurrence.Notes;
         }
     }
 

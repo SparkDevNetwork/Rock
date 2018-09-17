@@ -181,6 +181,7 @@
     <Compile Include="CodeGenerated\MetricValuePartition.cs" />
     <Compile Include="CodeGenerated\NcoaHistory.cs" />
     <Compile Include="CodeGenerated\Note.cs" />
+    <Compile Include="CodeGenerated\NoteAttachment.cs" />
     <Compile Include="CodeGenerated\NoteType.cs" />
     <Compile Include="CodeGenerated\NoteWatch.cs" />
     <Compile Include="CodeGenerated\Notification.cs" />

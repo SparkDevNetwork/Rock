@@ -248,8 +248,8 @@
     <Reference Include="WebGrease, Version=1.5.2.14234, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\WebGrease.1.5.2\lib\WebGrease.dll</HintPath>
     </Reference>
-    <Reference Include="Z.EntityFramework.Plus.EF6, Version=1.7.11.0, Culture=neutral, PublicKeyToken=59b66d028979105b, processorArchitecture=MSIL">
-      <HintPath>..\packages\Z.EntityFramework.Plus.EF6.1.7.11\lib\net45\Z.EntityFramework.Plus.EF6.dll</HintPath>
+    <Reference Include="Z.EntityFramework.Plus.EF6, Version=1.8.6.0, Culture=neutral, PublicKeyToken=59b66d028979105b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Z.EntityFramework.Plus.EF6.1.8.6\lib\net45\Z.EntityFramework.Plus.EF6.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -377,6 +377,24 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="Model\CodeGenerated\NoteAttachmentService.cs" />
+    <Compile Include="Model\NoteAttachment.cs" />
+    <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
+    <Compile Include="Data\NoAttributeFilterExpression.cs" />
+    <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
+    <Compile Include="Plugin\HotFixes\054_MigrationRollupsForV8_2.cs" />
+    <Compile Include="Plugin\HotFixes\053_DuplicateDataIntegrityReports.cs" />
+    <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Reporting\DataFilter\Person\HasDuplicateEmailFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\HasDuplicatePhoneFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\InteractionDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\InteractionsFilter.cs" />
+    <Compile Include="Reporting\DataSelect\Person\InteractionCountSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\InteractionDateSelect.cs" />
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentChannelCache.cs" />
@@ -534,6 +552,7 @@
     <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\ComponentDescription.cs" />
     <Compile Include="Extension\Container.cs" />
+    <Compile Include="Extension\FixedSizeList.cs" />
     <Compile Include="Extension\IComponentData.cs" />
     <Compile Include="Extension\IContainer.cs" />
     <Compile Include="Extension\SafeDirectoryCatalog.cs" />
@@ -692,14 +711,12 @@
     <Compile Include="Jobs\CalculatePersonSignals.cs" />
     <Compile Include="Jobs\CommunicationQueueAlert.cs" />
     <Compile Include="Jobs\DatabaseMaintenance.cs" />
+    <Compile Include="Jobs\GetNcoa.cs" />
     <Compile Include="Jobs\IndexRockSite.cs" />
     <Compile Include="Jobs\MigrateFamilyAlternateId.cs" />
     <Compile Include="Jobs\MigrateAttendanceOccurrenceData.cs" />
     <Compile Include="Jobs\MigrateHistorySummaryData.cs" />
     <Compile Include="Jobs\PostV80DataMigrations.cs" />
-    <Compile Include="Jobs\ProcessNcoaResults.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
     <Compile Include="Jobs\PostV74DataMigrations.cs" />
     <Compile Include="Jobs\MigrateCommunicationMediumData.cs" />
     <Compile Include="Jobs\MigrateInteractionsData.cs" />
@@ -784,6 +801,7 @@
     <Compile Include="Model\AnalyticsSourcePersonHistorical.cs" />
     <Compile Include="Model\AnalyticsFactFinancialTransaction.cs" />
     <Compile Include="Model\AnalyticsSourceFinancialTransaction.cs" />
+    <Compile Include="Model\CodeGenerated\ServiceJobHistoryService.cs" />
     <Compile Include="Model\ConnectionTypeService.Partial.cs" />
     <Compile Include="Model\AttendanceOccurrence.cs" />
     <Compile Include="Model\Attendance.cs" />
@@ -1154,6 +1172,7 @@
     <Compile Include="Model\MetricValue.cs" />
     <Compile Include="Model\MetricValuePartition.cs" />
     <Compile Include="Model\NcoaHistory.cs" />
+    <Compile Include="Model\NcoaHistoryService.Partial.cs" />
     <Compile Include="Model\Note.cs" />
     <Compile Include="Model\NoteService.Partial.cs" />
     <Compile Include="Model\NoteType.cs" />
@@ -1211,6 +1230,8 @@
     <Compile Include="Model\RestControllerService.Partial.cs" />
     <Compile Include="Model\Schedule.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
+    <Compile Include="Model\ServiceJobHistory.cs" />
+    <Compile Include="Model\ServiceJobHistoryService.Partial.cs" />
     <Compile Include="Model\SignalType.cs" />
     <Compile Include="Model\SiteDomain.cs" />
     <Compile Include="Model\LavaShortCode.cs" />
@@ -1237,11 +1258,6 @@
     <Compile Include="Plugin\HotFixes\048_InteractionSessionPerformance.cs" />
     <Compile Include="Plugin\HotFixes\047_DataAutomation.cs" />
     <Compile Include="Plugin\HotFixes\049_UpdateGivingAnalyticsAccounts.cs" />
-    <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
-      <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="Reporting\DataFilter\Person\AttendanceCampusFilter.cs" />
     <Compile Include="Plugin\HotFixes\050_MigrationRollupsForV7_4.cs" />
     <Compile Include="Reporting\DataFilter\FinancialScheduledTransactionDetail\AccountFilter.cs" />
@@ -1555,6 +1571,13 @@
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\FontAwesomeHelper.cs" />
     <Compile Include="Utility\IRockOwinStartup.cs" />
+    <Compile Include="Utility\Ncoa.cs" />
+    <Compile Include="Utility\SparkDataApi\PersonAddressItem.cs" />
+    <Compile Include="Utility\SparkDataApi\NcoaApi.cs" />
+    <Compile Include="Utility\SparkDataApi\NcoaReturnRecord.cs" />
+    <Compile Include="Utility\SparkDataApi\NcoaResponse.cs" />
+    <Compile Include="Utility\SparkDataApi\GroupNameTransactionKey.cs" />
+    <Compile Include="Utility\SparkDataApi\UsernamePassword.cs" />
     <Compile Include="Utility\Settings\DataAutomation\InactivatePeople.cs" />
     <Compile Include="Utility\Settings\DataAutomation\InteractionItem.cs" />
     <Compile Include="Utility\Settings\DataAutomation\MoveAdultChildren.cs" />
@@ -1562,6 +1585,9 @@
     <Compile Include="Utility\Settings\DataAutomation\UpdateFamilyStatus.cs" />
     <Compile Include="Utility\Settings\DataAutomation\UpdatePersonConnectionStatus.cs" />
     <Compile Include="Utility\Settings\DataAutomation\UpdateFamilyCampus.cs" />
+    <Compile Include="Utility\Settings\SparkData\NcoaSettings.cs" />
+    <Compile Include="Utility\Settings\SparkData\SparkDataConfig.cs" />
+    <Compile Include="Utility\SparkDataApi\SparkDataApi.cs" />
     <Compile Include="Utility\TextToWorkflow.cs" />
     <Compile Include="Utility\ZebraPrint.cs" />
     <Compile Include="Web\HttpModules\ResponseHeaders.cs" />
@@ -1576,6 +1602,9 @@
     <Compile Include="Web\UI\Controls\Grid\EncryptedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\HtmlField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaField.cs" />
+    <Compile Include="Web\UI\Controls\HiddenFieldRangeValidator.cs" />
+    <Compile Include="Web\UI\Controls\HiddenFieldWithValidationProperty.cs" />
+    <Compile Include="Web\UI\Controls\IHasRequired.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\AdvanceInfo.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\AdvanceInfoRow.cs" />
     <Compile Include="Web\UI\Controls\NoteEditor.cs" />
@@ -1586,6 +1615,7 @@
     <Compile Include="Web\UI\Controls\NumberBoxBase.cs" />
     <Compile Include="Web\UI\Controls\NumberUpDownGroup.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ContentChannelItemPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\ItemFromBlockPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ReportPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DataViewItemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\RegistrationInstancePicker.cs" />
@@ -1601,6 +1631,7 @@
     <Compile Include="Web\UI\Controls\SSNBox.cs" />
     <Compile Include="Web\UI\ICustomGridColumns.cs" />
     <Compile Include="Web\UI\ICustomGridOptions.cs" />
+    <Compile Include="Web\UI\IPickerBlock.cs" />
     <Compile Include="Web\UI\RockHiddenFieldPageStatePersister.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaBoundField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuesPickerEnhanced.cs" />
@@ -2177,6 +2208,15 @@
     <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_spCrm_PersonMerge.sql">
       <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
     </Content>
+    <Content Include="Plugin\HotFixes\052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving.sql">
+      <DependentUpon>052_MigrationRollupsForV8_1.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle.sql">
+      <DependentUpon>052_MigrationRollupsForV8_1.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive.sql">
+      <DependentUpon>052_MigrationRollupsForV8_1.cs</DependentUpon>
+    </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />
     <Content Include="Scripts\jquery-1.12.4.min.js" />
@@ -2241,8 +2281,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Plugin\HotFixes\HotFixMigrationResource.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>HotFixMigrationResource.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>HotFixMigrationResource.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

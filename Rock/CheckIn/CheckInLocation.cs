@@ -216,7 +216,7 @@ namespace Rock.CheckIn
         /// </returns>
         public override string ToString()
         {
-            return Location != null ? Location.ToString() : string.Empty;
+            return Location != null ? Location.Name : string.Empty;
         }
 
         /// <summary>
@@ -230,7 +230,7 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Gets the available keys (for debuging info).
+        /// Gets the available keys (for debugging info).
         /// </summary>
         /// <value>
         /// The available keys.

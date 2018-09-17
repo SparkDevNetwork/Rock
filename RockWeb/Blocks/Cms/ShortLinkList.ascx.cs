@@ -30,7 +30,7 @@ using System.Web.UI;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Short Link List" )]
     [Category( "CMS" )]
@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Cms
 
             RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
             string script = @"
-    new Clipboard('.js-copy-clipboard');
+    new ClipboardJS('.js-copy-clipboard');
     $('.js-copy-clipboard').tooltip();
 ";
             ScriptManager.RegisterStartupScript( gShortLinks, gShortLinks.GetType(), "copy-short-link", script, true );
@@ -160,7 +160,7 @@ namespace RockWeb.Blocks.Cms
                     .Select( s => new ShortLinkRow( s ) )
                     .ToList()
                     .AsQueryable();
-                
+
 
                 SortProperty sortProperty = gShortLinks.SortProperty;
                 if ( sortProperty != null )
@@ -191,7 +191,7 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
-        
+
         protected class ShortLinkRow
         {
             public int Id { get; set; }

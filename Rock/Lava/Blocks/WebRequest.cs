@@ -90,7 +90,7 @@ namespace Rock.Lava.Blocks
                     var client = new RestClient( parms["url"].ToString() );
 
                     var request = new RestRequest( parms["method"].ToUpper().ConvertToEnum<Method>( Method.GET ) );
-                    client.Timeout = 12000;
+                    client.Timeout = parms["timeout"].AsInteger();
 
                     // handle basic auth
                     if ( !string.IsNullOrWhiteSpace( parms["basicauth"] ) )
@@ -218,8 +218,9 @@ namespace Rock.Lava.Blocks
             parms.Add( "responsecontenttype", "json" );
             parms.Add( "body", "" );
             parms.Add( "requesttype", "text/plain" );
+            parms.Add( "timeout", "12000" );
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']*)" )
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

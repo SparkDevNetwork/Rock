@@ -51,12 +51,6 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-12">
-                            <Rock:DataTextBox ID="dtNotes" runat="server" TextMode="MultiLine" Rows="3" ValidateRequestMode="Disabled" SourceTypeName="Rock.Model.AttendanceOccurrence, Rock" PropertyName="Notes"></Rock:DataTextBox>
-                        </div>
-                    </div>
-
-                    <div class="row">
                         <div class="col-md-6">
 
                             <div class="js-roster">
@@ -95,6 +89,13 @@
 
                         </div>
                     </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:DataTextBox ID="dtNotes" runat="server" TextMode="MultiLine" Rows="3" ValidateRequestMode="Disabled" SourceTypeName="Rock.Model.AttendanceOccurrence, Rock" PropertyName="Notes"></Rock:DataTextBox>
+                        </div>
+                    </div>
+
 
                     <Rock:NotificationBox ID="nbPrintRosterWarning" runat="server" NotificationBoxType="Warning" />
 

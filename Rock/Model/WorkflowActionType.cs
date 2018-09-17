@@ -248,6 +248,13 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
         {
+            var workflowTypeId = WorkflowActivityTypeCache.Get( this.ActivityTypeId, dbContext as RockContext )?.WorkflowTypeId;
+            if ( workflowTypeId.HasValue )
+            {
+                WorkflowTypeCache.UpdateCachedEntity( workflowTypeId.Value, System.Data.Entity.EntityState.Modified );
+            }
+
+            WorkflowActivityTypeCache.UpdateCachedEntity( this.ActivityTypeId, System.Data.Entity.EntityState.Modified ); 
             WorkflowActionTypeCache.UpdateCachedEntity( this.Id, entityState );
         }
 
