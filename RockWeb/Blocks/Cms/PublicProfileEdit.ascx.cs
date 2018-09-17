@@ -895,6 +895,11 @@ namespace RockWeb.Blocks.Cms
                     else
                     {
                         person = new PersonService( rockContext ).Get( personId );
+                        if ( GetAttributeValue( "DisableNameEdit" ).AsBoolean() )
+                        {
+                            tbFirstName.Enabled = false;
+                            tbLastName.Enabled = false;
+                        }
                     }
 
                     if ( ddlGroup.SelectedValueAsId().HasValue )
@@ -902,11 +907,6 @@ namespace RockWeb.Blocks.Cms
 
                         if ( person != null )
                         {
-                            if ( GetAttributeValue( "DisableNameEdit" ).AsBoolean() )
-                            {
-                                tbFirstName.Enabled = false;
-                                tbLastName.Enabled = false;
-                            }
                             imgPhoto.BinaryFileId = person.PhotoId;
                             imgPhoto.NoPictureUrl = Person.GetPersonNoPictureUrl( person, 200, 200 );
                             ddlTitle.SelectedValue = person.TitleValueId.HasValue ? person.TitleValueId.Value.ToString() : string.Empty;
