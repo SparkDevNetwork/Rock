@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Data;
@@ -76,7 +77,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new BinaryFileTypePicker { ID = id }; 
+            return new BinaryFileTypePicker { ID = id };
         }
 
         /// <summary>
@@ -87,21 +88,22 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is BinaryFileTypePicker )
+            var picker = control as BinaryFileTypePicker;
+            if ( picker != null )
             {
-                int id = int.MinValue;
-                if ( Int32.TryParse( ( (BinaryFileTypePicker)control ).SelectedValue, out id ) )
+                int? itemId = picker.SelectedValue.AsIntegerOrNull();
+                Guid? itemGuid = null;
+                if ( itemId.HasValue )
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        var binaryFiletype = new BinaryFileTypeService( rockContext ).Get( id );
-                        if ( binaryFiletype != null )
-                        {
-                            return binaryFiletype.Guid.ToString();
-                        }
+                        itemGuid = new BinaryFileTypeService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
+
+                return itemGuid?.ToString();
             }
+
             return null;
         }
 
@@ -113,24 +115,23 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            Guid binaryFileTypeGuid = Guid.Empty;
-            if (Guid.TryParse( value, out binaryFileTypeGuid ))
+            var picker = control as BinaryFileTypePicker;
+            if ( picker != null )
             {
-                if ( control != null && control is BinaryFileTypePicker )
+                int? itemId = null;
+                Guid? itemGuid = value.AsGuidOrNull();
+                if ( itemGuid.HasValue )
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        var binaryFiletype = new BinaryFileTypeService( rockContext ).Get( binaryFileTypeGuid );
-                        if ( binaryFiletype != null )
-                        {
-                            ( (BinaryFileTypePicker)control ).SetValue( binaryFiletype.Id.ToString() );
-                        }
+                        itemId = new BinaryFileTypeService( rockContext ).Queryable().Where( a => a.Guid == itemGuid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
                     }
                 }
+
+                picker.SetValue( itemId );
             }
         }
 
         #endregion
-
     }
 }

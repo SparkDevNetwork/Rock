@@ -94,7 +94,7 @@ namespace Rock.Communication.Medium
             {
                 Person toPerson = null;
 
-                var mobilePhoneNumberValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+                var mobilePhoneNumberValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
 
                 // get from person
                 var fromPerson = new PersonService( rockContext ).Queryable()
@@ -149,7 +149,7 @@ namespace Rock.Communication.Medium
                 }
                 else
                 {
-                    var globalAttributes = GlobalAttributesCache.Read();
+                    var globalAttributes = GlobalAttributesCache.Get();
                     string organizationName = globalAttributes.GetValue( "OrganizationName" );
 
                     errorMessage = string.Format( "Could not deliver message. This phone number is not registered in the {0} database.", organizationName );
@@ -183,7 +183,7 @@ namespace Rock.Communication.Medium
             recipient.Status = CommunicationRecipientStatus.Pending;
             recipient.PersonAliasId = toPersonAliasId;
             recipient.ResponseCode = responseCode;
-            recipient.MediumEntityTypeId = EntityTypeCache.Read( "Rock.Communication.Medium.Sms" ).Id;
+            recipient.MediumEntityTypeId = EntityTypeCache.Get( "Rock.Communication.Medium.Sms" ).Id;
             communication.Recipients.Add( recipient );
 
             var communicationService = new Rock.Model.CommunicationService( rockContext );
@@ -246,11 +246,10 @@ namespace Rock.Communication.Medium
         {
             DateTime tokenStartDate = RockDateTime.Now.Subtract( new TimeSpan( TOKEN_REUSE_DURATION, 0, 0, 0 ) );
             var communicationRecipientService = new CommunicationRecipientService( rockContext );
-            var cache = RockMemoryCache.Default;
 
             lock ( _responseCodesLock )
             {
-                var availableResponseCodes = cache[RESPONSE_CODE_CACHE_KEY] as List<string>;
+                var availableResponseCodes = RockCache.Get( RESPONSE_CODE_CACHE_KEY ) as List<string>;
 
                 //
                 // Try up to 1,000 times to find a code. This really should never go past the first
@@ -275,7 +274,7 @@ namespace Rock.Communication.Medium
 
                     if ( !isUsed )
                     {
-                        cache[RESPONSE_CODE_CACHE_KEY] = availableResponseCodes;
+                        RockCache.AddOrUpdate( RESPONSE_CODE_CACHE_KEY, availableResponseCodes );
                         return code;
                     }
                 }
@@ -291,7 +290,7 @@ namespace Rock.Communication.Medium
         /// <returns></returns>
         public static DefinedValueCache FindFromPhoneDefinedValue( string phoneNumber )
         {
-            var definedType = DefinedTypeCache.Read( SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
+            var definedType = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
             if ( definedType != null )
             {
                 if ( definedType.DefinedValues != null && definedType.DefinedValues.Any() )

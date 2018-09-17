@@ -98,6 +98,11 @@ function() {
      result = result + ', with role(s): ' + roleCommaList;
   }
 
+  var groupStatus = $('.js-group-status option:selected', $content).text();
+  if (groupMemberStatus) {
+     result = result + ', with group status:' + groupStatus;
+  }
+
   var groupMemberStatus = $('.js-group-member-status option:selected', $content).text();
   if (groupMemberStatus) {
      result = result + ', with member status:' + groupMemberStatus;
@@ -120,11 +125,17 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                var groupType = Rock.Web.Cache.GroupTypeCache.Read( selectionValues[0].AsGuid() );
+                var groupType = GroupTypeCache.Get( selectionValues[0].AsGuid() );
 
                 var groupTypeRoleGuidList = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsGuid() ).ToList();
 
                 var groupTypeRoles = new GroupTypeRoleService( new RockContext() ).Queryable().Where( a => groupTypeRoleGuidList.Contains( a.Guid ) ).ToList();
+
+                bool? groupStatus = null;
+                if ( selectionValues.Length >= 4 )
+                {
+                    groupStatus = selectionValues[3].AsBooleanOrNull();
+                }
 
                 GroupMemberStatus? groupMemberStatus = null;
                 if ( selectionValues.Length >= 3 )
@@ -138,6 +149,11 @@ function() {
                     if ( groupTypeRoles.Count() > 0 )
                     {
                         result += string.Format( ", with role(s): {0}", groupTypeRoles.Select( a => a.Name ).ToList().AsDelimited( "," ) );
+                    }
+
+                    if ( groupStatus.HasValue )
+                    {
+                        result += string.Format( ", with group status: {0}", groupStatus.Value ? "Active" : "Inactive" );
                     }
 
                     if ( groupMemberStatus.HasValue )
@@ -171,7 +187,7 @@ function() {
             {
                 selectedGroupTypeId = groupTypePicker.SelectedGroupTypeId;
             }
-            
+
             groupTypePicker = new GroupTypePicker();
             groupTypePicker.ID = filterControl.ID + "_groupTypePicker";
             groupTypePicker.Label = "Group Type";
@@ -197,7 +213,17 @@ function() {
             ddlGroupMemberStatus.SetValue( GroupMemberStatus.Active.ConvertToInt() );
             filterControl.Controls.Add( ddlGroupMemberStatus );
 
-            return new Control[3] { groupTypePicker, cblRole, ddlGroupMemberStatus };
+            RockDropDownList ddlGroupStatus = new RockDropDownList();
+            ddlGroupStatus.CssClass = "js-group-status";
+            ddlGroupStatus.ID = filterControl.ID + "_ddlGroupStatus";
+            ddlGroupStatus.Label = "with Group Status";
+            ddlGroupStatus.Items.Insert( 0, new ListItem( "[All]", "" ) );
+            ddlGroupStatus.Items.Insert( 1, new ListItem( "Active", "True" ) );
+            ddlGroupStatus.Items.Insert( 2, new ListItem( "Inactive", "False" ) );
+            ddlGroupStatus.SetValue( true.ToString() );
+            filterControl.Controls.Add( ddlGroupStatus );
+
+            return new Control[4] { groupTypePicker, cblRole, ddlGroupStatus, ddlGroupMemberStatus };
         }
 
         /// <summary>
@@ -217,7 +243,7 @@ function() {
         /// <param name="groupTypeId">The group type identifier.</param>
         private void PopulateGroupRolesCheckList( int groupTypeId )
         {
-            var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeId );
+            var groupType = GroupTypeCache.Get( groupTypeId );
             if ( groupType != null )
             {
                 cblRole.Items.Clear();
@@ -256,11 +282,13 @@ function() {
         {
             var groupTypePicker = ( controls[0] as GroupTypePicker );
             var cblRoles = ( controls[1] as RockCheckBoxList );
-            var ddlMemberStatus = ( controls[2] as RockDropDownList );
+            var ddlGroupStatus = ( controls[2] as RockDropDownList );
+            var ddlMemberStatus = ( controls[3] as RockDropDownList );
+
 
             int groupTypeId = groupTypePicker.SelectedValueAsId() ?? 0;
             Guid? groupTypeGuid = null;
-            var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeId );
+            var groupType = GroupTypeCache.Get( groupTypeId );
             if ( groupType != null )
             {
                 groupTypeGuid = groupType.Guid;
@@ -270,7 +298,9 @@ function() {
 
             var memberStatusValue = ddlMemberStatus.SelectedValue;
 
-            return groupTypeGuid.ToString() + "|" + rolesGuidCommaList + "|" + memberStatusValue;
+            var groupStatus = ddlGroupStatus.SelectedValue;
+
+            return groupTypeGuid.ToString() + "|" + rolesGuidCommaList + "|" + memberStatusValue + "|" + groupStatus;
         }
 
         /// <summary>
@@ -290,7 +320,7 @@ function() {
                 {
                     ( controls[0] as GroupTypePicker ).SetValue( groupType.Id );
                 }
-                
+
                 groupTypePicker_SelectedIndexChanged( this, new EventArgs() );
 
                 string[] selectedRoleGuids = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
@@ -301,7 +331,17 @@ function() {
                     item.Selected = selectedRoleGuids.Contains( item.Value );
                 }
 
-                RockDropDownList ddlGroupMemberStatus = controls[2] as RockDropDownList;
+                RockDropDownList ddlGroupStatus = controls[2] as RockDropDownList;
+                if ( selectionValues.Length >= 4 )
+                {
+                    ddlGroupStatus.SetValue( selectionValues[3] );
+                }
+                else
+                {
+                    ddlGroupStatus.SetValue( string.Empty );
+                }
+
+                RockDropDownList ddlGroupMemberStatus = controls[3] as RockDropDownList;
                 if ( selectionValues.Length >= 3 )
                 {
                     ddlGroupMemberStatus.SetValue( selectionValues[2] );
@@ -330,13 +370,24 @@ function() {
                 int groupTypeId = 0;
 
                 Guid groupTypeGuid = selectionValues[0].AsGuid();
-                var groupType = GroupTypeCache.Read( groupTypeGuid );
+                var groupType = GroupTypeCache.Get( groupTypeGuid );
                 if ( groupType != null )
                 {
                     groupTypeId = groupType.Id;
                 }
 
-                var groupMemberServiceQry = groupMemberService.Queryable().Where( xx => xx.Group.GroupTypeId == groupTypeId && xx.Group.IsActive == true );
+                var groupMemberServiceQry = groupMemberService.Queryable().Where( xx => xx.Group.GroupTypeId == groupTypeId );
+
+                bool? groupStatus = null;
+                if ( selectionValues.Length >= 4 )
+                {
+                    groupStatus = selectionValues[3].AsBooleanOrNull();
+                }
+
+                if ( groupStatus.HasValue )
+                {
+                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => xx.Group.IsActive == groupStatus.Value );
+                }
 
                 var groupRoleGuids = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( n => n.AsGuid() ).ToList();
                 if ( groupRoleGuids.Count() > 0 )

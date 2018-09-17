@@ -3,28 +3,31 @@
 <ContentTemplate>
 
     <script>
-        
-        Sys.Application.add_load(function () {
-            $('.tenkey a.digit').click(function () {
-                $phoneNumber = $("input[id$='tbPhone']");
-                $phoneNumber.val($phoneNumber.val() + $(this).html());
-            });
-            $('.tenkey a.back').click(function () {
-                $phoneNumber = $("input[id$='tbPhone']");
-                $phoneNumber.val($phoneNumber.val().slice(0,-1));
-            });
-            $('.tenkey a.clear').click(function () {
-                $phoneNumber = $("input[id$='tbPhone']");
-                $phoneNumber.val('');
-            });
 
-            // set focus to the input unless on a touch device
-            var isTouchDevice = 'ontouchstart' in document.documentElement;
-            if (!isTouchDevice) {
-                $('.search-input').focus();
-            }
+        Sys.Application.add_load(function () {
+          $(document).ready(function() {
+                // set focus to the input unless on a touch device
+                var isTouchDevice = 'ontouchstart' in document.documentElement;
+                if (!isTouchDevice) {
+                    console.log("not touch");
+                    $('.search-input').focus();
+                }
+
+                $('.tenkey a.digit').click(function () {
+                    $phoneNumber = $("input[id$='tbPhone']");
+                    $phoneNumber.val($phoneNumber.val() + $(this).html());
+                });
+                $('.tenkey a.back').click(function () {
+                    $phoneNumber = $("input[id$='tbPhone']");
+                    $phoneNumber.val($phoneNumber.val().slice(0,-1));
+                });
+                $('.tenkey a.clear').click(function () {
+                    $phoneNumber = $("input[id$='tbPhone']");
+                    $phoneNumber.val('');
+                });
+            });
         });
-        
+
     </script>
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
@@ -32,9 +35,9 @@
     <div class="checkin-header">
         <h1><asp:Literal ID="lPageTitle" runat="server" /></h1>
     </div>
-                
+
     <div class="checkin-body">
-        
+
         <div class="checkin-scroll-panel">
             <div class="scroller">
 
@@ -76,16 +79,16 @@
                 </div>
 
             </div>
-            
+
             </div>
         </div>
 
     </div>
 
 
-    <div class="checkin-footer">   
+    <div class="checkin-footer">
         <div class="checkin-actions">
-            <asp:LinkButton CssClass="btn btn-default" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
+            <asp:LinkButton CssClass="btn btn-default btn-back" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
         </div>
     </div>
 

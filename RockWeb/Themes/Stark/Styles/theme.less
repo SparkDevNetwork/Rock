@@ -1,4 +1,4 @@
-﻿
+
 // Load Master Styles
 // -------------------------
 @import "../../../Styles/Bootstrap/variables.less";
@@ -13,7 +13,7 @@
     Rock Theme Styles
 
     1. HTML Overrides
-    2. Bootstrap Overides
+    2. Bootstrap Overrides
     3. Theme Styling
     4. Responsive Overrides
 
@@ -23,31 +23,31 @@
 // -------------------------
 
 html {
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 main {
-    display: block;
+  display: block;
 }
 
 // 2. Bootstrap Overrides
 // -------------------------
 
 .navbar {
-    position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013
-    // using fontawesome nav toggle button instead of the BS default
-    .navbar-toggle {
-        padding: 6px 10px;
+  position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013
+  // using fontawesome nav toggle button instead of the BS default
+  .navbar-toggle {
+    padding: 6px 10px;
 
-        i.fa-bars {
-            color: @navbar-inverse-toggle-icon-bar-bg;
-        }
+    i.fa-bars {
+      color: @navbar-inverse-toggle-icon-bar-bg;
     }
+  }
 }
 
 a:hover i.fs {
-    text-decoration: none;
+  text-decoration: none;
 }
 
 // 3. Theme Styling
@@ -58,114 +58,114 @@ h1.pagetitle:empty { // hides the page title h1 tag if the page has the title hi
 }
 
 .page-icon {
-    display: none;
+  display: none;
 }
 
 header {
-    .page-menu,
-    .login-status {
-        float: right;
-    }
+  .page-menu,
+  .login-status {
+    float: right;
+  }
 
-    .navbar {
-        background-color: @header-bg;
-        border: 0;
-    }
+  .navbar {
+    background-color: @header-bg;
+    border: 0;
+  }
 }
 
 // homepage items
 #announcement-rotator {
-    margin: 0 -@grid-gutter-width/2 @spacing-lg-px;
+  margin: 0 -@grid-gutter-width/2 @spacing-lg-px;
 
-    .item {
-        img {
-            width: 100%;
-        }
+  .item {
+    img {
+      width: 100%;
     }
+  }
 }
 
 .announcement-list {
-    .announcement {
-        margin: 0 auto @spacing-lg-px;
-        max-width: 390px;
-    }
+  .announcement {
+    max-width: 390px;
+    margin: 0 auto @spacing-lg-px;
+  }
 
-    .announcement-title {
-        margin: @spacing-sm-px 0;
-    }
+  .announcement-title {
+    margin: @spacing-sm-px 0;
+  }
 
-    img {
-        width: 100%;
-    }
+  img {
+    width: 100%;
+  }
 }
 
 .announcement-detail {
-    img {
-        width: 100%;
-    }
+  img {
+    width: 100%;
+  }
 }
 
 .nav-sub {
-    li {
-        border: 1px solid @gray-lighter;
-        border-radius: @border-radius-base;
-    }
+  li {
+    border: 1px solid @gray-lighter;
+    border-radius: @border-radius-base;
+  }
 }
 
 footer {
-    margin-bottom: 50px;
+  margin-bottom: 50px;
 
-    .footer-message {
-        float: left;
-    }
+  .footer-message {
+    float: left;
+  }
 
-    .footer-address {
-        float: right;
-    }
+  .footer-address {
+    float: right;
+  }
 }
 
 #splash.error {
-    background-color: @gray-lighter;
+  background-color: @gray-lighter;
 
-    #content {
-        margin-top: 20px;
-        background-color: @body-bg;
-        border-radius: @border-radius-base;
-        padding: 20px;
-    }
+  #content {
+    padding: 20px;
+    margin-top: 20px;
+    background-color: @body-bg;
+    border-radius: @border-radius-base;
+  }
 }
 
 .not-found h2 {
-    font-size: 200px;
-    font-weight: @font-weight-bold;
-    letter-spacing: -5px;
-    line-height: 210px;
+  font-size: 200px;
+  font-weight: @font-weight-bold;
+  line-height: 210px;
+  letter-spacing: -5px;
 
-    i {
-        color: #f03;
-        font-size: 210px;
-        position: relative;
-        top: -12px;
-    }
+  i {
+    position: relative;
+    top: -12px;
+    font-size: 210px;
+    color: #f03;
+  }
 }
 
 /* hide block panels */
 .panel.panel-block {
-    border: 0;
-    box-shadow: none;
+  border: 0;
+  box-shadow: none;
 
-    & > .panel-heading,
-    & > .rock-panel-drawer {
-        display: none;
+  & > .panel-heading,
+  & > .rock-panel-drawer {
+    display: none;
+  }
+
+  & > .panel-body {
+    padding: 0;
+
+    .grid.grid-panel {
+      margin: 0;
     }
-
-    & > .panel-body {
-        padding: 0;
-
-        .grid.grid-panel {
-            margin: 0;
-        }
-    }
+  }
 }
 
 // 4. Responsive Overrides
@@ -175,9 +175,9 @@ footer {
 
 // Small devices (tablets, 768px and up)
 @media (min-width: @screen-sm-min) {
-    #announcement-rotator {
-        margin: @spacing-lg-px 0;
-    }
+  #announcement-rotator {
+    margin: @spacing-lg-px 0;
+  }
 }
 
 // Medium devices (desktops, 992px and up)

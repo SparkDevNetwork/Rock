@@ -1,30 +1,34 @@
-{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+{%- if Page.DisplayChildPages == 'true' and Page.Pages != empty -%}
     <ul class="nav nav-stacked navbar-side">
-		{% for childPage in Page.Pages %}
-            {% if childPage.Current == 'true' %}
+		{%- for childPage in Page.Pages -%}
+            {%- if childPage.IsParentOfCurrent == 'true' -%}
 				<li class="current">
-			{% else %}
+			{%- else -%}
 				<li>
-			{% endif %}
+			{%- endif -%}
 				<i class="{{ childPage.IconCssClass }}"></i>
 
-				{% if childPage.DisplayChildPages == 'true' and childPage.Pages != empty %}
+				{%- if childPage.DisplayChildPages == 'true' and childPage.Pages != empty -%}
                     <ul class="nav nav-childpages">
                         <li class="title">{{ childPage.Title }}</li>
-						{% for grandchildPage in childPage.Pages %}
+						{%- for grandchildPage in childPage.Pages -%}
                             <li class="header">{{ grandchildPage.Title }}</li>
-                            {% if grandchildPage.DisplayChildPages == 'true' %}
-                                {% for greatgrandchildPage in grandchildPage.Pages %}
-                                    <li>
+                            {%- if grandchildPage.DisplayChildPages == 'true' -%}
+                                {%- for greatgrandchildPage in grandchildPage.Pages -%}
+                                    {%- if greatgrandchildPage.IsParentOfCurrent == 'true' or greatgrandchildPage.Current == 'true' -%}
+                                        <li class="current">
+                                    {%- else -%}
+                                        <li>
+                                    {%- endif -%}
                                         <a role="menu-item" href="{{ greatgrandchildPage.Url }}">{{ greatgrandchildPage.Title }}</a>
                                     </li>
-                                {% endfor %}
-                            {% endif %}
-                        {% endfor %}
+                                {%- endfor -%}
+                            {%- endif -%}
+                        {%- endfor -%}
                     </ul>
-                {% endif %}
+                {%- endif -%}
 
             </li>
-        {% endfor %}
+        {%- endfor -%}
     </ul>
-{% endif %}
+{%- endif -%}

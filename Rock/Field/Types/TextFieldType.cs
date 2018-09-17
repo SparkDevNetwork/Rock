@@ -34,6 +34,8 @@ namespace Rock.Field.Types
         #region Configuration
 
         private const string IS_PASSWORD_KEY = "ispassword";
+        private const string MAX_CHARACTERS = "maxcharacters";
+        private const string SHOW_COUNT_DOWN = "showcountdown";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -43,6 +45,8 @@ namespace Rock.Field.Types
         {
             var configKeys = base.ConfigurationKeys();
             configKeys.Add( IS_PASSWORD_KEY );
+            configKeys.Add( MAX_CHARACTERS );
+            configKeys.Add( SHOW_COUNT_DOWN );
             return configKeys;
         }
 
@@ -55,13 +59,32 @@ namespace Rock.Field.Types
             var controls = base.ConfigurationControls();
 
             // Add checkbox for deciding if the textbox is used for storing a password
-            var cb = new RockCheckBox();
-            controls.Add( cb );
-            cb.AutoPostBack = true;
-            cb.CheckedChanged += OnQualifierUpdated;
-            cb.Label = "Password Field";
-            cb.Text = "Yes";
-            cb.Help = "When set, edit field will be masked.";
+            var cbIsPasswordField = new RockCheckBox();
+            controls.Add( cbIsPasswordField );
+            cbIsPasswordField.AutoPostBack = true;
+            cbIsPasswordField.CheckedChanged += OnQualifierUpdated;
+            cbIsPasswordField.Label = "Password Field";
+            cbIsPasswordField.Text = "Yes";
+            cbIsPasswordField.Help = "When set, edit field will be masked.";
+
+            // Add number box for selecting the maximum number of characters
+            var nbMaxCharacters = new NumberBox();
+            controls.Add( nbMaxCharacters );
+            nbMaxCharacters.AutoPostBack = true;
+            nbMaxCharacters.TextChanged += OnQualifierUpdated;
+            nbMaxCharacters.NumberType = ValidationDataType.Integer;
+            nbMaxCharacters.Label = "Max Characters";
+            nbMaxCharacters.Help = "The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text.";
+
+            // Add checkbox indicating whether to show the count down.
+            var cbShowCountDown = new RockCheckBox();
+            controls.Add( cbShowCountDown );
+            cbShowCountDown.AutoPostBack = true;
+            cbShowCountDown.CheckedChanged += OnQualifierUpdated;
+            cbShowCountDown.Label = "Show Character Limit Countdown";
+            cbShowCountDown.Text = "Yes";
+            cbShowCountDown.Help = "When set, displays a countdown showing how many characters remain (for the Max Characters setting).";
+
             return controls;
         }
 
@@ -74,10 +97,37 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( IS_PASSWORD_KEY, new ConfigurationValue( "Password Field", "When set, edit field will be masked.", "" ) );
+            configurationValues.Add( MAX_CHARACTERS, new ConfigurationValue( "Max Characters", "The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text.", "" ) );
+            configurationValues.Add( SHOW_COUNT_DOWN, new ConfigurationValue( "Show Character Limit Countdown", "When set, displays a countdown showing how many characters remain (for the Max Characters setting).", "" ) );
 
-            if ( controls != null && controls.Count > 0 && controls[0] != null && controls[0] is CheckBox )
-            { 
-                configurationValues[IS_PASSWORD_KEY].Value = ( (CheckBox)controls[0] ).Checked.ToString();
+            if ( controls != null )
+            {
+                if ( controls.Count > 0 )
+                {
+                    CheckBox cbIsPasswordField = controls[0] as CheckBox;
+                    if ( cbIsPasswordField != null )
+                    {
+                        configurationValues[IS_PASSWORD_KEY].Value = cbIsPasswordField.Checked.ToString();
+                    }
+                }
+
+                if ( controls.Count > 1 )
+                {
+                    NumberBox nbMaxCharacters = controls[1] as NumberBox;
+                    if ( nbMaxCharacters != null )
+                    {
+                        configurationValues[MAX_CHARACTERS].Value = nbMaxCharacters.Text;
+                    }
+                }
+
+                if ( controls.Count > 2 )
+                {
+                    CheckBox cbShowCountDown = controls[2] as CheckBox;
+                    if ( cbShowCountDown != null )
+                    {
+                        configurationValues[SHOW_COUNT_DOWN].Value = cbShowCountDown.Checked.ToString();
+                    }
+                }
             }
 
             return configurationValues;
@@ -90,7 +140,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public bool IsPassword( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if (configurationValues != null && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
+            if ( configurationValues != null && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
             {
                 return configurationValues[IS_PASSWORD_KEY].Value.AsBoolean();
             }
@@ -107,9 +157,31 @@ namespace Rock.Field.Types
         {
             if ( controls != null && controls.Count > 0 && configurationValues != null )
             {
-                if ( controls[0] != null && controls[0] is CheckBox && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
+                if ( controls.Count > 0 && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
                 {
-                    ( (CheckBox)controls[0] ).Checked = configurationValues[IS_PASSWORD_KEY].Value.AsBoolean();
+                    CheckBox cbIsPasswordField = controls[0] as CheckBox;
+                    if ( cbIsPasswordField != null )
+                    {
+                        cbIsPasswordField.Checked = configurationValues[IS_PASSWORD_KEY].Value.AsBoolean();
+                    }
+                }
+
+                if ( controls.Count > 1 && configurationValues.ContainsKey( MAX_CHARACTERS ) )
+                {
+                    NumberBox nbMaxCharacters = controls[1] as NumberBox;
+                    if ( nbMaxCharacters != null )
+                    {
+                        nbMaxCharacters.Text = configurationValues[MAX_CHARACTERS].Value;
+                    }
+                }
+
+                if ( controls.Count > 2 && configurationValues.ContainsKey( SHOW_COUNT_DOWN ))
+                {
+                    CheckBox cbShowCountDown = controls[2] as CheckBox;
+                    if ( cbShowCountDown != null )
+                    {
+                        cbShowCountDown.Checked = configurationValues[SHOW_COUNT_DOWN].Value.AsBoolean();
+                    }
                 }
             }
         }
@@ -167,7 +239,7 @@ namespace Rock.Field.Types
         public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
         {
             // NOTE: this really should not be encoding the value. FormatValueAsHtml method is really designed to wrap a value with appropriate html (i.e. convert an email into a mailto anchor tag)
-            // but keeping it here for backward compatability.
+            // but keeping it here for backward compatibility.
             return System.Web.HttpUtility.HtmlEncode( FormatValue( parentControl, value, configurationValues, condensed ) );
         }
 
@@ -184,7 +256,7 @@ namespace Rock.Field.Types
         public override string FormatValueAsHtml( Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
         {
             // NOTE: this really should not be encoding the value. FormatValueAsHtml method is really designed to wrap a value with appropriate html (i.e. convert an email into a mailto anchor tag)
-            // but keeping it here for backward compatability.
+            // but keeping it here for backward compatibility.
             return System.Web.HttpUtility.HtmlEncode( FormatValue( parentControl, entityTypeId, entityId, value, configurationValues, condensed ) );
         }
 
@@ -204,13 +276,29 @@ namespace Rock.Field.Types
         {
             RockTextBox tb = base.EditControl( configurationValues, id ) as RockTextBox;
 
-            if ( configurationValues != null &&
-                configurationValues.ContainsKey( IS_PASSWORD_KEY ) &&
-                configurationValues[IS_PASSWORD_KEY].Value.AsBoolean() )
+            if ( configurationValues != null )
             {
-                tb.TextMode = TextBoxMode.Password;
-            }
 
+                if ( configurationValues.ContainsKey( IS_PASSWORD_KEY ) &&
+                    configurationValues[IS_PASSWORD_KEY].Value.AsBoolean() )
+                {
+                    tb.TextMode = TextBoxMode.Password;
+                }
+
+                if ( configurationValues.ContainsKey( MAX_CHARACTERS ) )
+                {
+                    int? maximumLength = configurationValues[MAX_CHARACTERS].Value.AsIntegerOrNull();
+                    if ( maximumLength.HasValue )
+                    {
+                        tb.MaxLength = maximumLength.Value;
+                    }
+                }
+
+                if ( configurationValues.ContainsKey( SHOW_COUNT_DOWN ) )
+                {
+                    tb.ShowCountDown = configurationValues[SHOW_COUNT_DOWN].Value.AsBoolean();
+                }
+            }
             return tb;
         }
 

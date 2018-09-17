@@ -67,7 +67,7 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            var attribute = AttributeCache.Read( GetAttributeValue( action, "BenevolenceRequestAttribute" ).AsGuid() );
+            var attribute = AttributeCache.Get( GetAttributeValue( action, "BenevolenceRequestAttribute" ).AsGuid() );
 
             if ( attribute == null )
             {

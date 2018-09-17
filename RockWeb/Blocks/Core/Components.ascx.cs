@@ -41,12 +41,14 @@ namespace RockWeb.Blocks.Core
 
     [TextField( "Component Container", "The Rock Extension Managed Component Container to manage. For example: 'Rock.Search.SearchContainer, Rock'", true, "", "", 1 )]
     [BooleanField( "Support Ordering", "Should user be allowed to re-order list of components?", true, "", 2 )]
+    [BooleanField("Support Security", "Should the user be allowed to configure security for the components?", true, "", 3)]
     public partial class Components : RockBlock, ICustomGridColumns
     {
         #region Private Variables
 
         private bool _supportOrdering = true;
         private bool _isAuthorizedToConfigure = false;
+        private bool _supportSecurity = true;
         private IContainer _container;
 
         #endregion
@@ -64,6 +66,7 @@ namespace RockWeb.Blocks.Core
             _isAuthorizedToConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
 
             _supportOrdering = GetAttributeValue( "SupportOrdering" ).AsBoolean( true );
+            _supportSecurity = GetAttributeValue( "SupportSecurity" ).AsBoolean( true );
 
             Type containerType = Type.GetType( GetAttributeValue( "ComponentContainer" ) );
             if ( containerType != null )
@@ -84,11 +87,6 @@ namespace RockWeb.Blocks.Core
 
                         rGrid.DataKeyNames = new string[] { "Id" };
 
-                        var reorderField = rGrid.ColumnsOfType<ReorderField>().FirstOrDefault();
-                        if ( reorderField != null )
-                        {
-                            reorderField.Visible = _supportOrdering && _isAuthorizedToConfigure;
-                        }
                         rGrid.GridReorder += rGrid_GridReorder;
                         rGrid.GridRebind += rGrid_GridRebind;
                         rGrid.RowDataBound += rGrid_RowDataBound;
@@ -114,6 +112,8 @@ namespace RockWeb.Blocks.Core
             {
                 DisplayError( "Could not get the type of the specified Managed Component Container" );
             }
+
+            this.BlockUpdated += Block_BlockUpdated;
         }
 
         /// <summary>
@@ -131,6 +131,7 @@ namespace RockWeb.Blocks.Core
                 if ( _container != null )
                 {
                     BindGrid();
+                    ConfigureBlock();
                 }
             }
             else
@@ -148,6 +149,11 @@ namespace RockWeb.Blocks.Core
             }
         }
 
+
+        private void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            ConfigureBlock();
+        }
         #endregion
 
         #region Grid Events
@@ -238,7 +244,7 @@ namespace RockWeb.Blocks.Core
                 {
                     aSecure.Visible = true;
 
-                    var entityType = EntityTypeCache.Read( componentDescription.Type );
+                    var entityType = EntityTypeCache.Get( componentDescription.Type );
                     string url = Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done", entityType.Id, 0, componentDescription.Name + " Security" ) );
                     aSecure.HRef = "javascript: Rock.controls.modal.show($(this), '" + url + "')";
                 }
@@ -280,6 +286,25 @@ namespace RockWeb.Blocks.Core
         #region Internal Methods
 
         /// <summary>
+        /// Configures the block.
+        /// </summary>
+        private void ConfigureBlock()
+        {
+            var reorderField = rGrid.ColumnsOfType<ReorderField>().FirstOrDefault();
+            if ( reorderField != null )
+            {
+                reorderField.Visible = _supportOrdering && _isAuthorizedToConfigure;
+            }
+
+            var securityColumn = rGrid.ColumnsOfType<RockTemplateFieldUnselected>().FirstOrDefault();
+            if ( securityColumn != null )
+            {
+                securityColumn.Visible = _supportSecurity && _isAuthorizedToConfigure;
+                ;
+            }
+        }
+
+        /// <summary>
         /// Binds the filter.
         /// </summary>
         private void BindFilter()
@@ -318,7 +343,7 @@ namespace RockWeb.Blocks.Core
             foreach ( var component in components )
             {
                 Type type = component.Value.Value.GetType();
-                if ( Rock.Attribute.Helper.UpdateAttributes( type, Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ), string.Empty, string.Empty, rockContext ) )
+                if ( Rock.Attribute.Helper.UpdateAttributes( type, EntityTypeCache.GetId( type.FullName ), string.Empty, string.Empty, rockContext ) )
                 {
                     component.Value.Value.LoadAttributes( rockContext );
                 }

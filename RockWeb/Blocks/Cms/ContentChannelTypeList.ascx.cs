@@ -179,7 +179,7 @@ namespace RockWeb.Blocks.Cms
                 types = types.OrderBy( p => p.Name ).ToList();
             }
 
-            gContentChannelType.EntityTypeId = EntityTypeCache.Read<ContentChannelType>().Id;
+            gContentChannelType.EntityTypeId = EntityTypeCache.Get<ContentChannelType>().Id;
             gContentChannelType.DataSource = types;
             gContentChannelType.DataBind();
         }

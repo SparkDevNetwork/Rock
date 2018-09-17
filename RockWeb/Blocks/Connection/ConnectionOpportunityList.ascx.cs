@@ -243,7 +243,7 @@ namespace RockWeb.Blocks.Connection
                         connectionOpportunityService.Delete( connectionOpportunity );
                         rockContext.SaveChanges();
 
-                        ConnectionWorkflowService.FlushCachedTriggers();
+                        ConnectionWorkflowService.RemoveCachedTriggers();
 
                     }
                     else
@@ -265,7 +265,7 @@ namespace RockWeb.Blocks.Connection
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 var connectionOpportunity = e.Row.DataItem as ConnectionOpportunity;
-                var lStatus = e.Row.FindControl( "lStatus" ) as RockLiteral;
+                var lStatus = e.Row.FindControl( "lStatus" ) as Literal;
                 if ( connectionOpportunity != null && lStatus != null )
                 {
                     lStatus.Text = connectionOpportunity.IsActive ? "<span class='label label-success'>Active</span>" : "<span class='label label-default'>Inactive</span>";
@@ -354,7 +354,7 @@ namespace RockWeb.Blocks.Connection
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name ) )
                 {
-                    AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+                    AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
                 }
             }
         }
@@ -429,7 +429,7 @@ namespace RockWeb.Blocks.Connection
                         boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
 
-                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                         if ( attributeCache != null )
                         {
                             boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -442,7 +442,7 @@ namespace RockWeb.Blocks.Connection
 
             securityCol = new SecurityField();
             securityCol.TitleField = "Name";
-            securityCol.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ConnectionOpportunity ) ).Id;
+            securityCol.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ConnectionOpportunity ) ).Id;
             gConnectionOpportunities.Columns.Add( securityCol );
 
             deleteCol = new DeleteField();
@@ -477,36 +477,10 @@ namespace RockWeb.Blocks.Connection
                 // Filter query by any configured attribute filters
                 if ( AvailableAttributes != null && AvailableAttributes.Any() )
                 {
-                    var attributeValueService = new AttributeValueService( rockContext );
-                    var parameterExpression = attributeValueService.ParameterExpression;
-
                     foreach ( var attribute in AvailableAttributes )
                     {
                         var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                        if ( filterControl == null ) continue;
-
-                        var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                        var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                        var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                        if ( expression == null ) continue;
-
-                        var attributeValues = attributeValueService
-                                            .Queryable()
-                                            .Where( v => v.Attribute.Id == attribute.Id );
-
-                        var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                        if ( filterIsDefault )
-                        {
-                            qry = qry.Where( w =>
-                                 !attributeValues.Any( v => v.EntityId == w.Id ) ||
-                                 filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                        }
-                        else
-                        {
-                            qry = qry.Where( w =>
-                                filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                        }
+                        qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, connectionOpportunityService, Rock.Reporting.FilterMode.SimpleFilter );
                     }
                 }
                 SortProperty sortProperty = gConnectionOpportunities.SortProperty;

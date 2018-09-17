@@ -114,7 +114,7 @@ namespace RockWeb.Blocks.Groups
                     int? id = e.Value.AsIntegerOrNull();
                     if ( id.HasValue )
                     {
-                        var purpose = DefinedValueCache.Read( id.Value );
+                        var purpose = DefinedValueCache.Get( id.Value );
                         if ( purpose != null )
                         {
                             e.Value = purpose.Value;
@@ -178,8 +178,6 @@ namespace RockWeb.Blocks.Groups
 
                 groupTypeService.Delete( groupType );
                 rockContext.SaveChanges();
-
-                GroupTypeCache.Flush( groupTypeId );
             }
 
             BindGrid();
@@ -223,7 +221,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindFilter()
         {
-            ddlPurpose.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ), true );
+            ddlPurpose.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ), true );
             ddlPurpose.SelectedValue = rFilter.GetUserPreference( "Purpose" );
             ddlIsSystem.SelectedValue = rFilter.GetUserPreference( "System Group Types" );
             ddlIsSystem.SelectedValue = rFilter.GetUserPreference( "Shown in Navigation" );

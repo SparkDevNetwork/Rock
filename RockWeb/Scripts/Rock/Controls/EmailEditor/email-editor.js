@@ -160,7 +160,7 @@
                 var browserScrollLevel = $browserScrollWindow.scrollTop()
                 var browserScrollHeight = window.parent.innerHeight;
                 var browserScrollLevel = $browserScrollWindow.scrollTop()
-                var browserMouseY = e.screenY - $(window.parent.document)[0].parentWindow.screenTop;
+                var browserMouseY = e.screenY - $(window.parent.document).scrollTop();
                 var browserMousePositionProportion = browserMouseY / browserScrollHeight;
                 if (browserMousePositionProportion > .90) {
                     browserScrollLevel += 20;

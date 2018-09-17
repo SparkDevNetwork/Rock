@@ -13,13 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 
@@ -42,18 +43,36 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Detail Page" )]
     [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
     [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 3 )]
-    [BooleanField("Show Campus Filter", "Setting to show/hide campus filter.", true, order: 4)]
-    [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 5, "ShowAttendance" )]
-    [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 6 )]
-    [BooleanField( "Show Note Column", "Should the note be displayed as a seperate grid column (instead of displaying a note icon under person's name)?", false, "", 7 )]
+    [LinkedPage( "Data View Detail Page", "Page used to view data views that are used with the group member sync.", false, order: 3 )]
+    [BooleanField( "Show Campus Filter", "Setting to show/hide campus filter.", true, order: 4 )]
+    [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 5, SHOW_FIRST_LAST_ATTENDANCE_KEY )]
+    [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 6, SHOW_DATE_ADDED_KEY )]
+    [BooleanField( "Show Note Column", "Should the note be displayed as a separate grid column (instead of displaying a note icon under person's name)?", false, "", 7 )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
+        private const string SHOW_FIRST_LAST_ATTENDANCE_KEY = "ShowAttendance";
+        private const string SHOW_DATE_ADDED_KEY = "ShowDateAdded";
+        private const string DATE_ADDED_FILTER_KEY = "Date Added";
+
         #region Private Variables
 
         private DefinedValueCache _inactiveStatus = null;
         private Group _group = null;
+        private GroupTypeCache _groupTypeCache = null;
         private bool _canView = false;
-        private Dictionary<int, Dictionary<int, string>> _groupMembersWithRegistrations = new Dictionary<int, Dictionary<int, string>>();
+        private Dictionary<int, List<GroupMemberRegistrationItem>> _groupMembersWithRegistrations = new Dictionary<int, List<GroupMemberRegistrationItem>>();
+
+        private class GroupMemberRegistrationItem
+        {
+            public int RegistrationId { get; set; }
+            public string RegistrationName { get; set; }
+        }
+
+        private HashSet<int> _groupMembersWithGroupMemberHistory = null;
+
+        // cache the DeleteField and ColumnIndex since it could get called many times in GridRowDataBound
+        private DeleteField _deleteField = null;
+        private int? _deleteFieldColumnIndex = null;
 
         #endregion
 
@@ -105,45 +124,7 @@ namespace RockWeb.Blocks.Groups
             // show hide campus filter
             cpCampusFilter.Visible = GetAttributeValue( "ShowCampusFilter" ).AsBoolean();
 
-            string script = @"
-    $('.js-person-popover').popover({
-        placement: 'right', 
-        trigger: 'manual',
-        delay: 500,
-        html: true,
-        content: function() {
-            var dataUrl = Rock.settings.get('baseUrl') + 'api/People/PopupHtml/' +  $(this).attr('personid') + '/false';
-
-            var result = $.ajax({ 
-                                type: 'GET', 
-                                url: dataUrl, 
-                                dataType: 'json', 
-                                contentType: 'application/json; charset=utf-8',
-                                async: false }).responseText;
-            
-            var resultObject = jQuery.parseJSON(result);
-
-            return resultObject.PickerItemDetailsHtml;
-
-        }
-    }).on('mouseenter', function () {
-        var _this = this;
-        $(this).popover('show');
-        $(this).siblings('.popover').on('mouseleave', function () {
-            $(_this).popover('hide');
-        });
-    }).on('mouseleave', function () {
-        var _this = this;
-        setTimeout(function () {
-            if (!$('.popover:hover').length) {
-                $(_this).popover('hide')
-            }
-        }, 100);
-    });
-
-   // $('.js-person-popover').popover('show'); // uncomment for styling
-";
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "person-link-popover", script, true );
+            /// add lazyload js so that person-link-popover javascript works (see GroupMemberList.ascx)
             RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.lazyload.min.js" ) );
 
             // if this block has a specific GroupId set, use that, otherwise, determine it from the PageParameters
@@ -167,6 +148,11 @@ namespace RockWeb.Blocks.Groups
                     RockPage.SaveSharedItem( key, _group );
                 }
 
+                if ( _group != null )
+                {
+                    _groupTypeCache = GroupTypeCache.Get( _group.GroupTypeId );
+                }
+
                 if ( _group != null && _group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     _canView = true;
@@ -179,49 +165,44 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.GetRecipientMergeFields += gGroupMembers_GetRecipientMergeFields;
                     gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
                     gGroupMembers.GridRebind += gGroupMembers_GridRebind;
-                    gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
+                    gGroupMembers.RowItemText = _groupTypeCache.GroupTerm + " " + _groupTypeCache.GroupMemberTerm;
                     gGroupMembers.ExportFilename = _group.Name;
                     gGroupMembers.ExportSource = ExcelExportSource.DataSource;
+
+                    // we'll have custom javascript (see GroupMemberList.ascx ) do this instead
                     gGroupMembers.ShowConfirmDeleteDialog = false;
 
                     // make sure they have Auth to edit the block OR edit to the Group
                     bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || _group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson );
                     gGroupMembers.Actions.ShowAdd = canEditBlock;
                     gGroupMembers.IsDeleteEnabled = canEditBlock;
-                }
 
-                // if group is being sync'ed remove ability to add/delete members 
-                if ( _group != null && _group.SyncDataViewId.HasValue )
+                    // If all of the roles in a group are sync'd then don't show the add button
+                    gGroupMembers.Actions.ShowAdd = _groupTypeCache.Roles
+                        .Where( r => !_group.GroupSyncs.Select( s => s.GroupTypeRoleId )
+                        .Contains( r.Id ) )
+                        .Any();
+                }
+            }
+
+            // Show the sync icon if group member sync is set up for this group.
+            if ( _group != null && _group.GroupSyncs != null && _group.GroupSyncs.Count() > 0 )
+            {
+                string syncedRolesHtml = string.Empty;
+                var dataViewDetailPage = GetAttributeValue( "DataViewDetailPage" );
+
+                if ( !string.IsNullOrWhiteSpace( dataViewDetailPage ) )
                 {
-                    gGroupMembers.IsDeleteEnabled = false;
-                    gGroupMembers.Actions.ShowAdd = false;
-                    hlSyncStatus.Visible = true;
-                    // link to the DataView
-                    int pageId = Rock.Web.Cache.PageCache.Read( Rock.SystemGuid.Page.DATA_VIEWS.AsGuid() ).Id;
-                    hlSyncSource.NavigateUrl = System.Web.VirtualPathUtility.ToAbsolute( String.Format( "~/page/{0}?DataViewId={1}", pageId, _group.SyncDataViewId.Value ) );
+                    syncedRolesHtml = string.Join( "<br>", _group.GroupSyncs.Select( s => string.Format( "<small><a href='{0}'>{1}</a> as {2}</small>", LinkedPageUrl( "DataViewDetailPage", new Dictionary<string, string>() { { "DataViewId", s.SyncDataViewId.ToString() } } ), s.SyncDataView.Name, s.GroupTypeRole.Name ) ).ToArray() );
                 }
-            }
+                else
+                {
+                    syncedRolesHtml = string.Join( "<br>", _group.GroupSyncs.Select( s => string.Format( "<small><i class='text-info'>{0}</i> as {1}</small>", s.SyncDataView.Name, s.GroupTypeRole.Name ) ).ToArray() );
+                }
 
-            string deleteScript = @"
-    $('table.js-grid-group-members a.grid-delete-button').click(function( e ){
-        var $btn = $(this);
-        e.preventDefault();
-        Rock.dialogs.confirm('Are you sure you want to delete this group member?', function (result) {
-            if (result) {
-                if ( $btn.closest('tr').hasClass('js-has-registration') ) {
-                    Rock.dialogs.confirm('This group member was added through a registration. Are you sure that you want to delete this group member and remove the link from the registration? ', function (result) {
-                        if (result) {
-                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
-                        }
-                    });
-                } else {
-                    window.location = e.target.href ? e.target.href : e.target.parentElement.href;
-                }
+                spanSyncLink.Attributes.Add( "data-content", syncedRolesHtml );
+                spanSyncLink.Visible = true;
             }
-        });
-    });
-";
-            ScriptManager.RegisterStartupScript( gGroupMembers, gGroupMembers.GetType(), "deleteInstanceScript", deleteScript, true );
         }
 
         /// <summary>
@@ -231,6 +212,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         public void GroupMemberList_BlockUpdated( object sender, EventArgs e )
         {
+            SetFilter();
             BindGroupMembersGrid();
         }
 
@@ -279,7 +261,7 @@ namespace RockWeb.Blocks.Groups
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                dynamic groupMember = e.Row.DataItem;
+                GroupMemberDataRow groupMember = e.Row.DataItem as GroupMemberDataRow;
 
                 if ( groupMember != null )
                 {
@@ -288,26 +270,67 @@ namespace RockWeb.Blocks.Groups
                     if ( _groupMembersWithRegistrations.ContainsKey( groupMemberId ) )
                     {
                         e.Row.AddCssClass( "js-has-registration" );
-                        
+
                         var lRegistration = e.Row.FindControl( "lRegistration" ) as Literal;
                         if ( lRegistration != null )
                         {
                             var regLinks = new List<string>();
-                            
-                            foreach( var reg in _groupMembersWithRegistrations[ groupMemberId ] )
+
+                            foreach ( var reg in _groupMembersWithRegistrations[groupMemberId] )
                             {
-                                regLinks.Add( string.Format( "<a href='{0}'>{1}</a>",
-                                    LinkedPageUrl( "RegistrationPage", new Dictionary<string, string> { { "RegistrationId", reg.Key.ToString() } } ),
-                                    reg.Value ) );
+                                regLinks.Add(
+                                    string.Format(
+                                        "<a href='{0}'>{1}</a>",
+                                        LinkedPageUrl( "RegistrationPage", new Dictionary<string, string> { { "RegistrationId", reg.RegistrationId.ToString() } } ),
+                                        reg.RegistrationName ) );
                             }
 
-                            lRegistration.Text = regLinks.AsDelimited( "<br/>" );   
+                            lRegistration.Text = regLinks.AsDelimited( "<br/>" );
                         }
                     }
 
                     if ( groupMember != null && groupMember.IsDeceased )
                     {
                         e.Row.AddCssClass( "is-deceased" );
+                    }
+
+                    if ( _deleteField != null && _deleteField.Visible )
+                    {
+                        LinkButton deleteButton = null;
+                        HtmlGenericControl buttonIcon = null;
+
+                        if ( !_deleteFieldColumnIndex.HasValue )
+                        {
+                            _deleteFieldColumnIndex = gGroupMembers.GetColumnIndex( gGroupMembers.Columns.OfType<DeleteField>().First() );
+                        }
+
+                        if ( _deleteFieldColumnIndex.HasValue && _deleteFieldColumnIndex > -1 )
+                        {
+                            deleteButton = e.Row.Cells[_deleteFieldColumnIndex.Value].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
+                        }
+
+                        if ( deleteButton != null )
+                        {
+                            buttonIcon = deleteButton.ControlsOfTypeRecursive<HtmlGenericControl>().FirstOrDefault();
+                        }
+
+                        if ( buttonIcon != null )
+                        {
+                            if ( _group.GroupSyncs.Any( a => a.GroupTypeRoleId == groupMember.GroupRoleId ) )
+                            {
+                                deleteButton.Enabled = false;
+                                buttonIcon.Attributes["class"] = "fa fa-exchange";
+                                var groupTypeRole = _groupTypeCache.Roles.FirstOrDefault( a => a.Id == groupMember.GroupRoleId );
+                                deleteButton.ToolTip = string.Format( "Managed by group sync for role \"{0}\".", groupTypeRole );
+                            }
+                            else if ( _groupTypeCache.EnableGroupHistory == true && _groupMembersWithGroupMemberHistory.Contains( groupMember.Id ) )
+                            {
+                                buttonIcon.Attributes["class"] = "fa fa-archive";
+                                deleteButton.AddCssClass( "btn-danger" );
+                                deleteButton.ToolTip = "Archive";
+                                e.Row.AddCssClass( "js-has-grouphistory" );
+                            }
+                        }
                     }
 
                     if ( _inactiveStatus != null && groupMember.RecordStatusValueId == _inactiveStatus.Id )
@@ -328,13 +351,13 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GetRecipientMergeFieldsEventArgs"/> instance containing the event data.</param>
-        void gGroupMembers_GetRecipientMergeFields( object sender, GetRecipientMergeFieldsEventArgs e )
+        protected void gGroupMembers_GetRecipientMergeFields( object sender, GetRecipientMergeFieldsEventArgs e )
         {
-            dynamic groupMember = e.DataItem;
+            GroupMemberDataRow groupMember = e.DataItem as GroupMemberDataRow;
             if ( groupMember != null )
             {
                 e.MergeValues.Add( "GroupRole", groupMember.GroupRole );
-                e.MergeValues.Add( "GroupMemberStatus", ( (GroupMemberStatus)groupMember.GroupMemberStatus ).ConvertToString() );
+                e.MergeValues.Add( "GroupMemberStatus", ( ( GroupMemberStatus ) groupMember.GroupMemberStatus ).ConvertToString() );
             }
         }
 
@@ -353,6 +376,7 @@ namespace RockWeb.Blocks.Groups
             rFilter.SaveUserPreference( "Gender", "Gender", cblGenderFilter.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( "Registration", "Registration", ddlRegistration.SelectedValue );
             rFilter.SaveUserPreference( "Signed Document", "Signed Document", ddlSignedDocument.SelectedValue );
+            rFilter.SaveUserPreference( DATE_ADDED_FILTER_KEY, DATE_ADDED_FILTER_KEY, drpDateAdded.DelimitedValues );
 
             if ( AvailableAttributes != null )
             {
@@ -370,6 +394,11 @@ namespace RockWeb.Blocks.Groups
                         {
                             // intentionally ignore
                         }
+                    }
+                    else
+                    {
+                        // no filter control, so clear out the user preference
+                        rFilter.SaveUserPreference( attribute.Key, attribute.Name, null );
                     }
                 }
             }
@@ -422,13 +451,12 @@ namespace RockWeb.Blocks.Groups
             {
                 e.Value = ResolveValues( e.Value, cblGenderFilter );
             }
-
             else if ( e.Key == "Campus" )
             {
                 var campusId = e.Value.AsIntegerOrNull();
                 if ( campusId.HasValue )
                 {
-                    var campusCache = CampusCache.Read( campusId.Value );
+                    var campusCache = CampusCache.Get( campusId.Value );
                     if ( campusCache != null )
                     {
                         e.Value = campusCache.Name;
@@ -443,7 +471,6 @@ namespace RockWeb.Blocks.Groups
                     e.Value = string.Empty;
                 }
             }
-
             else if ( e.Key == "Registration" )
             {
                 var instanceId = e.Value.AsIntegerOrNull();
@@ -467,10 +494,13 @@ namespace RockWeb.Blocks.Groups
                     e.Value = string.Empty;
                 }
             }
-            
             else if ( e.Key == "Signed Document" )
             {
                 return;
+            }
+            else if (e.Key == DATE_ADDED_FILTER_KEY )
+            {
+                e.Value = DateRangePicker.FormatDelimitedValues(e.Value);
             }
             else
             {
@@ -490,42 +520,48 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
-        /// Handles the Click event of the DeleteGroupMember control.
+        /// Handles the Click event of the delete/archive button in the grid
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
-        protected void DeleteGroupMember_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        protected void DeleteOrArchiveGroupMember_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             RockContext rockContext = new RockContext();
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-            RegistrationRegistrantService registrantService = new RegistrationRegistrantService( rockContext );
+
+            GroupMemberHistoricalService groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
             GroupMember groupMember = groupMemberService.Get( e.RowKeyId );
             if ( groupMember != null )
             {
-                string errorMessage;
-                if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )
+                bool archive = false;
+                if ( _groupTypeCache.EnableGroupHistory == true && groupMemberHistoricalService.Queryable().Any( a => a.GroupMemberId == groupMember.Id ) )
                 {
-                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                    return;
+                    // if the group has GroupHistory enabled, and this group member has group member history snapshots, they were prompted to Archive
+                    archive = true;
+                }
+                else
+                {
+                    string errorMessage;
+                    if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )
+                    {
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
                 }
 
                 int groupId = groupMember.GroupId;
 
-                foreach ( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId == groupMember.Id ) )
+                if ( archive )
                 {
-                    registrant.GroupMemberId = null;
+                    // NOTE: Delete will AutoArchive, but since we know that we need to archive, we can call .Archive directly
+                    groupMemberService.Archive( groupMember, this.CurrentPersonAliasId, true );
                 }
-
-                groupMemberService.Delete( groupMember );
+                else
+                {
+                    groupMemberService.Delete( groupMember, true );
+                }
 
                 rockContext.SaveChanges();
-
-                Group group = new GroupService( rockContext ).Get( groupId );
-                if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-                {
-                    // person removed from SecurityRole, Flush
-                    Rock.Security.Role.Flush( group.Id );
-                }
             }
 
             BindGroupMembersGrid();
@@ -536,7 +572,6 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         protected void gGroupMembers_AddClick( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "GroupMemberId", 0, "GroupId", _group.Id );
@@ -557,7 +592,6 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridRebindEventArgs" /> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         protected void gGroupMembers_GridRebind( object sender, GridRebindEventArgs e )
         {
             BindGroupMembersGrid( e.IsExporting, e.IsCommunication );
@@ -586,7 +620,7 @@ namespace RockWeb.Blocks.Groups
                         .Select( i => new { i.Id, i.Name } )
                         .ToList();
                     ddlRegistration.DataBind();
-                    ddlRegistration.Items.Insert(0, new ListItem() );
+                    ddlRegistration.Items.Insert( 0, new ListItem() );
                 }
             }
 
@@ -595,15 +629,19 @@ namespace RockWeb.Blocks.Groups
 
             BindAttributes();
             AddDynamicControls();
-            
+
             tbFirstName.Text = rFilter.GetUserPreference( "First Name" );
             tbLastName.Text = rFilter.GetUserPreference( "Last Name" );
             cpCampusFilter.SelectedCampusId = rFilter.GetUserPreference( "Campus" ).AsIntegerOrNull();
-            
+
             string genderValue = rFilter.GetUserPreference( "Gender" );
             if ( !string.IsNullOrWhiteSpace( genderValue ) )
             {
                 cblGenderFilter.SetValues( genderValue.Split( ';' ).ToList() );
+            }
+            else
+            {
+                cblGenderFilter.ClearSelection();
             }
 
             string roleValue = rFilter.GetUserPreference( "Role" );
@@ -624,6 +662,8 @@ namespace RockWeb.Blocks.Groups
             ddlSignedDocument.SetValue( rFilter.GetUserPreference( "Signed Document" ) );
             ddlSignedDocument.Visible = _group.RequiredSignatureDocumentTemplateId.HasValue;
 
+            drpDateAdded.DelimitedValues = rFilter.GetUserPreference( DATE_ADDED_FILTER_KEY ) ;
+            drpDateAdded.Visible = GetAttributeValue( SHOW_DATE_ADDED_KEY ).AsBoolean();
         }
 
         /// <summary>
@@ -639,23 +679,24 @@ namespace RockWeb.Blocks.Groups
                 int entityTypeId = new GroupMember().TypeId;
                 string groupQualifier = _group.Id.ToString();
                 string groupTypeQualifier = _group.GroupTypeId.ToString();
-                foreach ( var attributeModel in new AttributeService( rockContext ).Queryable()
-                    .Where( a =>
-                        a.EntityTypeId == entityTypeId &&
-                        a.IsGridColumn &&
-                        ( ( a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupQualifier ) ) ) )
+                foreach ( var attribute in new AttributeService( rockContext ).GetByEntityTypeQualifier( entityTypeId, "GroupId", groupQualifier, true )
+                    .Where( a => a.IsGridColumn )
                     .OrderByDescending( a => a.EntityTypeQualifierColumn )
                     .ThenBy( a => a.Order )
-                    .ThenBy( a => a.Name ) )
+                    .ThenBy( a => a.Name ).ToCacheAttributeList() )
                 {
-                    AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+                    if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        AvailableAttributes.Add( attribute );
+                    }
                 }
 
-
-                var inheritedAttributes = ( new GroupMember() { GroupId = _group.Id } ).GetInheritedAttributes( rockContext ).Where( a => a.IsGridColumn == true ).ToList();
-                if ( inheritedAttributes.Any() )
-                {
-                    AvailableAttributes.AddRange( inheritedAttributes );
+                foreach ( var inheritedGridColumnAttribute in ( new GroupMember() { GroupId = _group.Id } ).GetInheritedAttributes( rockContext ).Where( a => a.IsGridColumn == true && a.IsActive == true ).ToList() )
+                { 
+                    if ( inheritedGridColumnAttribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        AvailableAttributes.Add( inheritedGridColumnAttribute );
+                    }
                 }
             }
         }
@@ -668,12 +709,9 @@ namespace RockWeb.Blocks.Groups
             // Clear the filter controls
             phAttributeFilters.Controls.Clear();
 
-            // Remove attribute columns
-            foreach ( var column in gGroupMembers.Columns.OfType<AttributeField>().ToList() )
-            {
-                gGroupMembers.Columns.Remove( column );
-            }
-
+            // Clear dynamic controls so we can re-add them
+            RemoveAttributeAndButtonColumns();
+            
             if ( AvailableAttributes != null )
             {
                 foreach ( var attribute in AvailableAttributes )
@@ -683,7 +721,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         if ( control is IRockControl )
                         {
-                            var rockControl = (IRockControl)control;
+                            var rockControl = ( IRockControl ) control;
                             rockControl.Label = attribute.Name;
                             rockControl.Help = attribute.Description;
                             phAttributeFilters.Controls.Add( control );
@@ -719,18 +757,46 @@ namespace RockWeb.Blocks.Groups
                         boundField.DataField = attribute.Key;
                         boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
-
-                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
-                        if ( attributeCache != null )
-                        {
-                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
-                        }
+                        boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
 
                         gGroupMembers.Columns.Add( boundField );
                     }
                 }
             }
 
+            AddRowButtonsToEnd();
+        }
+
+        private void RemoveAttributeAndButtonColumns()
+        {
+            // Remove added button columns
+            DataControlField buttonColumn = gGroupMembers.Columns.OfType<DeleteField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
+            if ( buttonColumn != null )
+            {
+                gGroupMembers.Columns.Remove( buttonColumn );
+            }
+
+            buttonColumn = gGroupMembers.Columns.OfType<HyperLinkField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
+            if ( buttonColumn != null )
+            {
+                gGroupMembers.Columns.Remove( buttonColumn );
+            }
+
+            buttonColumn = gGroupMembers.Columns.OfType<LinkButtonField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
+            if ( buttonColumn != null )
+            {
+                gGroupMembers.Columns.Remove( buttonColumn );
+            }
+
+            // Remove attribute columns
+            foreach ( var column in gGroupMembers.Columns.OfType<AttributeField>().ToList() )
+            {
+                gGroupMembers.Columns.Remove( column );
+            }
+        }
+
+        private void AddRowButtonsToEnd()
+        {
             // Add Place Elsewhere column if the group or group type has any Place Elsewhere member triggers
             if ( _group != null && _group.GroupType != null )
             {
@@ -747,9 +813,10 @@ namespace RockWeb.Blocks.Groups
             }
 
             // Add delete column
-            var deleteField = new DeleteField();
-            gGroupMembers.Columns.Add( deleteField );
-            deleteField.Click += DeleteGroupMember_Click;
+            _deleteField = new DeleteField();
+            _deleteField.Click += DeleteOrArchiveGroupMember_Click;
+            gGroupMembers.Columns.Add( _deleteField );
+            
         }
 
         /// <summary>
@@ -940,11 +1007,12 @@ namespace RockWeb.Blocks.Groups
         {
             if ( _group != null )
             {
+                int groupId = _group.Id;
                 pnlGroupMembers.Visible = true;
 
-                lHeading.Text = string.Format( "{0} {1}", _group.GroupType.GroupTerm, _group.GroupType.GroupMemberTerm.Pluralize() );
+                lHeading.Text = string.Format( "{0} {1}", _groupTypeCache.GroupTerm, _groupTypeCache.GroupMemberTerm.Pluralize() );
 
-                if ( _group.GroupType.Roles.Any() )
+                if ( _groupTypeCache.Roles.Any() )
                 {
                     nbRoleWarning.Visible = false;
                     rFilter.Visible = true;
@@ -993,7 +1061,7 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     // Filter by role
-                    var validGroupTypeRoles = _group.GroupType.Roles.Select( r => r.Id ).ToList();
+                    var validGroupTypeRoles = _groupTypeCache.Roles.Select( r => r.Id ).ToList();
                     var roles = new List<int>();
                     foreach ( var roleId in cblRole.SelectedValues.AsIntegerList() )
                     {
@@ -1038,9 +1106,9 @@ namespace RockWeb.Blocks.Groups
                     // Filter by Campus
                     if ( cpCampusFilter.SelectedCampusId.HasValue )
                     {
-                        Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                        int familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
                         int campusId = cpCampusFilter.SelectedCampusId.Value;
-                        var qryFamilyMembersForCampus = new GroupMemberService( rockContext ).Queryable().Where( a => a.Group.GroupType.Guid == familyGuid && a.Group.CampusId == campusId );
+                        var qryFamilyMembersForCampus = new GroupMemberService( rockContext ).Queryable().Where( a => a.Group.GroupTypeId == familyGroupTypeId && a.Group.CampusId == campusId );
                         qry = qry.Where( a => qryFamilyMembersForCampus.Any( f => f.PersonId == a.PersonId ) );
                     }
 
@@ -1072,44 +1140,35 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
 
+                    // Filter by date added range
+                    var dateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateAdded.DelimitedValues );
+
+                    if ( dateRange.Start.HasValue )
+                    {
+                        qry = qry.Where( m =>
+                            m.DateTimeAdded.HasValue &&
+                            m.DateTimeAdded.Value >= dateRange.Start.Value );
+                    }
+
+                    if ( dateRange.End.HasValue )
+                    {
+                        var end = dateRange.End.Value.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
+                        qry = qry.Where( m =>
+                            m.DateTimeAdded.HasValue &&
+                            m.DateTimeAdded.Value < end );
+                    }
+
                     // Filter query by any configured attribute filters
                     if ( AvailableAttributes != null && AvailableAttributes.Any() )
                     {
-                        var attributeValueService = new AttributeValueService( rockContext );
-                        var parameterExpression = attributeValueService.ParameterExpression;
-
                         foreach ( var attribute in AvailableAttributes )
                         {
                             var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                            if ( filterControl == null ) continue;
-
-                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                            var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                            var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                            if ( expression == null ) continue;
-
-                            var attributeValues = attributeValueService
-                                        .Queryable()
-                                        .Where( v => v.Attribute.Id == attribute.Id );
-
-
-                            var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                            if ( filterIsDefault )
-                            {
-                                qry = qry.Where( w =>
-                                     !attributeValues.Any( v => v.EntityId == w.Id ) ||
-                                     filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                            }
-                            else
-                            {
-                                qry = qry.Where( w =>
-                                    filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                            }
+                            qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );
                         }
                     }
 
-                    _inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+                    _inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
 
                     SortProperty sortProperty = gGroupMembers.SortProperty;
 
@@ -1121,7 +1180,7 @@ namespace RockWeb.Blocks.Groups
 
                     List<GroupMember> groupMembersList = null;
                     if ( sortProperty != null && sortProperty.Property != "FirstAttended" && sortProperty.Property != "LastAttended" )
-                    { 
+                    {
                         groupMembersList = qry.Sort( sortProperty ).ToList();
                     }
                     else
@@ -1141,10 +1200,10 @@ namespace RockWeb.Blocks.Groups
                     // we need to save the group members into the grid's object list
                     gGroupMembers.ObjectList = new Dictionary<string, object>();
                     groupMembersList.ForEach( m => gGroupMembers.ObjectList.Add( m.Id.ToString(), m ) );
-                    gGroupMembers.EntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
+                    gGroupMembers.EntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
 
-                    var homePhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
-                    var cellPhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                    var homePhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+                    var cellPhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
 
                     // If exporting to Excel, the selectAll option will be true, and home location should be calculated
                     var homeLocations = new Dictionary<int, Location>();
@@ -1157,6 +1216,8 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     var groupMemberIds = groupMembersList.Select( m => m.Id ).ToList();
+
+                    _groupMembersWithGroupMemberHistory = new HashSet<int>( new GroupMemberHistoricalService( rockContext ).Queryable().Where( a => a.GroupId == groupId ).Select( a => a.GroupMemberId ).ToList() );
 
                     // Get all the group members with any associated registrations
                     _groupMembersWithRegistrations = new RegistrationRegistrantService( rockContext )
@@ -1177,7 +1238,7 @@ namespace RockWeb.Blocks.Groups
                                     Id = r.Registration.Id,
                                     Name = r.Registration.RegistrationInstance.Name
                                 } ).Distinct()
-                                .ToDictionary( r => r.Id, r => r.Name )
+                                .Select( r => new GroupMemberRegistrationItem { RegistrationId = r.Id, RegistrationName = r.Name } ).ToList()
                         } )
                         .ToDictionary( r => r.GroupMemberId, r => r.Registrations );
 
@@ -1190,19 +1251,19 @@ namespace RockWeb.Blocks.Groups
                     var connectionStatusField = gGroupMembers.ColumnsOfType<DefinedValueField>().FirstOrDefault( a => a.DataField == "ConnectionStatusValueId" );
                     if ( connectionStatusField != null )
                     {
-                        connectionStatusField.Visible = _group.GroupType.ShowConnectionStatus;
+                        connectionStatusField.Visible = _groupTypeCache.ShowConnectionStatus;
                     }
 
                     var martialStatusField = gGroupMembers.ColumnsOfType<DefinedValueField>().FirstOrDefault( a => a.DataField == "MaritalStatusValueId" );
                     if ( martialStatusField != null )
                     {
-                        martialStatusField.Visible = _group.GroupType.ShowMaritalStatus;
+                        martialStatusField.Visible = _groupTypeCache.ShowMaritalStatus;
                     }
 
                     string photoFormat = "<div class=\"photo-icon photo-round photo-round-xs pull-left margin-r-sm js-person-popover\" personid=\"{0}\" data-original=\"{1}&w=50\" style=\"background-image: url( '{2}' ); background-size: cover; background-repeat: no-repeat;\"></div>";
 
                     var attendanceFirstLast = new Dictionary<int, DateRange>();
-                    bool showAttendance = GetAttributeValue( "ShowAttendance" ).AsBoolean() && _group.GroupType.TakesAttendance;
+                    bool showAttendance = GetAttributeValue( SHOW_FIRST_LAST_ATTENDANCE_KEY ).AsBoolean() && _groupTypeCache.TakesAttendance;
                     gGroupMembers.ColumnsOfType<DateField>().First( a => a.DataField == "FirstAttended" ).Visible = showAttendance;
                     gGroupMembers.ColumnsOfType<DateField>().First( a => a.DataField == "LastAttended" ).Visible = showAttendance;
                     if ( showAttendance )
@@ -1210,7 +1271,7 @@ namespace RockWeb.Blocks.Groups
                         foreach ( var attendance in new AttendanceService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( a =>
-                                a.GroupId.HasValue && a.GroupId.Value == _group.Id &&
+                                a.Occurrence.GroupId.HasValue && a.Occurrence.GroupId.Value == _group.Id &&
                                 a.DidAttend.HasValue && a.DidAttend.Value )
                             .GroupBy( a => a.PersonAlias.PersonId )
                             .Select( g => new
@@ -1239,17 +1300,18 @@ namespace RockWeb.Blocks.Groups
                         NickName = m.Person.NickName,
                         LastName = m.Person.LastName,
                         Name =
-                        ( isExporting ? m.Person.LastName + ", " + m.Person.NickName : string.Format( photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) ) +
-                            m.Person.NickName + " " + m.Person.LastName
-                            + ( ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id ) ) 
+                        isExporting ? m.Person.LastName + ", " + m.Person.NickName : string.Format( photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) )
+                                    + m.Person.NickName + " " + m.Person.LastName
+                            + ( !string.IsNullOrWhiteSpace( m.Person.TopSignalColor ) ? " " + m.Person.GetSignalMarkup() : string.Empty )
+                            + ( ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id ) )
                                 ? " <i class='fa fa-exclamation-triangle text-warning'></i>"
                                 : string.Empty )
                             + ( ( !showNoteColumn && !string.IsNullOrEmpty( m.Note ) )
                                 ? " <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title='" + m.Note.EncodeHtml() + "'><i class='fa fa-file-text-o text-info'></i></span>"
                                 : string.Empty )
-                            + ( ( personIdsThatHaventSigned.Contains( m.PersonId ) )
+                            + ( personIdsThatHaventSigned.Contains( m.PersonId )
                                 ? " <i class='fa fa-pencil-square-o text-danger'></i>"
-                                : string.Empty)),
+                                : string.Empty ),
                         BirthDate = m.Person.BirthDate,
                         Age = m.Person.Age,
                         ConnectionStatusValueId = m.Person.ConnectionStatusValueId,
@@ -1272,14 +1334,16 @@ namespace RockWeb.Blocks.Groups
                         HomeAddress = homeLocations.ContainsKey( m.Id ) && homeLocations[m.Id] != null ?
                             homeLocations[m.Id].FormattedAddress : string.Empty,
                         Latitude = homeLocations.ContainsKey( m.Id ) && homeLocations[m.Id] != null ?
-                            homeLocations[m.Id].Latitude : (double?)null,
+                            homeLocations[m.Id].Latitude : ( double? ) null,
                         Longitude = homeLocations.ContainsKey( m.Id ) && homeLocations[m.Id] != null ?
-                            homeLocations[m.Id].Longitude : (double?)null,
+                            homeLocations[m.Id].Longitude : ( double? ) null,
                         GroupRole = m.GroupRole.Name,
                         GroupMemberStatus = m.GroupMemberStatus,
                         RecordStatusValueId = m.Person.RecordStatusValueId,
                         IsDeceased = m.Person.IsDeceased,
                         MaritalStatusValueId = m.Person.MaritalStatusValueId,
+                        GroupRoleId = m.GroupRoleId,
+                        IsArchived = m.IsArchived
                     } ).ToList();
 
                     if ( sortProperty != null )
@@ -1316,9 +1380,9 @@ namespace RockWeb.Blocks.Groups
                 {
                     nbRoleWarning.Text = string.Format(
                         "{0} cannot be added to this {1} because the '{2}' group type does not have any roles defined.",
-                        _group.GroupType.GroupMemberTerm.Pluralize(),
-                        _group.GroupType.GroupTerm,
-                        _group.GroupType.Name );
+                        _groupTypeCache.GroupMemberTerm.Pluralize(),
+                        _groupTypeCache.GroupTerm,
+                        _groupTypeCache.Name );
 
                     nbRoleWarning.Visible = true;
                     rFilter.Visible = false;
@@ -1367,40 +1431,66 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
-
-       
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="DotLiquid.Drop" />
     public class GroupMemberDataRow : DotLiquid.Drop
     {
         public int Id { get; set; }
+
         public Guid Guid { get; set; }
+
         public int PersonId { get; set; }
+
         public string NickName { get; set; }
+
         public string LastName { get; set; }
+
         public string Name { get; set; }
+
         public DateTime? BirthDate { get; set; }
+
         public int? Age { get; set; }
+
         public int? ConnectionStatusValueId { get; set; }
+
         public DateTime? DateTimeAdded { get; set; }
+
         public string Note { get; set; }
+
         public DateTime? FirstAttended { get; set; }
+
         public DateTime? LastAttended { get; set; }
+
         public string Email { get; set; }
+
         public string Gender { get; set; }
+
         public string HomePhone { get; set; }
+
         public string CellPhone { get; set; }
+
         public string HomeAddress { get; set; }
+
         public double? Latitude { get; set; }
+
         public double? Longitude { get; set; }
+
         public string GroupRole { get; set; }
+
         public GroupMemberStatus GroupMemberStatus { get; set; }
+
         public int? RecordStatusValueId { get; set; }
+
         public bool IsDeceased { get; set; }
+
         public int? MaritalStatusValueId { get; set; }
+
+        public int GroupRoleId { get; set; }
+
+        public bool IsArchived { get; set; }
     }
 }

@@ -17,14 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Quartz;
-
-using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Attribute;
-using Rock.Financial;
 using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Jobs
 {
@@ -36,12 +32,13 @@ namespace Rock.Jobs
     [SystemEmailField( "Receipt Email", "The system email to use to send the receipts.", false, "", "", 3 )]
     [SystemEmailField( "Failed Payment Email", "The system email to use to send a notice about a scheduled payment that failed.", false, "", "", 4 )]
     [WorkflowTypeField( "Failed Payment Workflow", "An optional workflow to start whenever a scheduled payment has failed.", false, false, "", "", 5)]
+    [FinancialGatewayField( "Target Gateway", "By default payments will download from all active financial gateways.  Optionally select a single gateway to download scheduled payments from.  You will need to set up additional jobs targeting other active gateways.", false, "", "", 6 )]
     [DisallowConcurrentExecution]
     public class GetScheduledPayments : IJob
     {
 
         /// <summary> 
-        /// Empty constructor for job initilization
+        /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
         /// scheduler can instantiate the class whenever it needs.
@@ -51,10 +48,10 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary> 
+        /// <summary>
         /// Job that updates the JobPulse setting with the current date/time.
         /// This will allow us to notify an admin if the jobs stop running.
-        /// 
+        ///
         /// Called by the <see cref="IScheduler" /> when a
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
@@ -64,50 +61,60 @@ namespace Rock.Jobs
             var exceptionMsgs = new List<string>();
 
             // get the job map
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            int scheduledPaymentsProcessed = 0;
+            var dataMap = context.JobDetail.JobDataMap;
+            var scheduledPaymentsProcessed = 0;
 
             using ( var rockContext = new RockContext() )
             {
-                foreach ( var financialGateway in new FinancialGatewayService( rockContext )
+                var targetGateways = new FinancialGatewayService( rockContext )
                     .Queryable()
-                    .Where( g => g.IsActive ) )
+                    .Where( g => g.IsActive );
+
+                var targetGatewayGuid = dataMap.GetString( "TargetGateway" ).AsGuidOrNull();
+                if (targetGatewayGuid.HasValue)
+                {
+                    targetGateways = targetGateways.Where(g => g.Guid == targetGatewayGuid.Value);
+                }
+
+                foreach ( var financialGateway in targetGateways )
                 {
                     try
                     {
                         financialGateway.LoadAttributes( rockContext );
 
                         var gateway = financialGateway.GetGatewayComponent();
-                        if ( gateway != null )
+                        if ( gateway == null )
                         {
-                            int daysBack = dataMap.GetString( "DaysBack" ).AsIntegerOrNull() ?? 1;
+                            continue;
+                        }
 
-                            DateTime today = RockDateTime.Today;
-                            TimeSpan days = new TimeSpan( daysBack, 0, 0, 0 );
-                            DateTime endDateTime = today.Add( financialGateway.GetBatchTimeOffset() );
+                        int daysBack = dataMap.GetString( "DaysBack" ).AsIntegerOrNull() ?? 1;
 
-                            // If the calculated end time has not yet occurred, use the previous day.
-                            endDateTime = RockDateTime.Now.CompareTo( endDateTime ) >= 0 ? endDateTime : endDateTime.AddDays( -1 );
+                        DateTime today = RockDateTime.Today;
+                        TimeSpan days = new TimeSpan( daysBack, 0, 0, 0 );
+                        DateTime endDateTime = today.Add( financialGateway.GetBatchTimeOffset() );
 
-                            DateTime startDateTime = endDateTime.Subtract( days );
+                        // If the calculated end time has not yet occurred, use the previous day.
+                        endDateTime = RockDateTime.Now.CompareTo( endDateTime ) >= 0 ? endDateTime : endDateTime.AddDays( -1 );
 
-                            string errorMessage = string.Empty;
-                            var payments = gateway.GetPayments( financialGateway, startDateTime, endDateTime, out errorMessage );
+                        DateTime startDateTime = endDateTime.Subtract( days );
 
-                            if ( string.IsNullOrWhiteSpace( errorMessage ) )
-                            {
-                                Guid? receiptEmail = dataMap.GetString( "ReceiptEmail" ).AsGuidOrNull();
-                                Guid? failedPaymentEmail = dataMap.GetString( "FailedPaymentEmail" ).AsGuidOrNull();
-                                Guid? failedPaymentWorkflowType = dataMap.GetString( "FailedPaymentWorkflow" ).AsGuidOrNull();
+                        string errorMessage = string.Empty;
+                        var payments = gateway.GetPayments( financialGateway, startDateTime, endDateTime, out errorMessage );
 
-                                string batchNamePrefix = dataMap.GetString( "BatchNamePrefix" );
-                                FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, string.Empty, receiptEmail, failedPaymentEmail, failedPaymentWorkflowType );
-                                scheduledPaymentsProcessed += payments.Count();
-                            }
-                            else
-                            {
-                                throw new Exception( errorMessage );
-                            }
+                        if ( string.IsNullOrWhiteSpace( errorMessage ) )
+                        {
+                            Guid? receiptEmail = dataMap.GetString( "ReceiptEmail" ).AsGuidOrNull();
+                            Guid? failedPaymentEmail = dataMap.GetString( "FailedPaymentEmail" ).AsGuidOrNull();
+                            Guid? failedPaymentWorkflowType = dataMap.GetString( "FailedPaymentWorkflow" ).AsGuidOrNull();
+
+                            string batchNamePrefix = dataMap.GetString( "BatchNamePrefix" );
+                            FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, string.Empty, receiptEmail, failedPaymentEmail, failedPaymentWorkflowType );
+                            scheduledPaymentsProcessed += payments.Count();
+                        }
+                        else
+                        {
+                            throw new Exception( errorMessage );
                         }
                     }
                     catch ( Exception ex )
@@ -115,7 +122,6 @@ namespace Rock.Jobs
                         ExceptionLogService.LogException( ex, null );
                         exceptionMsgs.Add( ex.Message );
                     }
-
                 }
             }
 
@@ -126,6 +132,5 @@ namespace Rock.Jobs
 
             context.Result = string.Format( "{0} payments processed", scheduledPaymentsProcessed );
         }
-
     }
 }

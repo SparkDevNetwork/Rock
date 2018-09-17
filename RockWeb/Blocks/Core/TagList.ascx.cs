@@ -206,11 +206,11 @@ namespace RockWeb.Blocks.Core
             switch ( e.Key )
             {
                 case "Category":
-                    var category = CategoryCache.Read( int.Parse( e.Value ) );
+                    var category = CategoryCache.Get( int.Parse( e.Value ) );
                     e.Value = category != null ? category.Name : string.Empty;  
                     break;
                 case "EntityType":
-                    var entityType = EntityTypeCache.Read( int.Parse( e.Value ) );
+                    var entityType = EntityTypeCache.Get( int.Parse( e.Value ) );
                     e.Value = entityType != null ? entityType.FriendlyName : string.Empty;
                     break;
                 case "Owner":
@@ -319,7 +319,7 @@ namespace RockWeb.Blocks.Core
                     IsActive = t.IsActive
                 } ).ToList();
 
-                rGrid.EntityTypeId = EntityTypeCache.Read<Tag>().Id;
+                rGrid.EntityTypeId = EntityTypeCache.Get<Tag>().Id;
                 rGrid.DataBind();
             }
         }

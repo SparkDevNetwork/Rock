@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Rock.Web.Cache;
 
 namespace Rock.Attribute
 {
@@ -29,7 +30,7 @@ namespace Rock.Attribute
         private const string CUSTOM_VALUES = "customvalues";
         private const string ALLOW_HTML = "allowhtml";
 
-        /* Developer Note: When adding new params to a Field Attribute, we could just add new Properties instead to avoid backwards compatibily issues. 
+        /* Developer Note: When adding new params to a Field Attribute, we could just add new Properties instead to avoid backwards compatibility issues. 
          * See AllowHtml below as an example, and the GroupList block for how to initialize it
          */
 
@@ -78,7 +79,7 @@ namespace Rock.Attribute
             Guid? guid = definedTypeGuid.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var definedType = Rock.Web.Cache.DefinedTypeCache.Read( guid.Value );
+                var definedType = DefinedTypeCache.Get( guid.Value );
                 if ( definedType != null )
                 {
                     var definedTypeConfigValue = new Field.ConfigurationValue( definedType.Id.ToString() );

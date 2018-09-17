@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -47,12 +47,12 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// The person's group member record for each CommunicationListId
         /// </summary>
-        Dictionary<int, GroupMember> personCommunicationListsMember = null;
+        private Dictionary<int, GroupMember> personCommunicationListsMember = null;
 
         /// <summary>
         /// The show medium preference
         /// </summary>
-        bool showMediumPreference = true;
+        private bool showMediumPreference = true;
 
         #endregion
 
@@ -119,7 +119,6 @@ namespace RockWeb.Blocks.Communication
                 if ( cbCommunicationListIsSubscribed.Text.IsNullOrWhiteSpace() )
                 {
                     cbCommunicationListIsSubscribed.Text = group.Name;
-
                 }
 
                 cbCommunicationListIsSubscribed.Checked = groupMember != null && groupMember.GroupMemberStatus == GroupMemberStatus.Active;
@@ -234,7 +233,7 @@ namespace RockWeb.Blocks.Communication
                         var groupMember = new GroupMember();
                         groupMember.PersonId = this.CurrentPersonId.Value;
                         groupMember.GroupId = group.Id;
-                        int? defaultGroupRoleId = GroupTypeCache.Read( group.GroupTypeId ).DefaultGroupRoleId;
+                        int? defaultGroupRoleId = GroupTypeCache.Get( group.GroupTypeId ).DefaultGroupRoleId;
                         if ( defaultGroupRoleId.HasValue )
                         {
                             groupMember.GroupRoleId = defaultGroupRoleId.Value;
@@ -257,11 +256,6 @@ namespace RockWeb.Blocks.Communication
                             groupMemberService.Add( groupMember );
                             rockContext.SaveChanges();
                             groupMember.SaveAttributeValue( "PreferredCommunicationMedium", rockContext );
-
-                            if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-                            {
-                                Rock.Security.Role.Flush( group.Id );
-                            }
                         }
                         else
                         {
@@ -292,18 +286,25 @@ namespace RockWeb.Blocks.Communication
             var groupService = new GroupService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
             var categoryService = new CategoryService( rockContext );
+            int communicationListGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
+            int? communicationListGroupTypeDefaultRoleId = GroupTypeCache.Get( communicationListGroupTypeId ).DefaultGroupRoleId;
 
-            int communicationListGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
+            // Get a list of syncs for the communication list groups where the default role is sync'd
+            var groupSyncService = new GroupSyncService( rockContext );
+            var commGroupSyncsForDefaultRole = groupSyncService
+                .Queryable()
+                .Where( a => a.Group.GroupTypeId == communicationListGroupTypeId && a.GroupTypeRoleId == communicationListGroupTypeDefaultRoleId )
+                .Select( a => a.GroupId );
 
-            // Get a list of all the Active CommunicationLists, but exclude Sync'd groups that the person is not in (Sync'ing would remove that person)
-            var communicationListQry = groupService.Queryable()
-                .Where( a => a.GroupTypeId == communicationListGroupTypeId
-                        && a.IsActive
-                        && ( a.SyncDataViewId == null || a.Members.Any( m => m.PersonId == this.CurrentPersonId ) ) );
+            // If the default role is being sync'd then don't show it, otherwise include it
+            var communicationListQry = groupService
+                .Queryable()
+                .Where( a => a.GroupTypeId == communicationListGroupTypeId && !commGroupSyncsForDefaultRole.Contains( a.Id ));
 
             var categoryGuids = this.GetAttributeValue( "CommunicationListCategories" ).SplitDelimitedValues().AsGuidList();
 
             var communicationLists = communicationListQry.ToList();
+
             var viewableCommunicationLists = new List<Group>();
             foreach ( var communicationList in communicationLists )
             {
@@ -355,7 +356,5 @@ namespace RockWeb.Blocks.Communication
         }
 
         #endregion
-
-
     }
 }

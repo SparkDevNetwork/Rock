@@ -16,6 +16,11 @@
 
         <asp:Panel ID="pnlContent" runat="server" CssClass="checkin-manager">
 
+            <div class="panel-heading">
+                    <h1 class="panel-title"> <i class="fa fa-sitemap"></i>&nbsp;<asp:Literal ID="lGroupTypeName" runat="server" /></h1>
+            </div>
+            <br />
+
             <asp:HiddenField ID="hfChartData" runat="server" />
             <asp:HiddenField ID="hfChartOptions" runat="server" />
             <asp:Panel ID="pnlChart" runat="server" style="width:100%;height:170px" CssClass="clickable" />
@@ -33,7 +38,7 @@
 
             <div class="panel panel-default">
 
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <asp:Panel ID="pnlNavHeading" runat="server" CssClass="panel-heading clickable clearfix" >
                     <asp:PlaceHolder runat="server">

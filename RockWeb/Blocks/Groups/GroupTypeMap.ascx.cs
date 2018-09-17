@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Groups
                             #map_canvas {{
                                 width: 100%;
                                 height: 100%;
-                                border-radius: 8px;
+                                border-radius: var(--border-radius-base);
                             }}
                         </style>";
 
@@ -235,7 +235,7 @@ namespace RockWeb.Blocks.Groups
                     personPageParams.Add( "PersonId", string.Empty );
                     var personProfilePage = LinkedPageUrl( "PersonProfilePage", personPageParams );
 
-                    var groupEntityType = EntityTypeCache.Read( typeof( Group ) );
+                    var groupEntityType = EntityTypeCache.Get( typeof( Group ) );
                     var dynamicGroups = new List<dynamic>();
 
 
@@ -310,7 +310,7 @@ namespace RockWeb.Blocks.Groups
                         var groupAttributes = new List<dynamic>();
                         foreach ( AttributeValue value in group.AttributeValues )
                         {
-                            var attrCache = AttributeCache.Read( value.AttributeId );
+                            var attrCache = AttributeCache.Get( value.AttributeId );
                             var dictAttribute = new Dictionary<string, object>();
                             dictAttribute.Add( "Key", attrCache.Key );
                             dictAttribute.Add( "Name", attrCache.Name );
@@ -401,7 +401,7 @@ namespace RockWeb.Blocks.Groups
                     string styleCode = "null";
                     string markerColor = "FE7569";
 
-                    DefinedValueCache dvcMapStyle = DefinedValueCache.Read( GetAttributeValue( "MapStyle" ).AsGuid() );
+                    DefinedValueCache dvcMapStyle = DefinedValueCache.Get( GetAttributeValue( "MapStyle" ).AsGuid() );
                     if ( dvcMapStyle != null )
                     {
                         styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );

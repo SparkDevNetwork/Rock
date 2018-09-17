@@ -102,12 +102,15 @@ namespace Rock.Field.Types
 
             if ( picker != null )
             {
-                var ids = picker.SelectedValuesAsInt();
-                var schedules = new ScheduleService( new RockContext() ).Queryable().Where( a => ids.Contains( a.Id ) );
-
-                if ( schedules.Any() )
+                var ids = picker.SelectedValuesAsInt().ToList();
+                using ( var rockContext = new RockContext() )
                 {
-                    result = schedules.Select( s => s.Guid.ToString() ).ToList().AsDelimited( "," );
+                    var schedules = new ScheduleService( rockContext ).GetByIds( ids ).ToList();
+
+                    if ( schedules.Any() )
+                    {
+                        result = schedules.Select( s => s.Guid.ToString() ).ToList().AsDelimited( "," );
+                    }
                 }
             }
 
@@ -122,28 +125,24 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as SchedulePicker;
+
+            if ( picker != null )
             {
-                var picker = control as SchedulePicker;
+                var guids = value?.SplitDelimitedValues().AsGuidList() ?? new List<Guid>();
 
-                if ( picker != null )
+                if ( guids.Any() )
                 {
-                    var guids = new List<Guid>();
-
-                    foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                    using ( var rockContext = new RockContext() )
                     {
-                        Guid? guid = guidValue.AsGuidOrNull();
-                        if ( guid.HasValue )
-                        {
-                            guids.Add( guid.Value );
-                        }
-                    }
-
-                    if ( guids.Any() )
-                    {
-                        var schedules = new ScheduleService( new RockContext() ).Queryable().Where( a => guids.Contains( a.Guid ) ).ToList();
+                        var schedules = new ScheduleService( rockContext ).GetByGuids( guids ).ToList();
                         picker.SetValues( schedules );
-                    }                    
+                    }
+                }
+                else
+                {
+                    // make sure that no schedules are selected
+                    picker.SetValues( new List<Schedule>() );
                 }
             }
         }

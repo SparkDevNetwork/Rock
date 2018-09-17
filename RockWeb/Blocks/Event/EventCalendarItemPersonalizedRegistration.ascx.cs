@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Event
         {
             var rockContext = new RockContext();
 
-            // get the person who was passed in for the registration registar
+            // get the person who was passed in for the registration registrar
             Person person = null;
 
             Guid personGuid = Guid.Empty;
@@ -362,7 +362,7 @@ namespace RockWeb.Blocks.Event
                 lbRegister.Visible = false;
                 lEventIntro.Visible = false;
                 cblRegistrants.Visible = false;
-                var campus = CampusCache.Read( _campusId );
+                var campus = CampusCache.Get( _campusId );
                 lMessages.Text = string.Format( "<div class='alert alert-info'>There are no {0} events for the {1} campus in the next {2} days.</div>",
                                     eventItem.Name,
                                     campus != null ? campus.Name : string.Empty,

@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Finance
 
             var detailPageReference = new Rock.Web.PageReference( GetAttributeValue( "DetailPage" ) );
 
-            // NOTE: if the detail page is the current page, use the current route instead of route specified in the DetailPage (to preserve old behavoir)
+            // NOTE: if the detail page is the current page, use the current route instead of route specified in the DetailPage (to preserve old behavior)
             if ( detailPageReference == null || detailPageReference.PageId == this.RockPage.PageId )
             {
                 hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 hfPageRouteTemplate.Value = string.Empty;
-                var pageCache = PageCache.Read( detailPageReference.PageId );
+                var pageCache = PageCache.Get( detailPageReference.PageId );
                 if ( pageCache != null )
                 {
                     var route = pageCache.PageRoutes.FirstOrDefault( a => a.Id == detailPageReference.RouteId );

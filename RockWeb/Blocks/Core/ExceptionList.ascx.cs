@@ -231,7 +231,7 @@ function(item) {
                     int siteId;
                     if ( int.TryParse( e.Value, out siteId ) )
                     {
-                        var site = SiteCache.Read( siteId );
+                        var site = SiteCache.Get( siteId );
                         if ( site != null )
                         {
                             e.Value = site.Name;
@@ -243,7 +243,7 @@ function(item) {
                     int pageId;
                     if ( int.TryParse( e.Value, out pageId ) )
                     {
-                        var page = PageCache.Read( pageId );
+                        var page = PageCache.Get( pageId );
                         if ( page != null )
                         {
                             e.Value = page.InternalName;

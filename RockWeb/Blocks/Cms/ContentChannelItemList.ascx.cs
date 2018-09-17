@@ -168,7 +168,7 @@ namespace RockWeb.Blocks.Cms
                 gItems.Actions.AddClick += gItems_Add;
                 gItems.GridRebind += gItems_GridRebind;
                 gItems.GridReorder += GItems_GridReorder;
-                gItems.EntityTypeId = EntityTypeCache.Read<ContentChannelItem>().Id;
+                gItems.EntityTypeId = EntityTypeCache.Get<ContentChannelItem>().Id;
 
                 AddAttributeColumns();
 
@@ -185,7 +185,7 @@ namespace RockWeb.Blocks.Cms
                 var securityField = new SecurityField();
                 gItems.Columns.Add( securityField );
                 securityField.TitleField = "Title";
-                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
                 
                 var deleteField = new DeleteField();
                 gItems.Columns.Add( deleteField );
@@ -299,6 +299,7 @@ namespace RockWeb.Blocks.Cms
             var rockContext = new RockContext();
             var contentItemService = new ContentChannelItemService( rockContext );
             var contentItemAssociationService = new ContentChannelItemAssociationService( rockContext );
+            var contentItemSlugService = new ContentChannelItemSlugService( rockContext );
 
             ContentChannelItem contentItem = contentItemService.Get( e.RowKeyId );
 
@@ -315,6 +316,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     contentItemAssociationService.DeleteRange( contentItem.ChildItems );
                     contentItemAssociationService.DeleteRange( contentItem.ParentItems );
+                    contentItemSlugService.DeleteRange( contentItem.ContentChannelItemSlugs );
                     contentItemService.Delete( contentItem );
                     rockContext.SaveChanges();
                 } );
@@ -389,7 +391,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             // Add attribute columns
-            int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
+            int entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
             foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
@@ -412,7 +414,7 @@ namespace RockWeb.Blocks.Cms
                     boundField.AttributeId = attribute.Id;
                     boundField.HeaderText = attribute.Name;
 
-                    var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                     if ( attributeCache != null )
                     {
                         boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;

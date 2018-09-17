@@ -161,6 +161,7 @@ namespace RockWeb.Blocks.Finance
                 scheduleSummary.Add( "PersonName", transactionSchedule.AuthorizedPersonAlias != null && transactionSchedule.AuthorizedPersonAlias.Person != null ? transactionSchedule.AuthorizedPersonAlias.Person.FullName : "" );
                 scheduleSummary.Add( "CurrencyType", ( transactionSchedule.FinancialPaymentDetail != null && transactionSchedule.FinancialPaymentDetail.CurrencyTypeValue != null ) ? transactionSchedule.FinancialPaymentDetail.CurrencyTypeValue.Value : ""  );
                 scheduleSummary.Add( "CreditCardType", ( transactionSchedule.FinancialPaymentDetail != null && transactionSchedule.FinancialPaymentDetail.CreditCardTypeValue != null) ? transactionSchedule.FinancialPaymentDetail.CreditCardTypeValue.Value : "" );
+                scheduleSummary.Add( "AccountNumberMasked", ( transactionSchedule.FinancialPaymentDetail != null ) ? transactionSchedule.FinancialPaymentDetail.AccountNumberMasked ?? "" : "" );
                 scheduleSummary.Add( "UrlEncryptedKey", transactionSchedule.UrlEncodedKey );
                 scheduleSummary.Add( "Frequency", transactionSchedule.TransactionFrequencyValue.Value );
                 scheduleSummary.Add( "FrequencyDescription", transactionSchedule.TransactionFrequencyValue.Description );
@@ -224,7 +225,7 @@ namespace RockWeb.Blocks.Finance
                 }
                 else
                 {
-                    content.Text = String.Format( "<div class='alert alert-danger'>An error occured while deleting your scheduled transation. Message: {0}</div>", errorMessage );
+                    content.Text = String.Format( "<div class='alert alert-danger'>An error occurred while deleting your scheduled transaction. Message: {0}</div>", errorMessage );
                 }
             }
 
@@ -288,7 +289,7 @@ namespace RockWeb.Blocks.Finance
                 var schedules = transactionService.Queryable( "ScheduledTransactionDetails.Account" )
                     .Where( s => givingIds.Contains( s.AuthorizedPersonAlias.Person.GivingId ) && s.IsActive == true );
 
-                // filter the list if necesssary
+                // filter the list if necessary
                 var gatewayFilterGuid = GetAttributeValue( "GatewayFilter" ).AsGuidOrNull();
                 if ( gatewayFilterGuid != null )
                 {

@@ -247,7 +247,7 @@ namespace Rock.Web.UI.Controls
                         writer.AddAttribute( HtmlTextWriterAttribute.Class, "required" );
                     }
                     writer.RenderBeginTag( HtmlTextWriterTag.Th );
-                    writer.Write( GlobalAttributesCache.Read().GetValue( "core.GradeLabel" ) );
+                    writer.Write( GlobalAttributesCache.Get().GetValue( "core.GradeLabel" ) );
                     writer.RenderEndTag();
                 }
 

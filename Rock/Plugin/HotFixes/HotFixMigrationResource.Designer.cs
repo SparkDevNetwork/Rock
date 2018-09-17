@@ -277,11 +277,13 @@ namespace Rock.Plugin.HotFixes {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to INSERT INTO [LavaShortCode]
+        ///   Looks up a localized string similar to IF ( SELECT COUNT(*) FROM [LavaShortCode] WHERE [Guid] = &apos;EA1335B7-158F-464F-8994-98C53D4E47FF&apos; ) = 0
+        ///BEGIN
+        ///INSERT INTO [LavaShortCode]
         ///	([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid])
         ///	VALUES
         ///	(&apos;Vimeo&apos;,&apos;Creates a responsive Vimeo embed from just a simple video id.&apos;,&apos;&lt;p&gt;Embedding a Vimeo video is easy, right? Well what if you want it to be responsive (adjust with the size of the window)? Or what about 
-        ///control of what is shown in the player? The Vimeo shortcode helps to shorten (see what we did there) the time it tak [rest of string was truncated]&quot;;.
+        ///contro [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _050_MigrationRollupsForV7_4_AddVimeoShortCode {
             get {
@@ -362,23 +364,25 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_050_MigrationRollupsForV7_4_spAnalytics_ETL_Campus", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        /// Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[spCrm_PersonDuplicateFinder]') AND type in (N'P', N'PC'))
-        /// DROP PROCEDURE [dbo].[spCrm_PersonDuplicateFinder]
-        /// GO
-        /// &lt;doc&gt;
+        ///   Looks up a localized string similar to 
+        ///
+        ///&lt;doc&gt;
         /// &lt;summary&gt;
-        /// This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
+        ///   This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
         /// &lt;/summary&gt;
-        /// &lt;remarks&gt;
-        /// Uses the following constants:
-        /// * Group Type - Family: '790E3215-3B10-442B-AF69-616C0DCB998E'
-        /// * Location Type - Home: '8C52E53C-2A66-435A-AE [rest of string was truncated]";.
+        /// 
+        /// &lt;remarks&gt; 
+        ///  Uses the following constants:
+        ///   * Group Type - Family: &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
+        ///            * Location Type - Home: &apos;8C52E53C-2A66-435A-AE6E-5EE307D9A0DC&apos;
+        ///            * Phone Type - Home: &apos;AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303&apos;
+        ///            * Phone Type - Cell: &apos;407E7E45-7B2E-4FCD-9605-ECB1339F2453&apos;
+        /// &lt;/remarks&gt;
+        /// &lt;code&gt;
+        ///   [rest of string was truncated]&quot;;.
         /// </summary>
-        /// <value>
-        /// The 050 migration rollups for v7 4 sp CRM person duplicate finder.
-        /// </value>
         public static string _050_MigrationRollupsForV7_4_spCrm_PersonDuplicateFinder {
             get {
                 return ResourceManager.GetString("_050_MigrationRollupsForV7_4_spCrm_PersonDuplicateFinder", resourceCulture);
@@ -404,6 +408,71 @@ namespace Rock.Plugin.HotFixes {
         public static string _050_MigrationRollupsForV7_4_spCrm_PersonMerge {
             get {
                 return ResourceManager.GetString("_050_MigrationRollupsForV7_4_spCrm_PersonMerge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///    &lt;doc&gt;
+        ///	    &lt;summary&gt;
+        /// 		    This stored procedure updates several attributes related to a person&apos;s
+        ///		    giving.
+        ///	    &lt;/summary&gt;
+        ///	
+        ///	    &lt;remarks&gt;	
+        ///		    For eRA we only consider adults for the critieria.
+        ///	    &lt;/remarks&gt;
+        ///	    &lt;code&gt;
+        ///		    EXEC [dbo].[spCrm_FamilyAnalyticsGiving] 
+        ///	    &lt;/code&gt;
+        ///    &lt;/doc&gt;
+        ///    */
+        ///
+        ///    ALTER PROCEDURE [dbo].[spCrm_FamilyAnalyticsGiving]
+        ///	
+        ///    AS
+        ///    BEGIN
+        ///	
+        ///	    -- configuration of the duration in weeks
+        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving {
+            get {
+                return ResourceManager.GetString("_052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns either the FullName of the specified Person or a list of names of family members
+        ///        In the case of a group (family), it will return the names of the adults of the family. If there are no adults in the family, the names of the non-adults will be listed
+        ///        Example1 (specific person): Bob Smith 
+        ///        Example2 (family with kids): Bill and Sally Jones
+        ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
+        ///        Example4 (just kids [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle {
+            get {
+                return ResourceManager.GetString("_052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns either the FullName of the specified Person or a list of names of family members
+        ///        In the case of a group (family), it will return the names of the adults of the family. If there are no adults in the family, the names of the non-adults will be listed
+        ///        Example1 (specific person): Bob Smith 
+        ///        Example2 (family with kids): Bill and Sally Jones
+        ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
+        ///        Example4 (just kids [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive {
+            get {
+                return ResourceManager.GetString("_052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive", resourceCulture);
             }
         }
     }

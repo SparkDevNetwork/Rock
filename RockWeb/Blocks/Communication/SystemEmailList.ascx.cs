@@ -118,7 +118,7 @@ namespace RockWeb.Blocks.Communication
                 int? categoryId = e.Value.AsIntegerOrNull();
                 if ( categoryId.HasValue )
                 {
-                    var category = Rock.Web.Cache.CategoryCache.Read( categoryId.Value );
+                    var category = CategoryCache.Get( categoryId.Value );
                     if ( category != null )
                     {
                         e.Value = category.Name;
@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.Communication
                 gEmailTemplates.DataSource = systemEmails.OrderBy( a => a.Category.Name ).ThenBy( a => a.Title ).ToList();
             }
 
-            gEmailTemplates.EntityTypeId = EntityTypeCache.Read<Rock.Model.SystemEmail>().Id;
+            gEmailTemplates.EntityTypeId = EntityTypeCache.Get<Rock.Model.SystemEmail>().Id;
             gEmailTemplates.DataBind();
         }
 

@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.Finance
             base.OnLoad( e );
 
             // set campus
-            var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+            var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
             var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
             if ( contextCampus != null )
@@ -391,7 +391,7 @@ namespace RockWeb.Blocks.Finance
 
                     }
 
-                    // add comment to the transation
+                    // add comment to the transaction
                     swipeInfo.Comment1 = GetAttributeValue( "PaymentComment" );
 
                     // get gateway
@@ -428,7 +428,7 @@ namespace RockWeb.Blocks.Finance
                             transaction.TransactionDateTime = RockDateTime.Now;
                             transaction.FinancialGatewayId = financialGateway.Id;
 
-                            var txnType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
+                            var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
                             transaction.TransactionTypeValueId = txnType.Id;
 
                             transaction.Summary = swipeInfo.Comment1;
@@ -442,7 +442,7 @@ namespace RockWeb.Blocks.Finance
                             Guid sourceGuid = Guid.Empty;
                             if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
                             {
-                                var source = DefinedValueCache.Read( sourceGuid );
+                                var source = DefinedValueCache.Get( sourceGuid );
                                 if ( source != null )
                                 {
                                     transaction.SourceTypeValueId = source.Id;
@@ -468,11 +468,11 @@ namespace RockWeb.Blocks.Finance
                                 transaction.TransactionDateTime.Value,
                                 financialGateway.GetBatchTimeOffset() );
 
-                            var batchChanges = new List<string>();
+                            var batchChanges = new History.HistoryChangeList();
 
                             if ( batch.Id == 0 )
                             {
-                                batchChanges.Add( "Generated the batch" );
+                                batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
                                 History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
                                 History.EvaluateChange( batchChanges, "Status", null, batch.Status );
                                 History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
@@ -583,8 +583,8 @@ namespace RockWeb.Blocks.Finance
         }
         protected void lbRegisterNext_Click( object sender, EventArgs e )
         {
-            _dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-            _dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+            _dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+            _dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
             
             // create new person / family
             Person person = new Person();
@@ -954,7 +954,7 @@ namespace RockWeb.Blocks.Finance
                 lbGiveAnonymously.Visible = false;
             }
 
-            _dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+            _dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
             if ( _dvcConnectionStatus == null )
             {
                 nbBlockConfigErrors.Heading = "Invalid Connection Status";
@@ -962,7 +962,7 @@ namespace RockWeb.Blocks.Finance
                 return false;
             }
 
-            _dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+            _dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
             if ( _dvcRecordStatus == null )
             {
                 nbBlockConfigErrors.Heading = "Invalid Record Status";

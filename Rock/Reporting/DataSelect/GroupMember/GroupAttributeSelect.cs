@@ -83,7 +83,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
                 {
                     if ( !_GroupAttributes.Any( e => e.AttributeGuid == attribute.Guid ) )
                     {
-                        var attributeCache = AttributeCache.Read( attribute.Guid );
+                        var attributeCache = AttributeCache.Get( attribute.Guid );
                         var entityField = EntityHelper.GetEntityFieldForAttribute( attributeCache, false );
                         if ( entityField != null )
                         {

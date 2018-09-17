@@ -175,8 +175,15 @@ BEGIN
 		AND EntityId = @BinaryFileTypeIdCOMMUNICATION_ATTACHMENT
 END
 " );
+
+            // MP:Fix for #2700
+            RockMigrationHelper.AddSecurityAuthForBinaryFileType( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT, 0, Rock.Security.Authorization.EDIT, true, Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS, Rock.Model.SpecialRole.None, "CC13A66F-282E-4739-AC56-A95C03EFA22E" );
+            RockMigrationHelper.AddSecurityAuthForBinaryFileType( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT, 1, Rock.Security.Authorization.EDIT, true, Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS, Rock.Model.SpecialRole.None, "E5D49B9C-DB39-42F9-9807-A4C0A96BD5C6" );
+            RockMigrationHelper.AddSecurityAuthForBinaryFileType( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_IMAGE, 0, Rock.Security.Authorization.EDIT, true, Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS, Rock.Model.SpecialRole.None, "540B63CA-A6ED-4F8E-B2E3-0A2EC815C7DE" );
+            RockMigrationHelper.AddSecurityAuthForBinaryFileType( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_IMAGE, 1, Rock.Security.Authorization.EDIT, true, Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS, Rock.Model.SpecialRole.None, "A963D209-94DC-4A4E-AD6F-6922558F77B9" );
+
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>

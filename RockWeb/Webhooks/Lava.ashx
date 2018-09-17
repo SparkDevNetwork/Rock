@@ -59,7 +59,7 @@ public class Lava : IHttpHandler
                 string response = lava.ResolveMergeFields( mergeFields, currentUser != null ? currentUser.Person : null, enabledLavaCommands );
 
                 context.Response.Write( response );
-                context.Response.ContentType = contentType.IsNotNullOrWhitespace() ? contentType : "text/plain";
+                context.Response.ContentType = contentType.IsNotNullOrWhiteSpace() ? contentType : "text/plain";
 
                 return;
             }
@@ -100,7 +100,7 @@ public class Lava : IHttpHandler
     {
         var url = "/" + string.Join( "", request.Url.Segments.SkipWhile( s => !s.EndsWith( ".ashx", StringComparison.InvariantCultureIgnoreCase ) && !s.EndsWith( ".ashx/", StringComparison.InvariantCultureIgnoreCase ) ).Skip( 1 ).ToArray() );
 
-        var dt = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.WEBHOOK_TO_LAVA.AsGuid() );
+        var dt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.WEBHOOK_TO_LAVA.AsGuid() );
         if ( dt != null )
         {
             foreach ( DefinedValueCache api in dt.DefinedValues.OrderBy( h => h.Order ) )

@@ -55,9 +55,10 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is LavaCommandsPicker )
+            var picker = control as LavaCommandsPicker;
+            if ( picker != null )
             {
-                return ( ( LavaCommandsPicker ) control ).SelectedLavaCommands.AsDelimited( "," );
+                return picker.SelectedLavaCommands?.AsDelimited( "," );
             }
 
             return null;
@@ -71,13 +72,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as LavaCommandsPicker;
+            if ( picker != null )
             {
-                if ( control != null && control is LavaCommandsPicker )
-                {
-                    var lavaCommandsPicker = ( LavaCommandsPicker ) control;
-                    lavaCommandsPicker.SelectedLavaCommands = value.SplitDelimitedValues().ToList();
-                }
+                picker.SelectedLavaCommands = value?.SplitDelimitedValues().ToList() ?? new List<string>();
             }
         }
 

@@ -32,7 +32,7 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Security
 {
     /// <summary>
-    /// The main Person Profile block the main information about a peron 
+    /// The main Person Profile block the main information about a person 
     /// </summary>
     [DisplayName( "Account Detail" )]
     [Category( "Security" )]
@@ -100,13 +100,13 @@ namespace RockWeb.Blocks.Security
                 Guid? locationTypeGuid = GetAttributeValue( "LocationType" ).AsGuidOrNull();
                 if ( locationTypeGuid.HasValue )
                 {
-                    var addressTypeDv = DefinedValueCache.Read( locationTypeGuid.Value );
+                    var addressTypeDv = DefinedValueCache.Get( locationTypeGuid.Value );
 
                     var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuidOrNull();
 
                     if ( familyGroupTypeGuid.HasValue )
                     {
-                        var familyGroupType = GroupTypeCache.Read( familyGroupTypeGuid.Value );
+                        var familyGroupType = GroupTypeCache.Get( familyGroupTypeGuid.Value );
 
                         RockContext rockContext = new RockContext();
                         var address = new GroupLocationService( rockContext ).Queryable()

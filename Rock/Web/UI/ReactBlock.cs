@@ -76,7 +76,7 @@ namespace Rock.Web.UI
         {
             base.OnInit(e);
 
-            string name = BlockCache.Read(BlockId).BlockType.Path.Replace("~", "").Replace(".ascx", "");
+            string name = BlockCache.Get(BlockId).BlockType.Path.Replace("~", "").Replace(".ascx", "");
             Id = "bid_" + BlockId;
             Path = name;
             Component = name.Replace("/", ".").Remove(0, 1);

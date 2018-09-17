@@ -305,7 +305,7 @@ namespace RockWeb.Blocks.Communication
 
                             rockContext.SaveChanges();
 
-                            // TODO: Send notice to sneder that communication was approved
+                            // TODO: Send notice to sender that communication was approved
 
                             ShowResult( "The communication has been approved", communication, NotificationBoxType.Success );
                         }
@@ -348,7 +348,7 @@ namespace RockWeb.Blocks.Communication
 
                             rockContext.SaveChanges();
 
-                            // TODO: Send notice to sneder that communication was denied
+                            // TODO: Send notice to sender that communication was denied
 
                             ShowResult( "The communication has been denied", communication, NotificationBoxType.Warning );
                         }
@@ -555,9 +555,26 @@ namespace RockWeb.Blocks.Communication
                 template = templateService.Get(template.Id);
                 if (template != null)
                 {
-                    template.MakePrivate( Authorization.VIEW, CurrentPerson );
-                    template.MakePrivate( Authorization.EDIT, CurrentPerson );
-                    template.MakePrivate( Authorization.ADMINISTRATE, CurrentPerson );
+                    template.AllowPerson( Authorization.VIEW, CurrentPerson );
+                    template.AllowPerson( Authorization.EDIT, CurrentPerson );
+                    template.AllowPerson( Authorization.ADMINISTRATE, CurrentPerson );
+
+                    var groupService = new GroupService( rockContext );
+                    var communicationAdministrators = groupService.Get( Rock.SystemGuid.Group.GROUP_COMMUNICATION_ADMINISTRATORS.AsGuid() );
+                    if (communicationAdministrators != null)
+                    {
+                        template.AllowSecurityRole( Authorization.VIEW, communicationAdministrators, rockContext );
+                        template.AllowSecurityRole( Authorization.EDIT, communicationAdministrators, rockContext );
+                        template.AllowSecurityRole( Authorization.ADMINISTRATE, communicationAdministrators, rockContext );
+                    }
+
+                    var rockAdministrators = groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() );
+                    if (rockAdministrators != null)
+                    {
+                        template.AllowSecurityRole( Authorization.VIEW, rockAdministrators, rockContext );
+                        template.AllowSecurityRole( Authorization.EDIT, rockAdministrators, rockContext );
+                        template.AllowSecurityRole( Authorization.ADMINISTRATE, rockAdministrators, rockContext );
+                    }
                 }
 
                 nbTemplateCreated.Visible = true;
@@ -590,7 +607,7 @@ namespace RockWeb.Blocks.Communication
             pnlOpened.Visible = false;
 
             lDetails.Text = GetMediumData( communication );
-            if ( communication.UrlReferrer.IsNotNullOrWhitespace() )
+            if ( communication.UrlReferrer.IsNotNullOrWhiteSpace() )
             {
                 lDetails.Text += string.Format( "<small>Originated from <a href='{0}'>this page</a></small>", communication.UrlReferrer );
             }
@@ -864,7 +881,7 @@ namespace RockWeb.Blocks.Communication
 
                         sb.AppendLine( "</div>" );
 
-                        if ( communication.Message.IsNotNullOrWhitespace() )
+                        if ( communication.Message.IsNotNullOrWhiteSpace() )
                         {
                             AppendMediumData( sb, "HtmlMessage", string.Format( @"
                         <iframe id='js-email-body-iframe' class='email-body'></iframe>
@@ -904,7 +921,7 @@ namespace RockWeb.Blocks.Communication
 
         private void AppendMediumData( StringBuilder sb, string key, string value )
         {
-            if ( key.IsNotNullOrWhitespace() && value.IsNotNullOrWhitespace() )
+            if ( key.IsNotNullOrWhiteSpace() && value.IsNotNullOrWhiteSpace() )
             {
                 sb.AppendFormat( "<div class='form-group'><label class='control-label'>{0}</label><p class='form-control-static'>{1}</p></div>", key, value );
             }

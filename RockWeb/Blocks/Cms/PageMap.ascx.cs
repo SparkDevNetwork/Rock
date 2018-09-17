@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Cms
 
             foreach ( var pageId in rootPageList )
             {
-                sb.Append( PageNode( PageCache.Read( pageId ), expandedPageIds, rockContext ) );
+                sb.Append( PageNode( PageCache.Get( pageId ), expandedPageIds, rockContext ) );
             }
 
             sb.AppendLine( "</ul>" );

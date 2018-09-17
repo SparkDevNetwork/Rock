@@ -124,13 +124,13 @@ namespace Rock.Workflow.Action
         /// <returns></returns>
         private InteractionChannelCache GetChannel( RockContext rockContext, string identifier )
         {
-            if ( identifier.IsNotNullOrWhitespace() )
+            if ( identifier.IsNotNullOrWhiteSpace() )
             {
                 // Find by Id
                 int? id = identifier.AsIntegerOrNull();
                 if ( id.HasValue )
                 {
-                    var channel = InteractionChannelCache.Read( id.Value );
+                    var channel = InteractionChannelCache.Get( id.Value );
                     if ( channel != null )
                     {
                         return channel;
@@ -141,7 +141,7 @@ namespace Rock.Workflow.Action
                 Guid? guid = identifier.AsGuidOrNull();
                 if ( guid.HasValue )
                 {
-                    var channel = InteractionChannelCache.Read( guid.Value );
+                    var channel = InteractionChannelCache.Get( guid.Value );
                     if ( channel != null )
                     {
                         return channel;
@@ -156,7 +156,7 @@ namespace Rock.Workflow.Action
                     .FirstOrDefault( c => c.Name == identifier );
                     if ( interactionChannel != null )
                     {
-                        return InteractionChannelCache.Read( interactionChannel );
+                        return InteractionChannelCache.Get( interactionChannel );
                     }
 
                     // If still no match, and we have a name, create a new channel
@@ -166,7 +166,7 @@ namespace Rock.Workflow.Action
                         interactionChannel.Name = identifier;
                         new InteractionChannelService( newRockContext ).Add( interactionChannel );
                         newRockContext.SaveChanges();
-                        return InteractionChannelCache.Read( interactionChannel.Id );
+                        return InteractionChannelCache.Get( interactionChannel.Id );
                     }
                 }
             }
@@ -196,13 +196,13 @@ namespace Rock.Workflow.Action
                     }
                 }
 
-                if ( identifier.IsNotNullOrWhitespace() )
+                if ( identifier.IsNotNullOrWhiteSpace() )
                 {
                     // Find by Id
                     int? id = identifier.AsIntegerOrNull();
                     if ( id.HasValue )
                     {
-                        var component = InteractionComponentCache.Read( id.Value );
+                        var component = InteractionComponentCache.Get( id.Value );
                         if ( component != null && component.ChannelId == channel.Id )
                         {
                             return component;
@@ -213,7 +213,7 @@ namespace Rock.Workflow.Action
                     Guid? guid = identifier.AsGuidOrNull();
                     if ( guid.HasValue )
                     {
-                        var component = InteractionComponentCache.Read( guid.Value );
+                        var component = InteractionComponentCache.Get( guid.Value );
                         if ( component != null && component.ChannelId == channel.Id )
                         {
                             return component;
@@ -238,7 +238,7 @@ namespace Rock.Workflow.Action
                             new InteractionComponentService( newRockContext ).Add( interactionComponent );
                             newRockContext.SaveChanges();
 
-                            return InteractionComponentCache.Read( interactionComponent.Id );
+                            return InteractionComponentCache.Get( interactionComponent.Id );
                         }
                     }
                 }
@@ -264,10 +264,10 @@ namespace Rock.Workflow.Action
             Guid? personAliasGuid = identifier.AsGuidOrNull();
             if ( personAliasGuid.HasValue )
             {
-                var personAlias = new PersonAliasService( rockContext ).Get( personAliasGuid.Value );
-                if ( personAlias != null )
+                personAliasId = new PersonAliasService( rockContext ).GetId( personAliasGuid.Value );
+                if ( personAliasId.HasValue )
                 {
-                    personAliasId = personAlias.Id;
+                    return personAliasId.Value;
                 }
             }
 

@@ -34,7 +34,8 @@ namespace Rock.Workflow.Action.CheckIn
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Grade and Age" )]
 
-    [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true )]
+    [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true , "", 0)]
+    [BooleanField( "Prioritize Grade", "Exclude groups that do not match by grade if one (or more) groups are found that do match by grade.", false, "", 1 )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Age Range Attribute", "Select the attribute used to define the age range of the group", true, false,
         Rock.SystemGuid.Attribute.GROUP_AGE_RANGE, order: 2 )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Birthdate Range Attribute", "Select the attribute used to define the birthdate range of the group", true, false,
@@ -70,7 +71,7 @@ namespace Rock.Workflow.Action.CheckIn
                 var ageRangeAttributeGuid = GetAttributeValue( action, "GroupAgeRangeAttribute" ).AsGuidOrNull();
                 if ( ageRangeAttributeGuid.HasValue )
                 {
-                    var attribute = AttributeCache.Read( ageRangeAttributeGuid.Value, rockContext );
+                    var attribute = AttributeCache.Get( ageRangeAttributeGuid.Value, rockContext );
                     if ( attribute != null )
                     {
                         ageRangeAttributeKey = attribute.Key;
@@ -82,15 +83,19 @@ namespace Rock.Workflow.Action.CheckIn
                 var birthdateRangeAttributeGuid = GetAttributeValue( action, "GroupBirthdateRangeAttribute" ).AsGuidOrNull();
                 if ( birthdateRangeAttributeGuid.HasValue )
                 {
-                    var attribute = AttributeCache.Read( birthdateRangeAttributeGuid.Value, rockContext );
+                    var attribute = AttributeCache.Get( birthdateRangeAttributeGuid.Value, rockContext );
                     if ( attribute != null )
                     {
                         birthdateRangeAttributeKey = attribute.Key;
                     }
                 }
 
+                var personGradeMatches = new Dictionary<int, List<int>>();
+
                 foreach ( var person in family.People )
                 {
+                    personGradeMatches.Add( person.Person.Id, new List<int>() );
+
                     int? gradeOffset = person.Person.GradeOffset;
                     var ageAsDouble = person.Person.AgePrecise;
                     decimal? age = ageAsDouble.HasValue ? Convert.ToDecimal( ageAsDouble.Value ) : (decimal?)null;
@@ -109,8 +114,8 @@ namespace Rock.Workflow.Action.CheckIn
                             DefinedValueCache maxGradeDefinedValue = null;
                             if ( gradeOffsetRangePair.Length == 2 )
                             {
-                                minGradeDefinedValue = gradeOffsetRangePair[0].HasValue ? DefinedValueCache.Read( gradeOffsetRangePair[0].Value ) : null;
-                                maxGradeDefinedValue = gradeOffsetRangePair[1].HasValue ? DefinedValueCache.Read( gradeOffsetRangePair[1].Value ) : null;
+                                minGradeDefinedValue = gradeOffsetRangePair[0].HasValue ? DefinedValueCache.Get( gradeOffsetRangePair[0].Value ) : null;
+                                maxGradeDefinedValue = gradeOffsetRangePair[1].HasValue ? DefinedValueCache.Get( gradeOffsetRangePair[1].Value ) : null;
                             }
                             if ( maxGradeDefinedValue != null || minGradeDefinedValue != null )
                             {
@@ -266,6 +271,14 @@ namespace Rock.Workflow.Action.CheckIn
                                     }
                                 }
                             }
+                            else
+                            {
+                                if ( isMatch.Value )
+                                {
+                                    // If the group was matched on grade, add it to the list of matched groups for the person
+                                    personGradeMatches[person.Person.Id].Add( group.Group.Id );
+                                }
+                            }
 
                             if ( isMatch.HasValue && !isMatch.Value )
                             {
@@ -278,7 +291,38 @@ namespace Rock.Workflow.Action.CheckIn
                                     group.ExcludedByFilter = true;
                                 }
                             }
+                        }
+                    }
+                }
 
+                // If grade is being prioritized, and there was at least one group matched by grade, remove all
+                // the groups that did not match by grade
+                if ( GetAttributeValue( action, "PrioritizeGrade" ).AsBoolean() )
+                {
+                    foreach ( var person in family.People )
+                    {
+                        // Check if person matched any group by grade
+                        if ( personGradeMatches[person.Person.Id].Any() )
+                        {
+                            // Check every group to see if it was matched by grade...
+                            foreach ( var groupType in person.GroupTypes.ToList() )
+                            {
+                                foreach ( var group in groupType.Groups.ToList() )
+                                {
+                                    if ( !personGradeMatches[person.Person.Id].Contains( group.Group.Id ) )
+                                    {
+                                        // ...if not, remove it
+                                        if ( remove )
+                                        {
+                                            groupType.Groups.Remove( group );
+                                        }
+                                        else
+                                        {
+                                            group.ExcludedByFilter = true;
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

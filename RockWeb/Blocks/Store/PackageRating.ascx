@@ -40,22 +40,18 @@
                                     <asp:Literal ID="lRatingSummary" runat="server" /> <asp:LinkButton ID="lbRate" Visible="true" runat="server" CssClass="pull-left" OnClick="lbRate_Click">Rate</asp:LinkButton>
                                 </div>
 
-                                <p>
-                                    <strong>Last Updated</strong><br />
-                                    <asp:Literal ID="lLastUpdate" runat="server" />
-                                </p>
-                                <p>
-                                    <strong>Required Rock Version</strong><br />
-                                    <asp:Literal ID="lRequiredRockVersion" runat="server" />
-                                </p>
-                                <p>
-                                    <strong>Author</strong><br />
-                                    <asp:Literal ID="lAuthorInfo" runat="server" />
-                                </p>
-                                <p>
-                                    <strong>Documentation</strong><br />
-                                    <asp:Literal ID="lDocumenationLink" runat="server" />
-                                </p>
+                                <dl>
+                                    <dt>Last Updated</dt>
+                                    <dd><asp:Literal ID="lLastUpdate" runat="server" /></dd>
+                                    <dt>Required Rock Version</dt>
+                                    <dd><asp:Literal ID="lRequiredRockVersion" runat="server" /></dd>
+                                    <dt>Author</dt>
+                                    <dd><asp:Literal ID="lAuthorInfo" runat="server" /></dd>
+                                    <dt>Documentation</dt>
+                                    <dd><asp:Literal ID="lDocumenationLink" runat="server" /></dd>
+                                    <dt>Support</dt>
+                                    <dd><asp:Literal ID="lSupportLink" runat="server" /></dd>
+                                </dl>
                             </div>
                             <div class="col-md-9">
 

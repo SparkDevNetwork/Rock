@@ -65,10 +65,10 @@ namespace Rock.Lava
 
             if ( options.GetLegacyGlobalMergeFields )
             {
-                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                var globalAttributes = GlobalAttributesCache.Get();
                 if ( globalAttributes.LavaSupportLevel != Lava.LavaSupportLevel.NoLegacy )
                 {
-                    var legacyGlobalAttributeMergeFields = Rock.Web.Cache.GlobalAttributesCache.GetLegacyMergeFields( currentPerson );
+                    var legacyGlobalAttributeMergeFields = GlobalAttributesCache.GetLegacyMergeFields( currentPerson );
                     foreach ( var legacyGlobalAttributeMergeField in legacyGlobalAttributeMergeFields )
                     {
                         mergeFields.Add( legacyGlobalAttributeMergeField.Key, legacyGlobalAttributeMergeField.Value );

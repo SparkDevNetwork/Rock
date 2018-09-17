@@ -97,7 +97,7 @@ namespace Rock.Field.Types
             if ( controls != null && controls.Count == 1 && configurationValues != null )
             {
                 var textBoxGroupPickerLabel = controls[0] as RockTextBox;
-                if ( textBoxGroupPickerLabel != null )
+                if ( textBoxGroupPickerLabel != null && configurationValues?.ContainsKey(CONFIG_GROUP_PICKER_LABEL) == true )
                 {
                     textBoxGroupPickerLabel.Text = configurationValues[CONFIG_GROUP_PICKER_LABEL].Value;
                 }

@@ -51,5 +51,83 @@ namespace Rock.Model
 
             return qry;
         }
+
+        /// <summary>
+        /// Returns an enumerable collection of the <see cref="Rock.Model.FinancialAccount" /> Ids that are ancestors of a specified accountId sorted starting with the most immediate parent
+        /// </summary>
+        /// <param name="accountId">The account identifier.</param>
+        /// <returns></returns>
+        public IOrderedEnumerable<int> GetAllAncestorIds( int accountId )
+        {
+            var result = this.Context.Database.SqlQuery<int>(
+                @"
+                with CTE as (
+                select *, 0 as [Level] from [FinancialAccount] where [Id]={0}
+                union all
+                select [a].*, [Level] + 1 as [Level] from [FinancialAccount] [a]
+                inner join CTE pcte on pcte.ParentAccountId = [a].[Id]
+                )
+                select Id from CTE where Id != {0} order by Level
+                ", accountId );
+
+            // already ordered within the sql, so do a dummy order by to get IOrderedEnumerable
+            return result.OrderBy( a => 0 );
+        }
+
+        /// <summary>
+        /// Gets the entire FinancialAccount tree ordered by parent to child recursively
+        /// </summary>
+        /// <returns></returns>
+        public IOrderedEnumerable<FinancialAccount> GetTree()
+        {
+            // The Path field creates a dot seperated list of parent to child Ids, starting with top level and ending with the row's ID.
+            // This allows the rows to be ordered by the nested hierarchy.
+            string qry = @"WITH cte AS (
+                SELECT parent.*
+		            , 0 AS [Level]
+		            , CAST( parent.Id AS VARCHAR( MAX ) ) AS [Path]
+                FROM [FinancialAccount] parent
+                WHERE parent.[ParentAccountId] IS NULL
+
+                UNION ALL
+
+                SELECT child.*
+		            , [Level] + 1
+		            , CAST( [Path] + '.' + CAST( child.Id AS VARCHAR( 100 ) ) AS VARCHAR( MAX ) )
+                FROM [FinancialAccount] child
+                INNER JOIN cte ON cte.[Id] = child.[ParentAccountId]
+            )
+
+            SELECT [Id]
+                , [ParentAccountId]
+                , [CampusId]
+                , [Name]
+                , [PublicName]
+                , [Description]
+                , [IsTaxDeductible]
+                , [GlCode]
+                , [Order]
+                , [IsActive]
+                , [StartDate]
+                , [EndDate]
+                , [AccountTypeValueId]
+                , [Guid]
+                , [CreatedDateTime]
+                , [ModifiedDateTime]
+                , [CreatedByPersonAliasId]
+                , [ModifiedByPersonAliasId]
+                , [ForeignKey]
+                , [ImageBinaryFileId]
+                , [Url]
+                , [PublicDescription]
+                , [IsPublic]
+                , [ForeignGuid]
+                , [ForeignId]
+            FROM cte ORDER BY [Path]";
+
+            // already ordered within the sql, so do a dummy order by to get IOrderedEnumerable
+            return Context.Database.SqlQuery<FinancialAccount>( qry ).OrderBy( a => 0 );
+
+        }
     }
 }

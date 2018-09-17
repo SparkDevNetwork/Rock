@@ -16,8 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI.WebControls;
-
+using Rock.Web.Cache;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -46,7 +47,7 @@ namespace Rock.Web.UI.Controls
         public bool UseGuidAsValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the group types.
+        /// Sets the group types. Note: Use SetGroupTypes instead to set this using List&lt;GroupTypeCache&gt;
         /// </summary>
         /// <value>
         /// The group types.
@@ -55,12 +56,21 @@ namespace Rock.Web.UI.Controls
         {
             set
             {
-                this.Items.Clear();
-                this.Items.Add( new ListItem() );
-                foreach ( GroupType groupType in value )
-                {
-                    this.Items.Add( new ListItem( groupType.Name, UseGuidAsValue ? groupType.Guid.ToString() : groupType.Id.ToString() ) );
-                }
+                SetGroupTypes( value.Select( a => GroupTypeCache.Get( a.Id ) ).ToList() );
+            }
+        }
+
+        /// <summary>
+        /// Sets the group types.
+        /// </summary>
+        /// <param name="groupTypes">The group types.</param>
+        public void SetGroupTypes( IEnumerable<GroupTypeCache> groupTypes )
+        {
+            this.Items.Clear();
+            this.Items.Add( new ListItem() );
+            foreach ( GroupTypeCache groupType in groupTypes )
+            {
+                this.Items.Add( new ListItem( groupType.Name, UseGuidAsValue ? groupType.Guid.ToString() : groupType.Id.ToString() ) );
             }
         }
 
@@ -110,6 +120,14 @@ namespace Rock.Web.UI.Controls
                 {
                     li.Selected = true;
                     this.SelectedValue = id.ToString();
+                }
+                else
+                {
+                    // if setting GroupTypeId to NULL or 0, just default to the first item in the list (which should be nothing)
+                    if ( this.Items.Count > 0 )
+                    {
+                        this.SelectedIndex = 0;
+                    }
                 }
             }
         }

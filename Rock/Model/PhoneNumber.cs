@@ -189,7 +189,7 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
-        private Dictionary<int, List<string>> PersonHistoryChanges { get; set; }
+        private Dictionary<int, History.HistoryChangeList> PersonHistoryChanges { get; set; }
 
         #endregion
 
@@ -213,9 +213,40 @@ namespace Rock.Model
                 Number = PhoneNumber.CleanNumber( NumberFormatted );
             }
 
-            var rockContext = (RockContext)dbContext;
-            int personId = PersonId;
-            PersonHistoryChanges = new Dictionary<int, List<string>> { { personId, new List<string>() } };
+			// Check for duplicate
+			if ( entry.State == System.Data.Entity.EntityState.Added || entry.State == System.Data.Entity.EntityState.Modified )
+			{
+				var rockContext = ( RockContext ) dbContext;
+				var phoneNumberService = new PhoneNumberService( rockContext );
+				var duplicates = phoneNumberService.Queryable().Where( pn => pn.PersonId == PersonId && pn.Number == Number && pn.CountryCode == CountryCode );
+
+                // Make sure this number isn't considered a duplicate
+                if ( entry.State == System.Data.Entity.EntityState.Modified )
+                {
+                    duplicates = duplicates.Where( d => d.Id != Id );
+                }
+
+                if ( duplicates.Any() )
+				{
+					var highestOrderedDuplicate = duplicates.Where( p => p.NumberTypeValue != null ).OrderBy(p => p.NumberTypeValue.Order).FirstOrDefault();
+					if ( NumberTypeValueId.HasValue && highestOrderedDuplicate != null && highestOrderedDuplicate.NumberTypeValue != null )
+					{
+                        // Ensure that we preserve the PhoneNumber with the highest preference phone type
+						var numberType = DefinedValueCache.Get( NumberTypeValueId.Value, rockContext );
+						if ( highestOrderedDuplicate.NumberTypeValue.Order < numberType.Order )
+						{
+							entry.State = entry.State == System.Data.Entity.EntityState.Added ? System.Data.Entity.EntityState.Detached : System.Data.Entity.EntityState.Deleted;
+						}
+						else
+						{
+							phoneNumberService.DeleteRange( duplicates);
+						}
+					}
+				}
+			}
+
+			int personId = PersonId;
+            PersonHistoryChanges = new Dictionary<int, History.HistoryChangeList> { { personId, new History.HistoryChangeList() } };
 
             switch ( entry.State )
             {
@@ -251,7 +282,7 @@ namespace Rock.Model
                 case System.Data.Entity.EntityState.Deleted:
                     {
                         personId = entry.OriginalValues["PersonId"].ToStringSafe().AsInteger();
-                        PersonHistoryChanges.AddOrIgnore( personId, new List<string>() );
+                        PersonHistoryChanges.AddOrIgnore( personId, new History.HistoryChangeList() );
                         int? oldPhoneNumberTypeId = entry.OriginalValues["NumberTypeValueId"].ToStringSafe().AsIntegerOrNull();
                         History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), string.Empty );
 
@@ -304,7 +335,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static string DefaultCountryCode()
         {
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
             if ( definedType != null )
             {
                 string countryCode = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => v.Value ).FirstOrDefault();
@@ -335,7 +366,7 @@ namespace Rock.Model
 
             number = CleanNumber( number );
 
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
             if ( definedType != null )
             {
                 var definedValues = definedType.DefinedValues.OrderBy( v => v.Order );

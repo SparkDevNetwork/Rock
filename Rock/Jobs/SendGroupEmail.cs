@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Web;
 using Rock.Communication;
+using System.Text;
 
 namespace Rock.Jobs
 {
@@ -74,22 +75,44 @@ namespace Rock.Jobs
                     .ToList();
                 foreach ( GroupMember groupMember in groupMemberList )
                 {
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                    mergeFields.Add( "Person", groupMember.Person );
+                    var person = groupMember.Person;
+                    if ( !person.IsEmailActive || person.Email.IsNullOrWhiteSpace() || person.EmailPreference == EmailPreference.DoNotEmail )
+                    {
+                        continue;
+                    }
+
+                    var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null );
+                    mergeFields.Add( "Person", person );
                     mergeFields.Add( "GroupMember", groupMember );
                     mergeFields.Add( "Group", groupMember.Group );
 
                     recipients.Add( new RecipientData( groupMember.Person.Email, mergeFields ) );
                 }
 
+                var errors = new List<string>();
                 if ( recipients.Any() )
                 {
                     var emailMessage = new RockEmailMessage( emailTemplateGuid );
                     emailMessage.SetRecipients( recipients );
-                    emailMessage.Send();
+                    emailMessage.Send( out errors );
+
                 }
 
                 context.Result = string.Format( "{0} emails sent", recipients.Count() );
+
+                if ( errors.Any() )
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine();
+                    sb.Append( string.Format( "{0} Errors: ", errors.Count() ) );
+                    errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
+                    string errorMessage = sb.ToString();
+                    context.Result += errorMessage;
+                    var exception = new Exception( errorMessage );
+                    HttpContext context2 = HttpContext.Current;
+                    ExceptionLogService.LogException( exception, context2 );
+                    throw exception;
+                }
             }
         }
 

@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void LoadDropDowns()
         {
-            var personEntityType = EntityTypeCache.Read<Person>();
+            var personEntityType = EntityTypeCache.Get<Person>();
             var currentPerson = RockPage.GetCurrentContext( personEntityType ) as Person;
 
             int? personIdParam = Request.QueryString["personId"].AsIntegerOrNull();

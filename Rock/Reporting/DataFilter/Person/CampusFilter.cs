@@ -132,7 +132,7 @@ function() {{
             if ( selectionValues.Length >= 1 )
             {
                 Guid campusGuid = selectionValues[0].AsGuid();
-                var campus = CampusCache.Read( campusGuid );
+                var campus = CampusCache.Get( campusGuid );
                 if ( campus != null )
                 {
                     result = "Campus: " + campus.Name;
@@ -182,7 +182,7 @@ function() {{
             var campusId = ( controls[0] as CampusPicker ).SelectedCampusId;
             if ( campusId.HasValue )
             {
-                var campus = CampusCache.Read( campusId.Value );
+                var campus = CampusCache.Get( campusId.Value );
                 if ( campus != null )
                 {
                     return campus.Guid.ToString();
@@ -204,7 +204,7 @@ function() {{
             if ( selectionValues.Length >= 1 )
             {
                 var campusPicker = controls[0] as CampusPicker;
-                var selectedCampus = CampusCache.Read( selectionValues[0].AsGuid() );
+                var selectedCampus = CampusCache.Get( selectionValues[0].AsGuid() );
                 if ( selectedCampus != null )
                 {
                     campusPicker.SelectedCampusId = selectedCampus.Id;
@@ -239,7 +239,7 @@ function() {{
 
                 if ( campusId.HasValue )
                 {
-                    var selectedCampus = CampusCache.Read( campusId.Value );
+                    var selectedCampus = CampusCache.Get( campusId.Value );
                     if ( selectedCampus != null )
                     {
                         selectionValues[0] = selectedCampus.Guid.ToString();
@@ -266,7 +266,7 @@ function() {{
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var campus = CampusCache.Read( selectionValues[0].AsGuid() );
+                var campus = CampusCache.Get( selectionValues[0].AsGuid() );
                 if ( campus == null )
                 {
                     return null;

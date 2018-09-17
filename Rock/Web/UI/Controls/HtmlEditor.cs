@@ -22,8 +22,8 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
-using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Security;
 
 namespace Rock.Web.UI.Controls
 {
@@ -621,7 +621,7 @@ namespace Rock.Web.UI.Controls
 
             _ceEditor = new CodeEditor();
             _ceEditor.ID = this.ID + "_codeEditor";
-            _ceEditor.EditorMode = CodeEditorMode.Html;
+            _ceEditor.EditorMode = CodeEditorMode.Lava;
             if ( !string.IsNullOrEmpty(this.CallbackOnChangeScript) )
             {
                 _ceEditor.OnChangeScript = this.CallbackOnChangeScript;
@@ -680,7 +680,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            var globalAttributesCache = GlobalAttributesCache.Read();
+            var globalAttributesCache = GlobalAttributesCache.Get();
 
             string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
             string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );

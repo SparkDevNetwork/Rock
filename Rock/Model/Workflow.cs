@@ -27,8 +27,8 @@ using System.Web;
 
 using Rock;
 using Rock.Data;
-using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -175,11 +175,11 @@ namespace Rock.Model
             {
                 if ( WorkflowTypeId > 0 )
                 {
-                    return WorkflowTypeCache.Read( WorkflowTypeId );
+                    return WorkflowTypeCache.Get( WorkflowTypeId );
                 }
                 else if ( WorkflowType != null )
                 {
-                    return WorkflowTypeCache.Read( WorkflowType.Id );
+                    return WorkflowTypeCache.Get( WorkflowType.Id );
                 }
                 return null;
             }
@@ -640,7 +640,7 @@ namespace Rock.Model
         {
             if ( workflowType != null )
             {
-                var workflowTypeCache = WorkflowTypeCache.Read( workflowType.Id );
+                var workflowTypeCache = WorkflowTypeCache.Get( workflowType.Id );
                 var workflow = Activate( workflowTypeCache, name, rockContext );
                 if ( workflow != null )
                 {

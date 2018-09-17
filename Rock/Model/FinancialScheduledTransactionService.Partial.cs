@@ -285,7 +285,7 @@ namespace Rock.Model
             var newTransactions = new List<FinancialTransaction>();
             var failedPayments = new List<FinancialTransaction>();
 
-            var contributionTxnType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            var contributionTxnType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
 
             int? defaultAccountId = null;
             using ( var rockContext2 = new RockContext() )
@@ -349,7 +349,7 @@ namespace Rock.Model
                             transaction.StatusMessage = payment.StatusMessage;
                             transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
 
-                            if ( payment.ForeignKey.IsNotNullOrWhitespace() )
+                            if ( payment.ForeignKey.IsNotNullOrWhiteSpace() )
                             {
                                 transaction.ForeignKey = payment.ForeignKey;
                             }
@@ -405,12 +405,12 @@ namespace Rock.Model
                             {
                                 if ( currencyTypeValue == null && financialPaymentDetail.CurrencyTypeValueId.HasValue )
                                 {
-                                    currencyTypeValue = DefinedValueCache.Read( financialPaymentDetail.CurrencyTypeValueId.Value );
+                                    currencyTypeValue = DefinedValueCache.Get( financialPaymentDetail.CurrencyTypeValueId.Value );
                                 }
 
                                 if ( creditCardTypevalue == null && financialPaymentDetail.CreditCardTypeValueId.HasValue )
                                 {
-                                    creditCardTypevalue = DefinedValueCache.Read( financialPaymentDetail.CreditCardTypeValueId.Value );
+                                    creditCardTypevalue = DefinedValueCache.Get( financialPaymentDetail.CreditCardTypeValueId.Value );
                                 }
 
                                 transaction.FinancialPaymentDetail.AccountNumberMasked = financialPaymentDetail.AccountNumberMasked;

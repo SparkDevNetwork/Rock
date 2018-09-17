@@ -14,9 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
-
-using Rock.Web.Cache;
 
 namespace Rock.Attribute
 {
@@ -29,12 +28,12 @@ namespace Rock.Attribute
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
         /// <returns>A list of all inherited AttributeCache objects.</returns>
-        List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext );
+        List<Rock.Web.Cache.AttributeCache> GetInheritedAttributes( Data.RockContext rockContext );
 
         /// <summary>
         /// Get any alternate Ids that should be used when loading attribute value for this entity.
         /// </summary>
         /// <returns>A list of any alternate entity Ids that should be used when loading attribute values.</returns>
-        List<int> GetAlternateEntityIds( Rock.Data.RockContext rockContext );
+        List<int> GetAlternateEntityIds( Data.RockContext rockContext );
     }
 }

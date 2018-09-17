@@ -23,8 +23,8 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Security;
 
 namespace Rock.Workflow.Action
 {
@@ -40,7 +40,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
     [WorkflowAttribute( "Connection Opportunity Attribute", "The attribute that contains the type of the new connection opportunity.", true, "", "", 1, null,
         new string[] { "Rock.Field.Types.ConnectionOpportunityFieldType" } )]
-    [WorkflowTextOrAttribute("Transfer Note", "Tranfer Note Attribute", "The note to include with the transfer activity.", false, "", "", 2 )]
+    [WorkflowTextOrAttribute("Transfer Note", "Transfer Note Attribute", "The note to include with the transfer activity.", false, "", "", 2 )]
     public class TransferConnectionRequest : ActionComponent
     {
         /// <summary>
@@ -76,7 +76,7 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            // Get the tranfer note
+            // Get the transfer note
             string note = GetAttributeValue( action, "TransferNote", true );
 
             if ( request != null && opportunity != null )

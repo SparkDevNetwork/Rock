@@ -349,7 +349,7 @@ namespace RockWeb.Blocks.Event
                 cblCampus.SetValues( campusValue.Split( ';' ).ToList() );
             }
 
-            cblAudience.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() ) );
+            cblAudience.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() ) );
             string audienceValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Audiences" ) );
             if ( !string.IsNullOrWhiteSpace( audienceValue ) )
             {
@@ -380,7 +380,7 @@ namespace RockWeb.Blocks.Event
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name ) )
                 {
-                    AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+                    AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
                 }
             }
         }
@@ -460,7 +460,7 @@ namespace RockWeb.Blocks.Event
                         boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
 
-                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                         if ( attributeCache != null )
                         {
                             boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -569,36 +569,10 @@ namespace RockWeb.Blocks.Event
                 // Filter query by any configured attribute filters
                 if ( AvailableAttributes != null && AvailableAttributes.Any() )
                 {
-                    var attributeValueService = new AttributeValueService( rockContext );
-                    var parameterExpression = attributeValueService.ParameterExpression;
-
                     foreach ( var attribute in AvailableAttributes )
                     {
                         var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                        if ( filterControl == null ) continue;
-
-                        var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                        var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                        var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                        if ( expression == null ) continue;
-
-                        var attributeValues = attributeValueService
-                                    .Queryable()
-                                    .Where( v => v.Attribute.Id == attribute.Id );
-
-                        var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                        if ( filterIsDefault )
-                        {
-                            qry = qry.Where( w =>
-                                 !attributeValues.Any( v => v.EntityId == w.Id ) ||
-                                 filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                        }
-                        else
-                        {
-                            qry = qry.Where( w =>
-                                filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                        }   
+                        qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, eventCalendarItemService, Rock.Reporting.FilterMode.SimpleFilter );
                     }
                 }
 
@@ -682,7 +656,7 @@ namespace RockWeb.Blocks.Event
                 // Save the calendar items to the grid's objectlist
                 gEventCalendarItems.ObjectList = new Dictionary<string, object>();
                 calendarItemsWithDates.ForEach( i => gEventCalendarItems.ObjectList.Add( i.EventCalendarItem.EventItem.Id.ToString(), i.EventCalendarItem ) );
-                gEventCalendarItems.EntityTypeId = EntityTypeCache.Read( "Rock.Model.EventCalendarItem" ).Id;
+                gEventCalendarItems.EntityTypeId = EntityTypeCache.Get( "Rock.Model.EventCalendarItem" ).Id;
 
                 gEventCalendarItems.DataSource = calendarItemsWithDates.Select( i => new
                 {

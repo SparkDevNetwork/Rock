@@ -13,7 +13,7 @@
             <asp:HiddenField ID="hfTransactionViewMode" runat="server" />
             <asp:HiddenField ID="hfMoveToBatchId" runat="server" />
 
-            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
             <div class="panel panel-block">
                 <div class="panel-heading">
@@ -27,7 +27,7 @@
 
                         <div class="btn-group panel-toggle pull-right">
                             <asp:LinkButton ID="btnTransactions" CssClass="btn btn-xs btn-primary" runat="server" Text="Transactions" OnClick="btnTransactionsViewMode_Click" />
-                            <asp:LinkButton ID="btnTransactionDetails" CssClass="btn btn-xs btn-default" runat="server" Text="Transaction Details" OnClick="btnTransactionsViewMode_Click" />
+                            <asp:LinkButton ID="btnTransactionDetails" CssClass="btn btn-xs btn-outline-primary" runat="server" Text="Transaction Details" OnClick="btnTransactionsViewMode_Click" />
                         </div>
                     </div>
                     
@@ -68,7 +68,7 @@
                                 <Rock:RockLiteralField ID="lCurrencyType" HeaderText="Currency Type" />
                                 <Rock:RockBoundField DataField="TransactionCode" HeaderText="Transaction Code" SortExpression="TransactionCode" ColumnPriority="DesktopSmall" />                
                                 <Rock:RockBoundField DataField="ForeignKey" HeaderText="Foreign Key" SortExpression="ForeignKey" ColumnPriority="DesktopSmall" />                
-                                <Rock:RockLiteralField ID="lBatchId" HeaderText="Batch Id" SortExpression="BatchId" ColumnPriority="DesktopSmall" ItemStyle-HorizontalAlign="Right" ExcelExportBehavior="NeverInclude"  />                
+                                <Rock:RockLiteralField ID="lBatchId" HeaderText="Batch Id" SortExpression="BatchId" ColumnPriority="DesktopSmall" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"  ExcelExportBehavior="AlwaysInclude" />
                                 <Rock:RockLiteralField ID="lAccounts" HeaderText="Accounts" />
                                 <Rock:RockBoundField DataField="Status" HeaderText="Status" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                 <Rock:DateTimeField DataField="SettledDate" HeaderText="Settled Date/Time" ExcelExportBehavior="AlwaysInclude" Visible="false" />

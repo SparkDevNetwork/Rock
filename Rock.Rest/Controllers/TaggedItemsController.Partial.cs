@@ -61,7 +61,7 @@ namespace Rock.Rest.Controllers
                 int? categoryId = null;
                 if ( categoryGuid.HasValue )
                 {
-                    var category = CategoryCache.Read( categoryGuid.Value );
+                    var category = CategoryCache.Get( categoryGuid.Value );
                     categoryId = category != null ? category.Id : (int?)null;
                 }
 

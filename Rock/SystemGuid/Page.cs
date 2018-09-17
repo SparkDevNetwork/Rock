@@ -725,6 +725,16 @@ namespace Rock.SystemGuid
         public const string GROUP_ATTENDANCE_DETAIL = "0C00CD89-BF4C-4B19-9B0D-E1FA2CFF5DD7";
 
         /// <summary>
+        /// The group history grid page guid
+        /// </summary>
+        public const string GROUP_HISTORY_GRID = "FB9A6BC0-0B51-4A92-A32C-58AC822CD2D0";
+
+        /// <summary>
+        /// The group member history page guid
+        /// </summary>
+        public const string GROUP_MEMBER_HISTORY = "EAAB757E-524F-4DB9-A124-D5EFBCDCA63B";
+
+        /// <summary>
         /// Gets the Group Map page guid
         /// ParentPage: Group Viewer
         /// </summary>
@@ -1592,5 +1602,7 @@ namespace Rock.SystemGuid
         /// ParentPage: System Dialogs
         /// </summary>
         public const string ZONEBLOCKS = "9F36531F-C1B5-4E23-8FA3-18B6DAFF1B0B";
+
+        
     }
 }

@@ -536,7 +536,9 @@ namespace Rock.Apps.CheckScannerUtility
                     string otherData = null;
                     if ( remainingMicrParts.Any() )
                     {
-                        checkNumber = remainingMicrParts.Last();
+                        // Now that we've indentified Routing and AccountNumber, the remaining MICR part is probably the CheckNumber. However, there might be multiple Parts left. We'll have to make a best guess on which chunk is the CheckNumber.
+                        // In those cases, assume the 'longest' chunk to the CheckNumber. (Other chunks tend to be short 1 or 2 digit numbers that mean something special to the bank)
+                        checkNumber = remainingMicrParts.OrderBy( p => p.Length ).Last();
                         
                         // throw any remaining data into 'otherData' (a reject symbol could be in the other data)
                         remainingMicr = remainingMicr.Replace( (char)RangerE13BMicrSymbols.E13B_OnUsSymbol, ' ' );

@@ -61,7 +61,7 @@ namespace Rock.Workflow.Action
             Guid guidPersonAttribute = personAttributeValue.AsGuid();
             if ( !guidPersonAttribute.IsEmpty() )
             {
-                var attributePerson = AttributeCache.Read( guidPersonAttribute, rockContext );
+                var attributePerson = AttributeCache.Get( guidPersonAttribute, rockContext );
                 if ( attributePerson != null )
                 {
                     string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute );
@@ -204,7 +204,7 @@ namespace Rock.Workflow.Action
                     }
                 case "Photo":
                     {
-                        // could be interger of binary file or a guid
+                        // could be integer of binary file or a guid
 
                         var binaryFileId = updateValue.AsIntegerOrNull();
                         if ( binaryFileId.HasValue )
@@ -428,7 +428,7 @@ namespace Rock.Workflow.Action
 
             int? definedValueId = null;
 
-            var definedValues = DefinedTypeCache.Read( definedTypeGuid ).DefinedValues;
+            var definedValues = DefinedTypeCache.Get( definedTypeGuid ).DefinedValues;
             DefinedValueCache definedValue = null;
 
             value = value.Trim();
