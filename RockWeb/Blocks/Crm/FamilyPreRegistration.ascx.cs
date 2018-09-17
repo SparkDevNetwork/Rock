@@ -153,13 +153,21 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
         protected override void LoadViewState( object savedState )
         {
-            base.LoadViewState( savedState );
+            try
+            {
+                base.LoadViewState( savedState );
 
-            Children = ViewState["Children"] as List<PreRegistrationChild> ?? new List<PreRegistrationChild>();
+                Children = ViewState["Children"] as List<PreRegistrationChild> ?? new List<PreRegistrationChild>();
 
-            BuildAdultAttributes( false, null, null );
-            BuildFamilyAttributes( false, null );
-            CreateChildrenControls( false );
+                BuildAdultAttributes( false, null, null );
+                BuildFamilyAttributes( false, null );
+                CreateChildrenControls( false );
+            }
+            catch ( Exception ex )
+            {
+                LogException( ex );
+            }
+            
         }
 
         /// <summary>
@@ -168,27 +176,35 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            base.OnInit( e );
-
-            _rockContext = new RockContext();
-
-            // Get the allowed relationship types that have been selected
-            var selectedRelationshipTypeIds = GetAttributeValue( "Relationships" ).SplitDelimitedValues().AsIntegerList();
-            var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
-            if ( knownRelationshipGroupType != null )
+            try
             {
-                _relationshipTypes = knownRelationshipGroupType.Roles
-                    .Where( r => selectedRelationshipTypeIds.Contains( r.Id ) )
-                    .ToDictionary( k => k.Id, v => v.Name );
-            }
-            if ( selectedRelationshipTypeIds.Contains( 0 ) )
-            {
-                _relationshipTypes.Add( 0, "Child" );
-            }
+                base.OnInit( e );
 
-            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlContent );
+                _rockContext = new RockContext();
+
+                // Get the allowed relationship types that have been selected
+                var selectedRelationshipTypeIds = GetAttributeValue( "Relationships" ).SplitDelimitedValues().AsIntegerList();
+                var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+                if ( knownRelationshipGroupType != null )
+                {
+                    _relationshipTypes = knownRelationshipGroupType.Roles
+                        .Where( r => selectedRelationshipTypeIds.Contains( r.Id ) )
+                        .ToDictionary( k => k.Id, v => v.Name );
+                }
+                if ( selectedRelationshipTypeIds.Contains( 0 ) )
+                {
+                    _relationshipTypes.Add( 0, "Child" );
+                }
+
+                // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+                this.BlockUpdated += Block_BlockUpdated;
+                this.AddConfigurationUpdateTrigger( upnlContent );
+            }
+            catch ( Exception ex )
+            {
+                LogException( ex );
+                throw;
+            }
         }
 
         /// <summary>
@@ -201,14 +217,22 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
             nbError.Visible = false;
 
-            if ( !Page.IsPostBack )
+            try
             {
-                SetControls();
+                if ( !Page.IsPostBack )
+                {
+                    SetControls();
+                }
+                else
+                {
+                    GetChildrenData();
+                }
             }
-            else
+            catch ( Exception ex )
             {
-                GetChildrenData();
+                LogException( ex );
             }
+            
         }
 
         /// <summary>
@@ -1079,15 +1103,13 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 var div1 = new HtmlGenericControl( "Div" );
                 phAttributes1.Controls.Add( div1 );
                 div1.AddCssClass( "col-sm-3" );
-                var ctrl1 = attribute.AddControl( div1.Controls, value1, this.BlockValidationGroup, setValues, false, attribute.IsRequired );
-                ctrl1.ID = string.Format( "attribute_field_{0}_1", attribute.Id );
+                var ctrl1 = attribute.AddControl( div1.Controls, value1, this.BlockValidationGroup, setValues, true, attribute.IsRequired, null, null, null, string.Format( "attribute_field_{0}_1", attribute.Id ) );
 
                 string value2 = adult2 != null ? adult2.GetAttributeValue( attribute.Key ) : string.Empty;
                 var div2 = new HtmlGenericControl( "Div" );
                 phAttributes2.Controls.Add( div2 );
                 div2.AddCssClass( "col-sm-3" );
-                var ctrl2 = attribute.AddControl( div2.Controls, value2, this.BlockValidationGroup, setValues, false, attribute.IsRequired );
-                ctrl2.ID = string.Format( "attribute_field_{0}_2", attribute.Id );
+                var ctrl2 = attribute.AddControl( div2.Controls, value2, this.BlockValidationGroup, setValues, true, attribute.IsRequired, null, null, null, string.Format( "attribute_field_{0}_2", attribute.Id ) );
             }
         }
 
