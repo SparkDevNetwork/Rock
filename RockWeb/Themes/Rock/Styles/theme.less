@@ -18,7 +18,7 @@
 /*
   Rock Theme Styles
   1. HTML Overrides
-  2. Bootstrap Overides
+  2. Bootstrap Overrides
   3. Rock Overrides
   4. Theme Styling
   5. Components
@@ -137,11 +137,11 @@ textarea,
       &::after {
         position: absolute;
         right: 24px;
-        bottom:0;
+        bottom: 0;
         left: 24px;
         height:0;
         content: " ";
-        opacity:0;
+        opacity: 0;
         transition: height 300ms ease-in-out, opacity 300ms ease-in-out;
       }
 
@@ -276,30 +276,10 @@ textarea,
 }
 
 .grid-filter {
-  padding: 0;
   border: 0;
 
   .btn-link {
-    position: absolute;
-    z-index: 100;
     margin: 5px 0 0 7px;
-    color: @ui-5;
-    text-decoration: none;
-    background: #fff;
-
-    &.is-open {
-      background: @panel-subheading;
-    }
-  }
-
-  .grid-filter-entry {
-    h4 { display: none; }
-
-    padding-top: 37px;
-  }
-
-  .grid-filter-overview fieldset {
-    padding: 37px 16px 8px;
   }
 }
 
@@ -491,7 +471,6 @@ textarea,
 td.grid-actions {
   padding: 0 !important;
   font-size: 1em;
-  background-color: #fff;
 }
 
 .grid-select-field {
@@ -571,25 +550,25 @@ td.grid-select-field {
     }
   }
 
-.navbar-zone-header {
-  .zone-content > .block-instance {
-    display: none;
+  .navbar-zone-header {
+    .zone-content > .block-instance {
+      display: none;
 
-    @media @sm {
-      float: left;
+      @media @sm {
+        display: block;
+        float: left;
+      }
+    }
+
+    .zone-content > .smart-search {
       display: block;
+      @media @sm {
+        float: right;
+      }
     }
+
+
   }
-
-  .zone-content > .smart-search {
-    display: block;
-    @media @sm {
-      float: right;
-    }
-  }
-
-
-}
 
   .navbar-toggle {
     float: left;
@@ -642,7 +621,8 @@ td.grid-select-field {
     }
   }
 
-  .navbar-nav.contextsetter, .contextsetter {
+  .navbar-nav.contextsetter,
+  .contextsetter {
     margin: 14px;
     background-color: @btn-default-bg;
     border: 1px solid @btn-default-border;

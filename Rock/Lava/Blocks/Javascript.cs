@@ -216,7 +216,7 @@ namespace Rock.Lava.Blocks
             parms.Add( "disableanonymousfunction", "false" );
             parms.Add( "url", string.Empty );
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']*')" )
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

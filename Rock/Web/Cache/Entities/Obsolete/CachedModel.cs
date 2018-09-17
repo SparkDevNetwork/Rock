@@ -20,7 +20,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Runtime.Serialization;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -278,6 +278,13 @@ namespace Rock.Web.Cache
         /// <returns>The stored value as a string or null if none exists.</returns>
         public string GetAttributeValue( string key )
         {
+            if ( this is IEntityCache && this is IHasAttributes )
+            {
+                // if a compiled V7 Plugin is calling this, 'this' might actually be the new ModelCache<T,TT> (which we can detect if it is IEntityCache) and not the obsolete CachedModel<T>
+                // so (this as IHasAttributes) will be the actual ModelCache<T,TT> instance that we can get the AttributeValue from
+                return ( this as IHasAttributes ).GetAttributeValue( key );
+            }
+
             if ( this.AttributeValues != null &&
                 this.AttributeValues.ContainsKey( key ) )
             {
@@ -316,6 +323,14 @@ namespace Rock.Web.Cache
         /// <param name="value">The value.</param>
         public void SetAttributeValue( string key, string value )
         {
+            if ( this is IEntityCache && this is IHasAttributes )
+            {
+                // if a compiled V7 Plugin is calling this, 'this' might actually be the new ModelCache<T,TT> (which we can detect if it is IEntityCache) and not the obsolete CachedModel<T>
+                // so (this as IHasAttributes) will be the actual ModelCache<T,TT> instance that we can set the AttributeValue with
+                ( this as IHasAttributes ).SetAttributeValue( key, value );
+                return;
+            }
+
             if ( this.AttributeValues != null )
             {
                 if ( this.AttributeValues.ContainsKey( key ) )
@@ -366,7 +381,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the available keys (for debuging info).
+        /// Gets the available keys (for debugging info).
         /// </summary>
         /// <value>
         /// The available keys.
@@ -424,10 +439,10 @@ namespace Rock.Web.Cache
                     }
                 }
 
-                // The remainder of this method is only neccessary to support the old way of getting attribute 
+                // The remainder of this method is only necessary to support the old way of getting attribute 
                 // values in liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
                 // deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
-                // suported (e.g. {{ Person | Attribute:'BaptismDate' }} ), the remainder of this method 
+                // supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), the remainder of this method 
                 // can be removed
 
                 if ( this.Attributes != null )

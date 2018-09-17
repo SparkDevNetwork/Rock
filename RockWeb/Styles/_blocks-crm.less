@@ -165,7 +165,6 @@
     img {
       width: 100%;
       height: auto;
-      min-width: 200px;
       max-width: 200px;
       max-height: 200px;
     }
@@ -284,7 +283,7 @@
     text-align: center;
 
     .badge {
-      display: inline-block; // fixes issue in default browser on Andriod
+      display: inline-block; // fixes issue in default browser on Android
       padding: 3px 7px 0;
       background-color: inherit;
     }
@@ -1365,4 +1364,24 @@ tr.inactive {
   @media @sm {
     padding-top: 4px;
   }
+}
+
+// 19. Event Calendar Item Personalized Registration
+// -------------------------
+.eventitem {
+  cursor: pointer;
+}
+
+.eventitem-select {
+  font-size: 38px;
+  font-family: @fa-font-face;
+  font-weight: @fa-theme-weight;
+}
+
+.eventitem-select:after {
+  content: @fa-var-square;
+}
+
+.eventitem.selected .eventitem-select:after {
+  content: @fa-var-check-square;
 }

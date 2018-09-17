@@ -24,7 +24,7 @@ using Rock.Model;
 namespace Rock.Workflow
 {
     /// <summary>
-    /// MEF Container class for WorkflowAction Componenets
+    /// MEF Container class for WorkflowAction Components
     /// </summary>
     [Obsolete( "Use WorkflowTriggersCache instead" )]
     public class TriggerCache

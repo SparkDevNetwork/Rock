@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Reporting
                     else
                     {
                         nbResponse.NotificationBoxType = NotificationBoxType.Danger;
-                        nbResponse.Text = "Authenication Failed.";
+                        nbResponse.Text = "Authentication Failed.";
                     }
                 }
                 else

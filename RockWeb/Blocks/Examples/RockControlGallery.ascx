@@ -785,7 +785,7 @@ Sys.Application.add_load(function () {
                     <div runat="server" class="r-example">
                         <Rock:BootstrapButton ID="lbSave" runat="server" Text="Click Me" CssClass="btn btn-primary"
                             DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
-                            CompletedText ="Done" CompletedDuration="3" CompletedMessage="&nbsp;Your Changes have been Saved!"/>
+                            CompletedText ="Done" CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>" CompletedDuration="3"/>
                     </div>
 
                     <a id="AttributeEditor"></a>
@@ -822,7 +822,7 @@ Sys.Application.add_load(function () {
     -->
 
     <ol class="reasons">
-        <li>Stynax highlighting</li>
+        <li>Syntax highlighting</li>
         <li>Tabs work great</li>
         <li>Code folding</li>
     </ol>
@@ -878,7 +878,7 @@ Horizontal Rule
 
                     <a id="CssRollovers"></a>
                     <h2 runat="server">CSS Rollovers</h2>
-                    You often run across situiations where you would like buttons or links to apprear when you hover over a selection of code. Instead of using jQuery toggles you can use the
+                    You often run across situations where you would like buttons or links to appear when you hover over a selection of code. Instead of using jQuery toggles you can use the
                 CSS classes below. These classes can be applied to any tags.  In order to support nested rollovers the actions must be direct decendents of their containers.  On touch enabled
                 devices the rollover-items will always be displayed.
                 <div runat="server" class="r-example">
@@ -898,7 +898,7 @@ Horizontal Rule
                     <h3 runat="server">rockFadeIn()</h3>
                     <p>
                         Use this to fade in a selected DOM object in. The function hides the selector and then fades it in. Using this object will help provide
-                    consistant fade behavior.
+                    consistent fade behavior.
                     </p>
                     <strong>Usage Examples</strong>
                     <ul>

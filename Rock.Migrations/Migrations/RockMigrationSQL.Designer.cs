@@ -109,29 +109,12 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;SMITH&apos;,1,2376206,880.85
-        ///&apos;JOHNSON&apos;,2,1857160,688.44
-        ///&apos;WILLIAMS&apos;,3,1534042,568.66
-        ///&apos;BROWN&apos;,4,1380145,511.62
-        ///&apos;JONES&apos;,5,1362755,505.17
-        ///&apos;MILLER&apos;,6,1127803,418.07
-        ///&apos;DAVIS&apos;,7,1072335,397.51
-        ///&apos;GARCIA&apos;,8,858289,318.17
-        ///&apos;RODRIGUEZ&apos;,9,804240,298.13
-        ///&apos;WILSON&apos;,10,783051,290.27
-        ///&apos;MARTINEZ&apos;,11,775072,287.32
-        ///&apos;ANDERSON&apos;,12,762394,282.62
-        ///&apos;TAYLOR&apos;,13,720370,267.04
-        ///&apos;THOMAS&apos;,14,710696,263.45
-        ///&apos;HERNANDEZ&apos;,15,706372,261.85
-        ///&apos;MOORE&apos;,16,698671,259
-        ///&apos;MARTIN&apos;,17,672711,249.37
-        ///&apos;JACKSON&apos;,18,666125,246.93
-        ///&apos;THOMPSON&apos;,19,644368,2 [rest of string was truncated]&quot;;.
+        ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static string _201707311527250_LastName {
+        public static byte[] _201707311527250_LastName {
             get {
-                return ResourceManager.GetString("_201707311527250_LastName", resourceCulture);
+                object obj = ResourceManager.GetObject("_201707311527250_LastName", resourceCulture);
+                return ((byte[])(obj));
             }
         }
         
@@ -1069,21 +1052,6 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to -- We have secured Person.ConnectionStatus and Person.RecordStatus on the bulk upate block to follow conventions on the person edit block.
-        ///-- Now we need to add those that currently have access so they don&apos;t lose anything.
-        ///
-        ///DECLARE @BlockEntityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Guid] = &apos;D89555CA-9AE4-4D62-8AF1-E5E463C1EF65&apos;)
-        ///DECLARE @BulkUpdateBlockId INT = (SELECT [Id] FROM [Block] WHERE [Guid] = &apos;A610AB9D-7397-4D27-8614-F6A282B78B2C&apos;)
-        ///DECLARE @RockAdminGroupId INT = (SELECT [Id] FROM  [rest of string was truncated]&quot;;.
-        /// </summary>
-        public static string _201807191932379_Rollup_0719_Add_ConnectionStatus_and_RecordStatus_Security_Actions_to_Bulk_Update {
-            get {
-                return ResourceManager.GetString("_201807191932379_Rollup_0719_Add_ConnectionStatus_and_RecordStatus_Security_Actio" +
-                        "ns_to_Bulk_Update", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to UPDATE [LavaShortCode] 
         ///SET [Markup] = &apos;{%- assign wrapperId = uniqueid -%}
         ///{%- assign firstopen = firstopen | AsBoolean -%}
@@ -1099,6 +1067,71 @@ namespace Rock.Migrations.Migrations {
         public static string _201807191932379_Rollup_0719_Fix_Accordion_Bug {
             get {
                 return ResourceManager.GetString("_201807191932379_Rollup_0719_Fix_Accordion_Bug", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///    &lt;doc&gt;
+        ///	    &lt;summary&gt;
+        /// 		    This stored procedure updates several attributes related to a person&apos;s
+        ///		    giving.
+        ///	    &lt;/summary&gt;
+        ///	
+        ///	    &lt;remarks&gt;	
+        ///		    For eRA we only consider adults for the critieria.
+        ///	    &lt;/remarks&gt;
+        ///	    &lt;code&gt;
+        ///		    EXEC [dbo].[spCrm_FamilyAnalyticsGiving] 
+        ///	    &lt;/code&gt;
+        ///    &lt;/doc&gt;
+        ///    */
+        ///
+        ///    ALTER PROCEDURE [dbo].[spCrm_FamilyAnalyticsGiving]
+        ///	
+        ///    AS
+        ///    BEGIN
+        ///	
+        ///	    -- configuration of the duration in weeks
+        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201808062254493_Rollup_0806_spCrm_FamilyAnalyticsGiving {
+            get {
+                return ResourceManager.GetString("_201808062254493_Rollup_0806_spCrm_FamilyAnalyticsGiving", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns either the FullName of the specified Person or a list of names of family members
+        ///        In the case of a group (family), it will return the names of the adults of the family. If there are no adults in the family, the names of the non-adults will be listed
+        ///        Example1 (specific person): Bob Smith 
+        ///        Example2 (family with kids): Bill and Sally Jones
+        ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
+        ///        Example4 (just kids [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201808062254493_Rollup_0806_ufnCrm_GetFamilyTitle {
+            get {
+                return ResourceManager.GetString("_201808062254493_Rollup_0806_ufnCrm_GetFamilyTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns either the FullName of the specified Person or a list of names of family members
+        ///        In the case of a group (family), it will return the names of the adults of the family. If there are no adults in the family, the names of the non-adults will be listed
+        ///        Example1 (specific person): Bob Smith 
+        ///        Example2 (family with kids): Bill and Sally Jones
+        ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
+        ///        Example4 (just kids [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201808062254493_Rollup_0806_ufnCrm_GetFamilyTitleIncludeInactive {
+            get {
+                return ResourceManager.GetString("_201808062254493_Rollup_0806_ufnCrm_GetFamilyTitleIncludeInactive", resourceCulture);
             }
         }
     }

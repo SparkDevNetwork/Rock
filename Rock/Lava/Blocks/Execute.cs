@@ -93,7 +93,7 @@ namespace Rock.Lava.Blocks
                 return;
             }
 
-            string userScript = @"return ""Watson, can you hear me?"";"; // inital script here was just for testing
+            string userScript = @"return ""Watson, can you hear me?"";"; // initial script here was just for testing
 
             using ( TextWriter temp = new StringWriter() )
             {
@@ -103,7 +103,7 @@ namespace Rock.Lava.Blocks
 
                 if ( _runtimeType == RuntimeType.SCRIPT )
                 {
-                    // add default convience import
+                    // add default convenience import
                     _imports.Insert( 0, "Rock.Data" );
                     _imports.Insert( 0, "Rock.Model" );
                     _imports.Insert( 0, "Rock" );
@@ -175,7 +175,7 @@ namespace Rock.Lava.Blocks
         {
             var parms = new Dictionary<string, string>();
 
-            var markupItems = Regex.Matches( markup, "(.*?:'[^']*')" )
+            var markupItems = Regex.Matches( markup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

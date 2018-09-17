@@ -241,8 +241,10 @@ namespace RockWeb.Blocks.Crm
 
         protected void lbPersonSelectBack_Click( object sender, EventArgs e )
         {
-
+            HidePanels();
+            pnlSearch.Visible = true;
         }
+
         protected void lbPersonSelectCancel_Click( object sender, EventArgs e )
         {
             GoHome();
@@ -387,7 +389,7 @@ namespace RockWeb.Blocks.Crm
                     workflow.SetAttributeValue( "BirthDate", dpBirthdate.Text );
                     workflow.SetAttributeValue( "OtherUpdates", tbOtherUpdates.Text );
 
-                    // lauch workflow
+                    // launch workflow
                     List<string> workflowErrors;
                     workflowService.Process( workflow, out workflowErrors );
                 }

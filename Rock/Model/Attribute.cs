@@ -221,7 +221,7 @@ namespace Rock.Model
         /// Gets or sets a value indicating whether this instance is analytic history.
         /// Only applies if this is an Attribute on an Entity that implements IAnalyticHistorical and IsAnalytic is True
         /// If this is true and IsAnalytic is also true, a change in value of this Attribute on the Entity makes the CurrentRowIndicator=1 record
-        /// to become CurrentRowIndicator=0, sets teh ExpireDate, then a new row with CurrentRowIndicator=1 to be created
+        /// to become CurrentRowIndicator=0, sets the ExpireDate, then a new row with CurrentRowIndicator=1 to be created
         /// </summary>
         /// <value>
         /// <c>true</c> if this instance is analytic history; otherwise, <c>false</c>.
@@ -441,6 +441,15 @@ namespace Rock.Model
                 GlobalAttributesCache.Remove();
             }
 
+            if ( ( !entityTypeId.HasValue || entityTypeId.Value == 0 ) && entityTypeQualifierColumn== Attribute.SYSTEM_SETTING_QUALIFIER && string.IsNullOrEmpty( entityTypeQualifierValue ) )
+            {
+                if ( entityState != System.Data.Entity.EntityState.Modified )
+                {
+                    // if a SystemSettings was Added or Removed, flush the SystemSettings cache (if it was only modified, it'll will point to the updated AttributeCache value)
+                    Rock.Web.SystemSettings.Remove();
+                }
+            }
+
             if ( entityTypeId.HasValue )
             {
                 if ( entityTypeId == EntityTypeCache.GetId<Block>() )
@@ -499,6 +508,17 @@ namespace Rock.Model
                         }
                     }
                 }
+                else if ( entityTypeId.HasValue )
+                {
+                    // some other EntityType. If it the EntityType has a CacheItem associated with it, clear out all the CachedItems of that type to ensure they have a clean read of the Attributes that were Added, Changed or Removed
+                    EntityTypeCache entityType = EntityTypeCache.Get( entityTypeId.Value, dbContext as RockContext );
+
+                    if ( entityType?.HasEntityCache() == true )
+                    {
+                        entityType.ClearCachedItems();
+                    }
+                }
+
             }
         }
 

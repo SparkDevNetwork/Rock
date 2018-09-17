@@ -34,7 +34,7 @@ namespace Rock.Utility
     public static class TextToWorkflow
     {
         /// <summary>
-        /// Handles a recieved message
+        /// Handles a received message
         /// </summary>
         /// <param name="toPhone">To phone.</param>
         /// <param name="fromPhone">From phone.</param>
@@ -57,7 +57,7 @@ namespace Rock.Utility
             // Iterate through workflows looking for a keyword match (Only the first match will be processed)
             foreach ( DefinedValueCache dvWorkflow in smsWorkflows )
             {
-                // Get the Keyword expression attribute and see if it matches the message that was recieved
+                // Get the Keyword expression attribute and see if it matches the message that was received
                 string keywordExpression = dvWorkflow.GetAttributeValue( "KeywordExpression" );
                 if ( string.IsNullOrWhiteSpace( keywordExpression ) )
                 {
@@ -77,7 +77,7 @@ namespace Rock.Utility
                     keywordExpression = $"^{keywordExpression}";
                 }
 
-                // If the keyword expression does not match the message that was recieved ignore this TextToWorkflow value and continue to the next
+                // If the keyword expression does not match the message that was received ignore this TextToWorkflow value and continue to the next
                 var match = Regex.Match( message, keywordExpression, RegexOptions.IgnoreCase );
                 if ( !match.Success ) continue;
 
@@ -108,7 +108,7 @@ namespace Rock.Utility
 
                 using ( var rockContext = new RockContext() )
                 {
-                    // Try to find a person associated with phone number recieved
+                    // Try to find a person associated with phone number received
                     var fromPerson = GetPerson( fromPhone, rockContext );
 
                     // Activate a new workflow
@@ -123,7 +123,7 @@ namespace Rock.Utility
                     // Format the phone number that was received
                     var formattedPhoneNumber = PhoneNumber.CleanNumber( PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), fromPhone ) );
 
-                    // Create list of the keyword expressions that matched the recieved message
+                    // Create list of the keyword expressions that matched the received message
                     var matchGroups = new List<string>();
                     foreach ( var matchItem in match.Groups )
                     {
@@ -166,7 +166,7 @@ namespace Rock.Utility
 
                     // Check to see if there is a response to return
                     var responseAttribute = workflow.GetAttributeValue( "SMSResponse" );
-                    response = !string.IsNullOrWhiteSpace( responseAttribute ) ? responseAttribute : "We recieved your message. Thank-you.";
+                    response = !string.IsNullOrWhiteSpace( responseAttribute ) ? responseAttribute : "We received your message. Thank-you.";
 
                 }
 
@@ -192,7 +192,7 @@ namespace Rock.Utility
 
             var phoneNumber = fromPhone.Replace( "+", "" );
 
-            // Get the person ids for people who's Mobile number matches the recieved From number
+            // Get the person ids for people who's Mobile number matches the received From number
             var mobilePhoneType = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
             var peopleWithMobileNumber = phoneNumberService
                 .Queryable().AsNoTracking()

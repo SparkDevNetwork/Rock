@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.CheckIn
                                             foreach ( var schedule in location.GetSchedules( true ) )
                                             {
                                                 var li = new HtmlGenericControl( "li" );
-                                                li.InnerText = string.Format( detailMsg, person.ToString(), group.ToString(), location.ToString(), schedule.ToString(), person.SecurityCode );
+                                                li.InnerText = string.Format( detailMsg, person.ToString(), group.ToString(), location.Location.Name, schedule.ToString(), person.SecurityCode );
 
                                                 phResults.Controls.Add( li );
                                             }

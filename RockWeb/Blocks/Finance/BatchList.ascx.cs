@@ -73,7 +73,6 @@ namespace RockWeb.Blocks.Finance
             gBatchList.Actions.ShowAdd = UserCanEdit;
             gBatchList.Actions.AddClick += gBatchList_Add;
             gBatchList.GridRebind += gBatchList_GridRebind;
-            gBatchList.RowCreated += GBatchList_RowCreated;
             gBatchList.RowDataBound += gBatchList_RowDataBound;
             gBatchList.IsDeleteEnabled = UserCanEdit;
             gBatchList.ShowConfirmDeleteDialog = false;
@@ -397,47 +396,6 @@ namespace RockWeb.Blocks.Finance
 
             BindGrid();
         }
-
-
-        /// <summary>
-        /// Handles the RowCreated event of the GBatchList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        private void GBatchList_RowCreated( object sender, GridViewRowEventArgs e )
-        {
-            if ( e.Row.RowType == DataControlRowType.DataRow && e.Row.DataItem != null )
-            {
-                var batch = e.Row.DataItem as FinancialBatch;
-                if ( batch != null )
-                {
-                    var batchRow = new BatchRow
-                    {
-                        Id = batch.Id,
-                        BatchStartDateTime = batch.BatchStartDateTime.Value,
-                        Name = batch.Name,
-                        AccountingSystemCode = batch.AccountingSystemCode,
-                        TransactionCount = batch.Transactions.Count(),
-                        ControlAmount = batch.ControlAmount,
-                        CampusName = batch.Campus != null ? batch.Campus.Name : "",
-                        Status = batch.Status,
-                        UnMatchedTxns = batch.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue ),
-                        BatchNote = batch.Note,
-                        AccountSummaryList = batch.Transactions
-                        .SelectMany( t => t.TransactionDetails )
-                        .GroupBy( d => d.AccountId )
-                        .Select( s => new BatchAccountSummary
-                        {
-                            AccountId = s.Key,
-                            Amount = s.Sum( d => (decimal?)d.Amount ) ?? 0.0M
-                        } )
-                        .ToList()
-                    };
-
-                    e.Row.DataItem = batchRow;
-                }
-            }
-        }
         
         /// <summary>
         /// Handles the RowDataBound event of the gBatchList control.
@@ -689,15 +647,35 @@ namespace RockWeb.Blocks.Finance
                 var rockContext = new RockContext();
                 _financialAccountLookup = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().ToList().ToDictionary( k => k.Id, v => v );
 
-                var financialBatchQry = GetQuery( rockContext )
-                    .AsNoTracking()
-                    .Include( b => b.Campus )
-                    .Include( b => b.Transactions.Select( t => t.TransactionDetails ) );
+                var financialBatchQry = GetQuery( rockContext ).AsNoTracking();
 
-                gBatchList.SetLinqDataSource( financialBatchQry );
-                gBatchList.ObjectList = ( (List<FinancialBatch>)gBatchList.DataSource ).ToDictionary( k => k.Id.ToString(), v => v as object );
-                gBatchList.EntityTypeId = EntityTypeCache.Get<Rock.Model.FinancialBatch>().Id;
+                var batchRowQry = financialBatchQry.Select( b => new BatchRow
+                {
+                    Id = b.Id,
+                    BatchStartDateTime = b.BatchStartDateTime.Value,
+                    Name = b.Name,
+                    AccountingSystemCode = b.AccountingSystemCode,
+                    TransactionCount = b.Transactions.Count(),
+                    ControlAmount = b.ControlAmount,
+                    CampusName = b.Campus != null ? b.Campus.Name : "",
+                    Status = b.Status,
+                    UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue ),
+                    BatchNote = b.Note,
+                    AccountSummaryList = b.Transactions
+                        .SelectMany( t => t.TransactionDetails )
+                        .GroupBy( d => d.AccountId )
+                        .Select( s => new BatchAccountSummary
+                        {
+                            AccountId = s.Key,
+                            Amount = s.Sum( d => ( decimal? ) d.Amount ) ?? 0.0M
+                        } )
+                        .ToList()
+                } );
 
+                gBatchList.ObjectList = financialBatchQry.ToList().ToDictionary( k => k.Id.ToString(), v => v as object );
+
+                gBatchList.SetLinqDataSource( batchRowQry.AsNoTracking() );
+                gBatchList.EntityTypeId = EntityTypeCache.Get<FinancialBatch>().Id;
                 gBatchList.DataBind();
 
                 RegisterJavaScriptForGridActions();
@@ -796,36 +774,10 @@ namespace RockWeb.Blocks.Finance
             // Filter query by any configured attribute filters
             if ( AvailableAttributes != null && AvailableAttributes.Any() )
             {
-                var attributeValueService = new AttributeValueService( rockContext );
-                var parameterExpression = attributeValueService.ParameterExpression;
-
                 foreach ( var attribute in AvailableAttributes )
                 {
                     var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                    if (filterControl == null) continue;
-
-                    var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                    var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                    var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                    if (expression == null) continue;
-
-                    var attributeValues = attributeValueService
-                        .Queryable()
-                        .Where(v => v.Attribute.Id == attribute.Id);
-
-                    var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                    if (filterIsDefault)
-                    {
-                        qry = qry.Where(w =>
-                            !attributeValues.Any(v => v.EntityId == w.Id) ||
-                            filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ));
-                    }
-                    else
-                    {
-                        qry = qry.Where( w =>
-                            filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                    }
+                    qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, batchService, Rock.Reporting.FilterMode.SimpleFilter );
                 }
             }
 

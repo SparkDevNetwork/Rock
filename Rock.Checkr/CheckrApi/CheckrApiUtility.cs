@@ -74,7 +74,6 @@ namespace Rock.Checkr.CheckrApi
         /// <summary>
         /// Return a rest client.
         /// </summary>
-        /// <param name="url">The URL.</param>
         /// <returns>The rest client.</returns>
         private static RestClient RestClient()
         {
@@ -85,7 +84,7 @@ namespace Rock.Checkr.CheckrApi
                 var settings = GetSettings( rockContext );
                 if ( settings != null )
                 {
-                    token = GetSettingValue( settings, "AccessToken" );
+                    token = GetSettingValue( settings, "AccessToken", true );
                 }
             }
 

@@ -859,10 +859,10 @@ namespace Rock.Data
         public DbSet<FollowingEventType> FollowingEventTypes { get; set; }
 
         /// <summary>
-        /// Gets or sets the following suggesteds.
+        /// Gets or sets the following suggestions.
         /// </summary>
         /// <value>
-        /// The following suggesteds.
+        /// The following suggestions.
         /// </value>
         public DbSet<FollowingSuggested> FollowingSuggesteds { get; set; }
 
@@ -1193,6 +1193,14 @@ namespace Rock.Data
         /// The notes.
         /// </value>
         public DbSet<Note> Notes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the note attachments.
+        /// </summary>
+        /// <value>
+        /// The note attachments.
+        /// </value>
+        public DbSet<NoteAttachment> NoteAttachments { get; set; }
 
         /// <summary>
         /// Gets or sets the note types.

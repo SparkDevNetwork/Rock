@@ -389,7 +389,7 @@ namespace Rock.Model
                         logService.Add( log );
                     }
 
-                    // If location has been succesfully standardized and geocoded, break to get out, otherwise next service will be attempted
+                    // If location has been successfully standardized and geocoded, break to get out, otherwise next service will be attempted
                     if ( standardized && geocoded )
                     {
                         break;
@@ -560,7 +560,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the locations associated to a device and optionally any child locaitons
+        /// Gets the locations associated to a device and optionally any child locations
         /// </summary>
         /// <param name="deviceId">The device identifier.</param>
         /// <param name="includeChildLocations">if set to <c>true</c> [include child locations].</param>

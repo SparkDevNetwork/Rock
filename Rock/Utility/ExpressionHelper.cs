@@ -18,21 +18,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
-using Rock.Field;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Web.Cache;
 
 namespace Rock.Utility
 {
     /// <summary>
-    /// Expresssion Helper Methods
+    /// Expression Helper Methods
     /// </summary>
     public static class ExpressionHelper
     {
-
         /// <summary>
         /// Gets a filter expression for an entity property value.
         /// </summary>
@@ -60,7 +58,7 @@ namespace Rock.Utility
                     object value = ConvertValueToPropertyType( filterValues[1], type, isNullableType );
                     ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
 
-                    bool valueNotNeeded = (ComparisonType.IsBlank | ComparisonType.IsNotBlank).HasFlag( comparisonType );
+                    bool valueNotNeeded = ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType );
 
                     if ( value != null || valueNotNeeded )
                     {
@@ -110,20 +108,30 @@ namespace Rock.Utility
         /// </summary>
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
-        /// <param name="entityField">The property.</param>
-        /// <param name="values">The values.</param>
+        /// <param name="entityField">The entity field.</param>
+        /// <param name="values">The filter parameter values.</param>
         /// <returns></returns>
         public static Expression GetAttributeExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField entityField, List<string> values )
         {
-            var service = new AttributeValueService( (RockContext)serviceInstance.Context );
+            if ( !values.Any() )
+            {
+                // if no filter parameter values where specified, don't filter
+                return Expression.Constant( true );
+            }
+
+            var service = new AttributeValueService( ( RockContext ) serviceInstance.Context );
 
             var attributeValues = service.Queryable().Where( v =>
-                v.EntityId.HasValue &&
-                v.Value != string.Empty );
+                v.EntityId.HasValue );
+
+            AttributeCache attributeCache = null;
 
             if ( entityField.AttributeGuid.HasValue )
             {
-                attributeValues = attributeValues.Where( v => v.Attribute.Guid == entityField.AttributeGuid );
+                attributeCache = AttributeCache.Get( entityField.AttributeGuid.Value );
+                var attributeId = attributeCache != null ? attributeCache.Id : 0;
+
+                attributeValues = attributeValues.Where( v => v.AttributeId == attributeId );
             }
             else
             {
@@ -136,16 +144,14 @@ namespace Rock.Utility
             // Attribute Value records only exist for Entities that have a value specified for the Attribute.
             // Therefore, if the specified comparison works by excluding certain values we must invert our filter logic:
             // first we find the Attribute Values that match those values and then we exclude the associated Entities from the result set.
-            var comparisonType = ComparisonType.EqualTo;
-            ComparisonType evaluatedComparisonType = comparisonType;
+            ComparisonType? comparisonType = ComparisonType.EqualTo;
+            ComparisonType? evaluatedComparisonType = comparisonType;
+            string compareToValue = null;
 
             if ( values.Count >= 2 )
             {
-                string comparisonValue = values[0];
-                if ( comparisonValue != "0" )
-                {
-                    comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                }
+                comparisonType = values[0].ConvertToEnumOrNull<ComparisonType>();
+                compareToValue = values[1];
 
                 switch ( comparisonType )
                 {
@@ -175,7 +181,40 @@ namespace Rock.Utility
             var filterExpression = entityField.FieldType.Field.AttributeFilterExpression( entityField.FieldConfig, values, attributeValueParameterExpression );
             if ( filterExpression != null )
             {
-                attributeValues = attributeValues.Where( attributeValueParameterExpression, filterExpression, null );
+                if ( filterExpression is NoAttributeFilterExpression )
+                {
+                    // Special Case: If AttributeFilterExpression returns NoAttributeFilterExpression, just return the NoAttributeFilterExpression.
+                    // For example, If this is a CampusFieldType and they didn't pick any campus, we don't want to do any filtering for this datafilter.
+                    return filterExpression;
+                }
+                else
+                {
+                    attributeValues = attributeValues.Where( attributeValueParameterExpression, filterExpression, null );
+                }
+            }
+            else
+            {
+                // AttributeFilterExpression returned NULL (the FieldType didn't specify any additional filter on AttributeValue),
+                // so just filter based on if the AttributeValue exists with a non-empty value
+                if ( entityField.FieldType.Field.FilterComparisonType.HasFlag( ComparisonType.IsBlank ) && string.IsNullOrEmpty( compareToValue ) )
+                {
+                    // in the case of EqualTo/NotEqualTo with a NULL compareToValue, filter this using an IsBlank/IsNotBlank filter ( if the fieldtype supports it )
+                    if ( comparisonType == ComparisonType.EqualTo )
+                    {
+                        // treat as IsBlank, but invert so that it ends being "NOT (people that *have* a value)"
+                        // this will make is so that the filter will return people that have a blank value or no AttributeValue record
+                        comparisonType = ComparisonType.IsBlank;
+                        evaluatedComparisonType = ComparisonType.IsNotBlank;
+                    }
+                    else if ( comparisonType == ComparisonType.NotEqualTo )
+                    {
+                        // treat as IsNotBlank
+                        comparisonType = ComparisonType.IsNotBlank;
+                        evaluatedComparisonType = ComparisonType.IsNotBlank;
+                    }
+                }
+
+                attributeValues = attributeValues.Where( a => !string.IsNullOrEmpty( a.Value ) );
             }
 
             IQueryable<int> ids = attributeValues.Select( v => v.EntityId.Value );
@@ -183,6 +222,20 @@ namespace Rock.Utility
             MemberExpression propertyExpression = Expression.Property( parameterExpression, "Id" );
             ConstantExpression idsExpression = Expression.Constant( ids.AsQueryable(), typeof( IQueryable<int> ) );
             Expression expression = Expression.Call( typeof( Queryable ), "Contains", new Type[] { typeof( int ) }, idsExpression, propertyExpression );
+
+            if ( attributeCache != null )
+            {
+                var comparedToDefault = entityField.FieldType.Field.IsComparedToValue( values, attributeCache.DefaultValue );
+                if ( comparedToDefault )
+                {
+                    var allAttributeValueIds = service.Queryable().Where( v => v.Attribute.Id == attributeCache.Id && v.EntityId.HasValue && !string.IsNullOrEmpty( v.Value ) ).Select( a => a.EntityId.Value );
+
+                    ConstantExpression allIdsExpression = Expression.Constant( allAttributeValueIds.AsQueryable(), typeof( IQueryable<int> ) );
+                    Expression notContainsExpression = Expression.Not( Expression.Call( typeof( Queryable ), "Contains", new Type[] { typeof( int ) }, allIdsExpression, propertyExpression ) );
+
+                    expression = Expression.Or( expression, notContainsExpression );
+                }
+            }
 
             // If we have used an inverted comparison type for the evaluation, invert the Expression so that it excludes the matching Entities.
             if ( comparisonType != evaluatedComparisonType )

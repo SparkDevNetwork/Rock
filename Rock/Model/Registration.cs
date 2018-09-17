@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -456,7 +456,8 @@ Registration By: {0} Total Cost/Fees:{1}
                                     typeof( Registration ),
                                     registration.Id,
                                     false,
-                                    currentPersonAliasId );
+                                    currentPersonAliasId,
+                                    rockContext.SourceOfChange );
                             }
                         }
 
@@ -498,7 +499,8 @@ Registration By: {0} Total Cost/Fees:{1}
                                 typeof( Registration ),
                                 registration.Id,
                                 false,
-                                currentPersonAliasId );
+                                currentPersonAliasId,
+                                rockContext.SourceOfChange );
                         }
 
                         rockContext.SaveChanges();
@@ -1022,7 +1024,7 @@ Registration By: {0} Total Cost/Fees:{1}
         public DateTime? SignatureDocumentLastSent { get; set; }
 
         /// <summary>
-        /// Discounteds the cost.
+        /// Discounts the cost.
         /// </summary>
         /// <param name="discountPercent">The discount percent.</param>
         /// <param name="discountAmount">The discount amount.</param>
@@ -1041,7 +1043,7 @@ Registration By: {0} Total Cost/Fees:{1}
         }
 
         /// <summary>
-        /// Discounteds the cost.
+        /// Discounts the cost.
         /// </summary>
         /// <param name="discountPercent">The discount percent.</param>
         /// <param name="discountAmount">The discount amount.</param>
@@ -1520,7 +1522,7 @@ Registration By: {0} Total Cost/Fees:{1}
         public decimal PreviousCost { get; set; }
 
         /// <summary>
-        /// Discounteds the cost.
+        /// Discounts the cost.
         /// </summary>
         /// <param name="discountPercent">The discount percent.</param>
         /// <returns></returns>

@@ -629,7 +629,7 @@ namespace RockWeb.Blocks.Connection
                         )
                         .Count();
 
-                    // only show if the oppportunity is active and there are active requests
+                    // only show if the opportunity is active and there are active requests
                     if ( opportunity.IsActive || ( !opportunity.IsActive && activeRequestCount > 0 ) )
                     {
                         // idle count is:

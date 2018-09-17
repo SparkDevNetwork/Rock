@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Finance
             // Setup for being able to copy text to clipboard
             RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
             string script = string.Format( @"
-    new Clipboard('#{0}');
+    new ClipboardJS('#{0}');
     $('#{0}').tooltip();
 ", btnCopyToClipboard.ClientID );
             ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
@@ -323,7 +323,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnApplyGiversFilter_Click( object sender, EventArgs e )
         {
-            // both Attendess Filter Apply button just do the same thing as the main apply button
+            // both Attendees Filter Apply button just do the same thing as the main apply button
             btnApply_Click( sender, e );
         }
 
@@ -1475,7 +1475,7 @@ function(item) {
 
             var rockContext = new RockContext();
 
-            // if dataview was selected and it includes people not in the result set, 
+            // if dataview was selected and it includes people not in the result set,
             if ( dataViewId.HasValue && rblDataViewAction.SelectedValue == "All" && dataViewPersonIds.Any() )
             {
                 // Query for the names of each of these people
@@ -1620,7 +1620,7 @@ function(item) {
 
             if ( isExporting )
             {
-                // Get al the affected person ids
+                // Get all the affected person ids
                 var personIds = personInfoList.Select( a => a.Id ).ToList();
 
                 // Load the phone numbers for these people
@@ -1631,7 +1631,7 @@ function(item) {
                 {
                     phoneNumbers = new PhoneNumberService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( n => 
+                        .Where( n =>
                             personIds.Contains( n.PersonId ) &&
                             n.NumberTypeValueId.HasValue && (
                                 n.NumberTypeValueId.Value == homePhoneType.Id ||
@@ -1649,7 +1649,7 @@ function(item) {
 
                     foreach ( var item in new GroupMemberService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( m =>                            
+                        .Where( m =>
                             personIds.Contains( m.PersonId ) &&
                             m.Group.GroupTypeId == familyGroupType.Id )
                         .Select( m => new
@@ -1660,7 +1660,7 @@ function(item) {
                                 .Select( l => l.Location )
                                 .FirstOrDefault()
                         } )
-                        .Where( l => 
+                        .Where( l =>
                             l.Location != null &&
                             l.Location.Street1 != "" &&
                             l.Location.City != "" ) )
@@ -1776,7 +1776,7 @@ function(item) {
         #region Enums
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum ShowBy
         {
@@ -1792,7 +1792,7 @@ function(item) {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum GiversFilterBy
         {
@@ -1813,7 +1813,7 @@ function(item) {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum GiversViewBy
         {
@@ -1846,9 +1846,9 @@ function(item) {
         public string name { get; set; }
         public DateTime start { get; set; }
         public DateTime end { get; set; }
-        public TimeSpan duration 
+        public TimeSpan duration
         {
-            get 
+            get
             {
                 return end.Subtract( start );
             }

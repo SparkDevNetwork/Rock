@@ -8,7 +8,6 @@
 */
 
 
-
 // 1. SQL Command
 // -------------------------
 
@@ -51,6 +50,19 @@
   .checkbox-inline {
     margin-top: 8px;
   }
+
+  @media @md {
+    // Vertically align criteria fields to the top
+    > div {
+      display: table-cell;
+      float: none;
+      vertical-align: top;
+    }
+
+    .vertical-align-bottom {
+      vertical-align: bottom;
+    }
+  }
 }
 
 .filter-item div[class*="col"] {
@@ -78,8 +90,8 @@
 
 .list-panel {
   > .grid-filter {
-    margin: -15px -15px 15px -15px;
     padding: 6px 12px;
+    margin: -15px -15px 15px -15px;
 
     > header {
       position: relative;

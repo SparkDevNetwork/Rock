@@ -37,7 +37,7 @@ namespace Rock
         #region GenericCollection Extensions
 
         /// <summary>
-        /// Concatonate the items into a Delimited string
+        /// Concatenate the items into a Delimited string
         /// </summary>
         /// <example>
         /// FirstNamesList.AsDelimited(",") would be "Ted,Suzy,Noah"
@@ -54,7 +54,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Concatonate the items into a Delimited string an optionally htmlencode the strings
+        /// Concatenate the items into a Delimited string an optionally htmlencode the strings
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="items">The items.</param>
@@ -138,7 +138,7 @@ namespace Rock
         /// Joins a dictionary of items.
         /// </summary>
         /// <param name="items">The items.</param>
-        /// <param name="delimter">The delimter.</param>
+        /// <param name="delimter">The delimiter.</param>
         /// <returns></returns>
         public static string Join( this Dictionary<string, string> items, string delimter )
         {

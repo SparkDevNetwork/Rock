@@ -21,15 +21,12 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Humanizer;
-using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
 using Rock.Security;
-using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -243,13 +240,85 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
     }})
 
     function testRequiredFields() {{
-        var hasValue = $('#{0}').val() != '' || $('#{1}').val() != '';
+        var hasValue = $('#{0}').val() != '' && $('#{1}').val() != '';
         enableRequiredFields( hasValue );
 
+        if (hasValue) {{
+            var required = $('#{2}').val() == 'True';
+            if (required) {{
+                $('#{3}').closest('.form-group').addClass('required');
+            }} else {{
+                $('#{3}').closest('.form-group').removeClass('required');
+            }}
+
+            required = $('#{4}').val() == 'True';
+            if (required) {{
+                var temp =  $('#{5}').closest('form-group');
+                $('#{5}').closest('.form-group').addClass('required');
+            }} else {{
+                $('#{5}').closest('.form-group').removeClass('required');
+            }}
+
+            required = $('#{6}').val() == 'True';
+            if (required) {{
+                $('#{7}').closest('.form-group').addClass('required');
+            }} else {{
+                $('#{7}').closest('.form-group').removeClass('required');
+            }}
+
+            required = $('#{8}').val() == 'True';
+            if (required) {{
+                $('#{9}').closest('.form-group').addClass('required');
+            }} else {{
+                $('#{9}').closest('.form-group').removeClass('required');
+            }}
+
+            required = $('#{10}').val() == 'True';
+            if (required) {{
+                $('#{11}').closest('.form-group').addClass('required');
+            }} else {{
+                $('#{11}').closest('.form-group').removeClass('required');
+            }}
+
+            required = $('#{12}').val() == 'True';
+            if (required) {{
+                $('#{13}').closest('.form-group').addClass('required');
+            }} else {{
+                $('#{13}').closest('.form-group').removeClass('required');
+            }}
+
+
+        }} else {{
+            $('#{3}').closest('.form-group').removeClass('required');
+            $('#{5}').closest('.form-group').removeClass('required');
+            $('#{7}').closest('.form-group').removeClass('required');
+            $('#{9}').closest('.form-group').removeClass('required');
+            $('#{11}').closest('.form-group').removeClass('required');
+            $('#{13}').closest('.form-group').removeClass('required');
+        }}
     }}
 ",
                 tbFirstName2.ClientID,
-                tbLastName2.ClientID
+                tbLastName2.ClientID,
+
+                hfSuffixRequired.ClientID,
+                dvpSuffix2.ClientID,
+
+                hfGenderRequired.ClientID,
+                ddlGender2.ClientID,
+
+                hfBirthDateRequired.ClientID,
+                dpBirthDate2.ClientID,
+
+                hfMaritalStatusRequired.ClientID,
+                dvpMaritalStatus2.ClientID,
+
+                hfMobilePhoneRequired.ClientID,
+                pnMobilePhone2.ClientID,
+
+                hfEmailRequired.ClientID,
+                tbEmail2.ClientID
+
             );
 
             ScriptManager.RegisterStartupScript( tbFirstName2, tbFirstName2.GetType(), "adult2-validation", script, true );
@@ -501,7 +570,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                         personService.Add( person );
 
                         person.Guid = child.Guid;
-                        person.NickName = child.NickName.FixCase();
+                        person.FirstName = child.NickName.FixCase();
                         person.LastName = child.LastName.FixCase();
                         person.RecordTypeValueId = recordTypePersonId;
                         person.RecordStatusValueId = recordStatusValue != null ? recordStatusValue.Id : (int?)null;
@@ -708,7 +777,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         #region Methods
 
         /// <summary>
-        /// Sets the intial visibility/required properties of controls based on block attribute values
+        /// Sets the initial visibility/required properties of controls based on block attribute values
         /// </summary>
         private void SetControls()
         {
@@ -735,7 +804,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             // Adult Suffix
             bool isRequired = SetControl( ADULT_SUFFIX_KEY, pnlSuffix1, pnlSuffix2 );
             dvpSuffix1.Required = isRequired;
-            dvpSuffix2.Required = isRequired;
+            hfSuffixRequired.Value = isRequired.ToStringSafe();
             var suffixDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() );
             dvpSuffix1.BindToDefinedType( suffixDt, true );
             dvpSuffix2.BindToDefinedType( suffixDt, true );
@@ -743,19 +812,19 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             // Adult Gender
             isRequired = SetControl( ADULT_GENDER_KEY, pnlGender1, pnlGender2 );
             ddlGender1.Required = isRequired;
-            ddlGender2.Required = isRequired;
+            hfGenderRequired.Value = isRequired.ToStringSafe();
             ddlGender1.BindToEnum<Gender>( true, new Gender[] { Gender.Unknown } );
             ddlGender2.BindToEnum<Gender>( true, new Gender[] { Gender.Unknown } );
 
             // Adult Birthdate
             isRequired = SetControl( ADULT_BIRTHDATE_KEY, pnlBirthDate1, pnlBirthDate2 );
             dpBirthDate1.Required = isRequired;
-            dpBirthDate2.Required = isRequired;
+            hfBirthDateRequired.Value = isRequired.ToStringSafe();
 
             // Adult Marital Status
             isRequired = SetControl( ADULT_MARTIAL_STATUS_KEY, pnlMaritalStatus1, pnlMaritalStatus2 );
             dvpMaritalStatus1.Required = isRequired;
-            dvpMaritalStatus2.Required = isRequired;
+            hfMaritalStatusRequired.Value = isRequired.ToStringSafe();
             var MaritalStatusDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
             dvpMaritalStatus1.BindToDefinedType( MaritalStatusDt, true );
             dvpMaritalStatus2.BindToDefinedType( MaritalStatusDt, true );
@@ -763,12 +832,12 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             // Adult Email
             isRequired = SetControl( ADULT_EMAIL_KEY, pnlEmail1, pnlEmail2 );
             tbEmail1.Required = isRequired;
-            tbEmail2.Required = isRequired;
+            hfEmailRequired.Value = isRequired.ToStringSafe();
 
             // Adult Mobile Phone
             isRequired = SetControl( ADULT_MOBILE_KEY, pnlMobilePhone1, pnlMobilePhone2 );
             pnMobilePhone1.Required = isRequired;
-            pnMobilePhone2.Required = isRequired;
+            hfMobilePhoneRequired.Value = isRequired.ToStringSafe();
 
             // Check for Current Family
             SetCurrentFamilyValues();
@@ -799,7 +868,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     spouse = CurrentPerson.GetSpouse( _rockContext );
                     if ( spouse != null )
                     {
-                        // If spouse was found, find the first family that spouse beongs to also.
+                        // If spouse was found, find the first family that spouse belongs to also.
                         family = families.Where( f => f.Members.Any( m => m.PersonId == spouse.Id ) ).FirstOrDefault();
                         if ( family == null )
                         {
@@ -964,7 +1033,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         }
 
         /// <summary>
-        /// Helper method to set visibilty of adult controls and return if it's required or not.
+        /// Helper method to set visibility of adult controls and return if it's required or not.
         /// </summary>
         /// <param name="attributeKey">The attribute key.</param>
         /// <param name="adultControl1">The adult control1.</param>
@@ -1200,7 +1269,14 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 // If not editing an existing person, attempt to match them to existing (if configured to do so)
                 if ( adult == null && showEmail && autoMatch )
                 {
-                    adult = personService.FindPerson( tbFirstName.Text, tbLastName.Text, tbEmail.Text, true );
+                    var gender = ddlGender.SelectedValueAsEnumOrNull<Gender>();
+                    int? suffixValueId = dvpSuffix.SelectedValueAsInt();
+                    var birthDate = dpBirthDate.SelectedDate;
+
+                    var personQuery = new PersonService.PersonMatchQuery( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim(), pnMobilePhone.Text.Trim(), gender, birthDate, suffixValueId );
+
+                    
+                    adult = personService.FindPerson( personQuery, true );
                     if ( adult != null )
                     {
                         saveEmptyValues = false;
@@ -1217,7 +1293,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     adult = new Person();
                     personService.Add( adult );
 
-                    adult.NickName = tbFirstName.Text.FixCase();
+                    adult.FirstName = tbFirstName.Text.FixCase();
                     adult.LastName = tbLastName.Text.FixCase();
                     adult.RecordTypeValueId = recordTypePersonId;
                     adult.RecordStatusValueId = recordStatusValue != null ? recordStatusValue.Id : (int?)null;
@@ -1275,7 +1351,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 // Save the mobile phone number
                 if ( showMobilePhone )
                 {
-                    SavePhoneNumber( adult.Id, pnMobilePhone1 );
+                    SavePhoneNumber( adult.Id, pnMobilePhone );
                 }
 
                 // Save any attribute values
@@ -1653,7 +1729,6 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         }
 
         #endregion
-
     }
 
 }

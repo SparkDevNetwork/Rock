@@ -31,7 +31,7 @@ using Rock.Security;
 namespace Rock.Checkr
 {
     /// <summary>
-    /// Checkr Background Check 
+    /// Checkr Background Check
     /// </summary>
     [Description( "Checkr Background Check" )]
     [Export( typeof( BackgroundCheckComponent ) )]
@@ -67,7 +67,8 @@ namespace Rock.Checkr
                 if ( workflow == null )
                 {
                     errorMessages.Add( "The 'Checkr' background check provider requires a valid workflow." );
-                    return false;
+                    UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
+                    return true;
                 }
 
                 Person person;
@@ -76,7 +77,7 @@ namespace Rock.Checkr
                 {
                     errorMessages.Add( "Unable to get Person." );
                     UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
-                    return false;
+                    return true;
                 }
 
                 string packageName;
@@ -84,7 +85,7 @@ namespace Rock.Checkr
                 {
                     errorMessages.Add( "Unable to get Package." );
                     UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
-                    return false;
+                    return true;
                 }
 
                 string candidateId;
@@ -92,14 +93,14 @@ namespace Rock.Checkr
                 {
                     errorMessages.Add( "Unable to create candidate." );
                     UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
-                    return false;
+                    return true;
                 }
 
                 if ( !CreateInvitation( candidateId, packageName, errorMessages ) )
                 {
                     errorMessages.Add( "Unable to create invitation." );
                     UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
-                    return false;
+                    return true;
                 }
 
                 using ( var newRockContext = new RockContext() )
@@ -133,7 +134,8 @@ namespace Rock.Checkr
             {
                 ExceptionLogService.LogException( ex, null );
                 errorMessages.Add( ex.Message );
-                return false;
+                UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
+                return true;
             }
         }
 
@@ -210,7 +212,7 @@ namespace Rock.Checkr
                     .Where( a => a.Key == key )
                     .FirstOrDefault();
 
-                // If workflow attribute doesn't exist, create it 
+                // If workflow attribute doesn't exist, create it
                 // ( should only happen first time a background check is processed for given workflow type)
                 if ( attribute == null )
                 {
@@ -281,7 +283,7 @@ namespace Rock.Checkr
                     }
                 }
 
-                // Save the recommendation 
+                // Save the recommendation
                 if ( !string.IsNullOrWhiteSpace( recommendation ) )
                 {
                     if ( SaveAttributeValue( workflow, "ReportRecommendation", recommendation,
@@ -291,7 +293,7 @@ namespace Rock.Checkr
                     }
 
                 }
-                // Save the report link 
+                // Save the report link
                 if ( documentId.IsNotNullOrWhiteSpace() )
                 {
                     int entityTypeId = EntityTypeCache.Get( typeof(Checkr) ).Id;
@@ -398,13 +400,13 @@ namespace Rock.Checkr
                             recommendation = "Report Disputed";
                             break;
                         case "InvitationCreated":
-                            recommendation = "Invitate Sent";
+                            recommendation = "Invitation Sent";
                             break;
                         case "InvitationCompleted":
-                            recommendation = "Invitate Complete";
+                            recommendation = "Invitation Completed";
                             break;
                         case "InvitationExpired":
-                            recommendation = "Invitate Expired";
+                            recommendation = "Invitation Expired";
                             break;
                     }
 
@@ -707,7 +709,7 @@ namespace Rock.Checkr
 
             return documentId;
         }
-       
+
         #endregion
     }
 }

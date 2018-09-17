@@ -103,9 +103,9 @@
                                     </asp:Panel>
                                 </div>
                             </div>
-                            
+
                             <Rock:NumberBox ID="nbPriority" runat="server" Label="Priority" />
-                            
+
                             <div class="form-row">
                                 <div class="col-sm-6">
                                 <Rock:DatePicker ID="dpStart" runat="server" Label="Start" Required="true" Visible="false" />
@@ -117,8 +117,6 @@
                                 </div>
                             </div>
 
-                        </div>
-                        
                         </div>
                     </div>
 

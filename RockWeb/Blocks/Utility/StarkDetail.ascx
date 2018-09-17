@@ -31,12 +31,10 @@
 
                     <strong>Changes to the Usercontrol (.ascx) File</strong>
                     <ul>
-                        <li>Update the Inherhits to match the namespace and class file</li>
+                        <li>Update the Inherits to match the namespace and class file</li>
                         <li>Remove this text... unless you really like it...</li>
                     </ul>
                 </div>
-                <asp:PlaceHolder ID="ph1" runat="server" />
-                <Rock:ControlMirror ID="mMirror" ControlID="ph1" runat="server" />
             </div>
         
         </asp:Panel>
