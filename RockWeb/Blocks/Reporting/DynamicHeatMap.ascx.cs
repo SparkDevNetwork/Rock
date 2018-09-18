@@ -436,6 +436,7 @@ namespace RockWeb.Blocks.Reporting
         protected override void ShowSettings()
         {
             pnlConfigure.Visible = true;
+            upnlContent.Update();
             LoadDropDowns();
             ddlBlockConfigDataView.SetValue( this.GetAttributeValue( "DataView" ).AsGuidOrNull() );
             mdConfigure.Show();

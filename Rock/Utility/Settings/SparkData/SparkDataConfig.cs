@@ -41,6 +41,12 @@ namespace Rock.Utility.Settings.SparkData
         public static readonly string SPARK_SERVER = "http://www.rockrms.com"; //"http://localhost:57822";
 
         /// <summary>
+        /// The minimum addresses required to run NCOA
+        /// </summary>
+        [JsonIgnore]
+        public static readonly int NCOA_MIN_ADDRESSES = 50;
+
+        /// <summary>
         /// Gets or sets the NCOA settings.
         /// </summary>
         /// <value>

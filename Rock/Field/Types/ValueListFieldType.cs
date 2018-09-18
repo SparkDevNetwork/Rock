@@ -180,12 +180,16 @@ namespace Rock.Field.Types
 
             if ( configurationValues != null && configurationValues.ContainsKey( "definedtype" ) )
             {
-                for( int i = 0; i < values.Length; i++)
+                int definedTypeId = 0;
+                if ( Int32.TryParse( configurationValues["definedtype"].Value, out definedTypeId ) )
                 {
-                    var definedValue = DefinedValueCache.Get( values[i].AsInteger() );
-                    if ( definedValue != null)
+                    for( int i = 0; i < values.Length; i++)
                     {
-                        values[i] = definedValue.Value;
+                        var definedValue = DefinedValueCache.Get( values[i].AsInteger() );
+                        if ( definedValue != null)
+                        {
+                            values[i] = definedValue.Value;
+                        }
                     }
                 }
             }
