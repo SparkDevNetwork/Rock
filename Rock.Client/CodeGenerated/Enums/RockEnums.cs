@@ -690,5 +690,13 @@ namespace Rock.Client.Enums
         PostAdd = 0x5,
     }
 
+    /// <summary>
+    /// </summary>
+    public enum WorkflowTriggerValueChangeType
+    {
+        ChangeFromTo = 0x0,
+        ValueEqual = 0x1,
+    }
+
     #pragma warning restore CS1591
 }

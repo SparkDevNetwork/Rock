@@ -55,10 +55,6 @@ dt {
   font-weight: @font-weight-semibold;
 }
 
-a:hover {
-  text-decoration: none;
-}
-
 input[type="text"],
 textarea,
 .form-control {
@@ -579,7 +575,17 @@ td.grid-select-field {
     cursor: pointer;
   }
 
-  .navbar-brand-corner {
+  .navbar-nav.contextsetter,
+  .contextsetter {
+    margin: 14px;
+    background-color: @btn-default-bg;
+    border: 1px solid @btn-default-border;
+    a {
+      color: @btn-default-color;
+    }
+  }
+
+    .navbar-brand-corner {
     position: relative;
     display: none;
     float: left;
@@ -618,16 +624,6 @@ td.grid-select-field {
 
     @media (min-width: @screen-sm-min) {
       display: block;
-    }
-  }
-
-  .navbar-nav.contextsetter,
-  .contextsetter {
-    margin: 14px;
-    background-color: @btn-default-bg;
-    border: 1px solid @btn-default-border;
-    a {
-      color: @btn-default-color;
     }
   }
 
@@ -842,6 +838,34 @@ td.grid-select-field {
 
 }
 
+.navbar-brand-side {
+  height: (@navbarside-width * .325) + (24 * 2);
+  color: #fff;
+
+  &.no-logo::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    content: "";
+    background-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: (@navbarside-width * .525);
+  }
+
+  .logo {
+    width: 47px;
+    height: 47px;
+    margin: 10px;
+  }
+
+  @media (min-width: @screen-sm-min) {
+    display: none;
+  }
+}
+
 #content-wrapper {
   position: relative;
 
@@ -867,6 +891,13 @@ td.grid-select-field {
     position: absolute;
     top: auto;
     z-index: auto;
+  }
+
+  // Disable Bootstrap Toggle Animation
+  &.collapsing {
+    -webkit-transition: none;
+    transition: none;
+    display: none;
   }
 
   .navbar-toggle-side-left {
@@ -919,7 +950,7 @@ td.grid-select-field {
       > i {
         display: block;
         padding: 24px 0;
-        font-size: calc(@navbarside-width * .32);
+        font-size: @navbarside-width * .325;
 
         &:hover {
           color: @navbarside-color;
@@ -1095,7 +1126,6 @@ td.grid-select-field {
 body.navbar-side-open {
   .navbar-static-side {
     display: block;
-    width: @navbarside-width;
   }
 
   #content-wrapper {
@@ -1103,19 +1133,9 @@ body.navbar-side-open {
   }
 }
 
-body.navbar-side-close {
-  .navbar-static-side {
-
-    @media (max-width: @screen-sm-max) {
-      display: none;
-    }
-  }
-}
-
-
 // sub page styles
 .main-content {
-  margin: 5px;
+  padding: 5px 15px;
 
   #page-content {
     min-height: 600px;
@@ -1164,6 +1184,7 @@ body.navbar-side-close {
 
   @media (min-width: @screen-md-min) {
     margin: 35px 35px 0 35px;
+    padding: 0;
 
     .page-title {
       padding: 20px 35px;

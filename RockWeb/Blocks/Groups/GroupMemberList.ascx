@@ -51,6 +51,7 @@
                                     <asp:ListItem Text="Yes" Value="Yes" />
                                     <asp:ListItem Text="No" Value="No" />
                                 </Rock:RockDropDownList>
+                                <Rock:DateRangePicker ID="drpDateAdded" runat="server" Label="Date Added" />
                                 <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                             </Rock:GridFilter>
                             <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gGroupMembers_Edit" CssClass="js-grid-group-members" >

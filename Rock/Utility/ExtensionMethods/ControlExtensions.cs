@@ -367,6 +367,12 @@ namespace Rock
                     // so this is a special case
                     ( (Rock.Web.UI.Controls.CampusPicker)listControl ).SelectedCampusId = intValue.Value;
                 }
+                else if ( listControl is Rock.Web.UI.Controls.IDefinedValuePicker && intValue.HasValue)
+                {
+                    // A DefinedValuePicker can be configured to only load Active DefinedValues, but if trying to set the value to an Inactive DefinedValue, it'll add that DefinedValue to the list
+                    // so this is a special case
+                    ( listControl as Rock.Web.UI.Controls.IDefinedValuePicker ).SelectedDefinedValuesId = new int[] { intValue.Value };
+                }
                 else
                 {
                     var valueItem = listControl.Items.FindByValue( value );

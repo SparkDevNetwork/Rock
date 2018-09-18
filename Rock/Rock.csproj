@@ -42,6 +42,12 @@
     <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
       <HintPath>..\packages\Antlr3.Runtime.3.5.1\lib\net40-client\Antlr3.Runtime.dll</HintPath>
     </Reference>
+    <Reference Include="AWSSDK.Core, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
+      <HintPath>..\packages\AWSSDK.Core.3.3.25.1\lib\net45\AWSSDK.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="AWSSDK.S3, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
+      <HintPath>..\packages\AWSSDK.S3.3.3.21.1\lib\net45\AWSSDK.S3.dll</HintPath>
+    </Reference>
     <Reference Include="BCrypt.Net, Version=0.1.5073.29922, Culture=neutral, PublicKeyToken=6bcd409ee6bc9292, processorArchitecture=MSIL">
       <HintPath>..\packages\BCrypt-Official.0.1.109\lib\BCrypt.Net.dll</HintPath>
     </Reference>
@@ -265,6 +271,7 @@
     <Compile Include="Attribute\AccountFieldAttribute.cs" />
     <Compile Include="Attribute\AccountsFieldAttribute.cs" />
     <Compile Include="Attribute\AddressFieldAttribute.cs" />
+    <Compile Include="Attribute\AssetStorageSystemFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
@@ -377,11 +384,18 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="Field\Types\AssetFieldType.cs" />
+    <Compile Include="Field\Types\AssetStorageSystemFieldType.cs" />
     <Compile Include="Model\CodeGenerated\NoteAttachmentService.cs" />
     <Compile Include="Model\NoteAttachment.cs" />
     <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
     <Compile Include="Data\NoAttributeFilterExpression.cs" />
+    <Compile Include="Field\ICachedEntitiesFieldType.cs" />
+    <Compile Include="Jobs\NoRetryAggregateException.cs" />
+    <Compile Include="Jobs\NoRetryException.cs" />
     <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
+    <Compile Include="Plugin\HotFixes\056_MigrationRollupsForV8_4.cs" />
+    <Compile Include="Plugin\HotFixes\055_MigrationRollupsForV8_3.cs" />
     <Compile Include="Plugin\HotFixes\054_MigrationRollupsForV8_2.cs" />
     <Compile Include="Plugin\HotFixes\053_DuplicateDataIntegrityReports.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
@@ -389,6 +403,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
     </Compile>
+    <Compile Include="Reporting\DataFilter\BenevolenceRequest\BenevolenceResultDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\BenevolenceResult\BenevolenceRequestDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasDuplicateEmailFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasDuplicatePhoneFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InteractionDataViewFilter.cs" />
@@ -801,6 +817,9 @@
     <Compile Include="Model\AnalyticsSourcePersonHistorical.cs" />
     <Compile Include="Model\AnalyticsFactFinancialTransaction.cs" />
     <Compile Include="Model\AnalyticsSourceFinancialTransaction.cs" />
+    <Compile Include="Model\AssetStorageSystem.cs" />
+    <Compile Include="Model\AssetStorageSystemService.Partial.cs" />
+    <Compile Include="Model\CodeGenerated\AssetStorageSystemService.cs" />
     <Compile Include="Model\CodeGenerated\ServiceJobHistoryService.cs" />
     <Compile Include="Model\ConnectionTypeService.Partial.cs" />
     <Compile Include="Model\AttendanceOccurrence.cs" />
@@ -1312,6 +1331,11 @@
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceFilter.cs" />
     <Compile Include="Security\Role.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
+    <Compile Include="Storage\AssetStorage\AmazonS3Component.cs" />
+    <Compile Include="Storage\AssetStorage\Asset.cs" />
+    <Compile Include="Storage\AssetStorage\AssetStorageComponent.cs" />
+    <Compile Include="Storage\AssetStorage\AssetStorageContainer.cs" />
+    <Compile Include="Storage\AssetStorage\FileSystemComponent.cs" />
     <Compile Include="SystemGuid\Block.cs" />
     <Compile Include="SystemGuid\Communication.cs" />
     <Compile Include="SystemGuid\InteractionChannel.cs" />
@@ -1614,6 +1638,7 @@
     <Compile Include="Web\UI\Controls\ListItems.cs" />
     <Compile Include="Web\UI\Controls\NumberBoxBase.cs" />
     <Compile Include="Web\UI\Controls\NumberUpDownGroup.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\AssetStorageSystemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ContentChannelItemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ItemFromBlockPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ReportPicker.cs" />
@@ -2284,6 +2309,9 @@
       <SubType>Designer</SubType>
       <LastGenOutput>HotFixMigrationResource.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\AWSSDK.S3.3.3.21.1\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

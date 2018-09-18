@@ -1075,13 +1075,42 @@ WHERE ExpireDateTime IS NOT NULL
             using ( var rockContext = new Rock.Data.RockContext() )
             {
                 var definedType = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
-                var stateList = definedType
+
+                // Update states from state name to abbreviation.
+                var stateNameList = definedType
                     .DefinedValues
                     .Where( v => v.ContainsKey( "Country" ) && v["Country"] != null )
-                    .Select( v => new { State = v.Value, Country = v["Country"] } ).ToLookup( v => v.State );
+                    .Select( v => new { State = v.Value, Country = v["Country"], StateName = v.Description } ).ToLookup( v => v.StateName, StringComparer.CurrentCultureIgnoreCase );
 
                 LocationService locationService = new LocationService( rockContext );
                 var locations = locationService
+                    .Queryable()
+                    .Where( l => l.State != null && l.State != string.Empty && l.State.Length > 3)
+                    .ToList();
+
+                foreach ( var location in locations )
+                {
+                    if ( stateNameList.Contains( location.State ) )
+                    {
+                        var state = stateNameList[location.State];
+                        if ( state.Count() == 1 )
+                        {
+                            location.State = state.First().State;
+                            location.Country = state.First().Country.ToStringSafe();
+                        }
+                    }
+                }
+
+                rockContext.SaveChanges();
+
+                // Populate empty country name if state is a known state
+                var stateList = definedType
+                    .DefinedValues
+                    .Where( v => v.ContainsKey( "Country" ) && v["Country"] != null )
+                    .Select( v => new { State = v.Value, Country = v["Country"] } ).ToLookup( v => v.State, StringComparer.CurrentCultureIgnoreCase );
+
+                locationService = new LocationService( rockContext );
+                locations = locationService
                     .Queryable()
                     .Where( l => ( l.Country == null || l.Country == string.Empty ) && l.State != null && l.State != string.Empty )
                     .ToList();
@@ -1093,6 +1122,7 @@ WHERE ExpireDateTime IS NOT NULL
                         var state = stateList[location.State];
                         if ( state.Count() == 1 )
                         {
+                            location.State = state.First().State;
                             location.Country = state.First().Country.ToStringSafe();
                         }
                     }

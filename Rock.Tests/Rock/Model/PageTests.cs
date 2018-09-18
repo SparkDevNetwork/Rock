@@ -295,7 +295,7 @@ namespace Rock.Tests.Rock.Model
             var page = Page.FromJson( json );
             Assert.NotNull( page.AttributeValues );
             Assert.NotEmpty( page.AttributeValues );
-            Assert.Equal( page.AttributeValues.First().Value.Value, "baz" );
+            Assert.Equal( "baz", page.AttributeValues.First().Value.Value );
         }
     }
 }

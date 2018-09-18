@@ -327,6 +327,11 @@ namespace Rock.Field.Types
                 }
             }
 
+            if ( comparison == null )
+            {
+                return new Rock.Data.NoAttributeFilterExpression();
+            }
+
             return comparison;
         }
 
