@@ -46,7 +46,7 @@ namespace Rock.Tests.Rock.StorageTests
         //        Key = "UnitTestFolder/",
         //        Type = AssetType.Folder
         //    };
-            
+
         //    var assets = s3Component.ListFoldersInFolder( assetStorageSystem, asset );
         //}
 
@@ -54,7 +54,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// Create a folder in the bucket using a key (the full name);
         /// This folder is used for other tests.
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot connect to AWS")]
         public void TestAWSCreateRootFolderUsingKey()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -72,7 +72,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// These folders are used for other tests.
         /// Requires TestAWSCreateFolderByKey
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot connect to AWS")]
         public void TestAWSCreateFolderByName()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -93,7 +93,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// Upload a file using RootFolder and Asset.Name.
         /// Requires TestAWSCreateFolderByKey, TestAWSCreateFolderByName
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot connect to AWS")]
         public void TestUploadObjectByName()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -111,7 +111,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// Upload a file using Asset.Key.
         /// Requires TestAWSCreateFolderByKey, TestAWSCreateFolderByName
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot connect to AWS")]
         public void TestUploadObjectByKey()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -128,7 +128,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Get a recursive list of objects using Asset.Key
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot connect to AWS")]
         public void TestListObjectsByKey()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -136,7 +136,7 @@ namespace Rock.Tests.Rock.StorageTests
 
             var asset = new Asset();
             asset.Key = ( "UnitTestFolder/" );
-            
+
             var assetList = s3Component.ListObjects( assetStorageSystem, asset );
             Assert.Contains( assetList, a => a.Name == "UnitTestFolder" );
             Assert.Contains( assetList, a => a.Name == "TestUploadObjectByName.jpg" );
@@ -148,7 +148,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Get a list of files and folders in a single folder using RootFolder
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot connect to AWS")]
         public void TestListObjectsInFolder()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -168,12 +168,12 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Upload > 2K objects. Used to test listing that requries more than one request.
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot connect to AWS")]
         public void TestUpload2kObjects()
         {
             var assetStorageSystem = GetAssetStorageSystem();
             var s3Component = assetStorageSystem.GetAssetStorageComponent();
-            
+
             var subFolder = new Asset();
             subFolder.Name = "TwoThousandObjects/";
             subFolder.Type = AssetType.Folder;
@@ -207,7 +207,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Get a list of keys that requires more than one request.
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot connect to AWS")]
         public void TestList2KObjectsInFolder()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -227,7 +227,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Create a download link for an asset on the fly.
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot connect to AWS")]
         public void TestCreateDownloadLink()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -246,7 +246,7 @@ namespace Rock.Tests.Rock.StorageTests
                 request.Method = "GET";
                 System.Net.HttpWebResponse response = request.GetResponse() as System.Net.HttpWebResponse;
                 response.Close();
-                valid = response.StatusCode == System.Net.HttpStatusCode.OK ? true : false; 
+                valid = response.StatusCode == System.Net.HttpStatusCode.OK ? true : false;
             }
             catch
             {
@@ -259,7 +259,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Get a file from storage.
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot connect to AWS")]
         public void TestGetObject()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -291,7 +291,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// List only the folders.
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot connect to AWS")]
         public void TestListFolders()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -320,7 +320,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// List only the files.
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot connect to AWS")]
         public void TestListFiles()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -341,7 +341,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Rename an existing file.
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot connect to AWS")]
         public void TestRenameAsset()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -365,7 +365,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Delete a single file.
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot connect to AWS")]
         public void TestDeleteFile()
         {
             var assetStorageSystem = GetAssetStorageSystem();
@@ -382,7 +382,7 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Delete all of the test data.
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Cannot connect to AWS")]
         public void TestDeleteFolder()
         {
             var assetStorageSystem = GetAssetStorageSystem();
