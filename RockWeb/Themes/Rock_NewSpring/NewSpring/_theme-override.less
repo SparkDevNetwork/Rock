@@ -1,0 +1,50 @@
+@base-spacing-unit: 30px;
+@brand-secondary: #1C683E;
+@brand-tertiary: #2a4930;
+
+@import "_badges.less";
+@import "_buttons.less";
+@import "_calendar.less";
+@import "_colors.less";
+@import "_communication-templates.less";
+@import "_floating.less";
+@import "_forms.less";
+@import "_images.less";
+@import "_labels.less";
+@import "_layout.less";
+@import "_list-as-blocks.less";
+@import "_login.less";
+@import "_navigation.less";
+@import "_panels.less";
+@import "_positioning.less";
+@import "_ratios.less";
+@import "_smartsearch.less";
+@import "_tables.less";
+@import "_typography.less";
+@import "_helpers.less";
+
+.pull-right, .pull-left {
+	max-width: 100%;
+}
+
+
+// Block Fixes
+.personprofilebar-bio .photo .following-status {
+	z-index: 400;
+}
+
+.public-profile-edit .photo {
+	margin-bottom: 20px;
+}
+
+// Changes overly specific color definition on person profile bar
+
+.personprofilebar-family,
+.personprofilebar-family a {
+	color: @theme-4-text;
+}
+
+// Fixes z-index of person profile image modal
+.personprofilebar-bio .photo .fluidbox-opened .fluidbox-ghost {
+	
+}

@@ -31,7 +31,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Shoulds serialize a PageContext into a JSON string.
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Need a mock for Global Attributes" )]
         public void ExportJson()
         {
             var guid = Guid.NewGuid();
