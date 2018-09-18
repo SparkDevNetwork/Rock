@@ -3948,6 +3948,16 @@ namespace Rock.Lava
                         {
                             return page.PageParameters();
                         }
+                    case "Cookies":
+                        {
+                            var cookies = new List<HttpCookieDrop>();
+                            foreach ( string cookieKey in System.Web.HttpContext.Current.Request.Cookies )
+                            {
+                                cookies.Add( new HttpCookieDrop( System.Web.HttpContext.Current.Request.Cookies[cookieKey] ) );
+                            }
+
+                            return cookies;
+                        }
                 }
             }
 
@@ -4710,6 +4720,132 @@ namespace Rock.Lava
             }
         }
 
+        #endregion
+
+        #region POCOs
+        /// <summary>
+        /// POCO to translate an HTTP cookie in to a Liquidizable form
+        /// </summary>
+        /// <seealso cref="DotLiquid.Drop" />
+        public class HttpCookieDrop : Drop
+        {
+            private readonly HttpCookie _cookie;
+
+            public string Name
+            {
+                get
+                {
+                    return _cookie.Name;
+                }
+            }
+
+            /// <summary>
+            /// Gets the path.
+            /// </summary>
+            /// <value>
+            /// The path.
+            /// </value>
+            public string Path
+            {
+                get
+                {
+                    return _cookie.Path;
+                }
+            }
+
+            /// <summary>
+            /// Gets a value indicating whether this <see cref="HttpCookieDrop"/> is secure.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if secure; otherwise, <c>false</c>.
+            /// </value>
+            public bool Secure
+            {
+                get
+                {
+                    return _cookie.Secure;
+                }
+            }
+
+            /// <summary>
+            /// Gets a value indicating whether this <see cref="HttpCookieDrop"/> is shareable.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if shareable; otherwise, <c>false</c>.
+            /// </value>
+            public bool Shareable
+            {
+                get
+                {
+                    return _cookie.Shareable;
+                }
+            }
+
+            /// <summary>
+            /// Gets the domain.
+            /// </summary>
+            /// <value>
+            /// The domain.
+            /// </value>
+            public string Domain
+            {
+                get
+                {
+                    return _cookie.Domain;
+                }
+            }
+
+            /// <summary>
+            /// Gets the expire date/time.
+            /// </summary>
+            /// <value>
+            /// The expires.
+            /// </value>
+            public DateTime Expires
+            {
+                get
+                {
+                    return _cookie.Expires;
+                }
+            }
+
+            /// <summary>
+            /// Gets the cookie's value.
+            /// </summary>
+            /// <value>
+            /// The value.
+            /// </value>
+            public string Value
+            {
+                get
+                {
+                    return _cookie.Value;
+                }
+            }
+
+            /// <summary>
+            /// Gets the cookie's values.
+            /// </summary>
+            /// <value>
+            /// The values.
+            /// </value>
+            public NameValueCollection Values
+            {
+                get
+                {
+                    return _cookie.Values;
+                }
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="HttpCookieDrop"/> class.
+            /// </summary>
+            /// <param name="cookie">The cookie.</param>
+            public HttpCookieDrop( HttpCookie cookie )
+            {
+                _cookie = cookie;
+            }
+        }
         #endregion
     }
 }
