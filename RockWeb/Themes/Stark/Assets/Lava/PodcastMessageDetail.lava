@@ -1,5 +1,5 @@
 ﻿{% assign item = Items | First %}
-{% if item  %}
+{% if item %}
 
 	{% assign videoLink = item | Attribute:'VideoLink','RawValue' %}
 	{% assign videoEmbed = item | Attribute:'VideoEmbed' %}
