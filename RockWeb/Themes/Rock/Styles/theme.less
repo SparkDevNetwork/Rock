@@ -661,14 +661,12 @@ td.grid-select-field {
   // }
 
   .smartsearch {
-    position: relative;
     float: right;
     width: ~"calc(100% - 160px)";
     height: 50px;
     padding: 0;
     margin: 15px 0;
     font-size: .875em;
-    color: @navbartop-color;
     border: 0;
 
     @media (min-width: @screen-sm-min) {
@@ -693,16 +691,10 @@ td.grid-select-field {
 
     input.searchinput {
       padding: 15px 0 15px 34px;
-      color: @navbartop-color;
     }
 
     .dropdown {
       margin-top: 10px;
-
-
-      .navbar-link {
-        color: @navbartop-color;
-      }
 
       .dropdown-menu {
         font-size: 1em;
@@ -1146,6 +1138,7 @@ body.navbar-side-open {
     margin: -5px -5px 5px -5px;
     background-color: @pagetitle-background;
     background-color: var(--pagetitle-background);
+    color: @pagetitle-text-color;
     border-bottom: 1px solid @gray-lighter;
 
     .title {
@@ -1172,11 +1165,10 @@ body.navbar-side-open {
       }
 
       > li + li::before {
-        padding: 0 5;
-        font-family: FontAwesome;
+        font-family: @fa-font-face;
         font-size: 80%;
         font-weight: 600;
-        content: @fa-var-chevron-right;
+        content: "@{breadcrumb-separator}"
       }
     }
   }
