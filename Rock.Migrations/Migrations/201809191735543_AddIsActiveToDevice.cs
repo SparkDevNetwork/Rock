@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,7 +29,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.Device", "IsActive", c => c.Boolean(nullable: false));
+            AddColumn("dbo.Device", "IsActive", c => c.Boolean(nullable: false, defaultValue: true));
         }
         
         /// <summary>
