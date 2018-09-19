@@ -2639,6 +2639,27 @@ namespace Rock.Lava
         /// </returns>
         public static string ZebraPhoto( DotLiquid.Context context, object input, string size, double brightness, double contrast, string fileName )
         {
+            return ZebraPhoto( context, input, size, brightness, contrast, fileName, 0 );
+        }
+
+        /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input, which is the person.</param>
+        /// <param name="size">The size.</param>
+        /// <param name="brightness">The brightness adjustment (-1.0 to 1.0).</param>
+        /// <param name="contrast">The contrast adjustment (-1.0 to 1.0).</param>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="rotationDegree">The degree of rotation to apply to the image (0, 90, 180, 270).</param>
+        /// <returns>
+        /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
+        /// </returns>
+        public static string ZebraPhoto( DotLiquid.Context context, object input, string size, double brightness, double contrast, string fileName, int rotationDegree )
+        {
             var person = GetPerson( input );
             try
             {
@@ -2763,6 +2784,27 @@ namespace Rock.Lava
                     finally
                     {
                         outputBitmap.UnlockBits( outputData );
+                    }
+
+                    // Rotate image
+                    switch ( rotationDegree )
+                    {
+                        case 90:
+                            {
+                                outputBitmap.RotateFlip( RotateFlipType.Rotate90FlipNone );
+                                break;
+                            }
+                        case 180:
+                            {
+                                outputBitmap.RotateFlip( RotateFlipType.Rotate180FlipNone );
+                                break;
+                            }
+                        case 270:
+                        case -90:
+                            {
+                                outputBitmap.RotateFlip( RotateFlipType.Rotate270FlipNone );
+                                break;
+                            }
                     }
 
                     // Convert from x to .png
