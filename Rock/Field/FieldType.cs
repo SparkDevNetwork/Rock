@@ -695,17 +695,17 @@ namespace Rock.Field
         /// Gets a filter expression to be used as part of a AttributeValue Query or EntityAttributeQueryExpression
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="filterValues">The filter values.</param>
+        /// <param name="filterValues">The filter values: FieldName, <see cref="ComparisonType">Comparison Type</see>, (optional) Comparison Value(s)</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <returns></returns>
         public virtual Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
         {
-            if ( filterValues.Count >= 2 )
+            if ( filterValues.Count >= 1 )
             {
                 ComparisonType? comparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
                 if ( comparisonType.HasValue )
                 {
-                    string compareToValue = filterValues[1];
+                    string compareToValue = filterValues.Count > 1 ? filterValues[1] : string.Empty;
                     MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
 
                     if ( !string.IsNullOrWhiteSpace( compareToValue ) )
@@ -715,7 +715,7 @@ namespace Rock.Field
                     }
                     else
                     {
-                        // No comparison value was specified, so we can filter if the Comparision Type using no value still makes sense
+                        // No comparison value was specified, so we can filter if the Comparison Type using no value still makes sense
                         if ( ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
                         {
                             // Just checking if IsBlank or IsNotBlank, so let ComparisonExpression do its thing
@@ -723,7 +723,7 @@ namespace Rock.Field
                         }
                         else if ( this.FilterComparisonType.HasFlag( ComparisonType.IsBlank ) )
                         {
-                            // if this Filter supports IsBlank/IsNotBlank, we can can convert this to IsBlank/IsNotBlank if no value was specified
+                            // if this Filter supports IsBlank/IsNotBlank, we can convert this to IsBlank/IsNotBlank if no value was specified
                             if ( comparisonType == ComparisonType.EqualTo )
                             {
                                 // an EqualTo  was specified, but no value was specified, so convert it to a IsBlank
