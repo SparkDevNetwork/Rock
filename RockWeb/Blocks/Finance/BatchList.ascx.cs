@@ -305,8 +305,7 @@ namespace RockWeb.Blocks.Finance
                         var sourceTypeValueId = e.Value.AsIntegerOrNull();
                         if ( sourceTypeValueId.HasValue )
                         {
-                            var sourceTypeValue = DefinedValueCache.Read( sourceTypeValueId.Value );
-                            e.Value = sourceTypeValue != null ? sourceTypeValue.ToString() : string.Empty;
+                            e.Value = DefinedValueCache.GetValue( sourceTypeValueId.Value );
                         }
                         else
                         {
