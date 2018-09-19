@@ -339,6 +339,7 @@ namespace Rock.Web.UI.Controls
 
             _hfModalVisible = new HiddenFieldWithClass();
             _hfModalVisible.CssClass = "js-modal-visible";
+            _hfModalVisible.ID = "hfModalVisible";
             _dialogPanel.Controls.Add( _hfModalVisible );
 
             // modal-header
