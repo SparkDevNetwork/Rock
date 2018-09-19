@@ -444,6 +444,7 @@ namespace RockWeb.Blocks.Core
             tbName.ReadOnly = readOnly;
             tbDescription.ReadOnly = readOnly;
             tbIpAddress.ReadOnly = readOnly;
+            cbIsActive.Enabled = !readOnly;
             ddlDeviceType.Enabled = !readOnly;
             ddlPrintTo.Enabled = !readOnly;
             ddlPrinter.Enabled = !readOnly;
