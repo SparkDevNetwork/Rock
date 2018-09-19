@@ -165,12 +165,14 @@
           // Some buttons are only active if at least one folder is selected once the tree has been selected then a folder is always selected.
           //$('.js-folderselect').removeClass('aspNetDisabled');
 
-          $selectFolder.text(folder);
-          $assetStorageId.text(storageId);
-          postbackArg = 'storage-id:' + storageId + '?folder-selected:' + folder.replace(/\\/g, "/") + '?expanded-folders:' + expandedFolders;
+          if ($selectFolder.text() != folder || $assetStorageId.text() != storageId) {
+            $selectFolder.text(folder);
+            $assetStorageId.text(storageId);
+            postbackArg = 'storage-id:' + storageId + '?folder-selected:' + folder.replace(/\\/g, "/") + '?expanded-folders:' + expandedFolders;
 
-          var jsPostback = "javascript:__doPostBack('" + options.filesUpdatePanelId + "','" + postbackArg + "');";
-          window.location = jsPostback;
+            var jsPostback = "javascript:__doPostBack('" + options.filesUpdatePanelId + "','" + postbackArg + "');";
+            window.location = jsPostback;
+          }
         });
 
         // Some buttons are only active if one file is selected.
