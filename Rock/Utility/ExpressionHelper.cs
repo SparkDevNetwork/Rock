@@ -114,7 +114,7 @@ namespace Rock.Utility
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="entityField">The entity field.</param>
-        /// <param name="values">The filter parameter values.</param>
+        /// <param name="values">The filter parameter values: FieldName, <see cref="ComparisonType">Comparison Type</see>, (optional) Comparison Value(s)</param>
         /// <returns></returns>
         public static Expression GetAttributeExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField entityField, List<string> values )
         {
@@ -151,12 +151,10 @@ namespace Rock.Utility
             // first we find the Attribute Values that match those values and then we exclude the associated Entities from the result set.
             ComparisonType? comparisonType = ComparisonType.EqualTo;
             ComparisonType? evaluatedComparisonType = comparisonType;
-            string compareToValue = null;
 
-            if ( values.Count >= 2 )
+            if ( values.Count >= 1 )
             {
                 comparisonType = values[0].ConvertToEnumOrNull<ComparisonType>();
-                compareToValue = values[1];
 
                 switch ( comparisonType )
                 {
