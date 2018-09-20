@@ -1364,8 +1364,7 @@ namespace RockWeb.Blocks.Groups
             bool includeWarnings = false;
             _groupMemberIdsThatLackGroupRequirements = new HashSet<int>( new GroupService( rockContext ).GroupMembersNotMeetingRequirements( _group, includeWarnings ).Select( a => a.Key.Id ).ToList().Distinct() );
 
-            //List<GroupMember> groupMembersList = null;
-            if ( sortProperty != null && sortProperty.Property != "FirstAttended" && sortProperty.Property != "LastAttended" )
+            if ( sortProperty != null )
             {
                 qry = qry.Sort( sortProperty );
             }
