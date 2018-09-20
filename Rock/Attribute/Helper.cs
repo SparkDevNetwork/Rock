@@ -451,7 +451,24 @@ namespace Rock.Attribute
 
                     if ( attributeIds.Count != 1 )
                     {
-                        attributeValueQuery = attributeValueQuery.Where( v => attributeIds.Contains( v.AttributeId ) );
+                        // a Linq query that uses 'Contains' can't be cached in the EF Plan Cache, so instead of doing a Contains, build a List of OR conditions. This can save 15-20ms per call (and still ends up with the exact same SQL)
+                        var parameterExpression = attributeValueService.ParameterExpression;
+                        MemberExpression propertyExpression = Expression.Property( parameterExpression, "AttributeId" );
+                        Expression expression = null;
+                        foreach ( var attributeId in attributeIds )
+                        {
+                            Expression attributeIdValue = Expression.Constant( attributeId );
+                            if ( expression != null )
+                            {
+                                expression = Expression.Or( expression, Expression.Equal( propertyExpression, attributeIdValue ) );
+                            }
+                            else
+                            {
+                                expression = Expression.Equal( propertyExpression, attributeIdValue );
+                            }
+                        }
+
+                        attributeValueQuery = attributeValueQuery.Where( parameterExpression, expression );
                     }
                     else
                     {
