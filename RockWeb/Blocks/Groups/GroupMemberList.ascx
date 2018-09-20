@@ -71,7 +71,7 @@
                                     <Rock:RockBoundField DataField="GroupMemberStatus" HeaderText="Member Status" SortExpression="GroupMemberStatus" />
                                     <Rock:DateField DataField="DateTimeAdded" HeaderText="Date Added" SortExpression="DateTimeAdded" />
 
-                                    <%-- Fields that are only shown when ShowAttendance is enabled --%>
+                                    <%-- Fields that are only shown when ShowAttendance is enabled: NOTE: This used to support Sorting, but that can cause performance issues with large groups. --%>
                                     <Rock:RockLiteralField ID="lFirstAttended" HeaderText="First Attended" />
                                     <Rock:RockLiteralField ID="lLastAttended" HeaderText="Last Attended" />
 
