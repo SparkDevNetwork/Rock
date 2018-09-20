@@ -31,11 +31,11 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
-    [DisplayName( "Asset Storage System List" )]
+    [DisplayName( "Asset Storage Provider List" )]
     [Category( "Core" )]
-    [Description( "Block for viewing list of asset storage systems." )]
+    [Description( "Block for viewing list of asset storage providers." )]
     [LinkedPage( "Detail Page" )]
-    public partial class AssetStorageSystemList : RockBlock, ICustomGridColumns
+    public partial class AssetStorageProviderList : RockBlock, ICustomGridColumns
     {
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -47,11 +47,11 @@ namespace RockWeb.Blocks.Core
 
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
-            rGridAssetStorageSystem.DataKeyNames = new string[] { "Id" };
-            rGridAssetStorageSystem.Actions.ShowAdd = canEdit;
-            rGridAssetStorageSystem.Actions.AddClick += rGridAssetStorageSystem_AddClick;
-            rGridAssetStorageSystem.GridRebind += rGridAssetStorageSystem_GridRebind;
-            rGridAssetStorageSystem.IsDeleteEnabled = canEdit;
+            rGridAssetStorageProvider.DataKeyNames = new string[] { "Id" };
+            rGridAssetStorageProvider.Actions.ShowAdd = canEdit;
+            rGridAssetStorageProvider.Actions.AddClick += rGridAssetStorageProvider_AddClick;
+            rGridAssetStorageProvider.GridRebind += rGridAssetStorageProvider_GridRebind;
+            rGridAssetStorageProvider.IsDeleteEnabled = canEdit;
         }
 
         /// <summary>
@@ -69,29 +69,29 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Handles the RowSelected event of the rGridAssetStorageSystem control.
+        /// Handles the RowSelected event of the rGridAssetStorageProvider control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void rGridAssetStorageSystem_RowSelected( object sender, RowEventArgs e )
+        protected void rGridAssetStorageProvider_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", new Dictionary<string, string> { { "assetStorageSystemId", e.RowKeyValue.ToString() } } );
+            NavigateToLinkedPage( "DetailPage", new Dictionary<string, string> { { "assetStorageProviderId", e.RowKeyValue.ToString() } } );
         }
 
         /// <summary>
-        /// Handles the DeleteClick event of the rGridAssetStorageSystem control.
+        /// Handles the DeleteClick event of the rGridAssetStorageProvider control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void rGridAssetStorageSystem_DeleteClick( object sender, RowEventArgs e )
+        protected void rGridAssetStorageProvider_DeleteClick( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
-            var assetStorageSystemService = new AssetStorageSystemService( rockContext );
+            var assetStorageProviderService = new AssetStorageProviderService( rockContext );
 
-            var assetStorageSystem = assetStorageSystemService.Get( e.RowKeyId );
-            if ( assetStorageSystem != null )
+            var assetStorageProvider = assetStorageProviderService.Get( e.RowKeyId );
+            if ( assetStorageProvider != null )
             {
-                assetStorageSystemService.Delete( assetStorageSystem );
+                assetStorageProviderService.Delete( assetStorageProvider );
                 rockContext.SaveChanges();
             }
 
@@ -99,21 +99,21 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Handles the AddClick event of the rGridAssetStorageSystem control.
+        /// Handles the AddClick event of the rGridAssetStorageProvider control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void rGridAssetStorageSystem_AddClick( object sender, EventArgs e )
+        protected void rGridAssetStorageProvider_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", new Dictionary<string, string> { { "assetStorageSystemId", "0" } } );
+            NavigateToLinkedPage( "DetailPage", new Dictionary<string, string> { { "assetStorageProviderId", "0" } } );
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the rGridAssetStorageSystem control.
+        /// Handles the GridRebind event of the rGridAssetStorageProvider control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void rGridAssetStorageSystem_GridRebind( object sender, EventArgs e )
+        protected void rGridAssetStorageProvider_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
@@ -125,11 +125,11 @@ namespace RockWeb.Blocks.Core
         {
             using ( var rockContext = new RockContext() )
             {
-                var assetStorageSystemService = new AssetStorageSystemService( rockContext );
+                var assetStorageProviderService = new AssetStorageProviderService( rockContext );
 
-                var qry = assetStorageSystemService.Queryable( "EntityType" ).AsNoTracking();
+                var qry = assetStorageProviderService.Queryable( "EntityType" ).AsNoTracking();
 
-                SortProperty sortProperty = rGridAssetStorageSystem.SortProperty;
+                SortProperty sortProperty = rGridAssetStorageProvider.SortProperty;
                 if ( sortProperty != null )
                 {
                     qry = qry.Sort( sortProperty );
@@ -139,8 +139,8 @@ namespace RockWeb.Blocks.Core
                     qry = qry.OrderBy( g => g.Name );
                 }
 
-                rGridAssetStorageSystem.DataSource = qry.ToList();
-                rGridAssetStorageSystem.DataBind();
+                rGridAssetStorageProvider.DataSource = qry.ToList();
+                rGridAssetStorageProvider.DataBind();
             }
         }
 

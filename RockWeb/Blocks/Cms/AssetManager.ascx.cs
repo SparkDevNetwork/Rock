@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Cms
                     if ( cbEvent.Checked == true )
                     {
                         var keyControl = repeaterItem.FindControl( "lbKey" ) as Label;
-                        return string.Format( "{{ \"AssetStorageSystemId\": \"{0}\", \"Key\": \"{1}\" }}", lbAssetStorageId.Text, keyControl.Text );
+                        return string.Format( "{{ \"AssetStorageProviderId\": \"{0}\", \"Key\": \"{1}\" }}", lbAssetStorageId.Text, keyControl.Text );
                     }
                 }
 
@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Cms
             string submitScriptFormat = @"// include in the post to ~/FileUploader.ashx
     var assetKey = $('#{0}').text();
     var storageId = $('#{1}').text();
-    data.formData = {{ StorageId: storageId, Key: assetKey, IsAssetStorageSystemAsset: true }};
+    data.formData = {{ StorageId: storageId, Key: assetKey, IsAssetStorageProviderAsset: true }};
 ";
 
             // setup javascript for when a file is submitted
@@ -187,7 +187,7 @@ Sys.Application.add_load(function () {{
     }});
 }});
 ",
-this.ResolveUrl( "~/api/AssetStorageSystems/GetChildren?assetFolderId=" ), // {0}
+this.ResolveUrl( "~/api/AssetStorageProviders/GetChildren?assetFolderId=" ), // {0}
 pnlAssetManager.ClientID, // {1}
 upnlFiles.ClientID // {2}
 );
@@ -263,8 +263,8 @@ upnlFiles.ClientID // {2}
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDownload_Click( object sender, EventArgs e )
         {
-            AssetStorageSystem assetStorageSystem = GetAssetStorageSystem();
-            var component = assetStorageSystem.GetAssetStorageComponent();
+            AssetStorageProvider assetStorageProvider = GetAssetStorageProvider();
+            var component = assetStorageProvider.GetAssetStorageComponent();
 
             foreach ( RepeaterItem file in rptFiles.Items )
             {
@@ -273,7 +273,7 @@ upnlFiles.ClientID // {2}
                 {
                     var keyControl = file.FindControl( "lbKey" ) as Label;
                     string key = keyControl.Text;
-                    Asset asset = component.GetObject( assetStorageSystem, new Asset { Key = key, Type = AssetType.File } );
+                    Asset asset = component.GetObject( assetStorageProvider, new Asset { Key = key, Type = AssetType.File } );
 
                     byte[] bytes = asset.AssetStream.ReadBytesToEnd();
 
@@ -296,8 +296,8 @@ upnlFiles.ClientID // {2}
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDelete_Click( object sender, EventArgs e )
         {
-            AssetStorageSystem assetStorageSystem = GetAssetStorageSystem();
-            var component = assetStorageSystem.GetAssetStorageComponent();
+            AssetStorageProvider assetStorageProvider = GetAssetStorageProvider();
+            var component = assetStorageProvider.GetAssetStorageComponent();
 
             foreach ( RepeaterItem file in rptFiles.Items )
             {
@@ -306,7 +306,7 @@ upnlFiles.ClientID // {2}
                 {
                     var keyControl = file.FindControl( "lbKey" ) as Label;
                     string key = keyControl.Text;
-                    component.DeleteAsset( assetStorageSystem, new Asset { Key = key, Type = AssetType.File } );
+                    component.DeleteAsset( assetStorageProvider, new Asset { Key = key, Type = AssetType.File } );
                 }
             }
 
@@ -336,8 +336,8 @@ upnlFiles.ClientID // {2}
                 return;
             }
 
-            AssetStorageSystem assetStorageSystem = GetAssetStorageSystem();
-            var component = assetStorageSystem.GetAssetStorageComponent();
+            AssetStorageProvider assetStorageProvider = GetAssetStorageProvider();
+            var component = assetStorageProvider.GetAssetStorageComponent();
             var asset = new Asset { Type = AssetType.Folder };
 
             // Selecting the root does not put a value for the selected folder, so we have to make sure
@@ -352,7 +352,7 @@ upnlFiles.ClientID // {2}
                 asset.Name = tbCreateFolder.Text;
             }
 
-            component.CreateFolder( assetStorageSystem, asset );
+            component.CreateFolder( assetStorageProvider, asset );
             upnlFolders.Update();
         }
 
@@ -363,9 +363,9 @@ upnlFiles.ClientID // {2}
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDeleteFolder_Click( object sender, EventArgs e )
         {
-            AssetStorageSystem assetStorageSystem = GetAssetStorageSystem();
-            var component = assetStorageSystem.GetAssetStorageComponent();
-            component.DeleteAsset( assetStorageSystem, new Asset { Key = lbSelectFolder.Text, Type = AssetType.Folder } );
+            AssetStorageProvider assetStorageProvider = GetAssetStorageProvider();
+            var component = assetStorageProvider.GetAssetStorageComponent();
+            component.DeleteAsset( assetStorageProvider, new Asset { Key = lbSelectFolder.Text, Type = AssetType.Folder } );
 
             lbSelectFolder.Text = string.Empty;
             upnlFolders.Update();
@@ -384,8 +384,8 @@ upnlFiles.ClientID // {2}
                 return;
             }
 
-            AssetStorageSystem assetStorageSystem = GetAssetStorageSystem();
-            var component = assetStorageSystem.GetAssetStorageComponent();
+            AssetStorageProvider assetStorageProvider = GetAssetStorageProvider();
+            var component = assetStorageProvider.GetAssetStorageComponent();
 
             foreach ( RepeaterItem repeaterItem in rptFiles.Items )
             {
@@ -394,7 +394,7 @@ upnlFiles.ClientID // {2}
                 {
                     var keyControl = repeaterItem.FindControl( "lbKey" ) as Label;
                     string key = keyControl.Text;
-                    component.RenameAsset( assetStorageSystem, new Asset { Key = key, Type = AssetType.File }, tbRenameFile.Text );
+                    component.RenameAsset( assetStorageProvider, new Asset { Key = key, Type = AssetType.File }, tbRenameFile.Text );
                 }
             }
 
@@ -419,40 +419,40 @@ upnlFiles.ClientID // {2}
         /// </summary>
         private void ListFiles()
         {
-            AssetStorageSystem assetStorageSystem = GetAssetStorageSystem();
-            if ( assetStorageSystem == null )
+            AssetStorageProvider assetStorageProvider = GetAssetStorageProvider();
+            if ( assetStorageProvider == null )
             {
                 return;
             }
 
-            var component = assetStorageSystem.GetAssetStorageComponent();
+            var component = assetStorageProvider.GetAssetStorageComponent();
             if ( component == null )
             {
                 return;
             }
 
-            var files = component.ListFilesInFolder( assetStorageSystem, new Asset { Key = lbSelectFolder.Text, Type = AssetType.Folder } );
+            var files = component.ListFilesInFolder( assetStorageProvider, new Asset { Key = lbSelectFolder.Text, Type = AssetType.Folder } );
             rptFiles.DataSource = files;
             rptFiles.DataBind();
         }
 
         /// <summary>
-        /// Gets the asset storage system using the ID stored in the hidden field, otherwise returns a new AssetStorageSystem.
+        /// Gets the asset storage provider using the ID stored in the hidden field, otherwise returns a new AssetStorageProvider.
         /// </summary>
         /// <returns></returns>
-        private AssetStorageSystem GetAssetStorageSystem()
+        private AssetStorageProvider GetAssetStorageProvider()
         {
-            AssetStorageSystem assetStorageSystem = new AssetStorageSystem();
+            AssetStorageProvider assetStorageProvider = new AssetStorageProvider();
             string assetStorageId = lbAssetStorageId.Text;
 
             if ( assetStorageId.IsNotNullOrWhiteSpace() )
             {
-                var assetStorageService = new AssetStorageSystemService( new RockContext() );
-                assetStorageSystem = assetStorageService.Get( assetStorageId.AsInteger() );
-                assetStorageSystem.LoadAttributes();
+                var assetStorageService = new AssetStorageProviderService( new RockContext() );
+                assetStorageProvider = assetStorageService.Get( assetStorageId.AsInteger() );
+                assetStorageProvider.LoadAttributes();
             }
 
-            return assetStorageSystem;
+            return assetStorageProvider;
         }
 
         /// <summary>
