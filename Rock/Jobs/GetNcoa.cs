@@ -113,6 +113,7 @@ namespace Rock.Jobs
                     if ( exception is NoRetryException || exception is NoRetryAggregateException )
                     {
                         sparkDataConfig.NcoaSettings.CurrentReportStatus = "Complete";
+                        sparkDataConfig.NcoaSettings.LastRunDate = RockDateTime.Now;
                     }
                     else
                     {
@@ -218,9 +219,10 @@ namespace Rock.Jobs
         private void StatusComplete( SparkDataConfig sparkDataConfig )
         {
             if ( sparkDataConfig.NcoaSettings.IsEnabled &&
-                !sparkDataConfig.NcoaSettings.LastRunDate.HasValue ||
-                ( sparkDataConfig.NcoaSettings.RecurringEnabled &&
-                sparkDataConfig.NcoaSettings.LastRunDate.Value.AddDays( sparkDataConfig.NcoaSettings.RecurrenceInterval ) < RockDateTime.Now ) )
+                (
+                    !sparkDataConfig.NcoaSettings.LastRunDate.HasValue ||
+                    ( sparkDataConfig.NcoaSettings.RecurringEnabled && sparkDataConfig.NcoaSettings.LastRunDate.Value.AddDays( sparkDataConfig.NcoaSettings.RecurrenceInterval ) < RockDateTime.Now )
+                ) )
             {
                 sparkDataConfig.NcoaSettings.CurrentReportStatus = "Start";
                 sparkDataConfig.NcoaSettings.PersonFullName = null;

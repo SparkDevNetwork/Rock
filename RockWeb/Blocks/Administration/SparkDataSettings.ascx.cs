@@ -438,7 +438,11 @@ namespace RockWeb.Blocks.Administration
                 nbNcoaRecurrenceInterval.Text = _sparkDataConfig.NcoaSettings.RecurrenceInterval.ToStringSafe();
                 cbNcoaAcceptTerms.Checked = _sparkDataConfig.NcoaSettings.IsAcceptedTerms;
                 cbNcoaAckPrice.Checked = _sparkDataConfig.NcoaSettings.IsAckPrice;
-                dvpNcoaInactiveRecordReason.SetValue( _sparkDataConfig.NcoaSettings.InactiveRecordReasonId );
+                if ( _sparkDataConfig.NcoaSettings.InactiveRecordReasonId.HasValue )
+                {
+                    dvpNcoaInactiveRecordReason.SetValue( _sparkDataConfig.NcoaSettings.InactiveRecordReasonId.Value );
+                }
+
                 nbNcoaCreditCard.Visible = false;
 
                 if ( _sparkDataConfig.NcoaSettings.CurrentReportStatus == null )
