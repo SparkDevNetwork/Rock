@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -1098,8 +1099,8 @@ function(item) {
             var allResults = new List<AttendeeResult>();
 
             // Collection of async queries to run before assembling data
-            var qryTasks = new List<Task>();
-            var taskInfos = new List<TaskInfo>();
+            var qryTasks = new ConcurrentBag<Task>();
+            var taskInfos = new ConcurrentBag<TaskInfo>();
 
             DataTable dtAttendeeLastAttendance = null;
             DataTable dtAttendees = null;
