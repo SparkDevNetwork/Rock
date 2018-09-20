@@ -76,10 +76,11 @@ namespace Rock.Rest.Controllers
                         treeViewItem.IconCssClass = "fa fa-folder";
                         treeViewItem.Name = folderAsset.Name;
 
-                        // NOTE: For performance reasons, we'll just assume it has Child Folders
-                        // If we want it to be more accurate, change it to something like:
-                        // treeViewItem.HasChildren = component.ListFoldersInFolder( assetStorageSystem, folderAsset ).Any();
-                        treeViewItem.HasChildren = true;
+                        // NOTE: This is not very performant. We should see if we can get a bool response from providers instead of getting the entire folder list for each subfolder.
+                        treeViewItem.HasChildren = component.ListFoldersInFolder( assetStorageSystem, folderAsset ).Any();
+
+                        // This is fast but will show the triangle for each folder. If no data the triangle disappears after clicking it.
+                        //treeViewItem.HasChildren = true;
 
                         treeViewItemList.Add( treeViewItem );
                     }
