@@ -31,13 +31,13 @@ namespace Rock.Storage.AssetStorage
     public class Asset
     {
         /// <summary>
-        /// Gets or sets the asset storage system identifier.
+        /// Gets or sets the asset storage provider identifier.
         /// </summary>
         /// <value>
-        /// The asset storage system identifier.
+        /// The asset storage provider identifier.
         /// </value>
-        [JsonProperty( "AssetStorageSystemId" )]
-        public int AssetStorageSystemId { get; set; }
+        [JsonProperty( "AssetStorageProviderId" )]
+        public int AssetStorageProviderId { get; set; }
 
         /// <summary>
         /// The name of the asset as it should appear to the end user. The name should be the last segment of the key.

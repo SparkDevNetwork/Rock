@@ -26,13 +26,13 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    public partial class AssetStorageSystemService
+    public partial class AssetStorageProviderService
     {
         /// <summary>
         /// Gets the active no tracking.
         /// </summary>
         /// <returns></returns>
-        public IQueryable<AssetStorageSystem> GetActiveNoTracking()
+        public IQueryable<AssetStorageProvider> GetActiveNoTracking()
         {
             return Queryable()
                 .AsNoTracking()
@@ -43,7 +43,7 @@ namespace Rock.Model
         /// Gets all no tracking.
         /// </summary>
         /// <returns></returns>
-        public IQueryable<AssetStorageSystem> GetAllNoTracking()
+        public IQueryable<AssetStorageProvider> GetAllNoTracking()
         {
             return Queryable().AsNoTracking();
         }

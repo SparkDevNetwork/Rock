@@ -102,6 +102,10 @@
     <Compile Include="Migrations\201809191735543_AddIsActiveToDevice.Designer.cs">
       <DependentUpon>201809191735543_AddIsActiveToDevice.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201809202157086_AssetManagerRefactor.cs" />
+    <Compile Include="Migrations\201809202157086_AssetManagerRefactor.Designer.cs">
+      <DependentUpon>201809202157086_AssetManagerRefactor.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -414,6 +418,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201809191735543_AddIsActiveToDevice.resx">
       <DependentUpon>201809191735543_AddIsActiveToDevice.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809202157086_AssetManagerRefactor.resx">
+      <DependentUpon>201809202157086_AssetManagerRefactor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

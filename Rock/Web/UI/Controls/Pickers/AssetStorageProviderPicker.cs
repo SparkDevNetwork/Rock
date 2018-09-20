@@ -25,7 +25,7 @@ using Rock.Model;
 
 namespace Rock.Web.UI.Controls
 {
-    class AssetStorageSystemPicker : RockDropDownList
+    class AssetStorageProviderPicker : RockDropDownList
     {
         public bool ShowAll
         {
@@ -58,17 +58,17 @@ namespace Rock.Web.UI.Controls
 
             using ( var rockContext = new RockContext() )
             {
-                foreach ( var assetStorageSystem in new AssetStorageSystemService( rockContext )
+                foreach ( var assetStorageProvider in new AssetStorageProviderService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( g => g.EntityTypeId.HasValue )
                     .OrderBy( g => g.Name )
                     .ToList() )
                 {
-                    var entityType = EntityTypeCache.Get( assetStorageSystem.EntityTypeId.Value );
+                    var entityType = EntityTypeCache.Get( assetStorageProvider.EntityTypeId.Value );
                     AssetStorageComponent component = AssetStorageContainer.GetComponent( entityType.Name );
-                    if ( showAll || ( assetStorageSystem.IsActive && component != null && component.IsActive ) )
+                    if ( showAll || ( assetStorageProvider.IsActive && component != null && component.IsActive ) )
                     {
-                        this.Items.Add( new ListItem( assetStorageSystem.Name, assetStorageSystem.Id.ToString() ) );
+                        this.Items.Add( new ListItem( assetStorageProvider.Name, assetStorageProvider.Id.ToString() ) );
                     }
                 }
             }

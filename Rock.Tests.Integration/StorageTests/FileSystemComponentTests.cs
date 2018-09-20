@@ -58,14 +58,14 @@ namespace Rock.Tests.Integration.StorageTests
             EnsureFolder( webContentFolder );
         }
 
-        private AssetStorageSystem GetAssetStorageSystem()
+        private AssetStorageProvider GetAssetStorageProvider()
         {
-            var assetStorageService = new AssetStorageSystemService( new RockContext() );
-            AssetStorageSystem assetStorageSystem = assetStorageService.Get( 3 );// need mock
-            assetStorageSystem.LoadAttributes();
-            assetStorageSystem.SetAttributeValue( "RootFolder", "TestFolder" );
+            var assetStorageService = new AssetStorageProviderService( new RockContext() );
+            AssetStorageProvider assetStorageProvider = assetStorageService.Get( 3 );// need mock
+            assetStorageProvider.LoadAttributes();
+            assetStorageProvider.SetAttributeValue( "RootFolder", "TestFolder" );
 
-            return assetStorageSystem;
+            return assetStorageProvider;
         }
 
         [TestMethod]
@@ -73,15 +73,15 @@ namespace Rock.Tests.Integration.StorageTests
         {
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var fileSystemComponent = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
                 fileSystemComponent.FileSystemCompontHttpContext = HttpContext.Current;
 
                 Asset asset = new Asset();
                 asset.Name = "TestFolder";
                 asset.Type = AssetType.Folder;
 
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageSystem, asset ) );
+                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, asset ) );
             }
         }
 
@@ -90,18 +90,18 @@ namespace Rock.Tests.Integration.StorageTests
         {
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var fileSystemComponent = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
                 fileSystemComponent.FileSystemCompontHttpContext = HttpContext.Current;
 
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageSystem, new Asset { Name = "TestFolderA", Type = AssetType.Folder } ) );
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageSystem, new Asset { Key = "TestFolder/TestFolderA/A1", Type = AssetType.Folder } ) );
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageSystem, new Asset { Name = "TestFolderB", Type = AssetType.Folder } ) );
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageSystem, new Asset { Name = "TestFolderC", Type = AssetType.Folder } ) );
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageSystem, new Asset { Name = "TestFolderD", Type = AssetType.Folder } ) );
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageSystem, new Asset { Key = "TestFolder/TestFolderE/E1/E1a", Type = AssetType.Folder } ) );
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageSystem, new Asset { Key = "TestFolder/TestFolderE/E2/E2a", Type = AssetType.Folder } ) );
-                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageSystem, new Asset { Key = "TestFolder/TestFolderE/E3/E3a", Type = AssetType.Folder } ) );
+                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Name = "TestFolderA", Type = AssetType.Folder } ) );
+                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderA/A1", Type = AssetType.Folder } ) );
+                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Name = "TestFolderB", Type = AssetType.Folder } ) );
+                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Name = "TestFolderC", Type = AssetType.Folder } ) );
+                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Name = "TestFolderD", Type = AssetType.Folder } ) );
+                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderE/E1/E1a", Type = AssetType.Folder } ) );
+                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderE/E2/E2a", Type = AssetType.Folder } ) );
+                Assert.IsTrue( fileSystemComponent.CreateFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderE/E3/E3a", Type = AssetType.Folder } ) );
             }
         }
 
@@ -112,8 +112,8 @@ namespace Rock.Tests.Integration.StorageTests
 
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var fileSystemComponent = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
                 fileSystemComponent.FileSystemCompontHttpContext = HttpContext.Current;
 
                 Asset asset = new Asset();
@@ -121,7 +121,7 @@ namespace Rock.Tests.Integration.StorageTests
                 asset.Key = ( "TestFolder/TestFolderA/TestUploadObjectByKey.jpg" );
                 asset.AssetStream = new FileStream( @"TestData\test.jpg", FileMode.Open );
 
-                Assert.IsTrue( fileSystemComponent.UploadObject( assetStorageSystem, asset ) );
+                Assert.IsTrue( fileSystemComponent.UploadObject( assetStorageProvider, asset ) );
             }
         }
 
@@ -132,8 +132,8 @@ namespace Rock.Tests.Integration.StorageTests
 
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var fileSystemComponent = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
                 fileSystemComponent.FileSystemCompontHttpContext = HttpContext.Current;
 
                 Asset asset = new Asset();
@@ -141,7 +141,7 @@ namespace Rock.Tests.Integration.StorageTests
                 asset.Name = ( "TestFolderA/TestUploadObjectByName.jpg" );
                 asset.AssetStream = new FileStream( @"TestData\test.jpg", FileMode.Open );
 
-                Assert.IsTrue( fileSystemComponent.UploadObject( assetStorageSystem, asset ) );
+                Assert.IsTrue( fileSystemComponent.UploadObject( assetStorageProvider, asset ) );
             }
         }
 
@@ -152,11 +152,11 @@ namespace Rock.Tests.Integration.StorageTests
 
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var fileSystemComponent = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
                 fileSystemComponent.FileSystemCompontHttpContext = HttpContext.Current;
 
-                var assets = fileSystemComponent.ListFoldersInFolder( assetStorageSystem, new Asset { Key = "~/TestFolder", Type = AssetType.Folder } );
+                var assets = fileSystemComponent.ListFoldersInFolder( assetStorageProvider, new Asset { Key = "~/TestFolder", Type = AssetType.Folder } );
 
                 Assert.IsTrue( assets.Any( a => a.Key == "~/TestFolder/TestFolderA/" ) );
                 Assert.IsTrue( assets.Any( a => a.Name == "TestFolderB" ) );
@@ -178,11 +178,11 @@ namespace Rock.Tests.Integration.StorageTests
 
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var fileSystemComponent = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
                 fileSystemComponent.FileSystemCompontHttpContext = HttpContext.Current;
 
-                var assets = fileSystemComponent.ListFilesInFolder( assetStorageSystem, new Asset { Key = "TestFolder/TestFolderA", Type = AssetType.Folder } );
+                var assets = fileSystemComponent.ListFilesInFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderA", Type = AssetType.Folder } );
 
                 Assert.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
                 Assert.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
@@ -199,11 +199,11 @@ namespace Rock.Tests.Integration.StorageTests
 
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var fileSystemComponent = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
                 fileSystemComponent.FileSystemCompontHttpContext = HttpContext.Current;
 
-                var assets = fileSystemComponent.ListObjects( assetStorageSystem );
+                var assets = fileSystemComponent.ListObjects( assetStorageProvider );
 
                 Assert.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
                 Assert.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
@@ -231,11 +231,11 @@ namespace Rock.Tests.Integration.StorageTests
 
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var fileSystemComponent = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
                 fileSystemComponent.FileSystemCompontHttpContext = HttpContext.Current;
 
-                var assets = fileSystemComponent.ListObjectsInFolder( assetStorageSystem, new Asset { Key = "TestFolder/TestFolderA", Type = AssetType.Folder } );
+                var assets = fileSystemComponent.ListObjectsInFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderA", Type = AssetType.Folder } );
 
                 Assert.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
                 Assert.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
@@ -251,15 +251,15 @@ namespace Rock.Tests.Integration.StorageTests
 
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var fileSystemComponent = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
                 fileSystemComponent.FileSystemCompontHttpContext = HttpContext.Current;
 
                 var asset = new Asset();
                 asset.Type = AssetType.File;
                 asset.Key = "TestFolder/TestFolderA/TestUploadObjectByKey.jpg";
 
-                Assert.IsTrue( fileSystemComponent.RenameAsset( assetStorageSystem, asset, "TestUploadObjectByKeyRenamed.jpg" ) );
+                Assert.IsTrue( fileSystemComponent.RenameAsset( assetStorageProvider, asset, "TestUploadObjectByKeyRenamed.jpg" ) );
             }
         }
 
@@ -270,15 +270,15 @@ namespace Rock.Tests.Integration.StorageTests
 
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var fileSystemComponent = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
                 fileSystemComponent.FileSystemCompontHttpContext = HttpContext.Current;
 
                 var asset = new Asset();
                 asset.Type = AssetType.File;
                 asset.Key = "TestFolder/TestFolderA/TestUploadObjectByKeyRenamed.jpg";
 
-                var downloadedAsset = fileSystemComponent.GetObject( assetStorageSystem, asset );
+                var downloadedAsset = fileSystemComponent.GetObject( assetStorageProvider, asset );
 
                 using ( FileStream fs = new FileStream( @"C:\temp\TestGetObjectDownloaded.jpg", FileMode.Create ) )
                 using ( downloadedAsset.AssetStream )
@@ -293,15 +293,15 @@ namespace Rock.Tests.Integration.StorageTests
         {
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var fileSystemComponent = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
                 fileSystemComponent.FileSystemCompontHttpContext = HttpContext.Current;
 
                 var asset = new Asset();
                 asset.Type = AssetType.File;
                 asset.Key = "TestFolder/TestFolderA/TestUploadObjectByKeyRenamed.jpg";
 
-                string link = fileSystemComponent.CreateDownloadLink( assetStorageSystem, asset );
+                string link = fileSystemComponent.CreateDownloadLink( assetStorageProvider, asset );
 
                 Uri uri = null;
 
@@ -317,15 +317,15 @@ namespace Rock.Tests.Integration.StorageTests
 
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var fileSystemComponent = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
                 fileSystemComponent.FileSystemCompontHttpContext = HttpContext.Current;
 
                 var asset = new Asset();
                 asset.Type = AssetType.File;
                 asset.Key = "TestFolder/DELETEFILE.jpg";
 
-                Assert.IsTrue( fileSystemComponent.DeleteAsset( assetStorageSystem, asset ) );
+                Assert.IsTrue( fileSystemComponent.DeleteAsset( assetStorageProvider, asset ) );
             }
         }
 
@@ -336,15 +336,15 @@ namespace Rock.Tests.Integration.StorageTests
 
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var fileSystemComponent = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
                 fileSystemComponent.FileSystemCompontHttpContext = HttpContext.Current;
 
                 var asset = new Asset();
                 asset.Type = AssetType.Folder;
                 asset.Key = "TestFolder/TestFolderDELETEME";
 
-                Assert.IsTrue( fileSystemComponent.DeleteAsset( assetStorageSystem, asset ) );
+                Assert.IsTrue( fileSystemComponent.DeleteAsset( assetStorageProvider, asset ) );
             }
         }
 

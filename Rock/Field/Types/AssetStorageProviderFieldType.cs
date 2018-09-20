@@ -25,21 +25,21 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
-    class AssetStorageSystemFieldType : FieldType
+    class AssetStorageProviderFieldType : FieldType
     {
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             string formattedValue = string.Empty;
 
-            Guid? assetStorageSystemGuid = value.AsGuidOrNull();
-            if ( assetStorageSystemGuid.HasValue )
+            Guid? assetStorageProviderGuid = value.AsGuidOrNull();
+            if ( assetStorageProviderGuid.HasValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var assetStorageSystem = new AssetStorageSystemService( rockContext ).Get( assetStorageSystemGuid.Value );
-                    if ( assetStorageSystem != null )
+                    var assetStorageProvider = new AssetStorageProviderService( rockContext ).Get( assetStorageProviderGuid.Value );
+                    if ( assetStorageProvider != null )
                     {
-                        formattedValue = assetStorageSystem.Name;
+                        formattedValue = assetStorageProvider.Name;
                     }
                 }
             }
@@ -49,12 +49,12 @@ namespace Rock.Field.Types
 
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new AssetStorageSystemPicker { ID = id, ShowAll = false };
+            return new AssetStorageProviderPicker { ID = id, ShowAll = false };
         }
 
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            var picker = control as AssetStorageSystemPicker;
+            var picker = control as AssetStorageProviderPicker;
             if ( picker != null )
             {
                 int? itemId = picker.SelectedValue.AsIntegerOrNull();
@@ -63,7 +63,7 @@ namespace Rock.Field.Types
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        itemGuid = new AssetStorageSystemService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        itemGuid = new AssetStorageProviderService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
 
@@ -75,7 +75,7 @@ namespace Rock.Field.Types
 
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            var picker = control as AssetStorageSystemPicker;
+            var picker = control as AssetStorageProviderPicker;
             if ( picker != null )
             {
                 int? itemId = null;
@@ -84,7 +84,7 @@ namespace Rock.Field.Types
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        itemId = new AssetStorageSystemService( rockContext ).Queryable().Where( a => a.Guid == itemGuid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
+                        itemId = new AssetStorageProviderService( rockContext ).Queryable().Where( a => a.Guid == itemGuid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
                     }
                 }
 

@@ -28,7 +28,7 @@ namespace Rock.Model
     /// 
     /// </summary>
     [DataContract]
-    public partial class AssetStorageSystem : Model<AssetStorageSystem>, IHasActiveFlag
+    public partial class AssetStorageProvider : Model<AssetStorageProvider>, IHasActiveFlag
     {
         #region Entity Properties
 
@@ -139,7 +139,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    public partial class AssetStorageServiceConfiguration : EntityTypeConfiguration<AssetStorageSystem>
+    public partial class AssetStorageServiceConfiguration : EntityTypeConfiguration<AssetStorageProvider>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AssetStorageServiceConfiguration"/> class.
