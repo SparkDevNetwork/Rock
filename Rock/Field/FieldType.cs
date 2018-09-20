@@ -435,10 +435,21 @@ namespace Rock.Field
                         values.Add( compare );
                     }
 
-                    string value = GetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues );
-                    if ( value != null )
+                    ComparisonType? comparisonType = compare.ConvertToEnumOrNull<ComparisonType>();
+                    if ( comparisonType.HasValue )
                     {
-                        values.Add( value );
+                        if ( ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType.Value ) )
+                        {
+                            // if using IsBlank or IsNotBlank, we don't care about the value, so don't try to grab it from the UI
+                        }
+                        else
+                        {
+                            string value = GetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues );
+                            if ( value != null )
+                            {
+                                values.Add( value );
+                            }
+                        }
                     }
                 }
                 catch
