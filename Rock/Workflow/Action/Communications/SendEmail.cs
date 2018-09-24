@@ -226,7 +226,7 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                Send( to.ResolveMergeFields( mergeFields ), fromEmail, fromName, subject, body, mergeFields, rockContext, createCommunicationRecord, attachments );
+                Send( to.ResolveMergeFields( mergeFields ), fromEmail.ResolveMergeFields( mergeFields ), fromName, subject, body, mergeFields, rockContext, createCommunicationRecord, attachments );
             }
 
             return true;
@@ -256,13 +256,16 @@ namespace Rock.Workflow.Action
             }
 
             emailMessage.FromEmail = fromEmail;
-            emailMessage.FromName = fromName;
+            emailMessage.FromName = fromName.IsNullOrWhiteSpace() ? fromEmail.Split( '@' )[0] : fromName;
             emailMessage.Subject = subject;
             emailMessage.Message = body;
 
             foreach (BinaryFile b in attachments)
             {
-                emailMessage.Attachments.Add( b );
+                if ( b != null )
+                {
+                    emailMessage.Attachments.Add( b );
+                }
             }
             
             emailMessage.CreateCommunicationRecord = createCommunicationRecord;
