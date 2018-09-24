@@ -17,22 +17,18 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
-using System.Text;
 using System.Web.UI;
 
 using Rock;
-using Rock.Constants;
+using Rock.Checkr.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
+using Rock.Web;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using System.Data.SqlClient;
-using Rock.Checkr.Constants;
-using Rock.Checkr;
+using Rock.Security;
+using Rock.SystemKey;
 
 namespace RockWeb.Blocks.Security.BackgroundCheck
 {
@@ -332,35 +328,47 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         protected void btnDefault_Click( object sender, EventArgs e )
         {
             var bioBlock = BlockCache.Get( Rock.SystemGuid.Block.BIO.AsGuid() );
-            List<Guid> workflowActionGuidList = bioBlock.GetAttributeValues( "WorkflowActions" ).AsGuidList();
-            if ( workflowActionGuidList == null || workflowActionGuidList.Count == 0 )
+            // Record an exception if the stock Bio block has been deleted but continue processing
+            // the remaining settings.
+            if ( bioBlock == null )
             {
-                // Add Checkr to Bio Workflow Actions
-                bioBlock.SetAttributeValue( "WorkflowActions", Rock.SystemGuid.WorkflowType.PROTECTMYMINISTRY );
-                ///BackgroundCheckContainer.Instance.Components
+                var errorMessage = string.Format( "Stock Bio block ({0}) is missing.", Rock.SystemGuid.Block.BIO );
+                ExceptionLogService.LogException( new Exception( errorMessage ) );
             }
             else
             {
-                //var workflowActionValues = workflowActionValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                Guid guid = Rock.SystemGuid.WorkflowType.PROTECTMYMINISTRY.AsGuid();
-                if ( !workflowActionGuidList.Any( w => w == guid ) )
+                List<Guid> workflowActionGuidList = bioBlock.GetAttributeValues( "WorkflowActions" ).AsGuidList();
+                if ( workflowActionGuidList == null || workflowActionGuidList.Count == 0 )
                 {
-                    // Add Checkr to Bio Workflow Actions
-                    workflowActionGuidList.Add( guid );
+                    // Add to Bio Workflow Actions
+                    bioBlock.SetAttributeValue( "WorkflowActions", Rock.SystemGuid.WorkflowType.PROTECTMYMINISTRY );
+                    ///BackgroundCheckContainer.Instance.Components
+                }
+                else
+                {
+                    //var workflowActionValues = workflowActionValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                    Guid guid = Rock.SystemGuid.WorkflowType.PROTECTMYMINISTRY.AsGuid();
+                    if ( !workflowActionGuidList.Any( w => w == guid ) )
+                    {
+                        // Add Checkr to Bio Workflow Actions
+                        workflowActionGuidList.Add( guid );
+                    }
+
+                    // Remove PMM from Bio Workflow Actions
+                    guid = CheckrSystemGuid.CHECKR_WORKFLOW_TYPE.AsGuid();
+                    workflowActionGuidList.RemoveAll( w => w == guid );
+                    bioBlock.SetAttributeValue( "WorkflowActions", workflowActionGuidList.AsDelimited( "," ) );
                 }
 
-                // Remove PMM from Bio Workflow Actions
-                guid = CheckrSystemGuid.CHECKR_WORKFLOW_TYPE.AsGuid();
-                workflowActionGuidList.RemoveAll( w => w == guid );
-                bioBlock.SetAttributeValue( "WorkflowActions", workflowActionGuidList.AsDelimited( "," ) );
-                string pmmTypeName = ( typeof( Rock.Security.BackgroundCheck.ProtectMyMinistry ) ).FullName;
-                var pmmComponent = BackgroundCheckContainer.Instance.Components.Values.FirstOrDefault(c => c.Value.TypeName == pmmTypeName );
-                // pmmComponent.Value.GetAttributeValue( "Active" );
-                pmmComponent.Value.SetAttributeValue( "Active", "True" );
-                pmmComponent.Value.SaveAttributeValue( "Active" );
+                bioBlock.SaveAttributeValue( "WorkflowActions" );
             }
 
-            bioBlock.SaveAttributeValue( "WorkflowActions" );
+            string pmmTypeName = ( typeof( Rock.Security.BackgroundCheck.ProtectMyMinistry ) ).FullName;
+            var pmmComponent = BackgroundCheckContainer.Instance.Components.Values.FirstOrDefault( c => c.Value.TypeName == pmmTypeName );
+            pmmComponent.Value.SetAttributeValue( "Active", "True" );
+            pmmComponent.Value.SaveAttributeValue( "Active" );
+            // Set as the default provider in the system setting
+            SystemSettings.SetValue( Rock.SystemKey.SystemSetting.DEFAULT_BACKGROUND_CHECK_PROVIDER, pmmTypeName );
 
             using ( var rockContext = new RockContext() )
             {
@@ -398,33 +406,16 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
         #region Internal Methods
         /// <summary>
-        /// Haves the workflow action.
+        /// Determines whether PMM is the default provider.
         /// </summary>
-        /// <param name="guidValue">The Guid value of the action.</param>
-        /// <returns>True/False if the Workflow contains the action</returns>
-        private bool HaveWorkflowAction( string guidValue )
+        /// <returns>
+        ///   <c>true</c> if PMM is the default provider; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsDefaultProvider()
         {
-            // workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson
-
-            using ( var rockContext = new RockContext() )
-            {
-                BlockService blockService = new BlockService( rockContext );
-                AttributeService attributeService = new AttributeService( rockContext );
-                AttributeValueService attributeValueService = new AttributeValueService( rockContext );
-
-                var block = blockService.Get( Rock.SystemGuid.Block.BIO.AsGuid() );
-
-                var attribute = attributeService.Get( Rock.SystemGuid.Attribute.BIO_WORKFLOWACTION.AsGuid() );
-                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, block.Id );
-                if ( attributeValue == null || string.IsNullOrWhiteSpace( attributeValue.Value ) )
-                {
-                    return false;
-                }
-
-                var workflowActionValues = attributeValue.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-                Guid guid = guidValue.AsGuid();
-                return workflowActionValues.Any( w => w.AsGuid() == guid );
-            }
+            string providerTypeName = ( typeof( Rock.Security.BackgroundCheck.ProtectMyMinistry ) ).FullName;
+            string defaultProvider = Rock.Web.SystemSettings.GetValue( SystemSetting.DEFAULT_BACKGROUND_CHECK_PROVIDER ) ?? string.Empty;
+            return providerTypeName == defaultProvider;
         }
 
         /// <summary>
@@ -444,7 +435,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 var settings = GetSettings( rockContext );
                 if ( settings != null )
                 {
-                    if ( HaveWorkflowAction( Rock.SystemGuid.WorkflowType.PROTECTMYMINISTRY ) )
+                    if ( IsDefaultProvider() )
                     {
                         btnDefault.Visible = false;
                         lbEdit.Enabled = true;
