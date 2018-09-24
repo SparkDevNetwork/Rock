@@ -69,6 +69,7 @@ namespace Rock.Field.Types
                 SelectControlCssClass = "btn btn-xs btn-default imageupload-group",
                 CssClass = "picker-asset",
                 ModalSaveButtonText = "Select",
+                ModalSaveButtonCssClass = "js-singleselect aspNetDisabled",
                 ButtonTextTemplate = "Select Asset",
                 PickerButtonTemplate = pickerButtonTemplate,
                 ModalTitle = "Asset Manager"
