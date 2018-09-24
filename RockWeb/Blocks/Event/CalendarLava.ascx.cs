@@ -623,6 +623,7 @@ namespace RockWeb.Blocks.Event
             }
 
             var selectedDate = calEventCalendar.SelectedDate;
+            calEventCalendar.VisibleDate = calEventCalendar.SelectedDate;
             var today = RockDateTime.Today;
             FilterStartDate = selectedDate;
             FilterEndDate = selectedDate;
