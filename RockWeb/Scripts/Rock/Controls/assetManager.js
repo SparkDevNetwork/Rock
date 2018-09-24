@@ -147,7 +147,7 @@
           });
 
           function resizeScrollAreaHeight() {
-            var overviewHeight = $folderTreeView.height();
+            var overviewHeight = $folderTreeView.closest('.overview').height();
             $treePort.height(overviewHeight)
             if (treePortIScroll) {
               treePortIScroll.refresh();
