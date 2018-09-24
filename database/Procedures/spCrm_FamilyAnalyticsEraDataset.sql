@@ -11,7 +11,7 @@
 	</summary>
 	
 	<remarks>	
-		For eRA we only consider adults for the critieria.
+		For eRA we only consider adults for the criteria.
 	</remarks>
 	<code>
 		EXEC [dbo].[spCrm_FamilyAnalyticsEraDataset] 
@@ -77,6 +77,51 @@ BEGIN
     DECLARE @SundayExitGivingDuration DATETIME = DATEADD(DAY, (7 * @ExitGivingDurationWeeks * - 1), @SundayDateStart)
     DECLARE @SundayExitAttendanceDurationShort DATETIME = DATEADD(DAY, (7 * @ExitAttendanceDurationShortWeeks * - 1), @SundayDateStart)
     DECLARE @SundayExitAttendanceDurationLong DATETIME = DATEADD(DAY, (7 * @ExitAttendanceDurationLongWeeks * - 1), @SundayDateStart)
+    DECLARE @TempFinancialTransactionByDateAndGivingId TABLE (
+        DistinctCount INT
+        ,GivingId VARCHAR(50)
+        ,TransactionDateTime DATETIME
+        )
+
+    INSERT INTO @TempFinancialTransactionByDateAndGivingId
+    SELECT COUNT(DISTINCT (ft.[Id])) [DistinctCount]
+        ,g1.GivingId
+        ,ft.TransactionDateTime [TransactionDateTime]
+    FROM [FinancialTransaction] ft
+    INNER JOIN [PersonAlias] pa ON pa.[Id] = ft.[AuthorizedPersonAliasId]
+    INNER JOIN [Person] g1 ON g1.[Id] = pa.[PersonId]
+    INNER JOIN [FinancialTransactionDetail] ftd ON ftd.[TransactionId] = ft.[Id]
+    INNER JOIN [FinancialAccount] fa ON fa.[Id] = ftd.AccountId
+    WHERE ft.TransactionTypeValueId = @ContributionType
+        AND fa.[IsTaxDeductible] = 1
+        AND ft.TransactionDateTime >= @SundayEntryGivingDurationLong
+    GROUP BY g1.GivingId
+        ,ft.TransactionDateTime
+
+    DECLARE @TempAttendanceBySundayDateAndFamily TABLE (
+        SundayDate DATE
+        ,StartDateTime DATETIME
+        ,FamilyId INT
+        )
+
+    INSERT INTO @TempAttendanceBySundayDateAndFamily
+    SELECT O.SundayDate
+        ,a.StartDateTime
+        ,fg.Id [FamilyId]
+    FROM [Attendance] a
+    INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
+    INNER JOIN [Group] ag ON ag.[Id] = O.[GroupId]
+    INNER JOIN [GroupType] agt ON agt.[Id] = ag.[GroupTypeId]
+        AND agt.[AttendanceCountsAsWeekendService] = 1
+    INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
+    INNER JOIN [GroupMember] fgm ON fgm.[PersonId] = pa.[PersonId]
+    INNER JOIN [Group] fg ON fg.[Id] = fgm.[GroupId]
+        AND fg.[GroupTypeId] = @FamilyGroupTypeId
+    WHERE a.[DidAttend] = 1
+        AND a.StartDateTime >= @SundayExitAttendanceDurationLong
+    GROUP BY O.SundayDate
+        ,StartDateTime
+        ,fg.Id
 
     SELECT [FamilyId]
         ,MAX([EntryGiftCountDurationShort]) AS [EntryGiftCountDurationShort]
@@ -95,112 +140,46 @@ BEGIN
                 END AS [IsEra]
             ,g.[Id] AS [FamilyId]
             ,(
-                SELECT COUNT(DISTINCT (ft.[Id]))
-                FROM [FinancialTransaction] ft
-                INNER JOIN [PersonAlias] pa ON pa.[Id] = ft.[AuthorizedPersonAliasId]
-                INNER JOIN [Person] g1 ON g1.[Id] = pa.[PersonId]
-                INNER JOIN [FinancialTransactionDetail] ftd ON ftd.[TransactionId] = ft.[Id]
-                INNER JOIN [FinancialAccount] fa ON fa.[Id] = ftd.AccountId
-                WHERE ft.TransactionTypeValueId = @ContributionType
-                    AND ft.TransactionDateTime >= @SundayEntryGivingDurationShort
+                SELECT ISNULL(SUM(ft.DistinctCount), 0)
+                FROM @TempFinancialTransactionByDateAndGivingId ft
+                WHERE ft.TransactionDateTime >= @SundayEntryGivingDurationShort
                     AND ft.TransactionDateTime <= @SundayDateStart
-                    AND (
-                        g1.[Id] = p.[Id]
-                        OR (
-                            g1.[GivingGroupId] IS NOT NULL
-                            AND g1.[GivingGroupID] = p.[GivingGroupId]
-                            )
-                        )
-                    AND fa.[IsTaxDeductible] = 1
+                    AND ft.GivingId = p.GivingId
                 ) AS [EntryGiftCountDurationShort]
             ,(
-                SELECT COUNT(DISTINCT (ft.[Id]))
-                FROM [FinancialTransaction] ft
-                INNER JOIN [PersonAlias] pa ON pa.[Id] = ft.[AuthorizedPersonAliasId]
-                INNER JOIN [Person] g1 ON g1.[Id] = pa.[PersonId]
-                INNER JOIN [FinancialTransactionDetail] ftd ON ftd.[TransactionId] = ft.[Id]
-                INNER JOIN [FinancialAccount] fa ON fa.[Id] = ftd.AccountId
-                WHERE ft.TransactionTypeValueId = @ContributionType
-                    AND ft.TransactionDateTime >= @SundayExitGivingDuration
+                SELECT ISNULL(SUM(ft.DistinctCount), 0)
+                FROM @TempFinancialTransactionByDateAndGivingId ft
+                WHERE ft.TransactionDateTime >= @SundayExitGivingDuration
                     AND ft.TransactionDateTime <= @SundayDateStart
-                    AND (
-                        g1.[Id] = p.[Id]
-                        OR (
-                            g1.[GivingGroupId] IS NOT NULL
-                            AND g1.[GivingGroupID] = p.[GivingGroupId]
-                            )
-                        )
-                    AND fa.[IsTaxDeductible] = 1
+                    AND ft.GivingId = p.GivingId
                 ) AS [ExitGiftCountDuration]
             ,(
-                SELECT COUNT(DISTINCT (ft.[Id]))
-                FROM [FinancialTransaction] ft
-                INNER JOIN [PersonAlias] pa ON pa.[Id] = ft.[AuthorizedPersonAliasId]
-                INNER JOIN [Person] g1 ON g1.[Id] = pa.[PersonId]
-                INNER JOIN [FinancialTransactionDetail] ftd ON ftd.[TransactionId] = ft.[Id]
-                INNER JOIN [FinancialAccount] fa ON fa.[Id] = ftd.AccountId
-                WHERE ft.TransactionTypeValueId = @ContributionType
-                    AND ft.TransactionDateTime >= @SundayEntryGivingDurationLong
+                SELECT ISNULL(SUM(ft.DistinctCount), 0)
+                FROM @TempFinancialTransactionByDateAndGivingId ft
+                WHERE ft.TransactionDateTime >= @SundayEntryGivingDurationLong
                     AND ft.TransactionDateTime <= @SundayDateStart
-                    AND (
-                        g1.[Id] = p.[Id]
-                        OR (
-                            g1.[GivingGroupId] IS NOT NULL
-                            AND g1.[GivingGroupID] = p.[GivingGroupId]
-                            )
-                        )
-                    AND fa.[IsTaxDeductible] = 1
+                    AND ft.GivingId = p.GivingId
                 ) AS [EntryGiftCountDurationLong]
             ,(
-                SELECT COUNT(DISTINCT O.SundayDate)
-                FROM [Attendance] a
-                INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
-                INNER JOIN [Group] ag ON ag.[Id] = O.[GroupId]
-                INNER JOIN [GroupType] agt ON agt.[Id] = ag.[GroupTypeId]
-                    AND agt.[AttendanceCountsAsWeekendService] = 1
-                INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
-                WHERE pa.[PersonId] IN (
-                        SELECT [PersonId]
-                        FROM [GroupMember]
-                        WHERE [GroupId] = g.[Id]
-                        )
-                    AND a.[DidAttend] = 1
-                    AND a.[StartDateTime] <= @SundayDateStart
-                    AND a.[StartDateTime] >= @SundayExitAttendanceDurationShort
+                SELECT COUNT(DISTINCT a.SundayDate)
+                FROM @TempAttendanceBySundayDateAndFamily a
+                WHERE a.FamilyId = g.Id
+                    AND a.StartDateTime <= @SundayDateStart
+                    AND a.StartDateTime >= @SundayExitAttendanceDurationShort
                 ) AS [ExitAttendanceCountDurationShort]
             ,(
-                SELECT COUNT(DISTINCT O.SundayDate)
-                FROM [Attendance] a
-                INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
-                INNER JOIN [Group] ag ON ag.[Id] = O.[GroupId]
-                INNER JOIN [GroupType] agt ON agt.[Id] = ag.[GroupTypeId]
-                    AND agt.[AttendanceCountsAsWeekendService] = 1
-                INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
-                WHERE pa.[PersonId] IN (
-                        SELECT [PersonId]
-                        FROM [GroupMember]
-                        WHERE [GroupId] = g.[Id]
-                        )
-                    AND a.[DidAttend] = 1
-                    AND a.[StartDateTime] <= @SundayDateStart
-                    AND a.[StartDateTime] >= @SundayEntryAttendanceDuration
+                SELECT COUNT(DISTINCT a.SundayDate)
+                FROM @TempAttendanceBySundayDateAndFamily a
+                WHERE a.FamilyId = g.Id
+                    AND a.StartDateTime <= @SundayDateStart
+                    AND a.StartDateTime >= @SundayEntryAttendanceDuration
                 ) AS [EntryAttendanceCountDuration]
             ,(
-                SELECT COUNT(DISTINCT O.SundayDate)
-                FROM [Attendance] a
-                INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
-                INNER JOIN [Group] ag ON ag.[Id] = O.[GroupId]
-                INNER JOIN [GroupType] agt ON agt.[Id] = ag.[GroupTypeId]
-                    AND agt.[AttendanceCountsAsWeekendService] = 1
-                INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
-                WHERE pa.[PersonId] IN (
-                        SELECT [PersonId]
-                        FROM [GroupMember]
-                        WHERE [GroupId] = g.[Id]
-                        )
-                    AND a.[DidAttend] = 1
-                    AND a.[StartDateTime] <= @SundayDateStart
-                    AND a.[StartDateTime] >= @SundayExitAttendanceDurationLong
+                SELECT COUNT(DISTINCT a.SundayDate)
+                FROM @TempAttendanceBySundayDateAndFamily a
+                WHERE a.FamilyId = g.Id
+                    AND a.StartDateTime <= @SundayDateStart
+                    AND a.StartDateTime >= @SundayExitAttendanceDurationLong
                 ) AS [ExitAttendanceCountDurationLong]
         FROM [Person] p
         INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id]
