@@ -106,6 +106,10 @@
     <Compile Include="Migrations\201809202157086_AssetManagerRefactor.Designer.cs">
       <DependentUpon>201809202157086_AssetManagerRefactor.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201809252117562_Rollup_0925.cs" />
+    <Compile Include="Migrations\201809252117562_Rollup_0925.Designer.cs">
+      <DependentUpon>201809252117562_Rollup_0925.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -422,6 +426,9 @@
     <EmbeddedResource Include="Migrations\201809202157086_AssetManagerRefactor.resx">
       <DependentUpon>201809202157086_AssetManagerRefactor.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809252117562_Rollup_0925.resx">
+      <DependentUpon>201809252117562_Rollup_0925.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
     </EmbeddedResource>
@@ -660,6 +667,9 @@
     </Content>
     <Content Include="Migrations\201809142151587_ContentComponents_CreateContentComponentChannelType.sql">
       <DependentUpon>201809142151587_ContentComponents.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201809252117562_Rollup_0925_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>201809252117562_Rollup_0925.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.sql">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
