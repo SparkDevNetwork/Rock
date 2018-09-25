@@ -124,6 +124,7 @@ namespace Rock.CodeGeneration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void btnGenerate_Click( object sender, EventArgs e )
         {
+            tbResults.Text = string.Empty;
             string serviceFolder = tbServiceFolder.Text;
             string restFolder = tbRestFolder.Text;
             string rockClientFolder = tbClientFolder.Text;
@@ -141,7 +142,7 @@ namespace Rock.CodeGeneration
                     var dbSetEntityType = typeof( Rock.Data.RockContext ).GetProperties().Where( a => a.PropertyType.IsGenericType && a.PropertyType.Name == "DbSet`1" ).Select( a => a.PropertyType.GenericTypeArguments[0] ).ToList();
                     var entityTypes = cblModels.Items.Cast<Type>().ToList();
                     var missingDbSets = entityTypes.Where( a => !dbSetEntityType.Any( x => x.FullName == a.FullName ) ).ToList();
-                    System.Diagnostics.Debug.WriteLine( missingDbSets.Select( a => a.Name ).ToList().AsDelimited( "\r\n" ) );
+                    tbResults.Text += missingDbSets.Select( a => a.Name + "is missing DbSet<> in RockContext" ).ToList().AsDelimited( "\r\n" ) + "\r\n\r\n";
 
                     foreach ( object item in cblModels.CheckedItems )
                     {
@@ -185,10 +186,52 @@ namespace Rock.CodeGeneration
                 }
             }
 
+            ReportRockObsolete();
+
             progressBar1.Visible = false;
             Cursor = Cursors.Default;
             MessageBox.Show( "Files have been generated" );
         }
+
+        public void ReportRockObsolete()
+        {
+            StringBuilder sbResults = new StringBuilder();
+            List<Assembly> rockAssemblyList = new List<Assembly>();
+            rockAssemblyList.Add( typeof( Rock.Data.RockContext ).Assembly );
+            rockAssemblyList.Add( typeof( Rock.Rest.ApiControllerBase ).Assembly );
+
+            foreach ( var rockAssembly in rockAssemblyList )
+            {
+                var allTypes = rockAssembly.GetTypes();
+                foreach ( var type in allTypes )
+                {
+                    if ( type.GetCustomAttribute<ObsoleteAttribute>() != null )
+                    {
+                        var rockObsolete = type.GetCustomAttribute<RockObsolete>();
+                        if ( rockObsolete == null )
+                        {
+                            sbResults.Append( $"type {type} is [Obsolete] but does not have a [RockObsolete]" );
+                        }
+                    }
+
+                    foreach ( var member in type.GetMembers())
+                    {
+                        if ( rockAssembly == member.Module.Assembly && member.GetCustomAttribute<ObsoleteAttribute>() != null )
+                        {
+                            var rockObsolete = member.GetCustomAttribute<RockObsolete>();
+                            if ( rockObsolete == null )
+                            {
+                                sbResults.AppendLine( $"type {type} has [Obsolete] {member.MemberType} {member} but does not have a [RockObsolete]" );
+                            }
+                        }
+                    }
+                }
+            }
+
+            tbResults.Text += sbResults.ToString();
+        }
+
+        
 
         /// <summary>
         /// Writes the database procs scripts.
@@ -1336,6 +1379,18 @@ order by [parentTable], [columnName]
 
     public static class HelperExtensions
     {
+        /*public static CustomAttributeData GetCustomAttributeData<T>( this Type type ) where T : System.Attribute
+        {
+            var attributeType = typeof( T );
+            return type.GetCustomAttributesData().FirstOrDefault( a => a.AttributeType == attributeType );
+        }
+
+        public static CustomAttributeData GetCustomAttributeData<T>( this MemberInfo memberInfo ) where T : System.Attribute
+        {
+            var attributeType = typeof( T );
+            return memberInfo.GetCustomAttributesData().FirstOrDefault( a => a.AttributeType == attributeType );
+        }*/
+
         public static PropertyInfo[] SortByStandardOrder( this PropertyInfo[] properties )
         {
             string[] baseModelPropertyTypeNames = new string[] { "Id", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId" };
