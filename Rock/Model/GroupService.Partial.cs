@@ -523,6 +523,7 @@ namespace Rock.Model
         /// <param name="includeWarnings">if set to <c>true</c> [include warnings].</param>
         /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
         /// <returns></returns>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use GroupMembersNotMeetingRequirements( roup, includeWarnings, includeInactive) instead" )]
         public Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> GroupMembersNotMeetingRequirements( int groupId, bool includeWarnings, bool includeInactive = false )
         {
@@ -816,6 +817,7 @@ namespace Rock.Model
         /// <param name="postalCode">The postal code.</param>
         /// <param name="country">The country.</param>
         /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
+        [RockObsolete( "1.5" )]
         [Obsolete("Use AddNewGroupAddress instead.")]
         public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid,
             string street1, string street2, string city, string state, string postalCode, string country, bool moveExistingToPrevious = false )
@@ -900,6 +902,7 @@ namespace Rock.Model
         /// <param name="locationTypeGuid">The location type unique identifier.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
+        [RockObsolete( "1.5" )]
         [Obsolete( "Use AddNewGroupAddress instead." )]
         public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid,
             int? locationId, bool moveExistingToPrevious = false )
@@ -963,6 +966,7 @@ namespace Rock.Model
         /// <param name="locationTypeGuid">The location type unique identifier.</param>
         /// <param name="location">The location.</param>
         /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
+        [RockObsolete( "1.5" )]
         [Obsolete( "Use AddNewGroupAddress instead." )]
         public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid,
             Location location, bool moveExistingToPrevious = false )

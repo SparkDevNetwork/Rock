@@ -26,6 +26,7 @@ namespace Rock.Web.UI.Controls
     /// 
     /// </summary>
     [ToolboxData( "<{0}:LiquidField runat=server></{0}:LiquidField>" )]
+    [RockObsolete( "1.7" )]
     [Obsolete( "Use LavaField instead" )]
     public class LiquidField : LavaField
     {
@@ -71,6 +72,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
+    [RockObsolete( "1.7" )]
     [Obsolete( "Use LavaFieldTemplate instead" )]
     public class LiquidFieldTemplate : LavaFieldTemplate
     {

@@ -68,6 +68,7 @@ namespace Rock.Model
         ///   <c>true</c> if non-cash; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
+        [RockObsolete( "1.5" )]
         [Obsolete("Field is not used. Non Cash transactions can be designated by the currency (tender) type.")]
         public bool IsNonCash { get; set; }
 
@@ -149,6 +150,7 @@ namespace Rock.Model
         /// <value>
         /// The history changes.
         /// </value>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use HistoryChangeList instead" )]
         public virtual List<string> HistoryChanges { get; set; }
 

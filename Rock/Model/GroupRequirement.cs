@@ -161,6 +161,7 @@ namespace Rock.Model
         /// <param name="personQry">A qry containing the people whose requirements should be checked</param>
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use PersonQueryableMeetsGroupRequirement(rockContxt, personQry, groupId, groupRoleId) instead" )]
         public IEnumerable<PersonGroupRequirementStatus> PersonQueryableMeetsGroupRequirement( RockContext rockContext, IQueryable<Person> personQry, int? groupRoleId )
         {
@@ -335,6 +336,7 @@ namespace Rock.Model
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
         /// <exception cref="System.NotSupportedException"></exception>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use PersonMeetsGroupRequirement(personId, groupId, groupRoleId) instead " )]
         public PersonGroupRequirementStatus PersonMeetsGroupRequirement( int personId, int? groupRoleId )
         {
@@ -383,6 +385,7 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         /// <param name="personId">The person identifier.</param>
         /// <param name="meetsGroupRequirement">The meets group requirement.</param>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use UpdateGroupMemberRequirementResult(rockContext, personId, groupId, meetsGroupRequirement) instead" )]
         public void UpdateGroupMemberRequirementResult( RockContext rockContext, int personId, MeetsGroupRequirement meetsGroupRequirement )
         {

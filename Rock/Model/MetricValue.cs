@@ -160,6 +160,7 @@ namespace Rock.Model
         /// The series identifier.
         /// </value>
         [DataMember]
+        [RockObsolete( "1.6" )]
         [Obsolete( "Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name" )]
         public string SeriesId
         {

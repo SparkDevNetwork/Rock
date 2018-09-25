@@ -126,6 +126,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The entity identifier.
         /// </value>
+        [RockObsolete( "1.6" )]
         [Obsolete("use MetricValuePartitionEntityIds instead")]
         public int? EntityId
         {
@@ -385,6 +386,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The series name URL.
         /// </value>
+        [RockObsolete( "1.6" )]
         [Obsolete]
         public string SeriesNameUrl
         {

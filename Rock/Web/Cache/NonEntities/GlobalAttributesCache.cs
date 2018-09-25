@@ -161,6 +161,7 @@ namespace Rock.Web.Cache
         /// Reads this instance.
         /// </summary>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Get instead" )]
         public static GlobalAttributesCache Read()
         {
@@ -172,6 +173,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Get instead" )]
         public static GlobalAttributesCache Read( RockContext rockContext )
         {
@@ -346,6 +348,7 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         /// <param name="valueFactory">The value factory.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete("No longer needed")]
         public new static GlobalAttributesCache GetOrAddExisting( string key, Func<GlobalAttributesCache> valueFactory )
         {
@@ -403,6 +406,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="currentPerson">The current person.</param>
         /// <returns></returns>
+        [RockObsolete( "1.5" )]
         [Obsolete( "Use Rock.Lava.LavaHelper.GetCommonMergeFields instead" )]
         public static Dictionary<string, object> GetMergeFields( Person currentPerson )
         {

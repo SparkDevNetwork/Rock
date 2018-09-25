@@ -165,6 +165,7 @@ namespace Rock.Rest.Controllers
         /// <param name="seriesId">The series identifier.</param>
         /// <returns></returns>
         [System.Web.Http.Route( "api/MetricValues/GetSeriesName/{metricId}/{seriesId}" )]
+        [RockObsolete( "1.6" )]
         [Obsolete( "Use api/MetricValues/GetSeriesPartitionName/{metricId}/{metricValuePartitionEntityIds}" )]
         public string GetSeriesName( int metricId, int seriesId )
         {
@@ -178,6 +179,7 @@ namespace Rock.Rest.Controllers
         /// <param name="metricValuePartitionEntityIds">The metric value partition entity ids.</param>
         /// <returns></returns>
         [System.Web.Http.Route( "api/MetricValues/GetSeriesPartitionName/{metricId}/{metricValuePartitionEntityIds}" )]
+        [RockObsolete( "1.6" )]
         [Obsolete( "Use POST ~api/MetricValues/GetSeriesPartitionName/{metricId} with List<string> of EntityTypeId|EntityId as the body")]
         public string GetSeriesPartitionName( int metricId, string metricValuePartitionEntityIds )
         {

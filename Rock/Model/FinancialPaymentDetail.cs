@@ -248,6 +248,7 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use HistoryChangeList" )]
         public virtual List<string> HistoryChanges { get; set; }
 
@@ -282,6 +283,7 @@ namespace Rock.Model
         /// <param name="paymentGateway">The payment gateway.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="changes">The changes.</param>
+        [RockObsolete( "1.7.1" )]
         [Obsolete( "Use other SetFromPaymentInfo" )]
         public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext, List<string> changes )
         {

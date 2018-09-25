@@ -193,6 +193,7 @@ namespace Rock.Model
         /// A Json formatted <see cref="System.String"/> that contains any Medium specific data.
         /// </value>
         [DataMember]
+        [RockObsolete( "1.7" )]
         [Obsolete( "MediumDataJson is no longer used." )]
         public string MediumDataJson { get; set; }
 
@@ -427,6 +428,7 @@ namespace Rock.Model
         /// A <see cref="System.Collections.Generic.Dictionary{String,String}"/> of key value pairs that contain medium specific data.
         /// </value>
         [DataMember]
+        [RockObsolete( "1.7" )]
         [Obsolete( "MediumData is no longer used. Communication now has specific properties for medium data." )]
         public virtual Dictionary<string, string> MediumData
         {
@@ -623,6 +625,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> containing the key associated with the value to retrieve. </param>
         /// <returns>A <see cref="System.String"/> representing the value that is linked with the specified key.</returns>
+        [RockObsolete( "1.7" )]
         [Obsolete( "MediumData is no longer used" )]
         public string GetMediumDataValue( string key )
         {
@@ -641,6 +644,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the key.</param>
         /// <param name="value">A <see cref="System.String"/> representing the value.</param>
+        [RockObsolete( "1.7" )]
         [Obsolete( "MediumData is no longer used" )]
         public void SetMediumDataValue( string key, string value )
         {
@@ -660,6 +664,7 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         [Obsolete( "This can return incorrect results if Recipients has been modified and not saved to the database. So don't use this." )]
+        [RockObsolete( "1.7.4" )]
         public int GetRecipientCount( RockContext rockContext )
         {
             var count = new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == this.Id ).Count();
@@ -966,6 +971,7 @@ namespace Rock.Model
         /// <param name="communicationId">The communication identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use GetNextPending( int communicationId, int mediumEntityId, Rock.Data.RockContext rockContext ) instead." )]
         public static Rock.Model.CommunicationRecipient GetNextPending( int communicationId, Rock.Data.RockContext rockContext )
         {
@@ -1086,6 +1092,7 @@ namespace Rock.Model
         /// <summary>
         /// Some other communication type
         /// </summary>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Not Supported" )]
         Other = 4
     }

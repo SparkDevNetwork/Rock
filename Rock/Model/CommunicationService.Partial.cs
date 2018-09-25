@@ -42,6 +42,7 @@ namespace Rock.Model
         /// <param name="recipientStatus">The recipient status.</param>
         /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
         /// <returns></returns>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use method without textMessage argument")]
         public Communication CreateEmailCommunication
         (
@@ -72,6 +73,7 @@ namespace Rock.Model
         /// <param name="recipientStatus">The recipient status.</param>
         /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
         /// <returns></returns>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use method with send date time argument" )]
         public Communication CreateEmailCommunication
         (

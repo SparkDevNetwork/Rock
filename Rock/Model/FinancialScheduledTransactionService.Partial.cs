@@ -75,6 +75,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <returns></returns>
+        [RockObsolete( "1.6.6" )]
         [Obsolete( "The GetByScheduleId( scheduleId, gatewayId ) method should be used instead." )]
         public FinancialScheduledTransaction GetByScheduleId( string scheduleId )
         {
@@ -254,6 +255,7 @@ namespace Rock.Model
         /// <param name="batchUrlFormat">The batch URL format.</param>
         /// <param name="receiptEmail">The receipt email.</param>
         /// <returns></returns>
+        [RockObsolete( "1.7" )]
         [Obsolete("Use method with failed payment email and workflow type parameters")]
         public static string ProcessPayments( FinancialGateway gateway, string batchNamePrefix, List<Payment> payments, string batchUrlFormat = "", Guid? receiptEmail = null )
         {

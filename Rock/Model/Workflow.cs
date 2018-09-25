@@ -617,6 +617,7 @@ namespace Rock.Model
         /// <param name="workflowType">The <see cref="Rock.Model.WorkflowType"/>  being activated.</param>
         /// <param name="name">A <see cref="System.String"/> representing the name of the <see cref="Rock.Model.Workflow"/> instance.</param>
         /// <returns>The <see cref="Rock.Model.Workflow"/> instance.</returns>
+        [RockObsolete( "1.7" )]
         [Obsolete( "For improved performance, use the Activate method that takes a WorkflowTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the Workflow object that is returned by that method will not have the WorkflowType property set. If you are referencing the WorkflowType property on a Workflow returned by that method, you will get a Null Reference Exception! You should use the new WorkflowTypeCache property on the workflow instead." )]
         public static Workflow Activate( WorkflowType workflowType, string name )
         {
@@ -635,6 +636,7 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.Workflow" /> instance.
         /// </returns>
+        [RockObsolete( "1.7" )]
         [Obsolete( "For improved performance, use the Activate method that takes a WorkflowTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the Workflow object that is returned by that method will not have the WorkflowType property set. If you are referencing the WorkflowType property on a Workflow returned by that method, you will get a Null Reference Exception! You should use the new WorkflowTypeCache property on the workflow instead." )]
         public static Workflow Activate( WorkflowType workflowType, string name, RockContext rockContext )
         {

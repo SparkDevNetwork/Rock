@@ -15,10 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Rock.Web.Cache;
 
 namespace Rock.CheckIn
@@ -60,7 +56,8 @@ namespace Rock.CheckIn
         /// <value>
         /// The length of the security code.
         /// </value>
-        [Obsolete("Use SecurityCodeAlphaNumericLength instead.")]
+        [RockObsolete( "1.6.4" )]
+        [Obsolete( "Use SecurityCodeAlphaNumericLength instead." )]
         public int SecurityCodeLength { get { return GetSetting( "core_checkin_SecurityCodeLength" ).AsIntegerOrNull() ?? 3; } }
 
         /// <summary>
@@ -206,13 +203,14 @@ namespace Rock.CheckIn
         /// <c>true</c> if [prevent duplicate checkin]; otherwise, <c>false</c>.
         /// </value>
         public bool PreventDuplicateCheckin { get { return GetSetting( "core_checkin_PreventDuplicateCheckin" ).AsBoolean( false ); } }
-        
+
         /// <summary>
         /// Gets a value indicating whether [prevent inactive people]. Obsolete as of 1.7.0.
         /// </summary>
         /// <value>
         /// <c>true</c> if [prevent inactive people]; otherwise, <c>false</c>.
         /// </value>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use PreventInactivePeople instead.", true )]
         public bool PreventInactivePeopele { get { return GetSetting( "core_checkin_PreventInactivePeople" ).AsBoolean( false ); } }
 
@@ -246,7 +244,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The automatic select options.
         /// </value>
-        public int? AutoSelectOptions { get { return GetSetting( "core_checkin_AutoSelectOptions" ).AsIntegerOrNull();  } }
+        public int? AutoSelectOptions { get { return GetSetting( "core_checkin_AutoSelectOptions" ).AsIntegerOrNull(); } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckinType"/> class.

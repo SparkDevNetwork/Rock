@@ -306,6 +306,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The custom on change press script.
         /// </value>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use CallbackOnKeyupScript or CallbackOnChangeScript instead" )]
         public string OnChangeScript
         {
@@ -482,6 +483,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The additional configurations.
         /// </value>
+        [RockObsolete( "1.6" )]
         [Obsolete( "Doesn't do anything anymore" )]
         public string AdditionalConfigurations
         {
