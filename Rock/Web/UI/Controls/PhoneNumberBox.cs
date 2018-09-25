@@ -350,7 +350,7 @@ namespace Rock.Web.UI.Controls
         }
     }
 
-    $('div.phone-number-box input:text').on('change', function(e) {
+    $('div.phone-number-box input.js-phone-format').on('change', function(e) {
         phoneNumberBoxFormatNumber($(this));
     });
 
@@ -358,7 +358,7 @@ namespace Rock.Web.UI.Controls
         e.preventDefault();
         $(this).closest('div.input-group').find('input:hidden').val($(this).html());
         $(this).closest('div.input-group-btn').find('button').html($(this).html() + ' <span class=""caret""></span>');
-        phoneNumberBoxFormatNumber($(this).closest('div.input-group').find('input:text').first());
+        phoneNumberBoxFormatNumber($(this).closest('div.input-group').find('input.js-phone-format').first());
     });
 " );
 
@@ -495,7 +495,7 @@ namespace Rock.Web.UI.Controls
 
             _hfCountryCode.RenderControl( writer );
 
-            ( (WebControl)this ).AddCssClass( "form-control" );
+            ( (WebControl)this ).AddCssClass( "form-control js-phone-format" );
             if ( !string.IsNullOrWhiteSpace( Placeholder ) )
             {
                 this.Attributes["placeholder"] = Placeholder;
@@ -503,11 +503,11 @@ namespace Rock.Web.UI.Controls
 
             this.Attributes["type"] = "tel";
 
+            ( ( WebControl ) this ).AddCssClass( cssClass );
+
             base.RenderControl( writer );
 
             writer.RenderEndTag();              // div.input-group
-
-            this.CssClass = cssClass;
         }
     }
 }
