@@ -27,6 +27,7 @@ namespace Rock.Transactions
     /// <summary>
     /// Runs a job now
     /// </summary>
+    [RockObsolete( "1.6" )]
     [Obsolete( "Use SendPaymentReceipts instead" )]
     public class SendPaymentReciepts : ITransaction
     {
@@ -51,6 +52,7 @@ namespace Rock.Transactions
         /// </summary>
         /// <param name="systemEmailGuid">The system email unique identifier.</param>
         /// <param name="transactionIds">The transaction ids.</param>
+        [RockObsolete( "1.6" )]
         [Obsolete( "Use SendPaymentReceipts instead" )]
         public SendPaymentReciepts( Guid systemEmailGuid, List<int> transactionIds )
         {

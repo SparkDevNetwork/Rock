@@ -29,6 +29,7 @@ namespace Rock
         /// <see href="http://stackoverflow.com/a/22005731/1853867" />
         /// <param name="headerText">The header text.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [System.Obsolete( "Use Rock's Grid.GetColumnByHeaderText instead" )]
         public static DataControlField GetColumnByHeaderText( this DataControlFieldCollection dataControlFieldCollection, string headerText )
         {
@@ -49,6 +50,7 @@ namespace Rock
         /// <param name="grid">The grid.</param>
         /// <param name="headerText">The header text.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [System.Obsolete( "Use Rock's Grid.GetColumnByHeaderText instead" )]
         public static DataControlField GetColumnByHeaderText( this GridView grid, string headerText )
         {

@@ -84,6 +84,7 @@ namespace Rock.Transactions
         /// <value>
         /// The text message.
         /// </value>
+        [RockObsolete( "1.7" )]
         [Obsolete("Text Message property is no longer supported for emails")]
         public string TextMessage { get; set; }
 

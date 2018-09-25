@@ -55,6 +55,7 @@ namespace Rock.Address
         /// <returns>
         /// True/False value of whether the verification was successful or not
         /// </returns>
+        [RockObsolete( "1.5" )]
         [Obsolete("Use Verify method instead")]
         public virtual bool VerifyLocation( Rock.Model.Location location, bool reVerify, out string result )
         {

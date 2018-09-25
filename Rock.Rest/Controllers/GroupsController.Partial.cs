@@ -343,6 +343,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
+        [RockObsolete( "1.5" )]
         [Obsolete( "Use one of the other ~/api/Groups/ByLocation endpoint(s)" )]
         [System.Web.Http.Route( "api/Groups/ByLocation/{geofenceGroupTypeId}/{groupTypeId}/{locationId}" )]
         public IQueryable GetByLocation( int geofenceGroupTypeId, int groupTypeId, int locationId, System.Web.Http.OData.Query.ODataQueryOptions<Group> queryOptions )

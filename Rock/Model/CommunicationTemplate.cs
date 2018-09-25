@@ -139,6 +139,7 @@ namespace Rock.Model
         /// <value>
         /// A Json formatted <see cref="System.String"/> that contains any Medium specific data.
         /// </value>
+        [RockObsolete( "1.7" )]
         [Obsolete( "MediumDataJson is no longer used." )]
         public string MediumDataJson { get; set; }
 
@@ -396,6 +397,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [NotMapped]
+        [RockObsolete( "1.7" )]
         [Obsolete( "MediumData is no longer used. Communication Template now has specific properties for medium data." )]
         public virtual Dictionary<string, string> MediumData
         {
@@ -449,6 +451,7 @@ namespace Rock.Model
         /// The attachment binary file ids
         /// </value>
         [NotMapped]
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use EmailAttachmentBinaryFileIds or SMSAttachmentBinaryFileIds" )]
         public virtual IEnumerable<int> AttachmentBinaryFileIds
         {
@@ -520,6 +523,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> containing the key associated with the value to retrieve. </param>
         /// <returns>A <see cref="System.String"/> representing the value that is linked with the specified key.</returns>
+        [RockObsolete( "1.7" )]
         [Obsolete( "MediumData is no longer used" )]
         public string GetMediumDataValue( string key )
         {
@@ -538,6 +542,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the key.</param>
         /// <param name="value">A <see cref="System.String"/> representing the value.</param>
+        [RockObsolete( "1.7" )]
         [Obsolete( "MediumData is no longer used" )]
         public void SetMediumDataValue( string key, string value )
         {

@@ -28,6 +28,7 @@ namespace Rock.Financial
         /// <summary>
         /// Gets or sets the name of the bank.
         /// </summary>
+        [RockObsolete( "1.5" )]
         [Obsolete( "BankName is not needed")]
         public string BankName { get; set; }
 

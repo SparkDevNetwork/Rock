@@ -677,7 +677,7 @@ namespace Rock.Communication.Transport
             }
         }
 
-        
+
 
         #region Obsolete
 
@@ -686,6 +686,7 @@ namespace Rock.Communication.Transport
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <exception cref="System.NotImplementedException"></exception>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use Send( Communication communication, Dictionary<string, string> mediumAttributes ) instead" )]
         public override void Send( Rock.Model.Communication communication )
         {
@@ -700,6 +701,7 @@ namespace Rock.Communication.Transport
         /// <param name="recipients">The recipients.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public override void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot )
         {
@@ -714,6 +716,7 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot, bool createCommunicationHistory )
         {
@@ -742,6 +745,7 @@ namespace Rock.Communication.Transport
         /// <param name="recipients">The recipients.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public override void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot )
         {
@@ -756,6 +760,7 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot, bool createCommunicationHistory )
         {
@@ -771,6 +776,7 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
         /// <param name="metaData">The meta data.</param>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot, bool createCommunicationHistory, Dictionary<string, string> metaData )
         {
@@ -799,6 +805,7 @@ namespace Rock.Communication.Transport
         /// <param name="body">The body.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null )
         {
@@ -815,6 +822,7 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">Attachments.</param>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
         {
@@ -832,6 +840,7 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">Attachments.</param>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public override void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
         {
@@ -850,6 +859,7 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">Attachments.</param>
         /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot, string themeRoot, List<Attachment> attachments, bool createCommunicationHistory )
         {

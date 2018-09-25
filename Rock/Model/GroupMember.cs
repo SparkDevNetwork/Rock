@@ -724,6 +724,7 @@ namespace Rock.Model
         /// Returns the current values of the group requirements statuses for this GroupMember from the last time they were calculated ordered by GroupRequirementType.Name
         /// </summary>
         /// <returns></returns>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use GetGroupRequirementsStatuses(rockContext) instead" )]
         public IEnumerable<GroupRequirementStatus> GetGroupRequirementsStatuses()
         {
@@ -976,6 +977,7 @@ namespace Rock.Model
         /// <value>
         /// The changes.
         /// </value>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use PersonHistoryChangeList or GroupMemberHistoryChangeList instead, depending on what you are doing. " )]
         public List<string> Changes { get; set; }
 

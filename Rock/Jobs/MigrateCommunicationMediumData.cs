@@ -144,6 +144,7 @@ END
         /// <param name="updateTemplates">if set to <c>true</c> [update templates].</param>
         /// <param name="howManyToConvert">The how many to convert.</param>
         /// <returns></returns>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use the other UpdateCommunicationRecords" )]
         public static bool UpdateCommunicationRecords( bool updateTemplates, int howManyToConvert )
         {

@@ -666,6 +666,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetSearchDetails/{personId}" )]
+        [RockObsolete( "1.7" )]
         [Obsolete( "Returns incorrect results, will be removed in a future version" )]
         public string GetImpersonationParameterObsolete( int personId )
         {

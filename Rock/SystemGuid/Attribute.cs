@@ -92,6 +92,7 @@ namespace Rock.SystemGuid
         /// The family attribute for storing a family's checkin identifiers
         /// </summary>
         ///
+        [RockObsolete( "1.8" )]
         [Obsolete( "Check-in identifiers are no longer stored as a family attribute. They are stored as a PersonSearchValue.")]
         public const string FAMILY_CHECKIN_IDENTIFIERS = "8F528431-A438-4488-8DC3-CA42E66C1B37";
 

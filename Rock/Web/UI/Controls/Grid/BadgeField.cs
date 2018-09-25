@@ -36,6 +36,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The minimum value to be considered Important.
         /// </value>
+        [RockObsolete( "1.4" )]
         [Obsolete( "Use DangerMin instead." )]
         public int ImportantMin
         {
@@ -49,6 +50,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The maximum value to be considered Important.
         /// </value>
+        [RockObsolete( "1.4" )]
         [Obsolete( "Use DangerMax instead." )]
         public int ImportantMax
         {

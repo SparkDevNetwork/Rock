@@ -69,6 +69,7 @@ You can view an online version of this email here:
         /// <param name="communication">The communication.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
+        [RockObsolete( "1.7" )]
         [Obsolete( "The GetCommunication now creates the HTML Preview directly" )]
         public override string GetHtmlPreview( Model.Communication communication, Person person )
         {
@@ -80,6 +81,7 @@ You can view an online version of this email here:
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <returns></returns>
+        [RockObsolete( "1.7" )]
         [Obsolete( "The CommunicationDetail block now creates the details" )]
         public override string GetMessageDetails( Model.Communication communication )
         {
@@ -93,6 +95,7 @@ You can view an online version of this email here:
         /// <value>
         /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
         /// </value>
+        [RockObsolete( "1.7" )]
         [Obsolete( "All mediums now support bulk communications" )]
         public override bool SupportsBulkCommunication
         {

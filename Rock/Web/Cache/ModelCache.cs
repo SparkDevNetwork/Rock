@@ -47,6 +47,7 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete("Use SetFromEntity instead")]
         public virtual void CopyFromModel( Rock.Data.IEntity model )
         {
@@ -348,6 +349,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Reloads the attribute values.
         /// </summary>
+        [RockObsolete( "1.8" )]
         [Obsolete( "No longer needed. The Attributes will get reloaded automatically." )]
         public virtual void ReloadAttributeValues()
         {
