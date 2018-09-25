@@ -2325,6 +2325,9 @@
     <Content Include="Plugin\HotFixes\052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive.sql">
       <DependentUpon>052_MigrationRollupsForV8_1.cs</DependentUpon>
     </Content>
+    <Content Include="Plugin\HotFixes\056_MigrationRollupsForV8_4_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>056_MigrationRollupsForV8_4.cs</DependentUpon>
+    </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />
     <Content Include="Scripts\jquery-1.12.4.min.js" />
