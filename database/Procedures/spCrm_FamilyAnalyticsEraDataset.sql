@@ -81,7 +81,7 @@ BEGIN
         DistinctCount INT
         ,GivingId VARCHAR(50)
         ,TransactionDateTime DATETIME
-        )
+       )
 
     INSERT INTO @TempFinancialTransactionByDateAndGivingId
     SELECT COUNT(DISTINCT (ft.[Id])) [DistinctCount]
