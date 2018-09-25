@@ -113,7 +113,7 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                fromEmail = fromValue;
+                fromEmail = fromValue.ResolveMergeFields( mergeFields );
             }
 
             Guid? guid = to.AsGuidOrNull();
@@ -226,7 +226,7 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                Send( to.ResolveMergeFields( mergeFields ), fromEmail.ResolveMergeFields( mergeFields ), fromName, subject, body, mergeFields, rockContext, createCommunicationRecord, attachments );
+                Send( to.ResolveMergeFields( mergeFields ), fromEmail, fromName, subject, body, mergeFields, rockContext, createCommunicationRecord, attachments );
             }
 
             return true;
@@ -256,7 +256,7 @@ namespace Rock.Workflow.Action
             }
 
             emailMessage.FromEmail = fromEmail;
-            emailMessage.FromName = fromName.IsNullOrWhiteSpace() ? fromEmail.Split( '@' )[0] : fromName;
+            emailMessage.FromName = fromName.IsNullOrWhiteSpace() ? fromEmail : fromName;
             emailMessage.Subject = subject;
             emailMessage.Message = body;
 
