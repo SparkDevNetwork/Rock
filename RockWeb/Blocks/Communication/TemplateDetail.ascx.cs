@@ -667,9 +667,15 @@ namespace RockWeb.Blocks.Communication
 
             if ( lavaFieldsNode == null )
             {
-                lavaFieldsNode = templateDoc.CreateElement( "div" );
+                lavaFieldsNode = templateDoc.CreateElement( "noscript" );
                 lavaFieldsNode.Attributes.Add( "id", "lava-fields" );
-                lavaFieldsNode.Attributes.Add( "style", "display:none" );
+            }
+            else if ( lavaFieldsNode.ParentNode.Name == "body" )
+            {
+                // if the lava-fields is a in the body (from pre-v9 template), remove it from body, and let it get added to head instead
+                lavaFieldsNode.Attributes.Remove( "style" );
+                lavaFieldsNode.Remove();
+                lavaFieldsNode.Name = "noscript";
             }
 
             var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhiteSpace() ).ToList();
@@ -731,7 +737,7 @@ namespace RockWeb.Blocks.Communication
             {
                 var lavaAssignsHtml = new StringBuilder();
                 lavaAssignsHtml.AppendLine();
-                lavaAssignsHtml.AppendLine( "    <!-- Lava Fields: Code-Generated from Template Editor -->" );
+                lavaAssignsHtml.AppendLine( "    {% comment %}  Lava Fields: Code-Generated from Template Editor {% endcomment %}" );
                 foreach ( var lavaFieldsTemplateItem in lavaFieldsTemplateDictionary )
                 {
                     lavaAssignsHtml.AppendLine( string.Format( "    {{% assign {0} = '{1}' %}}", lavaFieldsTemplateItem.Key, lavaFieldsTemplateItem.Value ) );
@@ -743,16 +749,16 @@ namespace RockWeb.Blocks.Communication
 
                 if ( lavaFieldsNode.ParentNode == null )
                 {
-                    var bodyNode = templateDoc.DocumentNode.SelectSingleNode( "//body" );
-                    if ( bodyNode != null )
+                    var headNode = templateDoc.DocumentNode.SelectSingleNode( "//head" );
+                    if ( headNode != null )
                     {
                         // prepend a linefeed so that it is after the lava node (to make it pretty printed)
-                        bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n" ) );
+                        headNode.PrependChild( templateDoc.CreateTextNode( "\r\n" ) );
 
-                        bodyNode.PrependChild( lavaFieldsNode );
+                        headNode.PrependChild( lavaFieldsNode );
 
                         // prepend a indented linefeed so that it ends up prior the lava node (to make it pretty printed)
-                        bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n  " ) );
+                        headNode.PrependChild( templateDoc.CreateTextNode( "\r\n  " ) );
                     }
                 }
             }
