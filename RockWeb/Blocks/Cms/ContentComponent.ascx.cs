@@ -293,9 +293,11 @@ namespace RockWeb.Blocks.Cms
         /// <returns></returns>
         public List<ContentChannelItem> GetContentChannelItems( string itemCacheKey, int? itemCacheDuration )
         {
+            List<ContentChannelItem> contentChannelItems = null;
+
             if ( itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
             {
-                var contentChannelItems = GetCacheItem( itemCacheKey ) as List<ContentChannelItem>;
+                contentChannelItems = GetCacheItem( itemCacheKey ) as List<ContentChannelItem>;
                 if ( contentChannelItems != null )
                 {
                     return contentChannelItems;
@@ -334,7 +336,15 @@ namespace RockWeb.Blocks.Cms
                 contentChannelItemsQuery = contentChannelItemsQuery.Where( paramExpression, whereExpression, null );
             }
 
-            return contentChannelItemsQuery.ToList();
+            contentChannelItems = contentChannelItemsQuery.ToList();
+
+            if ( contentChannelItems != null && itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
+            {
+                string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                AddCacheItem( itemCacheKey, contentChannelItems, itemCacheDuration.Value, cacheTags );
+            }
+
+            return contentChannelItems;
         }
 
         /// <summary>
