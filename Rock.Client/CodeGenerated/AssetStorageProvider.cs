@@ -27,9 +27,9 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for Device that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for AssetStorageProvider that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class DeviceEntity
+    public partial class AssetStorageProviderEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -38,7 +38,7 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
-        public int DeviceTypeValueId { get; set; }
+        public int? EntityTypeId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -47,13 +47,7 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public string IPAddress { get; set; }
-
-        /// <summary />
         public bool IsActive { get; set; }
-
-        /// <summary />
-        public int? LocationId { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -64,13 +58,7 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public int? PrinterDeviceId { get; set; }
-
-        /// <summary />
-        public Rock.Client.Enums.PrintFrom PrintFrom { get; set; }
-
-        /// <summary />
-        public Rock.Client.Enums.PrintTo PrintToOverride { get; set; }
+        public int Order { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -99,24 +87,20 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source Device object
+        /// Copies the base properties from a source AssetStorageProvider object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( Device source )
+        public void CopyPropertiesFrom( AssetStorageProvider source )
         {
             this.Id = source.Id;
             this.Description = source.Description;
-            this.DeviceTypeValueId = source.DeviceTypeValueId;
+            this.EntityTypeId = source.EntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IPAddress = source.IPAddress;
             this.IsActive = source.IsActive;
-            this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
-            this.PrinterDeviceId = source.PrinterDeviceId;
-            this.PrintFrom = source.PrintFrom;
-            this.PrintToOverride = source.PrintToOverride;
+            this.Order = source.Order;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -128,12 +112,12 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for Device that includes all the fields that are available for GETs. Use this for GETs (use DeviceEntity for POST/PUTs)
+    /// Client model for AssetStorageProvider that includes all the fields that are available for GETs. Use this for GETs (use AssetStorageProviderEntity for POST/PUTs)
     /// </summary>
-    public partial class Device : DeviceEntity
+    public partial class AssetStorageProvider : AssetStorageProviderEntity
     {
         /// <summary />
-        public DefinedValue DeviceType { get; set; }
+        public EntityType EntityType { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
