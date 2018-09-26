@@ -60,12 +60,6 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="HotFixMigrations\001_FixLabelMergeFields.cs" />
-    <Compile Include="HotFixMigrations\002_FixAttendanceEmail.cs" />
-    <Compile Include="HotFixMigrations\003_AddAttendanceIndex.cs" />
-    <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
-    <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
-    <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
     <Compile Include="Migrations\201807250211476_AddNoteAttachments.cs" />
     <Compile Include="Migrations\201807250211476_AddNoteAttachments.Designer.cs">
       <DependentUpon>201807250211476_AddNoteAttachments.cs</DependentUpon>
