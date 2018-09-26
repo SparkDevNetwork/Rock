@@ -23,7 +23,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.SqlServer;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
@@ -1767,6 +1769,66 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Uploads the person's photo from the specified url and sets it as the person's Photo using the default BinaryFileType.
+        /// </summary>
+        /// <param name="photoUri">The photo URI.</param>
+        public void SetPhotoFromUrl( Uri photoUri )
+        {
+            this.SetPhotoFromUrl( photoUri, Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+        }
+
+        /// <summary>
+        /// Uploads the person's photo from the specified url and sets it as the person's Photo using the specified BinaryFileType.
+        /// </summary>
+        /// <param name="photoUri">The photo URI.</param>
+        public void SetPhotoFromUrl( Uri photoUri, Guid binaryFileTypeGuid )
+        {
+            try
+            {
+                HttpWebRequest imageRequest = ( HttpWebRequest ) HttpWebRequest.Create( photoUri );
+                HttpWebResponse imageResponse = ( HttpWebResponse ) imageRequest.GetResponse();
+                var imageStream = imageResponse.GetResponseStream();
+                using ( var rockContext = new RockContext() )
+                {
+                    var binaryFileType = new BinaryFileTypeService( rockContext ).GetNoTracking( binaryFileTypeGuid );
+                    using ( MemoryStream photoData = new MemoryStream() )
+                    {
+                        imageStream.CopyTo( photoData );
+                        var fileName = this.FullName.RemoveSpaces().MakeValidFileName();
+                        if ( fileName.IsNullOrWhiteSpace() )
+                        {
+                            fileName = "PersonPhoto";
+                        }
+
+                        var binaryFile = new BinaryFile()
+                        {
+                            FileName = fileName,
+                            MimeType = imageResponse.ContentType,
+                            BinaryFileTypeId = binaryFileType.Id,
+                            IsTemporary = true
+                        };
+
+                        binaryFile.SetStorageEntityTypeId( binaryFileType.StorageEntityTypeId );
+
+                        byte[] photoDataBytes = photoData.ToArray();
+                        binaryFile.FileSize = photoDataBytes.Length;
+                        binaryFile.ContentStream = new MemoryStream( photoDataBytes );
+
+                        var binaryFileService = new BinaryFileService( rockContext );
+                        binaryFileService.Add( binaryFile );
+                        rockContext.SaveChanges();
+
+                        this.PhotoId = binaryFile.Id;
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                throw new Exception( $"Unable to set photo from {photoUri},", ex );
+            }
+        }
+
+        /// <summary>
         /// Creates a <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of the Person object
         /// </summary>
         /// <returns>A <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of the Person object.</returns>
@@ -2432,10 +2494,6 @@ namespace Rock.Model
             }
         }
 
-        
-
-
-
         /// <summary>
         /// Gets the person image tag.
         /// </summary>
@@ -2455,7 +2513,6 @@ namespace Rock.Model
             {
                 return GetPersonPhotoImageTag( null, null, null, Gender.Unknown, null, maxWidth, maxHeight, altText, className );
             }
-
         }
 
         /// <summary>
@@ -2552,7 +2609,7 @@ namespace Rock.Model
 
             return string.Format( "<img src='{0}'{1}{2}{3}/>", photoUrl.ToString(), styleString, altString, classString );
         }
-
+        
         /// <summary>
         /// Gets the HTML markup to use for displaying the top-most signal icon for this person.
         /// </summary>
