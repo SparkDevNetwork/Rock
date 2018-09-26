@@ -26,13 +26,13 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// AssetStorageSystems REST API
+    /// AssetStorageProviders REST API
     /// </summary>
-    public partial class AssetStorageSystemsController : Rock.Rest.ApiController<Rock.Model.AssetStorageSystem>
+    public partial class AssetStorageProvidersController : Rock.Rest.ApiController<Rock.Model.AssetStorageProvider>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AssetStorageSystemsController"/> class.
+        /// Initializes a new instance of the <see cref="AssetStorageProvidersController"/> class.
         /// </summary>
-        public AssetStorageSystemsController() : base( new Rock.Model.AssetStorageSystemService( new Rock.Data.RockContext() ) ) { } 
+        public AssetStorageProvidersController() : base( new Rock.Model.AssetStorageProviderService( new Rock.Data.RockContext() ) ) { } 
     }
 }

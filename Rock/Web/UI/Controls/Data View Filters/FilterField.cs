@@ -23,8 +23,8 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Reporting;
-using Rock.Web.Cache;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -74,6 +74,7 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the name of entity type that is being filtered.
+        /// NOTE: This is not to be confused with FilterEntityTypeName which is the DataFilter.Type.
         /// </summary>
         /// <value>
         /// The name of the filtered entity type.
@@ -169,6 +170,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Gets or sets the name of the filter entity type.  This is a DataFilter type
         /// that applies to the FilteredEntityType
+        /// NOTE: This is not to be confused with FilteredEntityTypeName which is the Rock.Data.EntityType
         /// </summary>
         /// <value>
         /// The name of the entity type.
@@ -223,6 +225,14 @@ namespace Rock.Web.UI.Controls
                 ViewState["ExcludedFilterTypes"] = value;
             }
         }
+
+        /// <summary>
+        /// Set this to a specific Entity to limit Filters that only apply to this Entity
+        /// </summary>
+        /// <value>
+        /// The entity fields override.
+        /// </value>
+        public Rock.Data.IEntity Entity { get; set; }
 
         /// <summary>
         /// Gets or sets the filter mode (Advanced Filter or Simple Filter)
@@ -470,6 +480,11 @@ namespace Rock.Web.UI.Controls
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
+                if ( component is Reporting.DataFilter.PropertyFilter )
+                {
+                    ( component as Reporting.DataFilter.PropertyFilter ).Entity = this.Entity;
+                }
+
                 component.Options = FilterOptions;
                 filterControls = component.CreateChildControls( FilteredEntityType, this, this.FilterMode );
             }

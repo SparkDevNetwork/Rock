@@ -48,7 +48,7 @@
                                         <p> Spark Data is a set of services that allows you to easily clean and enhance your data with
                                         little effort. Before you can begin you'll need to get an API key from the Rock RMS website
                                         and ensure that a credit card is on file for use with paid services.</p>
-                                        <p><a href="https://www.rockrms.com/sparkdatalink">Sign-up Now</a></p>
+                                        <p><a href="https://www.rockrms.com/sparkdatalink" target="_blank" >Sign-up Now</a></p>
 
                                         <asp:ValidationSummary ID="vsSignIn" runat="server" HeaderText="Please Correct the Following" ValidationGroup="SignInValidationGroup" CssClass="alert alert-validation" />
                                         <div class="row">
@@ -69,7 +69,7 @@
                     <asp:Panel ID="pnlSparkDataEdit" runat="server" Visible="false">
                         <p> For more information about your account, or to update your payment information please visit your organization's profile on the
                         Rock RMS website.</p>
-                        <p><a href="https://www.rockrms.com/sparkdatalink">Organization Profile</a></p>
+                        <p><a href="https://www.rockrms.com/sparkdatalink" target="_blank" >Organization Profile</a></p>
                         <asp:ValidationSummary ID="vsSparkDataEdit" runat="server" HeaderText="Please Correct the Following" ValidationGroup="SparkDataEditValidationGroup" CssClass="alert alert-validation" />
                         <div class="row">
                             <div class="col-md-6">

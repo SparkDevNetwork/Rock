@@ -286,7 +286,6 @@ namespace Rock.Rest.Controllers
                                                     && g.GroupRole.Guid == knownRelationshipOwner
                                                     && familyMembers.Contains( g.PersonId ) )
                                     .Select( m => m.GroupId );
-            rockContext.Database.Log = s => System.Diagnostics.Debug.WriteLine( s );
             var guests = groupMemberService.Queryable()
                                     .Where( g => g.GroupRole.Guid == knownRelationshipCanCheckin
                                                     && familyMembersKnownRelationshipGroups.Contains( g.GroupId ) )

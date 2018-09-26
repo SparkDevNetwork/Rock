@@ -1,3 +1,6 @@
+-- NOTE: THIS IS OBSOLETE. Use CodeGen_PagesBlocksAttributesMigration.sql and set @forceIncludeBlockAttributesValuesForPageId instead --
+
+
 -- NOTE: if you have SSMS 2012 or newer, you might what to turn on Options > Query Results > Sql Server > Results to Grid > 'Retain CR/LF on copy or save'
 -- This will allow you to Copy and Paste directly from the Grid results
 

@@ -384,6 +384,25 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns a substring of a string. Uses an empty string for any part that doesn't exist and will return a partial substring if the string isn't long enough for the requested length (The built-in method would throw an exception in these cases).
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="startIndex">The 0-based starting position.</param>
+        /// <param name="length">The desired length.</param>
+        /// <returns></returns>
+        public static string SafeSubstring( this string str, int startIndex, int maxLength )
+        {
+            if ( str == null || maxLength < 0 || startIndex < 0 || startIndex > str.Length )
+            {
+                return string.Empty;
+            }
+            else
+            {
+                return str.Substring( startIndex, Math.Min( maxLength, str.Length - startIndex ) );
+            }
+        }
+
+        /// <summary>
         /// Truncates a string after a max length and adds ellipsis.  Truncation will occur at first space prior to maxLength.
         /// </summary>
         /// <param name="str"></param>

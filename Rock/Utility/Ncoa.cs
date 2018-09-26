@@ -347,7 +347,7 @@ namespace Rock.Utility
                 sparkDataConfig.NcoaSettings.FileName = null;
                 SaveSettings( sparkDataConfig );
             }
-            catch(Exception ex)
+            catch ( Exception ex )
             {
                 throw new NoRetryAggregateException( "Failed to process NCOA export.", ex );
             }
@@ -538,7 +538,14 @@ namespace Rock.Utility
                             ncoaHistory.Processed = Processed.ManualUpdateRequired;
                         }
 
-                        rockContext.SaveChanges();
+                        try
+                        {
+                            rockContext.SaveChanges();
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( new AggregateException( string.Format( "NCOA Failed to set an address as invalid. NcoaHistoryId:'{0}' GroupId: '{1}'", ncoaHistory.Id, ncoaHistory.FamilyId ), ex ) );
+                        }
                     }
                 }
             }
@@ -609,8 +616,14 @@ namespace Rock.Utility
                             ncoaHistory.Processed = Processed.ManualUpdateRequired;
                         }
 
-                        rockContext.SaveChanges();
-
+                        try
+                        {
+                            rockContext.SaveChanges();
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( new AggregateException( string.Format( "NCOA Failed to apply 48 months family move. NcoaHistoryId:'{0}' GroupId: '{1}'", ncoaHistory.Id, ncoaHistory.FamilyId ), ex ) );
+                        }
                     }
                 }
             }
@@ -723,7 +736,14 @@ namespace Rock.Utility
                             }
                         }
 
-                        rockContext.SaveChanges();
+                        try
+                        {
+                            rockContext.SaveChanges();
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( new AggregateException( string.Format( "NCOA Failed to apply family move. NcoaHistoryId:'{0}' GroupId: '{1}'", ncoaHistory.Id, ncoaHistory.FamilyId ), ex ) );
+                        }
                     }
                 }
             }
@@ -755,6 +775,7 @@ namespace Rock.Utility
 
             foreach ( int id in ncoaIds )
             {
+                int personId = 0;
                 using ( var rockContext = new RockContext() )
                 {
                     // Get the NCOA record and make sure it still hasn't been processed
@@ -787,6 +808,7 @@ namespace Rock.Utility
                             {
                                 // If were able to mark their existing address as previous and add a new updated Home address, 
                                 // then set the status to complete (otherwise leave it as needing a manual update).
+                                personId = personAlias.PersonId;
                                 var previousGroupLocation = MarkAsPreviousLocation( ncoaHistory, groupLocationService, previousValueId, changes );
                                 if ( previousGroupLocation != null )
                                 {
@@ -846,7 +868,15 @@ namespace Rock.Utility
                             }
                         }
 
-                        rockContext.SaveChanges();
+                        try
+                        {
+                            rockContext.SaveChanges();
+                        }
+                        catch ( Exception ex )
+                        {
+                            var personAlias = personAliasService.Get( ncoaHistory.PersonAliasId );
+                            ExceptionLogService.LogException( new AggregateException( string.Format( "NCOA Failed to apply individual move. NcoaHistoryId:'{0}' PersonId: '{1}'", ncoaHistory.Id, personId ), ex ) );
+                        }
                     }
                 }
             }

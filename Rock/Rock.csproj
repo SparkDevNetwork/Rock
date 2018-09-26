@@ -386,7 +386,7 @@
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Field\Types\AssetFieldType.cs" />
-    <Compile Include="Field\Types\AssetStorageSystemFieldType.cs" />
+    <Compile Include="Field\Types\AssetStorageProviderFieldType.cs" />
     <Compile Include="Model\CodeGenerated\NoteAttachmentService.cs" />
     <Compile Include="Model\NoteAttachment.cs" />
     <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
@@ -394,6 +394,7 @@
     <Compile Include="Field\ICachedEntitiesFieldType.cs" />
     <Compile Include="Jobs\NoRetryAggregateException.cs" />
     <Compile Include="Jobs\NoRetryException.cs" />
+    <Compile Include="Jobs\PostV84DataMigrations.cs" />
     <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
     <Compile Include="Plugin\HotFixes\056_MigrationRollupsForV8_4.cs" />
     <Compile Include="Plugin\HotFixes\055_MigrationRollupsForV8_3.cs" />
@@ -412,6 +413,7 @@
     <Compile Include="Reporting\DataFilter\Person\InteractionsFilter.cs" />
     <Compile Include="Reporting\DataSelect\Person\InteractionCountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\InteractionDateSelect.cs" />
+    <Compile Include="SystemGuid\ContentChannelType.cs" />
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentChannelCache.cs" />
@@ -818,9 +820,9 @@
     <Compile Include="Model\AnalyticsSourcePersonHistorical.cs" />
     <Compile Include="Model\AnalyticsFactFinancialTransaction.cs" />
     <Compile Include="Model\AnalyticsSourceFinancialTransaction.cs" />
-    <Compile Include="Model\AssetStorageSystem.cs" />
-    <Compile Include="Model\AssetStorageSystemService.Partial.cs" />
-    <Compile Include="Model\CodeGenerated\AssetStorageSystemService.cs" />
+    <Compile Include="Model\AssetStorageProvider.cs" />
+    <Compile Include="Model\AssetStorageProviderService.Partial.cs" />
+    <Compile Include="Model\CodeGenerated\AssetStorageProviderService.cs" />
     <Compile Include="Model\CodeGenerated\ServiceJobHistoryService.cs" />
     <Compile Include="Model\ConnectionTypeService.Partial.cs" />
     <Compile Include="Model\AttendanceOccurrence.cs" />
@@ -1639,7 +1641,7 @@
     <Compile Include="Web\UI\Controls\ListItems.cs" />
     <Compile Include="Web\UI\Controls\NumberBoxBase.cs" />
     <Compile Include="Web\UI\Controls\NumberUpDownGroup.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\AssetStorageSystemPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\AssetStorageProviderPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ContentChannelItemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ItemFromBlockPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ReportPicker.cs" />
@@ -2242,6 +2244,9 @@
     </Content>
     <Content Include="Plugin\HotFixes\052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive.sql">
       <DependentUpon>052_MigrationRollupsForV8_1.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\056_MigrationRollupsForV8_4_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>056_MigrationRollupsForV8_4.cs</DependentUpon>
     </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />

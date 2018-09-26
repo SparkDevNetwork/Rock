@@ -585,7 +585,7 @@ td.grid-select-field {
     }
   }
 
-    .navbar-brand-corner {
+  .navbar-brand-corner {
     position: relative;
     display: none;
     float: left;
@@ -661,14 +661,12 @@ td.grid-select-field {
   // }
 
   .smartsearch {
-    position: relative;
     float: right;
     width: ~"calc(100% - 160px)";
     height: 50px;
     padding: 0;
     margin: 15px 0;
     font-size: .875em;
-    color: @navbartop-color;
     border: 0;
 
     @media (min-width: @screen-sm-min) {
@@ -693,16 +691,10 @@ td.grid-select-field {
 
     input.searchinput {
       padding: 15px 0 15px 34px;
-      color: @navbartop-color;
     }
 
     .dropdown {
       margin-top: 10px;
-
-
-      .navbar-link {
-        color: @navbartop-color;
-      }
 
       .dropdown-menu {
         font-size: 1em;
@@ -895,9 +887,9 @@ td.grid-select-field {
 
   // Disable Bootstrap Toggle Animation
   &.collapsing {
+    display: none;
     -webkit-transition: none;
     transition: none;
-    display: none;
   }
 
   .navbar-toggle-side-left {
@@ -1144,6 +1136,7 @@ body.navbar-side-open {
   .page-title {
     padding: 20px 15px;
     margin: -5px -5px 5px -5px;
+    color: @pagetitle-text-color;
     background-color: @pagetitle-background;
     background-color: var(--pagetitle-background);
     border-bottom: 1px solid @gray-lighter;
@@ -1172,19 +1165,18 @@ body.navbar-side-open {
       }
 
       > li + li::before {
-        padding: 0 5;
-        font-family: FontAwesome;
+        font-family: @fa-font-face;
         font-size: 80%;
         font-weight: 600;
-        content: @fa-var-chevron-right;
+        content: "@{breadcrumb-separator}"
       }
     }
   }
 
 
   @media (min-width: @screen-md-min) {
-    margin: 35px 35px 0 35px;
     padding: 0;
+    margin: 35px 35px 0 35px;
 
     .page-title {
       padding: 20px 35px;
@@ -1455,15 +1447,18 @@ body.navbar-side-open {
 }
 
 .note-editor.note-frame {
-  margin-bottom: 0;
+  margin: 0;
   border: 0;
+  .box-shadow(none);
+  &:focus-within {
+    box-shadow: @input-focus-box-shadow;
+  }
 }
 
 .note-editor .note-toolbar {
   padding: 0;
-  margin: 0;
-  border: 0;
-  border-top: 1px solid #eaeaea !important;
+  border: 1px solid @input-border;
+  border-bottom: 0;
 }
 
 .note-btn {
@@ -1494,7 +1489,8 @@ body.navbar-side-open {
 }
 
 .note-editor .note-editable {
-  border: 1px solid #eaeaea;
+  border: 1px solid @input-border;
+  border-radius: 0;
 }
 
 .picker-menu {

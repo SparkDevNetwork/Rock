@@ -149,7 +149,7 @@
 						</div>
 						{% endif %}
 
-						{% if LinkedPages.PersonDetailPage  %}
+						{% if LinkedPages.PersonDetailPage %}
 							</a>
 						{% endif %}
 					</div>

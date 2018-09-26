@@ -63,28 +63,28 @@ namespace Rock.Tests.Integration.StorageTests
             EnsureFolder( webContentFolder );
         }
 
-        private AssetStorageSystem GetAssetStorageSystem()
+        private AssetStorageProvider GetAssetStorageProvider()
         {
-            var assetStorageService = new AssetStorageSystemService( new Data.RockContext() );
-            AssetStorageSystem assetStorageSystem = assetStorageService.Get( 1 );// need mock
-            assetStorageSystem.LoadAttributes();
-            assetStorageSystem.SetAttributeValue( "RootFolder", "UnitTestFolder" );
+            var assetStorageProviderService = new AssetStorageProviderService( new Data.RockContext() );
+            AssetStorageProvider assetStorageProvider = assetStorageProviderService.Get( 1 );// need mock
+            assetStorageProvider.LoadAttributes();
+            assetStorageProvider.SetAttributeValue( "RootFolder", "UnitTestFolder" );
 
-            return assetStorageSystem;
+            return assetStorageProvider;
         }
 
         //[TestMethod]
         //public void TestListRootBucket()
         //{
-        //    var assetStorageSystem = GetAssetStorageSystem();
-        //    var s3Component = assetStorageSystem.GetAssetStorageComponent();
+        //    var assetStorageProvider = GetAssetStorageProvider();
+        //    var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
         //    var asset = new Asset {
         //        Key = "UnitTestFolder/",
         //        Type = AssetType.Folder
         //    };
-            
-        //    var assets = s3Component.ListFoldersInFolder( assetStorageSystem, asset );
+
+        //    var assets = s3Component.ListFoldersInFolder( assetStorageProvider, asset );
         //}
 
         /// <summary>
@@ -94,14 +94,14 @@ namespace Rock.Tests.Integration.StorageTests
         [TestMethod]
         public void TestAWSCreateRootFolderUsingKey()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             var asset = new Asset();
-            asset.Key = assetStorageSystem.GetAttributeValue( "RootFolder" );
+            asset.Key = assetStorageProvider.GetAttributeValue( "RootFolder" );
             asset.Type = AssetType.Folder;
 
-            Assert.IsTrue( s3Component.CreateFolder( assetStorageSystem, asset ) );
+            Assert.IsTrue( s3Component.CreateFolder( assetStorageProvider, asset ) );
         }
 
         /// <summary>
@@ -112,18 +112,18 @@ namespace Rock.Tests.Integration.StorageTests
         [TestMethod]
         public void TestAWSCreateFolderByName()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             var asset = new Asset();
             asset.Name = "SubFolder1/";
             asset.Type = AssetType.Folder;
-            Assert.IsTrue( s3Component.CreateFolder( assetStorageSystem, asset ) );
+            Assert.IsTrue( s3Component.CreateFolder( assetStorageProvider, asset ) );
 
             asset = new Asset();
             asset.Name = "SubFolder1/SubFolder1a/";
             asset.Type = AssetType.Folder;
-            Assert.IsTrue( s3Component.CreateFolder( assetStorageSystem, asset ) );
+            Assert.IsTrue( s3Component.CreateFolder( assetStorageProvider, asset ) );
         }
 
         /// <summary>
@@ -135,14 +135,14 @@ namespace Rock.Tests.Integration.StorageTests
         {
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var s3Component = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
                 Asset asset = new Asset();
                 asset.Name = ( "SubFolder1/TestUploadObjectByName.jpg" );
                 asset.AssetStream = new FileStream( @"TestData\test.jpg", FileMode.Open );
 
-                bool hasUploaded = s3Component.UploadObject( assetStorageSystem, asset );
+                bool hasUploaded = s3Component.UploadObject( assetStorageProvider, asset );
                 Assert.IsTrue( hasUploaded );
             }
         }
@@ -156,14 +156,14 @@ namespace Rock.Tests.Integration.StorageTests
         {
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var s3Component = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
                 Asset asset = new Asset();
                 asset.Key = ( "UnitTestFolder/SubFolder1/TestUploadObjectByKey.jpg" );
                 asset.AssetStream = new FileStream( @"TestData\test.jpg", FileMode.Open );
 
-                bool hasUploaded = s3Component.UploadObject( assetStorageSystem, asset );
+                bool hasUploaded = s3Component.UploadObject( assetStorageProvider, asset );
                 Assert.IsTrue( hasUploaded );
             }
         }
@@ -176,13 +176,13 @@ namespace Rock.Tests.Integration.StorageTests
         {
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var s3Component = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
                 var asset = new Asset();
                 asset.Key = ( "UnitTestFolder/" );
 
-                var assetList = s3Component.ListObjects( assetStorageSystem, asset );
+                var assetList = s3Component.ListObjects( assetStorageProvider, asset );
                 Assert.IsTrue( assetList.Any( a => a.Name == "UnitTestFolder" ) );
                 Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
                 Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
@@ -199,14 +199,14 @@ namespace Rock.Tests.Integration.StorageTests
         {
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var s3Component = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
                 var asset = new Asset();
                 asset.Key = "UnitTestFolder/SubFolder1/";
                 asset.Type = AssetType.Folder;
 
-                var assetList = s3Component.ListObjectsInFolder( assetStorageSystem, asset );
+                var assetList = s3Component.ListObjectsInFolder( assetStorageProvider, asset );
                 Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
                 Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
                 Assert.IsTrue( assetList.Any( a => a.Name == "SubFolder1" ) );
@@ -222,14 +222,14 @@ namespace Rock.Tests.Integration.StorageTests
         {
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var s3Component = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
                 var subFolder = new Asset();
                 subFolder.Name = "TwoThousandObjects/";
                 subFolder.Type = AssetType.Folder;
 
-                s3Component.CreateFolder( assetStorageSystem, subFolder );
+                s3Component.CreateFolder( assetStorageProvider, subFolder );
 
                 int i = 0;
                 while ( i < 10 )
@@ -238,7 +238,7 @@ namespace Rock.Tests.Integration.StorageTests
                     subFolder.Name = $"TwoThousandObjects/TestFolder-{i}/";
                     subFolder.Type = AssetType.Folder;
 
-                    s3Component.CreateFolder( assetStorageSystem, subFolder );
+                    s3Component.CreateFolder( assetStorageProvider, subFolder );
                     i++;
                 }
 
@@ -249,7 +249,7 @@ namespace Rock.Tests.Integration.StorageTests
                     using ( fs = new FileStream( @"TestData\TextDoc.txt", FileMode.Open ) )
                     {
                         Asset asset = new Asset { Name = $"TwoThousandObjects/TestFile-{i}.txt", AssetStream = fs };
-                        s3Component.UploadObject( assetStorageSystem, asset );
+                        s3Component.UploadObject( assetStorageProvider, asset );
                         i++;
                     }
                 }
@@ -264,14 +264,14 @@ namespace Rock.Tests.Integration.StorageTests
         {
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var s3Component = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
                 var asset = new Asset();
                 asset.Key = "UnitTestFolder/TwoThousandObjects/";
                 asset.Type = AssetType.Folder;
 
-                var assetList = s3Component.ListObjectsInFolder( assetStorageSystem, asset );
+                var assetList = s3Component.ListObjectsInFolder( assetStorageProvider, asset );
                 Assert.IsTrue( assetList.Any( a => a.Name == "TestFile-0.txt" ) );
                 Assert.IsTrue( assetList.Any( a => a.Name == "TestFile-1368.txt" ) );
                 Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-0" ) );
@@ -287,14 +287,14 @@ namespace Rock.Tests.Integration.StorageTests
         {
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var s3Component = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
                 Asset asset = new Asset();
                 asset.Type = AssetType.File;
                 asset.Key = "UnitTestFolder/SubFolder1/TestUploadObjectByName.jpg";
 
-                string url = s3Component.CreateDownloadLink( assetStorageSystem, asset );
+                string url = s3Component.CreateDownloadLink( assetStorageProvider, asset );
                 bool valid = false;
 
                 try
@@ -324,8 +324,8 @@ namespace Rock.Tests.Integration.StorageTests
             {
                 TestUploadObjectByName();
 
-                var assetStorageSystem = GetAssetStorageSystem();
-                var s3Component = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
                 var asset = new Asset();
                 asset.Type = AssetType.File;
@@ -335,7 +335,7 @@ namespace Rock.Tests.Integration.StorageTests
 
                 try
                 {
-                    var responseAsset = s3Component.GetObject( assetStorageSystem, asset );
+                    var responseAsset = s3Component.GetObject( assetStorageProvider, asset );
                     using ( responseAsset.AssetStream )
                     using ( FileStream fs = new FileStream( $@"C:\temp\{responseAsset.Name}", FileMode.Create ) )
                     {
@@ -359,14 +359,14 @@ namespace Rock.Tests.Integration.StorageTests
         {
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var s3Component = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
                 var asset = new Asset();
                 asset.Key = "UnitTestFolder/TwoThousandObjects/";
                 asset.Type = AssetType.Folder;
 
-                var assetList = s3Component.ListFoldersInFolder( GetAssetStorageSystem(), asset );
+                var assetList = s3Component.ListFoldersInFolder( GetAssetStorageProvider(), asset );
 
                 Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-0" ) );
                 Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-1" ) );
@@ -391,14 +391,14 @@ namespace Rock.Tests.Integration.StorageTests
         {
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var s3Component = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
                 var asset = new Asset();
                 asset.Key = "UnitTestFolder/SubFolder1/";
                 asset.Type = AssetType.Folder;
 
-                var assetList = s3Component.ListFilesInFolder( assetStorageSystem, asset );
+                var assetList = s3Component.ListFilesInFolder( assetStorageProvider, asset );
 
                 Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
                 Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
@@ -417,24 +417,24 @@ namespace Rock.Tests.Integration.StorageTests
 
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                var assetStorageSystem = GetAssetStorageSystem();
-                var s3Component = assetStorageSystem.GetAssetStorageComponent();
+                var assetStorageProvider = GetAssetStorageProvider();
+                var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
                 Asset asset = new Asset();
                 asset.Type = AssetType.File;
                 asset.Key = "UnitTestFolder/SubFolder1/TestUploadObjectByKey.jpg";
 
-                var origAssetList = s3Component.ListObjects( assetStorageSystem, asset );
+                var origAssetList = s3Component.ListObjects( assetStorageProvider, asset );
 
                 if ( origAssetList.Count == 1 )
                 {
-                    Assert.IsTrue( s3Component.RenameAsset( assetStorageSystem, asset, "TestUploadObjectByKeyRenamed.jpg" ) );
+                    Assert.IsTrue( s3Component.RenameAsset( assetStorageProvider, asset, "TestUploadObjectByKeyRenamed.jpg" ) );
 
                     asset = new Asset();
                     asset.Type = AssetType.File;
                     asset.Key = "UnitTestFolder/SubFolder1/TestUploadObjectByKey";
 
-                    var assetList = s3Component.ListObjects( assetStorageSystem, asset );
+                    var assetList = s3Component.ListObjects( assetStorageProvider, asset );
                     Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
                     Assert.IsFalse( assetList.Any( a => a.Name == "TestUploadObjectByKey.jpg" ) );
                 }
@@ -451,14 +451,14 @@ namespace Rock.Tests.Integration.StorageTests
         [TestMethod]
         public void TestDeleteFile()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             Asset asset = new Asset();
             asset.Key = "UnitTestFolder/SubFolder1/TestUploadObjectByName.jpg";
             asset.Type = AssetType.File;
 
-            bool hasDeleted = s3Component.DeleteAsset( assetStorageSystem, asset );
+            bool hasDeleted = s3Component.DeleteAsset( assetStorageProvider, asset );
             Assert.IsTrue( hasDeleted );
         }
 
@@ -468,21 +468,21 @@ namespace Rock.Tests.Integration.StorageTests
         [TestMethod]
         public void TestDeleteFolder()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             // Create a folder so we can test the delete 
             var assetSetup = new Asset();
             assetSetup.Name = "DELETE_FOLDER/";
             assetSetup.Type = AssetType.Folder;
-            Assert.IsTrue( s3Component.CreateFolder( assetStorageSystem, assetSetup ) );
+            Assert.IsTrue( s3Component.CreateFolder( assetStorageProvider, assetSetup ) );
 
             // Now we can run our test...
             Asset asset = new Asset();
             asset.Key = ( "DELETE_FOLDER/" );
             asset.Type = AssetType.Folder;
 
-            bool hasDeleted = s3Component.DeleteAsset( assetStorageSystem, asset );
+            bool hasDeleted = s3Component.DeleteAsset( assetStorageProvider, asset );
             Assert.IsTrue( hasDeleted );
         }
 
