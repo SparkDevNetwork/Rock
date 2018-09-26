@@ -198,10 +198,12 @@ namespace Rock.CodeGeneration
         /// </summary>
         public void ReportRockObsolete()
         {
-            StringBuilder sbResults = new StringBuilder();
+            StringBuilder sbWarnings = new StringBuilder();
+            List<string> obsoleteList = new List<string>();
             List<Assembly> rockAssemblyList = new List<Assembly>();
             rockAssemblyList.Add( typeof( Rock.Data.RockContext ).Assembly );
             rockAssemblyList.Add( typeof( Rock.Rest.ApiControllerBase ).Assembly );
+            
 
             foreach ( var rockAssembly in rockAssemblyList )
             {
@@ -214,15 +216,15 @@ namespace Rock.CodeGeneration
                         var rockObsolete = type.GetCustomAttribute<RockObsolete>();
                         if ( rockObsolete == null )
                         {
-                            sbResults.AppendLine( $"type {type} is [Obsolete] but does not have a [RockObsolete]" );
+                            sbWarnings.AppendLine( $"type {type} is [Obsolete] but does not have a [RockObsolete]" );
                         }
-                        else if ( cbGenerateObsoleteExport.Checked )
+                        else
                         {
-                           sbResults.AppendLine( $"{rockObsolete.Version},{type.Name},class" );
+                            obsoleteList.Add( $"{rockObsolete.Version},{type.Name},class,{typeObsoleteAttribute.IsError}" );
                         }
                     }
 
-                    foreach ( var member in type.GetMembers())
+                    foreach ( var member in type.GetMembers() )
                     {
                         ObsoleteAttribute memberObsoleteAttribute = member.GetCustomAttribute<ObsoleteAttribute>();
                         if ( memberObsoleteAttribute != null && rockAssembly == member.Module.Assembly && member.DeclaringType == type )
@@ -230,21 +232,27 @@ namespace Rock.CodeGeneration
                             var rockObsolete = member.GetCustomAttribute<RockObsolete>();
                             if ( rockObsolete == null )
                             {
-                                sbResults.AppendLine( $"type {type} has [Obsolete] {member.MemberType} {member} but does not have a [RockObsolete]" );
+                                sbWarnings.AppendLine( $"type {type} has [Obsolete] {member.MemberType} {member} but does not have a [RockObsolete]" );
                             }
-                            else if ( cbGenerateObsoleteExport.Checked )
+                            else
                             {
-                                sbResults.AppendLine( $"{rockObsolete.Version},{type.Name} {member.Name},{member.MemberType}" );
+                                obsoleteList.Add( $"{rockObsolete.Version},{type.Name} {member.Name},{member.MemberType},{memberObsoleteAttribute.IsError}" );
                             }
                         }
                     }
                 }
             }
 
-            tbResults.Text += sbResults.ToString();
-        }
+            tbResults.Text += sbWarnings.ToString();
 
-        
+            if ( cbGenerateObsoleteExport.Checked )
+            {
+                tbResults.Text += Environment.NewLine;
+
+                obsoleteList = obsoleteList.OrderBy( a => a.Split( new char[] { ',' } )[0] ).ToList();
+                tbResults.Text += $"Version,Name,Type,IsError" + Environment.NewLine + obsoleteList.AsDelimited( Environment.NewLine );
+            }
+        }
 
         /// <summary>
         /// Writes the database procs scripts.

@@ -725,7 +725,7 @@ namespace Rock.Model
         /// </summary>
         /// <returns></returns>
         [RockObsolete( "1.7" )]
-        [Obsolete( "Use GetGroupRequirementsStatuses(rockContext) instead" )]
+        [Obsolete( "Use GetGroupRequirementsStatuses(rockContext) instead", true )]
         public IEnumerable<GroupRequirementStatus> GetGroupRequirementsStatuses()
         {
             using ( var rockContext = new RockContext() )

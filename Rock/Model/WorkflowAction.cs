@@ -491,7 +491,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.WorkflowAction" />
         /// </returns>        
         [RockObsolete( "1.7" )]
-        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowActionTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowAction object that is returned by that method will not have the ActionType property set. If you are referencing the ActionType property on a Workflow Action returned by that method, you will get a Null Reference Exception! You should use the new ActionTypeCache property on the workflow action instead." )]
+        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowActionTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowAction object that is returned by that method will not have the ActionType property set. If you are referencing the ActionType property on a Workflow Action returned by that method, you will get a Null Reference Exception! You should use the new ActionTypeCache property on the workflow action instead.", true )]
         internal static WorkflowAction Activate( WorkflowActionType actionType, WorkflowActivity activity )
         {
             using ( var rockContext = new RockContext() )
@@ -510,7 +510,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.WorkflowAction" />
         /// </returns>
         [RockObsolete( "1.7" )]
-        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowActionTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowAction object that is returned by that method will not have the ActionType property set. If you are referencing the ActionType property on a Workflow Action returned by that method, you will get a Null Reference Exception! You should use the new ActionTypeCache property on the workflow action instead." )]
+        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowActionTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowAction object that is returned by that method will not have the ActionType property set. If you are referencing the ActionType property on a Workflow Action returned by that method, you will get a Null Reference Exception! You should use the new ActionTypeCache property on the workflow action instead.", true )]
         internal static WorkflowAction Activate( WorkflowActionType actionType, WorkflowActivity activity, RockContext rockContext )
         {
             if ( actionType != null )

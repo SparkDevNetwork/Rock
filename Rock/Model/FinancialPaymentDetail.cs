@@ -284,7 +284,7 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         /// <param name="changes">The changes.</param>
         [RockObsolete( "1.7.1" )]
-        [Obsolete( "Use other SetFromPaymentInfo" )]
+        [Obsolete( "Use other SetFromPaymentInfo", true )]
         public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext, List<string> changes )
         {
             this.SetFromPaymentInfo( paymentInfo, paymentGateway, rockContext );

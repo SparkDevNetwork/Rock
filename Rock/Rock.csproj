@@ -1353,7 +1353,6 @@
     <Compile Include="Transactions\InteractionTransaction.cs" />
     <Compile Include="Transactions\ShortLinkTransaction.cs" />
     <Compile Include="Transactions\SendPaymentReceipts.cs" />
-    <Compile Include="Transactions\SendPaymentReciepts.cs" />
     <Compile Include="Transactions\UpdatePersonsTopSignal.cs" />
     <Compile Include="UniversalSearch\Crawler\Crawler.cs" />
     <Compile Include="UniversalSearch\Crawler\CrawledPage.cs" />

@@ -41,7 +41,7 @@ namespace Rock.Utility
         /// </summary>
         /// <returns></returns>
         [RockObsolete( "1.7.1" )]
-        [Obsolete("Use SendToSpark(rockContext) to avoid error about multiple database contexts")]
+        [Obsolete("Use SendToSpark(rockContext) to avoid error about multiple database contexts", true)]
         public static List<Notification> SendToSpark()
         {
             using ( var rockContext = new RockContext() )

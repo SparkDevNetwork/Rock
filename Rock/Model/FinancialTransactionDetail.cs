@@ -62,17 +62,6 @@ namespace Rock.Model
         public int AccountId { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this is a non-cash detail.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if non-cash; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        [RockObsolete( "1.5" )]
-        [Obsolete("Field is not used. Non Cash transactions can be designated by the currency (tender) type.")]
-        public bool IsNonCash { get; set; }
-
-        /// <summary>
         /// Gets or sets the amount of the transaction detail.
         /// </summary>
         /// <value>

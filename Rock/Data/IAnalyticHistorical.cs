@@ -25,7 +25,7 @@ namespace Rock.Data
     /// and an Analytic Historical Table that stores previous versions of each record
     /// </summary>
     [RockObsolete( "1.7" )]
-    [Obsolete( "Decorate with [Analytics] instead" )]
+    [Obsolete( "Decorate with [Analytics] instead", true )]
     public interface IAnalyticHistorical : IAnalytic
     {
 

@@ -295,7 +295,7 @@ namespace Rock.Communication.Transport
         /// <param name="communication">The communication.</param>
         /// <exception cref="System.NotImplementedException"></exception>
         [RockObsolete( "1.7" )]
-        [Obsolete( "Use Send( Communication communication, Dictionary<string, string> mediumAttributes ) instead" )]
+        [Obsolete( "Use Send( Communication communication, Dictionary<string, string> mediumAttributes ) instead", true )]
         public override void Send( Rock.Model.Communication communication )
         {
             int mediumEntityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() )?.Id ?? 0;
@@ -310,7 +310,7 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         [RockObsolete( "1.7" )]
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public override void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
         {
             var message = new RockPushMessage();
@@ -336,7 +336,7 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <exception cref="NotImplementedException"></exception>
         [RockObsolete( "1.7" )]
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public override void Send(SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot)
         {
             throw new NotImplementedException();
@@ -353,7 +353,7 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <exception cref="NotImplementedException"></exception>
         [RockObsolete( "1.7" )]
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public override void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null)
         {
             throw new NotImplementedException();
@@ -371,7 +371,7 @@ namespace Rock.Communication.Transport
         /// <param name="attachments">Attachments.</param>
         /// <exception cref="NotImplementedException"></exception>
         [RockObsolete( "1.7" )]
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public override void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null)
         {
             throw new NotImplementedException();
@@ -390,7 +390,7 @@ namespace Rock.Communication.Transport
         /// <param name="attachments">The attachments.</param>
         /// <exception cref="NotImplementedException"></exception>
         [RockObsolete( "1.7" )]
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public override void Send(List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null)
         {
             throw new NotImplementedException();

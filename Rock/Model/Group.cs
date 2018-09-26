@@ -178,7 +178,7 @@ namespace Rock.Model
         /// The must meet requirements to add member.
         /// </value>
         [RockObsolete( "1.7" )]
-        [Obsolete( "This no longer is functional. Please use GroupRequirement.MustMeetRequirementToAddMember instead." )]
+        [Obsolete( "This no longer is functional. Please use GroupRequirement.MustMeetRequirementToAddMember instead.", true )]
         [NotMapped]
         public bool? MustMeetRequirementsToAddMember { get; set; }
 
@@ -654,7 +654,7 @@ namespace Rock.Model
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.7" )]
-        [Obsolete( "Use PersonMeetsGroupRequirements(rockContext, personId, groupRoleId) instead " )]
+        [Obsolete( "Use PersonMeetsGroupRequirements(rockContext, personId, groupRoleId) instead", true )]
         public IEnumerable<PersonGroupRequirementStatus> PersonMeetsGroupRequirements( int personId, int? groupRoleId )
         {
             using ( var rockContext = new RockContext() )

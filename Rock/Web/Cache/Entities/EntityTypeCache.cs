@@ -166,7 +166,7 @@ namespace Rock.Web.Cache
         /// <c>true</c> if this instance is analytic supported; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.7" )]
-        [Obsolete]
+        [Obsolete( "Use IsAnalyticsSupported( string entityTypeQualifierColumn, string entityTypeQualifierValue ) instead", true)]
         [DataMember]
         public bool IsAnalyticSupported { get; private set; }
 
@@ -177,7 +177,7 @@ namespace Rock.Web.Cache
         /// <c>true</c> if this instance is analytic historical supported; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.7" )]
-        [Obsolete]
+        [Obsolete( "Use IsAnalyticsHistoricalSupported( string entityTypeQualifierColumn, string entityTypeQualifierValue ) instead", true )]
         [DataMember]
         public bool IsAnalyticHistoricalSupported { get; private set; }
 

@@ -27,7 +27,7 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     [ToolboxData( "<{0}:FieldTypeList runat=server></{0}:FieldTypeList>" )]
     [RockObsolete( "1.7" )]
-    [Obsolete("Use FieldTypePicker instead")]
+    [Obsolete("Use FieldTypePicker instead", true )]
     public class FieldTypeList : DataDropDownList
     {
         /// <summary>

@@ -26,13 +26,6 @@ namespace Rock.Financial
     public class ACHPaymentInfo : PaymentInfo
     {
         /// <summary>
-        /// Gets or sets the name of the bank.
-        /// </summary>
-        [RockObsolete( "1.5" )]
-        [Obsolete( "BankName is not needed")]
-        public string BankName { get; set; }
-
-        /// <summary>
         /// The account number
         /// </summary>
         public string BankAccountNumber { get; set; }

@@ -49,17 +49,7 @@ namespace Rock.CheckIn
         ///   <c>true</c> if [enable override]; otherwise, <c>false</c>.
         /// </value>
         public bool EnableOverride { get { return GetSetting( "core_checkin_EnableOverride" ).AsBoolean( true ); } }
-
-        /// <summary>
-        /// Gets the length of the security code.
-        /// </summary>
-        /// <value>
-        /// The length of the security code.
-        /// </value>
-        [RockObsolete( "1.6.4" )]
-        [Obsolete( "Use SecurityCodeAlphaNumericLength instead." )]
-        public int SecurityCodeLength { get { return GetSetting( "core_checkin_SecurityCodeLength" ).AsIntegerOrNull() ?? 3; } }
-
+       
         /// <summary>
         /// Gets the length of the security code alpha numeric.
         /// </summary>

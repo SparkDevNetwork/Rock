@@ -54,7 +54,7 @@ namespace Rock.Communication.Medium
         /// <param name="person">The person.</param>
         /// <returns></returns>
         [RockObsolete( "1.7" )]
-        [Obsolete( "The GetCommunication now creates the HTML Preview directly" )]
+        [Obsolete( "The GetCommunication now creates the HTML Preview directly", true )]
         public override string GetHtmlPreview( Model.Communication communication, Person person )
         {
             throw new NotSupportedException();
@@ -66,7 +66,7 @@ namespace Rock.Communication.Medium
         /// <param name="communication">The communication.</param>
         /// <returns></returns>
         [RockObsolete( "1.7" )]
-        [Obsolete( "The CommunicationDetail block now creates the details" )]
+        [Obsolete( "The CommunicationDetail block now creates the details", true )]
         public override string GetMessageDetails( Model.Communication communication )
         {
             throw new NotSupportedException();
@@ -79,7 +79,7 @@ namespace Rock.Communication.Medium
         /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.7" )]
-        [Obsolete( "All mediums now support bulk communications" )]
+        [Obsolete( "All mediums now support bulk communications", true )]
         public override bool SupportsBulkCommunication
         {
             get
