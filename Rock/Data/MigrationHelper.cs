@@ -2026,6 +2026,32 @@ BEGIN
                 END", blockGuid, attributeGuid, value ) );
         }
 
+        /// <summary>
+        /// Updates the block attribute value. If an oldValue is provided then the block attribute value will only be updated
+        /// if it matches the old value EXACTLY. This method replaces the entire value, to append use AddBlockAttributeValue and
+        /// set appendToExisting to true. If it is okay to delete and replace then use AddBlockAttributeValue.
+        /// </summary>
+        /// <param name="blockGuid">The block unique identifier.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="newValue">The new value.</param>
+        /// <param name="oldValue">The old value.</param>
+        public void UpdateBlockAttributeValue(string blockGuid, string attributeGuid, string newValue, string oldValue = "" )
+        {
+            string qry = $@"
+                DECLARE @BlockId int = (SELECT [Id] FROM [Block] WHERE [Guid] = '{blockGuid}')
+                DECLARE @AttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
+
+                UPDATE [AttributeValue] SET [Value] = '{newValue}'
+                WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId";
+
+            if ( oldValue.IsNotNullOrWhiteSpace() )
+            {
+                qry += $@" AND [Value] = '{oldValue}'";
+            }
+
+            Migration.Sql( qry );
+        }
+
         #endregion
 
         #region DefinedType Methods

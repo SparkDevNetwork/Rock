@@ -49,7 +49,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Deletes the test data added to the database for each tests.
         /// </summary>
-        public void Cleanup()
+        private void Cleanup()
         {
             using ( var rockContext = new RockContext() )
             {

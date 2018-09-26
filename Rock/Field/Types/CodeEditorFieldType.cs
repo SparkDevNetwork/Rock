@@ -166,7 +166,7 @@ namespace Rock.Field.Types
 
                 if ( configurationValues.ContainsKey( EDITOR_HEIGHT ) )
                 {
-                    editor.EditorHeight = configurationValues[EDITOR_HEIGHT].Value.ToString();
+                    editor.EditorHeight = configurationValues[EDITOR_HEIGHT].Value;
                 }
             }
 
@@ -214,7 +214,7 @@ namespace Rock.Field.Types
         #region FilterControl
 
         /// <summary>
-        /// Gets the type of the filter comparison.
+        /// /*Get*/s the type of the filter comparison.
         /// </summary>
         /// <value>
         /// The type of the filter comparison.

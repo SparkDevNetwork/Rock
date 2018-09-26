@@ -62,8 +62,8 @@ namespace Rock.Tests.Workflow.Action
             };
             var errors = new List<string>();
             var result = BackgroundAction.Execute( new RockContext(), action, null, out errors );
-            Assert.Equal( errors.Count, 1 );
-            Assert.Equal( errors[0], "Invalid Background Check Provider Guid!" );
+            Assert.Single( errors );
+            Assert.Equal( "Invalid Background Check Provider Guid!", errors[0] );
         }
     }
 }
