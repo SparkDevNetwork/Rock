@@ -371,7 +371,8 @@ namespace Rock.Web.Cache
         /// Loads the attributes.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        [Obsolete( "No longer needed on Cached items. The Attributes will get loaded automatically." )]
+        [RockObsolete( "1.8" )]
+        [Obsolete( "No longer needed on Cached items. The Attributes will get loaded automatically.", true )]
         public void LoadAttributes( RockContext rockContext )
         {
             ReloadAttributeValues();
@@ -380,6 +381,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Loads the attributes.
         /// </summary>
+        [RockObsolete( "1.8" )]
         [Obsolete( "No longer needed on Cached items. The Attributes will get loaded automatically." )]
         public void LoadAttributes()
         {
