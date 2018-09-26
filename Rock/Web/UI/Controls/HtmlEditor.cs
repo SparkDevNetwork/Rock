@@ -307,7 +307,7 @@ namespace Rock.Web.UI.Controls
         /// The custom on change press script.
         /// </value>
         [RockObsolete( "1.7" )]
-        [Obsolete( "Use CallbackOnKeyupScript or CallbackOnChangeScript instead" )]
+        [Obsolete( "Use CallbackOnKeyupScript or CallbackOnChangeScript instead", true )]
         public string OnChangeScript
         {
             get
@@ -475,20 +475,6 @@ namespace Rock.Web.UI.Controls
             {
                 ViewState["MergeFields"] = value;
             }
-        }
-
-        /// <summary>
-        /// Gets or sets the additional configurations.
-        /// </summary>
-        /// <value>
-        /// The additional configurations.
-        /// </value>
-        [RockObsolete( "1.6" )]
-        [Obsolete( "Doesn't do anything anymore" )]
-        public string AdditionalConfigurations
-        {
-            get { return ViewState["AdditionalConfigurations"] as string ?? string.Empty; }
-            set { ViewState["AdditionalConfigurations"] = value; }
         }
 
         /// <summary>

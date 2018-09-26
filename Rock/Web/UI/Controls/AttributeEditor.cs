@@ -587,7 +587,7 @@ namespace Rock.Web.UI.Controls
         ///   <c>true</c> if Show in Grid option is visible; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.7" )]
-        [Obsolete( "Use IsShowInGridVisible instead." )]
+        [Obsolete( "Use IsShowInGridVisible instead.", true )]
         public bool ShowInGridVisible
         {
             get

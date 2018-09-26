@@ -141,7 +141,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [RockObsolete( "1.7" )]
-        [Obsolete( "Use PersonalDeviceTypeValueId instead." )]
+        [Obsolete( "Use PersonalDeviceTypeValueId instead.", true )]
         public virtual int PersonalDeviceTypeId
         {
             get { return PersonalDeviceTypeValueId ?? 0; }

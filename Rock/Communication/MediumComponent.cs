@@ -168,7 +168,7 @@ namespace Rock.Communication
         /// <param name="person">The person.</param>
         /// <returns></returns>
         [RockObsolete( "1.7" )]
-        [Obsolete("The GetCommunication now creates the HTML Preview directly")]
+        [Obsolete("The GetCommunication now creates the HTML Preview directly", true )]
         public abstract string GetHtmlPreview( Model.Communication communication, Person person );
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace Rock.Communication
         /// <param name="communication">The communication.</param>
         /// <returns></returns>
         [RockObsolete( "1.7" )]
-        [Obsolete( "The CommunicationDetail block now creates the details" )]
+        [Obsolete( "The CommunicationDetail block now creates the details", true )]
         public abstract string GetMessageDetails( Model.Communication communication );
 
         /// <summary>
@@ -187,7 +187,7 @@ namespace Rock.Communication
         /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.7" )]
-        [Obsolete( "All mediums now support bulk communications")]
+        [Obsolete( "All mediums now support bulk communications", true )]
         public abstract bool SupportsBulkCommunication
         {
             get;
