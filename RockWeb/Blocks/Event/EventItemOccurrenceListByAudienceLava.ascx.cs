@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     // default show all future
-                    itemOccurrences.RemoveAll( o => o.GetStartTimes( RockDateTime.Now, DateTime.Now.AddDays( 365 ) ).Count() == 0 );
+                    itemOccurrences.RemoveAll( o => o.GetStartTimes( RockDateTime.Now, RockDateTime.Now.AddDays( 365 ) ).Count() == 0 );
                 }
 
                 // limit results

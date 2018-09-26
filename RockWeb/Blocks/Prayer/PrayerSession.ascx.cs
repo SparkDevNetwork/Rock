@@ -330,6 +330,8 @@ namespace RockWeb.Blocks.Prayer
         protected void lbFlag_Click( object sender, EventArgs e )
         {
             mdFlag.SaveButtonText = "Yes, Flag This Request";
+            var index = hfPrayerIndex.ValueAsInt();
+            hfIdValue.SetValue( this.PrayerRequestIds[index] );
             mdFlag.Show();
         }
 

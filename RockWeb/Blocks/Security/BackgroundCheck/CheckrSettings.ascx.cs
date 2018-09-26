@@ -95,7 +95,10 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 BackgroundCheckContainer.Instance.Refresh();
             }
 
-            btnUpdate_Click( null, null );
+            if ( HaveWorkflowAction( CheckrSystemGuid.CHECKR_WORKFLOW_TYPE ) )
+            {
+                btnUpdate_Click( null, null );
+            }
 
             pnlToken.Visible = false;
             pnlPackages.Visible = true;
@@ -179,7 +182,22 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 checkrWorkflowAction.Name = "Background Check";
 
                 rockContext.SaveChanges();
+
+                // Enable Checkr packages and disable PMM packages
+                DefinedValueService definedValueService = new DefinedValueService( rockContext );
+                var packages = definedValueService
+                    .GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() )
+                    .ToList();
+
+                foreach ( var package in packages )
+                {
+                    package.IsActive = false;
+                }
+
+                rockContext.SaveChanges();
             }
+
+            btnUpdate_Click( null, null );
 
             ShowDetail();
         }
@@ -196,7 +214,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             {
                 var packages = new DefinedValueService( rockContext )
                     .GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() )
-                    .Where( v => v.ForeignId == 2 )
+                    .Where( v => v.ForeignId == 2 && v.IsActive )
                     .Select( v => v.Value.Substring( CheckrConstants.CHECKR_TYPENAME_PREFIX.Length ) )
                     .ToList();
 
@@ -251,6 +269,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
             if ( accessToken.IsNullOrWhiteSpace() )
             {
+                btnDefault.Visible = false;
                 pnlToken.Visible = true;
                 pnlPackages.Visible = false;
                 HideSecondaryBlocks( true );
@@ -260,10 +279,12 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 if ( HaveWorkflowAction( CheckrSystemGuid.CHECKR_WORKFLOW_TYPE ) )
                 {
                     btnDefault.Visible = false;
+                    pnlPackages.Enabled = true;
                 }
                 else
                 {
                     btnDefault.Visible = true;
+                    pnlPackages.Enabled = false;
                 }
 
                 tbAccessToken.Text = accessToken;

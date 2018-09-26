@@ -45,11 +45,15 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 3 )]
     [LinkedPage( "Data View Detail Page", "Page used to view data views that are used with the group member sync.", false, order: 3 )]
     [BooleanField( "Show Campus Filter", "Setting to show/hide campus filter.", true, order: 4 )]
-    [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 5, "ShowAttendance" )]
-    [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 6 )]
+    [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 5, SHOW_FIRST_LAST_ATTENDANCE_KEY )]
+    [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 6, SHOW_DATE_ADDED_KEY )]
     [BooleanField( "Show Note Column", "Should the note be displayed as a separate grid column (instead of displaying a note icon under person's name)?", false, "", 7 )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
+        private const string SHOW_FIRST_LAST_ATTENDANCE_KEY = "ShowAttendance";
+        private const string SHOW_DATE_ADDED_KEY = "ShowDateAdded";
+        private const string DATE_ADDED_FILTER_KEY = "Date Added";
+
         #region Private Variables
 
         private DefinedValueCache _inactiveStatus = null;
@@ -208,6 +212,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         public void GroupMemberList_BlockUpdated( object sender, EventArgs e )
         {
+            SetFilter();
             BindGroupMembersGrid();
         }
 
@@ -371,6 +376,7 @@ namespace RockWeb.Blocks.Groups
             rFilter.SaveUserPreference( "Gender", "Gender", cblGenderFilter.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( "Registration", "Registration", ddlRegistration.SelectedValue );
             rFilter.SaveUserPreference( "Signed Document", "Signed Document", ddlSignedDocument.SelectedValue );
+            rFilter.SaveUserPreference( DATE_ADDED_FILTER_KEY, DATE_ADDED_FILTER_KEY, drpDateAdded.DelimitedValues );
 
             if ( AvailableAttributes != null )
             {
@@ -388,6 +394,11 @@ namespace RockWeb.Blocks.Groups
                         {
                             // intentionally ignore
                         }
+                    }
+                    else
+                    {
+                        // no filter control, so clear out the user preference
+                        rFilter.SaveUserPreference( attribute.Key, attribute.Name, null );
                     }
                 }
             }
@@ -486,6 +497,10 @@ namespace RockWeb.Blocks.Groups
             else if ( e.Key == "Signed Document" )
             {
                 return;
+            }
+            else if (e.Key == DATE_ADDED_FILTER_KEY )
+            {
+                e.Value = DateRangePicker.FormatDelimitedValues(e.Value);
             }
             else
             {
@@ -646,6 +661,9 @@ namespace RockWeb.Blocks.Groups
 
             ddlSignedDocument.SetValue( rFilter.GetUserPreference( "Signed Document" ) );
             ddlSignedDocument.Visible = _group.RequiredSignatureDocumentTemplateId.HasValue;
+
+            drpDateAdded.DelimitedValues = rFilter.GetUserPreference( DATE_ADDED_FILTER_KEY ) ;
+            drpDateAdded.Visible = GetAttributeValue( SHOW_DATE_ADDED_KEY ).AsBoolean();
         }
 
         /// <summary>
@@ -1122,6 +1140,24 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
 
+                    // Filter by date added range
+                    var dateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateAdded.DelimitedValues );
+
+                    if ( dateRange.Start.HasValue )
+                    {
+                        qry = qry.Where( m =>
+                            m.DateTimeAdded.HasValue &&
+                            m.DateTimeAdded.Value >= dateRange.Start.Value );
+                    }
+
+                    if ( dateRange.End.HasValue )
+                    {
+                        var end = dateRange.End.Value.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
+                        qry = qry.Where( m =>
+                            m.DateTimeAdded.HasValue &&
+                            m.DateTimeAdded.Value < end );
+                    }
+
                     // Filter query by any configured attribute filters
                     if ( AvailableAttributes != null && AvailableAttributes.Any() )
                     {
@@ -1227,7 +1263,7 @@ namespace RockWeb.Blocks.Groups
                     string photoFormat = "<div class=\"photo-icon photo-round photo-round-xs pull-left margin-r-sm js-person-popover\" personid=\"{0}\" data-original=\"{1}&w=50\" style=\"background-image: url( '{2}' ); background-size: cover; background-repeat: no-repeat;\"></div>";
 
                     var attendanceFirstLast = new Dictionary<int, DateRange>();
-                    bool showAttendance = GetAttributeValue( "ShowAttendance" ).AsBoolean() && _groupTypeCache.TakesAttendance;
+                    bool showAttendance = GetAttributeValue( SHOW_FIRST_LAST_ATTENDANCE_KEY ).AsBoolean() && _groupTypeCache.TakesAttendance;
                     gGroupMembers.ColumnsOfType<DateField>().First( a => a.DataField == "FirstAttended" ).Visible = showAttendance;
                     gGroupMembers.ColumnsOfType<DateField>().First( a => a.DataField == "LastAttended" ).Visible = showAttendance;
                     if ( showAttendance )

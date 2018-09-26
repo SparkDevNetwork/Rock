@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.Reporting
         private void BindFilter()
         {
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM.AsGuid() );
-            ddlMediumValue.BindToDefinedType( definedType, true );
+            ddlMediumValue.DefinedTypeId = definedType.Id;
 
             var channelMediumValueId = gfFilter.GetUserPreference( MEDIUM_TYPE_FILTER ).AsIntegerOrNull();
             ddlMediumValue.SetValue( channelMediumValueId );

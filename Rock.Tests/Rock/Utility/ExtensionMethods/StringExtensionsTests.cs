@@ -24,7 +24,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         public void AsDouble_ValidInteger()
         {
             var output = @"3".AsDoubleOrNull();
-            Assert.Equal( output, 3.0d );
+            Assert.Equal( 3.0d, output );
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         public void AsDouble_ValidDouble()
         {
             var output = @"3.141592".AsDoubleOrNull();
-            Assert.Equal( output, (double)3.141592d );
+            Assert.Equal( (double)3.141592d, output );
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         public void AsDouble_ValidString()
         {
             var output = @"$3.14".AsDoubleOrNull();
-            Assert.Equal( output, (double)3.14d );
+            Assert.Equal( (double)3.14d, output );
         }
 
         /// <summary>

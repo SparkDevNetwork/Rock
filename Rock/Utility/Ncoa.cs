@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Jobs;
 using Rock.Model;
 using Rock.SystemKey;
 using Rock.Utility.Settings.SparkData;
@@ -101,7 +102,14 @@ namespace Rock.Utility
                             m.Group.GroupTypeId == familyGroupType.Id && // SystemGuid.GroupType.GROUPTYPE_FAMILY
                             m.Person.RecordStatusValueId != inactiveStatus.Id && // SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE
                             m.Group.GroupLocations.Any( gl => gl.GroupLocationTypeValueId.HasValue &&
-                                     gl.GroupLocationTypeValueId == homeLoc.Id ) ); // DefinedValueCache.Get( SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME
+                                     gl.GroupLocationTypeValueId == homeLoc.Id && // DefinedValueCache.Get( SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME
+                                     ( gl.Location.Country == null ||
+                                     gl.Location.Country == string.Empty ||
+                                     gl.Location.Country.ToUpper() == "US" ) &&
+                                     ( gl.Location.State != null &&
+                                     gl.Location.State != string.Empty ) &&
+                                     gl.Location.Street1 != null &&
+                                     gl.Location.Street1 != string.Empty ) );
 
                     var peopleHomelocation = groupMembers.Select( m => new
                     {
@@ -132,6 +140,12 @@ namespace Rock.Utility
                         peopleHomelocation = peopleHomelocation.Where( p => dataViewQuery.ContainsKey( p.PersonId ) );
                     }
 
+                    var definedType = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
+                    var stateList = definedType
+                        .DefinedValues
+                        .Where( v => v.ContainsKey( "Country" ) && v["Country"] != null )
+                        .Select( v => new { State = v.Value, Country = v["Country"], Description = v.Description } ).ToLookup( v => v.Description, StringComparer.OrdinalIgnoreCase );
+
                     return peopleHomelocation
                         .Select( g => new
                         {
@@ -147,11 +161,12 @@ namespace Rock.Utility
                                 Street1 = g.HomeLocation.Street1,
                                 Street2 = g.HomeLocation.Street2,
                                 City = g.HomeLocation.City,
-                                State = g.HomeLocation.State,
+                                State = stateList.Contains( g.HomeLocation.State ) ? stateList[g.HomeLocation.State].First().State : g.HomeLocation.State,
                                 PostalCode = g.HomeLocation.PostalCode,
-                                Country = g.HomeLocation.Country
+                                Country = g.HomeLocation.Country.IsNullOrWhiteSpace() ? "US" : g.HomeLocation.Country
                             }
                         } )
+                        .Where( g => g.HomeLocation.State.IsNotNullOrWhiteSpace() && g.HomeLocation.State.Length == 2 )
                         .ToDictionary( k => k.PersonId, v => v.HomeLocation );
                 }
 
@@ -179,26 +194,23 @@ namespace Rock.Utility
             switch ( accountStatus )
             {
                 case SparkDataApi.SparkDataApi.AccountStatus.AccountNoName:
-                    throw new UnauthorizedAccessException( "Account does not have a name." );
+                    throw new NoRetryException( "Init NCOA: Account does not have a name." );
                 case SparkDataApi.SparkDataApi.AccountStatus.AccountNotFound:
-                    throw new UnauthorizedAccessException( "Account not found." );
+                    throw new NoRetryException( "Init NCOA: Account not found." );
                 case SparkDataApi.SparkDataApi.AccountStatus.Disabled:
-                    throw new UnauthorizedAccessException( "Account is disabled." );
+                    throw new NoRetryException( "Init NCOA: Account is disabled." );
                 case SparkDataApi.SparkDataApi.AccountStatus.EnabledCardExpired:
-                    throw new UnauthorizedAccessException( "Credit card on Spark server expired." );
+                    throw new NoRetryException( "Init NCOA: Credit card on Spark server expired." );
                 case SparkDataApi.SparkDataApi.AccountStatus.EnabledNoCard:
-                    throw new UnauthorizedAccessException( "No credit card found on Spark server." );
+                    throw new NoRetryException( "Init NCOA: No credit card found on Spark server." );
                 case SparkDataApi.SparkDataApi.AccountStatus.InvalidSparkDataKey:
-                    throw new UnauthorizedAccessException( "Invalid Spark Data Key." );
+                    throw new NoRetryException( "Init NCOA: Invalid Spark Data Key." );
             }
 
             var addresses = GetAddresses( sparkDataConfig.NcoaSettings.PersonDataViewId );
-            if ( addresses.Count == 0 )
+            if ( addresses.Count < SparkDataConfig.NCOA_MIN_ADDRESSES )
             {
-                sparkDataConfig.NcoaSettings.LastRunDate = RockDateTime.Now;
-                sparkDataConfig.NcoaSettings.CurrentReportStatus = "Complete";
-                SaveSettings( sparkDataConfig );
-                return;
+                throw new NoRetryException( string.Format( "Init NCOA: Only {0} addresses were selected to be processed. NCOA will not run because it is below the minimum of {1} addresses.", addresses.Count, SparkDataConfig.NCOA_MIN_ADDRESSES ) );
             }
 
             GroupNameTransactionKey groupNameTransactionKey = null;
@@ -217,7 +229,7 @@ namespace Rock.Utility
                 if ( sparkDataConfig.NcoaSettings.CurrentReportStatus == "Failed" )
                 {
                     // To avoid trying to charging customer over and over again...
-                    sparkDataConfig.NcoaSettings.IsEnabled = false;
+                    throw new NoRetryException( "Init NCOA: Failed to initialize request." );
                 }
 
                 throw new Exception( "Init NCOA: Failed to initialize request." );
@@ -298,39 +310,47 @@ namespace Rock.Utility
 
             List<NcoaReturnRecord> ncoaReturnRecords;
             ncoaApi.DownloadExport( sparkDataConfig.NcoaSettings.CurrentReportExportKey, out ncoaReturnRecords );
-            var ncoaHistoryList = ncoaReturnRecords.Select( r => r.ToNcoaHistory() ).ToList();
-            FilterDuplicateLocations( ncoaHistoryList );
 
-            // Making sure that the database is empty to avoid adding duplicate data.
-            using ( var rockContext = new RockContext() )
+            try
             {
-                NcoaHistoryService ncoaHistoryService = new NcoaHistoryService( rockContext );
-                ncoaHistoryService.DeleteRange( ncoaHistoryService.Queryable() );
-                rockContext.SaveChanges();
-            }
+                var ncoaHistoryList = ncoaReturnRecords.Select( r => r.ToNcoaHistory() ).ToList();
+                FilterDuplicateLocations( ncoaHistoryList );
 
-            if ( ncoaReturnRecords != null && ncoaReturnRecords.Count != 0 )
-            {
-
+                // Making sure that the database is empty to avoid adding duplicate data.
                 using ( var rockContext = new RockContext() )
                 {
-                    var ncoaHistoryService = new NcoaHistoryService( rockContext );
-                    ncoaHistoryService.AddRange( ncoaHistoryList );
+                    NcoaHistoryService ncoaHistoryService = new NcoaHistoryService( rockContext );
+                    ncoaHistoryService.DeleteRange( ncoaHistoryService.Queryable() );
                     rockContext.SaveChanges();
                 }
+
+                if ( ncoaReturnRecords != null && ncoaReturnRecords.Count != 0 )
+                {
+
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var ncoaHistoryService = new NcoaHistoryService( rockContext );
+                        ncoaHistoryService.AddRange( ncoaHistoryList );
+                        rockContext.SaveChanges();
+                    }
+                }
+
+                ProcessNcoaResults( sparkDataConfig );
+
+                sparkDataApi.NcoaCompleteReport( sparkDataConfig.SparkDataApiKey, sparkDataConfig.NcoaSettings.FileName, sparkDataConfig.NcoaSettings.CurrentReportExportKey );
+
+                //Notify group
+                SendNotification( sparkDataConfig, "finished" );
+
+                sparkDataConfig.NcoaSettings.LastRunDate = RockDateTime.Now;
+                sparkDataConfig.NcoaSettings.CurrentReportStatus = "Complete";
+                sparkDataConfig.NcoaSettings.FileName = null;
+                SaveSettings( sparkDataConfig );
             }
-
-            ProcessNcoaResults( sparkDataConfig );
-
-            sparkDataApi.NcoaCompleteReport( sparkDataConfig.SparkDataApiKey, sparkDataConfig.NcoaSettings.FileName, sparkDataConfig.NcoaSettings.CurrentReportExportKey );
-
-            //Notify group
-            SentNotification( sparkDataConfig, "finished" );
-
-            sparkDataConfig.NcoaSettings.LastRunDate = RockDateTime.Now;
-            sparkDataConfig.NcoaSettings.CurrentReportStatus = "Complete";
-            sparkDataConfig.NcoaSettings.FileName = null;
-            SaveSettings( sparkDataConfig );
+            catch(Exception ex)
+            {
+                throw new NoRetryAggregateException( "Failed to process NCOA export.", ex );
+            }
         }
 
         /// <summary>
@@ -346,7 +366,7 @@ namespace Rock.Utility
 
             if ( sparkDataConfig.NcoaSettings.InactiveRecordReasonId == null )
             {
-                throw new NullReferenceException( "Inactive Record Reason value is empty." );
+                throw new NoRetryException( "Inactive Record Reason value is empty." );
             }
 
             // Get the inactive reason
@@ -913,7 +933,7 @@ namespace Rock.Utility
         /// </summary>
         /// <param name="sparkDataConfig">The spark data configuration.</param>
         /// <param name="status">The status to put in the notification.</param>
-        public void SentNotification( SparkDataConfig sparkDataConfig, string status )
+        public void SendNotification( SparkDataConfig sparkDataConfig, string status )
         {
             if ( !sparkDataConfig.GlobalNotificationApplicationGroupId.HasValue || sparkDataConfig.GlobalNotificationApplicationGroupId.Value == 0 )
             {

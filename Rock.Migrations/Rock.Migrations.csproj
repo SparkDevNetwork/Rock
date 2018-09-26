@@ -86,6 +86,14 @@
     <Compile Include="Migrations\201808302049467_Rollup_0830.Designer.cs">
       <DependentUpon>201808302049467_Rollup_0830.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201809102330278_AssetManager.cs" />
+    <Compile Include="Migrations\201809102330278_AssetManager.Designer.cs">
+      <DependentUpon>201809102330278_AssetManager.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201809122127196_Rollup_0912.cs" />
+    <Compile Include="Migrations\201809122127196_Rollup_0912.Designer.cs">
+      <DependentUpon>201809122127196_Rollup_0912.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -386,6 +394,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201808302049467_Rollup_0830.resx">
       <DependentUpon>201808302049467_Rollup_0830.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809102330278_AssetManager.resx">
+      <DependentUpon>201809102330278_AssetManager.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809122127196_Rollup_0912.resx">
+      <DependentUpon>201809122127196_Rollup_0912.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
