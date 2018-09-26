@@ -54,6 +54,7 @@
             this.tbDatabaseFolder = new System.Windows.Forms.TextBox();
             this.cbDatabaseProcs = new System.Windows.Forms.CheckBox();
             this.tbResults = new System.Windows.Forms.TextBox();
+            this.cbGenerateObsoleteExport = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // btnLoad
@@ -276,19 +277,30 @@
             this.tbResults.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tbResults.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbResults.Location = new System.Drawing.Point(11, 493);
+            this.tbResults.Location = new System.Drawing.Point(11, 504);
             this.tbResults.Multiline = true;
             this.tbResults.Name = "tbResults";
             this.tbResults.ReadOnly = true;
             this.tbResults.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbResults.Size = new System.Drawing.Size(574, 210);
+            this.tbResults.Size = new System.Drawing.Size(574, 199);
             this.tbResults.TabIndex = 20;
+            // 
+            // cbGenerateObsoleteExport
+            // 
+            this.cbGenerateObsoleteExport.AutoSize = true;
+            this.cbGenerateObsoleteExport.Location = new System.Drawing.Point(11, 481);
+            this.cbGenerateObsoleteExport.Name = "cbGenerateObsoleteExport";
+            this.cbGenerateObsoleteExport.Size = new System.Drawing.Size(105, 17);
+            this.cbGenerateObsoleteExport.TabIndex = 21;
+            this.cbGenerateObsoleteExport.Text = "Report Obsolete";
+            this.cbGenerateObsoleteExport.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(597, 729);
+            this.Controls.Add(this.cbGenerateObsoleteExport);
             this.Controls.Add(this.tbResults);
             this.Controls.Add(this.tbDatabaseFolder);
             this.Controls.Add(this.cbDatabaseProcs);
@@ -344,6 +356,7 @@
         private System.Windows.Forms.TextBox tbDatabaseFolder;
         private System.Windows.Forms.CheckBox cbDatabaseProcs;
         private System.Windows.Forms.TextBox tbResults;
+        private System.Windows.Forms.CheckBox cbGenerateObsoleteExport;
     }
 }
 

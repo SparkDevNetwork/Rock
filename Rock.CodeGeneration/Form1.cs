@@ -193,6 +193,9 @@ namespace Rock.CodeGeneration
             MessageBox.Show( "Files have been generated" );
         }
 
+        /// <summary>
+        /// Reports the rock obsolete.
+        /// </summary>
         public void ReportRockObsolete()
         {
             StringBuilder sbResults = new StringBuilder();
@@ -205,23 +208,33 @@ namespace Rock.CodeGeneration
                 var allTypes = rockAssembly.GetTypes();
                 foreach ( var type in allTypes )
                 {
-                    if ( type.GetCustomAttribute<ObsoleteAttribute>() != null )
+                    ObsoleteAttribute typeObsoleteAttribute = type.GetCustomAttribute<ObsoleteAttribute>();
+                    if ( typeObsoleteAttribute != null )
                     {
                         var rockObsolete = type.GetCustomAttribute<RockObsolete>();
                         if ( rockObsolete == null )
                         {
-                            sbResults.Append( $"type {type} is [Obsolete] but does not have a [RockObsolete]" );
+                            sbResults.AppendLine( $"type {type} is [Obsolete] but does not have a [RockObsolete]" );
+                        }
+                        else if ( cbGenerateObsoleteExport.Checked )
+                        {
+                           sbResults.AppendLine( $"{rockObsolete.Version},{type.Name},class" );
                         }
                     }
 
                     foreach ( var member in type.GetMembers())
                     {
-                        if ( rockAssembly == member.Module.Assembly && member.GetCustomAttribute<ObsoleteAttribute>() != null )
+                        ObsoleteAttribute memberObsoleteAttribute = member.GetCustomAttribute<ObsoleteAttribute>();
+                        if ( memberObsoleteAttribute != null && rockAssembly == member.Module.Assembly && member.DeclaringType == type )
                         {
                             var rockObsolete = member.GetCustomAttribute<RockObsolete>();
                             if ( rockObsolete == null )
                             {
                                 sbResults.AppendLine( $"type {type} has [Obsolete] {member.MemberType} {member} but does not have a [RockObsolete]" );
+                            }
+                            else if ( cbGenerateObsoleteExport.Checked )
+                            {
+                                sbResults.AppendLine( $"{rockObsolete.Version},{type.Name} {member.Name},{member.MemberType}" );
                             }
                         }
                     }
