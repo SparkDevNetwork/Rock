@@ -958,7 +958,7 @@ namespace Rock.Attribute
         /// <param name="parentControl">The parent control.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="validationGroup">The validation group.</param>
-        /// <param name="exclude">List of attribute names not to render</param>
+        /// <param name="exclude">List of attributes not to render. Attributes with a Key or Name in the exclude list will not be shown.</param>
         /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
         public static void AddEditControls( Rock.Attribute.IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering = false )
         {
@@ -986,7 +986,7 @@ namespace Rock.Attribute
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="numberOfColumns">The number of columns.</param>
-        /// <param name="exclude">The exclude.</param>
+        /// <param name="exclude">List of attributes not to render. Attributes with a Key or Name in the exclude list will not be shown.</param>
         /// <param name="supressOrdering">if set to <c>true</c> [supress ordering].</param>
         public static void AddEditControls( Rock.Attribute.IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering, int? numberOfColumns = null )
         {
@@ -1029,7 +1029,7 @@ namespace Rock.Attribute
         /// <param name="parentControl">The parent control.</param>
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
-        /// <param name="exclude">The exclude.</param>
+        /// <param name="exclude">List of attributes not to render. Attributes with a Key or Name in the exclude list will not be shown.</param>
         /// <param name="numberOfColumns">The number of columns.</param>
         public static void AddEditControls( string category, List<string> attributeKeys, Rock.Attribute.IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude, int? numberOfColumns )
         {
