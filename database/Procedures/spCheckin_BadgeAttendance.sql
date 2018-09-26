@@ -18,7 +18,7 @@
 	<param name="Reference Date" datatype="datetime">A date in the last month for the badge (optional, default is today)</param>
 	<param name="Number of Months" datatype="int">Number of months to display (optional, default is 24)</param>
 	<remarks>	
-		Looks up the following constants:
+		Uses the following constants:
 			* Group Type - Family: 790E3215-3B10-442B-AF69-616C0DCB998E
 			* Group Role - Adult: 2639F9A5-2AAE-4E48-A8C3-4FFE86681E42
 			* Group Role - Child: C8B1814F-6AA7-4055-B2D7-48FE20429CB9
@@ -38,10 +38,10 @@ ALTER PROCEDURE [dbo].[spCheckin_BadgeAttendance]
 AS
 BEGIN
 
-	DECLARE @cGROUP_TYPE_FAMILY uniqueidentifier = (SELECT guid FROM grouptype WHERE name = 'Family' AND IsSystem = 1)
-	DECLARE @cROLE_CHILD uniqueidentifier = (SELECT guid FROM grouptyperole WHERE name = 'Child' AND IsSystem = 1 AND GroupTypeId = (SELECT id FROM grouptype WHERE guid = @cGROUP_TYPE_FAMILY))
-	DECLARE @cROLE_ADULT uniqueidentifier = (SELECT guid FROM grouptyperole WHERE name = 'Adult' AND IsSystem = 1 AND GroupTypeId = (SELECT id FROM grouptype WHERE guid = @cGROUP_TYPE_FAMILY))
-	DECLARE @StartDay datetime
+	DECLARE @cROLE_ADULT uniqueidentifier = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42'
+	DECLARE @cROLE_CHILD uniqueidentifier = 'C8B1814F-6AA7-4055-B2D7-48FE20429CB9'
+	DECLARE @cGROUP_TYPE_FAMILY uniqueidentifier = '790E3215-3B10-442B-AF69-616C0DCB998E'
+        DECLARE @StartDay datetime
 	DECLARE @LastDay datetime
 
 	-- if role (adult/child) is unknown determine it
