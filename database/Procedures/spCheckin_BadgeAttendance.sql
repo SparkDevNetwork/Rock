@@ -18,7 +18,7 @@
 	<param name="Reference Date" datatype="datetime">A date in the last month for the badge (optional, default is today)</param>
 	<param name="Number of Months" datatype="int">Number of months to display (optional, default is 24)</param>
 	<remarks>	
-		Uses the following constants:
+		Looks up the following constants:
 			* Group Type - Family: 790E3215-3B10-442B-AF69-616C0DCB998E
 			* Group Role - Adult: 2639F9A5-2AAE-4E48-A8C3-4FFE86681E42
 			* Group Role - Child: C8B1814F-6AA7-4055-B2D7-48FE20429CB9
@@ -37,16 +37,18 @@ ALTER PROCEDURE [dbo].[spCheckin_BadgeAttendance]
 	, @MonthCount int = 24
 AS
 BEGIN
-	DECLARE @cROLE_ADULT uniqueidentifier = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42'
-	DECLARE @cROLE_CHILD uniqueidentifier = 'C8B1814F-6AA7-4055-B2D7-48FE20429CB9'
-	DECLARE @cGROUP_TYPE_FAMILY uniqueidentifier = '790E3215-3B10-442B-AF69-616C0DCB998E'
+
+	DECLARE @cGROUP_TYPE_FAMILY uniqueidentifier = (SELECT guid FROM grouptype WHERE name = 'Family' AND IsSystem = 1)
+	DECLARE @cROLE_CHILD uniqueidentifier = (SELECT guid FROM grouptyperole WHERE name = 'Child' AND IsSystem = 1 AND GroupTypeId = (SELECT id FROM grouptype WHERE guid = @cGROUP_TYPE_FAMILY))
+	DECLARE @cROLE_ADULT uniqueidentifier = (SELECT guid FROM grouptyperole WHERE name = 'Adult' AND IsSystem = 1 AND GroupTypeId = (SELECT id FROM grouptype WHERE guid = @cGROUP_TYPE_FAMILY))
 	DECLARE @StartDay datetime
 	DECLARE @LastDay datetime
 
 	-- if role (adult/child) is unknown determine it
 	IF (@RoleGuid IS NULL)
 	BEGIN
-		SELECT TOP 1 @RoleGuid =  gtr.[Guid] 
+		SELECT TOP 1 @RoleGuid =  
+			gtr.[Guid] 
 			FROM [GroupTypeRole] gtr
 				INNER JOIN [GroupMember] gm ON gm.[GroupRoleId] = gtr.[Id]
 				INNER JOIN [Group] g ON g.[Id] = gm.[GroupId]
@@ -60,84 +62,59 @@ BEGIN
 
 	-- set data boundaries
 	SET @LastDay = dbo.ufnUtility_GetLastDayOfMonth(@ReferenceDate) -- last day is most recent day
-	SET @StartDay = DATEADD(M, DATEDIFF(M, 0, DATEADD(month, ((@MonthCount -1) * -1), @LastDay)), 0) -- start day is the 1st of the first full month of the oldest day
 
 	-- make sure last day is not in future (in case there are errant checkin data)
+	-- Moved above @startDay so that month calculation isn't effected by errant data.
 	IF (@LastDay > getdate())
 	BEGIN
 		SET @LastDay = getdate()
 	END
 
+	SET @StartDay = DATEADD(M, DATEDIFF(M, 0, DATEADD(month, ((@MonthCount -1) * -1), @LastDay)), 0) -- start day is the 1st of the first full month of the oldest day
+
 	--PRINT 'Last Day: ' + CONVERT(VARCHAR, @LastDay, 101) 
 	--PRINT 'Start Day: ' + CONVERT(VARCHAR, @StartDay, 101) 
-
-    declare @familyMemberPersonIds table (personId int); 
+	
+    declare @familyMemberPersonIds table (personId INT, isperson bit); 
     declare @groupIds table (groupId int);
 
-    insert into @familyMemberPersonIds SELECT [Id] FROM [dbo].[ufnCrm_FamilyMembersOfPersonId](@PersonId);
+    insert into @familyMemberPersonIds SELECT id, CASE WHEN id = @personid THEN 1 ELSE 0 END IsPerson FROM [dbo].[ufnCrm_FamilyMembersOfPersonId](@PersonId);
     insert into @groupIds SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]();
 
-	-- query for attendance data
-	IF (@RoleGuid = @cROLE_ADULT)
-	BEGIN
-		SELECT 
-			COUNT([Attended]) AS [AttendanceCount]
-			, (SELECT dbo.ufnUtility_GetNumberOfSundaysInMonth(DATEPART(year, [SundayDate]), DATEPART(month, [SundayDate]), 'True' )) AS [SundaysInMonth]
-			, DATEPART(month, [SundayDate]) AS [Month]
-			, DATEPART(year, [SundayDate]) AS [Year]
-		FROM (
+	DECLARE @SundayList TABLE (AttendedSunday DATE);
 
-			SELECT s.[SundayDate], [Attended]
-				FROM dbo.ufnUtility_GetSundaysBetweenDates(@StartDay, @LastDay) s
-				LEFT OUTER JOIN (	
-						SELECT 
-							DISTINCT O.[SundayDate] AS [AttendedSunday],
-							1 as [Attended]
-						FROM
-							[Attendance] a
-							INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
-							INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
-						WHERE 
-							O.[GroupId] IN (select groupId from @groupIds)
-							AND O.[OccurrenceDate] BETWEEN @StartDay AND @LastDay
-							AND pa.[PersonId] IN (select PersonId from @familyMemberPersonIds) 
-							AND a.[DidAttend] = 1
-						) a ON [AttendedSunday] = s.[SundayDate]
+	-- Grab all the sundays that attender or family attended
+	INSERT INTO @SundayList(AttendedSunday)
+	SELECT
+		O.[SundayDate] AS [AttendedSunday]
+	FROM Attendance a 
+	INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
+	INNER JOIN @groupIds gid ON gid.groupId = o.groupid
+	WHERE
+		a.PersonAliasId IN (
+			SELECT pa.id 
+			FROM personalias pa
+			INNER JOIN @familyMemberPersonIds fmid
+				ON fmid.personId = pa.PersonId 
+				AND 1 = CASE WHEN @RoleGuid <> @cROLE_CHILD THEN fmid.isPerson ELSE 1 END -- Determine if not child and if so show family attendance vs just individual
+			)
 
-		) [CheckinDates]
-		GROUP BY DATEPART(month, [SundayDate]), DATEPART(year, [SundayDate])
-		OPTION (MAXRECURSION 1000)
-	END
-	ELSE
-	BEGIN
-		SELECT 
-			COUNT([Attended]) AS [AttendanceCount]
-			, (SELECT dbo.ufnUtility_GetNumberOfSundaysInMonth(DATEPART(year, [SundayDate]), DATEPART(month, [SundayDate]), 'True' )) AS [SundaysInMonth]
-			, DATEPART(month, [SundayDate]) AS [Month]
-			, DATEPART(year, [SundayDate]) AS [Year]
-		FROM (
+	-- Results set
+	SELECT 
+		COUNT([Attended]) AS [AttendanceCount]
+		, (SELECT dbo.ufnUtility_GetNumberOfSundaysInMonth(DATEPART(year, [SundayDate]), DATEPART(month, [SundayDate]), 'True' )) AS [SundaysInMonth]
+		, DATEPART(month, [SundayDate]) AS [Month]
+		, DATEPART(year, [SundayDate]) AS [Year]
+	FROM (
+		SELECT s.[SundayDate], a.[Attended]
+			FROM dbo.ufnUtility_GetSundaysBetweenDates(@StartDay, @LastDay) s
+			LEFT OUTER JOIN (	
+				-- For some reason splitting this into a temptable increased performance by 600%
+				SELECT DISTINCT sl.AttendedSunday, 1 as [Attended] FROM @SundayList sl
+				) a ON a.[AttendedSunday] = s.[SundayDate]
 
-			SELECT s.[SundayDate], [Attended]
-				FROM dbo.ufnUtility_GetSundaysBetweenDates(@StartDay, @LastDay) s
-				LEFT OUTER JOIN (	
-						SELECT 
-							DISTINCT O.[SundayDate] AS [AttendedSunday],
-							1 as [Attended]
-						FROM
-							[Attendance] a
-							INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
-							INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
-						WHERE 
-							O.[GroupId] IN (select groupId from @groupIds)
-							AND O.[OccurrenceDate] BETWEEN @StartDay AND @LastDay
-							AND pa.[PersonId] = @PersonId 
-							AND a.[DidAttend] = 1
-						) a ON [AttendedSunday] = s.[SundayDate]
-
-		) [CheckinDates]
-		GROUP BY DATEPART(month, [SundayDate]), DATEPART(year, [SundayDate])
-		OPTION (MAXRECURSION 1000)
-	END
-
+	) [CheckinDates]
+	GROUP BY DATEPART(month, [SundayDate]), DATEPART(year, [SundayDate])
+	OPTION (MAXRECURSION 1000)
 	
 END
