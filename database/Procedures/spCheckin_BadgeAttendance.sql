@@ -96,7 +96,7 @@ BEGIN
 			FROM personalias pa
 			INNER JOIN @familyMemberPersonIds fmid
 				ON fmid.personId = pa.PersonId 
-				AND 1 = CASE WHEN @RoleGuid <> @cROLE_CHILD THEN fmid.isPerson ELSE 1 END -- Determine if not child and if so show family attendance vs just individual
+				AND 1 = CASE WHEN @RoleGuid = @cROLE_CHILD THEN fmid.isPerson ELSE 1 END -- Determine if not child and if so show family attendance vs just individual
 			)
 
 	-- Results set
