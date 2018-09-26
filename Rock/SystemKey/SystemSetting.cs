@@ -74,6 +74,11 @@ namespace Rock.SystemKey
         public const string DATA_AUTOMATION_UPDATE_FAMILY_STATUS = "core_DataAutomationUpdateFamilyStatus";
 
         /// <summary>
+        /// The default background check provider
+        /// </summary>
+        public const string DEFAULT_BACKGROUND_CHECK_PROVIDER = "core_DefaultBackgroundCheckProvider";
+
+        /// <summary>
         /// The font awesome pro key
         /// </summary>
         public const string FONT_AWESOME_PRO_KEY = "core_FontAwesomeProKey";

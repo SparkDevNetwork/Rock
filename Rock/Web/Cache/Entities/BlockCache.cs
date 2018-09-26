@@ -125,7 +125,7 @@ namespace Rock.Web.Cache
         public string CssClass { get; private set; }
 
         /// <summary>
-        /// Gets or sets the pre HTML.
+        /// Gets the HTML to be rendered before the block
         /// </summary>
         /// <value>
         /// The pre HTML.
@@ -134,7 +134,7 @@ namespace Rock.Web.Cache
         public string PreHtml { get; private set; }
 
         /// <summary>
-        /// Gets or sets the post HTML.
+        /// Gets the HTML to be rendered after the block
         /// </summary>
         /// <value>
         /// The post HTML.

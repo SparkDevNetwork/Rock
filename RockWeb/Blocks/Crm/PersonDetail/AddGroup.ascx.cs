@@ -1401,7 +1401,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             attributeControls.ForEach( c => c.Visible = false );
             if ( CurrentPageIndex > startAttributePageIndex - 1 && attributeControls.Count >= ( CurrentPageIndex - ( startAttributePageIndex - 1 ) ) )
             {
-                attributeControls[CurrentPageIndex - 2].Visible = true;
+                int index = _enableAlternateIdentifier ? CurrentPageIndex - 3 : CurrentPageIndex - 2;
+                attributeControls[index].Visible = true;
             }
 
             if ( _confirmMaritalStatus && CurrentPageIndex == 0 )

@@ -209,6 +209,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             {
                 GetChildrenData();
             }
+            
         }
 
         /// <summary>
@@ -1079,15 +1080,13 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 var div1 = new HtmlGenericControl( "Div" );
                 phAttributes1.Controls.Add( div1 );
                 div1.AddCssClass( "col-sm-3" );
-                var ctrl1 = attribute.AddControl( div1.Controls, value1, this.BlockValidationGroup, setValues, false, attribute.IsRequired );
-                ctrl1.ID = string.Format( "attribute_field_{0}_1", attribute.Id );
+                var ctrl1 = attribute.AddControl( div1.Controls, value1, this.BlockValidationGroup, setValues, true, attribute.IsRequired, null, null, null, string.Format( "attribute_field_{0}_1", attribute.Id ) );
 
                 string value2 = adult2 != null ? adult2.GetAttributeValue( attribute.Key ) : string.Empty;
                 var div2 = new HtmlGenericControl( "Div" );
                 phAttributes2.Controls.Add( div2 );
                 div2.AddCssClass( "col-sm-3" );
-                var ctrl2 = attribute.AddControl( div2.Controls, value2, this.BlockValidationGroup, setValues, false, attribute.IsRequired );
-                ctrl2.ID = string.Format( "attribute_field_{0}_2", attribute.Id );
+                var ctrl2 = attribute.AddControl( div2.Controls, value2, this.BlockValidationGroup, setValues, true, attribute.IsRequired, null, null, null, string.Format( "attribute_field_{0}_2", attribute.Id ) );
             }
         }
 

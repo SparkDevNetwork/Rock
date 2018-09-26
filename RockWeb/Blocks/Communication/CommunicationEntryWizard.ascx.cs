@@ -305,7 +305,7 @@ namespace RockWeb.Blocks.Communication
                 cblCommunicationGroupSegments.SetValues( segmentDataviewIds );
             }
 
-            this.IndividualRecipientPersonIds = new CommunicationRecipientService( rockContext ).Queryable().Where( r => r.CommunicationId == communication.Id ).Select( a => a.PersonAlias.PersonId ).ToList();
+            this.IndividualRecipientPersonIds = new CommunicationRecipientService( rockContext ).Queryable().AsNoTracking().Where( r => r.CommunicationId == communication.Id ).Select( a => a.PersonAlias.PersonId ).ToList();
 
             int? personId = PageParameter( "Person" ).AsIntegerOrNull();
             if ( personId.HasValue && !communication.ListGroupId.HasValue )
@@ -420,7 +420,7 @@ namespace RockWeb.Blocks.Communication
             var groupTypeCommunicationGroupId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
             var groupService = new GroupService( rockContext );
 
-            var communicationGroupList = groupService.Queryable().Where( a => a.GroupTypeId == groupTypeCommunicationGroupId ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            var communicationGroupList = groupService.Queryable().AsNoTracking().Where( a => a.GroupTypeId == groupTypeCommunicationGroupId && a.IsActive ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             var authorizedCommunicationGroupList = communicationGroupList.Where( g => g.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).ToList();
 
             ddlCommunicationGroupList.Items.Clear();
@@ -560,7 +560,7 @@ namespace RockWeb.Blocks.Communication
             // load common communication segments (each communication list may have additional segments)
             var dataviewService = new DataViewService( rockContext );
             var categoryIdCommunicationSegments = CategoryCache.Get( Rock.SystemGuid.Category.DATAVIEW_COMMUNICATION_SEGMENTS.AsGuid() ).Id;
-            var commonSegmentDataViewList = dataviewService.Queryable().Where( a => a.CategoryId == categoryIdCommunicationSegments ).OrderBy( a => a.Name ).ToList();
+            var commonSegmentDataViewList = dataviewService.Queryable().AsNoTracking().Where( a => a.CategoryId == categoryIdCommunicationSegments ).OrderBy( a => a.Name ).ToList();
 
             var selectedDataViewIds = cblCommunicationGroupSegments.Items.OfType<ListItem>().Where( a => a.Selected ).Select( a => a.Value ).AsIntegerList();
 
@@ -779,7 +779,7 @@ namespace RockWeb.Blocks.Communication
         {
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
-            var qryPersons = personService.Queryable( true ).Where( a => this.IndividualRecipientPersonIds.Contains( a.Id ) ).Include( a => a.PhoneNumbers ).OrderBy( a => a.LastName ).ThenBy( a => a.NickName );
+            var qryPersons = personService.Queryable( true ).AsNoTracking().Where( a => this.IndividualRecipientPersonIds.Contains( a.Id ) ).Include( a => a.PhoneNumbers ).OrderBy( a => a.LastName ).ThenBy( a => a.NickName );
 
             gIndividualRecipients.SetLinqDataSource( qryPersons );
             gIndividualRecipients.DataBind();
@@ -1037,6 +1037,7 @@ namespace RockWeb.Blocks.Communication
 
             var templateQuery = new CommunicationTemplateService( rockContext )
                 .Queryable()
+                .AsNoTracking()
                 .Where( a => a.IsActive );
 
             int? categoryId = cpCommunicationTemplate.SelectedValue.AsIntegerOrNull();
@@ -1366,7 +1367,7 @@ namespace RockWeb.Blocks.Communication
                         testCommunication.Id = 0;
                         testCommunication.Guid = Guid.NewGuid();
                         testCommunication.CreatedByPersonAliasId = this.CurrentPersonAliasId;
-                        testCommunication.CreatedByPersonAlias = new PersonAliasService( rockContext ).Queryable().Where( a => a.Id == this.CurrentPersonAliasId.Value ).Include( a => a.Person ).FirstOrDefault();
+                        testCommunication.CreatedByPersonAlias = new PersonAliasService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == this.CurrentPersonAliasId.Value ).Include( a => a.Person ).FirstOrDefault();
                         testCommunication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
                         testCommunication.ForeignGuid = null;
                         testCommunication.ForeignId = null;

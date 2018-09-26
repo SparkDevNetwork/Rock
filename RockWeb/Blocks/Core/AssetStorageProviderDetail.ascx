@@ -1,5 +1,5 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AssetStorageSystemDetail.ascx.cs" Inherits="RockWeb.Blocks.Core.AssetStorageSystemDetail" %>
-<asp:UpdatePanel ID="pnlAssetStorageSystemUpdatePanel" runat="server">
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AssetStorageProviderDetail.ascx.cs" Inherits="RockWeb.Blocks.Core.AssetStorageProviderDetail" %>
+<asp:UpdatePanel ID="pnlAssetStorageProviderUpdatePanel" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
 
@@ -15,14 +15,14 @@
 
             <div class="panel-body">
 
-                <asp:ValidationSummary ID="valAssetStorageSystemDetail" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="valAssetStorageProviderDetail" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                 <div id="pnlEditDetails" runat="server">
                 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.AssetStorageSystem, Rock" PropertyName="Name" />
+                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.AssetStorageProvider, Rock" PropertyName="Name" />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
@@ -31,7 +31,7 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.AssetStorageSystem, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.AssetStorageProvider, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                         </div>
                     </div>
 
