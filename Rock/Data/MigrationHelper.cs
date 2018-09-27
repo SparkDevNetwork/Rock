@@ -905,7 +905,8 @@ namespace Rock.Data
 ", layoutGuid );
             }
 
-            if ( siteGuid.HasValue )
+            // if this is Site Global block (no Page or Layout), set the SiteId
+            if ( !pageGuid.HasValue && !layoutGuid.HasValue && siteGuid.HasValue )
             {
                 sb.AppendFormat( @"
                 SET @SiteId = (SELECT [Id] FROM [Site] WHERE [Guid] = '{0}')
