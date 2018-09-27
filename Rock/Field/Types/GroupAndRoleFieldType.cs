@@ -138,30 +138,32 @@ namespace Rock.Field.Types
                 }
             }
 
-            var rockContext = new RockContext();
-            if ( groupGuid.HasValue )
+            using ( var rockContext = new RockContext() )
             {
-                var group = new GroupService( rockContext ).Get( groupGuid.Value );
-                if ( group != null )
+                if ( groupGuid.HasValue )
                 {
-                    formattedValue = "Group: " + group.Name;
+                    var group = new GroupService( rockContext ).GetNoTracking( groupGuid.Value );
+                    if ( group != null )
+                    {
+                        formattedValue = "Group: " + group.Name;
+                    }
                 }
-            }
-            else if ( groupTypeGuid.HasValue )
-            {
-                var groupType = new GroupTypeService( rockContext ).Get( groupTypeGuid.Value );
-                if ( groupType != null )
+                else if ( groupTypeGuid.HasValue )
                 {
-                    formattedValue = "Group type: " + groupType.Name;
+                    var groupType = new GroupTypeService( rockContext ).GetNoTracking( groupTypeGuid.Value );
+                    if ( groupType != null )
+                    {
+                        formattedValue = "Group type: " + groupType.Name;
+                    }
                 }
-            }
 
-            if ( groupTypeRoleGuid.HasValue )
-            {
-                var groupTypeRole = new GroupTypeRoleService( rockContext ).Get( groupTypeRoleGuid.Value );
-                if ( groupTypeRole != null )
+                if ( groupTypeRoleGuid.HasValue )
                 {
-                    formattedValue += string.IsNullOrEmpty( formattedValue ) ? string.Empty : ", " + "Role: " + groupTypeRole.Name;
+                    var groupTypeRole = new GroupTypeRoleService( rockContext ).GetNoTracking( groupTypeRoleGuid.Value );
+                    if ( groupTypeRole != null )
+                    {
+                        formattedValue += string.IsNullOrEmpty( formattedValue ) ? string.Empty : ", " + "Role: " + groupTypeRole.Name;
+                    }
                 }
             }
 
@@ -209,7 +211,7 @@ namespace Rock.Field.Types
                 Guid? groupTypeRoleGuid = null;
                 if ( groupAndRolePicker.GroupTypeId.HasValue )
                 {
-                    var groupType = new GroupTypeService( rockContext ).Get( groupAndRolePicker.GroupTypeId.Value );
+                    var groupType = new GroupTypeService( rockContext ).GetNoTracking( groupAndRolePicker.GroupTypeId.Value );
                     if ( groupType != null )
                     {
                         groupTypeGuid = groupType.Guid;

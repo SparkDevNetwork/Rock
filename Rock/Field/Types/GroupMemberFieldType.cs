@@ -228,7 +228,7 @@ namespace Rock.Field.Types
                     var groupMemberService = new GroupMemberService( rockContext );
                     foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                     {
-                        var groupMember = groupMemberService.Get( guid );
+                        var groupMember = groupMemberService.GetNoTracking( guid );
                         if ( groupMember != null )
                         {
                             names.Add( groupMember.Person.FullName );
@@ -336,7 +336,7 @@ namespace Rock.Field.Types
                 using ( var rockContext = new RockContext() )
                 {
                     var groupMemberService = new GroupMemberService( rockContext );
-                    guids = groupMemberService.GetByIds( groupMemberIdList ).Select( a => a.Guid ).ToList();
+                    guids = groupMemberService.Queryable().AsNoTracking().Where( t => groupMemberIdList.Contains( t.Id ) ).Select( a => a.Guid ).ToList();
                 }
             }
 
