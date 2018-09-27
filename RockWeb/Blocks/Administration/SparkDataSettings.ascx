@@ -56,7 +56,7 @@
                                                 <Rock:RockTextBox ID="txtSparkDataApiKeyLogin" runat="server" Label="Spark Data Api Key" Required="true" ValidationGroup="SignInValidationGroup"/>
                                             </div>
                                             <div class="col-md-6">
-                                                <Rock:GroupPicker ID="grpNotificationGroupLogin" runat="server" Label="Notification Group" Help="Members of this group will recieve notifications when specific jobs and tasks complete." />
+                                                <Rock:GroupPicker ID="grpNotificationGroupLogin" runat="server" Label="Notification Group" Help="Members of this group will receive notifications when specific jobs and tasks complete." />
                                             </div>
                                         </div>
                                         <asp:LinkButton ID="btnSaveLogin" runat="server" CssClass="btn btn-primary" OnClick="btnSaveLogin_Click" ValidationGroup="SignInValidationGroup" >Save</asp:LinkButton>
@@ -76,7 +76,7 @@
                                 <Rock:RockTextBox ID="txtSparkDataApiKeyEdit" runat="server" Label="Spark Data Api Key" Required="true" ValidationGroup="SparkDataEditValidationGroup" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:GroupPicker ID="grpNotificationGroupEdit" runat="server" Label="Notification Group" Help="Members of this group will recieve notifications when specific jobs and tasks complete." />
+                                <Rock:GroupPicker ID="grpNotificationGroupEdit" runat="server" Label="Notification Group" Help="Members of this group will receive notifications when specific jobs and tasks complete." />
                             </div>
                         </div>
                         <asp:LinkButton ID="btnSaveEdit" runat="server" CssClass="btn btn-primary" OnClick="btnSaveEdit_Click" ValidationGroup="SparkDataEditValidationGroup" >Save</asp:LinkButton>
