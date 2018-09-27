@@ -436,21 +436,20 @@ namespace Rock.Field
                     }
 
                     ComparisonType? comparisonType = compare.ConvertToEnumOrNull<ComparisonType>();
-                    if ( comparisonType.HasValue )
+                    if ( comparisonType.HasValue && ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType.Value ) )
                     {
-                        if ( ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType.Value ) )
+                        // if using IsBlank or IsNotBlank, we don't care about the value, so don't try to grab it from the UI
+                        values.Add( string.Empty );
+                    }
+                    else
+                    {
+                        string value = GetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues );
+                        if ( value != null )
                         {
-                            // if using IsBlank or IsNotBlank, we don't care about the value, so don't try to grab it from the UI
-                        }
-                        else
-                        {
-                            string value = GetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues );
-                            if ( value != null )
-                            {
-                                values.Add( value );
-                            }
+                            values.Add( value );
                         }
                     }
+
                 }
                 catch
                 {
