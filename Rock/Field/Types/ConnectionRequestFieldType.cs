@@ -48,12 +48,15 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( guid.Value );
-                if (connectionRequest != null &&
-                    connectionRequest.PersonAlias != null &&
-                    connectionRequest.PersonAlias.Person != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = connectionRequest.PersonAlias.Person.FullName;
+                    var connectionRequest = new ConnectionRequestService( rockContext ).GetNoTracking( guid.Value );
+                    if ( connectionRequest != null &&
+                        connectionRequest.PersonAlias != null &&
+                        connectionRequest.PersonAlias.Person != null )
+                    {
+                        formattedValue = connectionRequest.PersonAlias.Person.FullName;
+                    }
                 }
             }
 
@@ -92,11 +95,14 @@ namespace Rock.Field.Types
                 int? id = picker.ItemId.AsIntegerOrNull();
                 if ( id.HasValue )
                 {
-                    var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( id.Value );
-
-                    if ( connectionRequest != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        return connectionRequest.Guid.ToString();
+                        var connectionRequest = new ConnectionRequestService( rockContext ).GetNoTracking( id.Value );
+
+                        if ( connectionRequest != null )
+                        {
+                            return connectionRequest.Guid.ToString();
+                        }
                     }
                 }
             }
