@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                gGroups.EntityTypeId = EntityTypeCache.Read<Group>().Id;
+                gGroups.EntityTypeId = EntityTypeCache.Get<Group>().Id;
                 gGroups.DataSource = groups
                     .Select( g => new
                     {

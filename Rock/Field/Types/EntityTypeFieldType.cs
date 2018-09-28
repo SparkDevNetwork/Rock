@@ -129,7 +129,7 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( value, out guid ) )
             {
-                var entityType = EntityTypeCache.Read( guid );
+                var entityType = EntityTypeCache.Get( guid );
                 if ( entityType != null )
                 {
                     formattedValue = entityType.FriendlyName;
@@ -159,7 +159,7 @@ namespace Rock.Field.Types
             if ( configurationValues != null )
             {
                 bool includeGlobal = false;
-                if ( configurationValues.ContainsKey( "includeglobal" ) && 
+                if ( configurationValues.ContainsKey( "includeglobal" ) &&
                     bool.TryParse(configurationValues["includeglobal"].Value, out includeGlobal) &&
                     !includeGlobal)
                 {
@@ -182,10 +182,17 @@ namespace Rock.Field.Types
             EntityTypePicker entityTypePicker = control as EntityTypePicker;
             if ( entityTypePicker != null && entityTypePicker.SelectedEntityTypeId.HasValue )
             {
-                var entityType = EntityTypeCache.Read(entityTypePicker.SelectedEntityTypeId.Value);
-                if (entityType != null)
+                if ( entityTypePicker.SelectedEntityTypeId == 0 && entityTypePicker.IncludeGlobalOption )
                 {
-                    return entityType.Guid.ToString();
+                    return Guid.Empty.ToString();
+                }
+                else
+                {
+                    var entityType = EntityTypeCache.Get( entityTypePicker.SelectedEntityTypeId.Value );
+                    if ( entityType != null )
+                    {
+                        return entityType.Guid.ToString();
+                    }
                 }
             }
 
@@ -200,20 +207,17 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            Guid guid = Guid.Empty;
-            if (Guid.TryParse(value, out guid))
+            EntityTypePicker entityTypePicker = control as EntityTypePicker;
+            if ( entityTypePicker != null )
             {
-                EntityTypePicker entityTypePicker = control as EntityTypePicker;
-                if ( entityTypePicker != null )
+                EntityTypeCache entityType = null;
+                Guid? guid = value.AsGuidOrNull();
+                if ( guid.HasValue )
                 {
-                    int selectedValue = 0;
-                    var entityType = EntityTypeCache.Read(guid);
-                    if (entityType != null)
-                    {
-                        selectedValue = entityType.Id;
-                    }
-                    entityTypePicker.SelectedEntityTypeId = selectedValue;
+                    entityType = EntityTypeCache.Get( guid.Value );
                 }
+
+                entityTypePicker.SelectedEntityTypeId = entityType?.Id;
             }
         }
 

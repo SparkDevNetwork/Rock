@@ -53,7 +53,7 @@ namespace Rock.Model
                 if ( checkAttributeUsage )
                 {
                     // check if any MatrixAttributes are using this AttributeMatrixTemplate
-                    var matrixFieldTypeId = FieldTypeCache.Read<MatrixFieldType>().Id;
+                    var matrixFieldTypeId = FieldTypeCache.Get<MatrixFieldType>().Id;
                     var qualifierKey = MatrixFieldType.ATTRIBUTE_MATRIX_TEMPLATE;
                     var qualifierValue = item.Id.ToString();
                     var usedAsMatrixTemplate = new AttributeService( new RockContext() ).Queryable()

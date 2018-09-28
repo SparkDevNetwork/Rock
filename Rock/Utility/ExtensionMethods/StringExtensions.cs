@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -51,10 +51,57 @@ namespace Rock
         }
 
         /// <summary>
+        /// Replaces the special characters from the string with the supplied string so that only alpha-numeric, '.', and '_' remain.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="replacementCharacters">The characters to replace special character(s) with. No restrictions or validation.</param>
+        /// <returns></returns>
+        public static string ReplaceSpecialCharacters( this string str, string replacementCharacters )
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach ( char c in str )
+            {
+                if ( ( c >= '0' && c <= '9' ) || ( c >= 'A' && c <= 'Z' ) || ( c >= 'a' && c <= 'z' ) || c == '.' || c == '_' )
+                {
+                    sb.Append( c );
+                }
+                else
+                {
+                    sb.Append( replacementCharacters );
+                }
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Removes all non alpha numeric characters from a string
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string RemoveAllNonAlphaNumericCharacters( this string str )
+        {
+            return string.Concat( str.Where( c => char.IsLetterOrDigit( c ) ) );
+        }
+
+        /// <summary>
         /// Determines whether the string is not null or whitespace.
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()]
+        public static bool IsNotNullOrWhiteSpace( this string str )
+        {
+            return !string.IsNullOrWhiteSpace( str );
+        }
+
+        /// <summary>
+        /// Determines whether [is not null or whitespace].
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns>
+        ///   <c>true</c> if [is not null or whitespace] [the specified string]; otherwise, <c>false</c>.
+        /// </returns>
+        [Obsolete( "Use IsNotNullOrWhiteSpace instead. Fixes non-standard casing.", false )]
         public static bool IsNotNullOrWhitespace( this string str )
         {
             return !string.IsNullOrWhiteSpace( str );
@@ -65,6 +112,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()]
         public static bool IsNullOrWhiteSpace( this string str )
         {
             return string.IsNullOrWhiteSpace( str );
@@ -100,6 +148,65 @@ namespace Rock
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Determines whether the string is valid mac address.
+        /// Works with colons, dashes, or no seperators
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns>
+        ///   <c>true</c> if valid mac address otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsValidMacAddress( this string str )
+        {
+            Regex regex = new Regex( "^([0-9a-fA-F]{2}(?:[:-]?[0-9a-fA-F]{2}){5})$" );
+            return regex.IsMatch( str );
+        }
+
+        /// <summary>
+        /// Determines whether the string is a valid http(s) URL
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns>
+        ///   <c>true</c> if [is valid URL] [the specified string]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsValidUrl( this string str )
+        {
+            Uri uriResult;
+            return Uri.TryCreate( str, UriKind.Absolute, out uriResult )
+                && ( uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps );
+        }
+
+        /// <summary>
+        /// Removes invalid, reserved, and unreccommended characters from strings that will be used in URLs.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string RemoveInvalidReservedUrlChars( this string str )
+        {
+            return str.Replace( " ", "" )
+                .Replace( ";", "" )
+                .Replace( "/", "" )
+                .Replace( "?", "" )
+                .Replace( ":", "" )
+                .Replace( "@", "" )
+                .Replace( "=", "" )
+                .Replace( "&", "" )
+                .Replace( "<", "" )
+                .Replace( ">", "" )
+                .Replace( "#", "" )
+                .Replace( "%", "" )
+                .Replace( "\"", "" )
+                .Replace( "{", "" )
+                .Replace( "}", "" )
+                .Replace( "|", "" )
+                .Replace( "\\", "" )
+                .Replace( "^", "" )
+                .Replace( "[", "" )
+                .Replace( "]", "" )
+                .Replace( "`", "" )
+                .Replace( "'", "" );
         }
 
         /// <summary>
@@ -142,7 +249,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Splits a Camel or Pascal cased identifier into seperate words.
+        /// Splits a Camel or Pascal cased identifier into separate words.
         /// </summary>
         /// <param name="str">The identifier.</param>
         /// <returns></returns>
@@ -246,11 +353,11 @@ namespace Rock
         /// Adds Quotes around the specified string and escapes any quotes that are already in the string.
         /// </summary>
         /// <param name="str">The string.</param>
-        /// <param name="QuoteChar">The quote character.</param>
+        /// <param name="quoteChar">The quote character.</param>
         /// <returns></returns>
-        public static string Quoted( this string str, string QuoteChar = "'" )
+        public static string Quoted( this string str, string quoteChar = "'" )
         {
-            var result = QuoteChar + str.EscapeQuotes() + QuoteChar;
+            var result = quoteChar + str.EscapeQuotes() + quoteChar;
             return result;
         }
 
@@ -308,7 +415,7 @@ namespace Rock
         /// <returns></returns>
         public static string TrimForMaxLength( this string str, Data.IEntity entity, string propertyName )
         {
-            if ( str.IsNotNullOrWhitespace() )
+            if ( str.IsNotNullOrWhiteSpace() )
             {
                 var maxLengthAttr = entity.GetAttributeFrom<System.ComponentModel.DataAnnotations.MaxLengthAttribute>( propertyName );
                 if ( maxLengthAttr != null )
@@ -332,14 +439,14 @@ namespace Rock
         /// <summary>
         /// Replaces the last occurrence of a given string with a new value
         /// </summary>
-        /// <param name="Source">The string.</param>
-        /// <param name="Find">The search parameter.</param>
-        /// <param name="Replace">The replacement parameter.</param>
+        /// <param name="source">The string.</param>
+        /// <param name="find">The search parameter.</param>
+        /// <param name="replace">The replacement parameter.</param>
         /// <returns></returns>
-        public static string ReplaceLastOccurrence( this string Source, string Find, string Replace )
+        public static string ReplaceLastOccurrence( this string source, string find, string replace )
         {
-            int Place = Source.LastIndexOf( Find );
-            return Place > 0 ? Source.Remove( Place, Find.Length ).Insert( Place, Replace ) : Source;
+            int Place = source.LastIndexOf( find );
+            return Place > 0 ? source.Remove( Place, find.Length ).Insert( Place, replace ) : source;
         }
 
         /// <summary>
@@ -815,6 +922,36 @@ namespace Rock
         public static string RemoveCrLf( this string str )
         {
             return str.Replace( Environment.NewLine, " " ).Replace( "\x0A", " " );
+        }
+
+        /// <summary>
+        /// Writes a string to a new memorystream
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static System.IO.MemoryStream ToMemoryStream( this string str )
+        {
+            var stream = new System.IO.MemoryStream();
+            var writer = new System.IO.StreamWriter( stream );
+            writer.Write( str );
+            writer.Flush();
+            stream.Position = 0;
+            return stream;
+        }
+
+        /// <summary>
+        /// Creates a StreamReader with the string data
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static System.IO.StreamReader ToStreamReader( this string str )
+        {
+            var stream = new System.IO.MemoryStream();
+            var writer = new System.IO.StreamWriter( stream );
+            writer.Write( str );
+            writer.Flush();
+            stream.Position = 0;
+            return new System.IO.StreamReader( stream );
         }
 
         #endregion String Extensions

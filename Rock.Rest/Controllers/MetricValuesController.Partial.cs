@@ -209,12 +209,12 @@ namespace Rock.Rest.Controllers
             {
                 if ( entityTypeEntity.EntityTypeId.HasValue && entityTypeEntity.EntityId.HasValue )
                 {
-                    var entityTypeCache = EntityTypeCache.Read( entityTypeEntity.EntityTypeId.Value );
+                    var entityTypeCache = EntityTypeCache.Get( entityTypeEntity.EntityTypeId.Value );
                     if ( entityTypeCache != null )
                     {
                         if ( entityTypeCache.Id == EntityTypeCache.GetId<Campus>() )
                         {
-                            var campus = CampusCache.Read( entityTypeEntity.EntityId.Value );
+                            var campus = CampusCache.Get( entityTypeEntity.EntityId.Value );
                             if ( campus != null )
                             {
                                 seriesPartitionValues.Add( campus.Name );
@@ -222,7 +222,7 @@ namespace Rock.Rest.Controllers
                         }
                         else if ( entityTypeCache.Id == EntityTypeCache.GetId<DefinedValue>() )
                         {
-                            var definedValue = DefinedValueCache.Read( entityTypeEntity.EntityId.Value );
+                            var definedValue = DefinedValueCache.Get( entityTypeEntity.EntityId.Value );
                             if ( definedValue != null )
                             {
                                 seriesPartitionValues.Add( definedValue.ToString() );

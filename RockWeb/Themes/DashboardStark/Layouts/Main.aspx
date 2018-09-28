@@ -1,18 +1,18 @@
 ﻿<%@ Page Language="C#" MasterPageFile="Site.Master" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
-    		
+
 <header>
     <div class="container">
         <div class="pull-left">
             <Rock:Zone Name="HeaderLeft" runat="server" />
-        </div>	
+        </div>
 	    <div class="pull-right">
             <Rock:Zone Name="HeaderRight" runat="server" />
 	    </div>
     </div>
 </header>
-   
+
 <main>
     <div class="container">
         <div class="row">
@@ -40,10 +40,10 @@
         </div>
     </div>
 </main>
-    
-    
+
+
 <footer>
-    <div class="container">		
+    <div class="container">
 	    <div class="pull-left">
             <Rock:Zone Name="FooterLeft" runat="server" />
         </div>
@@ -51,6 +51,6 @@
             <Rock:Zone Name="FooterRight" runat="server" />
         </div>
     </div>
-</footer>		
+</footer>
 </asp:Content>
 

@@ -16,7 +16,7 @@
     <div class="checkin-header">
         <h1><asp:Literal ID="lTitle" runat="server" /><div class="checkin-sub-title"><asp:Literal ID="lSubTitle" runat="server"></asp:Literal></div></h1>
     </div>
-                
+
     <div class="checkin-body">
 
         <div class="checkin-scroll-panel">
@@ -42,12 +42,12 @@
             </div>
         </div>
 
-    </div>        
+    </div>
 
-     <div class="row-fluid checkin-footer">   
+     <div class="row-fluid checkin-footer">
         <div class="checkin-actions">
-            <asp:LinkButton CssClass="btn btn-default" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
-            <asp:LinkButton CssClass="btn btn-default" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
+            <asp:LinkButton CssClass="btn btn-default btn-back" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
+            <asp:LinkButton CssClass="btn btn-default btn-cancel" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
         </div>
     </div>
 

@@ -49,7 +49,7 @@ namespace Rock.Attribute
             FieldConfigurationValues.Add( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( "Rock.Model.Attribute" ) );
             FieldConfigurationValues.Add( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( "EntityTypeId" ) );
 
-            var entityType = EntityTypeCache.Read( entityTypeName, false );
+            var entityType = EntityTypeCache.Get( entityTypeName, false );
             if ( entityType != null )
                 FieldConfigurationValues.Add( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entityType.Id.ToString() ) );
         }

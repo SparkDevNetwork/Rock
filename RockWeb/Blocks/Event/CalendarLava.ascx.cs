@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Event
     [BooleanField( "Show Week View", "Determines whether the week view option is shown", true, order: 11 )]
     [BooleanField( "Show Month View", "Determines whether the month view option is shown", true, order: 12 )]
 
-    [BooleanField( "Enable Campus Context", "If the page has a campus context it's value will be used as a filter", order: 13 )]
+    [BooleanField( "Enable Campus Context", "If the page has a campus context its value will be used as a filter", order: 13 )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/Calendar.lava' %}", "", 14 )]
 
     [DayOfWeekField( "Start of Week Day", "Determines what day is the start of a week.", true, DayOfWeek.Sunday, order: 15 )]
@@ -531,7 +531,7 @@ namespace RockWeb.Blocks.Event
             if ( campusId.HasValue )
             {
                 // Check if there's a campus with this id.
-                var campus = CampusCache.Read( campusId.Value );
+                var campus = CampusCache.Get( campusId.Value );
                 if ( campus != null )
                 {
                     cblCampus.SetValue( campusId.Value );
@@ -541,7 +541,7 @@ namespace RockWeb.Blocks.Event
             {
                 if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
                 {
-                    var contextCampus = RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus;
+                    var contextCampus = RockPage.GetCurrentContext( EntityTypeCache.Get( "Rock.Model.Campus" ) ) as Campus;
                     if ( contextCampus != null )
                     {
                         cblCampus.SetValue( contextCampus.Id );
@@ -552,7 +552,7 @@ namespace RockWeb.Blocks.Event
             // Setup Category Filter
             var selectedCategoryGuids = GetAttributeValue( "FilterCategories" ).SplitDelimitedValues( true ).AsGuidList();
             rcwCategory.Visible = selectedCategoryGuids.Any() && GetAttributeValue( "CategoryFilterDisplayMode" ).AsInteger() > 1;
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() );
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() );
             if ( definedType != null )
             {
                 cblCategory.DataSource = definedType.DefinedValues.Where( v => selectedCategoryGuids.Contains( v.Guid ) );

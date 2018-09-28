@@ -6,6 +6,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace org.newpointe.ExpiredCards.Data
 {
@@ -87,10 +88,9 @@ namespace org.newpointe.ExpiredCards.Data
 
             RockContext _rockContext = new RockContext();
             WorkflowService _workflowService = new WorkflowService(_rockContext);
-            WorkflowTypeService _workflowTypeService = new WorkflowTypeService(_rockContext);
-            WorkflowType _workflowType = _workflowTypeService.Get(workflowGuid);
+            WorkflowTypeCache _workflowTypeCache = WorkflowTypeCache.Get(workflowGuid);
 
-            Workflow _workflow = Rock.Model.Workflow.Activate(_workflowType, "New Test" + _workflowType.WorkTerm);
+            Workflow _workflow = Rock.Model.Workflow.Activate( _workflowTypeCache, "New Test" + _workflowTypeCache.WorkTerm);
 
 
             foreach (KeyValuePair<string, string> attribute in attributes)
@@ -104,7 +104,7 @@ namespace org.newpointe.ExpiredCards.Data
             if ( _workflowService.Process( _workflow, out errorMessages ) )
             {
                 // If the workflow type is persisted, save the workflow
-                if (_workflow.IsPersisted || _workflowType.IsPersisted)
+                if (_workflow.IsPersisted || _workflowTypeCache.IsPersisted)
                 {
                     if (_workflow.Id == 0)
                     {

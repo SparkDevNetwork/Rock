@@ -38,7 +38,8 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays the details of the given business." )]
 
-    [LinkedPage( "Person Profile Page", "The page used to view the details of a business contact" )]
+    [LinkedPage( "Person Profile Page", "The page used to view the details of a business contact", order: 0 )]
+    [LinkedPage( "Communication Page", "The communication page to use for when the business email address is clicked. Leave this blank to use the default.", false, "", "", 1 )]
     public partial class BusinessDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Base Control Methods
@@ -51,8 +52,8 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
-            ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
+            ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
+            ddlReason.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
 
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
@@ -155,14 +156,14 @@ namespace RockWeb.Blocks.Finance
             }
 
             // Record Type - this is always "business". it will never change.
-            business.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+            business.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
             // Record Status
             business.RecordStatusValueId = ddlRecordStatus.SelectedValueAsInt(); ;
 
             // Record Status Reason
             int? newRecordStatusReasonId = null;
-            if ( business.RecordStatusValueId.HasValue && business.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id )
+            if ( business.RecordStatusValueId.HasValue && business.RecordStatusValueId.Value == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id )
             {
                 newRecordStatusReasonId = ddlReason.SelectedValueAsInt();
             }
@@ -193,7 +194,7 @@ namespace RockWeb.Blocks.Finance
                 business.GivingGroup = adultFamilyMember.Group;
 
                 // Add/Update Known Relationship Group Type
-                var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+                var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
                 int knownRelationshipOwnerRoleId = knownRelationshipGroupType.Roles
                     .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) )
                     .Select( r => r.Id )
@@ -201,9 +202,9 @@ namespace RockWeb.Blocks.Finance
                 var knownRelationshipOwner = UpdateGroupMember( business.Id, knownRelationshipGroupType, "Known Relationship", null, knownRelationshipOwnerRoleId, rockContext );
 
                 // Add/Update Implied Relationship Group Type
-                var impliedRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_IMPLIED_RELATIONSHIPS.AsGuid() );
+                var impliedRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK.AsGuid() );
                 int impliedRelationshipOwnerRoleId = impliedRelationshipGroupType.Roles
-                    .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER.AsGuid() ) )
+                    .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid() ) )
                     .Select( r => r.Id )
                     .FirstOrDefault();
                 var impliedRelationshipOwner = UpdateGroupMember( business.Id, impliedRelationshipGroupType, "Implied Relationship", null, impliedRelationshipOwnerRoleId, rockContext );
@@ -211,7 +212,7 @@ namespace RockWeb.Blocks.Finance
                 rockContext.SaveChanges();
 
                 // Location
-                int workLocationTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK ).Id;
+                int workLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK ).Id;
 
                 var groupLocationService = new GroupLocationService( rockContext );
                 var workLocation = groupLocationService.Queryable( "Location" )
@@ -289,7 +290,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            ddlReason.Visible = ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+            ddlReason.Visible = ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
         }
 
         /// <summary>
@@ -368,7 +369,7 @@ namespace RockWeb.Blocks.Finance
             if ( contactId.HasValue && contactId.Value > 0 )
             {
                 // Get the relationship roles to use
-                var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+                var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
                 int businessContactRoleId = knownRelationshipGroupType.Roles
                     .Where( r =>
                         r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT.AsGuid() ) )
@@ -560,7 +561,7 @@ namespace RockWeb.Blocks.Finance
                 var detailsRight = new DescriptionList();
 
                 // Get address
-                var workLocationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() );
+                var workLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() );
                 if ( workLocationType != null )
                 {
                     if ( business.GivingGroup != null ) // Giving Group is a shortcut to Family Group for business
@@ -576,7 +577,7 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                var workPhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
+                var workPhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
                 if ( workPhoneType != null )
                 {
                     var phoneNumber = business.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == workPhoneType.Id );
@@ -586,9 +587,20 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                lDetailsRight.Text = detailsRight
-                    .Add( "Email Address", business.Email )
-                    .Html;
+                var communicationLinkedPageValue = this.GetAttributeValue( "CommunicationPage" );
+                Rock.Web.PageReference communicationPageReference;
+                if ( communicationLinkedPageValue.IsNotNullOrWhiteSpace() )
+                {
+                    communicationPageReference = new Rock.Web.PageReference( communicationLinkedPageValue );
+                }
+                else
+                {
+                    communicationPageReference = null;
+                }
+
+                detailsRight.Add( "Email Address", business.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference ) );
+
+                lDetailsRight.Text = detailsRight.Html;
             }
         }
 
@@ -631,7 +643,7 @@ namespace RockWeb.Blocks.Finance
 
                 // address
                 Location location = null;
-                var workLocationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() );
+                var workLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() );
                 if ( business.GivingGroup != null )     // Giving group is a shortcut to the family group for business
                 {
                     ddlCampus.SelectedValue = business.GivingGroup.CampusId.ToString();
@@ -644,7 +656,7 @@ namespace RockWeb.Blocks.Finance
                 acAddress.SetValues( location );
 
                 // Phone Number
-                var workPhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
+                var workPhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
                 PhoneNumber phoneNumber = null;
                 if ( workPhoneType != null )
                 {
@@ -669,7 +681,7 @@ namespace RockWeb.Blocks.Finance
                 ddlRecordStatus.SelectedValue = business.RecordStatusValueId.HasValue ? business.RecordStatusValueId.Value.ToString() : string.Empty;
                 ddlReason.SelectedValue = business.RecordStatusReasonValueId.HasValue ? business.RecordStatusReasonValueId.Value.ToString() : string.Empty;
                 ddlReason.Visible = business.RecordStatusReasonValueId.HasValue &&
-                    business.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+                    business.RecordStatusValueId.Value == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
             }
             else
             {
@@ -735,7 +747,6 @@ namespace RockWeb.Blocks.Finance
             {
                 groupMember = new GroupMember();
                 groupMember.Group = new Group();
-                groupMemberService.Add( groupMember );
             }
 
             groupMember.PersonId = businessId;
@@ -745,6 +756,11 @@ namespace RockWeb.Blocks.Finance
             groupMember.Group.GroupTypeId = groupType.Id;
             groupMember.Group.Name = groupName;
             groupMember.Group.CampusId = campusId;
+
+            if ( groupMember.Id == 0)
+            {
+                groupMemberService.Add( groupMember );
+            }
 
             return groupMember;
         }

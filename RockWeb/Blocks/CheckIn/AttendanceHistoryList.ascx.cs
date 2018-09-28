@@ -86,13 +86,13 @@ namespace RockWeb.Blocks.Checkin
             if ( !Page.IsPostBack )
             {
                 bool valid = true;
-                int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                int personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
                 if ( ContextTypesRequired.Any( p => p.Id == personEntityTypeId ) && _person == null )
                 {
                     valid = false;
                 }
 
-                int batchEntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
+                int batchEntityTypeId = EntityTypeCache.Get( "Rock.Model.Group" ).Id;
                 if ( ContextTypesRequired.Any( g => g.Id == batchEntityTypeId ) && _group == null )
                 {
                     valid = false;
@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.Checkin
                             .Where( a =>
                                 a.PersonAlias != null &&
                                 a.PersonAlias.PersonId == _person.Id )
-                            .Select( a => a.GroupId )
+                            .Select( a => a.Occurrence.GroupId )
                             .Distinct()
                             .ToList();
 
@@ -332,14 +332,14 @@ namespace RockWeb.Blocks.Checkin
 
                 if ( _group != null )
                 {
-                    qryAttendance = qryAttendance.Where( a => a.GroupId == _group.Id );
+                    qryAttendance = qryAttendance.Where( a => a.Occurrence.GroupId == _group.Id );
                 }
                 else
                 {
                     int? groupId = ddlAttendanceGroup.SelectedValueAsInt();
                     if ( groupId.HasValue )
                     {
-                        qryAttendance = qryAttendance.Where( a => a.GroupId == groupId.Value );
+                        qryAttendance = qryAttendance.Where( a => a.Occurrence.GroupId == groupId.Value );
                     }
                 }
             }
@@ -367,7 +367,7 @@ namespace RockWeb.Blocks.Checkin
             int? scheduleId = spSchedule.SelectedValue.AsIntegerOrNull();
             if ( scheduleId.HasValue && scheduleId.Value > 0 )
             {
-                qryAttendance = qryAttendance.Where( h => h.ScheduleId == scheduleId.Value );
+                qryAttendance = qryAttendance.Where( h => h.Occurrence.ScheduleId == scheduleId.Value );
             }
 
             // Filter by DidAttend
@@ -387,14 +387,14 @@ namespace RockWeb.Blocks.Checkin
             var qry = qryAttendance
                 .Select( a => new
                 {
-                    LocationId = a.LocationId,
-                    LocationName = a.Location.Name,
+                    LocationId = a.Occurrence.LocationId,
+                    LocationName = a.Occurrence.Location != null ? a.Occurrence.Location.Name : string.Empty,
                     CampusId = a.CampusId,
-                    CampusName = a.Campus.Name,
-                    ScheduleName = a.Schedule.Name,
+                    CampusName = a.Campus != null ? a.Campus.Name : string.Empty,
+                    ScheduleName = a.Occurrence.Schedule != null ? a.Occurrence.Schedule.Name : string.Empty,
                     Person = a.PersonAlias.Person,
-                    GroupName = a.Group != null ? a.Group.Name : string.Empty,
-                    GroupTypeId = a.Group != null ? a.Group.GroupTypeId : (int?)null,
+                    GroupName = a.Occurrence.Group != null ? a.Occurrence.Group.Name : string.Empty,
+                    GroupTypeId = a.Occurrence.Group != null ? a.Occurrence.Group.GroupTypeId : (int?)null,
                     StartDateTime = a.StartDateTime,
                     EndDateTime = a.EndDateTime,
                     DidAttend = a.DidAttend
@@ -436,7 +436,7 @@ namespace RockWeb.Blocks.Checkin
                 _locationPaths.AddOrIgnore( location.Id, locationPath );
             }
 
-            gHistory.EntityTypeId = EntityTypeCache.Read<Attendance>().Id;
+            gHistory.EntityTypeId = EntityTypeCache.Get<Attendance>().Id;
             gHistory.DataSource = qry.ToList();
             gHistory.DataBind();
         }

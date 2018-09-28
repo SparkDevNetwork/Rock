@@ -160,8 +160,8 @@ CommunicationRecipientActivity Moved: {_communicationRecipientActivityMoved}/{_c
         {
             using ( var rockContext = new RockContext() )
             {
-                var componentEntityTypePage = EntityTypeCache.Read<Rock.Model.Page>();
-                var channelMediumWebsite = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
+                var componentEntityTypePage = EntityTypeCache.Get<Rock.Model.Page>();
+                var channelMediumWebsite = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
                 var sqlInsertSitesToChannels = $@"
 -- Insert Websites
 INSERT INTO [InteractionChannel] (
@@ -465,8 +465,8 @@ END
         {
             using ( var rockContext = new RockContext() )
             {
-                var componentEntityTypeCommunicationRecipient = EntityTypeCache.Read<Rock.Model.CommunicationRecipient>();
-                var channelMediumCommunication = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_COMMUNICATION );
+                var componentEntityTypeCommunicationRecipient = EntityTypeCache.Get<Rock.Model.CommunicationRecipient>();
+                var channelMediumCommunication = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_COMMUNICATION );
 
                 // InteractionChannel for Communications already exists (in a migration)
                 var interactionChannel = new InteractionChannelService( rockContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );

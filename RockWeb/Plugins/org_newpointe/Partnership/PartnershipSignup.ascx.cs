@@ -130,7 +130,7 @@ namespace RockWeb.Plugins.org_newpointe.Partnership
 
             var discoverGroups = groupService.Queryable().Where(g => g.Name.Contains("DISCOVER My Church"));
 
-            var discoverGroupAttendance = attendanceService.Queryable().Where(a => discoverGroups.Contains(a.Group) && a.PersonAliasId == thePerson.PrimaryAliasId);
+            var discoverGroupAttendance = attendanceService.Queryable().Where(a => discoverGroups.Contains(a.Occurrence.Group) && a.PersonAliasId == thePerson.PrimaryAliasId);
 
             if (discoverGroupAttendance.Any())
             {
@@ -242,7 +242,7 @@ namespace RockWeb.Plugins.org_newpointe.Partnership
             partnershipYears.Add( dateToSave.Year.ToString() );
             person.SetAttributeValue( "Partnership", string.Join(",", partnershipYears) );
 
-            person.ConnectionStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_MEMBER.AsGuid(), rockContext ).Id;
+            person.ConnectionStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_MEMBER.AsGuid(), rockContext ).Id;
 
             rockContext.SaveChanges();
             person.SaveAttributeValues();
@@ -349,7 +349,7 @@ namespace RockWeb.Plugins.org_newpointe.Partnership
             mediumData.Add("Subject", subject);
             mediumData.Add("Body", emailHeader + body + emailFooter);
 
-            var mediumEntity = EntityTypeCache.Read(Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid(), rockContext);
+            var mediumEntity = EntityTypeCache.Get(Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid(), rockContext);
             if (mediumEntity != null)
             {
                 var medium = MediumContainer.GetComponent(mediumEntity.Name);
@@ -358,7 +358,7 @@ namespace RockWeb.Plugins.org_newpointe.Partnership
                     var transport = medium.Transport;
                     if (transport != null && transport.IsActive)
                     {
-                        var appRoot = GlobalAttributesCache.Read(rockContext).GetValue("InternalApplicationRoot");
+                        var appRoot = GlobalAttributesCache.Value("InternalApplicationRoot");
                         transport.Send(mediumData, recipients, appRoot, string.Empty);
                     }
                 }

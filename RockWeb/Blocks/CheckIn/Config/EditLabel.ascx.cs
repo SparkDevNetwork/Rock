@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -33,6 +33,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Utility;
 
 namespace RockWeb.Blocks.CheckIn.Config
 {
@@ -42,8 +43,11 @@ namespace RockWeb.Blocks.CheckIn.Config
     public partial class EditLabel : RockBlock
     {
         #region Properties
-        Regex regexPrintWidth = new Regex( @"\^PW(\d+)" );
-        Regex regexPrintHeight = new Regex( @"\^LL(\d+)" );
+        private Regex regexPrintWidth = new Regex( @"\^PW(\d+)" );
+        private Regex regexPrintHeight = new Regex( @"\^LL(\d+)" );
+
+        // ^JUS will save changes to EEPROM, doing this for each label is not needed, slows printing dramatically, and shortens the printer's memory life.
+        private const string REMOVE_ZPL_CONFIG_UPDATE_CODE = "^JUS";
         #endregion
 
         #region Control Methods
@@ -72,14 +76,13 @@ namespace RockWeb.Blocks.CheckIn.Config
                         if ( binaryFile != null )
                         {
                             lTitle.Text = binaryFile.FileName;
-                            ceLabel.Text = binaryFile.ContentsToString();
+                            ceLabel.Text = binaryFile.ContentsToString().Replace( REMOVE_ZPL_CONFIG_UPDATE_CODE, string.Empty );
                             SetLabelSize( ceLabel.Text );
                         }
                     }
                     else
                     {
                         pnlOpenFile.Visible = true;
-
 
                         ddlLabel.Items.Clear();
                         Guid labelTypeGuid = Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid();
@@ -90,18 +93,19 @@ namespace RockWeb.Blocks.CheckIn.Config
                         {
                             ddlLabel.Items.Add( new ListItem( labelFile.FileName, labelFile.Id.ToString() ) );
                         }
+
                         ddlLabel.SelectedIndex = 0;
                     }
 
                     ddlDevice.Items.Clear();
-                    var printerDeviceType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER.AsGuid() );
+                    var printerDeviceType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER.AsGuid() );
                     if ( printerDeviceType != null )
                     {
                         foreach ( var device in new DeviceService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( d =>
                                 d.DeviceTypeValueId == printerDeviceType.Id &&
-                                d.IPAddress != "" ) )
+                                d.IPAddress != string.Empty ) )
                         {
                             ddlDevice.Items.Add( new ListItem( device.Name, device.Id.ToString() ) );
                         }
@@ -114,7 +118,6 @@ namespace RockWeb.Blocks.CheckIn.Config
                 }
 
                 SetLabelImage();
-
             }
         }
 
@@ -136,7 +139,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     var file = new BinaryFileService( rockContext ).Get( fileId.Value );
                     if ( file != null )
                     {
-                        ceLabel.Text = file.ContentsToString();
+                        ceLabel.Text = file.ContentsToString().Replace( REMOVE_ZPL_CONFIG_UPDATE_CODE, string.Empty );
                         SetLabelSize( ceLabel.Text );
                         ceLabel.Label = string.Format( file.FileName );
                         btnSave.Text = "Save " + file.FileName;
@@ -159,6 +162,9 @@ namespace RockWeb.Blocks.CheckIn.Config
                     {
                         using ( var stream = new MemoryStream() )
                         {
+                            ceLabel.Text = ceLabel.Text.Replace( REMOVE_ZPL_CONFIG_UPDATE_CODE, string.Empty );
+                            ceLabel.Text = cbForceUTF8.Checked ? ceLabel.Text.Replace( "^CI0", "^CI28" ) : ceLabel.Text;
+
                             var writer = new StreamWriter( stream );
                             writer.Write( ceLabel.Text );
                             writer.Flush();
@@ -198,34 +204,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                 var device = new DeviceService( rockContext ).Get( ddlDevice.SelectedValueAsInt() ?? 0 );
                 if ( device != null )
                 {
-                    string currentIp = device.IPAddress;
-                    int printerPort = 9100;
-                    var printerIp = currentIp;
-
-                    // If the user specified in 0.0.0.0:1234 syntax then pull our the IP and port numbers.
-                    if ( printerIp.Contains( ":" ) )
-                    {
-                        var segments = printerIp.Split( ':' );
-
-                        printerIp = segments[0];
-                        printerPort = segments[1].AsInteger();
-                    }
-
-                    var printerEndpoint = new IPEndPoint( IPAddress.Parse( currentIp ), printerPort );
-
-                    var socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
-                    IAsyncResult result = socket.BeginConnect( printerEndpoint, null, null );
-                    bool success = result.AsyncWaitHandle.WaitOne( 5000, true );
-
-                    if ( socket.Connected )
-                    {
-                        var ns = new NetworkStream( socket );
-                        byte[] toSend = System.Text.Encoding.ASCII.GetBytes( ceLabel.Text );
-                        ns.Write( toSend, 0, toSend.Length );
-
-                        socket.Shutdown( SocketShutdown.Both );
-                        socket.Close();
-                    }
+                    ceLabel.Text = cbForceUTF8.Checked ? ceLabel.Text.Replace( "^CI0", "^CI28" ) : ceLabel.Text;
+                    ZebraPrint.PrintLabel( device.IPAddress, ceLabel.Text );
                 }
             }
         }
@@ -278,7 +258,9 @@ namespace RockWeb.Blocks.CheckIn.Config
                     nbLabelHeight.Text = heightRounded.ToString();
                 }
             }
-            catch { };
+            catch
+            {
+            }
         }
 
         private void SetLabelImage()
@@ -288,12 +270,9 @@ namespace RockWeb.Blocks.CheckIn.Config
             string height = nbLabelHeight.Text;
             string labelIndex = nbShowLabel.Text;
 
-            imgLabelary.ImageUrl = string.Format(
-                "http://api.labelary.com/v1/printers/{0}dpmm/labels/{1}x{2}/{3}/{4}",
-                dpmm, width, height, labelIndex, ceLabel.Text.UrlEncode() );
+            imgLabelary.ImageUrl = string.Format( "http://api.labelary.com/v1/printers/{0}dpmm/labels/{1}x{2}/{3}/{4}", dpmm, width, height, labelIndex, ceLabel.Text.UrlEncode() );
         }
 
         #endregion
-
-        }
     }
+}

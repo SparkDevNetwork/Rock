@@ -23,8 +23,8 @@ using System.Runtime.Serialization;
 
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Security;
 using System.Text;
 
 namespace Rock.Data
@@ -298,7 +298,7 @@ namespace Rock.Data
         /// then the authorization on the Rock.Security.GlobalDefault entity
         /// </summary>
         [NotMapped]
-        public virtual Security.ISecured ParentAuthority
+        public virtual ISecured ParentAuthority
         {
             get
             {
@@ -317,7 +317,7 @@ namespace Rock.Data
         /// An optional additional parent authority.  (i.e for Groups, the GroupType is main parent
         /// authority, but parent group is an additional parent authority )
         /// </summary>
-        public virtual Security.ISecured ParentAuthorityPre
+        public virtual ISecured ParentAuthorityPre
         {
             get { return null; }
         }
@@ -353,7 +353,7 @@ namespace Rock.Data
         /// </returns>
         public virtual bool IsAuthorized( string action, Rock.Model.Person person )
         {
-            return Security.Authorization.Authorized( this, action, person );
+            return Authorization.Authorized( this, action, person );
         }
 
         /// <summary>
@@ -377,7 +377,7 @@ namespace Rock.Data
         /// </returns>
         public virtual bool IsPrivate( string action, Person person )
         {
-            return Security.Authorization.IsPrivate( this, action, person  );
+            return Authorization.IsPrivate( this, action, person  );
         }
 
         /// <summary>
@@ -388,7 +388,7 @@ namespace Rock.Data
         /// <param name="rockContext">The rock context.</param>
         public virtual void MakePrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakePrivate( this, action, person, rockContext );
+            Authorization.MakePrivate( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -399,7 +399,7 @@ namespace Rock.Data
         /// <param name="rockContext">The rock context.</param>
         public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakeUnPrivate( this, action, person, rockContext );
+            Authorization.MakeUnPrivate( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -410,7 +410,7 @@ namespace Rock.Data
         /// <param name="rockContext">The rock context.</param>
         public virtual void AllowPerson( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.AllowPerson( this, action, person, rockContext );
+            Authorization.AllowPerson( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -421,17 +421,17 @@ namespace Rock.Data
         /// <param name="rockContext">The rock context.</param>
         public virtual void AllowSecurityRole( string action, Group group, RockContext rockContext = null )
         {
-            Security.Authorization.AllowSecurityRole( this, action, group, rockContext );
+            Authorization.AllowSecurityRole( this, action, group, rockContext );
         }
 
         /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
         /// <remarks>
-        /// This method is only neccessary to support the old way of getting attribute values in 
+        /// This method is only necessary to support the old way of getting attribute values in 
         /// liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
         /// deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
-        /// suported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be removed
+        /// supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be removed
         /// </remarks>
         /// <value>
         /// The <see cref="System.Object"/>.
@@ -447,7 +447,7 @@ namespace Rock.Data
                 object item = base[key];
                 if ( item == null )
                 {
-                    var lavaSupportLevel = GlobalAttributesCache.Read().LavaSupportLevel; 
+                    var lavaSupportLevel = GlobalAttributesCache.Get().LavaSupportLevel; 
                     
                     if (this.Attributes == null)
                     {
@@ -459,10 +459,10 @@ namespace Rock.Data
                         return AttributeValues.Select( a => a.Value ).ToList();
                     }
 
-                    // The remainder of this method is only neccessary to support the old way of getting attribute 
+                    // The remainder of this method is only necessary to support the old way of getting attribute 
                     // values in liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
                     // deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
-                    // suported (e.g. {{ Person | Attribute:'BaptismDate' }} ), the remainder of this method 
+                    // supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), the remainder of this method 
                     // can be removed
 
                     if ( lavaSupportLevel == Lava.LavaSupportLevel.NoLegacy )
@@ -525,10 +525,10 @@ namespace Rock.Data
         /// Determines whether the specified key contains key.
         /// </summary>
         /// <remarks>
-        /// This method is only neccessary to support the old way of getting attribute values in 
+        /// This method is only necessary to support the old way of getting attribute values in 
         /// liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
         /// deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
-        /// suported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be removed
+        /// supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be removed
         /// </remarks>
         /// <param name="key">The key.</param>
         /// <returns></returns>

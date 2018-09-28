@@ -103,10 +103,10 @@ namespace Rock.Slingshot
                          System.Diagnostics.Debug.WriteLine( $"Unable to extract {a.FullName} from imageZipFile: {ex.Message}" );
                      }
                  } );
-
-                var imageFilesInFolder = Directory.EnumerateFiles( extractedImagesFolder );
-                this.SlingshotImageFileNames.AddRange( imageFilesInFolder );
             }
+
+            var imageFilesInFolder = Directory.EnumerateFiles( extractedImagesFolder );
+            this.SlingshotImageFileNames.AddRange( imageFilesInFolder );
 
             BulkImporter = new BulkImporter();
             BulkImporter.ImportUpdateOption = importUpdateType;
@@ -699,7 +699,7 @@ namespace Rock.Slingshot
         /// <exception cref="System.Exception">Unexpected Note EntityType</exception>
         private void SubmitEntityNotesImport<T>( IEnumerable<SlingshotCore.Data.EntityNote> slingshotEntityNoteList, bool? groupEntityIsFamily ) where T : Rock.Data.IEntity
         {
-            var entityType = EntityTypeCache.Read<T>();
+            var entityType = EntityTypeCache.Get<T>();
 
             string entityFriendlyName = entityType.FriendlyName;
             if ( entityType.Id == EntityTypeCache.GetId<Rock.Model.Group>().Value )
@@ -735,7 +735,6 @@ namespace Rock.Slingshot
                     noteType.Name = noteTypeName;
                     noteType.UserSelectable = true;
                     noteType.IconCssClass = string.Empty;
-                    noteType.CssClass = string.Empty;
                     noteTypeService.Add( noteType );
                     rockContext.SaveChanges();
 
@@ -797,35 +796,35 @@ namespace Rock.Slingshot
                 switch ( slingshotFinancialPledge.PledgeFrequency )
                 {
                     case SlingshotCore.Model.PledgeFrequency.OneTime:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME )?.Id;
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME )?.Id;
                         break;
 
                     case SlingshotCore.Model.PledgeFrequency.Weekly:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY )?.Id;
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY )?.Id;
                         break;
 
                     case SlingshotCore.Model.PledgeFrequency.BiWeekly:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY )?.Id;
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY )?.Id;
                         break;
 
                     case SlingshotCore.Model.PledgeFrequency.TwiceAMonth:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY )?.Id;
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY )?.Id;
                         break;
 
                     case SlingshotCore.Model.PledgeFrequency.Monthly:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY )?.Id;
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY )?.Id;
                         break;
 
                     case SlingshotCore.Model.PledgeFrequency.Quarterly:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_QUARTERLY )?.Id;
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_QUARTERLY )?.Id;
                         break;
 
                     case SlingshotCore.Model.PledgeFrequency.TwiceAYear:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEYEARLY )?.Id;
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEYEARLY )?.Id;
                         break;
 
                     case SlingshotCore.Model.PledgeFrequency.Yearly:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_YEARLY )?.Id;
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_YEARLY )?.Id;
                         break;
                 }
 
@@ -1515,10 +1514,7 @@ namespace Rock.Slingshot
             var campusService = new CampusService( rockContext );
 
             // Flush the campuscache just in case it was updated in the Database without rock knowing about it
-            foreach ( var campuscache in CampusCache.All() )
-            {
-                Rock.Web.Cache.CampusCache.Flush( campuscache.Id );
-            }
+            CampusCache.Clear();
 
             // Rock has a Unique Constraint on Campus.Name so, make sure campus name is unique and rename it if a new campus happens to have the same name as an existing campus
             var usedCampusNames = CampusCache.All().Select( a => a.Name ).ToList();
@@ -1544,9 +1540,10 @@ namespace Rock.Slingshot
                 campusToAdd.Guid = Guid.NewGuid();
                 campusService.Add( campusToAdd );
                 rockContext.SaveChanges();
-
-                Rock.Web.Cache.CampusCache.Flush( campusToAdd.Id );
             }
+
+            // Flush the campuscache to force to reload
+            CampusCache.Clear();
         }
 
         /// <summary>
@@ -1653,8 +1650,6 @@ namespace Rock.Slingshot
             }
 
             rockContext.SaveChanges();
-
-            AttributeCache.FlushEntityAttributes();
         }
 
         /// <summary>
@@ -1756,8 +1751,6 @@ namespace Rock.Slingshot
             }
 
             rockContext.SaveChanges();
-
-            DefinedTypeCache.Flush( definedTypeId );
         }
 
         /// <summary>
@@ -1838,16 +1831,26 @@ namespace Rock.Slingshot
             var fileName = Path.Combine( this.SlingshotDirectoryName, new T().GetFileName() );
             if ( File.Exists( fileName ) )
             {
-                using ( var slingshotFileStream = File.OpenText( fileName ) )
+                try
                 {
-                    CsvReader csvReader = new CsvReader( slingshotFileStream );
-                    csvReader.Configuration.HasHeaderRecord = true;
-                    if ( willThrowOnMissingField.HasValue )
+                    using ( var slingshotFileStream = File.OpenText( fileName ) )
                     {
-                        csvReader.Configuration.WillThrowOnMissingField = willThrowOnMissingField.Value;
-                    }
+                        CsvReader csvReader = new CsvReader( slingshotFileStream );
+                        csvReader.Configuration.HasHeaderRecord = true;
+                        if ( willThrowOnMissingField.HasValue )
+                        {
+                            csvReader.Configuration.WillThrowOnMissingField = willThrowOnMissingField.Value;
+                        }
 
-                    return csvReader.GetRecords<T>().ToList();
+                        return csvReader.GetRecords<T>().ToList();
+                    }
+                }
+                catch
+                {
+                    var exceptions = AnalyzeImportFileExceptions<T>( willThrowOnMissingField, fileName );
+                    var exception = new AggregateException( $"File '{Path.GetFileName( fileName )}' cannot be properly read during Slingshot import. See InnerExceptions for line number(s).", exceptions );
+                    ExceptionLogService.LogException( exception );
+                    throw exception;
                 }
             }
             else
@@ -1855,6 +1858,48 @@ namespace Rock.Slingshot
                 return new List<T>();
             }
         }
+
+        /// <summary>
+        /// Process the import file and log all the lines where exceptions occur.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="willThrowOnMissingField">The will throw on missing field.</param>
+        /// <param name="fileName">Name of the file.</param>
+        /// <returns>Exceptions</returns>
+        private static List<Exception> AnalyzeImportFileExceptions<T>( bool? willThrowOnMissingField, string fileName ) where T : SlingshotCore.Model.IImportModel, new()
+        {
+            List<Exception> exceptions = new List<Exception>();
+
+            using ( var slingshotFileStream = File.OpenText( fileName ) )
+            {
+                // Pre process file to see if there are errors.
+                CsvReader csvReader = new CsvReader( slingshotFileStream );
+                csvReader.Configuration.HasHeaderRecord = true;
+                if ( willThrowOnMissingField.HasValue )
+                {
+                    csvReader.Configuration.WillThrowOnMissingField = willThrowOnMissingField.Value;
+                    csvReader.Configuration.IgnoreReadingExceptions = true;
+                }
+
+                // We're just reading these to spot any problems on a particular row.
+                int i = 1; // start count at the header row
+                while ( csvReader.Read() )
+                {
+                    i++;
+                    try
+                    {
+                        var record = csvReader.GetRecord<T>();
+                    }
+                    catch ( Exception ex )
+                    {
+                        exceptions.Add( new CsvBadDataException( $"Line {i} cannot be properly read during Slingshot import.", ex ) );
+                    }
+                }
+            }
+
+            return exceptions;
+        }
+
 
         /// <summary>
         /// Loads the person slingshot lists.
@@ -1883,8 +1928,8 @@ namespace Rock.Slingshot
         private void EnsureDefinedValues()
         {
             List<Rock.Model.DefinedValue> definedValuesToAdd = new List<Rock.Model.DefinedValue>();
-            int definedTypeIdCurrencyType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() ).Id;
-            int definedTypeIdTransactionSourceType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() ).Id;
+            int definedTypeIdCurrencyType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() ).Id;
+            int definedTypeIdTransactionSourceType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() ).Id;
 
             // The following DefinedValues are not IsSystem, but are potentionally needed to do an import, so make sure they exist on the server
             if ( !this.CurrencyTypeValues.ContainsKey( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH.AsGuid() ) )
@@ -1957,11 +2002,6 @@ namespace Rock.Slingshot
             var definedValueService = new DefinedValueService( rockContext );
             definedValueService.AddRange( definedValuesToAdd );
             rockContext.SaveChanges();
-
-            foreach ( var definedTypeId in definedValuesToAdd.Select( a => a.DefinedTypeId ).Distinct().ToList() )
-            {
-                DefinedTypeCache.Flush( definedTypeId );
-            }
         }
 
         /// <summary>
@@ -1989,20 +2029,20 @@ namespace Rock.Slingshot
             var rockContext = new RockContext();
 
             // Person Attributes
-            var personAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdPerson ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Read( a ) ).ToList();
+            var personAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdPerson ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Get( a ) ).ToList();
             this.PersonAttributeKeyLookup = personAttributes.ToDictionary( k => k.Key, v => v );
 
             // Family Attributes
             string groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id.ToString();
 
-            var familyAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdGroup && a.EntityTypeQualifierColumn == "GroupTypeId" && a.EntityTypeQualifierValue == groupTypeIdFamily ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Read( a ) ).ToList();
+            var familyAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdGroup && a.EntityTypeQualifierColumn == "GroupTypeId" && a.EntityTypeQualifierValue == groupTypeIdFamily ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Get( a ) ).ToList();
             this.FamilyAttributeKeyLookup = familyAttributes.ToDictionary( k => k.Key, v => v );
 
             // FieldTypes
-            this.FieldTypeLookup = new FieldTypeService( rockContext ).Queryable().Select( a => a.Id ).ToList().Select( a => FieldTypeCache.Read( a ) ).ToDictionary( k => k.Class, v => v );
+            this.FieldTypeLookup = new FieldTypeService( rockContext ).Queryable().Select( a => a.Id ).ToList().Select( a => FieldTypeCache.Get( a ) ).ToDictionary( k => k.Class, v => v );
 
             // GroupTypes
-            this.GroupTypeLookupByForeignId = new GroupTypeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == this.ForeignSystemKey ).ToList().Select( a => GroupTypeCache.Read( a ) ).ToDictionary( k => k.ForeignId.Value, v => v );
+            this.GroupTypeLookupByForeignId = new GroupTypeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == this.ForeignSystemKey ).ToList().Select( a => GroupTypeCache.Get( a ) ).ToDictionary( k => k.ForeignId.Value, v => v );
 
             // Campuses
             this.CampusLookupByForeignId = CampusCache.All().Where( a => a.ForeignId.HasValue && a.ForeignKey == this.ForeignSystemKey ).ToList().ToDictionary( k => k.ForeignId.Value, v => v );
@@ -2015,7 +2055,7 @@ namespace Rock.Slingshot
         /// <returns></returns>
         private Dictionary<Guid, DefinedValueCache> LoadDefinedValues( Guid definedTypeGuid )
         {
-            return DefinedTypeCache.Read( definedTypeGuid ).DefinedValues.ToDictionary( k => k.Guid );
+            return DefinedTypeCache.Get( definedTypeGuid ).DefinedValues.ToDictionary( k => k.Guid );
         }
     }
 }

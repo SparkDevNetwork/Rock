@@ -162,8 +162,8 @@ namespace Rock.Field.Types
                         useDescription = true;
                     }
 
-                    var lowerDefinedValue = DefinedValueCache.Read( valuePair[0].AsGuid() );
-                    var upperDefinedValue = DefinedValueCache.Read( valuePair[1].AsGuid() );
+                    var lowerDefinedValue = DefinedValueCache.Get( valuePair[0].AsGuid() );
+                    var upperDefinedValue = DefinedValueCache.Get( valuePair[1].AsGuid() );
                     if ( lowerDefinedValue != null || upperDefinedValue != null )
                     {
                         if ( useDescription )
@@ -221,7 +221,7 @@ namespace Rock.Field.Types
             if ( configurationValues != null && configurationValues.ContainsKey( DEFINED_TYPE_KEY ) )
             {
                 Guid definedTypeGuid = configurationValues.GetValueOrNull( DEFINED_TYPE_KEY ).AsGuid();
-                DefinedTypeCache definedType = DefinedTypeCache.Read( definedTypeGuid );
+                DefinedTypeCache definedType = DefinedTypeCache.Get( definedTypeGuid );
 
                 if ( definedType != null )
                 {

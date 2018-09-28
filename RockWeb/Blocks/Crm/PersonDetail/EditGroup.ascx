@@ -6,31 +6,39 @@
 
         <div class="panel panel-block" id="pnlEditGroup" runat="server">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-users"></i> <asp:Literal ID="lBanner" runat="server" /></h1>
+                <h1 class="panel-title">
+                    <i class="fa fa-users"></i> 
+                    <asp:Literal ID="lBanner" runat="server" />
+                </h1>
             </div>
             <div class="panel-body">
 
-                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <asp:CustomValidator ID="cvGroupMember" runat="server" Display="None" />
                 <Rock:NotificationBox ID="nbRoleLimitWarning" runat="server" NotificationBoxType="Warning" Heading="Role Limit Warning" />
 
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <fieldset>
                             <Rock:RockTextBox ID="tbGroupName" runat="server" Label='Group Name' Required="true" CssClass="input-meduim" AutoPostBack="true" OnTextChanged="tbGroupName_TextChanged" />
                         </fieldset>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <fieldset>
                             <Rock:CampusPicker ID="cpCampus" runat="server" Required="true" AutoPostBack="true" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" />
                         </fieldset>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <fieldset>
                             <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
                             <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="ddlReason_SelectedIndexChanged"></Rock:RockDropDownList>
                         </fieldset>
 
+                    </div>
+                    <div class="col-md-3">
+                        <fieldset>
+                            <Rock:DefinedValuePicker ID="dvpGroupStatus" runat="server" Label="Family Status" AutoPostBack="true" OnSelectedIndexChanged="dvpGroupStatus_SelectedIndexChanged" />
+                        </fieldset>
                     </div>
                 </div>
 
@@ -38,7 +46,7 @@
                     <div class="panel-heading clearfix">
                         <h3 class="panel-title pull-left"><%=GroupTypeName %> Members</h3>
                         <div class="pull-right">
-                            <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddPerson_Click" CausesValidation="false"><i class="fa fa-user"></i> Add Person</asp:LinkButton>
+                            <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddPerson_Click" CausesValidation="false">Add Person<i class="btn-icon fa fa-user"></i></asp:LinkButton>
                         </div>
                     </div>
                     <div class="panel-body">
@@ -56,8 +64,8 @@
                                             </div>
                                         </div>
                                         <div class="actions">
-                                            <asp:LinkButton ID="lbNewGroup" runat="server" CssClass="btn btn-default btn-move btn-xs" CommandName="Move"><i class="fa fa-fw fa-external-link"></i></asp:LinkButton>
-                                            <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-remove btn-default btn-xs" CommandName="Remove"><i class="fa fa-fw fa-times"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="lbNewGroup" runat="server" CssClass="btn btn-default btn-square btn-move btn-sm" CommandName="Move"><i class="fa fa-fw fa-external-link"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-remove btn-default btn-square btn-sm" CommandName="Remove"><i class="fa fa-fw fa-times"></i></asp:LinkButton>
                                         </div>
                                     </li>
                                 </ItemTemplate>
@@ -112,7 +120,7 @@
                                             <asp:CheckBox ID="cbLocation" runat="server" Checked='<%# Eval("IsLocation") %>' Visible='<%# !(bool)Eval("IsLocation") %>' />
                                         </EditItemTemplate>
                                     </Rock:RockTemplateField>
-                                    <Rock:RockTemplateField ItemStyle-HorizontalAlign="Center" HeaderStyle-CssClass="span1" ItemStyle-CssClass="grid-columncommand" ItemStyle-Wrap="false">
+                                    <Rock:RockTemplateField ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" HeaderStyle-CssClass="span1" ItemStyle-CssClass="grid-columncommand" ItemStyle-Wrap="false">
                                         <ItemTemplate>
                                             <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CommandName="Edit" CssClass="btn btn-default btn-sm" CausesValidation="false"><i class="fa fa-pencil"></i></asp:LinkButton>
                                         </ItemTemplate>
@@ -161,8 +169,8 @@
                     <li id="liExistingPerson" runat="server"><a href='#<%=divExistingPerson.ClientID%>' data-toggle="pill">Add Existing Person</a></li>
                 </ul>
 
-                <Rock:NotificationBox ID="nbAddPerson" runat="server" Heading="Please Correct the Following" NotificationBoxType="Danger" Visible="false" />
-                <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AddPerson"/>
+                <Rock:NotificationBox ID="nbAddPerson" runat="server" Heading="Please correct the following:" NotificationBoxType="Danger" Visible="false" />
+                <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="AddPerson"/>
 
                 <div class="tab-content">
 

@@ -313,12 +313,12 @@ $('#{4},#{5}').on('change', function (ev) {{
 
             _tbLowerValue = new DatePicker();
             _tbLowerValue.ID = this.ID + "_lower";
-            _tbLowerValue.CssClass = "input-width-md date input-group-lower js-lower";
+            _tbLowerValue.CssClass = "input-group-lower js-lower";
             Controls.Add( _tbLowerValue );
 
             _tbUpperValue = new DatePicker();
             _tbUpperValue.ID = this.ID + "_upper";
-            _tbUpperValue.CssClass = "input-width-md date input-group-upper js-upper";
+            _tbUpperValue.CssClass = "input-group-upper js-upper";
             Controls.Add( _tbUpperValue );
 
             // add custom validator
@@ -345,7 +345,7 @@ $('#{4},#{5}').on('change', function (ev) {{
         }
 
         /// <summary>
-        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// This is where you implement the simple aspects of rendering your control.  The rest
         /// will be handled by calling RenderControlHelper's RenderControl() method.
         /// </summary>
         /// <param name="writer">The writer.</param>

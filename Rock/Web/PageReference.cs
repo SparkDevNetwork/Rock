@@ -119,7 +119,7 @@ namespace Rock.Web
                 {
                     if ( Guid.TryParse( items[0], out pageGuid ) )
                     {
-                        var pageCache = PageCache.Read( pageGuid );
+                        var pageCache = PageCache.Get( pageGuid );
                         if ( pageCache != null )
                         {
                             // Set the page
@@ -237,7 +237,7 @@ namespace Rock.Web
                             {
                                 foreach( var pageAndRouteId in pages )
                                 {
-                                    var pageCache = PageCache.Read( pageAndRouteId.PageId );
+                                    var pageCache = PageCache.Get( pageAndRouteId.PageId );
                                     if ( pageCache != null && pageCache.Layout != null && pageCache.Layout.SiteId == site.Id )
                                     {
                                         PageId = pageAndRouteId.PageId;
@@ -356,7 +356,7 @@ namespace Rock.Web
         /// <returns></returns>
         private int? GetRouteIdFromPageAndParms()
         {
-            var pageCache = PageCache.Read( PageId );
+            var pageCache = PageCache.Get( PageId );
             if ( pageCache != null && pageCache.PageRoutes.Any() )
             {
                 var r = new Regex( @"(?<={)[A-Za-z0-9\-]+(?=})" );
@@ -470,21 +470,13 @@ namespace Rock.Web
         /// </returns>
         public override string ToString()
         {
-            var pageCache = PageCache.Read( this.PageId );
-            if (pageCache != null)
-            {
-                var pageRoute = pageCache.PageRoutes.FirstOrDefault( a=> a.Id == this.RouteId);
-                if (pageRoute != null)
-                {
-                    return pageRoute.Route;
-                }
-                else
-                {
-                    return pageCache.InternalName;
-                }
-            }
+            if ( PageId <= 0 ) return base.ToString();
 
-            return base.ToString();
+            var pageCache = PageCache.Get( this.PageId );
+            if (pageCache == null) return base.ToString();
+
+            var pageRoute = pageCache.PageRoutes.FirstOrDefault( a=> a.Id == this.RouteId);
+            return pageRoute != null ? pageRoute.Route : pageCache.InternalName;
         }
 
         /// <summary>
@@ -497,21 +489,13 @@ namespace Rock.Web
         {
             get 
             {
-                var pageCache = PageCache.Read( this.PageId );
-                if ( pageCache != null )
-                {
-                    var pageRoute = pageCache.PageRoutes.FirstOrDefault( a=> a.Id == this.RouteId);
-                    if (pageRoute != null)
-                    {
-                        return pageRoute.Route;
-                    }
-                    else
-                    {
-                        return this.BuildUrl();
-                    }
-                }
+                if (PageId <= 0) return null;
 
-                return null;
+                var pageCache = PageCache.Get( PageId);
+                if (pageCache == null) return null;
+
+                var pageRoute = pageCache.PageRoutes.FirstOrDefault(a => a.Id == RouteId);
+                return pageRoute != null ? pageRoute.Route : BuildUrl();
             }
         }
 
@@ -528,7 +512,7 @@ namespace Rock.Web
             // Get previous page references in nav history
             var pageReferenceHistory = HttpContext.Current.Session["RockPageReferenceHistory"] as List<PageReference>;
                         
-            // Current page heirarchy references
+            // Current page hierarchy references
             var pageReferences = new List<PageReference>();
 
             if (currentPage != null)

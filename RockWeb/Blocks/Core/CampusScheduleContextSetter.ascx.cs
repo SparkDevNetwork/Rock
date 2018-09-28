@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         protected void LoadCampusDropdowns()
         {
-            var campusEntityType = EntityTypeCache.Read( typeof( Campus ) );
+            var campusEntityType = EntityTypeCache.Get( typeof( Campus ) );
             var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
             var campusIdString = Request.QueryString["campusId"];
@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Core
 
             if ( currentCampus == null && GetAttributeValue( "DefaultToCurrentUser" ).AsBoolean() && CurrentPerson != null )
             {
-                currentCampus = CurrentPerson.GetFamilies().First().Campus;
+                currentCampus = CurrentPerson.GetFamily().Campus;
             }
 
             if ( currentCampus != null )
@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void LoadScheduleDropdowns()
         {
-            var scheduleEntityType = EntityTypeCache.Read( typeof( Schedule ) );
+            var scheduleEntityType = EntityTypeCache.Get( typeof( Schedule ) );
             var currentSchedule = RockPage.GetCurrentContext( scheduleEntityType ) as Schedule;
 
             var scheduleIdString = Request.QueryString["scheduleId"];

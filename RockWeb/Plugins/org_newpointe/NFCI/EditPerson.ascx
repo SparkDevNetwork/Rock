@@ -69,7 +69,7 @@
                         <asp:Repeater ID="rContactInfo" runat="server">
                             <ItemTemplate>
                                 <div class="form-group phonegroup">
-                                    <div class="control-label col-sm-2 phonegroup-label text-right"><%# Rock.Web.Cache.DefinedValueCache.Read( (int)Eval("NumberTypeValueId")).Value  %></div>
+                                    <div class="control-label col-sm-2 phonegroup-label text-right"><%# Rock.Web.Cache.DefinedValueCache.Get( (int)Eval("NumberTypeValueId")).Value  %></div>
                                     <div class="controls col-sm-10 phonegroup-number">
                                         <div class="row">
                                             <div class="col-sm-9">

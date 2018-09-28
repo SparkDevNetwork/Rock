@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Follow
                 var eventComponent = followingEvent.GetEventComponent();
                 if ( eventComponent != null )
                 {
-                    var followedEntityType = EntityTypeCache.Read( eventComponent.FollowedType );
+                    var followedEntityType = EntityTypeCache.Get( eventComponent.FollowedType );
                     if ( followedEntityType != null )
                     {
                         followingEvent.FollowedEntityTypeId = followedEntityType.Id;
@@ -282,8 +282,8 @@ namespace RockWeb.Blocks.Follow
                 EventEntityTypeId = followingEvent.EntityTypeId;
                 if ( followingEvent.EntityTypeId.HasValue )
                 {
-                    var EventComponentEntityType = EntityTypeCache.Read( followingEvent.EntityTypeId.Value );
-                    var EventEntityType = EntityTypeCache.Read( "Rock.Model.FollowingEventType" );
+                    var EventComponentEntityType = EntityTypeCache.Get( followingEvent.EntityTypeId.Value );
+                    var EventEntityType = EntityTypeCache.Get( "Rock.Model.FollowingEventType" );
                     if ( EventComponentEntityType != null && EventEntityType != null )
                     {
                         using ( var rockContext = new RockContext() )

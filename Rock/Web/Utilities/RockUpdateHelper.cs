@@ -50,7 +50,7 @@ namespace Rock.Web.Utilities
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var entityType = EntityTypeCache.Read( "Rock.Security.BackgroundCheck.ProtectMyMinistry", false, rockContext );
+                    var entityType = EntityTypeCache.Get( "Rock.Security.BackgroundCheck.ProtectMyMinistry", false, rockContext );
                     if ( entityType != null )
                     {
                         var pmmUserName = new AttributeValueService( rockContext )

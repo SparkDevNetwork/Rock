@@ -149,7 +149,7 @@ function() {
             ddlLocationType.Label = "Location Type";
             ddlLocationType.DataValueField = "Id";
             ddlLocationType.DataTextField = "Value";
-            DefinedTypeCache locationDefinedType = DefinedTypeCache.Read( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() );
+            DefinedTypeCache locationDefinedType = DefinedTypeCache.Get( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() );
             ddlLocationType.BindToDefinedType( locationDefinedType );
             ddlLocationType.Items.Insert( 0, new ListItem( "(All Location Types)", "" ) );
             panel.Controls.Add( ddlLocationType );

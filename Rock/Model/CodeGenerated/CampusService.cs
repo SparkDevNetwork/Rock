@@ -87,6 +87,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, Group.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<GroupHistorical>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, GroupHistorical.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

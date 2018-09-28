@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Administration
             var securityField = gActions.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RestAction ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.RestAction ) ).Id;
             }
         }
 

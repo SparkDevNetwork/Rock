@@ -88,7 +88,7 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public override string GetTitle( Type entityType )
         {
-            return EntityTypeCache.Read( entityType ).FriendlyName + " Fields";
+            return EntityTypeCache.Get( entityType ).FriendlyName + " Fields";
         }
 
         /// <summary>
@@ -171,6 +171,7 @@ namespace Rock.Reporting.DataFilter
                 string fieldSelection = values[0];
 
                 var entityFields = EntityHelper.GetEntityFields( entityType );
+
                 var entityField = entityFields.FindFromFilterSelection( fieldSelection );
                 if ( entityField != null )
                 {
@@ -201,7 +202,7 @@ namespace Rock.Reporting.DataFilter
             // add Empty option first
             ddlEntityField.Items.Add( new ListItem() );
             var rockBlock = filterControl.RockBlock();
-            var entityTypeCache = EntityTypeCache.Read( entityType, true );
+            var entityTypeCache = EntityTypeCache.Get( entityType, true );
 
             this.entityFields = EntityHelper.GetEntityFields( entityType );
             foreach ( var entityField in this.entityFields.OrderBy(a => !a.IsPreviewable).ThenBy(a => a.FieldKind != FieldKind.Property ).ThenBy(a => a.Title) )
@@ -215,8 +216,15 @@ namespace Rock.Reporting.DataFilter
                         // Workflows can contain tons of Qualified Attributes, so let the WorkflowAttributeFilter take care of those
                         includeField = false;
                     }
+
+                    var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
+
+                    // Don't include the attribute if it isn't active
+                    if ( attribute.IsActive == false )
+                    {
+                        includeField = false;
+                    }
                     
-                    var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
                     if ( includeField && attribute != null && rockBlock != null )
                     {
                         // only show the Attribute field in the drop down if they have VIEW Auth to it

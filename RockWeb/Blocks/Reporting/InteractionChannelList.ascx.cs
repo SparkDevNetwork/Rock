@@ -54,19 +54,19 @@ namespace RockWeb.Blocks.Reporting
                 <div class='panel-labels'> 
                     {% if InteractionChannel.ChannelTypeMediumValue != null and InteractionChannel.ChannelTypeMediumValue != '' %}<span class='label label-info'>{{ InteractionChannel.ChannelTypeMediumValue.Value }}</span>{% endif %}
                 </div>
-                 
             </div>
         </div>
     </a>
 {% endif %}" )]
 
-    [InteractionChannelsField( "Interaction Channels", "Select interaction channel to limit the display. No selection will show all.", false,  "", "", order: 3 )]
+    [InteractionChannelsField( "Interaction Channels", "Select interaction channel to limit the display. No selection will show all.", false, "", "", order: 3 )]
     [ContextAware( typeof( Person ) )]
     public partial class InteractionChannelList : Rock.Web.UI.RockBlock
     {
         #region Fields
 
         private const string MEDIUM_TYPE_FILTER = "Medium Type";
+        private const string INCLUDE_INACTIVE_FILTER = "Include Inactive";
 
         #endregion
 
@@ -124,6 +124,7 @@ namespace RockWeb.Blocks.Reporting
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             gfFilter.SaveUserPreference( MEDIUM_TYPE_FILTER, ddlMediumValue.SelectedValue );
+            gfFilter.SaveUserPreference( INCLUDE_INACTIVE_FILTER, cbIncludeInactive.Checked.ToString() );
             ShowList();
         }
 
@@ -141,8 +142,15 @@ namespace RockWeb.Blocks.Reporting
                     var mediumTypeValueId = e.Value.AsIntegerOrNull();
                     if ( mediumTypeValueId.HasValue )
                     {
-                        var mediumTypeValue = DefinedValueCache.Read( mediumTypeValueId.Value );
+                        var mediumTypeValue = DefinedValueCache.Get( mediumTypeValueId.Value );
                         e.Value = mediumTypeValue.Value;
+                    }
+                    break;
+                case INCLUDE_INACTIVE_FILTER:
+                    var includeFilterValue = e.Value.AsBooleanOrNull();
+                    if ( includeFilterValue.HasValue )
+                    {
+                        e.Value = includeFilterValue.Value.ToYesNo();
                     }
                     break;
                 default:
@@ -162,11 +170,14 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void BindFilter()
         {
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM.AsGuid() );
-            ddlMediumValue.BindToDefinedType( definedType, true );
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM.AsGuid() );
+            ddlMediumValue.DefinedTypeId = definedType.Id;
 
             var channelMediumValueId = gfFilter.GetUserPreference( MEDIUM_TYPE_FILTER ).AsIntegerOrNull();
             ddlMediumValue.SetValue( channelMediumValueId );
+
+            var includeInactive = gfFilter.GetUserPreference( INCLUDE_INACTIVE_FILTER ).AsBooleanOrNull() ?? false;
+            cbIncludeInactive.Checked = includeInactive;
         }
 
         /// <summary>
@@ -183,6 +194,11 @@ namespace RockWeb.Blocks.Reporting
                 if ( channelMediumValueId.HasValue )
                 {
                     channelQry = channelQry.Where( a => a.ChannelTypeMediumValueId == channelMediumValueId.Value );
+                }
+
+                if ( !cbIncludeInactive.Checked )
+                {
+                    channelQry = channelQry.Where( a => a.IsActive );
                 }
 
                 if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "InteractionChannels" ) ) )
@@ -215,11 +231,10 @@ namespace RockWeb.Blocks.Reporting
                     {
                         continue;
                     }
-
                     var channelMergeFields = new Dictionary<string, object>( mergeFields );
                     channelMergeFields.Add( "InteractionChannel", channel );
 
-                    string html = channel.ChannelListTemplate.IsNotNullOrWhitespace() ?
+                    string html = channel.ChannelListTemplate.IsNotNullOrWhiteSpace() ?
                         channel.ChannelListTemplate.ResolveMergeFields( channelMergeFields ) :
                         defaultTemplate.Render( Hash.FromDictionary( channelMergeFields ) );
 
@@ -236,13 +251,11 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        /// Get the person alias through query list or context.
+        /// Get the person through query list or context.
         /// </summary>
         private int? GetPersonId()
         {
             int? personId = PageParameter( "PersonId" ).AsIntegerOrNull();
-
-
             if ( !personId.HasValue )
             {
                 var person = ContextEntity<Person>();

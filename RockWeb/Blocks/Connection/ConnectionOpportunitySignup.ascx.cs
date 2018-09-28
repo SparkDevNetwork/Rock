@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Connection
     [BooleanField( "Display Home Phone", "Whether to display home phone", true, "", 0 )]
     [BooleanField( "Display Mobile Phone", "Whether to display mobile phone", true, "", 1 )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the response message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/OpportunityResponseMessage.lava' %}", "", 2 )]
-    [BooleanField( "Enable Campus Context", "If the page has a campus context it's value will be used as a filter", true, "", 4 )]
+    [BooleanField( "Enable Campus Context", "If the page has a campus context its value will be used as a filter", true, "", 4 )]
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 5 )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 6 )]
     [ConnectionOpportunityField( "Connection Opportunity", "If a Connection Opportunity is set, only details for it will be displayed (regardless of the querystring parameters).", false, "", "", 7 )]
@@ -49,8 +49,8 @@ namespace RockWeb.Blocks.Connection
     {
         #region Fields
 
-        DefinedValueCache _homePhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
-        DefinedValueCache _cellPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+        DefinedValueCache _homePhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+        DefinedValueCache _cellPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
         int _opportunityId = 0;
 
         #endregion
@@ -134,6 +134,7 @@ namespace RockWeb.Blocks.Connection
                     string firstName = tbFirstName.Text.Trim();
                     string lastName = tbLastName.Text.Trim();
                     string email = tbEmail.Text.Trim();
+                    string mobilePhoneNumber = pnMobile.Text.Trim();
                     int? campusId = cpCampus.SelectedCampusId;
 
                     // if a person guid was passed in from the query string use that
@@ -158,20 +159,16 @@ namespace RockWeb.Blocks.Connection
                     else
                     {
                         // Try to find matching person
-                        var personMatches = personService.GetByMatch( firstName, lastName, email );
-                        if ( personMatches.Count() == 1 )
-                        {
-                            // If one person with same name and email address exists, use that person
-                            person = personMatches.First();
-                        }
+                        var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhoneNumber );
+                        person = personService.FindPerson( personQuery, true );
                     }
 
                     // If person was not found, create a new one
                     if ( person == null )
                     {
                         // If a match was not found, create a new person
-                        var dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-                        var dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+                        var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+                        var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
 
                         person = new Person();
                         person.FirstName = firstName;
@@ -179,7 +176,7 @@ namespace RockWeb.Blocks.Connection
                         person.IsEmailActive = true;
                         person.Email = email;
                         person.EmailPreference = EmailPreference.EmailAllowed;
-                        person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                        person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                         if ( dvcConnectionStatus != null )
                         {
                             person.ConnectionStatusValueId = dvcConnectionStatus.Id;
@@ -358,7 +355,7 @@ namespace RockWeb.Blocks.Connection
                     // set the campus to the context
                     if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
                     {
-                        var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+                        var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
                         var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
                         if ( contextCampus != null )
@@ -377,7 +374,7 @@ namespace RockWeb.Blocks.Connection
 
         private void SavePhone( PhoneNumberBox phoneNumberBox, Person person, Guid phoneTypeGuid )
         {
-            var numberType = DefinedValueCache.Read( phoneTypeGuid );
+            var numberType = DefinedValueCache.Get( phoneTypeGuid );
             if ( numberType != null )
             {
                 var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );

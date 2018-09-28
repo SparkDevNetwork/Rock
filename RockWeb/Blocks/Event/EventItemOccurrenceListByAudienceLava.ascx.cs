@@ -131,7 +131,7 @@ namespace RockWeb.Blocks.Event
                 // filter occurrences for campus (always include the "All Campuses" events)
                 if ( GetAttributeValue( "UseCampusContext" ).AsBoolean() )
                 {
-                    var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+                    var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
                     var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
                     if ( contextCampus != null )
@@ -145,7 +145,7 @@ namespace RockWeb.Blocks.Event
                     if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "Campuses" ) ) )
                     {
                         var selectedCampusGuids = GetAttributeValue( "Campuses" ).Split( ',' ).AsGuidList();
-                        var selectedCampusIds = selectedCampusGuids.Select( a => CampusCache.Read( a ) ).Where( a => a != null ).Select( a => a.Id );
+                        var selectedCampusIds = selectedCampusGuids.Select( a => CampusCache.Get( a ) ).Where( a => a != null ).Select( a => a.Id );
 
                         // If an EventItemOccurrence's CampusId is null, then the occurrence is an 'All Campuses' event occurrence, so include those
                         qry = qry.Where( e => e.CampusId == null || selectedCampusIds.Contains( e.CampusId.Value ) );

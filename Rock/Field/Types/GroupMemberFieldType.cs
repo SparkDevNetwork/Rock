@@ -313,7 +313,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Reads new values entered by the user for the field
+        /// Gets the selected GroupMember(s) as a comma-delimited list of GroupMember.Guid
         /// </summary>
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues"></param>
@@ -324,23 +324,19 @@ namespace Rock.Field.Types
 
             if ( control != null && control is ListControl )
             {
-                groupMemberIdList.AddRange( ( (ListControl)control ).Items.Cast<ListItem>()
+                groupMemberIdList.AddRange( ( ( ListControl ) control ).Items.Cast<ListItem>()
                     .Where( i => i.Selected )
                     .Select( i => i.Value ).AsIntegerList() );
             }
 
             var guids = new List<Guid>();
 
-            using ( var rockContext = new RockContext() )
+            if ( groupMemberIdList.Any() )
             {
-                var groupMemberService = new GroupMemberService( rockContext );
-                foreach ( int groupMemberId in groupMemberIdList )
+                using ( var rockContext = new RockContext() )
                 {
-                    var groupMember = groupMemberService.Get( groupMemberId );
-                    if ( groupMember != null )
-                    {
-                        guids.Add( groupMember.Guid );
-                    }
+                    var groupMemberService = new GroupMemberService( rockContext );
+                    guids = groupMemberService.GetByIds( groupMemberIdList ).Select( a => a.Guid ).ToList();
                 }
             }
 
@@ -348,36 +344,29 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Sets the value.
+        /// Sets the value as a GroupMember.Guid or a List of GroupMember.Guids (as strings)
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="configurationValues"></param>
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as ListControl;
+            if ( picker != null )
             {
-                if ( control != null && control is ListControl )
+                List<int> selectedGroupMemberIds = new List<int>();
+                List<Guid> selectedGroupMemberGuids = value?.Split( ',' ).AsGuidList();
+                if ( selectedGroupMemberGuids != null )
                 {
-                    var ids = new List<string>();
                     using ( var rockContext = new RockContext() )
                     {
-                        var groupMemberService = new GroupMemberService( rockContext );
-                        foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
-                        {
-                            var groupMember = groupMemberService.Get( guid );
-                            if ( groupMember != null )
-                            {
-                                ids.Add( groupMember.Id.ToString() );
-                            }
-                        }
+                        selectedGroupMemberIds = new GroupMemberService( rockContext ).GetByGuids( selectedGroupMemberGuids ).Select( a => a.Id ).ToList();
                     }
+                }
 
-                    var listControl = control as ListControl;
-                    foreach ( ListItem li in listControl.Items )
-                    {
-                        li.Selected = ids.Contains( li.Value );
-                    }
+                foreach ( ListItem li in picker.Items )
+                {
+                    li.Selected = selectedGroupMemberIds.Contains( li.Value.AsInteger() );
                 }
             }
         }
@@ -685,18 +674,36 @@ namespace Rock.Field.Types
                     }
                 }
 
-                return comparison;
+                if ( comparison == null )
+                {
+                    // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
+                    return new NoAttributeFilterExpression();
+                }
+                else
+                {
+                    return comparison;
+                }
             }
 
             selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-            if ( selectedValues.Any() )
+            int valueCount = selectedValues.Count();
+            MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+            if ( valueCount == 0 )
             {
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
+                return new NoAttributeFilterExpression();
+            }
+            else if ( valueCount == 1 )
+            {
+                // only one value, so do an Equal instead of Contains which might compile a little bit faster
+                ComparisonType comparisonType = ComparisonType.EqualTo;
+                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( selectedValues[0] ) );
+            }
+            else
+            {
                 ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
                 return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
             }
-
-            return null;
         }
 
         #endregion

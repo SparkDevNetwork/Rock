@@ -84,6 +84,7 @@ namespace RockWeb.Blocks.Core
             gCategories.Actions.AddClick += gCategories_Add;
             gCategories.GridReorder += gCategories_GridReorder;
             gCategories.GridRebind += gCategories_GridRebind;
+            gCategories.RowDataBound += gCategories_RowDataBound;
 
             mdDetails.SaveClick += mdDetails_SaveClick;
             mdDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
@@ -145,7 +146,7 @@ namespace RockWeb.Blocks.Core
 
             Guid entityTypeGuid = Guid.Empty;
             Guid.TryParse( GetAttributeValue( "EntityType" ), out entityTypeGuid );
-            var entityType = EntityTypeCache.Read( entityTypeGuid );
+            var entityType = EntityTypeCache.Get( entityTypeGuid );
             if ( entityType != null )
             {
                 entityTypeName = entityType.FriendlyName;
@@ -155,11 +156,11 @@ namespace RockWeb.Blocks.Core
             CategoryCache category = null;
             if ( int.TryParse( PageParameter( "CategoryId" ), out parentCategoryId ) )
             {
-                category = CategoryCache.Read( parentCategoryId );
+                category = CategoryCache.Get( parentCategoryId );
 
                 if ( entityType == null && category != null )
                 {
-                    entityType = EntityTypeCache.Read( category.EntityTypeId.Value );
+                    entityType = EntityTypeCache.Get( category.EntityTypeId.Value );
 
                     if (entityType != null )
                     {
@@ -239,7 +240,7 @@ namespace RockWeb.Blocks.Core
                         if ( e.Value != "" )
                         {
                             if ( e.Value != "0" )
-                                e.Value = EntityTypeCache.Read( int.Parse( e.Value ) ).FriendlyName;
+                                e.Value = EntityTypeCache.Get( int.Parse( e.Value ) ).FriendlyName;
                         }
                         break;
                     }
@@ -283,8 +284,6 @@ namespace RockWeb.Blocks.Core
 
                     service.Delete( category );
                     rockContext.SaveChanges();
-
-                    CategoryCache.Flush( categoryId );
                 }
                 else
                 {
@@ -316,6 +315,40 @@ namespace RockWeb.Blocks.Core
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gCategories control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        private void gCategories_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                //
+                // Disable the edit button if it is a system category.
+                //
+                if ( ( ( bool ) e.Row.DataItem.GetPropertyValue( "IsSystem" ) ) == true )
+                {
+                    int? idx = gCategories.GetColumnIndexByFieldType( typeof( EditField ) );
+
+                    if ( idx.HasValue )
+                    {
+                        var cell = e.Row.Cells[idx.Value];
+
+                        if ( cell.Controls.Count > 0 && cell.Controls[0] is LinkButton )
+                        {
+                            ( ( LinkButton ) cell.Controls[0] ).Enabled = false;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gCategories control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         void gCategories_GridReorder( object sender, GridReorderEventArgs e )
         {
             var rockContext = new RockContext();
@@ -324,11 +357,6 @@ namespace RockWeb.Blocks.Core
             {
                 var changedIds = new CategoryService( rockContext ).Reorder( categories.ToList(), e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
-
-                foreach ( int id in changedIds )
-                {
-                    CategoryCache.Flush( id );
-                }
             }
 
             BindGrid();
@@ -410,8 +438,6 @@ namespace RockWeb.Blocks.Core
                     category.SaveAttributeValues( rockContext );
                 } );
 
-                CategoryCache.Flush( category.Id );
-
                 hfIdValue.Value = string.Empty;
                 mdDetails.Hide();
 
@@ -431,7 +457,7 @@ namespace RockWeb.Blocks.Core
             var securityField = gCategories.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Category ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Category ) ).Id;
             }
 
             _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
@@ -440,7 +466,7 @@ namespace RockWeb.Blocks.Core
                 Guid entityTypeGuid = Guid.Empty;
                 if ( Guid.TryParse( GetAttributeValue( "EntityType" ), out entityTypeGuid ) )
                 {
-                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( entityTypeGuid );
+                    var entityType = EntityTypeCache.Get( entityTypeGuid );
                     if ( entityType != null )
                     {
                         securityField.Visible = entityType.IsSecured;
@@ -525,10 +551,11 @@ namespace RockWeb.Blocks.Core
                     ChildCount = c.ChildCategories.Count(),
                     EntityType = c.EntityType.Name,
                     EntityQualifierField = c.EntityTypeQualifierColumn,
-                    EntityQualifierValue = c.EntityTypeQualifierValue
+                    EntityQualifierValue = c.EntityTypeQualifierValue,
+                    IsSystem = c.IsSystem
                 } ).ToList();
 
-            gCategories.EntityTypeId = EntityTypeCache.Read<Rock.Model.Category>().Id;
+            gCategories.EntityTypeId = EntityTypeCache.Get<Rock.Model.Category>().Id;
             gCategories.DataBind();
         }
 
@@ -594,7 +621,7 @@ namespace RockWeb.Blocks.Core
                 // if there is a parent category set the entity type and qualifiers and hide the settings
                 if ( _parentCategoryId.HasValue )
                 {
-                    var parentCategory = CategoryCache.Read( _parentCategoryId.Value );
+                    var parentCategory = CategoryCache.Get( _parentCategoryId.Value );
                     entityTypePicker.SelectedEntityTypeId = parentCategory.EntityTypeId;
                     tbEntityQualifierField.Text = parentCategory.EntityTypeQualifierColumn;
                     tbEntityQualifierValue.Text = parentCategory.EntityTypeQualifierValue;

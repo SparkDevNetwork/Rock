@@ -271,7 +271,7 @@ namespace RockWeb.Blocks.Store
                 lRequiredRockVersion.Text = string.Format("v{0}.{1}", 
                                                 latestVersion.RequiredRockSemanticVersion.Minor.ToString(),
                                                 latestVersion.RequiredRockSemanticVersion.Patch.ToString());
-                lDocumenationLink.Text = string.Format( "<a href='{0}'>Documentation Link</a>", latestVersion.DocumentationUrl );
+                lDocumenationLink.Text = string.Format( "<a href='{0}' target='_blank'>Documentation Link</a>", latestVersion.DocumentationUrl );
 
                 lSupportLink.Text = string.Format( "<a href='{0}'>Support Link</a>", package.SupportUrl );
 

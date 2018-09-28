@@ -62,6 +62,7 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\003_StatementGeneratorMoreOptions.cs" />
     <Compile Include="Migrations\002_StatementGeneratorUpdateTemplates.cs" />
     <Compile Include="Migrations\001_StatementGenerator.cs" />
     <Compile Include="Migrations\MigrationResource.Designer.cs">

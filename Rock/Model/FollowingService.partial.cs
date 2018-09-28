@@ -36,7 +36,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<IEntity> GetFollowedItems( int entityTypeId, int personId )
         {
-            EntityTypeCache itemEntityType = EntityTypeCache.Read( entityTypeId );
+            EntityTypeCache itemEntityType = EntityTypeCache.Get( entityTypeId );
             var rockContext = this.Context as RockContext;
             var followedItemsQry = this.Queryable().Where( a => a.PersonAlias.PersonId == personId && a.EntityTypeId == entityTypeId );
 

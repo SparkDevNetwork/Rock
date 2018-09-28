@@ -69,6 +69,275 @@
     <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
     <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
     <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.1\201807200941565_Rollup_PreAlphaRelease_0719.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.1\201807200941565_Rollup_PreAlphaRelease_0719.Designer.cs">
+      <DependentUpon>201807200941565_Rollup_PreAlphaRelease_0719.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806251757250_BackgroundCheckWarnOfRecent.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806251757250_BackgroundCheckWarnOfRecent.Designer.cs">
+      <DependentUpon>201806251757250_BackgroundCheckWarnOfRecent.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806252044512_UpdateHomepageMetrics.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806252044512_UpdateHomepageMetrics.Designer.cs">
+      <DependentUpon>201806252044512_UpdateHomepageMetrics.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806262300325_Rollup_0626.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806262300325_Rollup_0626.Designer.cs">
+      <DependentUpon>201806262300325_Rollup_0626.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201807102225186_AddIsActiveToDefinedValueType.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201807102225186_AddIsActiveToDefinedValueType.Designer.cs">
+      <DependentUpon>201807102225186_AddIsActiveToDefinedValueType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201807182135104_WorkflowTypeIsActive.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201807182135104_WorkflowTypeIsActive.Designer.cs">
+      <DependentUpon>201807182135104_WorkflowTypeIsActive.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201807191932379_Rollup_0719.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201807191932379_Rollup_0719.Designer.cs">
+      <DependentUpon>201807191932379_Rollup_0719.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201801162056008_V8Features.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201801162056008_V8Features.Designer.cs">
+      <DependentUpon>201801162056008_V8Features.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201801261601270_GroupSyncByRole.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201801261601270_GroupSyncByRole.Designer.cs">
+      <DependentUpon>201801261601270_GroupSyncByRole.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201801291304513_Rollup_0129.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201801291304513_Rollup_0129.Designer.cs">
+      <DependentUpon>201801291304513_Rollup_0129.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201801301528009_GroupSyncByRole2.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201801301528009_GroupSyncByRole2.Designer.cs">
+      <DependentUpon>201801301528009_GroupSyncByRole2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201802021609074_AllowForInactiveFees.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201802021609074_AllowForInactiveFees.Designer.cs">
+      <DependentUpon>201802021609074_AllowForInactiveFees.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201802092340176_Rollup_0209.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201802092340176_Rollup_0209.Designer.cs">
+      <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201802260423490_Rollup_0225.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201802260423490_Rollup_0225.Designer.cs">
+      <DependentUpon>201802260423490_Rollup_0225.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803022215255_PagesForHttpModules.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803022215255_PagesForHttpModules.Designer.cs">
+      <DependentUpon>201803022215255_PagesForHttpModules.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803022309306_FrontPorchIntegration.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803022309306_FrontPorchIntegration.Designer.cs">
+      <DependentUpon>201803022309306_FrontPorchIntegration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803051554031_AddCanManageToGroupTypeRole.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803051554031_AddCanManageToGroupTypeRole.Designer.cs">
+      <DependentUpon>201803051554031_AddCanManageToGroupTypeRole.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803051716384_AddIsActiveToConnectionType.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803051716384_AddIsActiveToConnectionType.Designer.cs">
+      <DependentUpon>201803051716384_AddIsActiveToConnectionType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803062219072_EnableSmartyStreets.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803062219072_EnableSmartyStreets.Designer.cs">
+      <DependentUpon>201803062219072_EnableSmartyStreets.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803081805523_Communication_AddSendDateTime.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803081805523_Communication_AddSendDateTime.Designer.cs">
+      <DependentUpon>201803081805523_Communication_AddSendDateTime.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803110904393_RegistrationTemplateFee_AddIsRequired.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803110904393_RegistrationTemplateFee_AddIsRequired.Designer.cs">
+      <DependentUpon>201803110904393_RegistrationTemplateFee_AddIsRequired.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803121549286_Rollup_0312.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803121549286_Rollup_0312.Designer.cs">
+      <DependentUpon>201803121549286_Rollup_0312.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803131953247_AddDataAutomation.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803131953247_AddDataAutomation.Designer.cs">
+      <DependentUpon>201803131953247_AddDataAutomation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803201440110_UpdateLegacyLava.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803201440110_UpdateLegacyLava.Designer.cs">
+      <DependentUpon>201803201440110_UpdateLegacyLava.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803201617508_DaysUntilAnniversary.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803201617508_DaysUntilAnniversary.Designer.cs">
+      <DependentUpon>201803201617508_DaysUntilAnniversary.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803221400152_AddIsLockedAsChildToPerson.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803221400152_AddIsLockedAsChildToPerson.Designer.cs">
+      <DependentUpon>201803221400152_AddIsLockedAsChildToPerson.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803221823324_UpdatedIsActiveInWorkflowType.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803221823324_UpdatedIsActiveInWorkflowType.Designer.cs">
+      <DependentUpon>201803221823324_UpdatedIsActiveInWorkflowType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803282333320_FrontPorch.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803282333320_FrontPorch.Designer.cs">
+      <DependentUpon>201803282333320_FrontPorch.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803301619284_Rollup_0330.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201803301619284_Rollup_0330.Designer.cs">
+      <DependentUpon>201803301619284_Rollup_0330.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804041350066_AddIsActiveToInteractionChannel.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804041350066_AddIsActiveToInteractionChannel.Designer.cs">
+      <DependentUpon>201804041350066_AddIsActiveToInteractionChannel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804051503546_AutoDiscounts.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804051503546_AutoDiscounts.Designer.cs">
+      <DependentUpon>201804051503546_AutoDiscounts.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804092319307_BusinessConversion.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804092319307_BusinessConversion.Designer.cs">
+      <DependentUpon>201804092319307_BusinessConversion.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804101732134_FrontPorchTweaks.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804101732134_FrontPorchTweaks.Designer.cs">
+      <DependentUpon>201804101732134_FrontPorchTweaks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804102204352_UtmTermFieldInteractions.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804102204352_UtmTermFieldInteractions.Designer.cs">
+      <DependentUpon>201804102204352_UtmTermFieldInteractions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804121040419_AddDimensionToBinaryFile.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804121040419_AddDimensionToBinaryFile.Designer.cs">
+      <DependentUpon>201804121040419_AddDimensionToBinaryFile.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804161720510_AddContentChannelItemSlug.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804161720510_AddContentChannelItemSlug.Designer.cs">
+      <DependentUpon>201804161720510_AddContentChannelItemSlug.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804192145436_AddPersonSearchKeys.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804192145436_AddPersonSearchKeys.Designer.cs">
+      <DependentUpon>201804192145436_AddPersonSearchKeys.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804271736429_Rollup_0427.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804271736429_Rollup_0427.Designer.cs">
+      <DependentUpon>201804271736429_Rollup_0427.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804272301456_MergeFromV7_4.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201804272301456_MergeFromV7_4.Designer.cs">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805042225214_Rollup_0504.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805042225214_Rollup_0504.Designer.cs">
+      <DependentUpon>201805042225214_Rollup_0504.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805072022522_GroupHistory.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805072022522_GroupHistory.Designer.cs">
+      <DependentUpon>201805072022522_GroupHistory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805152055059_AttendanceOccurrence.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805152055059_AttendanceOccurrence.Designer.cs">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805171836577_Rollup_0517.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805171836577_Rollup_0517.Designer.cs">
+      <DependentUpon>201805171836577_Rollup_0517.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805172159583_GroupStatusValue.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805172159583_GroupStatusValue.Designer.cs">
+      <DependentUpon>201805172159583_GroupStatusValue.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805182021328_Rollup0518.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805182021328_Rollup0518.Designer.cs">
+      <DependentUpon>201805182021328_Rollup0518.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805211735573_Homepage.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805211735573_Homepage.Designer.cs">
+      <DependentUpon>201805211735573_Homepage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805211952360_FamilyMembers.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805211952360_FamilyMembers.Designer.cs">
+      <DependentUpon>201805211952360_FamilyMembers.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805231625436_NotesUpdates.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805231625436_NotesUpdates.Designer.cs">
+      <DependentUpon>201805231625436_NotesUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805251707072_AddDefinedTypeColorSwatches.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805251707072_AddDefinedTypeColorSwatches.Designer.cs">
+      <DependentUpon>201805251707072_AddDefinedTypeColorSwatches.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805301747145_CacheTags.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805301747145_CacheTags.Designer.cs">
+      <DependentUpon>201805301747145_CacheTags.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805301858246_AddLogoToSite.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805301858246_AddLogoToSite.Designer.cs">
+      <DependentUpon>201805301858246_AddLogoToSite.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805302320038_Lucene.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201805302320038_Lucene.Designer.cs">
+      <DependentUpon>201805302320038_Lucene.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806011737240_RemoveNoteTypeCssClass.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806011737240_RemoveNoteTypeCssClass.Designer.cs">
+      <DependentUpon>201806011737240_RemoveNoteTypeCssClass.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806012358276_Rollup_0601.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806012358276_Rollup_0601.Designer.cs">
+      <DependentUpon>201806012358276_Rollup_0601.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806061732498_HomepageUpdates.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806061732498_HomepageUpdates.Designer.cs">
+      <DependentUpon>201806061732498_HomepageUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806081810282_LandingPage.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806081810282_LandingPage.Designer.cs">
+      <DependentUpon>201806081810282_LandingPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806111901512_CalculatePersonDuplicatesTimeout.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806111901512_CalculatePersonDuplicatesTimeout.Designer.cs">
+      <DependentUpon>201806111901512_CalculatePersonDuplicatesTimeout.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806111950515_ContentChannelViewDetail.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806111950515_ContentChannelViewDetail.Designer.cs">
+      <DependentUpon>201806111950515_ContentChannelViewDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806131619035_AttendancedCheckedInBy.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806131619035_AttendancedCheckedInBy.Designer.cs">
+      <DependentUpon>201806131619035_AttendancedCheckedInBy.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806151052457_AddRegistrarOptionToRegistrationTemplate.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806151052457_AddRegistrarOptionToRegistrationTemplate.Designer.cs">
+      <DependentUpon>201806151052457_AddRegistrarOptionToRegistrationTemplate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806181856008_AttendanceNotesHomepageMetricsScheduleFix.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806181856008_AttendanceNotesHomepageMetricsScheduleFix.Designer.cs">
+      <DependentUpon>201806181856008_AttendanceNotesHomepageMetricsScheduleFix.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806192127302_Rollup_0619.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806192127302_Rollup_0619.Designer.cs">
+      <DependentUpon>201806192127302_Rollup_0619.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806210058521_LandingPageContent.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806210058521_LandingPageContent.Designer.cs">
+      <DependentUpon>201806210058521_LandingPageContent.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806212244285_Rollup_0621.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806212244285_Rollup_0621.Designer.cs">
+      <DependentUpon>201806212244285_Rollup_0621.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806221612442_UpdateAttendanceSummary.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806221612442_UpdateAttendanceSummary.Designer.cs">
+      <DependentUpon>201806221612442_UpdateAttendanceSummary.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806222017201_V8Installers.cs" />
+    <Compile Include="Migrations\Version 8.0\Version 1.8.0\201806222017201_V8Installers.Designer.cs">
+      <DependentUpon>201806222017201_V8Installers.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RockMigrationSQL.resx</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -449,11 +718,6 @@
     <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711271827181_V7Rollup.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711271827181_V7Rollup.Designer.cs">
       <DependentUpon>201711271827181_V7Rollup.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>RockMigrationSQL.resx</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
@@ -2650,6 +2914,204 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.1\201807200941565_Rollup_PreAlphaRelease_0719.resx">
+      <DependentUpon>201807200941565_Rollup_PreAlphaRelease_0719.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806251757250_BackgroundCheckWarnOfRecent.resx">
+      <DependentUpon>201806251757250_BackgroundCheckWarnOfRecent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806252044512_UpdateHomepageMetrics.resx">
+      <DependentUpon>201806252044512_UpdateHomepageMetrics.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806262300325_Rollup_0626.resx">
+      <DependentUpon>201806262300325_Rollup_0626.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201807102225186_AddIsActiveToDefinedValueType.resx">
+      <DependentUpon>201807102225186_AddIsActiveToDefinedValueType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201807182135104_WorkflowTypeIsActive.resx">
+      <DependentUpon>201807182135104_WorkflowTypeIsActive.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201807191932379_Rollup_0719.resx">
+      <DependentUpon>201807191932379_Rollup_0719.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201801162056008_V8Features.resx">
+      <DependentUpon>201801162056008_V8Features.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201801261601270_GroupSyncByRole.resx">
+      <DependentUpon>201801261601270_GroupSyncByRole.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201801291304513_Rollup_0129.resx">
+      <DependentUpon>201801291304513_Rollup_0129.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201801301528009_GroupSyncByRole2.resx">
+      <DependentUpon>201801301528009_GroupSyncByRole2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201802021609074_AllowForInactiveFees.resx">
+      <DependentUpon>201802021609074_AllowForInactiveFees.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201802092340176_Rollup_0209.resx">
+      <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201802260423490_Rollup_0225.resx">
+      <DependentUpon>201802260423490_Rollup_0225.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201803022215255_PagesForHttpModules.resx">
+      <DependentUpon>201803022215255_PagesForHttpModules.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201803022309306_FrontPorchIntegration.resx">
+      <DependentUpon>201803022309306_FrontPorchIntegration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201803051554031_AddCanManageToGroupTypeRole.resx">
+      <DependentUpon>201803051554031_AddCanManageToGroupTypeRole.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201803051716384_AddIsActiveToConnectionType.resx">
+      <DependentUpon>201803051716384_AddIsActiveToConnectionType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201803062219072_EnableSmartyStreets.resx">
+      <DependentUpon>201803062219072_EnableSmartyStreets.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201803081805523_Communication_AddSendDateTime.resx">
+      <DependentUpon>201803081805523_Communication_AddSendDateTime.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201803110904393_RegistrationTemplateFee_AddIsRequired.resx">
+      <DependentUpon>201803110904393_RegistrationTemplateFee_AddIsRequired.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201803121549286_Rollup_0312.resx">
+      <DependentUpon>201803121549286_Rollup_0312.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201803131953247_AddDataAutomation.resx">
+      <DependentUpon>201803131953247_AddDataAutomation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201803201440110_UpdateLegacyLava.resx">
+      <DependentUpon>201803201440110_UpdateLegacyLava.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201803201617508_DaysUntilAnniversary.resx">
+      <DependentUpon>201803201617508_DaysUntilAnniversary.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201803221400152_AddIsLockedAsChildToPerson.resx">
+      <DependentUpon>201803221400152_AddIsLockedAsChildToPerson.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201803221823324_UpdatedIsActiveInWorkflowType.resx">
+      <DependentUpon>201803221823324_UpdatedIsActiveInWorkflowType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201803282333320_FrontPorch.resx">
+      <DependentUpon>201803282333320_FrontPorch.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201803301619284_Rollup_0330.resx">
+      <DependentUpon>201803301619284_Rollup_0330.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201804041350066_AddIsActiveToInteractionChannel.resx">
+      <DependentUpon>201804041350066_AddIsActiveToInteractionChannel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201804051503546_AutoDiscounts.resx">
+      <DependentUpon>201804051503546_AutoDiscounts.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201804092319307_BusinessConversion.resx">
+      <DependentUpon>201804092319307_BusinessConversion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201804101732134_FrontPorchTweaks.resx">
+      <DependentUpon>201804101732134_FrontPorchTweaks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201804102204352_UtmTermFieldInteractions.resx">
+      <DependentUpon>201804102204352_UtmTermFieldInteractions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201804121040419_AddDimensionToBinaryFile.resx">
+      <DependentUpon>201804121040419_AddDimensionToBinaryFile.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201804161720510_AddContentChannelItemSlug.resx">
+      <DependentUpon>201804161720510_AddContentChannelItemSlug.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201804192145436_AddPersonSearchKeys.resx">
+      <DependentUpon>201804192145436_AddPersonSearchKeys.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201804271736429_Rollup_0427.resx">
+      <DependentUpon>201804271736429_Rollup_0427.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201804272301456_MergeFromV7_4.resx">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201805042225214_Rollup_0504.resx">
+      <DependentUpon>201805042225214_Rollup_0504.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201805072022522_GroupHistory.resx">
+      <DependentUpon>201805072022522_GroupHistory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201805152055059_AttendanceOccurrence.resx">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201805171836577_Rollup_0517.resx">
+      <DependentUpon>201805171836577_Rollup_0517.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201805172159583_GroupStatusValue.resx">
+      <DependentUpon>201805172159583_GroupStatusValue.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201805182021328_Rollup0518.resx">
+      <DependentUpon>201805182021328_Rollup0518.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201805211735573_Homepage.resx">
+      <DependentUpon>201805211735573_Homepage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201805211952360_FamilyMembers.resx">
+      <DependentUpon>201805211952360_FamilyMembers.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201805231625436_NotesUpdates.resx">
+      <DependentUpon>201805231625436_NotesUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201805251707072_AddDefinedTypeColorSwatches.resx">
+      <DependentUpon>201805251707072_AddDefinedTypeColorSwatches.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201805301747145_CacheTags.resx">
+      <DependentUpon>201805301747145_CacheTags.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201805301858246_AddLogoToSite.resx">
+      <DependentUpon>201805301858246_AddLogoToSite.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201805302320038_Lucene.resx">
+      <DependentUpon>201805302320038_Lucene.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806011737240_RemoveNoteTypeCssClass.resx">
+      <DependentUpon>201806011737240_RemoveNoteTypeCssClass.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806012358276_Rollup_0601.resx">
+      <DependentUpon>201806012358276_Rollup_0601.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806061732498_HomepageUpdates.resx">
+      <DependentUpon>201806061732498_HomepageUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806081810282_LandingPage.resx">
+      <DependentUpon>201806081810282_LandingPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806111901512_CalculatePersonDuplicatesTimeout.resx">
+      <DependentUpon>201806111901512_CalculatePersonDuplicatesTimeout.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806111950515_ContentChannelViewDetail.resx">
+      <DependentUpon>201806111950515_ContentChannelViewDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806131619035_AttendancedCheckedInBy.resx">
+      <DependentUpon>201806131619035_AttendancedCheckedInBy.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806151052457_AddRegistrarOptionToRegistrationTemplate.resx">
+      <DependentUpon>201806151052457_AddRegistrarOptionToRegistrationTemplate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806181856008_AttendanceNotesHomepageMetricsScheduleFix.resx">
+      <DependentUpon>201806181856008_AttendanceNotesHomepageMetricsScheduleFix.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806192127302_Rollup_0619.resx">
+      <DependentUpon>201806192127302_Rollup_0619.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806210058521_LandingPageContent.resx">
+      <DependentUpon>201806210058521_LandingPageContent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806212244285_Rollup_0621.resx">
+      <DependentUpon>201806212244285_Rollup_0621.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806221612442_UpdateAttendanceSummary.resx">
+      <DependentUpon>201806221612442_UpdateAttendanceSummary.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.0\201806222017201_V8Installers.resx">
+      <DependentUpon>201806222017201_V8Installers.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
     </EmbeddedResource>
@@ -4598,6 +5060,129 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Migrations\Version 7.0\Version 1.7.0\201707311527250_LastName.gz">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\Version 8.0\Version 1.8.0\201802092340176_Rollup_0209_spCrm_PersonDuplicateFinder.sql">
+      <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
+    </None>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201807191932379_Rollup_0719_Fix Accordion Bug.sql">
+      <DependentUpon>201807191932379_Rollup_0719.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_Attendees.sql">
+      <DependentUpon>201802260423490_Rollup_0225.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>201802260423490_Rollup_0225.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201803201440110_UpdateLegacyLava.sql">
+      <DependentUpon>201803201440110_UpdateLegacyLava.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201803201617508_DaysUntilAnniversary.sql">
+      <DependentUpon>201803201617508_DaysUntilAnniversary.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201803301619284_Rollup_0330.sql">
+      <DependentUpon>201803301619284_Rollup_0330.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201804272301456_MergeFromV7_4_AddVimeoShortCode.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201804272301456_MergeFromV7_4_FixAccordionShortCode.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201804272301456_MergeFromV7_4_FixThankyouAndOngoingHyphenations.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_AccountTotals.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_PersonSummary.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201804272301456_MergeFromV7_4_GivingAnalyticsAccounts_TransactionData.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201804272301456_MergeFromV7_4_spAnalytics_ETL_Campus.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201804272301456_MergeFromV7_4_spCrm_PersonDuplicateFinder.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201804272301456_MergeFromV7_4_spCrm_PersonMerge.sql">
+      <DependentUpon>201804272301456_MergeFromV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805072022522_GroupHistory_spCrm_PersonMerge.sql">
+      <DependentUpon>201805072022522_GroupHistory.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805072022522_GroupHistory_spCrm_PersonMergeRelationships.sql">
+      <DependentUpon>201805072022522_GroupHistory.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805152055059_AttendanceOccurrence_spAnalytics_ETL_Attendance.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805152055059_AttendanceOccurrence_spCheckin_AttendanceAnalyticsQuery_AttendeeDates.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805152055059_AttendanceOccurrence_spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805152055059_AttendanceOccurrence_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805152055059_AttendanceOccurrence_spCheckin_AttendanceAnalyticsQuery_Attendees.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805152055059_AttendanceOccurrence_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805152055059_AttendanceOccurrence_spCheckin_BadgeAttendance.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805152055059_AttendanceOccurrence_spCheckin_WeeksAttendedInDuration.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805152055059_AttendanceOccurrence_spCrm_FamilyAnalyticsAttendance.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805152055059_AttendanceOccurrence_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805152055059_AttendanceOccurrence_spCrm_FamilyAnalyticsUpdateVisitDates.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805152055059_AttendanceOccurrence_vCheckin_Attendance.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805152055059_AttendanceOccurrence_vCheckin_GroupTypeAttendance.sql">
+      <DependentUpon>201805152055059_AttendanceOccurrence.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805171836577_Rollup_0517_CreatePresenceUser.sql">
+      <DependentUpon>201805171836577_Rollup_0517.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805171836577_Rollup_0517_spAnalytics_ETL_Attendance.sql">
+      <DependentUpon>201805171836577_Rollup_0517.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805171836577_Rollup_0517_vCheckin_Attendance.sql">
+      <DependentUpon>201805171836577_Rollup_0517.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805211735573_Homepage_ContentChannel.sql">
+      <DependentUpon>201805211735573_Homepage.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805211735573_Homepage_ContentChannel_Down.sql">
+      <DependentUpon>201805211735573_Homepage.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805211735573_Homepage_Metrics.sql">
+      <DependentUpon>201805211735573_Homepage.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201805211735573_Homepage_Metrics_Down.sql">
+      <DependentUpon>201805211735573_Homepage.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201806081810282_LandingPage.sql">
+      <DependentUpon>201806081810282_LandingPage.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 8.0\Version 1.8.0\201806111950515_ContentChannelViewDetail.sql">
+      <DependentUpon>201806111950515_ContentChannelViewDetail.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
     </Content>
@@ -4710,9 +5295,6 @@
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201707311527250_FirstNameGender.txt">
-      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
-    </Content>
-    <Content Include="Migrations\Version 7.0\Version 1.7.0\201707311527250_LastName.txt">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201707311527250_NickName.txt">
@@ -4876,6 +5458,9 @@
       <DependentUpon>201712191949335_CampusTimeZone.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
+    <None Include="Migrations\Version 8.0\Version 1.8.0\201802092340176_Rollup_0209_ufnUtility_CsvToTable.sql">
+      <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
+    </None>
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP1.sql" />
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP2.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608172242214_Podcasting.sql" />

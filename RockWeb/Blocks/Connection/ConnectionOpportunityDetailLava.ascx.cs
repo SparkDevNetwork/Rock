@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Connection
                 mergeFields.Add( "LinkedPages", linkedPages );
 
                 // Add Campus Context
-                mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus );
+                mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Get( "Rock.Model.Campus" ) ) as Campus );
 
                 // Resolve any lava in the summary/description fields before adding the opportunity
                 _connectionOpportunity.Summary = _connectionOpportunity.Summary.ResolveMergeFields( mergeFields );

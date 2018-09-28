@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Finance
         {
             pnlDetails.Visible = true;
             var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY );
-            ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ), true );
+            ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Get( frequencyTypeGuid ), true );
 
             using ( var rockContext = new RockContext() )
             {

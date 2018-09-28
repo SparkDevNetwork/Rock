@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Core
                     // set the context
                     if ( campus != null )
                     {
-                        var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+                        var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
                         var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
                         if ( currentCampus == null || currentCampus.Id != campus.Id )

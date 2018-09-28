@@ -18,8 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -329,7 +329,7 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Gets the available keys (for debuging info).
+        /// Gets the available keys (for debugging info).
         /// </summary>
         /// <value>
         /// The available keys.

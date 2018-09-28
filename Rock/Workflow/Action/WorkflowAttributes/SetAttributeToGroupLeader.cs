@@ -77,15 +77,15 @@ namespace Rock.Workflow.Action
                         Guid leaderGuid = GetAttributeValue(action, "Leader").AsGuid();
                         if ( !leaderGuid.IsEmpty() )
                         {
-                            var personAttribute = AttributeCache.Read(leaderGuid, rockContext);
+                            var personAttribute = AttributeCache.Get(leaderGuid, rockContext);
                             if ( personAttribute != null )
                             {
                                 // If this is a person type attribute
-                                if ( personAttribute.FieldTypeId == FieldTypeCache.Read(SystemGuid.FieldType.PERSON.AsGuid(), rockContext).Id )
+                                if ( personAttribute.FieldTypeId == FieldTypeCache.Get(SystemGuid.FieldType.PERSON.AsGuid(), rockContext).Id )
                                 {
                                     SetWorkflowAttributeValue(action, leaderGuid, groupLeader.PrimaryAlias.Guid.ToString());
                                 }
-                                else if ( personAttribute.FieldTypeId == FieldTypeCache.Read(SystemGuid.FieldType.TEXT.AsGuid(), rockContext).Id )
+                                else if ( personAttribute.FieldTypeId == FieldTypeCache.Get(SystemGuid.FieldType.TEXT.AsGuid(), rockContext).Id )
                                 {
                                     SetWorkflowAttributeValue(action, leaderGuid, groupLeader.FullName);
                                 }

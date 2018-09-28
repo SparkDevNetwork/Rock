@@ -111,12 +111,12 @@ namespace RockWeb.Blocks.Core
             {
                 int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
                 Block _block = new BlockService( new RockContext() ).Get( blockId );
-
-                dialogPage.SubTitle = "Id: " + blockId;
+                dialogPage.Title = _block.BlockType.Name;
+                dialogPage.SubTitle = string.Format("{0} / Id: {1}", _block.BlockType.Category, blockId);
 
                 if ( _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
-                    var blockType = BlockTypeCache.Read( _block.BlockTypeId );
+                    var blockType = BlockTypeCache.Get( _block.BlockTypeId );
                     if ( blockType != null && !blockType.IsInstancePropertiesVerified )
                     {
                         System.Web.UI.Control control = Page.LoadControl( blockType.Path );
@@ -125,11 +125,11 @@ namespace RockWeb.Blocks.Core
                             using ( var rockContext = new RockContext() )
                             {
                                 var rockBlock = control as RockBlock;
-                                int? blockEntityTypeId = EntityTypeCache.Read( typeof( Block ) ).Id;
+                                int? blockEntityTypeId = EntityTypeCache.Get( typeof( Block ) ).Id;
                                 Rock.Attribute.Helper.UpdateAttributes( rockBlock.GetType(), blockEntityTypeId, "BlockTypeId", blockType.Id.ToString(), rockContext );
                             }
 
-                            blockType.IsInstancePropertiesVerified = true;
+                            blockType.MarkInstancePropertiesVerified( true );
                         }
                     }
 
@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Core
         protected override void OnLoad( EventArgs e )
         {
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-            BlockCache _block = BlockCache.Read( blockId );
+            BlockCache _block = BlockCache.Get( blockId );
 
             var blockControlType = System.Web.Compilation.BuildManager.GetCompiledType( _block.BlockType.Path );
             this.ShowCustomGridColumns = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( blockControlType );
@@ -232,7 +232,7 @@ namespace RockWeb.Blocks.Core
 
                 if ( this.ShowCustomGridOptions )
                 {
-                    tglEnableStickyHeader.Checked = _block.GetAttributeValue( CustomGridOptionsConfig.EnableStickerHeadersAttributeKey ).AsBoolean();
+                    tglEnableStickyHeader.Checked = _block.GetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ).AsBoolean();
                 }
             }
 
@@ -252,7 +252,7 @@ namespace RockWeb.Blocks.Core
                 CurrentTab = lb.Text;
 
                 int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-                BlockCache _block = BlockCache.Read( blockId );
+                BlockCache _block = BlockCache.Get( blockId );
                 rptProperties.DataSource = GetTabs( _block.BlockType );
                 rptProperties.DataBind();
             }
@@ -323,23 +323,21 @@ namespace RockWeb.Blocks.Core
 
                 if ( tglEnableStickyHeader.Checked )
                 {
-                    if ( !block.Attributes.Any( a => a.Key == CustomGridOptionsConfig.EnableStickerHeadersAttributeKey ) )
+                    if ( !block.Attributes.Any( a => a.Key == CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ) )
                     {
-                        block.Attributes.Add( CustomGridOptionsConfig.EnableStickerHeadersAttributeKey, null );
+                        block.Attributes.Add( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, null );
                     }
                 }
 
-                if ( block.GetAttributeValue( CustomGridOptionsConfig.EnableStickerHeadersAttributeKey ).AsBoolean() != tglEnableStickyHeader.Checked )
+                if ( block.GetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ).AsBoolean() != tglEnableStickyHeader.Checked )
                 {
-                    block.SetAttributeValue( CustomGridOptionsConfig.EnableStickerHeadersAttributeKey, tglEnableStickyHeader.Checked.ToTrueFalse() );
+                    block.SetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, tglEnableStickyHeader.Checked.ToTrueFalse() );
 
                     // if EnableStickyHeaders changed, reload the page
                     reloadPage = true;
                 }
 
                 block.SaveAttributeValues( rockContext );
-
-                Rock.Web.Cache.BlockCache.Flush( block.Id );
 
                 StringBuilder scriptBuilder = new StringBuilder();
 
@@ -406,7 +404,7 @@ namespace RockWeb.Blocks.Core
         private void BindCustomColumnsConfig()
         {
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-            BlockCache _block = BlockCache.Read( blockId );
+            BlockCache _block = BlockCache.Get( blockId );
 
             rptCustomGridColumns.DataSource = CustomGridColumnsConfigState.ColumnsConfig;
             rptCustomGridColumns.DataBind();

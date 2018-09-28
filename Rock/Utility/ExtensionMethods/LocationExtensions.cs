@@ -28,7 +28,7 @@ namespace Rock
         #region Geography extension methods
 
         /// <summary>
-        /// Coordinateses the specified geography.
+        /// Coordinates the specified geography.
         /// </summary>
         /// <param name="geography">The geography.</param>
         /// <returns></returns>

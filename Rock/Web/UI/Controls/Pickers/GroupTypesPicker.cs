@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
+using Rock.Web.Cache;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -37,7 +38,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Sets the group types.
+        /// Sets the group types. Note: Use SetGroupTypes instead to set this using List&lt;GroupTypeCache&gt;
         /// </summary>
         /// <value>
         /// The group types.
@@ -46,14 +47,23 @@ namespace Rock.Web.UI.Controls
         {
             set
             {
-                this.Items.Clear();
-                foreach ( GroupType groupType in value )
-                {
-                    ListItem groupTypeItem = new ListItem();
-                    groupTypeItem.Value = groupType.Id.ToString();
-                    groupTypeItem.Text = groupType.Name;
-                    this.Items.Add( groupTypeItem );
-                }
+                SetGroupTypes( value.Select( a => GroupTypeCache.Get( a.Id ) ).ToList() );
+            }
+        }
+
+        /// <summary>
+        /// Sets the group types.
+        /// </summary>
+        /// <param name="groupTypes">The group types.</param>
+        public void SetGroupTypes( IEnumerable<GroupTypeCache> groupTypes )
+        {
+            this.Items.Clear();
+            foreach ( var groupType in groupTypes )
+            {
+                ListItem groupTypeItem = new ListItem();
+                groupTypeItem.Value = groupType.Id.ToString();
+                groupTypeItem.Text = groupType.Name;
+                this.Items.Add( groupTypeItem );
             }
         }
 

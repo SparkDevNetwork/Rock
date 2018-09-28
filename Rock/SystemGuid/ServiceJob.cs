@@ -27,5 +27,20 @@ namespace Rock.SystemGuid
         /// Gets the Job Pulse guid
         /// </summary>
         public const string JOB_PULSE = "CB24FF2A-5AD3-4976-883F-DAF4EFC1D7C7";
+
+        /// <summary>
+        /// The Job for migrating attendance records to occurrence recors (in V8)
+        /// </summary>
+        public const string MIGRATE_ATTENDANCE_OCCURRENCE = "98A2DCA5-5E2E-482A-A7CA-15DAD5B4EA65";
+
+        /// <summary>
+        /// The Job for migrating family check-in identifiers to person alternate ids
+        /// </summary>
+        public const string MIGRATE_FAMILY_CHECKIN_IDS = "E782C667-EF07-4AD2-86B7-01C1935AAF5B";
+
+        /// <summary>
+        /// The Job to get NCOA
+        /// </summary>
+        public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";
     }
 }

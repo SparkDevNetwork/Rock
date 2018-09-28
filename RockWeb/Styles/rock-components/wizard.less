@@ -3,6 +3,12 @@
 // --------------------------------------------------
 
 .wizard {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: start;
+  -webkit-align-items: flex-start;
+  align-items: flex-start;
   padding: 8px 0;
   margin: -15px;
   margin-top: -16px;
@@ -11,93 +17,88 @@
 
   .clearfix();
 
-  @media only screen and (max-width : 480px) {
+  @media only screen and (max-width: 480px) {
     display: none;
   }
-}
 
-.wizard-item-icon {
-  display: inline-block;
-  padding: 6px 8px;
-  margin: 0 auto;
-  color: @wizard-item-icon-color;
-  text-align: center;
-  background-color: @wizard-item-icon-bg;
-  border-radius: 24px;
-}
+  .wizard-item {
+    position: relative; /* Because we are absolutely positioning the connector */
+    width: 100%;
+    min-width: 75px;
+    color: @wizard-item-label-color;
+    text-align: center;
+    word-break: break-word;
+    cursor: default;
 
-.wizard-item-label {
-  font-size: 12px;
-  font-weight: @font-weight-light;
-  color: @wizard-item-label-color;
-}
-
-.wizard-item {
-  position: relative;
-  z-index: 1;
-  float: left;
-  min-width: 100px;
-  text-align: center;
-
-  @media @md {
-    min-width: 175px;
-  }
-
-  &:before {
-    position: absolute; /* positioning must be absolute here, and relative positioning must be applied to the parent */
-    top: 30%;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: -1;
-    margin: 0 auto; /* this centers the line to the full width specified */
-    content: "";
-    border-top: 4px solid @wizard-item-bar-color;
-  }
-
-  &.active {
-    &:before {
-      border-top: 4px solid @wizard-item-bar-complete-color;
+    a {
+      color: @wizard-item-label-color;
     }
 
     .wizard-item-icon {
-      color: @wizard-item-icon-active-color;
-      background-color: @wizard-item-icon-active-bg;
-    }
+      min-width: 75px;
 
+      i {
+        display: inline-block;
+        width: 36px;
+        height: 36px;
+        padding: 9px 7px;
+        color: @wizard-item-bar-color;
+        border: 1px solid @wizard-item-bar-color;
+        background: @wizard-item-icon-bg;
+        border-radius: 60px;
+      }
+    }
     .wizard-item-label {
-      color: @wizard-item-label-active-color;
-    }
-  }
-
-  &.complete {
-    &:before {
-      border-top: 4px solid @wizard-item-bar-complete-color;
+      padding-top: 5px;
     }
 
-    .wizard-item-icon {
-      color: @wizard-item-icon-complete-color;
-      background-color: @wizard-item-icon-complete-bg;
+    &::before {
+      position: absolute;
+      top: 18px; /* Same as above */
+      left: -50%;
+      width: ~"calc(100% - 36px)"; /* 22px = icon width */
+      height: 1px;
+      margin-left: 18px; /* 11px = 1/2 icon width */
+      content: "";
+      background-color: @wizard-item-bar-color;
     }
 
-    .wizard-item-label {
-      color: @wizard-item-label-complete-color;
+    &.active {
+      font-weight: bold;
+      color: @wizard-item-icon-active-bg;
+
+      &::before {
+        background-color: @wizard-item-bar-complete-color;
+      }
+
+      .wizard-item-icon i {
+        color: @wizard-item-icon-active-color;
+        border-color: @wizard-item-icon-active-bg;
+        background-color: @wizard-item-icon-active-bg;
+      }
     }
-  }
 
-  &:first-child:before {
-    left: 55px;
+    &.complete {
+      color: @wizard-item-icon-active-bg;
 
-    @media @md {
-      left: 100px;
+      a {
+        color: @wizard-item-icon-active-bg;
+      }
+
+      &::before {
+        background-color: @wizard-item-bar-complete-color;
+      }
+
+      .wizard-item-icon i {
+        color:  @wizard-item-icon-complete-color;
+        border-color: @wizard-item-icon-complete-color;
+        background-color: @wizard-item-icon-complete-bg;
+      }
     }
-  }
 
-  &:last-child:before {
-    right: 55px;
-
-    @media @md {
-      right: 100px;
+    &:first-of-type::before {
+      display: none;
     }
   }
 }
+

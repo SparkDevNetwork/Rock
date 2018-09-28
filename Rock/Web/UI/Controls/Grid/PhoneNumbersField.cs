@@ -79,7 +79,7 @@ namespace Rock.Web.UI.Controls
                 formattedNumber = PhoneNumber.FormattedNumber( cc, n, DisplayCountryCode );
             }
 
-            var phoneType = DefinedValueCache.Read( phoneNumberTypeId );
+            var phoneType = DefinedValueCache.Get( phoneNumberTypeId );
             if ( phoneType != null )
             {
                 if ( formatAsHtml )

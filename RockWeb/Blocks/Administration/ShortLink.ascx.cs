@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.Administration
                 SetSiteUrl();
 
                 string url = PageParameter( "url" );
-                if ( url.IsNotNullOrWhitespace() )
+                if ( url.IsNotNullOrWhiteSpace() )
                 {
                     tbUrl.Text = url;
                 }
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Administration
 
                     if ( errors.Any() )
                     {
-                        nbError.Text = "Please Correct the Following<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
+                        nbError.Text = "Please correct the following:<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
                         nbError.Visible = true;
                         return;
                     }
@@ -220,7 +220,7 @@ namespace RockWeb.Blocks.Administration
                 .OrderBy( s => s.Name )
                 .Select( a => a.Id )
                 .ToList()
-                .Select( a => SiteCache.Read( a ) ) )
+                .Select( a => SiteCache.Get( a ) ) )
             {
                 ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
             }

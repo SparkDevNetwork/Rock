@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Finance
 
                 personAndBusinesses.Insert( 0, this.CurrentPerson );
 
-                var currentPersonOrBusiness = RockPage.GetCurrentContext( EntityTypeCache.Read<Rock.Model.Person>() );
+                var currentPersonOrBusiness = RockPage.GetCurrentContext( EntityTypeCache.Get<Rock.Model.Person>() );
 
                 if ( currentPersonOrBusiness != null )
                 {

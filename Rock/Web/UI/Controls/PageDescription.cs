@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Web.UI;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -32,7 +33,7 @@ namespace Rock.Web.UI.Controls
             var rockPage = this.Page as RockPage;
             if ( rockPage != null )
             {
-                var pageCache = Rock.Web.Cache.PageCache.Read( rockPage.PageId );
+                var pageCache = PageCache.Get( rockPage.PageId );
                 if ( pageCache != null && pageCache.PageDisplayDescription && !string.IsNullOrWhiteSpace( pageCache.Description ) )
                 {
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "pageoverview-description" );

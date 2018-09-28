@@ -21,7 +21,6 @@ using System.Linq;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {

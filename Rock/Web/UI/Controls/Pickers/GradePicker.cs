@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
         public GradePicker()
             : base()
         {
-            Label = GlobalAttributesCache.Read().GetValue( "core.GradeLabel" );
+            Label = GlobalAttributesCache.Get().GetValue( "core.GradeLabel" );
 
             PopulateItems();
         }
@@ -47,7 +47,7 @@ namespace Rock.Web.UI.Controls
             // add blank item as first item
             this.Items.Add( new ListItem() );
 
-            var schoolGrades = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
             if ( schoolGrades != null )
             {
                 foreach ( var schoolGrade in schoolGrades.DefinedValues.OrderByDescending( a => a.Value.AsInteger() ) )
@@ -131,7 +131,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                var schoolGrades = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+                var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
                 return schoolGrades.DefinedValues.Select( a => a.Value.AsInteger() ).Max();
             }
         }
@@ -190,7 +190,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return DefinedValueCache.Read( this.SelectedValue.AsGuid() );
+                return DefinedValueCache.Get( this.SelectedValue.AsGuid() );
             }
             set
             {

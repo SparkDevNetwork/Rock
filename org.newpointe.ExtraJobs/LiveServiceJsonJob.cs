@@ -49,12 +49,6 @@ namespace org.newpointe.LiveService.Data
                 // save updated value to database
                 globalAttributeValue.Value = isLive;
                 rockContext.SaveChanges();
-
-                // flush the attributeCache for this attribute so it gets reloaded from the database
-                //Rock.Web.Cache.AttributeCache.Flush();
-
-                // flush the GlobalAttributeCache since this attribute is a GlobalAttribute
-                Rock.Web.Cache.GlobalAttributesCache.Flush();
             }
 
         }

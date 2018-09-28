@@ -34,6 +34,9 @@ namespace RockWeb
     /// </summary>
     public class LavaFileSystem : IFileSystem
     {
+
+        static readonly string[] LAVA_FILESYSTEM_WHITELIST = { ".lava", ".liquid", ".html", ".txt", ".json", ".svg" };
+
         public string Root { get; set; }
 
         public LavaFileSystem() {}
@@ -44,7 +47,7 @@ namespace RockWeb
 
             // Try to find exact file specified
             var file = new FileInfo( FullPath( templatePath ));
-            if ( file.Exists)
+            if ( file.Exists && Array.IndexOf(LAVA_FILESYSTEM_WHITELIST, file.Extension) > -1 )
             {
                 return File.ReadAllText(file.FullName);
             }
@@ -94,7 +97,7 @@ namespace RockWeb
                     HttpContext.Current.Items != null &&
                     HttpContext.Current.Items.Contains( "Rock:PageId" ) )
                 {
-                    var rockPage = PageCache.Read( HttpContext.Current.Items["Rock:PageId"].ToString().AsInteger() );
+                    var rockPage = PageCache.Get( HttpContext.Current.Items["Rock:PageId"].ToString().AsInteger() );
                     if ( rockPage != null &&
                         rockPage.Layout != null &&
                         rockPage.Layout.Site != null )

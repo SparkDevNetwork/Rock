@@ -117,7 +117,7 @@ function() {
                 int? campusId = GetCampusIdFromSelection( selectionValues );
                 if ( campusId.HasValue )
                 {
-                    var campus = CampusCache.Read( campusId.Value );
+                    var campus = CampusCache.Get( campusId.Value );
                     if ( campus != null )
                     {
                         result = string.Format( "Campus: {0}", campus.Name );
@@ -170,7 +170,7 @@ function() {
             int? campusId = ( controls[0] as CampusPicker ).SelectedCampusId;
             if ( campusId.HasValue )
             {
-                var campus = CampusCache.Read( campusId.Value );
+                var campus = CampusCache.Get( campusId.Value );
                 if ( campus != null )
                 {
                     return campus.Guid.ToString();
@@ -233,7 +233,7 @@ function() {
             int? campusId = null;
             if ( campusGuid.HasValue )
             {
-                var campus = CampusCache.Read( campusGuid.Value );
+                var campus = CampusCache.Get( campusGuid.Value );
                 if ( campus != null )
                 {
                     campusId = campus.Id;

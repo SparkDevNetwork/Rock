@@ -6,8 +6,8 @@
         var availabilityMessageRow = $('#availabilityMessageRow');
         var usernameUnavailable = $('#availabilityMessage');
         var usernameTextbox = $('#<%= tbUserName.ClientID %>');
-        var usernameRegExp = new RegExp("<%= Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "core.ValidUsernameRegularExpression" ) %>");
-        var usernameValidCaption = "<%= Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "core.ValidUsernameCaption" ) %>";
+        var usernameRegExp = new RegExp("<%= Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" ) %>");
+        var usernameValidCaption = "<%= Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" ) %>";
 
         availabilityMessageRow.hide();
 
@@ -59,8 +59,8 @@
 <asp:UpdatePanel ID="upnlNewAccount" runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-danger"/>
-    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-validation"/>
+    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation"/>
 
     <asp:PlaceHolder ID="phUserInfo" runat="server" Visible="true">
 
@@ -103,7 +103,7 @@
                         <legend>Phone Numbers</legend>
                         <asp:Repeater ID="rPhoneNumbers" runat="server">
                                     <ItemTemplate>
-                                        <div class="form-group phonegroup">
+                                        <div class="form-group phonegroup clearfix">
                                             <div class="control-label col-sm-1 phonegroup-label"><%# Eval("NumberTypeValue.Value")  %>&nbsp;</div>
                                             <div class="controls col-sm-11 phonegroup-number">
                                                 <div class="row">
@@ -223,7 +223,7 @@
 
         <div class="actions">
             <asp:Button ID="btnContinue" runat="server" Text="Continue" CssClass="btn btn-primary" OnClick="btnContinue_Click" Visible="false" />
-        <div class="actions">
+        </div>
 
     </asp:PlaceHolder>
 

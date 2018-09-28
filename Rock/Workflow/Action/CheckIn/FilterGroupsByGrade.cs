@@ -78,8 +78,8 @@ namespace Rock.Workflow.Action.CheckIn
                             DefinedValueCache maxGradeDefinedValue = null;
                             if ( gradeOffsetRangePair.Length == 2 )
                             {
-                                minGradeDefinedValue = gradeOffsetRangePair[0].HasValue ? DefinedValueCache.Read( gradeOffsetRangePair[0].Value ) : null;
-                                maxGradeDefinedValue = gradeOffsetRangePair[1].HasValue ? DefinedValueCache.Read( gradeOffsetRangePair[1].Value ) : null;
+                                minGradeDefinedValue = gradeOffsetRangePair[0].HasValue ? DefinedValueCache.Get( gradeOffsetRangePair[0].Value ) : null;
+                                maxGradeDefinedValue = gradeOffsetRangePair[1].HasValue ? DefinedValueCache.Get( gradeOffsetRangePair[1].Value ) : null;
                             }
 
                             /*

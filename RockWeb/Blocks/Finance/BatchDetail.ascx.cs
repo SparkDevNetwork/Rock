@@ -177,14 +177,14 @@ namespace RockWeb.Blocks.Finance
             var batchService = new FinancialBatchService( rockContext );
             FinancialBatch batch = null;
 
-            var changes = new List<string>();
+            var changes = new History.HistoryChangeList();
 
             int batchId = hfBatchId.Value.AsInteger();
             if ( batchId == 0 )
             {
                 batch = new FinancialBatch();
                 batchService.Add( batch );
-                changes.Add( "Created the batch" );
+                changes.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
             }
             else
             {
@@ -220,13 +220,13 @@ namespace RockWeb.Blocks.Finance
                 CampusCache oldCampus = null;
                 if ( batch.CampusId.HasValue )
                 {
-                    oldCampus = CampusCache.Read( batch.CampusId.Value );
+                    oldCampus = CampusCache.Get( batch.CampusId.Value );
                 }
 
                 CampusCache newCampus = null;
                 if ( campCampus.SelectedCampusId.HasValue )
                 {
-                    newCampus = CampusCache.Read( campCampus.SelectedCampusId.Value );
+                    newCampus = CampusCache.Get( campCampus.SelectedCampusId.Value );
                 }
 
                 History.EvaluateChange( changes, "Campus", oldCampus != null ? oldCampus.Name : "None", newCampus != null ? newCampus.Name : "None" );
@@ -458,7 +458,7 @@ namespace RockWeb.Blocks.Finance
                 string campusName = string.Empty;
                 if ( batch.CampusId.HasValue )
                 {
-                    var campus = CampusCache.Read( batch.CampusId.Value );
+                    var campus = CampusCache.Get( batch.CampusId.Value );
                     if ( campus != null )
                     {
                         campusName = campus.ToString();
@@ -550,7 +550,7 @@ namespace RockWeb.Blocks.Finance
 
                 if ( batchNamesDefinedTypeGuid.HasValue )
                 {
-                    var batchNamesDefinedType = DefinedTypeCache.Read( batchNamesDefinedTypeGuid.Value );
+                    var batchNamesDefinedType = DefinedTypeCache.Get( batchNamesDefinedTypeGuid.Value );
                     if ( batchNamesDefinedType != null )
                     {
                         ddlBatchName.BindToDefinedType( batchNamesDefinedType, true, false );

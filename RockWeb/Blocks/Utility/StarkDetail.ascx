@@ -6,7 +6,10 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
         
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-star"></i> Blank Detail Block</h1>
+                <h1 class="panel-title">
+                    <i class="fa fa-star"></i> 
+                    Blank Detail Block
+                </h1>
 
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlblTest" runat="server" LabelType="Info" Text="Label" />
@@ -28,11 +31,12 @@
 
                     <strong>Changes to the Usercontrol (.ascx) File</strong>
                     <ul>
-                        <li>Update the Inherhits to match the namespace and class file</li>
+                        <li>Update the Inherits to match the namespace and class file</li>
                         <li>Remove this text... unless you really like it...</li>
                     </ul>
                 </div>
-
+                <asp:PlaceHolder ID="ph1" runat="server" />
+                <Rock:ControlMirror ID="mMirror" ControlID="ph1" runat="server" />
             </div>
         
         </asp:Panel>

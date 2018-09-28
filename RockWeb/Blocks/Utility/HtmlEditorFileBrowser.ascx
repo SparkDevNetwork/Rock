@@ -5,12 +5,12 @@
         <asp:Literal ID="lTitle" runat="server"></asp:Literal>
         <span class="js-cancel-file-button cursor-pointer pull-right" style="opacity: .5">&times;</span>
     </h3>
-    
+
 </asp:Panel>
 
 <div class="picker-wrapper clearfix">
     <div class="picker-folders">
-        <%-- Folders - Separate UpdatePanel so that Tree doesn't get rebuilt on postbacks (unless the server explicity wants it to get rebuilt) --%>
+        <%-- Folders - Separate UpdatePanel so that Tree doesn't get rebuilt on postbacks (unless the server explicitly wants it to get rebuilt) --%>
         <asp:UpdatePanel ID="upnlFolders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
             <ContentTemplate>
                 <div class="actions btn-group">
@@ -39,7 +39,7 @@
                         </asp:Panel>
                     </div>
                 </div>
-                 
+
                 <script type="text/javascript">
                     var <%=pnlTreeViewPort.ClientID%>IScroll = null;
                     Sys.Application.add_load(function () {
@@ -56,7 +56,7 @@
 
                             // init scroll bars for folder divs
                             <%=pnlTreeViewPort.ClientID%>IScroll = new IScroll('#<%=pnlTreeViewPort.ClientID%>', {
-                                mouseWheel: true,
+                                mouseWheel: false,
                                 indicators: {
                                     el: '#<%=pnlTreeTrack.ClientID%>',
                                     interactive: true,
@@ -79,7 +79,7 @@
                         // init the file list RockList on every load
                         $('.js-file-list .js-listview').rockList();
                         new IScroll('#<%=pnlListViewPort.ClientID%>', {
-                            mouseWheel: true,
+                            mouseWheel: false,
                             indicators: {
                                 el: '#<%=pnlListTrack.ClientID%>',
                                     interactive: true,

@@ -217,8 +217,8 @@ namespace Rock.StatementGenerator.Rest
         /// <returns></returns>
         private static IQueryable<GroupLocation> GetGroupLocationQuery( RockContext rockContext )
         {
-            var groupLocationTypeIdHome = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )?.Id;
-            var groupLocationTypeIdWork = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() )?.Id;
+            var groupLocationTypeIdHome = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )?.Id;
+            var groupLocationTypeIdWork = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() )?.Id;
             var groupLocationTypeIds = new List<int>();
             if ( groupLocationTypeIdHome.HasValue )
             {
@@ -344,7 +344,7 @@ namespace Rock.StatementGenerator.Rest
 
                 if ( options.ExcludeOptedOutIndividuals == true && !options.DataViewId.HasValue )
                 {
-                    int? doNotSendGivingStatementAttributeId = AttributeCache.Read( Rock.StatementGenerator.SystemGuid.Attribute.PERSON_DO_NOT_SEND_GIVING_STATEMENT.AsGuid() )?.Id;
+                    int? doNotSendGivingStatementAttributeId = AttributeCache.Get( Rock.StatementGenerator.SystemGuid.Attribute.PERSON_DO_NOT_SEND_GIVING_STATEMENT.AsGuid() )?.Id;
                     if ( doNotSendGivingStatementAttributeId.HasValue )
                     {
                         var personIds = personList.Select( a => a.Id ).ToList();
@@ -412,7 +412,7 @@ namespace Rock.StatementGenerator.Rest
                     financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.OrderBy( a => a.Account.Order ).ThenBy( a => a.Account.Name ).ToList();
                 }
 
-                var lavaTemplateValue = DefinedValueCache.Read( options.LayoutDefinedValueGuid.Value );
+                var lavaTemplateValue = DefinedValueCache.Get( options.LayoutDefinedValueGuid.Value );
                 var lavaTemplateLava = lavaTemplateValue.GetAttributeValue( "LavaTemplate" );
                 var lavaTemplateFooterLava = lavaTemplateValue.GetAttributeValue( "FooterHtml" );
 
@@ -424,7 +424,7 @@ namespace Rock.StatementGenerator.Rest
                 var humanFriendlyEndDate = options.EndDate.HasValue ? options.EndDate.Value.AddDays( -1 ) : RockDateTime.Now.Date;
                 mergeFields.Add( "StatementEndDate", humanFriendlyEndDate );
 
-                var familyTitle = Rock.Data.RockUdfHelper.ufnCrm_GetFamilyTitle( rockContext, personId, groupId, null, false );
+                var familyTitle = Rock.Data.RockUdfHelper.ufnCrm_GetFamilyTitle( rockContext, personId, groupId, null, false, !options.ExcludeInActiveIndividuals );
 
                 mergeFields.Add( "Salutation", familyTitle );
 
@@ -542,6 +542,13 @@ namespace Rock.StatementGenerator.Rest
                         && options.CurrencyTypeIdsNonCash.Contains( a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) ).ToList();
                 }
 
+                // Add Merge Fields for Transactions for custom Statements that might want to organize the output by Transaction instead of TransactionDetail
+                var transactionListCash = transactionDetailListCash.GroupBy( a => a.Transaction ).Select( a => a.Key ).ToList();
+                var transactionListNonCash = transactionDetailListNonCash.GroupBy( a => a.Transaction ).Select( a => a.Key ).ToList();
+                mergeFields.Add( "Transactions", transactionListCash );
+                mergeFields.Add( "TransactionsNonCash", transactionListNonCash );
+                
+                // Add the standard TransactionDetails and TransactionDetailsNonCash that the default Rock templates use
                 mergeFields.Add( "TransactionDetails", transactionDetailListCash );
                 mergeFields.Add( "TransactionDetailsNonCash", transactionDetailListNonCash );
 
@@ -725,13 +732,13 @@ namespace Rock.StatementGenerator.Rest
                     {
                         if ( !options.IncludeBusinesses )
                         {
-                            int recordTypeValueIdPerson = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                            int recordTypeValueIdPerson = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                             pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.RecordTypeValueId == recordTypeValueIdPerson );
                         }
 
                         if ( options.ExcludeInActiveIndividuals )
                         {
-                            int recordStatusValueIdActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                            int recordStatusValueIdActive = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
                             pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive );
                         }
 
@@ -765,7 +772,7 @@ namespace Rock.StatementGenerator.Rest
             }
 
             // default to Contributions if nothing specified
-            var transactionTypeContribution = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            var transactionTypeContribution = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
             if ( options.TransactionTypeIds == null || !options.TransactionTypeIds.Any() )
             {
                 options.TransactionTypeIds = new List<int>();
@@ -820,13 +827,13 @@ namespace Rock.StatementGenerator.Rest
                     {
                         if ( !options.IncludeBusinesses )
                         {
-                            int recordTypeValueIdPerson = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                            int recordTypeValueIdPerson = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                             financialTransactionQry = financialTransactionQry.Where( a => a.AuthorizedPersonAlias.Person.RecordTypeValueId == recordTypeValueIdPerson );
                         }
 
                         if ( options.ExcludeInActiveIndividuals )
                         {
-                            int recordStatusValueIdActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                            int recordStatusValueIdActive = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
                             financialTransactionQry = financialTransactionQry.Where( a => a.AuthorizedPersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive );
                         }
                     }

@@ -14,11 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using Rock.Web.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -30,7 +33,7 @@ namespace Rock.Model
     [Table( "Campus" )]
     [DataContract]
     [Analytics( false, true )]
-    public partial class Campus : Model<Campus>, IOrdered
+    public partial class Campus : Model<Campus>, IOrdered, ICacheable
     {
         #region Entity Properties
 
@@ -123,7 +126,7 @@ namespace Rock.Model
         public int? LeaderPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the service times (Stored as a delimeted list)
+        /// Gets or sets the service times (Stored as a delimited list)
         /// </summary>
         /// <value>
         /// The service times.
@@ -175,6 +178,31 @@ namespace Rock.Model
         [DataMember]
         public virtual PersonAlias LeaderPersonAlias { get; set; }
 
+        /// <summary>
+        /// Gets the current date time.
+        /// </summary>
+        /// <value>
+        /// The current date time.
+        /// </value>
+        [NotMapped]
+        public virtual DateTime CurrentDateTime
+        {
+            get
+            {
+                if ( TimeZoneId.IsNotNullOrWhiteSpace() )
+                {
+                    var campusTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById( TimeZoneId );
+                    if ( campusTimeZoneInfo != null )
+                    {
+                        return TimeZoneInfo.ConvertTime( DateTime.UtcNow, campusTimeZoneInfo );
+                    }
+                }
+
+                return RockDateTime.Now;
+            }
+        }
+
+
         #endregion
 
         #region Public Methods
@@ -192,6 +220,28 @@ namespace Rock.Model
 
         #endregion
 
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return CampusCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            CampusCache.UpdateCachedEntity( this.Id, entityState );
+        }
+
+        #endregion
     }
 
     #region Entity Configuration

@@ -1,4 +1,4 @@
-<%@ WebHandler Language="C#" Class="SmsToWorkflow" %>
+﻿<%@ WebHandler Language="C#" Class="SmsToWorkflow" %>
 
 using System;
 using System.Web;
@@ -42,7 +42,7 @@ public class SmsToWorkflow : IHttpHandler
             dict.Add("RawPost", request.Form.ToJson());
             dict.Add("Webhook", request.Url.PathAndQuery);
 
-            launchWorkflow(new Guid(Rock.Web.Cache.GlobalAttributesCache.Read().GetValue("SMSToWorkflowWorkflowType")), dict);
+            launchWorkflow(new Guid(Rock.Web.Cache.GlobalAttributesCache.Get().GetValue("SMSToWorkflowWorkflowType")), dict);
 
             response.StatusCode = 200;
         }
@@ -70,10 +70,9 @@ public class SmsToWorkflow : IHttpHandler
         
 
         WorkflowService _workflowService = new WorkflowService(_rockContext);
-        WorkflowTypeService _workflowTypeService = new WorkflowTypeService(_rockContext);
-        WorkflowType _workflowType = _workflowTypeService.Get(workflowGuid);
+        WorkflowTypeCache _workflowTypeCache = WorkflowTypeCache.Get(workflowGuid);
 
-        Workflow _workflow = Rock.Model.Workflow.Activate(_workflowType, "New Test" + _workflowType.WorkTerm);
+        Workflow _workflow = Rock.Model.Workflow.Activate(_workflowTypeCache, "New Test" + _workflowTypeCache.WorkTerm);
 
 
         foreach (KeyValuePair<string, string> attribute in attributes)
@@ -86,7 +85,7 @@ public class SmsToWorkflow : IHttpHandler
         if (_workflowService.Process(_workflow, out errorMessages))
         {
             // If the workflow type is persisted, save the workflow
-            if (_workflow.IsPersisted || _workflowType.IsPersisted)
+            if (_workflow.IsPersisted || _workflowTypeCache.IsPersisted)
             {
                 if (_workflow.Id == 0)
                 {

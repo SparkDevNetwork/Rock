@@ -350,7 +350,7 @@ namespace RockWeb.Blocks.Crm
             {
                 var receiptEmail = new SystemEmailService( rockContext ).Get( new Guid( GetAttributeValue( "UpdateEmail" ) ) );
 
-                if ( receiptEmail != null && receiptEmail.To.IsNotNullOrWhitespace() )
+                if ( receiptEmail != null && receiptEmail.To.IsNotNullOrWhiteSpace() )
                 {
                     var errorMessages = new List<string>();
                     var message = new RockEmailMessage( receiptEmail );
@@ -366,7 +366,7 @@ namespace RockWeb.Blocks.Crm
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "WorkflowType" ) ) )
             {
                 var workflowService = new WorkflowService( rockContext );
-                var workflowType = WorkflowTypeCache.Read( new Guid( GetAttributeValue( "WorkflowType" ) ) );
+                var workflowType = WorkflowTypeCache.Get( new Guid( GetAttributeValue( "WorkflowType" ) ) );
 
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
@@ -387,7 +387,7 @@ namespace RockWeb.Blocks.Crm
                     workflow.SetAttributeValue( "BirthDate", dpBirthdate.Text );
                     workflow.SetAttributeValue( "OtherUpdates", tbOtherUpdates.Text );
 
-                    // lauch workflow
+                    // launch workflow
                     List<string> workflowErrors;
                     workflowService.Process( workflow, out workflowErrors );
                 }

@@ -55,7 +55,7 @@ namespace RockWeb.Plugins.org_newpointe.Stars
             {
                 // Populate drop down list with Defined Values
                 var frequencyTypeGuid = new Guid(org.newpointe.Stars.SystemGuid.DefinedType.STARS_TYPE);
-                ddlStars.BindToDefinedType(DefinedTypeCache.Read(frequencyTypeGuid));
+                ddlStars.BindToDefinedType(DefinedTypeCache.Get(frequencyTypeGuid));
             }
 
         }

@@ -610,7 +610,7 @@ namespace RockWeb.Blocks.WorkFlow
             int? activityTypeId = ddlActivateNewActivity.SelectedValueAsId();
             if (activityTypeId.HasValue)
             {
-                var activityType = WorkflowActivityTypeCache.Read(activityTypeId.Value);
+                var activityType = WorkflowActivityTypeCache.Get(activityTypeId.Value);
                 if (activityType != null)
                 {
                     var activity = WorkflowActivity.Activate( activityType, Workflow );

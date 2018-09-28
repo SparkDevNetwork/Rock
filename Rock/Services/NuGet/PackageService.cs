@@ -27,7 +27,7 @@ using Rock.Model;
 namespace Rock.Services.NuGet
 {
     /// <summary>
-    /// Facade class to provide intaraction with NuGet internals
+    /// Facade class to provide interaction with NuGet internals
     /// </summary>
     public class PackageService
     {

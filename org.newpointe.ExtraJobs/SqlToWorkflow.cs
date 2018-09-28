@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
 using Rock.Attribute;
 using Rock.Data;
@@ -7,6 +7,7 @@ using Rock.Web.UI.Controls;
 
 using Quartz;
 using Rock;
+using Rock.Web.Cache;
 
 namespace org.newpointe.SqlToWorkflow
 {
@@ -25,7 +26,7 @@ namespace org.newpointe.SqlToWorkflow
 
             var rockContext = new RockContext();
             var workflowService = new WorkflowService( rockContext );
-            WorkflowType workflowType = new WorkflowTypeService( rockContext ).Get( dataMap.GetString( "WGuid" ).AsGuid() );
+            WorkflowTypeCache workflowTypeCache = WorkflowTypeCache.Get( dataMap.GetString( "WGuid" ).AsGuid() );
 
             DataSet data = DbService.GetDataSet( dataMap.GetString( "SQLQuery" ), CommandType.Text, new Dictionary<string, object>() );
 
@@ -33,7 +34,7 @@ namespace org.newpointe.SqlToWorkflow
             {
                 foreach ( DataRow row in tbl.Rows )
                 {
-                    Workflow workflow = Workflow.Activate( workflowType, "New " + workflowType.WorkTerm );
+                    Workflow workflow = Workflow.Activate( workflowTypeCache, "New " + workflowTypeCache.WorkTerm );
 
                     foreach ( DataColumn col in tbl.Columns )
                     {
@@ -43,7 +44,7 @@ namespace org.newpointe.SqlToWorkflow
                     if ( workflowService.Process( workflow, out List<string> errorMessages ) )
                     {
                         // If the workflow type is persisted, save the workflow
-                        if ( workflow.IsPersisted || workflowType.IsPersisted )
+                        if ( workflow.IsPersisted || workflowTypeCache.IsPersisted )
                         {
                             if ( workflow.Id == 0 )
                             {

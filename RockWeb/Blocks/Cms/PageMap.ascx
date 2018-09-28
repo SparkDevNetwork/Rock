@@ -118,6 +118,7 @@
                     if (itemSearch) {
                         var locationUrl = window.location.href.split('?')[0] + itemSearch;
                         locationUrl += "&ExpandedIds=" + encodeURIComponent(expandedDataIds).toLowerCase();
+                        locationUrl += "&Redirect=false"
                         if (window.location != locationUrl) {
                             window.location = locationUrl;
                         }

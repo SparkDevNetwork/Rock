@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Reporting
                 
                 mergeFields.Add( "InteractionComponentEntity", componentEntity);
 
-                string template = _component.Channel.ComponentDetailTemplate.IsNotNullOrWhitespace() ?
+                string template = _component.Channel.ComponentDetailTemplate.IsNotNullOrWhiteSpace() ?
                     _component.Channel.ComponentDetailTemplate :
                     GetAttributeValue( "DefaultTemplate" );
 
@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Reporting
 
             try
             {
-                var componentEntityType = EntityTypeCache.Read( interactionComponent.Channel.ComponentEntityTypeId.Value ).GetEntityType();
+                var componentEntityType = EntityTypeCache.Get( interactionComponent.Channel.ComponentEntityTypeId.Value ).GetEntityType();
                 IService serviceInstance = Reflection.GetServiceForEntityType( componentEntityType, rockContext );
                 if ( serviceInstance != null )
                 {

@@ -118,7 +118,7 @@
                             <Rock:PersonPicker runat="server" ID="ppRequestor" Label="Requestor" Required="true" OnSelectPerson="ppRequestor_SelectPerson" />
                         </div>
                         <div class="col-md-3">
-                            <Rock:RockDropDownList ID="ddlConnectorEdit" runat="server" Label="Connector" />
+                            <Rock:RockDropDownList ID="ddlConnectorEdit" runat="server" Label="Connector" EnhanceForLongLists="true" />
                         </div>
                         <div class="col-md-4 col-md-offset-2">
                             <Rock:RockRadioButtonList ID="rblState" runat="server" Label="State" RepeatDirection="Horizontal" OnSelectedIndexChanged="rblState_SelectedIndexChanged" AutoPostBack="true" />
@@ -132,7 +132,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockDropDownList ID="ddlPlacementGroup" runat="server" Label="Placement Group" AutoPostBack="true" OnSelectedIndexChanged="ddlPlacementGroup_SelectedIndexChanged" />
+                            <Rock:RockDropDownList ID="ddlPlacementGroup" runat="server" Label="Placement Group" AutoPostBack="true" OnSelectedIndexChanged="ddlPlacementGroup_SelectedIndexChanged" EnhanceForLongLists="true" />
                             <Rock:RockDropDownList ID="ddlPlacementGroupRole" runat="server" Label="Group Member Role" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="ddlPlacementGroupRole_SelectedIndexChanged" />
                             <Rock:RockDropDownList ID="ddlPlacementGroupStatus" runat="server" Label="Group Member Status" Visible="false" />
                         </div>
@@ -165,7 +165,7 @@
                             <Rock:RockControlWrapper ID="rcwTransferOpportunity" runat="server" Label="New Opportunity">
                                 <div class="row">
                                     <div class="col-md-8">
-                                        <Rock:RockDropDownList ID="ddlTransferOpportunity" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlTransferOpportunity_SelectedIndexChanged" />
+                                        <Rock:RockDropDownList ID="ddlTransferOpportunity" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlTransferOpportunity_SelectedIndexChanged" EnhanceForLongLists="true" />
                                     </div>
                                     <div class="col-md-4">
                                         <Rock:BootstrapButton ID="btnSearch" runat="server" CssClass="btn btn-primary" Text="Search" OnClick="btnSearch_Click" />
@@ -241,7 +241,7 @@
 
         <Rock:ModalDialog ID="dlgConnectionRequestActivities" runat="server" SaveButtonText="Add" OnSaveClick="btnAddConnectionRequestActivity_Click" Title="Add Activity" ValidationGroup="Activity" >
             <Content>
-                <asp:ValidationSummary ID="valConnectorGroup" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Activity" />
+                <asp:ValidationSummary ID="valConnectorGroup" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Activity" />
                 <asp:HiddenField ID="hfAddConnectionRequestActivityGuid" runat="server" />
                 <div class="row">
                     <div class="col-md-6">

@@ -510,7 +510,7 @@ namespace RockWeb.Blocks.Finance
                         rockContext.SaveChanges();
 
                         // Add a note about the change
-                        var noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
+                        var noteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
                         if ( noteType != null )
                         {
                             var noteService = new NoteService( rockContext );
@@ -629,7 +629,7 @@ namespace RockWeb.Blocks.Finance
                 gAccountsView.DataSource = txn.ScheduledTransactionDetails.ToList();
                 gAccountsView.DataBind();
 
-                var noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
+                var noteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
                 if ( noteType != null )
                 {
                     var rockContext = new RockContext();

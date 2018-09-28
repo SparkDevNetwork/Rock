@@ -402,10 +402,10 @@ namespace RockWeb.Plugins.org_newpointe.Shape
         }
 
 
-        protected Person GetPersonFromId(string PersonId)
+        protected Person GetPersonFromId(string personId)
         {
 
-            int intPersonId = Int32.Parse(PersonId);
+            int intPersonId = Int32.Parse(personId);
             PersonService personService = new PersonService(rockContext);
 
             var person = personService.Queryable().FirstOrDefault(p => p.Id == intPersonId);
@@ -446,7 +446,7 @@ namespace RockWeb.Plugins.org_newpointe.Shape
         private void ShowExplaination(string personalityType)
         {
             var personalityValue =
-                DefinedTypeCache.Read(Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid())
+                DefinedTypeCache.Get(Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid())
                     .DefinedValues.Where(v => v.Value == personalityType)
                     .FirstOrDefault();
             if (personalityValue != null)
@@ -511,7 +511,7 @@ namespace RockWeb.Plugins.org_newpointe.Shape
                                 rockContext,
                                 authorizedPersonAlias.Person,
                                 Rock.Model.AuthenticationServiceType.Internal,
-                                EntityTypeCache.Read(Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid()).Id,
+                                EntityTypeCache.Get(Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid()).Id,
                                 txtUserName.Text,
                                 txtPassword.Text,
                                 true);

@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Prayer
         /// <summary>
         /// The prayer request key parameter used in the QueryString for detail page.
         /// </summary>
-        private static readonly string _PrayerRequestKeyParameter = "prayerRequestId";
+        private static readonly string _PrayerRequestKeyParameter = "PrayerRequestId";
 
         /// <summary>
         /// Holds whether or not the person can add, edit, and delete.
@@ -120,11 +120,11 @@ namespace RockWeb.Blocks.Prayer
             gPrayerRequests.IsDeleteEnabled = _canAddEditDelete;
 
             // if there is a Person as the ContextEntity, there is no need to show the Name column
-            gPrayerRequests.Columns.GetColumnByHeaderText( "Name" ).Visible = this.ContextEntity<Rock.Model.Person>() == null;
+            gPrayerRequests.GetColumnByHeaderText( "Name" ).Visible = this.ContextEntity<Rock.Model.Person>() == null;
 
 
-            gPrayerRequests.Columns.GetColumnByHeaderText( "Prayer Count" ).Visible = GetAttributeValue( "ShowPrayerCount" ).AsBoolean();
-            gPrayerRequests.Columns.GetColumnByHeaderText( "Approved?" ).Visible = GetAttributeValue( "ShowApprovedColumn" ).AsBoolean();
+            gPrayerRequests.GetColumnByHeaderText( "Prayer Count" ).Visible = GetAttributeValue( "ShowPrayerCount" ).AsBoolean();
+            gPrayerRequests.GetColumnByHeaderText( "Approved?" ).Visible = GetAttributeValue( "ShowApprovedColumn" ).AsBoolean();
         }
 
         /// <summary>
@@ -347,7 +347,7 @@ namespace RockWeb.Blocks.Prayer
                     }
                     else
                     {
-                        var category = Rock.Web.Cache.CategoryCache.Read( categoryId );
+                        var category = CategoryCache.Get( categoryId );
                         if ( category != null )
                         {
                             e.Value = category.Name;
@@ -358,7 +358,7 @@ namespace RockWeb.Blocks.Prayer
 
                 case "Prayer Campus":
 
-                    var campus = Rock.Web.Cache.CampusCache.Read( e.Value.AsInteger() );
+                    var campus = CampusCache.Get( e.Value.AsInteger() );
                     e.Value = campus != null ? campus.Name : string.Empty;
 
                     break;
@@ -385,7 +385,7 @@ namespace RockWeb.Blocks.Prayer
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {
-                AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+                AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
             }
         }
 
@@ -449,7 +449,7 @@ namespace RockWeb.Blocks.Prayer
                         boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
 
-                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                         if ( attributeCache != null )
                         {
                             boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -587,36 +587,10 @@ namespace RockWeb.Blocks.Prayer
             // Filter query by any configured attribute filters
             if ( AvailableAttributes != null && AvailableAttributes.Any() )
             {
-                var attributeValueService = new AttributeValueService( rockContext );
-                var parameterExpression = attributeValueService.ParameterExpression;
-
                 foreach ( var attribute in AvailableAttributes )
                 {
                     var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                    if ( filterControl == null ) continue;
-
-                    var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                    var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                    var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                    if ( expression == null ) continue;
-
-                    var attributeValues = attributeValueService
-                                .Queryable()
-                                .Where( v => v.Attribute.Id == attribute.Id );
-
-                    var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                    if ( filterIsDefault )
-                    {
-                        prayerRequests = prayerRequests.Where( w =>
-                             !attributeValues.Any( v => v.EntityId == w.Id ) ||
-                             filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                    }
-                    else
-                    {
-                        prayerRequests = prayerRequests.Where( w =>
-                            filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                    }
+                    prayerRequests = attribute.FieldType.Field.ApplyAttributeQueryFilter( prayerRequests, filterControl, attribute, prayerRequestService, Rock.Reporting.FilterMode.SimpleFilter );
                 }
             }
 
@@ -636,7 +610,7 @@ namespace RockWeb.Blocks.Prayer
                 gPrayerRequests.DataSource = prayerRequests.OrderByDescending( p => p.EnteredDateTime ).ThenByDescending( p => p.Id ).ToList();
             }
 
-            gPrayerRequests.EntityTypeId = EntityTypeCache.Read<PrayerRequest>().Id;
+            gPrayerRequests.EntityTypeId = EntityTypeCache.Get<PrayerRequest>().Id;
             gPrayerRequests.DataBind();
         }
 

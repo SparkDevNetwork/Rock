@@ -20,8 +20,9 @@ using System.Linq;
 using System.Web;
 using System.Web.UI.WebControls;
 using Rock.Attribute;
-using Rock.Field.Types;
 using Rock.Web.Cache;
+using Rock.Data;
+using Rock.Field.Types;
 
 namespace Rock.Web.UI.Controls
 {
@@ -142,6 +143,7 @@ namespace Rock.Web.UI.Controls
                         if ( this.ItemStyle.HorizontalAlign != HorizontalAlign.Center )
                         {
                             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+                            this.HeaderStyle.HorizontalAlign = HorizontalAlign.Center;
                         }
 
                         var boolValue = rawValue.AsBoolean();

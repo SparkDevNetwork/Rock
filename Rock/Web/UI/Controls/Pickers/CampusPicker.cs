@@ -35,7 +35,6 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             Label = "Campus";
-            CampusIds = CampusCache.All().Select( c => c.Id ).ToList();
         }
 
         /// <summary>
@@ -59,19 +58,31 @@ namespace Rock.Web.UI.Controls
         /// </value>
         private List<int> CampusIds
         {
-            get { return ViewState["CampusIds"] as List<int> ?? new List<int>(); }
-            set { ViewState["CampusIds"] = value; }
+            get
+            {
+                return ViewState["CampusIds"] as List<int> ?? CampusCache.All().Select( c => c.Id ).ToList();
+
+            }
+
+            set
+            {
+                ViewState["CampusIds"] = value;
+            }
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [include inactive].
+        /// Gets or sets a value indicating whether [include inactive] (defaults to True).
         /// </summary>
         /// <value>
         ///   <c>true</c> if [include inactive]; otherwise, <c>false</c>.
         /// </value>
         public bool IncludeInactive
         {
-            get { return ViewState["IncludeInactive"] as bool? ?? true; }
+            get
+            {
+                return ViewState["IncludeInactive"] as bool? ?? true;
+            }
+
             set
             {
                 ViewState["IncludeInactive"] = value;
@@ -117,6 +128,14 @@ namespace Rock.Web.UI.Controls
                 {
                     li.Selected = true;
                 }
+                else
+                {
+                    // if setting CampusId to NULL or 0, just default to the first item in the list (which should be nothing)
+                    if ( this.Items.Count > 0 )
+                    {
+                        this.SelectedIndex = 0;
+                    }
+                }
             }
         }
 
@@ -127,9 +146,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="value">The value.</param>
         public void CheckItem( int? value )
         {
-            if ( value.HasValue &&
+            if ( value.HasValue && value.Value > 0 &&
                 this.Items.FindByValue( value.Value.ToString() ) == null &&
-                CampusCache.Read( value.Value ) != null )
+                CampusCache.Get( value.Value ) != null )
             {
                 LoadItems( value );
             }

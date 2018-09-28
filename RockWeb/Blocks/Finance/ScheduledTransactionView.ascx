@@ -37,7 +37,7 @@
                                         <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
-                                    <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
+                                    <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                 </Columns>
                             </Rock:Grid>
                             <div class="actions pull-right">
@@ -54,7 +54,7 @@
                                             <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                         </Rock:RockTemplateField>
                                         <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
-                                        <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
+                                        <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"/>
                                         <Rock:EditField OnClick="gAccountsEdit_EditClick" />
                                         <Rock:DeleteField OnClick="gAccountsEdit_DeleteClick" />
                                     </Columns>
@@ -98,7 +98,7 @@
 
         <Rock:ModalDialog ID="mdAccount" runat="server" Title="Account" SaveButtonText="OK" OnSaveClick="mdAccount_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Account">
             <Content>
-                <asp:ValidationSummary ID="valSummaryAccount" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Account" />
+                <asp:ValidationSummary ID="valSummaryAccount" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Account" />
                 <asp:HiddenField ID="hfAccountGuid" runat="server" />
                 <div class="row">
                     <div class="col-md-6">

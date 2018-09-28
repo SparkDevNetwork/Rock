@@ -119,15 +119,19 @@ namespace Rock.Web.UI.Adapters
 
                 if ( renderRadioButtonLabel )
                 {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "label-text" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                    
                     if ( rb.Text.Length > 0 )
                     {
-                        writer.Write( rb.Text );
+                        
+                        writer.Write(  rb.Text );
                     }
                     else
                     {
                         writer.Write( "&nbsp;" );
                     }
-                    
+                    writer.RenderEndTag();      // Span
                     writer.RenderEndTag();      // Label
                 }
 

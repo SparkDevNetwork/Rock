@@ -45,8 +45,15 @@ namespace Rock.Migrations
             DropColumn("dbo.Interaction", "DetailTemplate");
             DropColumn("dbo.InteractionSession", "ListTemplate");
             DropColumn("dbo.InteractionSession", "DetailTemplate");
+
+            // MP: Add new 'Communication Page' BlockSetting to Bio and set bio block on the internal person profile page to use the Simple Communication page.
+            // Attrib for BlockType: Person Bio:Communication Page
+            RockMigrationHelper.UpdateBlockTypeAttribute( "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Communication Page", "CommunicationPage", "", @"The communication page to use for when the person's email address is clicked. Leave this blank to use the default.", 15, @"", "18B917AE-6395-4B70-95F4-AA5E6EA1F799" );
+            // Attrib Value for Block:Bio, Attribute:Communication Page , Layout: PersonDetail, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "B5C1FDB6-0224-43E4-8E26-6B2EAF86253A", "18B917AE-6395-4B70-95F4-AA5E6EA1F799", @"7e8408b2-354c-4a5a-8707-36754ae80b9a" );
+
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>

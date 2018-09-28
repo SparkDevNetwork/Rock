@@ -21,7 +21,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Base class for NumberBox and CurrencyBox controls
     /// </summary>
     /// <seealso cref="Rock.Web.UI.Controls.RockTextBox" />
     public class NumberBoxBase : RockTextBox

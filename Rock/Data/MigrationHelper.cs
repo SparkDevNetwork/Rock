@@ -396,6 +396,89 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Updates the System Setting or adds it if it doesn't exist
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="value">The value.</param>
+        public void UpdateSystemSetting( string attributeKey, string value )
+        {
+            var attributeName = attributeKey.SplitCase();
+            string updateSql = $@"
+                DECLARE 
+                    @FieldTypeId int
+                    ,@AttributeId int
+                
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{Rock.SystemGuid.FieldType.TEXT}')
+                SET @AttributeId = (SELECT [Id]
+                    FROM [Attribute]
+                    WHERE [EntityTypeId] IS NULL
+                    AND [EntityTypeQualifierColumn] = '{Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER}'
+                    AND [Key] = '{attributeKey}')
+
+                IF @AttributeId IS NOT NULL
+                BEGIN
+                    UPDATE [Attribute]
+                    SET [DefaultValue] = '{value.Replace( "'", "''" )}'
+                    WHERE [Id] = @AttributeId
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Order],[IsGridColumn],[IsMultiValue],[IsRequired],                        
+                        [Key],[Name],[DefaultValue], [Guid])
+                    VALUES(
+                        1,@FieldTypeId,NULL,'{Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER}','',
+                        0,0,0,0,
+                        '{attributeKey}','{attributeName}', '{value.Replace("'", "''")}', NEWID())
+                END";
+
+            Migration.Sql( updateSql );
+        }
+
+        /// <summary>
+        /// Updates the system setting if [Attribute].[DefaultValue] is null or blank or adds it if it doesn't exist
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="value">The value.</param>
+        public void UpdateSystemSettingIfNullOrBlank( string attributeKey, string value )
+        {
+            var attributeName = attributeKey.SplitCase();
+            string updateSql = $@"
+                DECLARE @FieldTypeId int = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{Rock.SystemGuid.FieldType.TEXT}')
+                DECLARE @AttributeId int = (
+	                SELECT [Id]
+                    FROM [Attribute]
+                    WHERE [EntityTypeId] IS NULL
+                    AND [EntityTypeQualifierColumn] = '{Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER}'
+                    AND [Key] = '{attributeKey}')
+
+                IF @AttributeId IS NOT NULL
+                BEGIN
+                -- We have an attribute, see if it should be updated
+	                IF (SELECT COUNT([Id]) FROM [Attribute] WHERE [Id] = @AttributeId AND ([DefaultValue] = '' OR [DefaultValue] IS NULL)) > 0
+	                BEGIN
+		                UPDATE [Attribute]
+		                SET [DefaultValue] = '{value.Replace( "'", "''" )}'
+		                WHERE [Id] = @AttributeId
+	                END
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Order],[IsGridColumn],[IsMultiValue],[IsRequired],                        
+                        [Key],[Name],[DefaultValue], [Guid])
+                    VALUES(
+                        1,@FieldTypeId,NULL,'{Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER}','',
+                        0,0,0,0,
+                        '{attributeKey}','{attributeName}', '{value.Replace( "'", "''" )}', NEWID())
+                END";
+
+            Migration.Sql( updateSql );
+        }
+
+        /// <summary>
         /// Deletes the Layout.
         /// </summary>
         /// <param name="guid">The GUID.</param>
@@ -1907,6 +1990,40 @@ BEGIN
                     blockGuid,
                     attributeGuid )
             );
+        }
+
+        /// <summary>
+        /// Deletes a block attribute value for the given block guid and attribute guid
+        /// </summary>
+        /// <param name="blockGuid">The block GUID.</param>
+        /// <param name="attributeGuid">The attribute GUID.</param>
+        /// <param name="value">The value to delete.</param>
+        // https://stackoverflow.com/questions/48193162/remove-value-from-comma-delimited-string-sql-server
+        public void DeleteBlockAttributeValue(string blockGuid, string attributeGuid, string value)
+        {
+            Migration.Sql( string.Format( @"
+                DECLARE @BlockId int
+                SET @BlockId = (SELECT [Id] FROM [Block] WHERE [Guid] = '{0}')
+
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
+
+                IF @BlockId IS NOT NULL AND @AttributeId IS NOT NULL
+                BEGIN
+                    WITH CTE AS
+                        (
+                            SELECT Value, REPLACE(','+ Value +',', ',{2},',',') As newValue
+                            FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId 
+                        )
+
+
+                        UPDATE CTE
+                        SET Value = ISNULL(
+                                            STUFF(
+                                                STUFF(newValue, 1, 1, ''), 
+                                                LEN(newValue)-1, 2, '')
+                                        , '')
+                END", blockGuid, attributeGuid, value ) );
         }
 
         #endregion
@@ -5560,51 +5677,56 @@ END
         public void AddReport( string categoryGuid, string dataViewGuid, string entityTypeGuid, string name, string description, string guid, int? fetchTop = null )
         {
             Migration.Sql( string.Format( @"
-                DECLARE @CategoryId INT = (
-                        SELECT TOP 1 [Id]
-                        FROM [Category]
-                        WHERE [Guid] = '{0}'
-                        )
-                    ,@DataViewId INT = (
-                        SELECT TOP 1 [Id]
-                        FROM [DataView]
-                        WHERE [Guid] = '{1}'
-                        )
-                    ,@EntityTypeId INT = (
-                        SELECT TOP 1 [Id]
-                        FROM [EntityType]
-                        WHERE [Guid] = '{2}'
-                        )
+                IF NOT EXISTS (
+                    SELECT [Id]
+                    FROM [Report]
+                    WHERE [Guid] = '{5}' )
+                BEGIN
+                    DECLARE @CategoryId INT = (
+                            SELECT TOP 1 [Id]
+                            FROM [Category]
+                            WHERE [Guid] = '{0}'
+                            )
+                        ,@DataViewId INT = (
+                            SELECT TOP 1 [Id]
+                            FROM [DataView]
+                            WHERE [Guid] = '{1}'
+                            )
+                        ,@EntityTypeId INT = (
+                            SELECT TOP 1 [Id]
+                            FROM [EntityType]
+                            WHERE [Guid] = '{2}'
+                            )
 
-                INSERT INTO [Report] (
-                    [IsSystem]
-                    ,[Name]
-                    ,[Description]
-                    ,[CategoryId]
-                    ,[EntityTypeId]
-                    ,[DataViewId]
-                    ,[Guid]
-                    ,[FetchTop]
-                    )
-                VALUES (
-                    0
-                    ,'{3}'
-                    ,'{4}'
-                    ,@CategoryId
-                    ,@EntityTypeId
-                    ,@DataViewId
-                    ,'{5}'
-                    ,{6}
-                    )",
-                      categoryGuid, // {0}
-                      dataViewGuid, // {1}
-                      entityTypeGuid, // {2}
-                      name, // {3}
-                      description, // {4}
-                      guid, // {5}
-                      fetchTop.HasValue ? fetchTop.Value.ToString() : "NULL" // {6}
-                      )
-                      );
+                    INSERT INTO [Report] (
+                        [IsSystem]
+                        ,[Name]
+                        ,[Description]
+                        ,[CategoryId]
+                        ,[EntityTypeId]
+                        ,[DataViewId]
+                        ,[Guid]
+                        ,[FetchTop]
+                        )
+                    VALUES (
+                        0
+                        ,'{3}'
+                        ,'{4}'
+                        ,@CategoryId
+                        ,@EntityTypeId
+                        ,@DataViewId
+                        ,'{5}'
+                        ,{6}
+                        )
+                END",
+                categoryGuid, // {0}
+                dataViewGuid, // {1}
+                entityTypeGuid, // {2}
+                name, // {3}
+                description, // {4}
+                guid, // {5}
+                fetchTop.HasValue ? fetchTop.Value.ToString() : "NULL" // {6}
+                ) );
         }
 
         /// <summary>
@@ -5631,47 +5753,52 @@ END
             string dataSelectComponentEntityTypeGuid, string selection, int order, string columnHeaderText, string guid )
         {
             Migration.Sql( string.Format( @"
-            DECLARE @ReportId INT = (
-                        SELECT TOP 1 [Id]
-                        FROM [Report]
-                        WHERE [Guid] = '{0}'
-                        )
-                   ,@DataSelectComponentEntityTypeId INT = (
-                        SELECT TOP 1 [Id]
-                        FROM [EntityType]
-                        WHERE [Guid] = '{3}'
-                        )
+                IF NOT EXISTS (
+                    SELECT [Id]
+                    FROM [dbo].[ReportField]
+                    WHERE [Guid] = '{7}' )
+                BEGIN
+                    DECLARE @ReportId INT = (
+                            SELECT TOP 1 [Id]
+                            FROM [Report]
+                            WHERE [Guid] = '{0}'
+                            )
+                        ,@DataSelectComponentEntityTypeId INT = (
+                            SELECT TOP 1 [Id]
+                            FROM [EntityType]
+                            WHERE [Guid] = '{3}'
+                            )
 
-            INSERT INTO [dbo].[ReportField] (
-                [ReportId]
-                ,[ReportFieldType]
-                ,[ShowInGrid]
-                ,[DataSelectComponentEntityTypeId]
-                ,[Selection]
-                ,[Order]
-                ,[ColumnHeaderText]
-                ,[Guid]
-                )
-            VALUES (
-                @ReportId
-                ,{1}
-                ,{2}
-                ,@DataSelectComponentEntityTypeId
-                ,'{4}'
-                ,{5}
-                ,'{6}'
-                ,'{7}'
-                )
-            ",
-              reportGuid, // {0}
-              reportFieldType.ConvertToInt(), // {1}
-              showInGrid.Bit(), // {2}
-              dataSelectComponentEntityTypeGuid, // {3}
-              selection.Replace( "'", "''" ), // {4}
-              order, // {5}
-              columnHeaderText, // {6}
-              guid // {7}
-              ) );
+                    INSERT INTO [dbo].[ReportField] (
+                        [ReportId]
+                        ,[ReportFieldType]
+                        ,[ShowInGrid]
+                        ,[DataSelectComponentEntityTypeId]
+                        ,[Selection]
+                        ,[ColumnOrder]
+                        ,[ColumnHeaderText]
+                        ,[Guid]
+                        )
+                    VALUES (
+                        @ReportId
+                        ,{1}
+                        ,{2}
+                        ,@DataSelectComponentEntityTypeId
+                        ,'{4}'
+                        ,{5}
+                        ,'{6}'
+                        ,'{7}'
+                        )
+                END",
+                reportGuid, // {0}
+                reportFieldType.ConvertToInt(), // {1}
+                showInGrid.Bit(), // {2}
+                dataSelectComponentEntityTypeGuid, // {3}
+                selection.Replace( "'", "''" ), // {4}
+                order, // {5}
+                columnHeaderText, // {6}
+                guid // {7}
+                ) );
         }
 
         /// <summary>

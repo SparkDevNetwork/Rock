@@ -378,7 +378,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlAccountType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_ACCOUNT_TYPE.AsGuid() ) );
+            ddlAccountType.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_ACCOUNT_TYPE.AsGuid() ) );
 
             cpCampus.Campuses = CampusCache.All();
             cpCampus.Visible = cpCampus.Items.Count > 0;

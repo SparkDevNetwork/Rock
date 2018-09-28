@@ -107,9 +107,9 @@ namespace Rock.Jobs
 
                     resultsMessage.Append( errorMessage );
 
-                    if ( alertEmail.IsNotNullOrWhitespace() )
+                    if ( alertEmail.IsNotNullOrWhiteSpace() )
                     {
-                        var globalAttributes = GlobalAttributesCache.Read();
+                        var globalAttributes = GlobalAttributesCache.Get();
                         string emailHeader = globalAttributes.GetValue( "EmailHeader" );
                         string emailFooter = globalAttributes.GetValue( "EmailFooter" );
                         string messageBody = $"{emailHeader} {errorMessage} <p><small>This message was generated from the Rock Database Maintenance Job</small></p>{emailFooter}";

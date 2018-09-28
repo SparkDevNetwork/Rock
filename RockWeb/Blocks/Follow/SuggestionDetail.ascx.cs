@@ -263,8 +263,8 @@ namespace RockWeb.Blocks.Follow
                 SuggestionEntityTypeId = followingSuggestion.EntityTypeId;
                 if ( followingSuggestion.EntityTypeId.HasValue )
                 {
-                    var SuggestionComponentEntityType = EntityTypeCache.Read( followingSuggestion.EntityTypeId.Value );
-                    var SuggestionEntityType = EntityTypeCache.Read( "Rock.Model.FollowingSuggestionType" );
+                    var SuggestionComponentEntityType = EntityTypeCache.Get( followingSuggestion.EntityTypeId.Value );
+                    var SuggestionEntityType = EntityTypeCache.Get( "Rock.Model.FollowingSuggestionType" );
                     if ( SuggestionComponentEntityType != null && SuggestionEntityType != null )
                     {
                         using ( var rockContext = new RockContext() )

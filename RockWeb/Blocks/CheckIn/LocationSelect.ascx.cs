@@ -346,7 +346,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( CurrentCheckInType != null && CurrentCheckInType.DisplayLocationCount )
             { 
-                return string.Format( " <span class='checkin-sub-title'> Count: {0}</span>", KioskLocationAttendance.Read( locationId ).CurrentCount );
+                return string.Format( " <span class='checkin-sub-title'> Count: {0}</span>", KioskLocationAttendance.Get( locationId ).CurrentCount );
             }
 
             return string.Empty;

@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Crm
             var securityField = gPersonBadge.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.PersonBadge ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.PersonBadge ) ).Id;
             }
         }
 
@@ -126,8 +126,6 @@ namespace RockWeb.Blocks.Crm
                     return;
                 }
 
-                PersonBadgeCache.Flush( personBadge.Id );
-
                 personBadgeService.Delete( personBadge );
                 rockContext.SaveChanges();
             }
@@ -143,13 +141,7 @@ namespace RockWeb.Blocks.Crm
             service.Reorder( personBadges.ToList(), e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
 
-            foreach ( var personBadge in personBadges )
-            {
-                PersonBadgeCache.Flush( personBadge.Id );
-            }
-
             BindGrid();
-
         }
         
         /// <summary>

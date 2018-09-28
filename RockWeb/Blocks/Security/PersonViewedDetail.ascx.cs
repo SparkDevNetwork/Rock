@@ -129,7 +129,7 @@ namespace RockWeb.Blocks.Security
                 personViewedList = personViewedList.OrderByDescending( p => p.ViewDateTime ).ToList();
             }
 
-            gViewDetails.EntityTypeId = EntityTypeCache.Read<PersonViewed>().Id;
+            gViewDetails.EntityTypeId = EntityTypeCache.Get<PersonViewed>().Id;
             gViewDetails.DataSource = personViewedList;
             gViewDetails.DataBind();
         }
