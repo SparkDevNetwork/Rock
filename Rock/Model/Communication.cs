@@ -832,7 +832,6 @@ namespace Rock.Model
             // Get all pending communiation recipents that is no longer part of the group list member
             var missingMemberInList = recipientsQry.Where( a => a.Status == CommunicationRecipientStatus.Pending )
                 .Where( a => !qryCommunicationListMembers.Any( r => r.PersonId == a.PersonAlias.PersonId ) )
-                .AsNoTracking()
                 .ToList();
 
             foreach ( var missingMember in missingMemberInList )
