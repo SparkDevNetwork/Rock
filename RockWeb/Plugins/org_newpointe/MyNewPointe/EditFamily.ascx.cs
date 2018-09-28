@@ -34,8 +34,8 @@ namespace RockWeb.Plugins.org_newpointe.MyNewpointe
         static readonly Guid GUID_PREV = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS );
         static readonly Guid GUID_FAMILY = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
-        static readonly DefinedValueCache PreviousLocationType = DefinedValueCache.Read( GUID_PREV );
-        static readonly DefinedValueCache HomeLocationType = DefinedValueCache.Read( GUID_HOME );
+        static readonly DefinedValueCache PreviousLocationType = DefinedValueCache.Get( GUID_PREV );
+        static readonly DefinedValueCache HomeLocationType = DefinedValueCache.Get( GUID_HOME );
 
         protected override void OnLoad( EventArgs e )
         {
@@ -186,8 +186,8 @@ namespace RockWeb.Plugins.org_newpointe.MyNewpointe
         {
             RockContext rContext = new RockContext();
 
-            DefinedValueCache PreviousLocationType = DefinedValueCache.Read( GUID_PREV );
-            DefinedValueCache HomeLocationType = DefinedValueCache.Read( GUID_HOME );
+            DefinedValueCache PreviousLocationType = DefinedValueCache.Get( GUID_PREV );
+            DefinedValueCache HomeLocationType = DefinedValueCache.Get( GUID_HOME );
 
             Group family = new GroupService( rContext ).Get( PageParameter( "GroupId" ).AsInteger() );
             if ( family == null || !checkPermissions( family ) )
