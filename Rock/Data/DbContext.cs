@@ -627,26 +627,33 @@ namespace Rock.Data
                         trigger.WorkflowTriggerType == WorkflowTriggerType.PostSave ||
                         trigger.WorkflowTriggerType == WorkflowTriggerType.PreSave )
                     {
-                        if ( hasCurrent && !hasPrevious )
+                        if ( trigger.WorkflowTriggerValueChangeType == WorkflowTriggerValueChangeType.ValueEqual )
                         {
-                            // ...and previous cannot be the same as the current (must be a change)
-                            match = ( currentValue == trigger.EntityTypeQualifierValue &&
-                                currentValue != previousValue );
+                            match = trigger.EntityTypeQualifierValue == currentValue;
                         }
-                        else if ( !hasCurrent && hasPrevious )
+                        else
                         {
-                            // ...and previous cannot be the same as the current (must be a change)
-                            match = ( previousValue == trigger.EntityTypeQualifierValuePrevious &&
-                                previousValue != currentValue );
-                        }
-                        else if ( hasCurrent && hasPrevious )
-                        {
-                            match = ( currentValue == trigger.EntityTypeQualifierValue &&
-                                previousValue == trigger.EntityTypeQualifierValuePrevious );
-                        }
-                        else if ( !hasCurrent && !hasPrevious )
-                        {
-                            match = previousValue != currentValue;
+                            if ( hasCurrent && !hasPrevious )
+                            {
+                                // ...and previous cannot be the same as the current (must be a change)
+                                match = ( currentValue == trigger.EntityTypeQualifierValue &&
+                                    currentValue != previousValue );
+                            }
+                            else if ( !hasCurrent && hasPrevious )
+                            {
+                                // ...and previous cannot be the same as the current (must be a change)
+                                match = ( previousValue == trigger.EntityTypeQualifierValuePrevious &&
+                                    previousValue != currentValue );
+                            }
+                            else if ( hasCurrent && hasPrevious )
+                            {
+                                match = ( currentValue == trigger.EntityTypeQualifierValue &&
+                                    previousValue == trigger.EntityTypeQualifierValuePrevious );
+                            }
+                            else if ( !hasCurrent && !hasPrevious )
+                            {
+                                match = previousValue != currentValue;
+                            }
                         }
                     }
                 }

@@ -1781,6 +1781,10 @@ namespace RockWeb.Blocks.Finance
                             .Sum();
 
                         totalAmount += otherAmounts;
+                        if ( totalAmount > 0 )
+                        {
+                            tbRefundAmount.MaximumValue = totalAmount.ToString();
+                        }
 
                         tbRefundAmount.Text = ( totalAmount > 0.0m ? totalAmount : 0.0m ).ToString( "N2" );
                         ddlRefundReason.SelectedIndex = -1;

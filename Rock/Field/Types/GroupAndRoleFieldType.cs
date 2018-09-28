@@ -96,7 +96,7 @@ namespace Rock.Field.Types
             if ( controls != null && controls.Count == 1 && configurationValues != null )
             {
                 var textBoxGroupAndRolePickerLabel = controls[0] as RockTextBox;
-                if ( textBoxGroupAndRolePickerLabel != null )
+                if ( textBoxGroupAndRolePickerLabel != null && configurationValues?.ContainsKey(CONFIG_GROUP_AND_ROLE_PICKER_LABEL) == true )
                 {
                     textBoxGroupAndRolePickerLabel.Text = configurationValues[CONFIG_GROUP_AND_ROLE_PICKER_LABEL].Value;
                 }

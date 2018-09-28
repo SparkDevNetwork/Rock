@@ -19,6 +19,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -77,6 +78,31 @@ namespace Rock.Web.Cache
         [DataMember]
         public string Description { get; private set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this DefinedValue is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsActive { get; private set; }
+
+        /// <summary>
+        /// Gets the DefinedType of this DefinedVlaue
+        /// </summary>
+        /// <value>
+        /// The DefinedType
+        /// </value>
+        public DefinedTypeCache DefinedType => DefinedTypeCache.Get( DefinedTypeId );
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override ISecured ParentAuthority => DefinedType;
+
         #endregion
 
         #region Public Methods
@@ -97,6 +123,7 @@ namespace Rock.Web.Cache
             Order = definedValue.Order;
             Value = definedValue.Value;
             Description = definedValue.Description;
+            IsActive = definedValue.IsActive;
         }
 
         /// <summary>
