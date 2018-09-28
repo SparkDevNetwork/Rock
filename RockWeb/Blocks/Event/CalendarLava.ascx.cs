@@ -605,6 +605,7 @@ namespace RockWeb.Blocks.Event
             }
 
             var selectedDate = calEventCalendar.SelectedDate;
+            calEventCalendar.VisibleDate = calEventCalendar.SelectedDate;
             FilterStartDate = selectedDate;
             FilterEndDate = selectedDate;
             if ( ViewMode == "Week" )
