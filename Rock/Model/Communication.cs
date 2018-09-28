@@ -829,7 +829,7 @@ namespace Rock.Model
                 communicationRecipientService.Add( communicationRecipient );
             }
 
-            // Get all pending communiation recipents that is no longer part of the group list member
+            // Get all pending communication recipents that are no longer part of the group list member, then delete them from the Recipients
             var missingMemberInList = recipientsQry.Where( a => a.Status == CommunicationRecipientStatus.Pending )
                 .Where( a => !qryCommunicationListMembers.Any( r => r.PersonId == a.PersonAlias.PersonId ) )
                 .ToList();
