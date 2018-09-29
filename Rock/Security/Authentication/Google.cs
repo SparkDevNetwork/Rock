@@ -34,6 +34,10 @@ using Rock.Web.Cache;
 
 namespace Rock.Security.ExternalAuthentication
 {
+    /// <summary>
+    /// Authenticates a user using Google
+    /// </summary>
+    /// <seealso cref="Rock.Security.AuthenticationComponent" />
     [Description( "Google Authentication Provider" )]
     [Export( typeof( AuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Google" )]
@@ -41,9 +45,6 @@ namespace Rock.Security.ExternalAuthentication
     [TextField( "Client ID", "The Google Client ID" )]
     [TextField( "Client Secret", "The Google Client Secret" )]
 
-    /// <summary>
-    /// Authenticates a user using Google
-    /// </summary>
     public class Google : AuthenticationComponent
     {
         /// <summary>

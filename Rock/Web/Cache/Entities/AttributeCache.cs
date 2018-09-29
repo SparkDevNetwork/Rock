@@ -725,6 +725,9 @@ namespace Rock.Web.Cache
         #endregion
     }
 
+    /// <summary>
+    /// Defined options that be can used when calling AddControl
+    /// </summary>
     public class AttributeControlOptions
     {
 
