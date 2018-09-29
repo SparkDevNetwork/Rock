@@ -28,7 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourcePersonHistorical.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AssetStorageSystem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AssetStorageProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Attendance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttendanceCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttendanceOccurrence.cs" />
@@ -194,6 +194,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Schedule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ScheduleCategoryExclusion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceJob.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceJobHistory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceLog.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignalType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocument.cs" />
