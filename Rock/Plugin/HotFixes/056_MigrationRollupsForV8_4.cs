@@ -39,6 +39,7 @@ namespace Rock.Plugin.HotFixes
             FixShortcodeFunctionality();
             AddDefaultBackgroundCheckSystemSetting();
             ImproveFamilyAnalyticsJobPerf();
+            EnableNCOA();
         }
 
 
@@ -47,6 +48,20 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Down()
         {
+        }
+
+        /// <summary>
+        /// Enables the NCOA Job
+        /// </summary>
+        private void EnableNCOA()
+        {
+            // GP: Enable NCOA
+            Sql( @"
+DELETE FROM [dbo].[Auth] WHERE [Guid] = '8628653e-f4d8-42b4-4793-38647fada3f1'
+UPDATE [dbo].[ServiceJob]
+   SET [IsActive] = 1, [Description] = 'Job that gets National Change of Address (NCOA) data'
+ WHERE Guid = 'D2D6EA6C-F94A-39A0-481B-A23D08B887D6'
+" );
         }
 
 
