@@ -51,10 +51,13 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if (guid.HasValue)
             {
-                var status = new ConnectionStatusService( new RockContext() ).Get( guid.Value );
-                if ( status != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = status.Name;
+                    var status = new ConnectionStatusService( rockContext ).GetNoTracking( guid.Value );
+                    if ( status != null )
+                    {
+                        formattedValue = status.Name;
+                    }
                 }
             }
 

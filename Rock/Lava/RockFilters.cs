@@ -4796,6 +4796,12 @@ namespace Rock.Lava
         {
             private readonly HttpCookie _cookie;
 
+            /// <summary>
+            /// Gets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
             public string Name
             {
                 get

@@ -23,6 +23,7 @@ using Rock.Model;
 using Rock.Web.UI.Controls;
 using System.Linq;
 using Rock.Web.Cache;
+using System.Data.Entity;
 
 namespace Rock.Field.Types
 {
@@ -134,10 +135,13 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( value, out guid ) )
             {
-                var contentChannelItem = new ContentChannelItemService( new RockContext() ).Get( guid );
-                if ( contentChannelItem != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = contentChannelItem.Title;
+                    var contentChannelItem = new ContentChannelItemService( rockContext ).GetNoTracking( guid );
+                    if ( contentChannelItem != null )
+                    {
+                        formattedValue = contentChannelItem.Title;
+                    }
                 }
             }
 
@@ -189,7 +193,7 @@ namespace Rock.Field.Types
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        itemGuid = new ContentChannelItemService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        itemGuid = new ContentChannelItemService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
 
