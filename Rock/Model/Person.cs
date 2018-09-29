@@ -1781,6 +1781,7 @@ namespace Rock.Model
         /// Uploads the person's photo from the specified url and sets it as the person's Photo using the specified BinaryFileType.
         /// </summary>
         /// <param name="photoUri">The photo URI.</param>
+        /// <param name="binaryFileTypeGuid">The binary file type unique identifier.</param>
         public void SetPhotoFromUrl( Uri photoUri, Guid binaryFileTypeGuid )
         {
             try
