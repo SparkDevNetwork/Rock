@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
@@ -45,26 +46,28 @@ namespace Rock.Field.Types
             var binaryFileGuid = value.AsGuidOrNull();
             if ( binaryFileGuid.HasValue )
             {
-                var binaryFileService = new BinaryFileService( new RockContext() );
-                var binaryFileInfo = binaryFileService.Queryable().Where( a => a.Guid == binaryFileGuid.Value )
-                    .Select( s => new
-                    {
-                        s.FileName,
-                        s.MimeType,
-                        s.Guid
-                    } )
-                    .FirstOrDefault();
-
-                if ( binaryFileInfo != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    if ( condensed )
+                    var binaryFileService = new BinaryFileService( rockContext );
+                    var binaryFileInfo = binaryFileService.Queryable().AsNoTracking().Where( a => a.Guid == binaryFileGuid.Value )
+                        .Select( s => new
+                        {
+                            s.FileName,
+                            s.MimeType,
+                            s.Guid
+                        } )
+                        .FirstOrDefault();
+
+                    if ( binaryFileInfo != null )
                     {
-                        return binaryFileInfo.FileName;
-                    }
-                    else
-                    {
-                        var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
-                        string htmlFormat = @"
+                        if ( condensed )
+                        {
+                            return binaryFileInfo.FileName;
+                        }
+                        else
+                        {
+                            var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                            string htmlFormat = @"
 <audio
     src='{0}?guid={1}' 
     class='img img-responsive js-media-audio'
@@ -78,8 +81,9 @@ namespace Rock.Field.Types
 </script>
 ";
 
-                        var html = string.Format( htmlFormat, filePath, binaryFileInfo.Guid, binaryFileInfo.MimeType );
-                        return html;
+                            var html = string.Format( htmlFormat, filePath, binaryFileInfo.Guid, binaryFileInfo.MimeType );
+                            return html;
+                        }
                     }
                 }
             }

@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -128,8 +129,11 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue && !guid.Value.IsEmpty() )
             {
-                var binaryFileInfo = new BinaryFileService( new RockContext() )
+                using ( var rockContext = new RockContext() )
+                {
+                    var binaryFileInfo = new BinaryFileService( rockContext )
                     .Queryable()
+                    .AsNoTracking()
                     .Where( f => f.Guid == guid.Value )
                     .Select( f =>
                         new
@@ -140,16 +144,17 @@ namespace Rock.Field.Types
                         } )
                     .FirstOrDefault();
 
-                if ( binaryFileInfo != null )
-                {
-                    if ( condensed )
+                    if ( binaryFileInfo != null )
                     {
-                        return binaryFileInfo.FileName;
-                    }
-                    else
-                    {
-                        var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
-                        return string.Format( "<a href='{0}?guid={1}' title='{2}' class='btn btn-xs btn-default'>View</a>", filePath, binaryFileInfo.Guid, System.Web.HttpUtility.HtmlEncode(binaryFileInfo.FileName) );
+                        if ( condensed )
+                        {
+                            return binaryFileInfo.FileName;
+                        }
+                        else
+                        {
+                            var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                            return string.Format( "<a href='{0}?guid={1}' title='{2}' class='btn btn-xs btn-default'>View</a>", filePath, binaryFileInfo.Guid, System.Web.HttpUtility.HtmlEncode( binaryFileInfo.FileName ) );
+                        }
                     }
                 }
             }
@@ -199,7 +204,7 @@ namespace Rock.Field.Types
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        itemGuid = new BinaryFileService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        itemGuid = new BinaryFileService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
 
