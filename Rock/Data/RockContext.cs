@@ -205,6 +205,14 @@ namespace Rock.Data
         public DbSet<AnalyticsSourcePersonHistorical> AnalyticsSourcePersonHistoricals { get; set; }
 
         /// <summary>
+        /// Gets or sets the asset storage providers.
+        /// </summary>
+        /// <value>
+        /// The asset storage providers.
+        /// </value>
+        public DbSet<AssetStorageProvider> AssetStorageProviders { get; set; }
+
+        /// <summary>
         /// Gets or sets the attendances.
         /// </summary>
         /// <value>
@@ -1483,6 +1491,14 @@ namespace Rock.Data
         /// The schedules.
         /// </value>
         public DbSet<Schedule> Schedules { get; set; }
+
+        /// <summary>
+        /// Gets or sets the service job histories.
+        /// </summary>
+        /// <value>
+        /// The service job histories.
+        /// </value>
+        public DbSet<ServiceJobHistory> ServiceJobHistories { get; set; }
 
         /// <summary>
         /// Gets or sets the Jobs.

@@ -389,7 +389,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <param name="startIndex">The 0-based starting position.</param>
-        /// <param name="length">The desired length.</param>
+        /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
         public static string SafeSubstring( this string str, int startIndex, int maxLength )
         {
