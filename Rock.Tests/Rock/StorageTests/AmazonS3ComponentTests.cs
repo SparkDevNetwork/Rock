@@ -46,7 +46,7 @@ namespace Rock.Tests.Rock.StorageTests
         //        Key = "UnitTestFolder/",
         //        Type = AssetType.Folder
         //    };
-
+            
         //    var assets = s3Component.ListFoldersInFolder( assetStorageSystem, asset );
         //}
 
@@ -136,7 +136,7 @@ namespace Rock.Tests.Rock.StorageTests
 
             var asset = new Asset();
             asset.Key = ( "UnitTestFolder/" );
-
+            
             var assetList = s3Component.ListObjects( assetStorageSystem, asset );
             Assert.Contains( assetList, a => a.Name == "UnitTestFolder" );
             Assert.Contains( assetList, a => a.Name == "TestUploadObjectByName.jpg" );
@@ -173,7 +173,7 @@ namespace Rock.Tests.Rock.StorageTests
         {
             var assetStorageSystem = GetAssetStorageSystem();
             var s3Component = assetStorageSystem.GetAssetStorageComponent();
-
+            
             var subFolder = new Asset();
             subFolder.Name = "TwoThousandObjects/";
             subFolder.Type = AssetType.Folder;
