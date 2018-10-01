@@ -593,6 +593,10 @@ namespace Rock.Model
                 {
                     entityType.FlushCachedItem( this.EntityId.Value );
                 }
+                else if ( cacheAttribute.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Device>())
+                {
+                    Rock.CheckIn.KioskDevice.FlushItem( this.EntityId.Value );
+                }
             }
 
             if ( ( !cacheAttribute.EntityTypeId.HasValue || cacheAttribute.EntityTypeId.Value == 0 ) && string.IsNullOrEmpty( cacheAttribute.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( cacheAttribute.EntityTypeQualifierValue ) )
