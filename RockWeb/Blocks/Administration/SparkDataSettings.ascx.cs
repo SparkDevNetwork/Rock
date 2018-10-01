@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Administration
             dvpNcoaPersonDataView.EntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
 
             var inactiveRecordReasonDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
-            dvpNcoaInactiveRecordReason.BindToDefinedType( inactiveRecordReasonDt, true );
+            dvpNcoaInactiveRecordReason.DefinedTypeId = inactiveRecordReasonDt.Id;
         }
 
         /// <summary>
