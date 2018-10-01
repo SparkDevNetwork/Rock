@@ -259,6 +259,8 @@ p, ul, ol, blockquote {
 	    z-index: -1;
 	    transition: all .6s cubic-bezier(.85,0,.14,1.01);
 	}
+	&:active:before,
+	&:focus:before,
 	&:hover:before {
     width: 101%;
 	}
@@ -280,6 +282,8 @@ p, ul, ol, blockquote {
 	    z-index: -1;
 	    transition: all .6s cubic-bezier(.85,0,.14,1.01);
 	}
+	&:active:before,
+	&:focus:before,
 	&:hover:before {
     width: 101%;
 	}
@@ -301,11 +305,15 @@ p, ul, ol, blockquote {
 	    z-index: -1;
 	    transition: all .6s cubic-bezier(.85,0,.14,1.01);
 	}
+	&:active:before,
+	&:focus:before,
 	&:hover:before {
     width: 101%;
 	}
 }
-
+.checkbox-inline, .radio-inline {
+	margin-top: 8px;
+}
 .checkbox input[type=checkbox], 
 .checkbox-inline input[type=checkbox], 
 .radio input[type=radio], 

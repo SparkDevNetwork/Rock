@@ -40,7 +40,7 @@
 		<script src="<%# ResolveRockUrl("~~/bower_components/select2/dist/js/select2.min.js") %>"></script>
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
-    <script src="<%# ResolveRockUrl("~~/Scripts/scripts.min.js" ) %>" ></script>
+    <script src="<%# ResolveRockUrl("~~/Scripts/scripts.min.js", true ) %>" ></script>
 
 		<!-- Go to www.addthis.com/dashboard to customize your tools -->
 		<script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5b2009499d65f890"></script>
