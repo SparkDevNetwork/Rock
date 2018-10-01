@@ -14,7 +14,7 @@
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="fDevice" runat="server">
                         <Rock:RockTextBox ID="tbName" runat="server" Label="Name" />
-                        <Rock:RockDropDownList ID="ddlDeviceType" runat="server" Label="Device Type" />
+                        <Rock:DefinedValuePicker ID="dvpDeviceType" runat="server" Label="Device Type" />
                         <Rock:RockTextBox ID="tbIPAddress" runat="server" Label="IP Address" />
                         <Rock:RockDropDownList ID="ddlPrintTo" runat="server" Label="Print To" />
                         <Rock:RockDropDownList ID="ddlPrinter" runat="server" Label="Printer" DataTextField="Name" DataValueField="Id" EnhanceForLongLists="true" />
