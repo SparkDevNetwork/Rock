@@ -61,7 +61,7 @@
                     <Rock:PanelWidget ID="wpGeneral" runat="server" Title="General">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockDropDownList ID="ddlGroupTypePurpose" runat="server" Label="Purpose"
+                                <Rock:DefinedValuePicker ID="dvpGroupTypePurpose" runat="server" Label="Purpose"
                                     Help="An optional field used to qualify what the over-all purpose of this group type is for.  Additional values can be added by editing the 'Group Type Purpose' Defined Type." />
                                 <Rock:RockControlWrapper ID="rcGroupTypes" runat="server" Label="Child Group Types"
                                     Help="The types of child groups that can be added to groups of this type. This is used to define the group hierarchy. To allow an unlimited hierarchy add this type as an allowed child group type.">
