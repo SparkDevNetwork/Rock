@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Core
                 Device.Name = tbName.Text;
                 Device.Description = tbDescription.Text;
                 Device.IPAddress = tbIpAddress.Text;
-                Device.DeviceTypeValueId = ddlDeviceType.SelectedValueAsInt().Value;
+                Device.DeviceTypeValueId = dvpDeviceType.SelectedValueAsInt().Value;
                 Device.PrintToOverride = (PrintTo)System.Enum.Parse( typeof( PrintTo ), ddlPrintTo.SelectedValue );
                 Device.PrinterDeviceId = ddlPrinter.SelectedValueAsInt();
                 Device.PrintFrom = (PrintFrom)System.Enum.Parse( typeof( PrintFrom ), ddlPrintFrom.SelectedValue );
@@ -328,8 +328,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlDeviceType.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ) );
-            ddlDeviceType.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+            dvpDeviceType.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ).Id;
 
             ddlPrintFrom.BindToEnum<PrintFrom>();
 
@@ -376,7 +375,7 @@ namespace RockWeb.Blocks.Core
             tbDescription.Text = Device.Description;
             tbIpAddress.Text = Device.IPAddress;
             cbIsActive.Checked = Device.IsActive;
-            ddlDeviceType.SetValue( Device.DeviceTypeValueId );
+            dvpDeviceType.SetValue( Device.DeviceTypeValueId );
             ddlPrintTo.SetValue( Device.PrintToOverride.ConvertToInt().ToString() );
             ddlPrinter.SetValue( Device.PrinterDeviceId );
             ddlPrintFrom.SetValue( Device.PrintFrom.ConvertToInt().ToString() );
@@ -445,7 +444,7 @@ namespace RockWeb.Blocks.Core
             tbDescription.ReadOnly = readOnly;
             tbIpAddress.ReadOnly = readOnly;
             cbIsActive.Enabled = !readOnly;
-            ddlDeviceType.Enabled = !readOnly;
+            dvpDeviceType.Enabled = !readOnly;
             ddlPrintTo.Enabled = !readOnly;
             ddlPrinter.Enabled = !readOnly;
             ddlPrintFrom.Enabled = !readOnly;
@@ -460,7 +459,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="device">The device.</param>
         private void AddAttributeControls( Device device)
         {
-            int typeId = ddlDeviceType.SelectedValueAsInt() ?? 0;
+            int typeId = dvpDeviceType.SelectedValueAsInt() ?? 0;
             hfTypeId.Value = typeId.ToString();
 
             device.DeviceTypeValueId = typeId;
@@ -485,7 +484,7 @@ namespace RockWeb.Blocks.Core
         {
             bool isValid = true;
             int currentDeviceId = int.Parse( hfDeviceId.Value );
-            int? deviceTypeId = ddlDeviceType.SelectedValueAsInt().Value;
+            int? deviceTypeId = dvpDeviceType.SelectedValueAsInt().Value;
             if ( !string.IsNullOrWhiteSpace( tbIpAddress.Text ) && deviceTypeId != null )
             {
                 var rockContext = new RockContext();
@@ -528,7 +527,7 @@ namespace RockWeb.Blocks.Core
         private void SetPrinterSettingsVisibility()
         {
             var checkinKioskDeviceTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
-            pnlPrinterSettings.Visible = ( ddlDeviceType.SelectedValue.AsIntegerOrNull() == checkinKioskDeviceTypeId );
+            pnlPrinterSettings.Visible = ( dvpDeviceType.SelectedValue.AsIntegerOrNull() == checkinKioskDeviceTypeId );
         }
 
         /// <summary>
