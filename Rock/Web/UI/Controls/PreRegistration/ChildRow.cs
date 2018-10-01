@@ -618,7 +618,7 @@ namespace Rock.Web.UI.Controls
             _ddlSuffix.Label = "Suffix";
             string suffixValue = _ddlSuffix.SelectedValue;
             _ddlSuffix.Items.Clear();
-            _ddlSuffix.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ), true );
+            _ddlSuffix.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ).Id;
             if ( !string.IsNullOrEmpty( suffixValue ) )
             {
                 _ddlSuffix.SelectedValue = suffixValue;
