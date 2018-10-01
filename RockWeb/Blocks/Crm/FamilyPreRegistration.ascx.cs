@@ -807,8 +807,8 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             dvpSuffix1.Required = isRequired;
             hfSuffixRequired.Value = isRequired.ToStringSafe();
             var suffixDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() );
-            dvpSuffix1.BindToDefinedType( suffixDt, true );
-            dvpSuffix2.BindToDefinedType( suffixDt, true );
+            dvpSuffix1.DefinedTypeId = suffixDt.Id;
+            dvpSuffix2.DefinedTypeId = suffixDt.Id;
 
             // Adult Gender
             isRequired = SetControl( ADULT_GENDER_KEY, pnlGender1, pnlGender2 );
@@ -827,8 +827,8 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             dvpMaritalStatus1.Required = isRequired;
             hfMaritalStatusRequired.Value = isRequired.ToStringSafe();
             var MaritalStatusDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
-            dvpMaritalStatus1.BindToDefinedType( MaritalStatusDt, true );
-            dvpMaritalStatus2.BindToDefinedType( MaritalStatusDt, true );
+            dvpMaritalStatus1.DefinedTypeId = MaritalStatusDt.Id;
+            dvpMaritalStatus2.DefinedTypeId = MaritalStatusDt.Id;
 
             // Adult Email
             isRequired = SetControl( ADULT_EMAIL_KEY, pnlEmail1, pnlEmail2 );
