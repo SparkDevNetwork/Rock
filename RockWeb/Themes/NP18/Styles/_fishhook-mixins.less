@@ -1,14 +1,14 @@
 .font(@size,@weight:normal,@style:normal) {
 	// @size should be px value AS DESIGNED AT 1920 for this to work
 	@media (min-width: @screen-sm) {
-		@pxValue: 	@size/(unit(@font-size-large)/unit(@font-size-base)); //px value needs to be calculated based on viewport size
-		@remValue: 	@size/unit(@font-size-large); //rem value is constant, because html base font size changes
+		@pxValue: 	(unit(@size)/(unit(@font-size-large)/unit(@font-size-base))); //px value needs to be calculated based on viewport size
+		@remValue: 	(unit(@size)/unit(@font-size-large)); //rem value is constant, because html base font size changes
 		font-size: 	~"@{pxValue}px"; 
 		font-size: 	~"@{remValue}rem";
 	}
 	@media (min-width: @screen-xl) {
-		@pxValue: 	@size; //px value from design at 1920
-		@remValue: 	@size/unit(@font-size-large); //rem value is constant, because html base font size changes
+		@pxValue: 	unit(@size); //px value from design at 1920
+		@remValue: 	(unit(@size)/unit(@font-size-large)); //rem value is constant, because html base font size changes
 		font-size: 	~"@{pxValue}px"; 
 		font-size: 	~"@{remValue}rem";
 	}

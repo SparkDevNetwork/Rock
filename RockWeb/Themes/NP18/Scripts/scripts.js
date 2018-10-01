@@ -2,6 +2,8 @@ jQuery(function($){
 
 function scrollToAnchor(hash) {
 	//window.console.log(hash);
+	//window.console.log(hash.slice(1));
+	if (document.getElementById(hash.slice(1))) {
     var target = $(hash),
         headerHeight = $("header nav.primary").height() + 5; // Get fixed header height
 
@@ -14,6 +16,7 @@ function scrollToAnchor(hash) {
         }, 100);
         return false;
     }
+  }
 }
 
 if(window.location.hash) {
@@ -211,7 +214,15 @@ $("a[href*=\\#]:not([href=\\#])").click(function()
 		$('.sermon').removeClass('open');		
     $(container).removeClass('open').hide();
   });
+function init() {
   $('.notification-bar').each(function(){
 	  $('body').css({'padding-top':$(this).outerHeight()});
+	  $('.navbar-subheader').css({'top':$(this).outerHeight()});	  
   });
+}
+  $(window).resize(function(){
+    init();
+    didScroll = true;
+	});
+	init();
 });
