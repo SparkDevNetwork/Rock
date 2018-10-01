@@ -530,8 +530,8 @@ namespace RockWeb.Blocks.Event
                                         DigitalSignatureComponent != null &&
                                         !string.IsNullOrWhiteSpace( DigitalSignatureComponent.CookieInitializationUrl ) )
                                     {
-                                        // Redirect for Digital Signature Cookie Initialization 
-                                        var returnUrl = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash() + Request.Url.PathAndQuery.RemoveLeadingForwardslash();
+                                        // Redirect for Digital Signature Cookie Initialization
+                                        var returnUrl = ResolvePublicUrl( Request.Url.PathAndQuery );
                                         returnUrl = returnUrl + ( returnUrl.Contains( "?" ) ? "&" : "?" ) + "redirected=True";
                                         string redirectUrl = string.Format( "{0}?redirect_uri={1}", DigitalSignatureComponent.CookieInitializationUrl, HttpUtility.UrlEncode( returnUrl ) );
                                         Response.Redirect( redirectUrl, false );
@@ -3447,8 +3447,7 @@ namespace RockWeb.Blocks.Event
                         string inviteLink = DigitalSignatureComponent.GetInviteLink( RegistrationTemplate.RequiredSignatureDocumentTemplate.ProviderTemplateKey, out errors );
                         if ( !string.IsNullOrWhiteSpace( inviteLink ) )
                         {
-                            string returnUrl = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash() +
-                                ResolveRockUrl( "~/Blocks/Event/DocumentReturn.html" );
+                            string returnUrl = ResolvePublicUrl( "~/Blocks/Event/DocumentReturn.html" );
                             hfRequiredDocumentLinkUrl.Value = string.Format( "{0}?redirect_uri={1}", inviteLink, returnUrl );
                         }
                         else
@@ -3709,6 +3708,30 @@ namespace RockWeb.Blocks.Event
             nbMain.Text = string.Format( "<p>{0}</p>", text );
             nbMain.NotificationBoxType = NotificationBoxType.Danger;
             nbMain.Visible = true;
+        }
+
+        /// <summary>
+        /// Resolves a relative URL using the PublicApplicationRoot value but using the current request's scheme (http vs https).
+        /// </summary>
+        /// <param name="relativeUrl">The relative URL.</param>
+        /// <returns></returns>
+        private string ResolvePublicUrl( string relativeUrl )
+        {
+            string resolvedUrl = ResolveRockUrl( relativeUrl );
+
+            string url = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority ).EnsureTrailingForwardslash() + resolvedUrl.RemoveLeadingForwardslash();
+
+            try
+            {
+                var appRootUri = new Uri( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) );
+                if ( appRootUri != null )
+                {
+                    url = string.Format( "{0}://{1}", Request.Url.Scheme, appRootUri.Authority ).EnsureTrailingForwardslash() + resolvedUrl.RemoveLeadingForwardslash();
+                }
+            }
+            catch { }
+
+            return url;
         }
 
         /// <summary>

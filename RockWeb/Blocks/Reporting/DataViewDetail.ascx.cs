@@ -1016,6 +1016,7 @@ $(document).ready(function() {
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
+            filterField.ValidationGroup = this.BlockValidationGroup;
             filterField.DataViewFilterGuid = Guid.NewGuid();
             filterField.DeleteClick += filterControl_DeleteClick;
             groupControl.Controls.Add( filterField );
@@ -1117,6 +1118,7 @@ $(document).ready(function() {
                 if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
                     var filterControl = new FilterField();
+                    filterControl.ValidationGroup = this.BlockValidationGroup;
                     parentControl.Controls.Add( filterControl );
                     filterControl.DataViewFilterGuid = filter.Guid;
                     filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );

@@ -473,6 +473,8 @@ namespace Rock.Client.Enums
         NotProcessed = 0x0,
         Complete = 0x1,
         ManualUpdateRequired = 0x2,
+        ManualUpdateRequiredOrNotProcessed = 0x3,
+        All = 0x4,
     }
 
     /// <summary>
@@ -550,6 +552,8 @@ namespace Rock.Client.Enums
         WorkPhone = 0xa,
         Grade = 0xb,
         ConnectionStatus = 0xc,
+        MiddleName = 0xd,
+        AnniversaryDate = 0xe,
     }
 
     /// <summary>
@@ -684,6 +688,14 @@ namespace Rock.Client.Enums
         PostDelete = 0x3,
         ImmediatePostSave = 0x4,
         PostAdd = 0x5,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum WorkflowTriggerValueChangeType
+    {
+        ChangeFromTo = 0x0,
+        ValueEqual = 0x1,
     }
 
     #pragma warning restore CS1591

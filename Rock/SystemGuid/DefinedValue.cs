@@ -121,6 +121,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CURRENCY_TYPE_UNKNOWN = "56C9AE9C-B5EB-46D5-9650-2EF86B14F856";
 
+        /// <summary>
+        /// Other Currency Type
+        /// </summary>
+        public const string CURRENCY_TYPE_OTHER = "0FDF0BB3-B483-4C0A-9DFF-A35ABE3B688D";
+
         #endregion
 
         #region Financial Transaction Type

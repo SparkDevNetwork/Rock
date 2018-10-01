@@ -23,11 +23,12 @@ namespace Rock
     /// </summary>
     public static partial class ExtensionMethods
     {
-
         /// <summary>
         /// Returns a formated string of the memory size.
         /// </summary>
         /// <param name="value">The value.</param>
+        /// <param name="unit">The unit.</param>
+        /// <param name="decimalPlaces">The decimal places.</param>
         /// <returns></returns>
         public static string FormatAsSpecificMemorySize( this int value, MemorySizeUnit unit, int decimalPlaces = 0 )
         {
@@ -39,17 +40,61 @@ namespace Rock
         }
 
         /// <summary>
-        /// Units of measure for memory
+        /// Units of measure for memory from bytes to YottaBytes
         /// </summary>
         public enum MemorySizeUnit
         {
-            Bytes, KB, MB, GB, TB, PB, EB, ZB, YB
+            /// <summary>
+            /// Bytes
+            /// </summary>
+            Bytes,
+
+            /// <summary>
+            /// KiloBytes
+            /// </summary>
+            KB,
+
+            /// <summary>
+            /// MegaBytes
+            /// </summary>
+            MB,
+
+            /// <summary>
+            /// GigaBytes
+            /// </summary>
+            GB,
+
+            /// <summary>
+            /// TeraBytes
+            /// </summary>
+            TB,
+
+            /// <summary>
+            /// PetaBytes
+            /// </summary>
+            PB,
+
+            /// <summary>
+            /// ExaBytes
+            /// </summary>
+            EB,
+
+            /// <summary>
+            /// ZettaBytes
+            /// </summary>
+            ZB,
+
+            /// <summary>
+            /// YottaBytes
+            /// </summary>
+            YB
         }
 
         /// <summary>
         /// Returns a formated string of the memory size.
         /// </summary>
         /// <param name="value">The value.</param>
+        /// <param name="decimalPlaces">The decimal places.</param>
         /// <returns></returns>
         public static string FormatAsMemorySize( this int value, int decimalPlaces = 0)
         {

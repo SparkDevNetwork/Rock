@@ -508,6 +508,17 @@ namespace Rock.Model
                         }
                     }
                 }
+                else if ( entityTypeId.HasValue )
+                {
+                    // some other EntityType. If it the EntityType has a CacheItem associated with it, clear out all the CachedItems of that type to ensure they have a clean read of the Attributes that were Added, Changed or Removed
+                    EntityTypeCache entityType = EntityTypeCache.Get( entityTypeId.Value, dbContext as RockContext );
+
+                    if ( entityType?.HasEntityCache() == true )
+                    {
+                        entityType.ClearCachedItems();
+                    }
+                }
+
             }
         }
 

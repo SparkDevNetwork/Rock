@@ -125,6 +125,8 @@
                                             Help="The map theme that should be used for styling the map." ValidationGroup="GroupFinderSettings" />
                                         <Rock:NumberBox ID="nbMapHeight" runat="server" Label="Map Height"
                                             Help="The pixel height to use for the map." ValidationGroup="GroupFinderSettings" />
+                                        <Rock:NumberBox ID="nbMarkerPrecision" runat="server" Label="Marker Precision"
+                                            Help="The precision factor to apply to marker coordinates. For example:<br>100 = two decimal places, which is a little over half a mile (enough to identify a town or suburb)<br>1000 = three decimal places, which is about the length of an American Football field (enough to identify a city block)<br>10000 = four decimal places, which is about 12 yards (enough to identify a house)" ValidationGroup="GroupFinderSettings" />
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:RockCheckBox ID="cbShowFence" runat="server" Label="Show Fence(s)" Text="Yes"

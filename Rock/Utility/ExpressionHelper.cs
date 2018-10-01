@@ -58,7 +58,7 @@ namespace Rock.Utility
                     object value = ConvertValueToPropertyType( filterValues[1], type, isNullableType );
                     ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
 
-                    bool valueNotNeeded = (ComparisonType.IsBlank | ComparisonType.IsNotBlank).HasFlag( comparisonType );
+                    bool valueNotNeeded = ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType );
 
                     if ( value != null || valueNotNeeded )
                     {
@@ -100,6 +100,11 @@ namespace Rock.Utility
                 return Enum.Parse( propertyType, value );
             }
 
+            if ( propertyType == typeof( TimeSpan ) )
+            {
+                return value.AsTimeSpan();
+            }
+
             return Convert.ChangeType( value, propertyType );
         }
 
@@ -116,7 +121,7 @@ namespace Rock.Utility
             if ( !values.Any() )
             {
                 // if no filter parameter values where specified, don't filter
-                return Expression.Constant( true );
+                return new NoAttributeFilterExpression();
             }
 
             var service = new AttributeValueService( ( RockContext ) serviceInstance.Context );
@@ -144,13 +149,13 @@ namespace Rock.Utility
             // Attribute Value records only exist for Entities that have a value specified for the Attribute.
             // Therefore, if the specified comparison works by excluding certain values we must invert our filter logic:
             // first we find the Attribute Values that match those values and then we exclude the associated Entities from the result set.
-            var comparisonType = ComparisonType.EqualTo;
-            ComparisonType evaluatedComparisonType = comparisonType;
+            ComparisonType? comparisonType = ComparisonType.EqualTo;
+            ComparisonType? evaluatedComparisonType = comparisonType;
             string compareToValue = null;
 
             if ( values.Count >= 2 )
             {
-                comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                comparisonType = values[0].ConvertToEnumOrNull<ComparisonType>();
                 compareToValue = values[1];
 
                 switch ( comparisonType )
@@ -194,27 +199,10 @@ namespace Rock.Utility
             }
             else
             {
-                // AttributeFilterExpression returned NULL (the FieldType didn't specify any additional filter on AttributeValue),
-                // so just filter based on if the AttributeValue exists with a non-empty value
-                if ( entityField.FieldType.Field.FilterComparisonType.HasFlag( ComparisonType.IsBlank ) && string.IsNullOrEmpty( compareToValue ) )
-                {
-                    // in the case of EqualTo/NotEqualTo with a NULL compareToValue, filter this using an IsBlank/IsNotBlank filter ( if the fieldtype supports it )
-                    if ( comparisonType == ComparisonType.EqualTo )
-                    {
-                        // treat as IsBlank, but invert so that it ends being "NOT (people that *have* a value)"
-                        // this will make is so that the filter will return people that have a blank value or no AttributeValue record
-                        comparisonType = ComparisonType.IsBlank;
-                        evaluatedComparisonType = ComparisonType.IsNotBlank;
-                    }
-                    else if ( comparisonType == ComparisonType.NotEqualTo )
-                    {
-                        // treat as IsNotBlank
-                        comparisonType = ComparisonType.IsNotBlank;
-                        evaluatedComparisonType = ComparisonType.IsNotBlank;
-                    }
-                }
-
-                attributeValues = attributeValues.Where( a => !string.IsNullOrEmpty( a.Value ) );
+                // AttributeFilterExpression returned NULL ( the FieldType didn't specify any additional filter on AttributeValue),
+                // ideally the FieldType should have returned a NoAttributeFilterExpression, but just in case, don't filter
+                System.Diagnostics.Debug.WriteLine( $"Unexpected NULL result from FieldType.Field.AttributeFilterExpression for { entityField.FieldType }" );
+                return new NoAttributeFilterExpression();
             }
 
             IQueryable<int> ids = attributeValues.Select( v => v.EntityId.Value );
@@ -225,10 +213,10 @@ namespace Rock.Utility
 
             if ( attributeCache != null )
             {
-                var filterIsDefault = entityField.FieldType.Field.IsEqualToValue( values, attributeCache.DefaultValue );
-                if ( filterIsDefault )
+                var comparedToDefault = entityField.FieldType.Field.IsComparedToValue( values, attributeCache.DefaultValue );
+                if ( comparedToDefault )
                 {
-                    var allAttributeValueIds = service.Queryable().Where( v => v.Attribute.Id == attributeCache.Id && v.EntityId.HasValue ).Select( a => a.EntityId.Value );
+                    var allAttributeValueIds = service.Queryable().Where( v => v.Attribute.Id == attributeCache.Id && v.EntityId.HasValue && !string.IsNullOrEmpty( v.Value ) ).Select( a => a.EntityId.Value );
 
                     ConstantExpression allIdsExpression = Expression.Constant( allAttributeValueIds.AsQueryable(), typeof( IQueryable<int> ) );
                     Expression notContainsExpression = Expression.Not( Expression.Call( typeof( Queryable ), "Contains", new Type[] { typeof( int ) }, allIdsExpression, propertyExpression ) );

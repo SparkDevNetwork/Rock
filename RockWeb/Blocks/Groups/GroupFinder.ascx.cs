@@ -70,6 +70,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show Map", "", false, "CustomSetting" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "CustomSetting" )]
     [IntegerField( "Map Height", "", false, 600, "CustomSetting" )]
+    [IntegerField( "Marker Precision", "", false, 1000, "CustomSetting" )]
     [BooleanField( "Show Fence", "", false, "CustomSetting" )]
     [ValueListField( "Polygon Colors", "", false, "#f37833|#446f7a|#afd074|#649dac|#f8eba2|#92d0df|#eaf7fc", "#ffffff", null, null, "CustomSetting" )]
     [CodeEditorField( "Map Info", "", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
@@ -312,6 +313,7 @@ namespace RockWeb.Blocks.Groups
             SetAttributeValue( "ShowMap", cbShowMap.Checked.ToString() );
             SetAttributeValue( "MapStyle", ddlMapStyle.SelectedValue );
             SetAttributeValue( "MapHeight", nbMapHeight.Text );
+            SetAttributeValue( "MarkerPrecision", nbMarkerPrecision.Text );
             SetAttributeValue( "ShowFence", cbShowFence.Checked.ToString() );
             SetAttributeValue( "PolygonColors", vlPolygonColors.Value );
             SetAttributeValue( "MapInfo", ceMapInfo.Text );
@@ -472,6 +474,7 @@ namespace RockWeb.Blocks.Groups
             ddlMapStyle.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MAP_STYLES.AsGuid() ) );
             ddlMapStyle.SetValue( GetAttributeValue( "MapStyle" ) );
             nbMapHeight.Text = GetAttributeValue( "MapHeight" );
+            nbMarkerPrecision.Text = GetAttributeValue( "MarkerPrecision" );
             cbShowFence.Checked = GetAttributeValue( "ShowFence" ).AsBoolean();
             vlPolygonColors.Value = GetAttributeValue( "PolygonColors" );
             ceMapInfo.Text = GetAttributeValue( "MapInfo" );
@@ -971,7 +974,7 @@ namespace RockWeb.Blocks.Groups
 ",
                         personLocation.FormattedHtmlAddress );
 
-                    personMapItem = new FinderMapItem( personLocation );
+                    personMapItem = new FinderMapItem( personLocation, 100000 );
                     personMapItem.Name = "Your Location";
                     personMapItem.InfoWindow = HttpUtility.HtmlEncode( infoWindow.Replace( Environment.NewLine, string.Empty ).Replace( "\n", string.Empty ).Replace( "\t", string.Empty ) );
                 }
@@ -1039,7 +1042,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         foreach ( var fence in fences )
                         {
-                            var mapItem = new FinderMapItem( fence.Location );
+                            var mapItem = new FinderMapItem( fence.Location, 100000 );
                             mapItem.EntityTypeId = EntityTypeCache.Get( "Rock.Model.Group" ).Id;
                             mapItem.EntityId = fence.GroupId;
                             mapItem.Name = fence.Group.Name;
@@ -1070,6 +1073,8 @@ namespace RockWeb.Blocks.Groups
 
                     bool showDebug = UserCanEdit && GetAttributeValue( "MapInfoDebug" ).AsBoolean();
                     lMapInfoDebug.Visible = showDebug;
+
+                    double precision = GetAttributeValue( "MarkerPrecision" ).AsDoubleOrNull() ?? 1000;
 
                     // Add mapitems for all the remaining valid group locations
                     var groupMapItems = new List<MapItem>();
@@ -1115,7 +1120,7 @@ namespace RockWeb.Blocks.Groups
                             }
 
                             // Add a map item for group
-                            var mapItem = new FinderMapItem( gl.Location );
+                            var mapItem = new FinderMapItem( gl.Location, precision );
                             mapItem.EntityTypeId = EntityTypeCache.Get( "Rock.Model.Group" ).Id;
                             mapItem.EntityId = group.Id;
                             mapItem.Name = group.Name;
@@ -1381,6 +1386,8 @@ namespace RockWeb.Blocks.Groups
                 ,styles: mapStyle
                 ,center: new google.maps.LatLng({7}, {8})
                 ,zoom: {9}
+                ,maxZoom: 13
+                ,streetViewControl: false
             }};
 
             // Display a map on the page
@@ -1640,9 +1647,14 @@ namespace RockWeb.Blocks.Groups
             /// Initializes a new instance of the <see cref="FinderMapItem"/> class.
             /// </summary>
             /// <param name="location">The location.</param>
-            public FinderMapItem( Location location )
+            public FinderMapItem( Location location, double precision )
                 : base( location )
             {
+                if ( Point != null )
+                {
+                    if ( Point.Latitude.HasValue ) Point.Latitude = Math.Round( Point.Latitude.Value * precision ) / precision;
+                    if ( Point.Longitude.HasValue ) Point.Longitude = Math.Round( Point.Longitude.Value * precision ) / precision;
+                }
             }
         }
 
