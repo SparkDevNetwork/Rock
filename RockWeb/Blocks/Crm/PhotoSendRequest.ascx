@@ -15,7 +15,7 @@
 
                     <Rock:RockCheckBoxList ID="cblRoles" runat="server" Label="Family Roles" DataValueField="Id" DataTextField="Name"></Rock:RockCheckBoxList>
                     <Rock:NumberBox ID="nbAge" runat="server" CssClass="input-width-sm" Label="Age is more than" NumberType="Integer" Text="16" />
-                    <Rock:RockCheckBoxList ID="cblConnectionStatus" runat="server" Label="Connection Status" DataValueField="Value" DataTextField="Text"></Rock:RockCheckBoxList>
+                    <Rock:DefinedValuesPicker ID="dvpConnectionStatus" runat="server" Label="Connection Status" DataValueField="Value" DataTextField="Text"></Rock:DefinedValuesPicker>
                     <Rock:NumberBox ID="nbUpdatedLessThan" runat="server" CssClass="input-width-sm" Label="Exclude people with a photo updated in the last (years)" Text="3" ></Rock:NumberBox>
 
                     <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Text="" Visible="false" />
