@@ -34,7 +34,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            UpdatespCheckin_BadgeAttendance();
+            //UpdatespCheckin_BadgeAttendance();
         }
 
 

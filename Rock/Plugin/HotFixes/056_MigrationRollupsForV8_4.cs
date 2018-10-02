@@ -38,7 +38,7 @@ namespace Rock.Plugin.HotFixes
             //UpdateInteractionForeignKeyIndex();
             //FixShortcodeFunctionality();
             //AddDefaultBackgroundCheckSystemSetting();
-            EnableNCOA();
+            //EnableNCOA();
         }
 
 
