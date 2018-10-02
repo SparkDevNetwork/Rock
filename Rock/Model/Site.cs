@@ -381,6 +381,7 @@ namespace Rock.Model
         /// The icon CSS weight.
         /// </value>
         [DataMember]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Moved to Theme" )]
         public IconCssWeight IconCssWeight { get; set; }
 
@@ -421,6 +422,7 @@ namespace Rock.Model
         /// <value>
         /// The icon extensions.
         /// </value>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Moved to Theme" )]
         public virtual ICollection<DefinedValue> IconExtensions { get; set; } = new Collection<DefinedValue>();
 
@@ -751,6 +753,7 @@ namespace Rock.Model
     /// <summary>
     /// Font Awesome Icon CSS Weight
     /// </summary>
+    [RockObsolete( "1.8" )]
     [Obsolete( "Moved to Theme" )]
     public enum IconCssWeight
     {

@@ -106,6 +106,7 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Get( int id ) instead.")]
         public static KioskLocationAttendance Read( int id )
         {
@@ -156,6 +157,7 @@ namespace Rock.CheckIn
         /// Flushes the specified id.
         /// </summary>
         /// <param name="id">The id.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Remove( int id ) instead.")]
         public static void Flush( int id )
         {

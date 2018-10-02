@@ -43,6 +43,7 @@ namespace Rock.Reporting
         /// <param name="includeOnlyReportingFields">if set to <c>true</c> [include only reporting fields].</param>
         /// <param name="limitToFilterableFields">if set to <c>true</c> [limit to filterable fields].</param>
         /// <returns></returns>
+        [RockObsolete( "1.9" )]
         [Obsolete( "Use other GetCacheKey" )]
         public static string GetCacheKey( Type entityType, bool includeOnlyReportingFields = true, bool limitToFilterableFields = true )
         {

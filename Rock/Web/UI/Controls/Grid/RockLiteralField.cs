@@ -57,6 +57,7 @@ namespace Rock.Web.UI.Controls
         /// Gets the value that should be exported to Excel
         /// </summary>
         /// <param name="row">The row.</param>
+        /// <param name="dataControlFieldCell">The data control field cell.</param>
         /// <returns></returns>
         public override object GetExportValue( GridViewRow row, DataControlFieldCell dataControlFieldCell )
         {

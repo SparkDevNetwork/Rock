@@ -334,30 +334,6 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets a group by location.
-        /// </summary>
-        /// <param name="geofenceGroupTypeId">The geofence group type identifier.</param>
-        /// <param name="groupTypeId">The group type identifier.</param>
-        /// <param name="locationId">The location identifier.</param>
-        /// <param name="queryOptions">The query options.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        [Obsolete( "Use one of the other ~/api/Groups/ByLocation endpoint(s)" )]
-        [System.Web.Http.Route( "api/Groups/ByLocation/{geofenceGroupTypeId}/{groupTypeId}/{locationId}" )]
-        public IQueryable GetByLocation( int geofenceGroupTypeId, int groupTypeId, int locationId, System.Web.Http.OData.Query.ODataQueryOptions<Group> queryOptions )
-        {
-            // Get the location record
-            var rockContext = (RockContext)Service.Context;
-            var specifiedLocation = new LocationService( rockContext ).Get( locationId );
-
-            // If location was valid and address was geocoded successfully
-            DbGeography geoPoint = specifiedLocation != null ? specifiedLocation.GeoPoint : null;
-
-            return GetByGeoPoint( groupTypeId, geoPoint, false, null, geofenceGroupTypeId, queryOptions );
-        }
-
-        /// <summary>
         /// Gets a list of groups surrounding the specified the location, optionally limited to the specified geofenceGroupTypeId
         /// If geofenceGroupTypeId is specified, the list of GeoFence groups will be returned with the groups as child groups of that geofence group.
         /// </summary>

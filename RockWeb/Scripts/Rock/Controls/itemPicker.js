@@ -126,9 +126,10 @@
                             selectedIds = [],
                             selectedNames = [];
 
-                    $.each(selectedNodes, function (index, node) {
-                        selectedIds.push(node.id);
-                        selectedNames.push(node.name);
+                  $.each(selectedNodes, function (index, node) {
+                    var nodeName = $("<textarea/>").html(node.name).text();
+                    selectedNames.push(nodeName);
+                    selectedIds.push(node.id);
                     });
 
                     $hfItemIds.val(selectedIds.join(','));

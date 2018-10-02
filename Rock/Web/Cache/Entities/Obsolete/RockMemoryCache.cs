@@ -31,6 +31,7 @@ namespace Rock.Web.Cache
     /// https://github.com/ironyx/sharpmemorycache
     /// 
     /// </summary>
+    [RockObsolete( "1.8" )]
     [Obsolete( "use RockCache instead" )]
     public class RockMemoryCache : MemoryCache
     {

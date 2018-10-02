@@ -294,6 +294,7 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete("Use SetFromEntity instead")]
         public override void CopyFromModel( Data.IEntity model )
         {
@@ -328,6 +329,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="attribute">The attribute.</param>
         /// <param name="qualifiers">The qualifiers.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use SetFromEntity instead" )]
         public void CopyFromModel( Rock.Model.Attribute attribute, Dictionary<string, string> qualifiers )
         {
@@ -592,6 +594,7 @@ namespace Rock.Web.Cache
         /// <param name="attributeModel">The attribute model.</param>
         /// <param name="qualifiers">The qualifiers.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete("Use Get instead")]
         public static AttributeCache Read( Rock.Model.Attribute attributeModel, Dictionary<string, string> qualifiers )
         {
@@ -697,6 +700,7 @@ namespace Rock.Web.Cache
         /// Loads the entity attributes.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete("No longer needed")]
         public static void LoadEntityAttributes( RockContext rockContext )
         {
@@ -706,6 +710,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes the entity attributes.
         /// </summary>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use RemoveEntityAttributes instead" )]
         public static void FlushEntityAttributes()
         {
@@ -725,6 +730,9 @@ namespace Rock.Web.Cache
         #endregion
     }
 
+    /// <summary>
+    /// Defined options that be can used when calling AddControl
+    /// </summary>
     public class AttributeControlOptions
     {
 

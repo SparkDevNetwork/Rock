@@ -1258,5 +1258,29 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201809252117562_Rollup_0925_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the attendance data needed for the Attendance Badge. If no family role (adult/child)
+        ///		is given it is looked up.  If the individual is an adult it will return family attendance if it&apos;s a child
+        ///		it will return the individual&apos;s attendance. If a person is in two families once as a child once as an
+        ///		adult it will pick the first role it finds.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* AttendanceCount
+        ///		* SundaysInMonth
+        ///		* Month
+        ///		* Year
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;P [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201810021839212_Rollup_1002_spCheckin_BadgeAttendance {
+            get {
+                return ResourceManager.GetString("_201810021839212_Rollup_1002_spCheckin_BadgeAttendance", resourceCulture);
+            }
+        }
     }
 }
