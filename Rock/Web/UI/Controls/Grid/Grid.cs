@@ -1749,11 +1749,10 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             {
                 // Columns to export with their column index as the key
                 var gridColumns = new Dictionary<int, DataControlField>();
-
-                for ( int i = 0; i < this.Columns.Count; i++ )
+                for ( int i = 0; i < this.CreatedColumns.Count; i++ )
                 {
-                    var dataField = this.Columns[i];
-                    var rockField = this.Columns[i] as IRockGridField;
+                    var dataField = this.CreatedColumns[i];
+                    var rockField = this.CreatedColumns[i] as IRockGridField;
                     if ( rockField != null &&
                         (
                             rockField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude ||
@@ -1919,6 +1918,18 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                         {
                             visibleFields.Add( fieldOrder++, rockTemplateField );
                         }
+                    }
+                }
+
+                
+
+                if ( CustomColumns != null && CustomColumns.Any() )
+                {
+                    foreach ( var columnConfig in CustomColumns )
+                    {
+                        var column = columnConfig.GetGridColumn();
+                        lavaFields.Add( column );
+                        visibleFields.Add( fieldOrder++, column );
                     }
                 }
 
@@ -2138,6 +2149,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                                 }
                                 mergeValues.Add( dataFieldItem.Key, dataFieldValue );
                             }
+                            mergeValues.Add( "Row", item );
 
                             string resolvedValue = lavaField.LavaTemplate.ResolveMergeFields( mergeValues );
                             resolvedValue = resolvedValue.Replace( "~~/", themeRoot ).Replace( "~/", appRoot ).ReverseCurrencyFormatting().ToString();
@@ -2175,7 +2187,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                         }
                     }
 
-                    foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
+                foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
                     {
                         columnCounter++;
                         object propValue = prop.GetValue( item, null );
@@ -3225,9 +3237,9 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 service.Add( entitySet );
                 rockContext.SaveChanges();
                 entitySetItems.ForEach( a =>
-                 {
-                     a.EntitySetId = entitySet.Id;
-                 } );
+                {
+                    a.EntitySetId = entitySet.Id;
+                } );
 
                 rockContext.BulkInsert( entitySetItems );
 
