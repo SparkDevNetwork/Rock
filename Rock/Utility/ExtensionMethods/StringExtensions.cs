@@ -33,6 +33,17 @@ namespace Rock
         #region String Extensions
 
         /// <summary>
+        /// Joins and array of strings using the provided separator.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="separator">The separator.</param>
+        /// <returns>Concatencated string.</returns>
+        public static string JoinStrings( this IEnumerable<string> source, string separator )
+        {
+            return string.Join( separator, source.ToArray() );
+        }
+
+        /// <summary>
         /// Removes special characters from the string so that only Alpha, Numeric, '.' and '_' remain;
         /// </summary>
         /// <param name="str">The identifier.</param>
@@ -101,6 +112,7 @@ namespace Rock
         /// <returns>
         ///   <c>true</c> if [is not null or whitespace] [the specified string]; otherwise, <c>false</c>.
         /// </returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use IsNotNullOrWhiteSpace instead. Fixes non-standard casing.", false )]
         public static bool IsNotNullOrWhitespace( this string str )
         {
@@ -388,7 +400,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <param name="startIndex">The 0-based starting position.</param>
-        /// <param name="length">The desired length.</param>
+        /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
         public static string SafeSubstring( this string str, int startIndex, int maxLength )
         {

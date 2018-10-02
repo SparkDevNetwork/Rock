@@ -132,6 +132,7 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Get( Guid guid ) instead.")]
         public static KioskLabel Read( Guid guid )
         {
@@ -203,6 +204,7 @@ namespace Rock.CheckIn
         /// Flushes the specified guid.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Remove( Guid guid ) instead.")]
         public static void Flush( Guid guid )
         {

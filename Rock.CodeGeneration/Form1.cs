@@ -124,6 +124,7 @@ namespace Rock.CodeGeneration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void btnGenerate_Click( object sender, EventArgs e )
         {
+            tbResults.Text = string.Empty;
             string serviceFolder = tbServiceFolder.Text;
             string restFolder = tbRestFolder.Text;
             string rockClientFolder = tbClientFolder.Text;
@@ -141,7 +142,7 @@ namespace Rock.CodeGeneration
                     var dbSetEntityType = typeof( Rock.Data.RockContext ).GetProperties().Where( a => a.PropertyType.IsGenericType && a.PropertyType.Name == "DbSet`1" ).Select( a => a.PropertyType.GenericTypeArguments[0] ).ToList();
                     var entityTypes = cblModels.Items.Cast<Type>().ToList();
                     var missingDbSets = entityTypes.Where( a => !dbSetEntityType.Any( x => x.FullName == a.FullName ) ).ToList();
-                    System.Diagnostics.Debug.WriteLine( missingDbSets.Select( a => a.Name ).ToList().AsDelimited( "\r\n" ) );
+                    tbResults.Text += missingDbSets.Select( a => a.Name + "is missing DbSet<> in RockContext" ).ToList().AsDelimited( "\r\n" ) + "\r\n\r\n";
 
                     foreach ( object item in cblModels.CheckedItems )
                     {
@@ -185,9 +186,72 @@ namespace Rock.CodeGeneration
                 }
             }
 
+            ReportRockObsolete();
+
             progressBar1.Visible = false;
             Cursor = Cursors.Default;
             MessageBox.Show( "Files have been generated" );
+        }
+
+        /// <summary>
+        /// Reports the rock obsolete.
+        /// </summary>
+        public void ReportRockObsolete()
+        {
+            StringBuilder sbWarnings = new StringBuilder();
+            List<string> obsoleteList = new List<string>();
+            List<Assembly> rockAssemblyList = new List<Assembly>();
+            rockAssemblyList.Add( typeof( Rock.Data.RockContext ).Assembly );
+            rockAssemblyList.Add( typeof( Rock.Rest.ApiControllerBase ).Assembly );
+            
+
+            foreach ( var rockAssembly in rockAssemblyList )
+            {
+                var allTypes = rockAssembly.GetTypes();
+                foreach ( var type in allTypes )
+                {
+                    ObsoleteAttribute typeObsoleteAttribute = type.GetCustomAttribute<ObsoleteAttribute>();
+                    if ( typeObsoleteAttribute != null )
+                    {
+                        var rockObsolete = type.GetCustomAttribute<RockObsolete>();
+                        if ( rockObsolete == null )
+                        {
+                            sbWarnings.AppendLine( $"type {type} is [Obsolete] but does not have a [RockObsolete]" );
+                        }
+                        else
+                        {
+                            obsoleteList.Add( $"{rockObsolete.Version},{type.Name},class,{typeObsoleteAttribute.IsError}" );
+                        }
+                    }
+
+                    foreach ( var member in type.GetMembers() )
+                    {
+                        ObsoleteAttribute memberObsoleteAttribute = member.GetCustomAttribute<ObsoleteAttribute>();
+                        if ( memberObsoleteAttribute != null && rockAssembly == member.Module.Assembly && member.DeclaringType == type )
+                        {
+                            var rockObsolete = member.GetCustomAttribute<RockObsolete>();
+                            if ( rockObsolete == null )
+                            {
+                                sbWarnings.AppendLine( $"type {type} has [Obsolete] {member.MemberType} {member} but does not have a [RockObsolete]" );
+                            }
+                            else
+                            {
+                                obsoleteList.Add( $"{rockObsolete.Version},{type.Name} {member.Name},{member.MemberType},{memberObsoleteAttribute.IsError}" );
+                            }
+                        }
+                    }
+                }
+            }
+
+            tbResults.Text += sbWarnings.ToString();
+
+            if ( cbGenerateObsoleteExport.Checked )
+            {
+                tbResults.Text += Environment.NewLine;
+
+                obsoleteList = obsoleteList.OrderBy( a => a.Split( new char[] { ',' } )[0] ).ToList();
+                tbResults.Text += $"Version,Name,Type,IsError" + Environment.NewLine + obsoleteList.AsDelimited( Environment.NewLine );
+            }
         }
 
         /// <summary>
@@ -1336,6 +1400,18 @@ order by [parentTable], [columnName]
 
     public static class HelperExtensions
     {
+        /*public static CustomAttributeData GetCustomAttributeData<T>( this Type type ) where T : System.Attribute
+        {
+            var attributeType = typeof( T );
+            return type.GetCustomAttributesData().FirstOrDefault( a => a.AttributeType == attributeType );
+        }
+
+        public static CustomAttributeData GetCustomAttributeData<T>( this MemberInfo memberInfo ) where T : System.Attribute
+        {
+            var attributeType = typeof( T );
+            return memberInfo.GetCustomAttributesData().FirstOrDefault( a => a.AttributeType == attributeType );
+        }*/
+
         public static PropertyInfo[] SortByStandardOrder( this PropertyInfo[] properties )
         {
             string[] baseModelPropertyTypeNames = new string[] { "Id", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId" };

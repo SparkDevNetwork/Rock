@@ -14,36 +14,44 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Plugin;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Rock.Migrations.HotFixMigrations
+namespace Rock.Plugin.HotFixes
 {
     /// <summary>
     /// 
     /// </summary>
-    [MigrationNumber( 2, "1.3.2" )]
-    public class FixAttendanceEmail : Migration
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 57, "1.8.4" )]
+    public class MigrationRollupsForV8_5 : Migration
     {
         /// <summary>
         /// The commands to run to migrate plugin to the specific version
         /// </summary>
         public override void Up()
         {
-// NOTE: This was included in normal migration with v4.0
-/*
-            Sql( @"
-    UPDATE [SystemEmail]
-    SET [Body] = REPLACE( [Body], '?GroupId={{ Group.Id }}&Occurrence=', '?{{ Person.ImpersonationParameter }}&GroupId={{ Group.Id }}&Occurrence=' )
-    WHERE [Guid] = 'ED567FDE-A3B4-4827-899D-C2740DF3E5DA'
-" );
-*/
+            //UpdatespCheckin_BadgeAttendance();
         }
+
 
         /// <summary>
         /// The commands to undo a migration from a specific version
         /// </summary>
         public override void Down()
         {
+        }
+
+        /// <summary>
+        /// Pull Request: Add migration for the item that updated via this Pull Request
+        /// Asana https://app.asana.com/0/517335866408894/843680915532957
+        /// </summary>
+        private void UpdatespCheckin_BadgeAttendance()
+        {
+            Sql( HotFixMigrationResource._057_MigrationRollupsForV8_5_spCheckin_BadgeAttendance );
         }
     }
 }

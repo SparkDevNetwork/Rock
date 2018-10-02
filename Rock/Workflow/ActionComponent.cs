@@ -67,7 +67,8 @@ namespace Rock.Workflow
         /// Loads the attributes.
         /// </summary>
         /// <param name="action">The action.</param>
-        [Obsolete("Don't Use this. The ActionTypeCache will already have the attributes loaded automatically")]
+        [RockObsolete( "1.7" )]
+        [Obsolete("Don't Use this. The ActionTypeCache will already have the attributes loaded automatically", true )]
         public void LoadAttributes( WorkflowAction action )
         {
             action.ActionType.LoadAttributes();

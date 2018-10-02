@@ -51,7 +51,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if (guid.HasValue)
             {
-                var activityType = new ConnectionActivityTypeService( new RockContext() ).Get( guid.Value );
+                var activityType = new ConnectionActivityTypeService( new RockContext() ).GetNoTracking( guid.Value );
                 if ( activityType != null )
                 {
                     formattedValue = activityType.Name;
