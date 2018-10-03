@@ -2410,7 +2410,7 @@ namespace RockWeb.Blocks.Event
                     // Remove/delete any registrant fees that are no longer in UI with quantity 
                     foreach ( var dbFee in registrant.Fees.ToList() )
                     {
-                        if ( !registrantInfo.FeeValues.Keys.Contains( dbFee.RegistrationTemplateFeeId ) ||
+                        if ( !registrantInfo.FeeValues.ContainsKey( dbFee.RegistrationTemplateFeeId ) ||
                             registrantInfo.FeeValues[dbFee.RegistrationTemplateFeeId] == null ||
                             !registrantInfo.FeeValues[dbFee.RegistrationTemplateFeeId]
                                 .Any( f =>
