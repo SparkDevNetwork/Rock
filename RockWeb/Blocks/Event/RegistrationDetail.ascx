@@ -187,8 +187,8 @@
                                     </asp:PlaceHolder>
 
                                     <asp:PlaceHolder ID="phManualDetails" runat="server">
-                                        <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
-                                        <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
+                                        <Rock:DefinedValuePicker ID="dvpCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="dvpCurrencyType_SelectedIndexChanged" />
+                                        <Rock:DefinedValuePicker ID="dvpCreditCardType" runat="server" Label="Credit Card Type" />
                                         <Rock:RockTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code" />
                                     </asp:PlaceHolder>
 
