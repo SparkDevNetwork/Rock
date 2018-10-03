@@ -4277,21 +4277,21 @@ namespace RockWeb.Blocks.Event
                     break;
 
                 case RegistrationPersonFieldType.MaritalStatus:
-                    var ddlMaritalStatus = new RockDropDownList
+                    var dvpMaritalStatus = new DefinedValuePicker
                     {
-                        ID = "ddlMaritalStatus",
+                        ID = "dvpMaritalStatus",
                         Label = "Marital Status",
                         Required = field.IsRequired,
                         ValidationGroup = BlockValidationGroup
                     };
 
-                    ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
-                    phRegistrantControls.Controls.Add( ddlMaritalStatus );
+                    dvpMaritalStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
+                    phRegistrantControls.Controls.Add( dvpMaritalStatus );
 
                     if ( setValue && fieldValue != null )
                     {
                         var value = fieldValue.ToString().AsInteger();
-                        ddlMaritalStatus.SetValue( value );
+                        dvpMaritalStatus.SetValue( value );
                     }
 
                     break;
@@ -4379,23 +4379,23 @@ namespace RockWeb.Blocks.Event
                     break;
 
                 case RegistrationPersonFieldType.ConnectionStatus:
-                    var ddlConnectionStatus = new RockDropDownList
+                    var dvpConnectionStatus = new DefinedValuePicker
                     {
-                        ID = "ddlConnectionStatus",
+                        ID = "dvpConnectionStatus",
                         Label = "Connection Status",
                         Required = field.IsRequired,
                         ValidationGroup = BlockValidationGroup
                     };
 
-                    ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
+                    dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ).Id;
 
                     if ( setValue && fieldValue != null )
                     {
                         var value = fieldValue.ToString().AsInteger();
-                        ddlConnectionStatus.SetValue( value );
+                        dvpConnectionStatus.SetValue( value );
                     }
 
-                    phRegistrantControls.Controls.Add( ddlConnectionStatus );
+                    phRegistrantControls.Controls.Add( dvpConnectionStatus );
                     break;
             }
         }
@@ -4743,8 +4743,8 @@ namespace RockWeb.Blocks.Event
                     return ddlGender != null ? ddlGender.SelectedValueAsInt() : null;
 
                 case RegistrationPersonFieldType.MaritalStatus:
-                    var ddlMaritalStatus = phRegistrantControls.FindControl( "ddlMaritalStatus" ) as RockDropDownList;
-                    return ddlMaritalStatus != null ? ddlMaritalStatus.SelectedValueAsInt() : null;
+                    var dvpMaritalStatus = phRegistrantControls.FindControl( "dvpMaritalStatus" ) as RockDropDownList;
+                    return dvpMaritalStatus != null ? dvpMaritalStatus.SelectedValueAsInt() : null;
 
                 case RegistrationPersonFieldType.AnniversaryDate:
                     var dppAnniversaryDate = phRegistrantControls.FindControl( "dppAnniversaryDate" ) as DatePartsPicker;
@@ -4787,8 +4787,8 @@ namespace RockWeb.Blocks.Event
                     break;
 
                 case RegistrationPersonFieldType.ConnectionStatus:
-                    var ddlConnectionStatus = phRegistrantControls.FindControl( "ddlConnectionStatus" ) as RockDropDownList;
-                    return ddlConnectionStatus != null ? ddlConnectionStatus.SelectedValueAsInt() : null;
+                    var dvpConnectionStatus = phRegistrantControls.FindControl( "dvpConnectionStatus" ) as RockDropDownList;
+                    return dvpConnectionStatus != null ? dvpConnectionStatus.SelectedValueAsInt() : null;
             }
 
             return null;
