@@ -710,12 +710,13 @@ namespace Rock.Field
         /// <returns></returns>
         public virtual Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
         {
-            if ( filterValues.Count >= 1 )
+            // If filterValues.Count >= 2, then filterValues[0] is ComparisonType, and filterValues[1] is a CompareToValue. Otherwise, filterValues[0] is a CompareToValue (for example, a SingleSelect attribute)
+            if ( filterValues.Count >= 2 )
             {
                 ComparisonType? comparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
                 if ( comparisonType.HasValue )
                 {
-                    string compareToValue = filterValues.Count > 1 ? filterValues[1] : string.Empty;
+                    string compareToValue = filterValues[1];
                     MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
 
                     if ( !string.IsNullOrWhiteSpace( compareToValue ) )
