@@ -71,6 +71,12 @@ If (Test-Path "$rootfolder\temp\web.connectionstrings.config"){
 	Copy-Item "$rootfolder\temp\web.connectionstrings.config" "$webroot" -force
 }
 
+# move core Rock css overrides file back from temp
+If (Test-Path "$rootfolder\temp\_css-overrides.less"){
+	Write-Host "Moving _css-overrides.less from temp dir"
+	Copy-Item "$rootfolder\temp\_css-overrides.less" "$webroot\Themes\Rock\Styles" -force
+}
+
 # remove the app offline flag
 If (Test-Path "$webroot\app_offline.htm"){
 	Write-Host "Removing app offline template"

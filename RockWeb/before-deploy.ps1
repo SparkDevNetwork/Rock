@@ -26,6 +26,12 @@ If (Test-Path "$webroot\web.connectionstrings.config"){
 	Copy-Item "$webroot\web.connectionstrings.config" "$rootfolder\temp" -force
 }
 
+# backup css overrides for core Rock theme
+If (Test-Path "$webroot\Themes\Rock\Styles\_css-overrides.less"){
+	Write-Host "Moving _css-overrides.less to temp dir"
+	Copy-Item "$webroot\Themes\Rock\Styles\_css-overrides.less" "$rootfolder\temp" -force
+}
+
 # load the app offline template
 If (Test-Path "$webroot\app_offline-template.htm"){
 	Write-Host "Loading the app offline template"
