@@ -912,10 +912,10 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.HomePhone:
-                                var tbRegistrantsMobilePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsMobilePhoneFilter" ) as RockTextBox;
-                                if ( tbRegistrantsMobilePhoneFilter != null )
+                                var tbRegistrantsHomePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsHomePhoneFilter" ) as RockTextBox;
+                                if ( tbRegistrantsHomePhoneFilter != null )
                                 {
-                                    fRegistrants.SaveUserPreference( "Home Phone", tbRegistrantsMobilePhoneFilter.Text );
+                                    fRegistrants.SaveUserPreference( "Home Phone", tbRegistrantsHomePhoneFilter.Text );
                                 }
 
                                 break;
@@ -6007,8 +6007,8 @@ namespace RockWeb.Blocks.Event
                     case "First Name":
                     case "Last Name":
                     case "Email":
-                    case "Home Phone":
-                    case "Cell Phone":
+                    case "HomePhone":
+                    case "Phone":
                     case "Signed Document":
                         break;
 
