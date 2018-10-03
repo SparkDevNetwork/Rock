@@ -152,7 +152,8 @@ namespace Rock.Utility
             ComparisonType? comparisonType = ComparisonType.EqualTo;
             ComparisonType? evaluatedComparisonType = comparisonType;
 
-            if ( values.Count >= 1 )
+            // If Values.Count >= 2, then Values[0] is ComparisonType, and Values[1] is a CompareToValue. Otherwise, Values[0] is a CompareToValue (for example, a SingleSelect attribute)
+            if ( values.Count >= 2 )
             {
                 comparisonType = values[0].ConvertToEnumOrNull<ComparisonType>();
 
