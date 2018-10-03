@@ -63,8 +63,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.AllStaffLive {
                             // Active Schedule, set liveFeedStatus to on
                             liveFeedStatus.Value = "on";
 
-                            liveHeading.Text = BlockName;
-
                             // Get the ip address
                             String currentIp = GetLanIPAddress();
 
