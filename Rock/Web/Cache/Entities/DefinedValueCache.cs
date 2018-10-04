@@ -19,6 +19,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -77,6 +78,31 @@ namespace Rock.Web.Cache
         [DataMember]
         public string Description { get; private set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this DefinedValue is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsActive { get; private set; }
+
+        /// <summary>
+        /// Gets the DefinedType of this DefinedVlaue
+        /// </summary>
+        /// <value>
+        /// The DefinedType
+        /// </value>
+        public DefinedTypeCache DefinedType => DefinedTypeCache.Get( DefinedTypeId );
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override ISecured ParentAuthority => DefinedType;
+
         #endregion
 
         #region Public Methods
@@ -97,6 +123,7 @@ namespace Rock.Web.Cache
             Order = definedValue.Order;
             Value = definedValue.Value;
             Description = definedValue.Description;
+            IsActive = definedValue.IsActive;
         }
 
         /// <summary>
@@ -115,6 +142,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete("Use Get Instead")]
         public static DefinedValueCache Read( string guid )
         {
@@ -126,16 +154,27 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
-        /// Gets the name.
+        /// Gets the Value of the DefinedValue
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public static string GetValue( int? id )
+        {
+            if ( !id.HasValue )
+                return null;
+
+            var definedValue = Get( id.Value );
+            return definedValue?.Value;
+        }
+
+        /// <summary>
+        /// Gets the Value of the DefinedValue
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
         public static string GetName( int? id )
         {
-            if ( !id.HasValue ) return null;
-
-            var definedValue = Get( id.Value );
-            return definedValue?.Value;
+            return GetValue( id );
         }
 
         #endregion

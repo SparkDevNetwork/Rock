@@ -401,7 +401,11 @@ namespace Rock.Field
         public virtual Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
             var control = EditControl( configurationValues, id );
-            control.ID = string.Format( "{0}_ctlCompareValue", id );
+            if ( control != null )
+            {
+                control.ID = string.Format( "{0}_ctlCompareValue", id );
+            }
+
             if ( control is WebControl )
             {
                 ( ( WebControl ) control ).AddCssClass( "js-filter-control" );
@@ -431,11 +435,21 @@ namespace Rock.Field
                         values.Add( compare );
                     }
 
-                    string value = GetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues );
-                    if ( value != null )
+                    ComparisonType? comparisonType = compare.ConvertToEnumOrNull<ComparisonType>();
+                    if ( comparisonType.HasValue && ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType.Value ) )
                     {
-                        values.Add( value );
+                        // if using IsBlank or IsNotBlank, we don't care about the value, so don't try to grab it from the UI
+                        values.Add( string.Empty );
                     }
+                    else
+                    {
+                        string value = GetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues );
+                        if ( value != null )
+                        {
+                            values.Add( value );
+                        }
+                    }
+
                 }
                 catch
                 {
@@ -606,7 +620,15 @@ namespace Rock.Field
                             var filterValueValue = FormatFilterValueValue( configurationValues, filterValues[1] );
                             if ( string.IsNullOrEmpty( filterValueValue ) )
                             {
-                                return string.Format( "{0} ''", comparisonType.ConvertToString() );
+                                if ( this.FilterComparisonType.HasFlag( ComparisonType.IsBlank ) && comparisonType == ComparisonType.EqualTo || comparisonType == ComparisonType.NotEqualTo )
+                                {
+                                    // if IsBlank is one of the allowed FilterComparisonTypes, and if EqualTo or NotEqualTo specified with blank value, this will get converted is IsBlank/IsNotBlank
+                                    // so we can render this as "Equal To ''" or '"Not Equal To ''" 
+                                    return string.Format( "{0} '{1}'", comparisonType.ConvertToString(), filterValueValue );
+                                }
+
+                                // if there is no value specified, just return String.Empty
+                                return string.Empty;
                             }
                             else
                             {
@@ -683,23 +705,47 @@ namespace Rock.Field
         /// Gets a filter expression to be used as part of a AttributeValue Query or EntityAttributeQueryExpression
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="filterValues">The filter values.</param>
+        /// <param name="filterValues">The filter values: FieldName, <see cref="ComparisonType">Comparison Type</see>, (optional) Comparison Value(s)</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <returns></returns>
         public virtual Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
         {
+            // If filterValues.Count >= 2, then filterValues[0] is ComparisonType, and filterValues[1] is a CompareToValue. Otherwise, filterValues[0] is a CompareToValue (for example, a SingleSelect attribute)
             if ( filterValues.Count >= 2 )
             {
                 ComparisonType? comparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
                 if ( comparisonType.HasValue )
                 {
                     string compareToValue = filterValues[1];
-                    bool valueNotNeeded = ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType );
+                    MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
 
-                    if ( valueNotNeeded || !string.IsNullOrWhiteSpace( compareToValue ) )
+                    if ( !string.IsNullOrWhiteSpace( compareToValue ) )
                     {
-                        MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
+                        // both a comparison type and value are specified, so we can process normally
                         return ComparisonHelper.ComparisonExpression( comparisonType.Value, propertyExpression, AttributeConstantExpression( compareToValue ) );
+                    }
+                    else
+                    {
+                        // No comparison value was specified, so we can filter if the Comparison Type using no value still makes sense
+                        if ( ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
+                        {
+                            // Just checking if IsBlank or IsNotBlank, so let ComparisonExpression do its thing
+                            return ComparisonHelper.ComparisonExpression( comparisonType.Value, propertyExpression, AttributeConstantExpression( string.Empty ) );
+                        }
+                        else if ( this.FilterComparisonType.HasFlag( ComparisonType.IsBlank ) )
+                        {
+                            // if this Filter supports IsBlank/IsNotBlank, we can convert this to IsBlank/IsNotBlank if no value was specified
+                            if ( comparisonType == ComparisonType.EqualTo )
+                            {
+                                // an EqualTo  was specified, but no value was specified, so convert it to a IsBlank
+                                return ComparisonHelper.ComparisonExpression( ComparisonType.IsBlank, propertyExpression, AttributeConstantExpression( string.Empty ) );
+                            }
+                            else if ( comparisonType == ComparisonType.NotEqualTo )
+                            {
+                                // a NotEqualTo was specified, but no value was specified, so convert it to a IsNotBlank
+                                return ComparisonHelper.ComparisonExpression( ComparisonType.IsNotBlank, propertyExpression, AttributeConstantExpression( string.Empty ) );
+                            }
+                        }
                     }
                 }
                 else
@@ -709,8 +755,8 @@ namespace Rock.Field
                 }
             }
 
-            // return null if there isn't an additional expression that will help narrow down which AttributeValue records to include
-            return null;
+            // return NoAttributeFilterExpression ( which means don't filter ) if there isn't enough information to make a Comparison Expression
+            return new NoAttributeFilterExpression();
         }
 
         /// <summary>

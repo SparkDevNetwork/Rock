@@ -345,6 +345,14 @@ namespace Rock.Attribute
                 return;
             }
 
+            if ( entity is Rock.Web.Cache.IEntityCache )
+            {
+                // Don't let this LoadAttributes get called on a IEntityCache (or ModelCache<,>)
+                // It'll just end up removing the attributes since this LoadAttributes is looking up Attributes based on entity.GetType(), which wouldn't be the entity type of the underlying model
+                // CacheObjects manage attributes themselves
+                return;
+            }
+
             Type entityType = entity.GetType();
             if ( entityType.IsDynamicProxyType() )
             {
@@ -421,9 +429,6 @@ namespace Rock.Attribute
 
             if ( allAttributes.Any() )
             {
-                rockContext = rockContext ?? new RockContext();
-                var attributeValueService = new Rock.Model.AttributeValueService( rockContext );
-
                 foreach ( var attribute in allAttributes )
                 {
                     // Add a placeholder for this item's value for each attribute
@@ -433,6 +438,9 @@ namespace Rock.Attribute
                 // If loading attributes for a saved item, read the item's value(s) for each attribute 
                 if ( !entityTypeCache.IsEntity || entity.Id != 0 )
                 {
+                    rockContext = rockContext ?? new RockContext();
+                    var attributeValueService = new Rock.Model.AttributeValueService( rockContext );
+
                     List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
                     IQueryable<AttributeValue> attributeValueQuery;
 
@@ -451,7 +459,24 @@ namespace Rock.Attribute
 
                     if ( attributeIds.Count != 1 )
                     {
-                        attributeValueQuery = attributeValueQuery.Where( v => attributeIds.Contains( v.AttributeId ) );
+                        // a Linq query that uses 'Contains' can't be cached in the EF Plan Cache, so instead of doing a Contains, build a List of OR conditions. This can save 15-20ms per call (and still ends up with the exact same SQL)
+                        var parameterExpression = attributeValueService.ParameterExpression;
+                        MemberExpression propertyExpression = Expression.Property( parameterExpression, "AttributeId" );
+                        Expression expression = null;
+                        foreach ( var attributeId in attributeIds )
+                        {
+                            Expression attributeIdValue = Expression.Constant( attributeId );
+                            if ( expression != null )
+                            {
+                                expression = Expression.Or( expression, Expression.Equal( propertyExpression, attributeIdValue ) );
+                            }
+                            else
+                            {
+                                expression = Expression.Equal( propertyExpression, attributeIdValue );
+                            }
+                        }
+
+                        attributeValueQuery = attributeValueQuery.Where( parameterExpression, expression );
                     }
                     else
                     {
@@ -933,7 +958,7 @@ namespace Rock.Attribute
         /// <param name="parentControl">The parent control.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="validationGroup">The validation group.</param>
-        /// <param name="exclude">List of attribute names not to render</param>
+        /// <param name="exclude">List of attributes not to render. Attributes with a Key or Name in the exclude list will not be shown.</param>
         /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
         public static void AddEditControls( Rock.Attribute.IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering = false )
         {
@@ -961,7 +986,7 @@ namespace Rock.Attribute
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="numberOfColumns">The number of columns.</param>
-        /// <param name="exclude">The exclude.</param>
+        /// <param name="exclude">List of attributes not to render. Attributes with a Key or Name in the exclude list will not be shown.</param>
         /// <param name="supressOrdering">if set to <c>true</c> [supress ordering].</param>
         public static void AddEditControls( Rock.Attribute.IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering, int? numberOfColumns = null )
         {
@@ -1004,7 +1029,7 @@ namespace Rock.Attribute
         /// <param name="parentControl">The parent control.</param>
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
-        /// <param name="exclude">The exclude.</param>
+        /// <param name="exclude">List of attributes not to render. Attributes with a Key or Name in the exclude list will not be shown.</param>
         /// <param name="numberOfColumns">The number of columns.</param>
         public static void AddEditControls( string category, List<string> attributeKeys, Rock.Attribute.IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude, int? numberOfColumns )
         {

@@ -30,9 +30,10 @@ using Rock.Web.Utilities;
 
 namespace Rock.Reporting.DataFilter.Person
 {
-    // <summary>
-    ///   A Data Filter to select Person through their Interaction.
+    /// <summary>
+    /// 
     /// </summary>
+    /// <seealso cref="Rock.Reporting.DataFilterComponent" />
     [Description( "Select Person through their Interaction." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Interaction View" )]

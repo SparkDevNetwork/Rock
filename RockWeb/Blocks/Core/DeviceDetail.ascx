@@ -8,7 +8,7 @@
 
 <asp:UpdatePanel ID="upnlDevice" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
+        <asp:Panel ID="pnlDetails" CssClass="panel panel-block js-device-panel" runat="server" Visible="false">
 
             <asp:HiddenField ID="hfDeviceId" runat="server" />
             <asp:HiddenField ID="hfTypeId" runat="server" />
@@ -16,6 +16,10 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-desktop"></i>
                     <asp:Literal ID="lActionTitle" runat="server" /></h1>
+
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlInactive" runat="server" CssClass="js-inactivedevice-label" LabelType="Danger" Text="Inactive" />
+                </div>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
@@ -32,6 +36,7 @@
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="Name" Required="true" />
                         </div>
                         <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbIsActive" runat="server" CssClass="js-isactivedevice" Text="Active" />
                         </div>
                     </div>
 
@@ -103,6 +108,31 @@
             </Content>
         </Rock:ModalDialog>
 
+                <script>
+
+            Sys.Application.add_load(function () {
+                function setIsActiveControls(activeCheckbox) {
+
+                    var $inactiveLabel = $(activeCheckbox).closest(".js-device-panel").find('.js-inactivedevice-label');
+                    if ($(activeCheckbox).is(':checked')) {
+                        $inactiveLabel.hide();
+                    }
+                    else {
+                        $inactiveLabel.show();
+                    }
+                }
+
+                $('.js-isactivedevice').on('click', function () {
+                    setIsActiveControls(this);
+                });
+
+                  $('.js-isactivedevice').each(function (i) {
+                    setIsActiveControls(this);
+                });
+
+            });
+
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>

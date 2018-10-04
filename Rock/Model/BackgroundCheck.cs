@@ -196,7 +196,8 @@ namespace Rock.Model
         /// The response XML.
         /// </value>
         [NotMapped]
-        [Obsolete( "Use ResponseData Instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use ResponseData Instead", true )]
         public virtual string ResponseXml { get; set; }
 
         #endregion

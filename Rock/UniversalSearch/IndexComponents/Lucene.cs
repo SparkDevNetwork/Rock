@@ -392,7 +392,13 @@ namespace Rock.UniversalSearch.IndexComponents
             {
                 if ( _writer != null )
                 {
-                    _writer.DeleteDocuments( new Term[] { new Term( "type", documentType.Name.ToLower() ), new Term( propertyName, propertyValue.ToStringSafe() ) } );
+                    BooleanQuery query = new BooleanQuery
+                    {
+                        { new TermQuery( new Term( "type", documentType.Name.ToLower() ) ), Occur.MUST },
+                        { new TermQuery( new Term( propertyName, propertyValue.ToStringSafe() ) ), Occur.MUST }
+                    };
+
+                    _writer.DeleteDocuments( query );
                 }
             }
         }

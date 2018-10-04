@@ -60,12 +60,6 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="HotFixMigrations\001_FixLabelMergeFields.cs" />
-    <Compile Include="HotFixMigrations\002_FixAttendanceEmail.cs" />
-    <Compile Include="HotFixMigrations\003_AddAttendanceIndex.cs" />
-    <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
-    <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
-    <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
     <Compile Include="Migrations\201807250211476_AddNoteAttachments.cs" />
     <Compile Include="Migrations\201807250211476_AddNoteAttachments.Designer.cs">
       <DependentUpon>201807250211476_AddNoteAttachments.cs</DependentUpon>
@@ -81,6 +75,42 @@
     <Compile Include="Migrations\201808091807164_ServiceJobHistory.cs" />
     <Compile Include="Migrations\201808091807164_ServiceJobHistory.Designer.cs">
       <DependentUpon>201808091807164_ServiceJobHistory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201808302049467_Rollup_0830.cs" />
+    <Compile Include="Migrations\201808302049467_Rollup_0830.Designer.cs">
+      <DependentUpon>201808302049467_Rollup_0830.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201809102330278_AssetManager.cs" />
+    <Compile Include="Migrations\201809102330278_AssetManager.Designer.cs">
+      <DependentUpon>201809102330278_AssetManager.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201809122127196_Rollup_0912.cs" />
+    <Compile Include="Migrations\201809122127196_Rollup_0912.Designer.cs">
+      <DependentUpon>201809122127196_Rollup_0912.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201809142151587_ContentComponents.cs" />
+    <Compile Include="Migrations\201809142151587_ContentComponents.Designer.cs">
+      <DependentUpon>201809142151587_ContentComponents.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201809191735543_AddIsActiveToDevice.cs" />
+    <Compile Include="Migrations\201809191735543_AddIsActiveToDevice.Designer.cs">
+      <DependentUpon>201809191735543_AddIsActiveToDevice.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201809202157086_AssetManagerRefactor.cs" />
+    <Compile Include="Migrations\201809202157086_AssetManagerRefactor.Designer.cs">
+      <DependentUpon>201809202157086_AssetManagerRefactor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201809252117562_Rollup_0925.cs" />
+    <Compile Include="Migrations\201809252117562_Rollup_0925.Designer.cs">
+      <DependentUpon>201809252117562_Rollup_0925.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201809271711053_ObsoleteFields.cs" />
+    <Compile Include="Migrations\201809271711053_ObsoleteFields.Designer.cs">
+      <DependentUpon>201809271711053_ObsoleteFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201810021839212_Rollup_1002.cs" />
+    <Compile Include="Migrations\201810021839212_Rollup_1002.Designer.cs">
+      <DependentUpon>201810021839212_Rollup_1002.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
@@ -380,6 +410,33 @@
     <EmbeddedResource Include="Migrations\201808091807164_ServiceJobHistory.resx">
       <DependentUpon>201808091807164_ServiceJobHistory.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201808302049467_Rollup_0830.resx">
+      <DependentUpon>201808302049467_Rollup_0830.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809102330278_AssetManager.resx">
+      <DependentUpon>201809102330278_AssetManager.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809122127196_Rollup_0912.resx">
+      <DependentUpon>201809122127196_Rollup_0912.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809142151587_ContentComponents.resx">
+      <DependentUpon>201809142151587_ContentComponents.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809191735543_AddIsActiveToDevice.resx">
+      <DependentUpon>201809191735543_AddIsActiveToDevice.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809202157086_AssetManagerRefactor.resx">
+      <DependentUpon>201809202157086_AssetManagerRefactor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809252117562_Rollup_0925.resx">
+      <DependentUpon>201809252117562_Rollup_0925.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809271711053_ObsoleteFields.resx">
+      <DependentUpon>201809271711053_ObsoleteFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201810021839212_Rollup_1002.resx">
+      <DependentUpon>201810021839212_Rollup_1002.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
     </EmbeddedResource>
@@ -616,13 +673,19 @@
     <Content Include="Migrations\201808062254493_Rollup_0806_ufnCrm_GetFamilyTitleIncludeInactive.sql">
       <DependentUpon>201808062254493_Rollup_0806.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\201809142151587_ContentComponents_CreateContentComponentChannelType.sql">
+      <DependentUpon>201809142151587_ContentComponents.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201809252117562_Rollup_0925_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>201809252117562_Rollup_0925.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201810021839212_Rollup_1002_spCheckin_BadgeAttendance.sql">
+      <DependentUpon>201810021839212_Rollup_1002.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.sql">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\CreateDatabase\201707311527250_FirstNameGender.txt">
-      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
-    </Content>
-    <Content Include="Migrations\CreateDatabase\201707311527250_LastName.txt">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\CreateDatabase\201707311527250_NickName.txt">
@@ -635,6 +698,21 @@
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
+    <None Include="Migrations\201809142151587_ContentComponents_AdUnit.Lava">
+      <DependentUpon>201809142151587_ContentComponents.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\201809142151587_ContentComponents_Card.Lava">
+      <DependentUpon>201809142151587_ContentComponents.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\201809142151587_ContentComponents_Hero.Lava">
+      <DependentUpon>201809142151587_ContentComponents.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\201809142151587_ContentComponents_SideBySide.Lava">
+      <DependentUpon>201809142151587_ContentComponents.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\CreateDatabase\201707311527250_LastName.gz">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </None>
     <None Include="Migrations\Version 8.0\Version 1.8.0\201802092340176_Rollup_0209_spCrm_PersonDuplicateFinder.sql">
       <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
     </None>

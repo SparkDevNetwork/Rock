@@ -174,6 +174,7 @@ namespace RockWeb.Blocks.Core
                 Device.PrintToOverride = (PrintTo)System.Enum.Parse( typeof( PrintTo ), ddlPrintTo.SelectedValue );
                 Device.PrinterDeviceId = ddlPrinter.SelectedValueAsInt();
                 Device.PrintFrom = (PrintFrom)System.Enum.Parse( typeof( PrintFrom ), ddlPrintFrom.SelectedValue );
+                Device.IsActive = cbIsActive.Checked;
 
                 if ( Device.Location == null )
                 {
@@ -374,6 +375,7 @@ namespace RockWeb.Blocks.Core
             tbName.Text = Device.Name;
             tbDescription.Text = Device.Description;
             tbIpAddress.Text = Device.IPAddress;
+            cbIsActive.Checked = Device.IsActive;
             ddlDeviceType.SetValue( Device.DeviceTypeValueId );
             ddlPrintTo.SetValue( Device.PrintToOverride.ConvertToInt().ToString() );
             ddlPrinter.SetValue( Device.PrinterDeviceId );
@@ -442,10 +444,12 @@ namespace RockWeb.Blocks.Core
             tbName.ReadOnly = readOnly;
             tbDescription.ReadOnly = readOnly;
             tbIpAddress.ReadOnly = readOnly;
+            cbIsActive.Enabled = !readOnly;
             ddlDeviceType.Enabled = !readOnly;
             ddlPrintTo.Enabled = !readOnly;
             ddlPrinter.Enabled = !readOnly;
             ddlPrintFrom.Enabled = !readOnly;
+            SetHighlightLabelVisibility( Device, readOnly );
 
             btnSave.Visible = !readOnly;
         }
@@ -493,6 +497,29 @@ namespace RockWeb.Blocks.Core
             }
 
             return isValid;
+        }
+
+        /// <summary>
+        /// Sets the highlight label visibility.
+        /// </summary>
+        /// <param name="device">The group.</param>
+        private void SetHighlightLabelVisibility( Device device, bool readOnly )
+        {
+            if ( readOnly )
+            {
+                // if we are just showing readonly detail of the group, we don't have to worry about the highlight labels changing while editing on the client
+                hlInactive.Visible = !device.IsActive;
+            }
+            else
+            {
+                // in edit mode, the labels will have javascript handle if/when they are shown
+                hlInactive.Visible = true;
+            }
+
+            if ( device.IsActive )
+            {
+                hlInactive.Style[HtmlTextWriterStyle.Display] = "none";
+            }
         }
 
         /// <summary>

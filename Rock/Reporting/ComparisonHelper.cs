@@ -228,7 +228,8 @@ namespace Rock.Reporting
                         ComparisonType.IsNotBlank |
                         ComparisonType.NotEqualTo;
 
-        /// Returns the result of doing a numeric comparison of the specified comparison type using the value and compareValue(s)
+        /// <summary>
+        /// Compares the numeric values.
         /// </summary>
         /// <param name="comparisonType">Type of the comparison.</param>
         /// <param name="value">The value.</param>

@@ -264,23 +264,23 @@ namespace Rock.Web.UI.Controls
 
             // a little javascript to make the daterange picker behave similar to the bootstrap-datepicker demo site's date range picker
             var scriptFormat = @"
-$('#{0}').datepicker({{ format: '{2}', todayHighlight: true }}).on('changeDate', function (ev) {{
-    // close the start date picker and set focus to the end date
-    $('#{0}').data('datepicker').hide();
-    $('#{1}')[0].focus();
-    if ($('#{1}').data('datepicker').dates.length == 0) {{
-        $('#{1}').data('datepicker').show();
-    }}
-}});
-
-$('#{1}').datepicker({{ format: '{2}', todayHighlight: true }}).on('changeDate', function (ev) {{
-    // close the enddate picker immediately after selecting an end date
-    $('#{1}').data('datepicker').hide();
+$(function() {{
+    $('#{3}').datepicker({{
+        format: '{2}',
+        todayHighlight: true,
+        autoclose: true,
+        inputs: $('#{3} .form-control')
+    }});
 }});
 
 // if the guest clicks the addon select all the text in the input
 $('#{3}').find('.input-group-lower .input-group-addon').on('click', function () {{
     $(this).siblings('.form-control').select();
+}});
+
+$('#{4}').on('changeDate', function (ev) {{
+    // set focus to the end date
+    $('#{5}')[0].focus();
 }});
 
 // if the guest clicks the addon select all the text in the input
@@ -292,7 +292,6 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
 $('#{4},#{5}').on('change', function (ev) {{
     ValidatorValidate({6});
 }});
-
 ";
             string lowerSelector = string.Format( "{0} .input-group-lower.date", this.ClientID );
             string upperSelector = string.Format( "{0} .input-group-upper.date", this.ClientID );
@@ -312,11 +311,13 @@ $('#{4},#{5}').on('change', function (ev) {{
             RockControlHelper.CreateChildControls( this, Controls );
 
             _tbLowerValue = new DatePicker();
+            _tbLowerValue.EnableJavascript = false;
             _tbLowerValue.ID = this.ID + "_lower";
             _tbLowerValue.CssClass = "input-group-lower js-lower";
             Controls.Add( _tbLowerValue );
 
             _tbUpperValue = new DatePicker();
+            _tbUpperValue.EnableJavascript = false;
             _tbUpperValue.ID = this.ID + "_upper";
             _tbUpperValue.CssClass = "input-group-upper js-upper";
             Controls.Add( _tbUpperValue );

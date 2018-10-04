@@ -30,6 +30,7 @@ namespace Rock.Tests.Integration.Model
     /// </summary>
     /// <seealso cref="System.IDisposable" />
     [TestClass]
+    [Ignore()]
     public class AttendanceCodeTests : IDisposable
     {
         /// <summary>

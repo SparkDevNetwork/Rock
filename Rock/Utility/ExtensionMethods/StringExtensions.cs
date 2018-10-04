@@ -33,6 +33,17 @@ namespace Rock
         #region String Extensions
 
         /// <summary>
+        /// Joins and array of strings using the provided separator.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="separator">The separator.</param>
+        /// <returns>Concatencated string.</returns>
+        public static string JoinStrings( this IEnumerable<string> source, string separator )
+        {
+            return string.Join( separator, source.ToArray() );
+        }
+
+        /// <summary>
         /// Removes special characters from the string so that only Alpha, Numeric, '.' and '_' remain;
         /// </summary>
         /// <param name="str">The identifier.</param>
@@ -101,6 +112,7 @@ namespace Rock
         /// <returns>
         ///   <c>true</c> if [is not null or whitespace] [the specified string]; otherwise, <c>false</c>.
         /// </returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use IsNotNullOrWhiteSpace instead. Fixes non-standard casing.", false )]
         public static bool IsNotNullOrWhitespace( this string str )
         {
@@ -380,6 +392,25 @@ namespace Rock
             else
             {
                 return str.Substring( 0, length );
+            }
+        }
+
+        /// <summary>
+        /// Returns a substring of a string. Uses an empty string for any part that doesn't exist and will return a partial substring if the string isn't long enough for the requested length (The built-in method would throw an exception in these cases).
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="startIndex">The 0-based starting position.</param>
+        /// <param name="maxLength">The maximum length.</param>
+        /// <returns></returns>
+        public static string SafeSubstring( this string str, int startIndex, int maxLength )
+        {
+            if ( str == null || maxLength < 0 || startIndex < 0 || startIndex > str.Length )
+            {
+                return string.Empty;
+            }
+            else
+            {
+                return str.Substring( startIndex, Math.Min( maxLength, str.Length - startIndex ) );
             }
         }
 

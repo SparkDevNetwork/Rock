@@ -12,14 +12,14 @@
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" Title="Warning" Visible="false" />
 
                 <fieldset>
-                    <asp:Panel ID="pnlRequester" runat="server">
+                    <asp:Panel ID="pnlRequester" CssClass="prayer-requester" runat="server">
                         <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
                         <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="false" />
                         <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="false" />
-                        <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Mobile Phone" /> 
+                        <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Mobile Phone" />
                         <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                     </asp:Panel>
-                    
+
                     <Rock:ButtonDropDownList ID="bddlCategory" runat="server" Label="Category"></Rock:ButtonDropDownList>
 
                     <em ID="lblCount" runat="server" class="pull-right badge"></em>
@@ -46,12 +46,12 @@
 
             </div>
 
-            
+
 
         </asp:Panel>
 
         <asp:Panel runat="server" ID="pnlReceipt" Visible="False" CssClass="panel panel-block">
-            
+
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-cloud-upload"></i> Add Prayer Request</h1>
             </div>

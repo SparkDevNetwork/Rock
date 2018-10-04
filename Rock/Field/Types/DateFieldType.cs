@@ -728,7 +728,14 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
         {
-            return PropertyFilterExpression( configurationValues, filterValues, parameterExpression, "ValueAsDateTime", typeof( DateTime? ) );
+            var comparison = PropertyFilterExpression( configurationValues, filterValues, parameterExpression, "ValueAsDateTime", typeof( DateTime? ) );
+
+            if ( comparison == null )
+            {
+                return new Rock.Data.NoAttributeFilterExpression();
+            }
+
+            return comparison;
         }
 
         /// <summary>

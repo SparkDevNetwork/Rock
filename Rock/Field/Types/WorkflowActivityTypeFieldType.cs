@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -144,10 +145,15 @@ namespace Rock.Field.Types
 
                 if ( string.IsNullOrWhiteSpace( formattedValue ) )
                 {
-                    formattedValue = new WorkflowActivityTypeService( new RockContext() ).Queryable()
-                        .Where( a => a.Guid.Equals( guid ) )
-                        .Select( a => a.Name )
-                        .FirstOrDefault();
+                    using ( var rockContext = new RockContext() )
+                    {
+                        formattedValue = new WorkflowActivityTypeService( rockContext )
+                            .Queryable()
+                            .AsNoTracking()
+                            .Where( a => a.Guid.Equals( guid ) )
+                            .Select( a => a.Name )
+                            .FirstOrDefault();
+                    }
                 }
             }
 

@@ -367,6 +367,12 @@ namespace Rock
                     // so this is a special case
                     ( (Rock.Web.UI.Controls.CampusPicker)listControl ).SelectedCampusId = intValue.Value;
                 }
+                else if ( listControl is Rock.Web.UI.Controls.IDefinedValuePicker && intValue.HasValue)
+                {
+                    // A DefinedValuePicker can be configured to only load Active DefinedValues, but if trying to set the value to an Inactive DefinedValue, it'll add that DefinedValue to the list
+                    // so this is a special case
+                    ( listControl as Rock.Web.UI.Controls.IDefinedValuePicker ).SelectedDefinedValuesId = new int[] { intValue.Value };
+                }
                 else
                 {
                     var valueItem = listControl.Items.FindByValue( value );
@@ -500,6 +506,18 @@ namespace Rock
         /// <param name="useDescriptionAsText">if set to <c>true</c> [use description as text].</param>
         public static void BindToDefinedType( this ListControl listControl, DefinedTypeCache definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
         {
+            // For IDefinedValuePicker types: Before this section of code was added, BindToDefinedType did not update DefinedTypeId, because not all ListControls have it.
+            // If BindToDefinedType was used instead of DefinedTypeId, the control did show the defined values and the user was be able to pick it, and save.
+            // However, when the selected value(s) was/were set pragmatically, the list gets re-populated using DefinedTypeId. Because it is not set, the list will be empty except for the selected value(s)
+            // For IDefinedValuePicker DefinedTypeId should be set instead of using BindToDefinedType.
+            if ( listControl is Rock.Web.UI.Controls.IDefinedValuePicker )
+            {
+                Web.UI.Controls.IDefinedValuePicker definedValuePicker = ( Rock.Web.UI.Controls.IDefinedValuePicker ) listControl;
+                definedValuePicker.DefinedTypeId = definedType.Id;
+                definedValuePicker.DisplayDescriptions = useDescriptionAsText;
+                return;
+            }
+
             var ds = definedType.DefinedValues
                 .Select( v => new
                 {

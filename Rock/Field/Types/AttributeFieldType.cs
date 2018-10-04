@@ -31,7 +31,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type used to display a dropdown list of attributes
     /// </summary>
-    public class AttributeFieldType : FieldType
+    public class AttributeFieldType : FieldType, ICachedEntitiesFieldType
     {
 
         #region Configuration
@@ -228,6 +228,32 @@ namespace Rock.Field.Types
 
         }
 
+        #endregion
+
+        #region ICachedEntitiesFieldType Members
+        /// <summary>
+        /// Gets the cached attributes.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public List<IEntityCache> GetCachedEntities( string value )
+        {
+            var attributes = new List<IEntityCache>();
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
+                {
+                    var attribute = AttributeCache.Get( guid );
+                    if ( attribute != null )
+                    {
+                        attributes.Add( attribute );
+                    }
+                }
+            }
+
+            return attributes;
+        }
         #endregion
 
         #region Edit Control

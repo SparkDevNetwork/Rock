@@ -265,15 +265,19 @@ namespace RockWeb.Blocks.Core
                         .Where( h =>
                             ( h.EntityTypeId == entityTypeCache.Id && h.EntityId == _entity.Id )
                             || ( h.EntityTypeId == groupEntityTypeId && familyIds.Contains( h.EntityId ) ) );
+
+                        // as per issue #1594, if relatedEntityType is an Attribute then check View Authorization
+                        var attributeEntity = EntityTypeCache.Get( Rock.SystemGuid.EntityType.ATTRIBUTE.AsGuid() );
+                        var personAttributes = new AttributeService( rockContext ).GetByEntityTypeId( entityTypeCache.Id ).ToList().Select( a => AttributeCache.Get( a ) );
+                        var allowedAttributeIds = personAttributes.Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ).Select( a => a.Id ).ToList();
+                        qry = qry.Where( a => ( a.RelatedEntityTypeId == attributeEntity.Id ) ? allowedAttributeIds.Contains( a.RelatedEntityId.Value ) : true );                            
                     }
                     else
                     {
-
                         qry = historyService.Queryable().Include( a => a.CreatedByPersonAlias.Person )
                         .Where( h =>
                             ( h.EntityTypeId == entityTypeCache.Id && h.EntityId == _entity.Id ) );
                     }
-
 
                     var historyCategories = new CategoryService( rockContext ).GetByEntityTypeId( EntityTypeCache.GetId<Rock.Model.History>() ).ToList().Select( a => CategoryCache.Get( a ) );
                     var allowedCategoryIds = historyCategories.Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ).Select( a => a.Id ).ToList();

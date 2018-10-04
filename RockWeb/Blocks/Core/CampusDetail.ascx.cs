@@ -94,6 +94,15 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            var campusLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid() );
+
+            if ( campusLocationType.Id != lpLocation.Location.LocationTypeValueId )
+            {
+                nbEditModeMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                nbEditModeMessage.Text = "The selected named location is not a 'Campus' location type. Please update this before continuing.";
+                return;
+            }
+
             Campus campus;
             var rockContext = new RockContext();
             var campusService = new CampusService( rockContext );
@@ -123,7 +132,7 @@ namespace RockWeb.Blocks.Core
 
             campus.PhoneNumber = tbPhoneNumber.Text;
 
-            lpLocation.Location = campus.Location;
+            campus.LocationId = lpLocation.Location.Id;
 
             campus.ShortCode = tbCampusCode.Text;
             campus.TimeZoneId = ddlTimeZone.SelectedValue;

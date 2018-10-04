@@ -100,6 +100,11 @@ namespace Rock.Utility
                 return Enum.Parse( propertyType, value );
             }
 
+            if ( propertyType == typeof( TimeSpan ) )
+            {
+                return value.AsTimeSpan();
+            }
+
             return Convert.ChangeType( value, propertyType );
         }
 
@@ -109,14 +114,14 @@ namespace Rock.Utility
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="entityField">The entity field.</param>
-        /// <param name="values">The filter parameter values.</param>
+        /// <param name="values">The filter parameter values: FieldName, <see cref="ComparisonType">Comparison Type</see>, (optional) Comparison Value(s)</param>
         /// <returns></returns>
         public static Expression GetAttributeExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField entityField, List<string> values )
         {
             if ( !values.Any() )
             {
                 // if no filter parameter values where specified, don't filter
-                return Expression.Constant( true );
+                return new NoAttributeFilterExpression();
             }
 
             var service = new AttributeValueService( ( RockContext ) serviceInstance.Context );
@@ -146,12 +151,11 @@ namespace Rock.Utility
             // first we find the Attribute Values that match those values and then we exclude the associated Entities from the result set.
             ComparisonType? comparisonType = ComparisonType.EqualTo;
             ComparisonType? evaluatedComparisonType = comparisonType;
-            string compareToValue = null;
 
+            // If Values.Count >= 2, then Values[0] is ComparisonType, and Values[1] is a CompareToValue. Otherwise, Values[0] is a CompareToValue (for example, a SingleSelect attribute)
             if ( values.Count >= 2 )
             {
                 comparisonType = values[0].ConvertToEnumOrNull<ComparisonType>();
-                compareToValue = values[1];
 
                 switch ( comparisonType )
                 {
@@ -194,27 +198,10 @@ namespace Rock.Utility
             }
             else
             {
-                // AttributeFilterExpression returned NULL (the FieldType didn't specify any additional filter on AttributeValue),
-                // so just filter based on if the AttributeValue exists with a non-empty value
-                if ( entityField.FieldType.Field.FilterComparisonType.HasFlag( ComparisonType.IsBlank ) && string.IsNullOrEmpty( compareToValue ) )
-                {
-                    // in the case of EqualTo/NotEqualTo with a NULL compareToValue, filter this using an IsBlank/IsNotBlank filter ( if the fieldtype supports it )
-                    if ( comparisonType == ComparisonType.EqualTo )
-                    {
-                        // treat as IsBlank, but invert so that it ends being "NOT (people that *have* a value)"
-                        // this will make is so that the filter will return people that have a blank value or no AttributeValue record
-                        comparisonType = ComparisonType.IsBlank;
-                        evaluatedComparisonType = ComparisonType.IsNotBlank;
-                    }
-                    else if ( comparisonType == ComparisonType.NotEqualTo )
-                    {
-                        // treat as IsNotBlank
-                        comparisonType = ComparisonType.IsNotBlank;
-                        evaluatedComparisonType = ComparisonType.IsNotBlank;
-                    }
-                }
-
-                attributeValues = attributeValues.Where( a => !string.IsNullOrEmpty( a.Value ) );
+                // AttributeFilterExpression returned NULL ( the FieldType didn't specify any additional filter on AttributeValue),
+                // ideally the FieldType should have returned a NoAttributeFilterExpression, but just in case, don't filter
+                System.Diagnostics.Debug.WriteLine( $"Unexpected NULL result from FieldType.Field.AttributeFilterExpression for { entityField.FieldType }" );
+                return new NoAttributeFilterExpression();
             }
 
             IQueryable<int> ids = attributeValues.Select( v => v.EntityId.Value );

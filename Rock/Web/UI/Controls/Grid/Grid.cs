@@ -1085,6 +1085,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
                 if ( !this.ShowActionsInHeader || !this.ShowActionRow )
                 {
+                    _actionHeaderRow.Visible = false;
                     _headerGridActionsMirror.Visible = false;
                 }
 
@@ -1112,9 +1113,22 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             for ( int i = 0; i < this.Columns.Count; i++ )
             {
                 var column = this.Columns[i];
-                if ( !( column is INotRowSelectedField ) && !( column is HyperLinkField ) )
+                if ( !( column is INotRowSelectedField ) )
                 {
-                    RowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
+                    if ( !( column is HyperLinkField ) )
+                    {
+                        if ( column is RockTemplateField )
+                        {
+                            if ( ( column as RockTemplateField ).OnRowSelectedEnabled )
+                            {
+                                RowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
+                            }
+                        }
+                        else
+                        {
+                            RowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
+                        }
+                    }
                 }
 
                 // get data priority from column
@@ -1735,11 +1749,10 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             {
                 // Columns to export with their column index as the key
                 var gridColumns = new Dictionary<int, DataControlField>();
-
-                for ( int i = 0; i < this.Columns.Count; i++ )
+                for ( int i = 0; i < this.CreatedColumns.Count; i++ )
                 {
-                    var dataField = this.Columns[i];
-                    var rockField = this.Columns[i] as IRockGridField;
+                    var dataField = this.CreatedColumns[i];
+                    var rockField = this.CreatedColumns[i] as IRockGridField;
                     if ( rockField != null &&
                         (
                             rockField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude ||
@@ -1798,11 +1811,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                         else if ( col.Value is RockTemplateField )
                         {
                             var fieldCell = gridViewRowCellLookup[col.Value];
-                            var textControls = fieldCell.ControlsOfTypeRecursive<Control>().OfType<ITextControl>();
-                            if ( textControls.Any() )
-                            {
-                                exportValue = textControls.Select( a => a.Text ).Where( t => !string.IsNullOrWhiteSpace( t ) ).ToList().AsDelimited( string.Empty ).ReverseCurrencyFormatting();
-                            }
+                            exportValue = ( col.Value as RockTemplateField ).GetExportValue( gridViewRow, fieldCell );
                         }
 
                         ExcelHelper.SetExcelValue( worksheet.Cells[rowCounter, columnCounter], exportValue );
@@ -1882,6 +1891,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 Dictionary<BoundField, PropertyInfo> boundFieldPropLookup = new Dictionary<BoundField, PropertyInfo>();
                 var attributeFields = this.Columns.OfType<AttributeField>().ToList();
                 var lavaFields = new List<LavaField>();
+                var rockTemplateFields = new List<RockTemplateField>();
                 var visibleFields = new Dictionary<int, DataControlField>();
 
                 int fieldOrder = 0;
@@ -1893,17 +1903,40 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                         lavaFields.Add( lavaField );
                         visibleFields.Add( fieldOrder++, lavaField );
                     }
+
                     if ( dataField is BoundField )
                     {
                         var boundField = dataField as BoundField;
                         visibleFields.Add( fieldOrder++, boundField );
+                    }
+
+                    if ( dataField is RockTemplateField )
+                    {
+                        var rockTemplateField = dataField as RockTemplateField;
+                        rockTemplateFields.Add( rockTemplateField );
+                        if ( rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude || ( rockTemplateField.Visible == true && rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.IncludeIfVisible ) )
+                        {
+                            visibleFields.Add( fieldOrder++, rockTemplateField );
+                        }
+                    }
+                }
+
+                
+
+                if ( CustomColumns != null && CustomColumns.Any() )
+                {
+                    foreach ( var columnConfig in CustomColumns )
+                    {
+                        var column = columnConfig.GetGridColumn();
+                        lavaFields.Add( column );
+                        visibleFields.Add( fieldOrder++, column );
                     }
                 }
 
                 var oType = GetDataSourceObjectType();
 
                 // get all properties of the objects in the grid
-                IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
+                List<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
 
                 // If this is a DotLiquid.Drop class, don't include any of the properties that are inherited from DotLiquid.Drop
                 if ( typeof( DotLiquid.Drop ).IsAssignableFrom( oType ) )
@@ -2086,7 +2119,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                                     exportValue = GetExportValue( prop, propValue, IsDefinedValue( definedValueFields, propIsDefinedValueLookup, prop ), cell ).ReverseCurrencyFormatting();
                                 }
                             }
-                            else if ( boundField is PersonField )
+                            else if ( boundField.DataField?.Contains(".") == true )
                             {
                                 exportValue = item.GetPropertyValue( boundField.DataField );
                             }
@@ -2116,6 +2149,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                                 }
                                 mergeValues.Add( dataFieldItem.Key, dataFieldValue );
                             }
+                            mergeValues.Add( "Row", item );
 
                             string resolvedValue = lavaField.LavaTemplate.ResolveMergeFields( mergeValues );
                             resolvedValue = resolvedValue.Replace( "~~/", themeRoot ).Replace( "~/", appRoot ).ReverseCurrencyFormatting().ToString();
@@ -2130,9 +2164,30 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
                             continue;
                         }
+
+                        var rockTemplateField = dataField as RockTemplateField;
+                        if ( rockTemplateField != null )
+                        {
+                            var row = this.Rows[dataIndex];
+                            var cell = row?.Cells.OfType<DataControlFieldCell>().Where( a => a.ContainingField == rockTemplateField ).FirstOrDefault();
+                            if ( cell != null )
+                            {
+                                var exportValue = rockTemplateField.GetExportValue( row, cell );
+
+                                if ( exportValue != null )
+                                {
+                                    worksheet.Cells[rowCounter, columnCounter].Value = exportValue;
+
+                                    // Update column formatting based on data
+                                    ExcelHelper.FinalizeColumnFormat( worksheet, columnCounter, exportValue );
+                                }
+
+                                continue;
+                            }
+                        }
                     }
 
-                    foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
+                foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
                     {
                         columnCounter++;
                         object propValue = prop.GetValue( item, null );
@@ -3182,9 +3237,9 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 service.Add( entitySet );
                 rockContext.SaveChanges();
                 entitySetItems.ForEach( a =>
-                 {
-                     a.EntitySetId = entitySet.Id;
-                 } );
+                {
+                    a.EntitySetId = entitySet.Id;
+                } );
 
                 rockContext.BulkInsert( entitySetItems );
 
