@@ -180,7 +180,7 @@ namespace Rock.Jobs
                     errorList.AddRange( errorMessages );
 
                     // be conservative: only mark as notified if we are sure the email didn't fail 
-                    if ( errorMessages.Any() || !sendSuccess )
+                    if ( sendSuccess == false )
                     {
                         continue;
                     }
@@ -201,7 +201,7 @@ namespace Rock.Jobs
                 {
                     StringBuilder sb = new StringBuilder();
                     sb.AppendLine();
-                    sb.Append( "Errors: " );
+                    sb.Append( "Errors in GroupLeaderPendingNotificationJob: " );
                     errorList.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                     string errors = sb.ToString();
                     context.Result += errors;
