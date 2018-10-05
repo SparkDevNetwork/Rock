@@ -107,11 +107,7 @@ namespace Rock.Workflow.Action
                                         }
                                         else
                                         {
-                                            string smsNumber = phoneNumber.Number;
-                                            if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
-                                            {
-                                                smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
-                                            }
+                                            string smsNumber = phoneNumber.E164Format;
 
                                             var recipient = new RecipientData( smsNumber, mergeFields );
                                             recipients.Add( recipient );
@@ -160,11 +156,7 @@ namespace Rock.Workflow.Action
                                                 .FirstOrDefault();
                                             if ( phoneNumber != null )
                                             {
-                                                string smsNumber = phoneNumber.Number;
-                                                if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
-                                                {
-                                                    smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
-                                                }
+                                                string smsNumber = phoneNumber.E164Format;
 
                                                 var recipientMergeFields = new Dictionary<string, object>( mergeFields );
                                                 var recipient = new RecipientData( smsNumber, recipientMergeFields );

@@ -214,11 +214,7 @@ namespace Rock.Communication.Transport
 
                                             string message = ResolveText( communication.SMSMessage, currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
 
-                                            string twilioNumber = phoneNumber.Number;
-                                            if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
-                                            {
-                                                twilioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
-                                            }
+                                            string twilioNumber = phoneNumber.E164Format;
 
                                             MessageResource response = SendToTwilio( fromPhone, callbackUrl, attachmentMediaUrls, message, twilioNumber );
 

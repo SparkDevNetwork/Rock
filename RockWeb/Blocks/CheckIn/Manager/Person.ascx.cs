@@ -268,7 +268,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             var smsMessage = new RockSMSMessage();
             // NumberFormatted and NumberFormattedWithCountryCode does NOT work (this pattern is repeated in Twilio.cs)
-            smsMessage.AddRecipient( new RecipientData( "+" + phoneNumber.CountryCode + phoneNumber.Number ) );
+            smsMessage.AddRecipient( new RecipientData( phoneNumber.E164Format ) );
             smsMessage.FromNumber = smsFromNumber;
             smsMessage.Message = tbSmsMessage.Value;
             var errorMessages = new List<string>();

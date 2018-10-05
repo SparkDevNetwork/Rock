@@ -191,6 +191,26 @@ namespace Rock.Model
         [NotMapped]
         private Dictionary<int, History.HistoryChangeList> PersonHistoryChanges { get; set; }
 
+        /// <summary>
+        /// Formats the phone number in IE64 format. Should be used when formatting numbers for sending SMS. https://support.twilio.com/hc/en-us/articles/223183008-Formatting-International-Phone-Numbers
+        /// </summary>
+        /// <value>
+        public string E164Format
+        {
+            get {
+                if ( this.Number.IsNullOrWhiteSpace() )
+                    return string.Empty;
+
+                // UK numbers (+44) take off leading 0
+                if (this.CountryCode.IsNullOrWhiteSpace() && this.CountryCode == "44" && this.Number.StartsWith("0") )
+                {
+                    return "+" + this.CountryCode + this.Number.Substring( 1 );
+                }
+
+                return "+" + ( this.CountryCode ?? string.Empty ) + this.Number;
+            }
+        }
+
         #endregion
 
         #region Methods
