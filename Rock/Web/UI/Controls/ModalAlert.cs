@@ -45,8 +45,17 @@ namespace Rock.Web.UI.Controls
         /// <param name="alertType">Type of the message.</param>
         public void Show( string message, ModalAlertType alertType )
         {
-            var cleanMessage = System.Net.WebUtility.HtmlEncode( message );
-            string script = string.Format( "bootbox.alert('<h4>{0}</h4>{1}');", alertType.ConvertToString(), cleanMessage );
+			var cleanMessage = System.Net.WebUtility.HtmlEncode( message );
+            string script;
+            if ( alertType == ModalAlertType.None )
+            {
+                script = $"bootbox.alert('{cleanMessage)}');";
+            }
+            else
+            {
+                script = $"bootbox.alert('<h4>{alertType.ConvertToString()}</h4>{cleanMessage}');";
+            }
+
             ScriptManager.RegisterStartupScript( this, this.GetType(), ScriptKey, script, true );
         }
 
@@ -64,16 +73,18 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public enum ModalAlertType
     {
+        None,
+
         /// <summary>
         /// 
         /// </summary>
         Alert,
-        
+
         /// <summary>
         /// 
         /// </summary>
         Information,
-        
+
         /// <summary>
         /// 
         /// </summary>
