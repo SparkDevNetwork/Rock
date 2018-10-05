@@ -15,8 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Rock.Web
@@ -60,12 +60,31 @@ namespace Rock.Web
         {
             if ( dateTime != null )
             {
-                return Add(term, dateTime.Value.ToString(format), showIfBlank);
+                return Add( term, dateTime.Value.ToString( format ), showIfBlank );
             }
             else
             {
                 return Add( term, null, showIfBlank );
             }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="DescriptionList"/> is horizontal.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if horizontal; otherwise, <c>false</c>.
+        /// </value>
+        private bool Horizontal { get; set; }
+
+        /// <summary>
+        /// Sets the horizontal.
+        /// </summary>
+        /// <param name="horizontal">if set to <c>true</c> [horizontal].</param>
+        /// <returns></returns>
+        public DescriptionList SetHorizontal( bool horizontal )
+        {
+            this.Horizontal = horizontal;
+            return this;
         }
 
         /// <summary>
@@ -80,11 +99,19 @@ namespace Rock.Web
             {
                 if ( _termDescriptionList.Any() )
                 {
+                    
                     string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
 
                     StringBuilder result = new StringBuilder();
 
-                    result.Append(@"<dl>");
+                    if ( Horizontal )
+                    {
+                        result.Append( @"<dl class='dl-horizontal'>" );
+                    }
+                    else
+                    {
+                        result.Append( @"<dl>" );
+                    }
 
                     foreach ( var pair in _termDescriptionList )
                     {
