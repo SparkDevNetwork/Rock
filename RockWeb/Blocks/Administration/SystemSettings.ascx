@@ -4,15 +4,13 @@
 <ContentTemplate>
 
     <section class="panel panel-block">
-        <div class="panel-heading rollover-container clearfix">
+        <div class="panel-heading">
             <h1 class="panel-title">
                 <asp:Literal ID="lCategoryName" runat="server" />
             </h1>
-            <div class="actions rollover-item pull-right">
-                
-            </div>
         </div>
         <div class="panel-body">
+            <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
             <asp:ValidationSummary ID="valSummaryTop" runat="server"  HeaderText="Please correct the following:" CssClass="alert alert-validation" />
             <fieldset id="fsAttributes" runat="server" class="attribute-values"></fieldset>
             <asp:Panel ID="pnlEditActions" runat="server" CssClass="actions" Visible="false">

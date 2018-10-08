@@ -24,6 +24,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -258,48 +259,57 @@ namespace RockWeb.Blocks.Administration
 
         private void CreateControls( bool setValues )
         {
+            nbEditModeMessage.Visible = false;
             fsAttributes.Controls.Clear();
 
             string validationGroup = string.Format( "vgAttributeValues_{0}", this.BlockId );
             valSummaryTop.ValidationGroup = validationGroup;
             btnSave.ValidationGroup = validationGroup;
 
-            foreach ( int attributeId in AttributeList )
+            if (AttributeList.Count > 0)
             {
-                var attribute = AttributeCache.Get( attributeId );
-                string formattedValue = string.Empty;
-
-                if ( ViewMode != VIEW_MODE_EDIT || !attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                foreach (int attributeId in AttributeList)
                 {
-                    if ( attribute.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
-                    {
-                        formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attribute.EntityTypeId, null, attribute.DefaultValue, attribute.QualifierValues, true );
-                    }
-                    else
-                    {
-                        formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attribute.EntityTypeId, null, attribute.DefaultValue, attribute.QualifierValues, false );
-                    }
+                    var attribute = AttributeCache.Get( attributeId );
+                    string formattedValue = string.Empty;
 
-                    if ( !string.IsNullOrWhiteSpace( formattedValue ) )
+                    if (ViewMode != VIEW_MODE_EDIT || !attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ))
                     {
-                        if ( attribute.FieldType.Class == typeof( Rock.Field.Types.MatrixFieldType ).FullName )
+                        if (attribute.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName)
                         {
-                            fsAttributes.Controls.Add( new RockLiteral { Label = attribute.Name, Text = formattedValue, CssClass = "matrix-attribute" } );
+                            formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attribute.EntityTypeId, null, attribute.DefaultValue, attribute.QualifierValues, true );
                         }
                         else
                         {
-                            fsAttributes.Controls.Add( new RockLiteral { Label = attribute.Name, Text = formattedValue } );
+                            formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attribute.EntityTypeId, null, attribute.DefaultValue, attribute.QualifierValues, false );
+                        }
+
+                        if (!string.IsNullOrWhiteSpace( formattedValue ))
+                        {
+                            if (attribute.FieldType.Class == typeof( Rock.Field.Types.MatrixFieldType ).FullName)
+                            {
+                                fsAttributes.Controls.Add( new RockLiteral { Label = attribute.Name, Text = formattedValue, CssClass = "matrix-attribute" } );
+                            }
+                            else
+                            {
+                                fsAttributes.Controls.Add( new RockLiteral { Label = attribute.Name, Text = formattedValue } );
+                            }
                         }
                     }
+                    else
+                    {
+                        attribute.AddControl( fsAttributes.Controls, attribute.DefaultValue, validationGroup, setValues, true );
+                    }
                 }
-                else
-                {
-                    attribute.AddControl( fsAttributes.Controls, attribute.DefaultValue, validationGroup, setValues, true );
-                }
+            }
+            else
+            {
+                nbEditModeMessage.Text = "No Setting found under the selected category.";
+                nbEditModeMessage.Visible = true;
             }
 
             pnlActions.Visible = ( ViewMode != VIEW_MODE_VIEW );
-            pnlEditActions.Visible = ( ViewMode == VIEW_MODE_VIEW );
+            pnlEditActions.Visible = (ViewMode == VIEW_MODE_VIEW && AttributeList.Count > 0);
         }
 
         #endregion
