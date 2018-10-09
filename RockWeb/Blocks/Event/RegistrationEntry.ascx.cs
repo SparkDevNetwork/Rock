@@ -2647,7 +2647,7 @@ namespace RockWeb.Blocks.Event
                     familyId = RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask ?
                         multipleFamilyGroupIds[familyGuid] :
                         singleFamilyId.Value;
-                    PersonService.AddPersonToFamily( person, true, multipleFamilyGroupIds[familyGuid], familyRoleId, rockContext );
+                    PersonService.AddPersonToFamily( person, true, familyId.Value, familyRoleId, rockContext );
                 }
                 else
                 {
