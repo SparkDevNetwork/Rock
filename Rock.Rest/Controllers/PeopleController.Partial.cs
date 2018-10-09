@@ -666,24 +666,11 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetSearchDetails/{personId}" )]
-        [Obsolete( "Returns incorrect results, will be removed in a future version" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Returns incorrect results, will be removed in a future version", true )]
         public string GetImpersonationParameterObsolete( int personId )
         {
-            // NOTE: This route is called GetSearchDetails but really returns an ImpersonationParameter due to a copy/paste bug. 
-            // Marked obsolete but kept around in case anybody was taking advantage of this bug 
-
-            string result = string.Empty;
-
-            var rockContext = this.Service.Context as Rock.Data.RockContext;
-
-            var person = new PersonService( rockContext ).Queryable().Include( a => a.Aliases ).AsNoTracking().FirstOrDefault( a => a.Id == personId );
-
-            if ( person != null )
-            {
-                result = person.ImpersonationParameter;
-            }
-
-            return result;
+            throw new NotSupportedException();
         }
 
         /// <summary>

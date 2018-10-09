@@ -54,6 +54,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the value that should be exported to Excel
+        /// </summary>
+        /// <param name="row">The row.</param>
+        /// <param name="dataControlFieldCell">The data control field cell.</param>
+        /// <returns></returns>
+        public override object GetExportValue( GridViewRow row, DataControlFieldCell dataControlFieldCell )
+        {
+            var literal = dataControlFieldCell.FindControl( this.ID ) as Literal;
+            return literal?.Text;
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         public class LiteralTemplate : ITemplate

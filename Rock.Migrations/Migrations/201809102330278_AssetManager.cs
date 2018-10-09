@@ -16,9 +16,6 @@
 //
 namespace Rock.Migrations
 {
-    using System;
-    using System.Data.Entity.Migrations;
-    
     /// <summary>
     ///
     /// </summary>
@@ -61,8 +58,6 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateEntityType( "Rock.Storage.AssetStorage.AmazonS3Component", "Amazon S3 Component", "Rock.Storage.AssetStorage.AmazonS3Component, Rock, Version=1.9.0.2, Culture=neutral, PublicKeyToken=null", false, true, "FFE9C4A0-7AB7-48CA-8938-EC73DEC134E8" );
             RockMigrationHelper.UpdateEntityType( "Rock.Storage.AssetStorage.FileSystemComponent", "File System Component", "Rock.Storage.AssetStorage.FileSystemComponent, Rock, Version=1.9.0.2, Culture=neutral, PublicKeyToken=null", false, true, "FFEA94EA-D394-4C1A-A3AE-23E6C50F047A" );
 
-            AddLocalContentAsset();
-
             RockMigrationHelper.AddPage( true, "C831428A-6ACD-4D49-9B2D-046D399E3123", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Asset Storage Systems", "", "1F5D5991-C586-45FC-A5AC-B7CD4D533990", "fa fa-cloud" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( true, "1F5D5991-C586-45FC-A5AC-B7CD4D533990", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Asset Storage System Detail", "", "299751A1-EBE2-467C-8271-44BA13278331", "fa fa-cloud" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( true, "B4A24AB7-9369-4055-883F-4F4892C39AE3", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Asset Manager", "", "D2B919E2-3725-438F-8A86-AC87F81A72EB", "fa fa-folder-open" ); // Site:Rock RMS
@@ -99,7 +94,6 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "0579DEB6-5E53-4295-8578-D8EC8916D84D", "D427EC52-1F82-4C02-B4EE-FCA78D038CB0", @"False" );
             RockMigrationHelper.UpdateFieldType( "Asset", "", "Rock", "Rock.Field.Types.AssetFieldType", "4E4E8692-23B4-49EA-88B4-2AB07899E0EE" );
             RockMigrationHelper.UpdateFieldType( "Asset Storage System", "", "Rock", "Rock.Field.Types.AssetStorageSystemFieldType", "1596F562-E8D0-4C5F-9A00-23B5594F17E2" );
-
         }
 
         /// <summary>
@@ -107,12 +101,12 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            // Attrib for BlockType: Group Map:Show Child Groups as Default
-            RockMigrationHelper.DeleteAttribute( "5491D32B-BEBD-48DE-A57A-34C70F257CD3" );
-            // Attrib for BlockType: Content Channel View Detail:Detail Page
-            RockMigrationHelper.DeleteAttribute( "5767C5C2-533A-4F04-A4DD-AD75FCF54F7C" );
-            // Attrib for BlockType: Asset Storage System List:core.CustomGridEnableStickyHeaders
-            RockMigrationHelper.DeleteAttribute( "D427EC52-1F82-4C02-B4EE-FCA78D038CB0" );
+            //Attrib for BlockType: Group Map:Show Child Groups as Default
+           RockMigrationHelper.DeleteAttribute( "5491D32B-BEBD-48DE-A57A-34C70F257CD3" );
+           // Attrib for BlockType: Content Channel View Detail:Detail Page
+           RockMigrationHelper.DeleteAttribute( "5767C5C2-533A-4F04-A4DD-AD75FCF54F7C" );
+           // Attrib for BlockType: Asset Storage System List:core.CustomGridEnableStickyHeaders
+           RockMigrationHelper.DeleteAttribute( "D427EC52-1F82-4C02-B4EE-FCA78D038CB0" );
             // Attrib for BlockType: Asset Storage System List:core.CustomGridColumnsConfig
             RockMigrationHelper.DeleteAttribute( "445F7885-1747-49B1-BF5A-98ACE237B3D2" );
             // Attrib for BlockType: Asset Storage System List:Detail Page
@@ -138,13 +132,6 @@ namespace Rock.Migrations
             DropIndex("dbo.AssetStorageSystem", new[] { "CreatedByPersonAliasId" });
             DropIndex("dbo.AssetStorageSystem", new[] { "EntityTypeId" });
             DropTable("dbo.AssetStorageSystem");
-        }
-
-        private void AddLocalContentAsset()
-        {
-            Sql( @"DECLARE @entityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Storage.AssetStorage.FileSystemComponent')
-                INSERT INTO [dbo].[AssetStorageSystem]([Name], [Order], [EntityTypeId], [IsActive], [guid])
-                VALUES('Local Content', 0, @entityTypeId, 1, NEWID())" );
         }
     }
 }

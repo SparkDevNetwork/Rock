@@ -24,23 +24,44 @@ using System.Threading.Tasks;
 
 using Rock.Extension;
 
-
 namespace Rock.Storage.AssetStorage
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class AssetStorageContainer : Container<AssetStorageComponent, IComponentData>
     {
+        /// <summary>
+        /// The instance
+        /// </summary>
         private static readonly Lazy<AssetStorageContainer> instance = new Lazy<AssetStorageContainer>( () => new AssetStorageContainer() );
 
+        /// <summary>
+        /// Gets the instance.
+        /// </summary>
+        /// <value>
+        /// The instance.
+        /// </value>
         public static AssetStorageContainer Instance
         {
             get { return instance.Value; }
         }
 
+        /// <summary>
+        /// Gets the component.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
         public static AssetStorageComponent GetComponent( string entityType )
         {
             return Instance.GetComponentByEntity( entityType );
         }
 
+        /// <summary>
+        /// Gets the name of the component.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
         public static string GetComponentName( string entityType )
         {
             return Instance.GetComponentNameByEntity( entityType );
@@ -48,6 +69,12 @@ namespace Rock.Storage.AssetStorage
 
         // TODO: Do we need or want a default Component?
 
+        /// <summary>
+        /// Gets or sets the components.
+        /// </summary>
+        /// <value>
+        /// The components.
+        /// </value>
         [ImportMany( typeof( AssetStorageComponent ) )]
         protected override IEnumerable<Lazy<AssetStorageComponent, IComponentData>> MEFComponents { get; set; }
     }

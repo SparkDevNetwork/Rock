@@ -138,5 +138,63 @@ namespace Rock.Tests.Utility.ExtensionMethods
         }
 
         #endregion
+
+        #region SafeSubstring
+
+        [Fact]
+        public void SafeSubstring_NullString()
+        {
+            string test = null;
+            var output = test.SafeSubstring( 1, 3 );
+            Assert.Equal( string.Empty, output );
+        }
+
+        [Fact]
+        public void SafeSubstring_NegativeIndex()
+        {
+            var output = "Test".SafeSubstring( -1, 3 );
+            Assert.Equal( string.Empty, output );
+        }
+
+        [Fact]
+        public void SafeSubstring_IndexTooLarge()
+        {
+            var output = "Test".SafeSubstring( 10, 3 );
+            Assert.Equal( string.Empty, output );
+        }
+
+        [Fact]
+        public void SafeSubstring_NegativeLength()
+        {
+            var output = "Test".SafeSubstring( 1, -3 );
+            Assert.Equal( string.Empty, output );
+        }
+
+        [Fact]
+        public void SafeSubstring_LengthTooLarge()
+        {
+            var output = "Test".SafeSubstring( 1, 30 );
+            Assert.Equal( "est", output );
+        }
+
+        [Fact]
+        public void SafeSubstring_EmptyString()
+        {
+            var output = "".SafeSubstring( 0, 3 );
+            Assert.Equal( string.Empty, output );
+        }
+
+        #endregion
+
+        #region AsNumeric
+
+        [Fact]
+        public void AsNumeric_NumbersOnly()
+        {
+            var output = "0abcd123-45-6&78$9".AsNumeric();
+            Assert.Equal( "0123456789", output );
+        }
+
+        #endregion
     }
 }

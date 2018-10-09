@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -13,6 +29,10 @@ using Rock.Attribute;
 
 namespace Rock.Storage.AssetStorage
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.Storage.AssetStorage.AssetStorageComponent" />
     [Description( "Server File System" )]
     [Export( typeof( AssetStorageComponent ) )]
     [ExportMetadata( "ComponentName", "ServerFileSystem" )]
@@ -45,6 +65,10 @@ namespace Rock.Storage.AssetStorage
         #endregion Properties
 
         #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileSystemComponent"/> class.
+        /// </summary>
         public FileSystemComponent() : base()
         {
         }
@@ -56,14 +80,14 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Creates the download link.
         /// </summary>
-        /// <param name="assetStorageSystem"></param>
+        /// <param name="assetStorageProvider"></param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public override string CreateDownloadLink( AssetStorageSystem assetStorageSystem, Asset asset )
+        public override string CreateDownloadLink( AssetStorageProvider assetStorageProvider, Asset asset )
         {
             try
             {
-                string rootFolder = FixRootFolder( GetAttributeValue( assetStorageSystem, "RootFolder" ) );
+                string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
                 asset.Key = FixKey( asset, rootFolder );
                 string domainName = FileSystemCompontHttpContext.Request.Url.GetLeftPart( UriPartial.Authority );
                 string uriKey = asset.Key.TrimStart( '~' );
@@ -80,13 +104,13 @@ namespace Rock.Storage.AssetStorage
         /// Creates a folder. If Asset.Key is not provided then one is created using the RootFolder and Asset.Name.
         /// If Key is provided it MUST use the full path, RootFolder is not used.
         /// </summary>
-        /// <param name="assetStorageSystem"></param>
+        /// <param name="assetStorageProvider"></param>
         /// <param name="asset"></param>
         /// <returns></returns>
-        public override bool CreateFolder( AssetStorageSystem assetStorageSystem, Asset asset )
+        public override bool CreateFolder( AssetStorageProvider assetStorageProvider, Asset asset )
         {
             HasRequirementsFolder( asset );
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageSystem, "RootFolder" ) );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
             asset.Key = FixKey( asset, rootFolder );
             
             string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
@@ -107,14 +131,14 @@ namespace Rock.Storage.AssetStorage
         /// Deletes the asset. If Asset.Key is not provided then one is created using the RootFolder and Asset.Name.
         /// If Key is provided then it MUST use the full path, RootFolder is not used.
         /// </summary>
-        /// <param name="assetStorageSystem"></param>
+        /// <param name="assetStorageProvider"></param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public override bool DeleteAsset( AssetStorageSystem assetStorageSystem, Asset asset )
+        public override bool DeleteAsset( AssetStorageProvider assetStorageProvider, Asset asset )
         {
             try
             {
-                string rootFolder = FixRootFolder( GetAttributeValue( assetStorageSystem, "RootFolder" ) );
+                string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
                 asset.Key = FixKey( asset, rootFolder );
                 string physicalPath = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
 
@@ -139,14 +163,14 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Gets the object as an Asset.
         /// </summary>
-        /// <param name="assetStorageSystem"></param>
+        /// <param name="assetStorageProvider"></param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public override Asset GetObject( AssetStorageSystem assetStorageSystem, Asset asset )
+        public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset )
         {
             try
             {
-                string rootFolder = FixRootFolder( GetAttributeValue( assetStorageSystem, "RootFolder" ) );
+                string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
 
                 asset.Key = FixKey( asset, rootFolder );
                 string physicalFile = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
@@ -166,15 +190,15 @@ namespace Rock.Storage.AssetStorage
         }
 
         /// <summary>
-        /// Lists the files in AssetStorageSystem.RootFolder.
+        /// Lists the files in AssetStorageProvider.RootFolder.
         /// </summary>
-        /// <param name="assetStorageSystem"></param>
+        /// <param name="assetStorageProvider"></param>
         /// <returns></returns>
-        public override List<Asset> ListFilesInFolder( AssetStorageSystem assetStorageSystem )
+        public override List<Asset> ListFilesInFolder( AssetStorageProvider assetStorageProvider )
         {
             var asset = new Asset();
             asset.Type = AssetType.Folder;
-            return ListFilesInFolder( assetStorageSystem, asset );
+            return ListFilesInFolder( assetStorageProvider, asset );
         }
 
         /// <summary>
@@ -184,12 +208,12 @@ namespace Rock.Storage.AssetStorage
         /// If a key is provided it MUST use the full path, RootFolder and Name are not used.
         /// The last segment in the key is the folder name.
         /// </summary>
-        /// <param name="assetStorageSystem"></param>
+        /// <param name="assetStorageProvider"></param>
         /// <param name="asset"></param>
         /// <returns></returns>
-        public override List<Asset> ListFilesInFolder( AssetStorageSystem assetStorageSystem, Asset asset )
+        public override List<Asset> ListFilesInFolder( AssetStorageProvider assetStorageProvider, Asset asset )
         {
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageSystem, "RootFolder" ) );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
 
             asset.Key = FixKey( asset, rootFolder );
             string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
@@ -198,15 +222,15 @@ namespace Rock.Storage.AssetStorage
         }
 
         /// <summary>
-        /// Lists the folders in AssetStorageSystem.Rootfolder.
+        /// Lists the folders in AssetStorageProvider.Rootfolder.
         /// </summary>
-        /// <param name="assetStorageSystem"></param>
+        /// <param name="assetStorageProvider"></param>
         /// <returns></returns>
-        public override List<Asset> ListFoldersInFolder( AssetStorageSystem assetStorageSystem )
+        public override List<Asset> ListFoldersInFolder( AssetStorageProvider assetStorageProvider )
         {
             var asset = new Asset();
             asset.Type = AssetType.Folder;
-            return ListFoldersInFolder( assetStorageSystem, asset );
+            return ListFoldersInFolder( assetStorageProvider, asset );
         }
 
         /// <summary>
@@ -216,12 +240,12 @@ namespace Rock.Storage.AssetStorage
         /// If a key is provided it MUST use the full path, RootFolder and Name are not used.
         /// The last segment in the key is the folder name.
         /// </summary>
-        /// <param name="assetStorageSystem"></param>
+        /// <param name="assetStorageProvider"></param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public override List<Asset> ListFoldersInFolder( AssetStorageSystem assetStorageSystem, Asset asset )
+        public override List<Asset> ListFoldersInFolder( AssetStorageProvider assetStorageProvider, Asset asset )
         {
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageSystem, "RootFolder" ) );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
             asset.Key = FixKey( asset, rootFolder );
             string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
 
@@ -231,13 +255,13 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Lists the objects from the current root folder.
         /// </summary>
-        /// <param name="assetStorageSystem"></param>
+        /// <param name="assetStorageProvider"></param>
         /// <returns></returns>
-        public override List<Asset> ListObjects( AssetStorageSystem assetStorageSystem )
+        public override List<Asset> ListObjects( AssetStorageProvider assetStorageProvider )
         {
             var asset = new Asset();
             asset.Type = AssetType.Folder;
-            return ListObjects( assetStorageSystem, asset );
+            return ListObjects( assetStorageProvider, asset );
         }
 
         /// <summary>
@@ -248,12 +272,12 @@ namespace Rock.Storage.AssetStorage
         /// files starting with 'mr' in folder 'pictures/cats/' set key = 'pictures/cats/mr' to get 'mr. whiskers'
         /// and 'mrs. whiskers' but not 'fluffy' or 'carnage the attack cat'.
         /// </summary>
-        /// <param name="assetStorageSystem"></param>
+        /// <param name="assetStorageProvider"></param>
         /// <param name="asset"></param>
         /// <returns></returns>
-        public override List<Asset> ListObjects( AssetStorageSystem assetStorageSystem, Asset asset )
+        public override List<Asset> ListObjects( AssetStorageProvider assetStorageProvider, Asset asset )
         {
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageSystem, "RootFolder" ) );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
 
             asset.Key = FixKey( asset, rootFolder );
             var assets = new List<Asset>();
@@ -272,12 +296,12 @@ namespace Rock.Storage.AssetStorage
         /// If a key is provided it MUST use the full path, RootFolder and Name are not used.
         /// The last segment in key is the folder name.
         /// </summary>
-        /// <param name="assetStorageSystem"></param>
+        /// <param name="assetStorageProvider"></param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public override List<Asset> ListObjectsInFolder( AssetStorageSystem assetStorageSystem, Asset asset )
+        public override List<Asset> ListObjectsInFolder( AssetStorageProvider assetStorageProvider, Asset asset )
         {
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageSystem, "RootFolder" ) );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
 
             asset.Key = FixKey( asset, rootFolder );
             var assets = new List<Asset>();
@@ -292,13 +316,13 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Renames the asset.
         /// </summary>
-        /// <param name="assetStorageSystem"></param>
+        /// <param name="assetStorageProvider"></param>
         /// <param name="asset">The asset.</param>
         /// <param name="newName">The new name.</param>
         /// <returns></returns>
-        public override bool RenameAsset( AssetStorageSystem assetStorageSystem, Asset asset, string newName )
+        public override bool RenameAsset( AssetStorageProvider assetStorageProvider, Asset asset, string newName )
         {
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageSystem, "RootFolder" ) );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
 
             try
             {
@@ -322,12 +346,12 @@ namespace Rock.Storage.AssetStorage
         /// Uploads a file. If Asset.Key is not provided then one is created using the RootFolder and Asset.Name.
         /// If a key is provided it MUST use the full path, RootFolder is not used.
         /// </summary>
-        /// <param name="assetStorageSystem"></param>
+        /// <param name="assetStorageProvider"></param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public override bool UploadObject( AssetStorageSystem assetStorageSystem, Asset asset )
+        public override bool UploadObject( AssetStorageProvider assetStorageProvider, Asset asset )
         {
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageSystem, "RootFolder" ) );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
 
             asset.Key = FixKey( asset, rootFolder );
 

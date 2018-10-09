@@ -116,6 +116,43 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets all ancestors for the provided Category ID.
+        /// If the ID is available use it over the GUID and the GUID overload finds the ID
+        /// and then executes this method.
+        /// </summary>
+        /// <param name="childCategoryId">The child category identifier.</param>
+        /// <returns></returns>
+        public IEnumerable<Category> GetAllAncestors( int childCategoryId )
+        {
+            return ExecuteQuery( $@"
+                WITH CTE AS (
+	                SELECT *
+	                FROM [Category]
+	                WHERE [Id] = {childCategoryId}
+	                UNION ALL
+	                SELECT c.*
+	                FROM [Category] c
+	                JOIN CTE on c.[Id] = CTE.ParentCategoryId
+                )
+
+                SELECT * FROM CTE
+                ORDER BY [ParentCategoryId]" );
+        }
+
+        /// <summary>
+        /// Gets all ancestors for the provided Category GUID.
+        /// If the ID is available then use the ID overload instead. This method
+        /// looks up the ID and then executes the ID overload.
+        /// </summary>
+        /// <param name="childCategoryGuid">The child category unique identifier.</param>
+        /// <returns></returns>
+        public IEnumerable<Category> GetAllAncestors( Guid childCategoryGuid )
+        {
+            var childCategory = this.Get( childCategoryGuid );
+            return GetAllAncestors( childCategory != null ? childCategory.Id : 0 );
+        }
+
+        /// <summary>
         /// Gets all of the categories that were selected and optionally all the child categories of the selected categories
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>

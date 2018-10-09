@@ -74,19 +74,6 @@ namespace Rock.Model
         /// Gets the by schedule identifier.
         /// </summary>
         /// <param name="scheduleId">The schedule identifier.</param>
-        /// <returns></returns>
-        [Obsolete( "The GetByScheduleId( scheduleId, gatewayId ) method should be used instead." )]
-        public FinancialScheduledTransaction GetByScheduleId( string scheduleId )
-        {
-            return Queryable( "ScheduledTransactionDetails,AuthorizedPersonAlias.Person" )
-                .Where( t => t.GatewayScheduleId == scheduleId.Trim() )
-                .FirstOrDefault();
-        }
-
-        /// <summary>
-        /// Gets the by schedule identifier.
-        /// </summary>
-        /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="gatewayId">The gateway identifier.</param>
         /// <returns></returns>
         public FinancialScheduledTransaction GetByScheduleId( string scheduleId, int gatewayId )
@@ -254,7 +241,8 @@ namespace Rock.Model
         /// <param name="batchUrlFormat">The batch URL format.</param>
         /// <param name="receiptEmail">The receipt email.</param>
         /// <returns></returns>
-        [Obsolete("Use method with failed payment email and workflow type parameters")]
+        [RockObsolete( "1.7" )]
+        [Obsolete("Use method with failed payment email and workflow type parameters", true )]
         public static string ProcessPayments( FinancialGateway gateway, string batchNamePrefix, List<Payment> payments, string batchUrlFormat = "", Guid? receiptEmail = null )
         {
             return ProcessPayments( gateway, batchNamePrefix, payments, batchUrlFormat, receiptEmail, null, null );

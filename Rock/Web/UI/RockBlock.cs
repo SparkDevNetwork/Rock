@@ -396,6 +396,7 @@ namespace Rock.Web.UI
         /// <param name="key">A <see cref="System.String"/> representing the name of the key to differentiate items from same block instance</param>
         /// <param name="value">The <see cref="System.Object"/> to cache.</param>
         /// <param name="cacheItemPolicy">Optional <see cref="System.Runtime.Caching.CacheItemPolicy"/>, defaults to null</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( "AddCacheItem no longer supports a CacheItemPolicy, specify a number of seconds or absolute datetime instead.")]
         protected virtual void AddCacheItem( string key, object value, CacheItemPolicy cacheItemPolicy )
         {
@@ -427,6 +428,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the key name for the item that will be flushed. This value 
         /// defaults to an empty string.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete("Use RemoveCacheItem( string key ) instead.")]
         protected virtual void FlushCacheItem( string key = "" )
         {
@@ -439,6 +441,7 @@ namespace Rock.Web.UI
         /// Therefore, it should not be used in production applications (if possible).
         /// </summary>
         /// <param name="blockId">An <see cref="System.Int32"/> representing the block item that will be flushed.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Method is no longer supported.")]
         protected virtual void FlushSharedBlock( int blockId )
         {

@@ -154,6 +154,7 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use FindPersons instead.", false )]
         public IEnumerable<Person> GetByMatch( string firstName, string lastName, string email, bool includeDeceased = false, bool includeBusinesses = false )
         {
@@ -657,6 +658,7 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use FindBusinesses instead.", false )]
         public IEnumerable<Person> GetBusinessByMatch( string businessName, string email )
         {
@@ -1867,7 +1869,8 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.Person" /> associated with the provided Key, otherwise null.
         /// </returns>
-        [Obsolete( "Use GetByEncryptedKey( string encryptedKey, bool followMerges, int? pageId ) instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use GetByEncryptedKey( string encryptedKey, bool followMerges, int? pageId ) instead", true )]
         public Person GetByEncryptedKey( string encryptedKey, bool followMerges )
         {
             return GetByEncryptedKey( encryptedKey, true, true, null );
@@ -2177,6 +2180,7 @@ namespace Rock.Model
         /// <param name="reason">The reason.</param>
         /// <param name="reasonNote">The reason note.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete]
         public List<string> InactivatePerson( Person person, Web.Cache.DefinedValueCache reason, string reasonNote )
         {

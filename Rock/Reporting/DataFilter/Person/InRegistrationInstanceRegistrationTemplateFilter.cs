@@ -290,7 +290,7 @@ namespace Rock.Reporting.DataFilter.Person
 
                 if ( selectionValues.Length >= 2 )
                 {
-                    cbIncludeInactiveRegistrationInstances.Checked = selectionValues[6].AsBooleanOrNull() ?? false;
+                    cbIncludeInactiveRegistrationInstances.Checked = selectionValues[1].AsBooleanOrNull() ?? false;
                 }
                 else
                 {
@@ -301,7 +301,7 @@ namespace Rock.Reporting.DataFilter.Person
                 if ( selectionValues.Length >= 3 )
                 {
                     // convert comma delimited to pipe
-                    registeredOnDateRangePicker.DelimitedValues = selectionValues[7].Replace( ',', '|' );
+                    registeredOnDateRangePicker.DelimitedValues = selectionValues[2].Replace( ',', '|' );
                 }
             }
         }

@@ -563,7 +563,8 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="zoneName">A <see cref="System.String"/> representing the name of the zone.</param>
         /// <returns>The <see cref="System.Web.UI.Control"/> for the zone, if the zone is not found, the form control is returned.</returns>
-        [Obsolete("Use the other FindZone()")]
+        [RockObsolete( "1.7" )]
+        [Obsolete("Use the other FindZone()", true )]
         protected virtual Control FindZone( string zoneName )
         {
             // Find the zone, or use the Form if not found

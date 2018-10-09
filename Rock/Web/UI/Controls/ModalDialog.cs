@@ -149,8 +149,33 @@ namespace Rock.Web.UI.Controls
         /// <value>The save button text.</value>
         public string SaveButtonText
         {
-            get { return ViewState["SaveButtonText"] as string ?? "Save"; }
-            set { ViewState["SaveButtonText"] = value; }
+            get => ViewState["SaveButtonText"] as string ?? "Save";
+            set => ViewState["SaveButtonText"] = value;
+        }
+
+        /// <summary>
+        /// Gets or sets additional CSS classes for the modal save button.
+        /// If js hooks are needed this is the place to add them.
+        /// </summary>
+        /// <value>
+        /// The save button CSS class.
+        /// </value>
+        public string SaveButtonCssClass
+        {
+            get => ViewState["SaveButtonCSSClass"] as string ?? string.Empty;
+            set => ViewState["SaveButtonCSSClass"] = value;
+        }
+
+        /// <summary>
+        /// Gets the Control for the SaveButton
+        /// </summary>
+        /// <value>
+        /// The save button.
+        /// </value>
+        public bool SaveButtonCausesValidation
+        {
+            get => ViewState["SaveButtonCausesValidation"] as bool? ?? true;
+            set => ViewState["SaveButtonCausesValidation"] = value;
         }
 
         /// <summary>
@@ -221,7 +246,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [close link visible].
+        /// Gets or sets a value indicating whether the close button (The X in the Header) is visible
         /// </summary>
         /// <value>
         ///   <c>true</c> if [close link visible]; otherwise, <c>false</c>.
@@ -392,13 +417,13 @@ namespace Rock.Web.UI.Controls
             _serverSaveLink = new HtmlAnchor();
             _footerPanel.Controls.Add( _serverSaveLink );
             _serverSaveLink.ID = "serverSaveLink";
-            _serverSaveLink.Attributes.Add( "class", "btn btn-primary" );
+            _serverSaveLink.Attributes.Add( "class", $"btn btn-primary {SaveButtonCssClass}" );
             _serverSaveLink.ServerClick += SaveLink_ServerClick;
 
             _saveLink = new HtmlAnchor();
             _footerPanel.Controls.Add( _saveLink );
             _saveLink.ID = "saveLink";
-            _saveLink.Attributes.Add( "class", "btn btn-primary js-modaldialog-save-link" );
+            _saveLink.Attributes.Add( "class", $"btn btn-primary js-modaldialog-save-link {SaveButtonCssClass}" );
         }
 
         /// <summary>
@@ -411,10 +436,21 @@ namespace Rock.Web.UI.Controls
 
             _serverSaveLink.Visible = !string.IsNullOrWhiteSpace( SaveButtonText ) && SaveClick != null;
             _serverSaveLink.InnerText = SaveButtonText;
-            _serverSaveLink.ValidationGroup = this.ValidationGroup;
+            _serverSaveLink.AddCssClass( SaveButtonCssClass );
+            if ( SaveButtonCausesValidation )
+            {
+                _serverSaveLink.CausesValidation = true;
+                _serverSaveLink.ValidationGroup = this.ValidationGroup;
+            }
+            else
+            {
+                _serverSaveLink.CausesValidation = false;
+                _serverSaveLink.ValidationGroup = "";
+            }
 
             _saveLink.Visible = !string.IsNullOrWhiteSpace( SaveButtonText ) && SaveClick == null && !string.IsNullOrWhiteSpace( OnOkScript );
             _saveLink.InnerText = SaveButtonText;
+            _saveLink.AddCssClass( SaveButtonCssClass );
             _saveLink.ValidationGroup = this.ValidationGroup;
 
             _saveThenAddLink.Visible = !string.IsNullOrWhiteSpace( SaveThenAddButtonText ) && SaveThenAddClick != null;

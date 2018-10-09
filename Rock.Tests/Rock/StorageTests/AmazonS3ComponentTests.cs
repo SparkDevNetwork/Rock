@@ -25,46 +25,45 @@ namespace Rock.Tests.Rock.StorageTests
         //private RegionEndpoint AWSRegion = RegionEndpoint.USWest1;
         //private string Bucket = "rockphotostest0";
         //private string UnitTestRootFolder = "UnitTestFolder";
-
-        private AssetStorageSystem GetAssetStorageSystem()
+        private AssetStorageProvider GetAssetStorageProvider()
         {
-            var assetStorageService = new AssetStorageSystemService( new Data.RockContext() );
-            AssetStorageSystem assetStorageSystem = assetStorageService.Get( 1 );// need mock
-            assetStorageSystem.LoadAttributes();
-            assetStorageSystem.SetAttributeValue( "RootFolder", "UnitTestFolder" );
+            var assetStorageService = new AssetStorageProviderService( new Data.RockContext() );
+            AssetStorageProvider assetStorageProvider = assetStorageService.Get( 1 );// need mock
+            assetStorageProvider.LoadAttributes();
+            assetStorageProvider.SetAttributeValue( "RootFolder", "UnitTestFolder" );
 
-            return assetStorageSystem;
+            return assetStorageProvider;
         }
 
         //[Fact]
         //public void TestListRootBucket()
         //{
-        //    var assetStorageSystem = GetAssetStorageSystem();
-        //    var s3Component = assetStorageSystem.GetAssetStorageComponent();
+        //    var assetStorageProvider = GetAssetStorageProvider();
+        //    var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
         //    var asset = new Asset {
         //        Key = "UnitTestFolder/",
         //        Type = AssetType.Folder
         //    };
-            
-        //    var assets = s3Component.ListFoldersInFolder( assetStorageSystem, asset );
+
+        //    var assets = s3Component.ListFoldersInFolder( assetStorageProvider, asset );
         //}
 
         /// <summary>
         /// Create a folder in the bucket using a key (the full name);
         /// This folder is used for other tests.
         /// </summary>
-        [Fact( Skip = "Cannot connect to AWS")]
+        [Fact(Skip ="Need mock")]
         public void TestAWSCreateRootFolderUsingKey()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             var asset = new Asset();
-            asset.Key = assetStorageSystem.GetAttributeValue( "RootFolder" );
+            asset.Key = assetStorageProvider.GetAttributeValue( "RootFolder" );
             asset.Type = AssetType.Folder;
 
-            Assert.True( s3Component.CreateFolder( assetStorageSystem, asset ) );
+            Assert.True( s3Component.CreateFolder( assetStorageProvider, asset ) );
         }
 
         /// <summary>
@@ -72,38 +71,38 @@ namespace Rock.Tests.Rock.StorageTests
         /// These folders are used for other tests.
         /// Requires TestAWSCreateFolderByKey
         /// </summary>
-        [Fact( Skip = "Cannot connect to AWS")]
+        [Fact( Skip = "Need mock" )]
         public void TestAWSCreateFolderByName()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             var asset = new Asset();
             asset.Name = "SubFolder1/";
             asset.Type = AssetType.Folder;
-            Assert.True( s3Component.CreateFolder( assetStorageSystem, asset ) );
+            Assert.True( s3Component.CreateFolder( assetStorageProvider, asset ) );
 
             asset = new Asset();
             asset.Name = "SubFolder1/SubFolder1a/";
             asset.Type = AssetType.Folder;
-            Assert.True( s3Component.CreateFolder( assetStorageSystem, asset ) );
+            Assert.True( s3Component.CreateFolder( assetStorageProvider, asset ) );
         }
 
         /// <summary>
         /// Upload a file using RootFolder and Asset.Name.
         /// Requires TestAWSCreateFolderByKey, TestAWSCreateFolderByName
         /// </summary>
-        [Fact( Skip = "Cannot connect to AWS")]
+        [Fact( Skip = "Need mock" )]
         public void TestUploadObjectByName()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             Asset asset = new Asset();
             asset.Name = ( "SubFolder1/TestUploadObjectByName.jpg" );
             asset.AssetStream = new FileStream( @"C:\temp\test.jpg", FileMode.Open );
 
-            bool hasUploaded = s3Component.UploadObject( assetStorageSystem, asset );
+            bool hasUploaded = s3Component.UploadObject( assetStorageProvider, asset );
             Assert.True( hasUploaded );
         }
 
@@ -111,33 +110,33 @@ namespace Rock.Tests.Rock.StorageTests
         /// Upload a file using Asset.Key.
         /// Requires TestAWSCreateFolderByKey, TestAWSCreateFolderByName
         /// </summary>
-        [Fact( Skip = "Cannot connect to AWS")]
+        [Fact( Skip = "Need mock" )]
         public void TestUploadObjectByKey()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             Asset asset = new Asset();
             asset.Key = ( "UnitTestFolder/SubFolder1/TestUploadObjectByKey.jpg" );
             asset.AssetStream = new FileStream( @"C:\temp\test.jpg", FileMode.Open );
 
-            bool hasUploaded = s3Component.UploadObject( assetStorageSystem, asset );
+            bool hasUploaded = s3Component.UploadObject( assetStorageProvider, asset );
             Assert.True( hasUploaded );
         }
 
         /// <summary>
         /// Get a recursive list of objects using Asset.Key
         /// </summary>
-        [Fact( Skip = "Cannot connect to AWS")]
+        [Fact( Skip = "Need mock" )]
         public void TestListObjectsByKey()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             var asset = new Asset();
             asset.Key = ( "UnitTestFolder/" );
             
-            var assetList = s3Component.ListObjects( assetStorageSystem, asset );
+            var assetList = s3Component.ListObjects( assetStorageProvider, asset );
             Assert.Contains( assetList, a => a.Name == "UnitTestFolder" );
             Assert.Contains( assetList, a => a.Name == "TestUploadObjectByName.jpg" );
             Assert.Contains( assetList, a => a.Name == "TestUploadObjectByKey.jpg" );
@@ -148,17 +147,17 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Get a list of files and folders in a single folder using RootFolder
         /// </summary>
-        [Fact( Skip = "Cannot connect to AWS")]
+        [Fact(Skip ="Need mock")]
         public void TestListObjectsInFolder()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             var asset = new Asset();
             asset.Key = "UnitTestFolder/SubFolder1/";
             asset.Type = AssetType.Folder;
 
-            var assetList = s3Component.ListObjectsInFolder( assetStorageSystem, asset );
+            var assetList = s3Component.ListObjectsInFolder( assetStorageProvider, asset );
             Assert.Contains( assetList, a => a.Name == "TestUploadObjectByName.jpg" );
             Assert.Contains( assetList, a => a.Name == "TestUploadObjectByKey.jpg" );
             Assert.Contains( assetList, a => a.Name == "SubFolder1" );
@@ -168,17 +167,17 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Upload > 2K objects. Used to test listing that requries more than one request.
         /// </summary>
-        [Fact( Skip = "Cannot connect to AWS")]
+        [Fact(Skip ="Need mock")]
         public void TestUpload2kObjects()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
             
             var subFolder = new Asset();
             subFolder.Name = "TwoThousandObjects/";
             subFolder.Type = AssetType.Folder;
 
-            s3Component.CreateFolder( assetStorageSystem, subFolder );
+            s3Component.CreateFolder( assetStorageProvider, subFolder );
 
             int i = 0;
             while ( i < 10 )
@@ -187,7 +186,7 @@ namespace Rock.Tests.Rock.StorageTests
                 subFolder.Name = $"TwoThousandObjects/TestFolder-{i}/";
                 subFolder.Type = AssetType.Folder;
 
-                s3Component.CreateFolder( assetStorageSystem, subFolder );
+                s3Component.CreateFolder( assetStorageProvider, subFolder );
                 i++;
             }
 
@@ -198,7 +197,7 @@ namespace Rock.Tests.Rock.StorageTests
                 using ( fs = new FileStream( @"C:\temp\TextDoc.txt", FileMode.Open ) )
                 {
                     Asset asset = new Asset { Name = $"TwoThousandObjects/TestFile-{i}.txt", AssetStream = fs };
-                    s3Component.UploadObject( assetStorageSystem, asset );
+                    s3Component.UploadObject( assetStorageProvider, asset );
                     i++;
                 }
             }
@@ -207,17 +206,17 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Get a list of keys that requires more than one request.
         /// </summary>
-        [Fact( Skip = "Cannot connect to AWS")]
+        [Fact(Skip ="Need mock")]
         public void TestList2KObjectsInFolder()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             var asset = new Asset();
             asset.Key = "UnitTestFolder/TwoThousandObjects/";
             asset.Type = AssetType.Folder;
 
-            var assetList = s3Component.ListObjectsInFolder( assetStorageSystem, asset );
+            var assetList = s3Component.ListObjectsInFolder( assetStorageProvider, asset );
             Assert.Contains( assetList, a => a.Name == "TestFile-0.txt" );
             Assert.Contains( assetList, a => a.Name == "TestFile-1368.txt" );
             Assert.Contains( assetList, a => a.Name == "TestFolder-0" );
@@ -227,17 +226,17 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Create a download link for an asset on the fly.
         /// </summary>
-        [Fact( Skip = "Cannot connect to AWS")]
+        [Fact(Skip ="Need mock")]
         public void TestCreateDownloadLink()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             Asset asset = new Asset();
             asset.Type = AssetType.File;
             asset.Key = "UnitTestFolder/SubFolder1/TestUploadObjectByName.jpg";
 
-            string url = s3Component.CreateDownloadLink( assetStorageSystem, asset );
+            string url = s3Component.CreateDownloadLink( assetStorageProvider, asset );
             bool valid = false;
 
             try
@@ -259,11 +258,11 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Get a file from storage.
         /// </summary>
-        [Fact( Skip = "Cannot connect to AWS")]
+        [Fact(Skip ="Need mock")]
         public void TestGetObject()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             var asset = new Asset();
             asset.Type = AssetType.File;
@@ -273,7 +272,7 @@ namespace Rock.Tests.Rock.StorageTests
 
             try
             {
-                var responseAsset = s3Component.GetObject( assetStorageSystem, asset );
+                var responseAsset = s3Component.GetObject( assetStorageProvider, asset );
                 using ( responseAsset.AssetStream)
                 using ( FileStream fs = new FileStream( $@"C:\temp\{responseAsset.Name}", FileMode.Create ) )
                 {
@@ -291,17 +290,17 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// List only the folders.
         /// </summary>
-        [Fact( Skip = "Cannot connect to AWS")]
+        [Fact(Skip ="Need mock")]
         public void TestListFolders()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             var asset = new Asset();
             asset.Key = "UnitTestFolder/TwoThousandObjects/";
             asset.Type = AssetType.Folder;
 
-            var assetList = s3Component.ListFoldersInFolder( GetAssetStorageSystem(), asset );
+            var assetList = s3Component.ListFoldersInFolder( GetAssetStorageProvider(), asset );
 
             Assert.Contains( assetList, a => a.Name == "TestFolder-0" );
             Assert.Contains( assetList, a => a.Name == "TestFolder-1" );
@@ -320,17 +319,17 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// List only the files.
         /// </summary>
-        [Fact( Skip = "Cannot connect to AWS")]
+        [Fact(Skip ="Need mock")]
         public void TestListFiles()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             var asset = new Asset();
             asset.Key = "UnitTestFolder/SubFolder1/";
             asset.Type = AssetType.Folder;
 
-            var assetList = s3Component.ListFilesInFolder( assetStorageSystem, asset );
+            var assetList = s3Component.ListFilesInFolder( assetStorageProvider, asset );
 
             Assert.Contains( assetList, a => a.Name == "TestUploadObjectByKey.jpg" );
             Assert.Contains( assetList, a => a.Name == "TestUploadObjectByName.jpg" );
@@ -341,23 +340,23 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Rename an existing file.
         /// </summary>
-        [Fact( Skip = "Cannot connect to AWS")]
+        [Fact(Skip ="Need mock")]
         public void TestRenameAsset()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             Asset asset = new Asset();
             asset.Type = AssetType.File;
             asset.Key = "UnitTestFolder/SubFolder1/TestUploadObjectByKey.jpg";
 
-            Assert.True( s3Component.RenameAsset( assetStorageSystem, asset, "TestUploadObjectByKeyRenamed.jpg" ) );
+            Assert.True( s3Component.RenameAsset( assetStorageProvider, asset, "TestUploadObjectByKeyRenamed.jpg" ) );
 
             asset = new Asset();
             asset.Type = AssetType.File;
             asset.Key = "UnitTestFolder/SubFolder1/TestUploadObjectByKey";
 
-            var assetList = s3Component.ListObjects( assetStorageSystem, asset );
+            var assetList = s3Component.ListObjects( assetStorageProvider, asset );
             Assert.Contains( assetList, a => a.Name == "TestUploadObjectByKeyRenamed.jpg" );
             Assert.DoesNotContain( assetList, a => a.Name == "TestUploadObjectByKey.jpg" );
         }
@@ -365,34 +364,34 @@ namespace Rock.Tests.Rock.StorageTests
         /// <summary>
         /// Delete a single file.
         /// </summary>
-        [Fact( Skip = "Cannot connect to AWS")]
+        [Fact(Skip ="Need mock")]
         public void TestDeleteFile()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             Asset asset = new Asset();
             asset.Key = "UnitTestFolder/SubFolder1/TestUploadObjectByName.jpg";
             asset.Type = AssetType.File;
 
-            bool hasDeleted = s3Component.DeleteAsset( assetStorageSystem, asset );
+            bool hasDeleted = s3Component.DeleteAsset( assetStorageProvider, asset );
             Assert.True( hasDeleted );
         }
 
         /// <summary>
         /// Delete all of the test data.
         /// </summary>
-        [Fact( Skip = "Cannot connect to AWS")]
+        [Fact(Skip ="Need mock")]
         public void TestDeleteFolder()
         {
-            var assetStorageSystem = GetAssetStorageSystem();
-            var s3Component = assetStorageSystem.GetAssetStorageComponent();
+            var assetStorageProvider = GetAssetStorageProvider();
+            var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
             Asset asset = new Asset();
             asset.Key = ( "UnitTestFolder/" );
             asset.Type = AssetType.Folder;
 
-            bool hasDeleted = s3Component.DeleteAsset( assetStorageSystem, asset );
+            bool hasDeleted = s3Component.DeleteAsset( assetStorageProvider, asset );
             Assert.True( hasDeleted );
         }
     }

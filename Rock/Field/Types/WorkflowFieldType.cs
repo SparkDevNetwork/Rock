@@ -131,10 +131,13 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( value, out guid ) )
             {
-                var workflow = new WorkflowService( new RockContext() ).Get( guid );
-                if ( workflow != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = workflow.Name;
+                    var workflow = new WorkflowService( rockContext ).GetNoTracking( guid );
+                    if ( workflow != null )
+                    {
+                        formattedValue = workflow.Name;
+                    }
                 }
             }
 
@@ -182,10 +185,13 @@ namespace Rock.Field.Types
             {
                 if ( workflowPicker.WorkflowId.HasValue )
                 {
-                    var workflowGuid = new WorkflowService( new RockContext() ).GetGuid( workflowPicker.WorkflowId.Value );
-                    if ( workflowGuid != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        return workflowGuid.ToString();
+                        var workflowGuid = new WorkflowService( rockContext ).GetGuid( workflowPicker.WorkflowId.Value );
+                        if ( workflowGuid != null )
+                        {
+                            return workflowGuid.ToString();
+                        }
                     }
                 }
             }

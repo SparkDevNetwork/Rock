@@ -366,22 +366,7 @@ namespace Rock.Plugin.HotFixes {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 
-        ///
-        ///&lt;doc&gt;
-        /// &lt;summary&gt;
-        ///   This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
-        /// &lt;/summary&gt;
-        /// 
-        /// &lt;remarks&gt; 
-        ///  Uses the following constants:
-        ///   * Group Type - Family: &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
-        ///            * Location Type - Home: &apos;8C52E53C-2A66-435A-AE6E-5EE307D9A0DC&apos;
-        ///            * Phone Type - Home: &apos;AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303&apos;
-        ///            * Phone Type - Cell: &apos;407E7E45-7B2E-4FCD-9605-ECB1339F2453&apos;
-        /// &lt;/remarks&gt;
-        /// &lt;code&gt;
-        ///   [rest of string was truncated]&quot;;.
+        /// These comments intentionally removed due to character
         /// </summary>
         public static string _050_MigrationRollupsForV7_4_spCrm_PersonDuplicateFinder {
             get {
@@ -434,7 +419,8 @@ namespace Rock.Plugin.HotFixes {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving {
             get {
@@ -473,6 +459,54 @@ namespace Rock.Plugin.HotFixes {
         public static string _052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive {
             get {
                 return ResourceManager.GetString("_052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure returns a data set used by the Rock eRA job to add/remove
+        ///		people from being an eRA. It should not be modified as it will be updated in the
+        ///		future to meet additional requirements.
+        ///
+        ///		The goal of the query is to return both those that meet the eRA requirements as well
+        ///		as those that are marked as already being an eRA and the criteria to ensure that
+        ///		they still should be an era.
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		For eRA we only consider adults for the c [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _056_MigrationRollupsForV8_4_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_056_MigrationRollupsForV8_4_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the attendance data needed for the Attendance Badge. If no family role (adult/child)
+        ///		is given it is looked up.  If the individual is an adult it will return family attendance if it&apos;s a child
+        ///		it will return the individual&apos;s attendance. If a person is in two families once as a child once as an
+        ///		adult it will pick the first role it finds.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* AttendanceCount
+        ///		* SundaysInMonth
+        ///		* Month
+        ///		* Year
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;P [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _057_MigrationRollupsForV8_5_spCheckin_BadgeAttendance
+        {
+            get
+            {
+                return ResourceManager.GetString( "_057_MigrationRollupsForV8_5_spCheckin_BadgeAttendance", resourceCulture );
             }
         }
     }
