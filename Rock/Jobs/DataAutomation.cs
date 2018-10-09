@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1570,7 +1570,7 @@ Update Family Status: {updateFamilyStatus}
         {
             var entitySet = new EntitySet();
             entitySet.EntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
-            entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
+            entitySet.ExpireDateTime = RockDateTime.Now.AddDays( 1 );
 
             var service = new EntitySetService( rockContext );
             service.Add( entitySet );
