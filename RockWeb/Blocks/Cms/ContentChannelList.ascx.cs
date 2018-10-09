@@ -15,19 +15,21 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
-using System.ComponentModel;
 using Rock.Security;
 using Rock.Web.Cache;
-using System.Collections.Generic;
-using System.Web.UI.WebControls;
+using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -239,7 +241,10 @@ namespace RockWeb.Blocks.Cms
         {
             ContentChannelService contentChannelService = new ContentChannelService( new RockContext() );
             SortProperty sortProperty = gContentChannels.SortProperty;
-            var qry = contentChannelService.Queryable( "ContentChannelType,Items" );
+            var qry = contentChannelService.Queryable()
+                .Include( a => a.ContentChannelType )
+                .Include( a => a.Items )
+                .Where( a => a.ContentChannelType.ShowInChannelList == true );
 
             int? typeId = gfFilter.GetUserPreference( "Type" ).AsIntegerOrNull();
             if ( typeId.HasValue )

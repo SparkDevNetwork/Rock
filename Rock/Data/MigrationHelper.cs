@@ -244,7 +244,7 @@ namespace Rock.Data
         #region Block Type Methods
 
         /// <summary>
-        /// Updates the BlockType by path (if it exists);
+        /// Updates the BlockType by Path (if it exists).
         /// otherwise it inserts a new record. In either case it will be marked IsSystem.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -287,6 +287,46 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Updates the BlockType by Guid (if it exists).
+        /// otherwise it inserts a new record. In either case it will be marked IsSystem.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="path">The path.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void UpdateBlockTypeByGuid( string name, string description, string path, string category, string guid )
+        {
+            Migration.Sql( $@"
+                -- delete just in case Rock added it automatically before it was migrated
+                DELETE FROM [BlockType] 
+	            WHERE [Path] = '{1}' AND [Guid] != '{guid}';
+
+                -- look up existing block by guid and insert/update as needed
+                DECLARE @Id int
+                SET @Id = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '{guid}')
+                IF @Id IS NULL
+                BEGIN
+                    INSERT INTO [BlockType] (
+                        [IsSystem],[Path],[Category],[Name],[Description],
+                        [Guid])
+                    VALUES(
+                        1,'{path}','{category}','{name}','{description}',
+                        '{guid}')
+                END
+                ELSE
+                BEGIN
+                    UPDATE [BlockType] SET
+                        [IsSystem] = 1,
+                        [Category] = '{category}',
+                        [Name] = '{name}',
+                        [Description] = '{description}',
+                        [Path] = '{path}'
+                    WHERE [Guid] = '{guid}'
+                END");
+        }
+
+        /// <summary>
         /// Adds a new BlockType.
         /// </summary>
         /// <param name="name"></param>
@@ -323,7 +363,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Renames the type of the block.
+        /// Updates the Path of a BlockType
         /// </summary>
         /// <param name="oldPath">The old path.</param>
         /// <param name="newPath">The new path.</param>
@@ -817,6 +857,28 @@ namespace Rock.Data
         /// <param name="guid">The unique identifier.</param>
         public void AddBlock( bool skipIfAlreadyExists, string pageGuid, string layoutGuid, string blockTypeGuid, string name, string zone, string preHtml, string postHtml, int order, string guid )
         {
+            AddBlock( skipIfAlreadyExists, pageGuid.AsGuidOrNull(), layoutGuid.AsGuidOrNull(), null, blockTypeGuid.AsGuidOrNull(), name, zone, preHtml, postHtml, order, guid );
+        }
+
+        /// <summary>
+        /// Adds a new Block of the given block type to the given page (optional) or layout (optional) or site (optional),
+        /// setting its values with the given parameter values. If only the layout is given,
+        /// edit/configuration authorization will also be inserted into the Auth table
+        /// for the admin role (GroupId 2).
+        /// </summary>
+        /// <param name="skipIfAlreadyExists">if set to <c>true</c> [skip if already exists].</param>
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="layoutGuid">The layout unique identifier.</param>
+        /// <param name="siteGuid">The site unique identifier.</param>
+        /// <param name="blockTypeGuid">The block type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="zone">The zone.</param>
+        /// <param name="preHtml">The pre HTML.</param>
+        /// <param name="postHtml">The post HTML.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddBlock( bool skipIfAlreadyExists, Guid? pageGuid, Guid? layoutGuid, Guid? siteGuid, Guid? blockTypeGuid, string name, string zone, string preHtml, string postHtml, int order, string guid )
+        {
             var sb = new StringBuilder();
             sb.Append( @"
                 DECLARE @PageId int
@@ -824,20 +886,31 @@ namespace Rock.Data
 
                 DECLARE @LayoutId int
                 SET @LayoutId = null
+
+                DECLARE @SiteId int
+                SET @SiteId = null
 " );
 
-            if ( !string.IsNullOrWhiteSpace( pageGuid ) )
+            if ( pageGuid.HasValue )
             {
                 sb.AppendFormat( @"
                 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
 ", pageGuid );
             }
 
-            if ( !string.IsNullOrWhiteSpace( layoutGuid ) )
+            if ( layoutGuid.HasValue )
             {
                 sb.AppendFormat( @"
                 SET @LayoutId = (SELECT [Id] FROM [Layout] WHERE [Guid] = '{0}')
 ", layoutGuid );
+            }
+
+            // if this is Site Global block (no Page or Layout), set the SiteId
+            if ( !pageGuid.HasValue && !layoutGuid.HasValue && siteGuid.HasValue )
+            {
+                sb.AppendFormat( @"
+                SET @SiteId = (SELECT [Id] FROM [Site] WHERE [Guid] = '{0}')
+", siteGuid );
             }
 
             sb.AppendFormat( @"
@@ -849,11 +922,11 @@ namespace Rock.Data
 
                 DECLARE @BlockId int
                 INSERT INTO [Block] (
-                    [IsSystem],[PageId],[LayoutId],[BlockTypeId],[Zone],
+                    [IsSystem],[PageId],[LayoutId],[SiteId],[BlockTypeId],[Zone],
                     [Order],[Name],[PreHtml],[PostHtml],[OutputCacheDuration],
                     [Guid])
                 VALUES(
-                    1,@PageId,@LayoutId,@BlockTypeId,'{1}',
+                    1,@PageId,@LayoutId,@SiteId,@BlockTypeId,'{1}',
                     {2},'{3}','{4}','{5}',0,
                     '{6}')
                 SET @BlockId = SCOPE_IDENTITY()
@@ -866,8 +939,8 @@ namespace Rock.Data
                     postHtml.Replace( "'", "''" ),
                     guid );
 
-            // If adding a layout block, give edit/configuration authorization to admin role
-            if ( string.IsNullOrWhiteSpace( pageGuid ) )
+            // If adding a layout or site block, give edit/configuration authorization to admin role
+            if ( !pageGuid.HasValue )
                 sb.Append( @"
                 INSERT INTO [Auth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[GroupId],[Guid])
                     VALUES(@EntityTypeId,@BlockId,0,'Edit','A',0,2,NEWID())

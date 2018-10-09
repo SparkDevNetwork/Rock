@@ -5,11 +5,6 @@
 <% if ( liveFeedStatus.Value.Equals( "on" ) )
    { %>
 
-
-    <h2>
-        <asp:Literal ID="liveHeading" runat="server" />
-    </h2>
-
     <asp:HiddenField ID="localIP" runat="server" />
     <script>var localIP = <%= localIP.Value %></script>
     

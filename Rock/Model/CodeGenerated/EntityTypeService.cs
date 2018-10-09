@@ -52,9 +52,9 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<AssetStorageSystem>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<AssetStorageProvider>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, AssetStorageSystem.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, AssetStorageProvider.FriendlyTypeName );
                 return false;
             }  
  

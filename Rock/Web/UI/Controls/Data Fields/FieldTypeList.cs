@@ -26,7 +26,8 @@ namespace Rock.Web.UI.Controls
     /// A composite control that renders a label, dropdownlist, and datavalidation control for a specific field of a data model
     /// </summary>
     [ToolboxData( "<{0}:FieldTypeList runat=server></{0}:FieldTypeList>" )]
-    [Obsolete("Use FieldTypePicker instead")]
+    [RockObsolete( "1.7" )]
+    [Obsolete("Use FieldTypePicker instead", true )]
     public class FieldTypeList : DataDropDownList
     {
         /// <summary>

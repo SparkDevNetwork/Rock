@@ -300,6 +300,20 @@ namespace RockWeb.Blocks.Finance
 
                         break;
                     }
+                case "Contains Source Type":
+                    {
+                        var sourceTypeValueId = e.Value.AsIntegerOrNull();
+                        if ( sourceTypeValueId.HasValue )
+                        {
+                            e.Value = DefinedValueCache.GetValue( sourceTypeValueId.Value );
+                        }
+                        else
+                        {
+                            e.Value = string.Empty;
+                        }
+
+                        break;
+                    }
             }
         }
 
@@ -320,6 +334,7 @@ namespace RockWeb.Blocks.Finance
             gfBatchFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             gfBatchFilter.SaveUserPreference( "Campus", campCampus.SelectedValue );
             gfBatchFilter.SaveUserPreference( "Contains Transaction Type", ddlTransactionType.SelectedValue );
+            gfBatchFilter.SaveUserPreference( "Contains Source Type", ddlSourceType.SelectedValue );
 
             if ( AvailableAttributes != null )
             {
@@ -602,6 +617,10 @@ namespace RockWeb.Blocks.Finance
 
             drpBatchDate.DelimitedValues = gfBatchFilter.GetUserPreference( "Date Range" );
 
+            var definedTypeSourceTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() );
+            ddlSourceType.BindToDefinedType( definedTypeSourceTypes, true );
+            ddlSourceType.SetValue( gfBatchFilter.GetUserPreference( "Contains Source Type" ) );
+
             BindAttributes();
             AddDynamicControls();
         }
@@ -769,6 +788,13 @@ namespace RockWeb.Blocks.Finance
             if ( campus != null )
             {
                 qry = qry.Where( b => b.CampusId == campus.Id );
+            }
+
+            // filter by batches that contain transactions of the specified source type
+            var sourceTypeValueId = gfBatchFilter.GetUserPreference( "Contains Source Type" ).AsIntegerOrNull();
+            if ( sourceTypeValueId.HasValue )
+            {
+                qry = qry.Where( a => a.Transactions.Any( t => t.SourceTypeValueId == sourceTypeValueId.Value ) );
             }
 
             // Filter query by any configured attribute filters

@@ -27,16 +27,20 @@ using Rock.Web.Cache;
 
 namespace Rock.Storage.AssetStorage
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.Extension.Component" />
     public abstract class AssetStorageComponent : Component
     {
-
         #region Constructors
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AssetStorageComponent"/> class.
         /// </summary>
         public AssetStorageComponent() : base(false)
         {
-            // Override default constructor of Component that loads attributes (not needed for asset storage components, needs to be done by each AssetStorageSystem)
+            // Override default constructor of Component that loads attributes (not needed for asset storage components, needs to be done by each AssetStorageProvider)
         }
 
         #endregion Constructors
@@ -169,14 +173,14 @@ namespace Rock.Storage.AssetStorage
         }
 
         /// <summary>
-        /// Use GetAttributeValue( AssetStorageSystem assetStorageSystem, string key ) instead.
+        /// Use GetAttributeValue( AssetStorageProvider assetStorageProvider, string key ) instead.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>Exception</returns>
-        /// <exception cref="Exception">Asset Storage attributes are saved for specific asset storage components. Use GetAttributeValue( AssetStorageSystem assetStorageSystem, string key ) instead.</exception>
+        /// <exception cref="Exception">Asset Storage attributes are saved for specific asset storage components. Use GetAttributeValue( AssetStorageProvider assetStorageProvider, string key ) instead.</exception>
         public override string GetAttributeValue( string key )
         {
-            throw new Exception( "Asset Storage attributes are saved for specific asset storage components. Use GetAttributeValue( AssetStorageSystem assetStorageSystem, string key ) instead." );
+            throw new Exception( "Asset Storage attributes are saved for specific asset storage components. Use GetAttributeValue( AssetStorageProvider assetStorageProvider, string key ) instead." );
         }
 
         #endregion Component Overrides
@@ -184,19 +188,19 @@ namespace Rock.Storage.AssetStorage
         #region Public Methods
 
         /// <summary>
-        /// Gets the attribute value for the provided AssetStorageSystem and Key.
+        /// Gets the attribute value for the provided AssetStorageProvider and Key.
         /// </summary>
-        /// <param name="assetStorageSystem">The asset storage system.</param>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public string GetAttributeValue( AssetStorageSystem assetStorageSystem, string key )
+        public string GetAttributeValue( AssetStorageProvider assetStorageProvider, string key )
         {
-            if ( assetStorageSystem.AttributeValues == null )
+            if ( assetStorageProvider.AttributeValues == null )
             {
-                assetStorageSystem.LoadAttributes();
+                assetStorageProvider.LoadAttributes();
             }
 
-            var values = assetStorageSystem.AttributeValues;
+            var values = assetStorageProvider.AttributeValues;
             if ( values != null && values.ContainsKey( key ) )
             {
                 var keyValues = values[key];
@@ -210,21 +214,22 @@ namespace Rock.Storage.AssetStorage
         }
 
         #endregion Public Methods
-                
+
         #region Abstract Methods
 
         /// <summary>
         /// Gets the object as an Asset.
         /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public abstract Asset GetObject( AssetStorageSystem assetStorageSystem, Asset asset );
+        public abstract Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset );
 
         /// <summary>
         /// Lists the objects from the current root folder.
         /// </summary>
         /// <returns></returns>
-        public abstract List<Asset> ListObjects( AssetStorageSystem assetStorageSystem );
+        public abstract List<Asset> ListObjects( AssetStorageProvider assetStorageProvider );
 
         /// <summary>
         /// Lists the objects. If Asset.Key is not provided then one is created using the RootFolder and Asset.Name.
@@ -234,9 +239,10 @@ namespace Rock.Storage.AssetStorage
         /// files starting with 'mr' in folder 'pictures/cats/' set key = 'pictures/cats/mr' to get 'mr. whiskers'
         /// and 'mrs. whiskers' but not 'fluffy' or 'carnage the attack cat'.
         /// </summary>
-        /// <param name="folder">The folder.</param>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public abstract List<Asset> ListObjects( AssetStorageSystem assetStorageSystem, Asset asset );
+        public abstract List<Asset> ListObjects( AssetStorageProvider assetStorageProvider, Asset asset );
 
         /// <summary>
         /// Lists the objects in folder. The asset key or name should be the folder.
@@ -245,15 +251,16 @@ namespace Rock.Storage.AssetStorage
         /// If a key is provided it MUST use the full path, RootFolder and Name are not used.
         /// The last segment in key is the folder name.
         /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public abstract List<Asset> ListObjectsInFolder( AssetStorageSystem assetStorageSystem, Asset asset );
+        public abstract List<Asset> ListObjectsInFolder( AssetStorageProvider assetStorageProvider, Asset asset );
 
         /// <summary>
-        /// Lists the files in AssetStorageSystem.RootFolder.
+        /// Lists the files in AssetStorageProvider.RootFolder.
         /// </summary>
         /// <returns></returns>
-        public abstract List<Asset> ListFilesInFolder( AssetStorageSystem assetStorageSystem );
+        public abstract List<Asset> ListFilesInFolder( AssetStorageProvider assetStorageProvider );
 
         /// <summary>
         /// Lists the files in folder. Asset.Key or Asset.Name is the folder.
@@ -263,13 +270,13 @@ namespace Rock.Storage.AssetStorage
         /// The last segment in the key is the folder name.
         /// </summary>
         /// <returns></returns>
-        public abstract List<Asset> ListFilesInFolder( AssetStorageSystem assetStorageSystem, Asset asset );
+        public abstract List<Asset> ListFilesInFolder( AssetStorageProvider assetStorageProvider, Asset asset );
 
         /// <summary>
-        /// Lists the folders in AssetStorageSystem.Rootfolder.
+        /// Lists the folders in AssetStorageProvider.Rootfolder.
         /// </summary>
         /// <returns></returns>
-        public abstract List<Asset> ListFoldersInFolder( AssetStorageSystem assetStorageSystem );
+        public abstract List<Asset> ListFoldersInFolder( AssetStorageProvider assetStorageProvider );
 
         /// <summary>
         /// Lists the folder in folder. Asset.Key or Asset.Name is the folder.
@@ -278,49 +285,54 @@ namespace Rock.Storage.AssetStorage
         /// If a key is provided it MUST use the full path, RootFolder and Name are not used.
         /// The last segment in the key is the folder name.
         /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public abstract List<Asset> ListFoldersInFolder( AssetStorageSystem assetStorageSystem, Asset asset );
+        public abstract List<Asset> ListFoldersInFolder( AssetStorageProvider assetStorageProvider, Asset asset );
 
         /// <summary>
         /// Uploads a file. If Asset.Key is not provided then one is created using the RootFolder and Asset.Name.
         /// If a key is provided it MUST use the full path, RootFolder is not used.
         /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="asset">The asset.</param>
-        /// <param name="file">The file.</param>
         /// <returns></returns>
-        public abstract bool UploadObject( AssetStorageSystem assetStorageSystem, Asset asset );
+        public abstract bool UploadObject( AssetStorageProvider assetStorageProvider, Asset asset );
 
         /// <summary>
         /// Creates a folder. If Asset.Key is not provided then one is created using the RootFolder and Asset.Name.
         /// If Key is provided it MUST use the full path, RootFolder is not used.
         /// </summary>
-        /// <param name="folderName">Name of the folder.</param>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public abstract bool CreateFolder( AssetStorageSystem assetStorageSystem, Asset asset );
+        public abstract bool CreateFolder( AssetStorageProvider assetStorageProvider, Asset asset );
 
         /// <summary>
         /// Deletes the asset. If Asset.Key is not provided then one is created using the RootFolder and Asset.Name.
         /// If Key is provided then it MUST use the full path, RootFolder is not used.
         /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public abstract bool DeleteAsset( AssetStorageSystem assetStorageSystem, Asset asset );
+        public abstract bool DeleteAsset( AssetStorageProvider assetStorageProvider, Asset asset );
 
         /// <summary>
         /// Renames the asset.
         /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="asset">The asset.</param>
         /// <param name="newName">The new name.</param>
         /// <returns></returns>
-        public abstract bool RenameAsset( AssetStorageSystem assetStorageSystem, Asset asset, string newName );
+        public abstract bool RenameAsset( AssetStorageProvider assetStorageProvider, Asset asset, string newName );
 
         /// <summary>
         /// Creates the download link.
         /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public abstract string CreateDownloadLink( AssetStorageSystem assetStorageSystem, Asset asset );
+        public abstract string CreateDownloadLink( AssetStorageProvider assetStorageProvider, Asset asset );
 
         #endregion Abstract Methods
 

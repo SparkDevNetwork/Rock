@@ -245,7 +245,8 @@
                         </div>
                         <asp:Panel ID="pnlListViewPort" runat="server" CssClass="viewport">
                             <div class="overview">
-                                <Rock:NotificationBox ID="nbNoFilesInfo" runat="server" Text="No Files Found" Visible="false" NotificationBoxType="Info" />
+                                <%--<Rock:NotificationBox ID="nbNoFilesInfo" runat="server" Text="No Files Found" Visible="false" NotificationBoxType="Info" />--%>
+                                <asp:Label ID="lbNoFilesFound" runat="server" Visible="false" Text="No files found." CssClass="text-muted" />
                                 <asp:Label ID="lblFiles" CssClass="js-listview" runat="server" />
                             </div>
                         </asp:Panel>

@@ -63,12 +63,12 @@ namespace Rock.Model
                 // Create a new context so type can be saved independing of current context
                 using ( var rockContext = new RockContext() )
                 {
-                    var EntityTypeService = new EntityTypeService( rockContext );
+                    var entityTypeService = new EntityTypeService( rockContext );
                     entityType = new EntityType();
                     entityType.Name = type.FullName;
                     entityType.FriendlyName = type.Name.SplitCase();
                     entityType.AssemblyName = type.AssemblyQualifiedName;
-                    EntityTypeService.Add( entityType );
+                    entityTypeService.Add( entityType );
                     rockContext.SaveChanges();
                 }
 
@@ -98,10 +98,10 @@ namespace Rock.Model
             {
                 // Create a new context so type can be saved independing of current context
                 var rockContext = new RockContext();
-                var EntityTypeService = new EntityTypeService( rockContext );
+                var entityTypeService = new EntityTypeService( rockContext );
                 entityType = new EntityType();
                 entityType.Name = name;
-                EntityTypeService.Add( entityType );
+                entityTypeService.Add( entityType );
                 rockContext.SaveChanges();
 
                 // Read type using current context

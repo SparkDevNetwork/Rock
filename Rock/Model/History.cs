@@ -105,6 +105,7 @@ namespace Rock.Model
         /// The summary.
         /// </value>
         [DataMember]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use SummaryHtml instead to get the Summary, or use HistoryChangeList related functions to log history " )]
         public string Summary { get; set; }
 
@@ -602,6 +603,7 @@ namespace Rock.Model
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
         /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE ) ]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, string oldValue, string newValue, bool isSensitive = false )
         {
@@ -654,6 +656,7 @@ namespace Rock.Model
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
         /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldValue, int? newValue, bool isSensitive = false )
         {
@@ -691,6 +694,7 @@ namespace Rock.Model
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
         /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, decimal? oldValue, decimal? newValue, bool isSensitive = false )
         {
@@ -729,6 +733,7 @@ namespace Rock.Model
         /// <param name="newValue">The new value.</param>
         /// <param name="includeTime">if set to <c>true</c> [include time].</param>
         /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, DateTime? oldValue, DateTime? newValue, bool includeTime = false, bool isSensitive = false )
         {
@@ -781,6 +786,7 @@ namespace Rock.Model
         /// <param name="oldValue">if set to <c>true</c> [old value].</param>
         /// <param name="newValue">if set to <c>true</c> [new value].</param>
         /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, bool? oldValue, bool? newValue, bool isSensitive = false )
         {
@@ -818,6 +824,7 @@ namespace Rock.Model
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
         /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, Enum oldValue, Enum newValue, bool isSensitive = false )
         {
@@ -849,6 +856,7 @@ namespace Rock.Model
         /// <param name="oldDefinedValueId">The old defined value identifier.</param>
         /// <param name="newDefinedValue">The new defined value.</param>
         /// <param name="newDefinedValueId">The new defined value identifier.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldDefinedValueId, DefinedValue newDefinedValue, int? newDefinedValueId )
         {
@@ -878,6 +886,7 @@ namespace Rock.Model
         /// <param name="newDefinedValueId">The new defined value identifier.</param>
         /// <param name="blankValue">The blank value.</param>
         /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldDefinedValueId, DefinedValue newDefinedValue, int? newDefinedValueId, string blankValue, bool isSensitive )
         {
@@ -917,6 +926,7 @@ namespace Rock.Model
         /// <param name="oldGroupTypeId">The old defined value identifier.</param>
         /// <param name="newGroupType">The new defined value.</param>
         /// <param name="newGroupTypeId">The new defined value identifier.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupTypeId, GroupType newGroupType, int? newGroupTypeId )
         {
@@ -946,6 +956,7 @@ namespace Rock.Model
         /// <param name="newGroupTypeId">The new defined value identifier.</param>
         /// <param name="blankValue">The blank value.</param>
         /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupTypeId, GroupType newGroupType, int? newGroupTypeId, string blankValue, bool isSensitive )
         {
@@ -985,6 +996,7 @@ namespace Rock.Model
         /// <param name="oldCampusId">The old defined value identifier.</param>
         /// <param name="newCampus">The new defined value.</param>
         /// <param name="newCampusId">The new defined value identifier.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldCampusId, Campus newCampus, int? newCampusId )
         {
@@ -1014,6 +1026,7 @@ namespace Rock.Model
         /// <param name="newCampusId">The new defined value identifier.</param>
         /// <param name="blankValue">The blank value.</param>
         /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldCampusId, Campus newCampus, int? newCampusId, string blankValue, bool isSensitive )
         {
@@ -1054,6 +1067,7 @@ namespace Rock.Model
         /// <param name="newPersonAlias">The new person alias.</param>
         /// <param name="newPersonAliasId">The new person alias identifier.</param>
         /// <param name="rockContext">The rock context.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldPersonAliasId, PersonAlias newPersonAlias, int? newPersonAliasId, RockContext rockContext )
         {
@@ -1085,6 +1099,7 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         /// <param name="blankValue">The blank value.</param>
         /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldPersonAliasId, PersonAlias newPersonAlias, int? newPersonAliasId, RockContext rockContext, string blankValue, bool isSensitive )
         {
@@ -1126,6 +1141,7 @@ namespace Rock.Model
         /// <param name="newGroup">The new person alias.</param>
         /// <param name="newGroupId">The new person alias identifier.</param>
         /// <param name="rockContext">The rock context.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupId, Group newGroup, int? newGroupId, RockContext rockContext )
         {
@@ -1143,6 +1159,7 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         /// <param name="blankValue">The blank value.</param>
         /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupId, Group newGroup, int? newGroupId, RockContext rockContext, string blankValue, bool isSensitive )
         {
@@ -1163,6 +1180,7 @@ namespace Rock.Model
         /// <param name="newGroupTypeRole">The new person alias.</param>
         /// <param name="newGroupTypeRoleId">The new person alias identifier.</param>
         /// <param name="rockContext">The rock context.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupTypeRoleId, GroupTypeRole newGroupTypeRole, int? newGroupTypeRoleId, RockContext rockContext )
         {
@@ -1194,6 +1212,7 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         /// <param name="blankValue">The blank value.</param>
         /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupTypeRoleId, GroupTypeRole newGroupTypeRole, int? newGroupTypeRoleId, RockContext rockContext, string blankValue, bool isSensitive )
         {
@@ -1235,6 +1254,7 @@ namespace Rock.Model
         /// <param name="newLocation">The new person alias.</param>
         /// <param name="newLocationId">The new person alias identifier.</param>
         /// <param name="rockContext">The rock context.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldLocationId, Location newLocation, int? newLocationId, RockContext rockContext )
         {
@@ -1266,6 +1286,7 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         /// <param name="blankValue">The blank value.</param>
         /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldLocationId, Location newLocation, int? newLocationId, RockContext rockContext, string blankValue, bool isSensitive )
         {
@@ -1699,6 +1720,7 @@ namespace Rock.Model
             /// Initializes a new instance of the <see cref="HistoryChange"/> class.
             /// </summary>
             /// <param name="summary">The summary.</param>
+            [RockObsolete( "1.8" )]
             [Obsolete]
             public HistoryChange( string summary )
             {
@@ -1835,6 +1857,7 @@ namespace Rock.Model
             /// <value>
             /// The summary.
             /// </value>
+            [RockObsolete( "1.8" )]
             [Obsolete]
             public string Summary { get; set; }
 

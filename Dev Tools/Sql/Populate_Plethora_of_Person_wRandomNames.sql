@@ -12409,9 +12409,13 @@ BEGIN
             ,@locationTypeValueHome
             ,NEWID()
             ,1
-            ,0
+            ,1
             )
         
+		if (@personCounter % 500 = 0)
+		begin
+  		  print concat(@personCounter, '/', @maxPerson);
+        end
 
         SET @personCounter += 2;
     END
