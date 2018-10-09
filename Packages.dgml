@@ -8,19 +8,19 @@
     <Node Id="HtmlAgilityPack 1.4.6" Category="Package" Bounds="213.473333333333,0,131.46,25.96" Label="HtmlAgilityPack 1.4.6" />
     <Node Id="Humanizer 1.31.0" Category="Package" Bounds="223.356666666667,480,111.693333333333,25.96" Label="Humanizer 1.31.0" />
     <Node Id="ImageResizer 3.4.3" Category="Package" Bounds="220.1,312,118.206666666667,25.96" Label="ImageResizer 3.4.3" />
-    <Node Id="Microsoft.AspNet.Cors 5.2.2" Category="Package" Bounds="489.413333333333,492,166.406666666667,25.96" Label="Microsoft.AspNet.Cors 5.2.2" />
+    <Node Id="Microsoft.AspNet.Cors 5.2.3" Category="Package" Bounds="489.413333333333,492,166.406666666667,25.96" Label="Microsoft.AspNet.Cors 5.2.3" />
     <Node Id="Microsoft.AspNet.ScriptManager.WebForms 5.0.0" Category="Package" Bounds="139.34,712,279.726666666667,25.96" Label="Microsoft.AspNet.ScriptManager.WebForms 5.0.0" />
     <Node Id="Microsoft.AspNet.SignalR 2.0.3" Category="Package" Bounds="188.2,768,182.006666666667,25.96" Label="Microsoft.AspNet.SignalR 2.0.3" />
     <Node Id="Microsoft.AspNet.SignalR.Core 2.0.3" Category="Package" Bounds="740.64,844,209.516666666667,25.96" Label="Microsoft.AspNet.SignalR.Core 2.0.3" />
     <Node Id="Microsoft.AspNet.SignalR.JS 2.0.3" Category="Package" Bounds="474.985,724,195.263333333333,25.96" Label="Microsoft.AspNet.SignalR.JS 2.0.3" />
     <Node Id="Microsoft.AspNet.SignalR.SystemWeb 2.0.3" Category="Package" Bounds="449.066666666667,780,247.1,25.96" Label="Microsoft.AspNet.SignalR.SystemWeb 2.0.3" />
     <Node Id="Microsoft.AspNet.Web.Optimization 1.1.3" Category="Package" Bounds="726.166666666667,612,238.463333333333,25.96" Label="Microsoft.AspNet.Web.Optimization 1.1.3" />
-    <Node Id="Microsoft.AspNet.WebApi 5.2.2" Category="Package" Bounds="186.743333333333,368,184.92,25.96" Label="Microsoft.AspNet.WebApi 5.2.2" />
-    <Node Id="Microsoft.AspNet.WebApi.Client 5.2.2" Category="Package" Bounds="994.63,368,217.896666666667,25.96" Label="Microsoft.AspNet.WebApi.Client 5.2.2" />
-    <Node Id="Microsoft.AspNet.WebApi.Core 5.2.2" Category="Package" Bounds="739.183333333333,536,212.43,25.96" Label="Microsoft.AspNet.WebApi.Core 5.2.2" />
-    <Node Id="Microsoft.AspNet.WebApi.Cors 5.2.2" Category="Package" Bounds="173.58,536,211.246666666667,25.96" Label="Microsoft.AspNet.WebApi.Cors 5.2.2" />
+    <Node Id="Microsoft.AspNet.WebApi 5.2.3" Category="Package" Bounds="186.743333333333,368,184.92,25.96" Label="Microsoft.AspNet.WebApi 5.2.3" />
+    <Node Id="Microsoft.AspNet.WebApi.Client 5.2.3" Category="Package" Bounds="994.63,368,217.896666666667,25.96" Label="Microsoft.AspNet.WebApi.Client 5.2.3" />
+    <Node Id="Microsoft.AspNet.WebApi.Core 5.2.3" Category="Package" Bounds="739.183333333333,536,212.43,25.96" Label="Microsoft.AspNet.WebApi.Core 5.2.3" />
+    <Node Id="Microsoft.AspNet.WebApi.Cors 5.2.3" Category="Package" Bounds="173.58,536,211.246666666667,25.96" Label="Microsoft.AspNet.WebApi.Cors 5.2.3" />
     <Node Id="Microsoft.AspNet.WebApi.OData 5.3.1" Category="Package" Bounds="458.986666666667,257,221.26,25.96" Label="Microsoft.AspNet.WebApi.OData 5.3.1" UseManualLocation="True" />
-    <Node Id="Microsoft.AspNet.WebApi.WebHost 5.2.2" Category="Package" Bounds="454.231666666667,368,236.77,25.96" Label="Microsoft.AspNet.WebApi.WebHost 5.2.2" />
+    <Node Id="Microsoft.AspNet.WebApi.WebHost 5.2.3" Category="Package" Bounds="454.231666666667,368,236.77,25.96" Label="Microsoft.AspNet.WebApi.WebHost 5.2.3" />
     <Node Id="Microsoft.Data.Edm 5.6.3" Category="Package" Bounds="949.758333333333,79.9999999999999,151.64,25.96" Label="Microsoft.Data.Edm 5.6.3" UseManualLocation="True" />
     <Node Id="Microsoft.Data.OData 5.6.3" Category="Package" Bounds="754.445,207,161.906666666667,25.96" Label="Microsoft.Data.OData 5.6.3" UseManualLocation="True" />
     <Node Id="Microsoft.Owin 2.0.1" Category="Package" Bounds="1246.10833333333,876,128.29,25.96" Label="Microsoft.Owin 2.0.1" />
@@ -58,15 +58,15 @@
     <Link Source="Microsoft.AspNet.SignalR.SystemWeb 2.0.3" Target="Microsoft.Owin.Host.SystemWeb 2.0.1" Category="Package Dependency" Bounds="696.166687011719,792.97998046875,29.885009765625,0" />
     <Link Source="Microsoft.AspNet.Web.Optimization 1.1.3" Target="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package Dependency" Bounds="905.240783691406,637.960021972656,129.699645996094,28.1322021484375" />
     <Link Source="Microsoft.AspNet.Web.Optimization 1.1.3" Target="WebGrease 1.6.0" Category="Package Dependency" Bounds="964.630004882813,624.97998046875,75.6500244140625,0" />
-    <Link Source="Microsoft.AspNet.WebApi 5.2.2" Target="Microsoft.AspNet.WebApi.WebHost 5.2.2" Category="Package Dependency" Bounds="371.663330078125,380.980010986328,73.5683288574219,0" />
-    <Link Source="Microsoft.AspNet.WebApi.Client 5.2.2" Target="Newtonsoft.Json 6.0.6" Category="Package Dependency" Bounds="1113.1591796875,393.959991455078,182.16845703125,246.798919677734" />
-    <Link Source="Microsoft.AspNet.WebApi.Core 5.2.2" Target="Microsoft.AspNet.WebApi.Client 5.2.2" Category="Package Dependency" Bounds="865.345825195313,398.86865234375,210.741455078125,137.13134765625" />
-    <Link Source="Microsoft.AspNet.WebApi.Cors 5.2.2" Target="Microsoft.AspNet.Cors 5.2.2" Category="Package Dependency" Bounds="365.76025390625,518.625244140625,115.863494873047,17.374755859375" />
-    <Link Source="Microsoft.AspNet.WebApi.Cors 5.2.2" Target="Microsoft.AspNet.WebApi.Core 5.2.2" Category="Package Dependency" Bounds="384.82666015625,548.97998046875,345.356689453125,0" />
-    <Link Source="Microsoft.AspNet.WebApi.OData 5.3.1" Target="Microsoft.AspNet.WebApi.Client 5.2.2" Category="Package Dependency" Bounds="632.056493780462,282.959995727539,400.270353618562,83.2082395124316" />
-    <Link Source="Microsoft.AspNet.WebApi.OData 5.3.1" Target="Microsoft.AspNet.WebApi.Core 5.2.2" Category="Package Dependency" Bounds="589.0458984375,282.959991455078,241.134399414063,245.856353759766" />
+    <Link Source="Microsoft.AspNet.WebApi 5.2.3" Target="Microsoft.AspNet.WebApi.WebHost 5.2.3" Category="Package Dependency" Bounds="371.663330078125,380.980010986328,73.5683288574219,0" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 5.2.3" Target="Newtonsoft.Json 6.0.6" Category="Package Dependency" Bounds="1113.1591796875,393.959991455078,182.16845703125,246.798919677734" />
+    <Link Source="Microsoft.AspNet.WebApi.Core 5.2.3" Target="Microsoft.AspNet.WebApi.Client 5.2.3" Category="Package Dependency" Bounds="865.345825195313,398.86865234375,210.741455078125,137.13134765625" />
+    <Link Source="Microsoft.AspNet.WebApi.Cors 5.2.3" Target="Microsoft.AspNet.Cors 5.2.3" Category="Package Dependency" Bounds="365.76025390625,518.625244140625,115.863494873047,17.374755859375" />
+    <Link Source="Microsoft.AspNet.WebApi.Cors 5.2.3" Target="Microsoft.AspNet.WebApi.Core 5.2.3" Category="Package Dependency" Bounds="384.82666015625,548.97998046875,345.356689453125,0" />
+    <Link Source="Microsoft.AspNet.WebApi.OData 5.3.1" Target="Microsoft.AspNet.WebApi.Client 5.2.3" Category="Package Dependency" Bounds="632.056493780462,282.959995727539,400.270353618562,83.2082395124316" />
+    <Link Source="Microsoft.AspNet.WebApi.OData 5.3.1" Target="Microsoft.AspNet.WebApi.Core 5.2.3" Category="Package Dependency" Bounds="589.0458984375,282.959991455078,241.134399414063,245.856353759766" />
     <Link Source="Microsoft.AspNet.WebApi.OData 5.3.1" Target="Microsoft.Data.OData 5.6.3" Category="Package Dependency" Bounds="638.61358081665,234.623926711178,118.942989895492,22.3760690163613" />
-    <Link Source="Microsoft.AspNet.WebApi.WebHost 5.2.2" Target="Microsoft.AspNet.WebApi.Core 5.2.2" Category="Package Dependency" Bounds="597.16064453125,393.959991455078,220.683776855469,137.141143798828" />
+    <Link Source="Microsoft.AspNet.WebApi.WebHost 5.2.3" Target="Microsoft.AspNet.WebApi.Core 5.2.3" Category="Package Dependency" Bounds="597.16064453125,393.959991455078,220.683776855469,137.141143798828" />
     <Link Source="Microsoft.Data.OData 5.6.3" Target="Microsoft.Data.Edm 5.6.3" Category="Package Dependency" Bounds="854.835640270723,110.958112296711,143.820828630519,96.0418834308277" />
     <Link Source="Microsoft.Data.OData 5.6.3" Target="System.Spatial 5.6.3" Category="Package Dependency" Bounds="907.807072112534,232.959995727539,225.134206022017,40.3575942973496" />
     <Link Source="Microsoft.Owin 2.0.1" Target="Owin 1.0" Category="Package Dependency" Bounds="1348.85363769531,858.91748046875,50.8004150390625,17.08251953125" />
@@ -82,7 +82,7 @@
     <Link Source="Rock" Target="HtmlAgilityPack 1.4.6" Category="Installed Package" Bounds="22.0106298419391,31.1591466697279,231.505728278757,163.840849057811" />
     <Link Source="Rock" Target="Humanizer 1.31.0" Category="Installed Package" Bounds="15.4155349731445,220.959991455078,231.221565246582,253.251281738281" />
     <Link Source="Rock" Target="ImageResizer 3.4.3" Category="Installed Package" Bounds="28.6074884151445,218.569226602591,211.744056307706,89.9130926176394" />
-    <Link Source="Rock" Target="Microsoft.AspNet.WebApi 5.2.2" Category="Installed Package" Bounds="24.3429632861628,220.959995727539,226.565278729917,142.254271342699" />
+    <Link Source="Rock" Target="Microsoft.AspNet.WebApi 5.2.3" Category="Installed Package" Bounds="24.3429632861628,220.959995727539,226.565278729917,142.254271342699" />
     <Link Source="Rock" Target="NuGet.Core 2.8.1" Category="Installed Package" Bounds="15.1144618988037,220.959991455078,215.002237319946,200.294158935547" />
     <Link Source="Rock" Target="Twilio 3.6.11" Category="Installed Package" Bounds="28.6700000762939,140.007159589913,200.647975336143,60.4419868095554" />
     <Link Source="Rock.Migrations" Target="EntityFramework 6.1.0" Category="Installed Package" Bounds="0.69580378447079,96.9599995422363,226.865281864692,68.44059228077" />
@@ -90,8 +90,8 @@
     <Link Source="Rock.Rest" Target="EntityFramework 6.1.0" Category="Installed Package" Bounds="-10.4364833831787,197.661804199219,252.671789169312,119.338195800781" />
     <Link Source="Rock.Rest" Target="Humanizer 1.31.0" Category="Installed Package" Bounds="-11.2034812290684,342.959995727539,257.284209553815,132.909330858348" />
     <Link Source="Rock.Rest" Target="ImageResizer 3.4.3" Category="Installed Package" Bounds="-0.866668497721349,326.059155912178,211.967803531926,3.35888123940993" />
-    <Link Source="Rock.Rest" Target="Microsoft.AspNet.WebApi 5.2.2" Category="Installed Package" Bounds="-0.866668497721349,335.711973340835,190.878979185878,30.8519795716413" />
-    <Link Source="Rock.Rest" Target="Microsoft.AspNet.WebApi.Cors 5.2.2" Category="Installed Package" Bounds="-17.628529800448,342.959995727539,270.736738045697,187.908355774448" />
+    <Link Source="Rock.Rest" Target="Microsoft.AspNet.WebApi 5.2.3" Category="Installed Package" Bounds="-0.866668497721349,335.711973340835,190.878979185878,30.8519795716413" />
+    <Link Source="Rock.Rest" Target="Microsoft.AspNet.WebApi.Cors 5.2.3" Category="Installed Package" Bounds="-17.628529800448,342.959995727539,270.736738045697,187.908355774448" />
     <Link Source="Rock.Rest" Target="Microsoft.AspNet.WebApi.OData 5.3.1" Category="Installed Package" Bounds="-0.866668497721349,281.805677753795,451.054492699474,44.6627880667315" />
     <Link Source="Rock.Rest" Target="UAParser 1.0.2.0" Category="Installed Package" Bounds="-21.7602024078369,342.959991455078,246.595834732056,246.569549560547" />
     <Link Source="RockWeb" Target="Humanizer 1.31.0" Category="Installed Package" Bounds="64.6129913330078,504.120452880859,149.885040283203,131.879547119141" />
@@ -99,8 +99,8 @@
     <Link Source="RockWeb" Target="Microsoft.AspNet.ScriptManager.WebForms 5.0.0" Category="Installed Package" Bounds="84.8228225708008,661.960021972656,140.020332336426,47.5811157226563" />
     <Link Source="RockWeb" Target="Microsoft.AspNet.SignalR 2.0.3" Category="Installed Package" Bounds="64.3674240112305,661.960021972656,140.457405090332,104.291320800781" />
     <Link Source="RockWeb" Target="Microsoft.AspNet.Web.Optimization 1.1.3" Category="Installed Package" Bounds="89.7966690063477,636.255310058594,627.447715759277,12.7246704101563" />
-    <Link Source="RockWeb" Target="Microsoft.AspNet.WebApi 5.2.2" Category="Installed Package" Bounds="63.3342552185059,397.886047363281,180.669742584229,238.113952636719" />
-    <Link Source="RockWeb" Target="Microsoft.AspNet.WebApi.Cors 5.2.2" Category="Installed Package" Bounds="83.8144302368164,565.62158203125,158.022987365723,70.37841796875" />
+    <Link Source="RockWeb" Target="Microsoft.AspNet.WebApi 5.2.3" Category="Installed Package" Bounds="63.3342552185059,397.886047363281,180.669742584229,238.113952636719" />
+    <Link Source="RockWeb" Target="Microsoft.AspNet.WebApi.Cors 5.2.3" Category="Installed Package" Bounds="83.8144302368164,565.62158203125,158.022987365723,70.37841796875" />
     <Link Source="RockWeb" Target="Microsoft.SqlServer.Types 11.0.1" Category="Installed Package" Bounds="65.1935577392578,661.960021972656,166.639999389648,159.186950683594" />
     <Link Source="RockWeb" Target="NuGet.Core 2.8.1" Category="Installed Package" Bounds="66.681770324707,454.504241943359,182.563285827637,181.495758056641" />
     <Link Source="RockWeb" Target="UAParser 1.0.2.0" Category="Installed Package" Bounds="89.7966690063477,617.043029785156,127.848731994629,25.053466796875" />

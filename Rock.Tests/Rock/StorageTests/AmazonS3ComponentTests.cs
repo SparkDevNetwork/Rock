@@ -245,7 +245,7 @@ namespace Rock.Tests.Rock.StorageTests
                 request.Method = "GET";
                 System.Net.HttpWebResponse response = request.GetResponse() as System.Net.HttpWebResponse;
                 response.Close();
-                valid = response.StatusCode == System.Net.HttpStatusCode.OK ? true : false; 
+                valid = response.StatusCode == System.Net.HttpStatusCode.OK ? true : false;
             }
             catch
             {

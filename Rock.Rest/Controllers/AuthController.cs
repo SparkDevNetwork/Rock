@@ -23,7 +23,7 @@ using Rock.Security;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class AuthController : ApiController
     {
