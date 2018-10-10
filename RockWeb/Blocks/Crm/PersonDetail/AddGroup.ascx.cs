@@ -73,6 +73,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [WorkflowTypeField( "Group Workflow(s)", "The workflow(s) to launch for the group (family) that is added.", true, false, "", "", 27, "GroupWorkflows" )]
     [LinkedPage( "Person Detail Page", "The Page to navigate to after the family has been added. (Note that {GroupId} and {PersonId} can be included in the route). Leave blank to go to the default page of ~/Person/{PersonId}.", false, order: 28 )]
     [BooleanField( "Enable Alternate Identifier", "If enabled, an additional step will be shown for supplying a custom alternate identifier for each person.", false, order: 29 )]
+    [BooleanField( "Generate Alternate Identifier", "If enabled, a custom alternate identifier will be generated for each person.", true, order: 30 )]
     public partial class AddGroup : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -93,6 +94,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private DefinedValueCache _cellPhone = null;
         private string _smsOption = "False";
         private bool _enableAlternateIdentifier = false;
+        private bool _generateAlternateIdentifier = true;
 
         #endregion
 
@@ -248,6 +250,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             _cellPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
 
             _enableAlternateIdentifier = GetAttributeValue( "EnableAlternateIdentifier" ).AsBooleanOrNull() ?? false;
+            _generateAlternateIdentifier = GetAttributeValue( "GenerateAlternateIdentifier" ).AsBooleanOrNull() ?? true;
 
             _confirmMaritalStatus = _isFamilyGroupType && GetAttributeValue( "MaritalStatusConfirmation" ).AsBoolean();
             if ( _confirmMaritalStatus )
@@ -768,7 +771,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                     else
                     {
-                        advanceInfoRow.AlternateId = PersonSearchKeyService.GenerateRandomAlternateId( true );
+                        if ( _generateAlternateIdentifier )
+                        {
+                            advanceInfoRow.AlternateId = PersonSearchKeyService.GenerateRandomAlternateId( true );
+                        }
                     }
                 }
 
