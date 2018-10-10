@@ -119,7 +119,10 @@ namespace Rock.Utility
         /// </returns>
         private static bool IsComparedToValue( ParameterExpression attributeValueParameterExpression, Expression comparisonExpression, string value )
         {
-            var attributeValue = new AttributeValue() { Value = value };
+            // Creates a dummy attribute value that uses the default value
+            AttributeValue attributeValue = AttributeValue.CreateNonPersistedAttributeValue( value );
+
+            // Assign the dummy attribute to the comparison expression
             Expression assignExpr = Expression.Assign( attributeValueParameterExpression, Expression.Constant( attributeValue ) );
             BlockExpression blockExpr = Expression.Block(
                 new ParameterExpression[] { attributeValueParameterExpression },
@@ -127,6 +130,7 @@ namespace Rock.Utility
                 comparisonExpression
                 );
 
+            // Execute the comparison expression
             return Expression.Lambda<Func<bool>>( blockExpr ).Compile()();
         }
 
