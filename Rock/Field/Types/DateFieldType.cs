@@ -754,6 +754,12 @@ namespace Rock.Field.Types
             }
 
             ComparisonType? filterComparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
+
+            if (filterComparisonType == null )
+            {
+                return false;
+            }
+
             ComparisonType? equalToCompareValue = GetEqualToCompareValue().ConvertToEnumOrNull<ComparisonType>();
             DateTime? valueAsDateTime = value.AsDateTime();
 
