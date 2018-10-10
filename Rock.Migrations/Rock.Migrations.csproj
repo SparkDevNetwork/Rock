@@ -112,6 +112,10 @@
     <Compile Include="Migrations\201810021839212_Rollup_1002.Designer.cs">
       <DependentUpon>201810021839212_Rollup_1002.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201810102034424_AddSpiritualityGifts.cs" />
+    <Compile Include="Migrations\201810102034424_AddSpiritualityGifts.Designer.cs">
+      <DependentUpon>201810102034424_AddSpiritualityGifts.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -436,6 +440,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201810021839212_Rollup_1002.resx">
       <DependentUpon>201810021839212_Rollup_1002.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201810102034424_AddSpiritualityGifts.resx">
+      <DependentUpon>201810102034424_AddSpiritualityGifts.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
