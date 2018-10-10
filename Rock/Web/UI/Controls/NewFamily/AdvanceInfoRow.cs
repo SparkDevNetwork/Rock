@@ -17,6 +17,7 @@
 using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Model;
 
 namespace Rock.Web.UI.Controls
 {
@@ -26,6 +27,7 @@ namespace Rock.Web.UI.Controls
     public class NewGroupAdvanceInfoRow : CompositeControl
     {
         private RockTextBox _tbAlternateId;
+        private LinkButton _lbGenerate;
 
         /// <summary>
         /// Gets or sets the person GUID.
@@ -108,6 +110,9 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             _tbAlternateId = new RockTextBox();
+            _lbGenerate = new LinkButton();
+            _lbGenerate.Text = "<i class='fas fa-barcode text-color'></i>";
+            _lbGenerate.Click += lbGenerate_Click;
         }
 
         /// <summary>
@@ -120,6 +125,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Handles the Click event of the lbGenerate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbGenerate_Click( object sender, EventArgs e )
+        {
+            AlternateId = PersonSearchKeyService.GenerateRandomAlternateId( true );
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -128,10 +143,10 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
 
             _tbAlternateId.ID = "_tbAlternateId";
-
-
             Controls.Add( _tbAlternateId );
 
+            _lbGenerate.ID = "_btnGenerate";
+            Controls.Add( _lbGenerate );
         }
 
         /// <summary>
@@ -155,7 +170,14 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 writer.AddAttribute( "class", "form-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.AddAttribute( "class", "input-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _tbAlternateId.RenderControl( writer );
+                writer.AddAttribute( "class", "input-group-addon" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _lbGenerate.RenderControl( writer );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 
