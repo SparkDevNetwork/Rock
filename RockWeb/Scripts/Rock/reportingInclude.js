@@ -25,7 +25,7 @@
 
     $('.js-filter-compare').change(function () {
         updateFilterControls(this);
-    })
+    });
 
     // handle property selection changes from the EntityFieldFilter
     $('select.entity-property-selection').change(function () {
@@ -251,7 +251,7 @@ $(document).ready(function () {
 
                     return result;
                 }
-            }
+            };
 
         return exports;
     }());
