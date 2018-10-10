@@ -1933,6 +1933,18 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                     }
                 }
 
+                
+
+                if ( CustomColumns != null && CustomColumns.Any() )
+                {
+                    foreach ( var columnConfig in CustomColumns )
+                    {
+                        var column = columnConfig.GetGridColumn();
+                        lavaFields.Add( column );
+                        visibleFields.Add( fieldOrder++, column );
+                    }
+                }
+
                 var oType = GetDataSourceObjectType();
 
                 // get all properties of the objects in the grid
@@ -1970,9 +1982,20 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
                 // Grid column headings
                 var boundPropNames = new List<string>();
-                foreach ( DataControlField dataField in visibleFields.OrderBy( f => f.Key ).Select( f => f.Value ) )
+
+                // Array provides slight performance improvement here over a list
+                var orderedVisibleFields = visibleFields.OrderBy( f => f.Key ).Select( f => f.Value ).ToArray();
+                for (int i = 0; i < orderedVisibleFields.Count(); i++ )
                 {
-                    worksheet.Cells[rowCounter, columnCounter].Value = dataField.HeaderText;
+                    DataControlField dataField = orderedVisibleFields[i];
+                    if (dataField.HeaderText.IsNullOrWhiteSpace())
+                    {
+                        dataField.HeaderText = string.Format( "Column {0}", i );
+                    }
+                    else
+                    {
+                        worksheet.Cells[rowCounter, columnCounter].Value = dataField.HeaderText;
+                    }
 
                     var boundField = dataField as BoundField;
                     if ( boundField != null )
