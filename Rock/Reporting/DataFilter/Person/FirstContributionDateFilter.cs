@@ -89,14 +89,21 @@ namespace Rock.Reporting.DataFilter.Person
         {
             return @"
 function() {
-    
-    var dateRangeText = $('.js-slidingdaterange-text-value', $content).val()
-    var accountPicker = $('.js-account-picker', $content);
-    var accountNames = accountPicker.find('.selected-names').text() 
+    var useSundayDate = $('.js-use-sunday-date', $content).is(':checked');
+    var sundayString = useSundayDate == true ? 'Sunday ' : '';
 
-   return 'First contribution date to accounts ' + accountNames  + '. DateRange: ' + dateRangeText;
+    var accountPicker = $('.account-picker', $content);
+    var accountNames = accountPicker.find('.selected-names').text();
+    if(accountNames) {
+        accountNames = ' to accounts: ' + accountNames;
+    }
+
+    var dateRangeText = $('.js-slidingdaterange-text-value', $content).val();
+
+    return 'First contribution ' + sundayString + 'date' + accountNames  + '. DateRange: ' + dateRangeText;
 }
 ";
+
         }
 
         /// <summary>
@@ -133,12 +140,19 @@ function() {
                 var accountGuids = selectionValues[2].Split( ',' ).Select( a => a.AsGuid() ).ToList();
                 accountNames = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids ).Select( a => a.Name ).ToList().AsDelimited( "," );
 
+                string sundayDateString = string.Empty;
+
+                var useSundayDate = selectionValues[4].AsBooleanOrNull();
+                if (useSundayDate == null || useSundayDate == true )
+                {
+                    sundayDateString = "Sunday ";
+                }
+
                 result = string.Format(
-                    "First contribution date{0}. Date Range: {1}",
-                    !string.IsNullOrWhiteSpace( accountNames ) ? " to accounts:" + accountNames : string.Empty,
-                    SlidingDateRangePicker.FormatDelimitedValues( fakeSlidingDateRangePicker.DelimitedValues )
-                    )
-                    ;
+                    "First contribution {0}date{1}. Date Range: {2}",
+                     sundayDateString, 
+                    !string.IsNullOrWhiteSpace( accountNames ) ? " to accounts: " + accountNames : string.Empty,
+                    SlidingDateRangePicker.FormatDelimitedValues( fakeSlidingDateRangePicker.DelimitedValues ) );
             }
 
             return result;
@@ -153,7 +167,7 @@ function() {
             AccountPicker accountPicker = new AccountPicker();
             accountPicker.AllowMultiSelect = true;
             accountPicker.ID = filterControl.ID + "_accountPicker";
-            accountPicker.AddCssClass( "js-account-picker" );
+            //accountPicker.AddCssClass( "js-account-picker" );
             accountPicker.Label = "Accounts";
             filterControl.Controls.Add( accountPicker );
 
@@ -165,7 +179,14 @@ function() {
             slidingDateRangePicker.Required = true;
             filterControl.Controls.Add( slidingDateRangePicker );
 
-            var controls = new Control[2] { accountPicker, slidingDateRangePicker };
+            RockCheckBox cbUseSundayDate = new RockCheckBox();
+            cbUseSundayDate.ID = filterControl.ID + "_cbUseSundayDate";
+            cbUseSundayDate.Label = "Use Sunday Date";
+            cbUseSundayDate.Help = "Use the Sunday Date instead of the actual transaction date.";
+            cbUseSundayDate.AddCssClass( "js-use-sunday-date" );
+            filterControl.Controls.Add( cbUseSundayDate );
+
+            var controls = new Control[3] { accountPicker, slidingDateRangePicker, cbUseSundayDate };
 
             return controls;
         }
@@ -203,8 +224,10 @@ function() {
             // convert pipe to comma delimited
             var delimitedValues = slidingDateRangePicker.DelimitedValues.Replace( "|", "," );
 
+            string useSundayDate = ( controls[2] as RockCheckBox ).Checked.ToString();
+
             // {1} and {2} used to store the DateRange before, but now we using the SlidingDateRangePicker
-            return string.Format( "{0}|{1}|{2}|{3}", string.Empty, string.Empty, accountGuids, delimitedValues );
+            return string.Format( "{0}|{1}|{2}|{3}|{4}", string.Empty, string.Empty, accountGuids, delimitedValues, useSundayDate );
         }
 
         /// <summary>
@@ -216,12 +239,11 @@ function() {
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
             string[] selectionValues = selection.Split( '|' );
-            if ( selectionValues.Length >= 3 )
+            if ( selectionValues.Length >= 4 )
             {
-                var accountPicker = controls[0] as AccountPicker;
                 var slidingDateRangePicker = controls[1] as SlidingDateRangePicker;
-
-                if ( selectionValues.Length >= 4 )
+                
+                if ( selectionValues.Length >= 5 )
                 {
                     // convert comma delimited to pipe
                     slidingDateRangePicker.DelimitedValues = selectionValues[3].Replace( ',', '|' );
@@ -236,12 +258,16 @@ function() {
                     slidingDateRangePicker.SetDateRangeModeValue( new DateRange( lowerValue, upperValue ) );
                 }
 
+                var accountPicker = controls[0] as AccountPicker;
                 var accountGuids = selectionValues[2].Split( ',' ).Select( a => a.AsGuid() ).ToList();
                 var accounts = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids );
                 if ( accounts != null && accounts.Any() )
                 {
                     accountPicker.SetValues( accounts );
                 }
+
+                var cbUseSundayDate = controls[2] as RockCheckBox;
+                cbUseSundayDate.Checked = selectionValues[4].AsBooleanOrNull() ?? false;
             }
         }
 
@@ -305,22 +331,25 @@ function() {
                 }
             }
 
+            // Default this to true if it is not available so the behavior of existing dataviews (< v9.0) are not changed without user input.
+            bool useSundayDate = selectionValues[4].AsBooleanOrNull() ?? true;
+
             var firstContributionDateQry = financialTransactionsQry
                 .GroupBy( xx => xx.AuthorizedPersonAlias.PersonId )
                 .Select( ss => new
                 {
                     PersonId = ss.Key,
-                    FirstTransactionSundayDate = ss.Min( a => a.SundayDate )
+                    FirstTransactionDate = ss.Min( a => useSundayDate == true ? a.SundayDate : a.TransactionDateTime )
                 } );
 
             if ( dateRange.Start.HasValue )
             {
-                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionSundayDate >= dateRange.Start.Value );
+                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionDate >= dateRange.Start.Value );
             }
 
             if ( dateRange.End.HasValue )
             {
-                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionSundayDate < dateRange.End.Value );
+                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionDate < dateRange.End.Value );
             }
 
             var innerQry = firstContributionDateQry.Select( xx => xx.PersonId ).AsQueryable();
