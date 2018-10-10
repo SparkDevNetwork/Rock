@@ -1571,11 +1571,13 @@ namespace RockWeb.Blocks.Finance
 
                 if ( txn.Id == 0 )
                 {
+                    gpPaymentGateway.Enabled = true;
                     btnSaveThenAdd.Visible = true;
                     btnSaveThenViewBatch.Visible = !string.IsNullOrEmpty( LinkedPageUrl( "BatchDetailPage" ) ) && txn.BatchId.HasValue;
                 }
                 else
                 {
+                    gpPaymentGateway.Enabled = false;
                     btnSaveThenAdd.Visible = false;
                     btnSaveThenViewBatch.Visible = false;
                 }
