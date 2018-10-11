@@ -196,6 +196,15 @@ namespace Rockweb.Blocks.Crm
             }
         }
 
+        /// <summary>
+        /// Gets or sets the total number of questions
+        /// </summary>
+        public int QuestionCount
+        {
+            get { return ViewState[NUMBER_OF_QUESTIONS] as int? ?? 0; }
+            set { ViewState[NUMBER_OF_QUESTIONS] = value; }
+        }
+
         #endregion
 
         #region Base Control Methods
@@ -220,6 +229,7 @@ namespace Rockweb.Blocks.Crm
             base.OnInit( e );
 
             SetPanelTitleAndIcon();
+
             // otherwise use the currently logged in person
             string personKey = PageParameter( "Person" );
             if ( !string.IsNullOrEmpty( personKey ) )
@@ -328,9 +338,11 @@ namespace Rockweb.Blocks.Crm
             int pageNumber = hfPageNo.ValueAsInt() + 1;
             GetResponse();
 
-            int questionCount = Int32.Parse( GetAttributeValue( NUMBER_OF_QUESTIONS ) );
-            var totalQuestion = pageNumber * questionCount;
-            if ( AssessmentResponses.Count > totalQuestion && !AssessmentResponses.All( a => a.Response.HasValue ) )
+            LinkButton btn = ( LinkButton ) sender;
+            string commandArgument = btn.CommandArgument;
+
+            var totalQuestion = pageNumber * QuestionCount;
+            if ( AssessmentResponses.Count > totalQuestion && !AssessmentResponses.All( a => a.Response.HasValue ) || "Next".Equals( commandArgument ) )
             {
                 BindRepeater( pageNumber );
             }
@@ -394,8 +406,6 @@ namespace Rockweb.Blocks.Crm
             {
                 iIcon.Attributes["class"] = panelIcon;
             }
-
-            hfQuestionCount.SetValue( this.GetAttributeValue( NUMBER_OF_QUESTIONS ).AsInteger() );
         }
 
         /// <summary>
@@ -462,6 +472,15 @@ namespace Rockweb.Blocks.Crm
                                         Code = a.Key,
                                         Question = a.Value
                                     } ).ToList();
+
+            // If _maxQuestions has not been set yet...
+            if ( QuestionCount == 0 && AssessmentResponses != null )
+            {
+                // Set the max number of questions to be no greater than the actual number of questions.
+                int numQuestions = this.GetAttributeValue( NUMBER_OF_QUESTIONS ).AsInteger();
+                QuestionCount = ( numQuestions > AssessmentResponses.Count ) ? AssessmentResponses.Count : numQuestions;
+            }
+
             BindRepeater( 0 );
         }
 
@@ -474,26 +493,27 @@ namespace Rockweb.Blocks.Crm
 
             var answeredQuestionCount = AssessmentResponses.Where( a => a.Response.HasValue ).Count();
             PercentComplete = Math.Round( ( Convert.ToDecimal( answeredQuestionCount ) / Convert.ToDecimal( AssessmentResponses.Count ) ) * 100.0m, 2 );
-            int questionCount = Int32.Parse( GetAttributeValue( NUMBER_OF_QUESTIONS ) );
 
-            var skipCount = pageNumber * questionCount;
+            var skipCount = pageNumber * QuestionCount;
 
             var questions = AssessmentResponses
                 .Skip( skipCount )
-                .Take( questionCount + 1 )
+                .Take( QuestionCount + 1 )
                 .ToList();
 
-            rQuestions.DataSource = questions.Take( questionCount );
+            rQuestions.DataSource = questions.Take( QuestionCount );
             rQuestions.DataBind();
 
             // set next button
-            if ( questions.Count() > questionCount )
+            if ( questions.Count() > QuestionCount )
             {
                 btnNext.Text = "Next";
+                btnNext.CommandArgument = "Next";
             }
             else
             {
                 btnNext.Text = "Finish";
+                btnNext.CommandArgument = "Finish";
             }
 
             // build prev button
