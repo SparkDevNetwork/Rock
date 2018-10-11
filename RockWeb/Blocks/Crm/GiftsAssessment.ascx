@@ -11,17 +11,18 @@
     /// Returns true if the test is complete.
     ///</summary>
     function isComplete() {
+        var complete = true;
 
         // provide error indicator if nothing is checked for each radio button group
         $(".js-gift-questions input:radio").each(function(){
             var name = $(this).attr("name");
             if ($("input:radio[name='" + name + "']:checked").length == 0) {
+                complete = false;
                 $("input:radio[name='" + name + "']").first().closest(".form-group").addClass("has-error has-feedback");
             }
         });
 
-        var $completedQuestions = $('.js-gift-questions input[type=radio]:checked');
-        if ($completedQuestions.length < parseInt($('#<%=hfQuestionCount.ClientID%>').val())){
+        if ( ! complete ){
             $('[id$="divError"]').fadeIn();
             return false;
         }
@@ -55,7 +56,6 @@
 <asp:UpdatePanel ID="upAssessment" runat="server">
     <ContentTemplate>
         <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger">You have to be signed in to take the assessment.</Rock:NotificationBox>
-        <asp:HiddenField ID="hfQuestionCount" runat="server" />
         <asp:Panel ID="pnlAssessment" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title"><i runat="server" id="iIcon"></i>
