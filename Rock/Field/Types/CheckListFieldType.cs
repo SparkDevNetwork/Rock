@@ -284,7 +284,7 @@ namespace Rock.Field.Types
             {
                 var keyValuePairs = JsonConvert.DeserializeObject<List<KeyValuePair>>( configurationValues[VALUES_KEY].Value );
                 var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
-                return keyValuePairs.Where( a => values.Contains( a.Key ) ).Select( a => a.Value ).ToList().AsDelimited( " OR " );
+                return AddQuotes( keyValuePairs.Where( a => values.Contains( a.Key ) ).Select( a => a.Value ).ToList().AsDelimited( "' OR '" ) );
             }
             return string.Empty;
         }
