@@ -634,7 +634,7 @@ namespace Rock.Field.Types
                     if ( comparisonType == ComparisonType.Between && filterValueValues.Length > 1 )
                     {
                         var dateRangeText = SlidingDateRangePicker.FormatDelimitedValues( filterValueValues[1] );
-                        return dateRangeText.IsNotNullOrWhiteSpace() ? string.Format( "during '{0}'", dateRangeText ) : null;
+                        return dateRangeText.IsNotNullOrWhiteSpace() ? string.Format( "During '{0}'", dateRangeText ) : null;
                     }
                     else
                     {
@@ -669,7 +669,7 @@ namespace Rock.Field.Types
                 filterValueValues[0] = ParseRelativeValue( filterValueValues[0] );
             
                 string comparisonValue = filterValues[0];
-                if ( comparisonValue != "0" )
+                if ( comparisonValue != "0" && comparisonValue.IsNotNullOrWhiteSpace() )
                 {
                     ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
                     MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
