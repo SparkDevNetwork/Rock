@@ -402,11 +402,11 @@ namespace Rock.Field.Types
         {
             var configuredValues = Helper.GetConfiguredValues( configurationValues );
             var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-            return configuredValues
+            return AddQuotes( configuredValues
                 .Where( v => selectedValues.Contains( v.Key ) )
                 .Select( v => "'" + v.Value + "'" )
                 .ToList()
-                .AsDelimited( " or " );
+                .AsDelimited( "' OR '" ) );
         }
 
         /// <summary>
