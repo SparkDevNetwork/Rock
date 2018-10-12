@@ -273,7 +273,7 @@ upnlFiles.ClientID // {2}
                 {
                     var keyControl = file.FindControl( "lbKey" ) as Label;
                     string key = keyControl.Text;
-                    Asset asset = component.GetObject( assetStorageProvider, new Asset { Key = key, Type = AssetType.File } );
+                    Asset asset = component.GetObject( assetStorageProvider, new Asset { Key = key, Type = AssetType.File }, false );
 
                     byte[] bytes = asset.AssetStream.ReadBytesToEnd();
 
