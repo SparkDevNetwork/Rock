@@ -650,7 +650,7 @@ namespace Rock.Field
         /// <returns></returns>
         public virtual string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            string formattedValue = FormatValue( null, value, configurationValues, false );
+            string formattedValue = FormatValue( null, value, configurationValues, true );
             if ( !string.IsNullOrWhiteSpace( formattedValue ) )
             {
                 return string.Format( "'{0}'", formattedValue );
