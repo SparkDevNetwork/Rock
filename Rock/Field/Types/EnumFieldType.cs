@@ -302,7 +302,7 @@ namespace Rock.Field.Types
             var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList().AsIntegerList();
             return AddQuotes( EnumValues
                 .Where( v => selectedValues.Contains( v.Key ) )
-                .Select( v => "'" + v.Value + "'" )
+                .Select( v => v.Value )
                 .ToList()
                 .AsDelimited( "' OR '" ) );
         }
