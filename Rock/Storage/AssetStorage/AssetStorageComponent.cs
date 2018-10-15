@@ -396,9 +396,10 @@ namespace Rock.Storage.AssetStorage
         {
             string assetFilePath = FileSystemCompontHttpContext.Request.MapPath( asset.Key );
 
-            if ( Path.GetExtension( asset.Name ).Equals( ".svg", StringComparison.OrdinalIgnoreCase ) )
+            if ( Path.GetExtension( asset.Name ).Equals( ".svg", StringComparison.OrdinalIgnoreCase ) ||
+                Path.GetExtension( asset.Name ).Equals( ".ico", StringComparison.OrdinalIgnoreCase ) )
             {
-                // just save the svg to the thumbnail dir
+                // just save the ico or svg to the thumbnail dir as there is no need to make a thumbnail
                 File.Copy( assetFilePath, physicalThumbPath, true );
                 return;
             }
