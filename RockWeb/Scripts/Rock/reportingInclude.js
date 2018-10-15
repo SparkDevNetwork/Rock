@@ -242,6 +242,10 @@ $(document).ready(function () {
                 formatFilterDefault: function (title, $selectedContent) {
                     var compareTypeText = $('.js-filter-compare', $selectedContent).find(':selected').text();
                     var compareValueText = $('.js-filter-control', $selectedContent).find(':selected').map(function () { return this.text; }).get().join("', '");
+                  if (compareValueText == "") {
+                    var compareValueText = $('.js-filter-control', $selectedContent).find(':checked').next().map(function () { return $(this).text(); }).get().join("', '");
+                    }
+
                     var result = title;
                     if ($('.js-filter-control', $selectedContent).is(':visible')) {
                         result = title + ' ' + compareTypeText + " '" + compareValueText + "'";
