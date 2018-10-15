@@ -34,41 +34,41 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            // SK: Update group view lava template to display schedule when exist (ISSUE #3188)
-            // Update the default template
-            Sql( @"		  
-		  UPDATE 
-	[GroupType]
-SET 
-	[GroupViewLavaTemplate] = REPLACE([GroupViewLavaTemplate],'{{ Group.Schedule.ToString()','{{ Group.Schedule.FriendlyScheduleText')
-WHERE 
-	[GroupViewLavaTemplate] Like '%{{ Group.Schedule.ToString()%'
-" );
+//            // SK: Update group view lava template to display schedule when exist (ISSUE #3188)
+//            // Update the default template
+//            Sql( @"		  
+//		  UPDATE 
+//	[GroupType]
+//SET 
+//	[GroupViewLavaTemplate] = REPLACE([GroupViewLavaTemplate],'{{ Group.Schedule.ToString()','{{ Group.Schedule.FriendlyScheduleText')
+//WHERE 
+//	[GroupViewLavaTemplate] Like '%{{ Group.Schedule.ToString()%'
+//" );
 
-            // Update the system setting 
-            Sql( @"UPDATE 
-	[Attribute]
-SET 
-	[DefaultValue] = REPLACE([DefaultValue],'{{ Group.Schedule.ToString()','{{ Group.Schedule.FriendlyScheduleText')
-WHERE 
-	[Key]='core_templates_GroupViewTemplate'" );
+//            // Update the system setting 
+//            Sql( @"UPDATE 
+//	[Attribute]
+//SET 
+//	[DefaultValue] = REPLACE([DefaultValue],'{{ Group.Schedule.ToString()','{{ Group.Schedule.FriendlyScheduleText')
+//WHERE 
+//	[Key]='core_templates_GroupViewTemplate'" );
 
-            // SK: Added Other to Currency Type Defined Type
-            RockMigrationHelper.UpdateDefinedValue( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, "Other", "The currency type is other.", SystemGuid.DefinedValue.CURRENCY_TYPE_OTHER, true );
+//            // SK: Added Other to Currency Type Defined Type
+//            RockMigrationHelper.UpdateDefinedValue( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, "Other", "The currency type is other.", SystemGuid.DefinedValue.CURRENCY_TYPE_OTHER, true );
 
-            // NA: Enable AllowGroupSync for Communication List type groups (Fixes #3223).
-            Sql( string.Format( "UPDATE [GroupType] SET [AllowGroupSync] = 1 WHERE [AllowGroupSync] = 0 AND [Guid] = '{0}'", Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST ) );
+//            // NA: Enable AllowGroupSync for Communication List type groups (Fixes #3223).
+//            Sql( string.Format( "UPDATE [GroupType] SET [AllowGroupSync] = 1 WHERE [AllowGroupSync] = 0 AND [Guid] = '{0}'", Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST ) );
 
-            // NA: Make Personal Device Platform Defined Values IsSystem=true
-            // Fix Personal Device Platform Defined Values to IsSystem=true
-            Sql( string.Format( "UPDATE [DefinedValue] SET [IsSystem] = 1 WHERE [IsSystem] = 0 AND [Guid] = '{0}'", Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_ANDROID ) );
-            Sql( string.Format( "UPDATE [DefinedValue] SET [IsSystem] = 1 WHERE [IsSystem] = 0 AND [Guid] = '{0}'", Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_IOS ) );
+//            // NA: Make Personal Device Platform Defined Values IsSystem=true
+//            // Fix Personal Device Platform Defined Values to IsSystem=true
+//            Sql( string.Format( "UPDATE [DefinedValue] SET [IsSystem] = 1 WHERE [IsSystem] = 0 AND [Guid] = '{0}'", Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_ANDROID ) );
+//            Sql( string.Format( "UPDATE [DefinedValue] SET [IsSystem] = 1 WHERE [IsSystem] = 0 AND [Guid] = '{0}'", Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_IOS ) );
 
-            // NA: Fix FrontPorch Device Platform Defined Values IsSystem=true
-            // Fix FrontPorch Device Platform Defined Values IsSystem=true
-            // NOTE: These do not have a well-known GUIDs so we will target them via their value and description.
-            Sql( string.Format( "UPDATE [DefinedValue] SET [IsSystem] = 1 WHERE [IsSystem] = 0 AND [DefinedTypeId] = ( SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}' ) AND [Value] = 'Windows' AND [Description] = 'A Windows device'", Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM ) );
-            Sql( string.Format( "UPDATE [DefinedValue] SET [IsSystem] = 1 WHERE [IsSystem] = 0 AND [DefinedTypeId] = ( SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}' ) AND [Value] = 'Mac' AND [Description] = 'A Macintosh device'", Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM ) );
+//            // NA: Fix FrontPorch Device Platform Defined Values IsSystem=true
+//            // Fix FrontPorch Device Platform Defined Values IsSystem=true
+//            // NOTE: These do not have a well-known GUIDs so we will target them via their value and description.
+//            Sql( string.Format( "UPDATE [DefinedValue] SET [IsSystem] = 1 WHERE [IsSystem] = 0 AND [DefinedTypeId] = ( SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}' ) AND [Value] = 'Windows' AND [Description] = 'A Windows device'", Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM ) );
+//            Sql( string.Format( "UPDATE [DefinedValue] SET [IsSystem] = 1 WHERE [IsSystem] = 0 AND [DefinedTypeId] = ( SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}' ) AND [Value] = 'Mac' AND [Description] = 'A Macintosh device'", Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM ) );
         }
 
 
