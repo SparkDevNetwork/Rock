@@ -746,7 +746,7 @@ namespace Rock.Storage.AssetStorage
                 Key = commonPrefix,
                 Uri = $"https://{bucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
                 Type = AssetType.Folder,
-                IconPath = GetFileTypeIcon( commonPrefix ),
+                IconPath = string.Empty,
                 FileSize = 0,
                 LastModifiedDateTime = null,
                 Description = string.Empty
