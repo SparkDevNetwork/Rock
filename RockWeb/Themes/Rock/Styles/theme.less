@@ -919,10 +919,13 @@ td.grid-select-field {
 
   .navbar-side {
     position: fixed;
+    top: @navbar-top-height;
+    bottom: 0;
     z-index: @zindex-navbar-fixed;
     display: inline-block;
     width: 100%;
     width: @navbarside-width;
+    overflow-y: auto;
     cursor: default;
 
     & > li {
