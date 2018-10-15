@@ -528,7 +528,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return AddQuotes( values.Select( v => "'" + v + "'" ).ToList().AsDelimited( "' OR '" ) );
+            return AddQuotes( values.ToList().AsDelimited( "' OR '" ) );
         }
 
         /// <summary>
