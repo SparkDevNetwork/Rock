@@ -868,11 +868,11 @@ namespace Rock.Web.UI.Controls
 
             if ( !string.IsNullOrWhiteSpace( currentValue ) )
             {
-                _ddlCountry.SetValue( currentValue );
+                _ddlCountry.SetValue( currentValue, defaultCountryCode );
             }
             else
             {
-                _ddlCountry.SetValue( string.Empty );
+                _ddlCountry.SetValue( defaultCountryCode );
             }
         }
 
