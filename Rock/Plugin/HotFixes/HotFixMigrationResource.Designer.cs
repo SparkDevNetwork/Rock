@@ -499,6 +499,35 @@ namespace Rock.Plugin.HotFixes {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 
+        ///INSERT INTO BinaryFile(
+        ///	  [IsTemporary]
+        ///	, [IsSystem]
+        ///	, [BinaryFileTypeId]
+        ///	, [FileName]
+        ///	, [MimeType]
+        ///	, [Description]
+        ///	, [StorageEntityTypeId]
+        ///	, [Guid]
+        ///	, [StorageEntitySettings]
+        ///	, [Path]
+        ///	, [FileSize]
+        ///)
+        ///VALUES (
+        ///	  0 --[IsTemporary]
+        ///	, 0 --[IsSystem]
+        ///	, (SELECT [Id] FROM [BinaryFileType] WHERE [Guid] = &apos;DE0E5C50-234B-474C-940C-C571F385E65F&apos;) --[BinaryFileTypeId]
+        ///	, &apos;Install Icon Font on Printer&apos; --[FileName]
+        ///	, &apos;text/plain&apos; --[MimeType]
+        ///	, &apos;This label installs the Rock icon font, [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _057_MigrationRollupsForV8_5_AddCheck_inLabelToInstallIconFont {
+            get {
+                return ResourceManager.GetString("_057_MigrationRollupsForV8_5_AddCheck_inLabelToInstallIconFont", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to /*
         ///&lt;doc&gt;
         ///	&lt;summary&gt;
@@ -519,6 +548,33 @@ namespace Rock.Plugin.HotFixes {
         public static string _057_MigrationRollupsForV8_5_spCheckin_BadgeAttendance {
             get {
                 return ResourceManager.GetString("_057_MigrationRollupsForV8_5_spCheckin_BadgeAttendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to USE [Rock-develop]
+        ///GO
+        ///
+        ///SET ANSI_NULLS ON
+        ///GO
+        ///
+        ///SET QUOTED_IDENTIFIER ON
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure attempts to update an indivdiual&apos;s first and second visit
+        ///		attributes. Below are a few points of interest on the logic.
+        ///
+        ///		+ A child&apos;s date will only be calculated looking at their check-in data.
+        ///		+ An adult&apos;s date will be calculated looking at the check-in data of all the children.
+        ///
+        ///		+ When calculating a first-visit date it will only write the date if the first checkin [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _057_MigrationRollupsForV8_5_spCrm_FamilyAnalyticsFirstVisitsAttributeUpdate {
+            get {
+                return ResourceManager.GetString("_057_MigrationRollupsForV8_5_spCrm_FamilyAnalyticsFirstVisitsAttributeUpdate", resourceCulture);
             }
         }
     }
