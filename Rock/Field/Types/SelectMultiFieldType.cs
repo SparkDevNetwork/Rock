@@ -152,7 +152,7 @@ namespace Rock.Field.Types
                     .Where( v => selectedValues.Contains( v.Key ) )
                     .Select( v => v.Value )
                     .ToList()
-                    .AsDelimited( "," );
+                    .AsDelimited( ", " );
             }
 
             return base.FormatValue( parentControl, value, configurationValues, condensed );

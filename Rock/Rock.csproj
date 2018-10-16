@@ -418,6 +418,7 @@
     <Compile Include="SystemGuid\ContentChannelType.cs" />
     <Compile Include="Utility\RockColor.cs" />
     <Compile Include="Utility\RockObsolete.cs" />
+    <Compile Include="SystemGuid\SystemSetting.cs" />
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentChannelCache.cs" />

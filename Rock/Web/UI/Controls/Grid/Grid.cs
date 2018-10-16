@@ -1405,8 +1405,12 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 int? rowIndex = e.CommandArgument?.ToString().AsIntegerOrNull();
                 if ( rowIndex.HasValue )
                 {
-                    RowEventArgs a = new RowEventArgs( this.Rows[rowIndex.Value] );
-                    OnRowSelected( a );
+                    // The rows can have changed (the filter or data has changed) since the UI have been updated. This avoid an exception if there are now less rows than the selected row index.
+                    if ( this.Rows.Count > rowIndex.Value )
+                    {
+                        RowEventArgs a = new RowEventArgs( this.Rows[rowIndex.Value] );
+                        OnRowSelected( a );
+                    }
                 }
             }
         }

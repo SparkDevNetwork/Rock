@@ -284,7 +284,7 @@ namespace Rock.Field.Types
             {
                 var keyValuePairs = JsonConvert.DeserializeObject<List<KeyValuePair>>( configurationValues[VALUES_KEY].Value );
                 var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
-                return keyValuePairs.Where( a => values.Contains( a.Key ) ).Select( a => a.Value ).ToList().AsDelimited( " OR " );
+                return AddQuotes( keyValuePairs.Where( a => values.Contains( a.Key ) ).Select( a => a.Value ).ToList().AsDelimited( "' OR '" ) );
             }
             return string.Empty;
         }
@@ -301,28 +301,46 @@ namespace Rock.Field.Types
             Expression comparison = null;
             if ( filterValues.Count > 1 )
             {
-                ComparisonType comparisonType = filterValues[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains );
-
-                List<string> selectedValues = filterValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-
-                foreach ( var selectedValue in selectedValues )
+                ComparisonType? comparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
+                if ( comparisonType.HasValue )
                 {
-                    var searchValue = "," + selectedValue + ",";
-                    var qryToExtract = new AttributeValueService( new Data.RockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
-                    var valueExpression = FilterExpressionExtractor.Extract<AttributeValue>( qryToExtract, parameterExpression, "a" );
 
-                    if ( comparisonType != ComparisonType.Contains )
-                    {
-                        valueExpression = Expression.Not( valueExpression );
-                    }
+                    string compareToValue = filterValues[1];
+                    MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
 
-                    if ( comparison == null )
+                    if ( !string.IsNullOrWhiteSpace( compareToValue ) )
                     {
-                        comparison = valueExpression;
+                        List<string> selectedValues = compareToValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+                        foreach ( var selectedValue in selectedValues )
+                        {
+                            var searchValue = "," + selectedValue + ",";
+                            var qryToExtract = new AttributeValueService( new Data.RockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
+                            var valueExpression = FilterExpressionExtractor.Extract<AttributeValue>( qryToExtract, parameterExpression, "a" );
+
+                            if ( comparisonType.Value != ComparisonType.Contains )
+                            {
+                                valueExpression = Expression.Not( valueExpression );
+                            }
+
+                            if ( comparison == null )
+                            {
+                                comparison = valueExpression;
+                            }
+                            else
+                            {
+                                comparison = Expression.Or( comparison, valueExpression );
+                            }
+                        }
                     }
                     else
                     {
-                        comparison = Expression.Or( comparison, valueExpression );
+                        // No comparison value was specified, so we can filter if the Comparison Type using no value still makes sense
+                        if ( ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
+                        {
+                            // Just checking if IsBlank or IsNotBlank, so let ComparisonExpression do its thing
+                            return ComparisonHelper.ComparisonExpression( comparisonType.Value, propertyExpression, AttributeConstantExpression( string.Empty ) );
+                        }
                     }
                 }
             }

@@ -254,5 +254,35 @@ namespace Rock.Field.Types
         }
 
         #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var guids = value.SplitDelimitedValues();
+                    var dataviews = new DataViewService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) );
+                    if ( dataviews.Any() )
+                    {
+                        formattedValue = string.Join( "' AND '", ( from dataview in dataviews select dataview.Name ).ToArray() );
+                    }
+                }
+            }
+
+            return AddQuotes( formattedValue );
+        }
+
+        #endregion
     }
 }
