@@ -2333,7 +2333,13 @@
     <Content Include="Plugin\HotFixes\056_MigrationRollupsForV8_4_spCrm_FamilyAnalyticsEraDataset.sql">
       <DependentUpon>056_MigrationRollupsForV8_4.cs</DependentUpon>
     </Content>
+    <Content Include="Plugin\HotFixes\057_MigrationRollupsForV8_5_AddCheck-inLabelToInstallIconFont.sql">
+      <DependentUpon>057_MigrationRollupsForV8_5.cs</DependentUpon>
+    </Content>
     <Content Include="Plugin\HotFixes\057_MigrationRollupsForV8_5_spCheckin_BadgeAttendance.sql">
+      <DependentUpon>057_MigrationRollupsForV8_5.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\057_MigrationRollupsForV8_5_spCrm_FamilyAnalyticsFirstVisitsAttributeUpdate.sql">
       <DependentUpon>057_MigrationRollupsForV8_5.cs</DependentUpon>
     </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
