@@ -163,12 +163,23 @@ namespace Rock.Storage.AssetStorage
         }
 
         /// <summary>
-        /// Gets the object as an Asset.
+        /// Gets the object as an Asset and creates the thumbnail.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="asset">The asset.</param>
+        /// <returns></returns>
+        public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset )
+        {
+            return GetObject( assetStorageProvider, asset, true );
+        }
+
+        /// <summary>
+        /// Gets the object as an Asset with the option to create a thumbnail.
         /// </summary>
         /// <param name="assetStorageProvider"></param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset, bool createThumbnail = false )
+        public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset, bool createThumbnail )
         {
             try
             {

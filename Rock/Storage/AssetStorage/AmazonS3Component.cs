@@ -293,12 +293,23 @@ namespace Rock.Storage.AssetStorage
         }
 
         /// <summary>
-        /// Returns a stream of the specified file.
+        /// Returns an asset with the stream of the specified file and creates a thumbnail.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="asset">The asset.</param>
+        /// <returns></returns>
+        public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset)
+        {
+            return GetObject( assetStorageProvider, asset, true );
+        }
+
+        /// <summary>
+        /// Returns an asset with the stream of the specified file with the option to create a thumbnail.
         /// </summary>
         /// <param name="assetStorageProvider"></param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset, bool createThumbnail = false )
+        public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset, bool createThumbnail )
         {
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
             asset.Key = FixKey( asset, rootFolder );
