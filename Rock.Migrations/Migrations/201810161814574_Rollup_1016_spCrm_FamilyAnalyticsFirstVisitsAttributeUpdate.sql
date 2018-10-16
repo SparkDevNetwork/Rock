@@ -1,6 +1,3 @@
-USE [Rock-develop]
-GO
-
 SET ANSI_NULLS ON
 GO
 
