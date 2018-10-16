@@ -10,7 +10,7 @@
 				{% endcomment %}
 				<ul class="list-inline">
 					<li><a href="/blog">All</a></li>
-					<li><a href="/the-daily">The Daily</a></li>
+					<li><a href="/daily">The Daily</a></li>
 					<li><a href="/stories">Stories</a></li>
 					<li><a href="/dwights-blog">Dwight's Blog</a></li>
 					<li><a href="/missions-blog">Missions</a></li>
