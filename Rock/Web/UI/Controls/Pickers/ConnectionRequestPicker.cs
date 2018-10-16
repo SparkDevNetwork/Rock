@@ -30,6 +30,27 @@ namespace Rock.Web.UI.Controls
     public class ConnectionRequestPicker : ItemPicker
     {
         /// <summary>
+        /// Gets or sets the initial item parent ids.
+        /// This override is required to add quotes so that Javascript reads it as an array of strings. ('Rock.controls.itemPicker.initialize' parameter 'expandedIds'). This is used in rockTree.js
+        /// _hfInitialItemParentIds value get split by comma, so it should not have quotes. This is only temporary.
+        /// The javascript in itemPicker.js should be updated to handle this without the workaround.
+        /// </summary>
+        /// <value>
+        /// The initial item parent ids.
+        /// </value>
+        public override string InitialItemParentIds
+        {
+            get
+            {
+                return base.InitialItemParentIds.Split( ',' ).ToList().Select( i => i.Quoted() ).ToList().AsDelimited( "," );
+            }
+            set
+            {
+                base.InitialItemParentIds = value;
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
