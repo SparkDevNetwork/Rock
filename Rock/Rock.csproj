@@ -1744,6 +1744,7 @@
     <Compile Include="Web\UI\Controls\ButtonGroup.cs" />
     <Compile Include="Web\UI\ICustomGridColumns.cs" />
     <Compile Include="Web\UI\ICustomGridOptions.cs" />
+    <Compile Include="Web\UI\IIdleRedirectBlock.cs" />
     <Compile Include="Web\UI\RockHiddenFieldPageStatePersister.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaBoundField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuesPickerEnhanced.cs" />
