@@ -39,6 +39,10 @@ namespace RockWeb.Plugins.org_newpointe.BlockMods.CheckIn
     [Description( "Displays the details of a successful checkin." )]
 
     [LinkedPage( "Person Select Page", "", false, "", "", 5 )]
+    [TextField( "Title", "", false, "Checked-in", "Text", 6 )]
+    [TextField( "Detail Message", "The message to display indicating person has been checked in. Use {0} for person, {1} for group, {2} for schedule, and {3} for the security code", false,
+        "{0} was checked into {1} in {2} at {3}", "Text", 7 )]
+
     public partial class Success : CheckInBlock
     {
         /// <summary>
@@ -51,8 +55,6 @@ namespace RockWeb.Plugins.org_newpointe.BlockMods.CheckIn
 
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/cordova-2.4.0.js", false );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/ZebraPrint.js" );
-
-            RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
             var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
@@ -80,6 +82,9 @@ namespace RockWeb.Plugins.org_newpointe.BlockMods.CheckIn
                 {
                     try
                     {
+                        lTitle.Text = GetAttributeValue( "Title" );
+                        string detailMsg = GetAttributeValue( "DetailMessage" );
+
                         var printFromClient = new List<CheckInLabel>();
                         var printFromServer = new List<CheckInLabel>();
 
@@ -101,8 +106,7 @@ namespace RockWeb.Plugins.org_newpointe.BlockMods.CheckIn
                                             foreach ( var schedule in location.GetSchedules( true ) )
                                             {
                                                 var li = new HtmlGenericControl( "li" );
-                                                li.InnerText = string.Format( "{0} was checked into {1} in {2} at {3}",
-                                                    person.ToString(), group.ToString(), location.ToString(), schedule.ToString(), person.SecurityCode );
+                                                li.InnerText = string.Format( detailMsg, person.ToString(), group.ToString(), location.Location.Name, schedule.ToString(), person.SecurityCode );
 
                                                 phResults.Controls.Add( li );
                                             }
@@ -121,17 +125,24 @@ namespace RockWeb.Plugins.org_newpointe.BlockMods.CheckIn
                         if ( printFromClient.Any() )
                         {
                             var urlRoot = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority );
-                            printFromClient.OrderBy( l => l.Order ).ToList().ForEach( l => l.LabelFile = urlRoot + l.LabelFile.Replace( "GetFile.ashx", "GetCheckinLabel.ashx" ) );
+                            printFromClient
+                                .OrderBy( l => l.PersonId )
+                                .ThenBy( l => l.Order )
+                                .ToList().ForEach( l => l.LabelFile = urlRoot + l.LabelFile.Replace( "GetFile.ashx", "GetCheckinLabel.ashx" ) );
                             printFromClient.Take( printFromClient.Count() - 1 ).ToList().ForEach( l => l.LabelFile += "&delaycut=T" );
                             AddLabelScript( printFromClient.ToJson() );
                         }
 
                         if ( printFromServer.Any() )
                         {
+                            var messages = new List<string>();
+
                             Socket socket = null;
                             string currentIp = string.Empty;
 
-                            foreach ( var label in printFromServer.OrderBy( l => l.Order ) )
+                            foreach ( var label in printFromServer
+                                                .OrderBy( l => l.PersonId )
+                                                .ThenBy( l => l.Order ) )
                             {
                                 var labelCache = KioskLabel.Get( label.FileGuid );
                                 if ( labelCache != null )
@@ -146,20 +157,32 @@ namespace RockWeb.Plugins.org_newpointe.BlockMods.CheckIn
                                                 socket.Close();
                                             }
 
-                                            currentIp = label.PrinterAddress;
-                                            var printerIp = new IPEndPoint( IPAddress.Parse( currentIp ), 9100 );
+                                            int printerPort = 9100;
+                                            var printerIpAddress = label.PrinterAddress;
+
+                                            // If the user specified in 0.0.0.0:1234 syntax then pull our the IP and port numbers.
+                                            if ( printerIpAddress.Contains( ":" ) )
+                                            {
+                                                var segments = printerIpAddress.Split( ':' );
+
+                                                printerIpAddress = segments[0];
+                                                printerPort = segments[1].AsInteger();
+                                            }
+
+                                            var printerEndpoint = new IPEndPoint( IPAddress.Parse( printerIpAddress ), printerPort );
 
                                             socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
-                                            IAsyncResult result = socket.BeginConnect( printerIp, null, null );
+                                            IAsyncResult result = socket.BeginConnect( printerEndpoint, null, null );
                                             bool success = result.AsyncWaitHandle.WaitOne( 5000, true );
                                         }
 
                                         string printContent = labelCache.FileContent;
+
                                         foreach ( var mergeField in label.MergeFields )
                                         {
                                             if ( !string.IsNullOrWhiteSpace( mergeField.Value ) )
                                             {
-                                                printContent = Regex.Replace( printContent, string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ), ZebraFormatString( mergeField.Value ) );
+                                                printContent = Regex.Replace( printContent, string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ), mergeField.Value );
                                             }
                                             else
                                             {
@@ -178,23 +201,35 @@ namespace RockWeb.Plugins.org_newpointe.BlockMods.CheckIn
 
                                         if ( socket.Connected )
                                         {
-                                            var ns = new NetworkStream( socket );
-                                            byte[] toSend = System.Text.Encoding.ASCII.GetBytes( printContent );
-                                            ns.Write( toSend, 0, toSend.Length );
+                                            if ( socket.Connected )
+                                            {
+                                                var ns = new NetworkStream( socket );
+                                                //var encoder = System.Text.Encoding.GetEncoding( "ISO-8859-1" );
+                                                var encoder = System.Text.Encoding.UTF8;
+                                                byte[] toSend = encoder.GetBytes( printContent );
+                                                ns.Write( toSend, 0, toSend.Length );
+                                            }
                                         }
                                         else
                                         {
-                                            phResults.Controls.Add( new LiteralControl( "<br/>NOTE: Could not connect to printer!" ) );
+                                            messages.Add( "NOTE: Could not connect to printer!" );
                                         }
                                     }
                                 }
                             }
 
+                            // Close the socket
                             if ( socket != null && socket.Connected )
                             {
                                 socket.Shutdown( SocketShutdown.Both );
                                 socket.Close();
                             }
+
+                            foreach ( var message in messages )
+                            {
+                                phResults.Controls.Add( new LiteralControl( string.Format( "<br/>{0}", message ) ) );
+                            }
+                            
                         }
 
                     }
@@ -214,18 +249,6 @@ namespace RockWeb.Plugins.org_newpointe.BlockMods.CheckIn
         protected void lbDone_Click( object sender, EventArgs e )
         {
             NavigateToHomePage();
-        }
-
-        private string ZebraFormatString( string input, bool isJson = false )
-        {
-            if ( isJson )
-            {
-                return input.Replace( "é", @"\\82" );  // fix acute e
-            }
-            else
-            {
-                return input.Replace( "é", @"\82" );  // fix acute e
-            }
         }
 
         /// <summary>
@@ -313,7 +336,7 @@ namespace RockWeb.Plugins.org_newpointe.BlockMods.CheckIn
 			    }}
             );
 	    }}
-", ZebraFormatString( jsonObject, true ) );
+", jsonObject );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "addLabelScript", script, true );
         }
 
