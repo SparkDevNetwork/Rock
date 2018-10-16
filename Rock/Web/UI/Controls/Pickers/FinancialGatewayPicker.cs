@@ -61,7 +61,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            LoadItems( false );
+            LoadItems( ShowAll );
         }
 
         /// <summary>

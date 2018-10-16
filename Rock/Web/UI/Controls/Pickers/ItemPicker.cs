@@ -550,7 +550,7 @@ $@"Rock.controls.itemPicker.initialize({{
     allowMultiSelect: {this.AllowMultiSelect.ToString().ToLower()},
     defaultText: '{this.DefaultText}',
     restParams: $('#{_hfItemRestUrlExtraParams.ClientID}').val(),
-    expandedIds: [{this.InitialItemParentIds}],
+    expandedIds: ['{this.InitialItemParentIds}'],
     showSelectChildren: {this.ShowSelectChildren.ToString().ToLower()}
 }});
 ";
