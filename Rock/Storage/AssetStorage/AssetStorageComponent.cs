@@ -181,7 +181,7 @@ namespace Rock.Storage.AssetStorage
         /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public abstract Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset, bool createThumbnail );
+        public abstract Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset, bool createThumbnail = false );
 
         /// <summary>
         /// Lists the objects from the current root folder.
