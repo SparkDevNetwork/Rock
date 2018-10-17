@@ -30,7 +30,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Cms
 {
     [DisplayName( "Asset Manager" )]
-    [Category( "Core" )]
+    [Category( "CMS" )]
     [Description( "Manage files stored on a remote server or 3rd party cloud storage" )]
     public partial class AssetManager : RockBlock, IPickerBlock
     {
