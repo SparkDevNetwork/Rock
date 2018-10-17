@@ -1850,6 +1850,31 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the Person by impersonation token but does not validate against token properties (e.g. expiration)
+        /// Use this method if needing to get the person from a token that may be expired.
+        /// </summary>
+        /// <param name="encryptedKey">The encrypted key.</param>
+        /// <returns></returns>
+        public Person GetByImpersonationToken( string encryptedKey )
+        {
+            // first, see if it exists as a PersonToken
+            using ( var personTokenRockContext = new RockContext() )
+            {
+                var personToken = new PersonTokenService( personTokenRockContext ).GetByImpersonationToken( encryptedKey );
+                if ( personToken != null )
+                {
+                    if ( personToken.PersonAlias != null )
+                    {
+                        // refetch using PersonService using rockContext instead of personTokenRockContext which was used to save the changes to personKey
+                        return this.Get( personToken.PersonAlias.PersonId );
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Special override of Entity.GetByEncryptedKey for Person. Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
         /// </summary>
         /// <param name="encryptedKey">The encrypted key.</param>
