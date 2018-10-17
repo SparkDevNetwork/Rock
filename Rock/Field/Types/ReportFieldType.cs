@@ -50,10 +50,13 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var report = new ReportService( new RockContext() ).Get( guid.Value );
-                if ( report != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = report.Name;
+                    var report = new ReportService( rockContext ).GetNoTracking( guid.Value );
+                    if ( report != null )
+                    {
+                        formattedValue = report.Name;
+                    }
                 }
             }
 

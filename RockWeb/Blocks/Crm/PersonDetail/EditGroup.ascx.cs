@@ -345,7 +345,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
 
                     // Figure out which ones are in another group
-                    var groupMemberPersonIds = GroupMembers.Select( m => m.Id ).ToList();
+                    var groupMemberPersonIds = GroupMembers.Select( m => m.PersonId ).ToList();
                     var otherGroupPersonIds = new GroupMemberService( new RockContext() ).Queryable()
                         .Where( m =>
                             groupMemberPersonIds.Contains( m.PersonId ) &&
@@ -354,7 +354,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .Select( m => m.PersonId )
                         .Distinct();
                     GroupMembers
-                        .Where( m => otherGroupPersonIds.Contains( m.Id ) )
+                        .Where( m => otherGroupPersonIds.Contains( m.PersonId ) )
                         .ToList()
                         .ForEach( m => m.IsInOtherGroups = true );
 
@@ -534,7 +534,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     HtmlControl divPersonImage = e.Item.FindControl( "divPersonImage" ) as HtmlControl;
                     if ( divPersonImage != null )
                     {
-                        divPersonImage.Style.Add( "background-image", @String.Format( @"url({0})", Person.GetPersonPhotoUrl( groupMember.Id, groupMember.PhotoId, groupMember.Age, groupMember.Gender, null ) + "&width=65" ) );
+                        divPersonImage.Style.Add( "background-image", @String.Format( @"url({0})", Person.GetPersonPhotoUrl( groupMember.PersonId, groupMember.PhotoId, groupMember.Age, groupMember.Gender, groupMember.RecordTypeValueGuid, groupMember.AgeClassification ) + "&width=65" ) );
                     }
 
                     var rblRole = e.Item.FindControl( "rblRole" ) as RadioButtonList;
@@ -712,7 +712,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 if ( ppPerson.PersonId.HasValue )
                 {
-                    var existingGroupMember = GroupMembers.Where( m => m.Id == ppPerson.PersonId.Value ).FirstOrDefault();
+                    var existingGroupMember = GroupMembers.Where( m => m.PersonId == ppPerson.PersonId.Value ).FirstOrDefault();
                     if ( existingGroupMember != null )
                     {
                         existingGroupMember.Removed = false;
@@ -1119,7 +1119,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                        if ( !groupMemberInfo.ExistingGroupMember )
 	                        {
 	                            Person person = null;
-	                            if ( groupMemberInfo.Id == -1 )
+	                            if ( groupMemberInfo.PersonId == -1 )
 	                            {
 	                                person = new Person();
 	
@@ -1168,7 +1168,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                            }
 	                            else
 	                            {
-	                                person = personService.Get( groupMemberInfo.Id );
+	                                person = personService.Get( groupMemberInfo.PersonId );
 	                            }
 	
 	                            if ( person == null )
@@ -1191,13 +1191,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 }
 	
 	                            PersonService.AddPersonToGroup( person, person.Id == 0, _group.Id, role.Id, rockContext );
-	                            groupMemberInfo.Id = person.Id;
+	                            groupMemberInfo.PersonId = person.Id;
 	                        }
 	                        else
 	                        {
 	                            // existing group members
 	                            var groupMember = groupMemberService.Queryable( "Person", true ).Where( m =>
-	                                m.PersonId == groupMemberInfo.Id &&
+	                                m.PersonId == groupMemberInfo.PersonId &&
 	                                m.Group.GroupTypeId == _groupType.Id &&
 	                                m.GroupId == _group.Id ).FirstOrDefault();
 	
@@ -1276,7 +1276,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                        // Remove anyone that was moved from another family
 	                        if ( groupMemberInfo.RemoveFromOtherGroups )
 	                        {
-	                            PersonService.RemovePersonFromOtherFamilies( _group.Id, groupMemberInfo.Id, rockContext );
+	                            PersonService.RemovePersonFromOtherFamilies( _group.Id, groupMemberInfo.PersonId, rockContext );
 	                        }
 	                    }
 	
@@ -1616,7 +1616,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     {
         public int Index { get; set; }
 
-        public int Id { get; set; }
+        public int PersonId { get; set; }
 
         public bool ExistingGroupMember { get; set; }  // Is this person part of the original group 
 
@@ -1635,6 +1635,31 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         public string LastName { get; set; }
 
         public int? SuffixValueId { get; set; }
+
+        public int? RecordTypeValueId { get; private set; }
+
+        public Guid? RecordTypeValueGuid
+        {
+            get
+            {
+                DefinedValueCache recordTypeValue = null;
+                if ( RecordTypeValueId != null )
+                {
+                    recordTypeValue = DefinedValueCache.Get( RecordTypeValueId.Value );
+                }
+
+                if ( recordTypeValue != null )
+                {
+                    return recordTypeValue.Guid;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        public AgeClassification AgeClassification { get; private set; }
 
         public Gender Gender { get; set; }
 
@@ -1691,7 +1716,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         public GroupMemberInfo()
         {
-            Id = -1;
+            PersonId = -1;
             ExistingGroupMember = false;
             Removed = false;
             RemoveFromOtherGroups = false;
@@ -1701,12 +1726,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( person != null )
             {
-                Id = person.Id;
+                PersonId = person.Id;
                 TitleValueId = person.TitleValueId;
                 FirstName = person.FirstName;
                 NickName = person.NickName;
                 LastName = person.LastName;
                 SuffixValueId = person.SuffixValueId;
+                RecordTypeValueId = person.RecordTypeValueId;
+                AgeClassification = person.AgeClassification;
                 Gender = person.Gender;
                 BirthDate = person.BirthDate;
                 GradeOffset = person.GradeOffset;

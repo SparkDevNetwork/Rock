@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -90,6 +91,42 @@ namespace Rock.Web.UI.Controls
                 return ( t == null ) ? string.Empty : ( string ) t;
             }
             set { ViewState["ID"] = value; }
+        }
+
+        /// <summary>
+        /// Gets the value that should be exported to Excel
+        /// </summary>
+        /// <param name="row">The row.</param>
+        /// <param name="dataControlFieldCell">The data control field cell.</param>
+        /// <returns></returns>
+        public virtual object GetExportValue( GridViewRow row, DataControlFieldCell dataControlFieldCell )
+        {
+            var textControls = dataControlFieldCell.ControlsOfTypeRecursive<Control>().OfType<ITextControl>();
+            if ( textControls.Any() )
+            {
+                return textControls.Select( a => a.Text ).Where( t => !string.IsNullOrWhiteSpace( t ) ).ToList().AsDelimited( string.Empty ).ReverseCurrencyFormatting();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the OnRowSelected event will be fired when a user clicks on this cell ( default is true)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [on row selected enabled]; otherwise, <c>false</c>.
+        /// </value>
+        public bool OnRowSelectedEnabled
+        {
+            get
+            {
+                return ViewState["OnRowSelectedEnabled"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["OnRowSelectedEnabled"] = true;
+            }
         }
     }
 }

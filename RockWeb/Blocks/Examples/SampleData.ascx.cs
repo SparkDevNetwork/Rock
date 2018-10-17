@@ -484,6 +484,22 @@ namespace RockWeb.Blocks.Examples
             var elemRegistrationTemplates = xdoc.Element( "data" ).Element( "registrationTemplates" );
             var elemRegistrationInstances = xdoc.Element( "data" ).Element( "registrationInstances" );
 
+            // load studyTopics into DefinedType
+            foreach ( var elemGroup in elemGroups.Elements( "group" ) )
+            {
+                if ( elemGroup.Attribute( "studyTopic" ) != null )
+                {
+                    var topic = elemGroup.Attribute( "studyTopic" ).Value;
+                    DefinedValueCache smallGroupTopicDefinedValue = _smallGroupTopicDefinedType.DefinedValues.FirstOrDefault( a => a.Value == topic );
+
+                    // add it as new if we didn't find it.
+                    if ( smallGroupTopicDefinedValue == null )
+                    {
+                        smallGroupTopicDefinedValue = AddDefinedTypeValue( topic, _smallGroupTopicDefinedType );
+                    }
+                }
+            }
+
             TimeSpan ts;
 
             //// First delete any sample data that might exist already 
@@ -1604,13 +1620,6 @@ namespace RockWeb.Blocks.Examples
                 {
                     var topic = elemGroup.Attribute( "studyTopic" ).Value;
                     DefinedValueCache smallGroupTopicDefinedValue = _smallGroupTopicDefinedType.DefinedValues.FirstOrDefault( a => a.Value == topic );
-
-                    // add it as new if we didn't find it.
-                    if ( smallGroupTopicDefinedValue == null )
-                    {
-                        smallGroupTopicDefinedValue = AddDefinedTypeValue( topic, _smallGroupTopicDefinedType );
-                    }
-
                     group.SetAttributeValue( "Topic", smallGroupTopicDefinedValue.Guid.ToString() );
                 }
 
@@ -1745,7 +1754,7 @@ namespace RockWeb.Blocks.Examples
                 definedValueService.Add( definedValue );
                 rockContext.SaveChanges();
 
-                return DefinedValueCache.Get( definedValue.Id );
+                return DefinedValueCache.Get( definedValue.Id, rockContext );
             }
         }
 

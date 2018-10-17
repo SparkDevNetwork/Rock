@@ -904,7 +904,11 @@ namespace Rock.Utility.SparkDataApi
             else
             {
                 ncoaHistory.NcoaType = NcoaType.NoMove;
-                ncoaHistory.Processed = Processed.Complete;
+
+                if ( AddressStatus == "V" )
+                {
+                    ncoaHistory.Processed = Processed.Complete;
+                }
             }
 
             if ( AddressStatus != "V" )

@@ -268,4 +268,25 @@
   <data name="_201707311527250_LastName" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>createdatabase\201707311527250_lastname.gz;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="_201809142151587_ContentComponents_AdUnit" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201809142151587_contentcomponents_adunit.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201809142151587_ContentComponents_Card" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201809142151587_contentcomponents_card.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201809142151587_ContentComponents_CreateContentComponentChannelType" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201809142151587_contentcomponents_createcontentcomponentchanneltype.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201809142151587_ContentComponents_Hero" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201809142151587_contentcomponents_hero.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201809142151587_ContentComponents_SideBySide" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201809142151587_contentcomponents_sidebyside.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201809252117562_Rollup_0925_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201809252117562_rollup_0925_spcrm_familyanalyticseradataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201810021839212_Rollup_1002_spCheckin_BadgeAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201810021839212_rollup_1002_spcheckin_badgeattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

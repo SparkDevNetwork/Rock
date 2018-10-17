@@ -541,7 +541,8 @@ namespace Rock.Web.UI.Controls
             /// <param name="key">The key.</param>
             /// <param name="name">The name.</param>
             /// <param name="value">The value.</param>
-            [Obsolete( "DisplayFilterValueArgs(userPreference, prefix) instead" )]
+            [RockObsolete( "1.7.4" )]
+            [Obsolete( "DisplayFilterValueArgs(userPreference, prefix) instead", true )]
             public DisplayFilterValueArgs( string key, string name, string value )
             {
                 Key = key;
@@ -553,7 +554,8 @@ namespace Rock.Web.UI.Controls
             /// Initializes a new instance of the <see cref="DisplayFilterValueArgs"/> class.
             /// </summary>
             /// <param name="userPreference">The user preference.</param>
-            [Obsolete( "DisplayFilterValueArgs(userPreference, prefix) instead" )]
+            [RockObsolete( "1.7.4" )]
+            [Obsolete( "DisplayFilterValueArgs(userPreference, prefix) instead", true )]
             public DisplayFilterValueArgs( UserPreference userPreference ) :
                 this( userPreference, null )
             {

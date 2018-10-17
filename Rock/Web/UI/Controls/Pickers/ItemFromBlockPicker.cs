@@ -405,6 +405,28 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets additional CSS classes for the modal save button.
+        /// If js hooks are needed this is the place to add them.
+        /// </summary>
+        /// <value>
+        /// The modal save button CSS class.
+        /// </value>
+        public string ModalSaveButtonCssClass
+        {
+            get
+            {
+                EnsureChildControls();
+                return _pickerDialog.SaveButtonCssClass;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _pickerDialog.SaveButtonCssClass = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the modal title.
         /// </summary>
         /// <value>

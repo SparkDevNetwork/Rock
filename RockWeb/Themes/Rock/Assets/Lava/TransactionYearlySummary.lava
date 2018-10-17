@@ -48,7 +48,7 @@
             <strong>{{ 'Global' | Attribute:'CurrencySymbol' }}{{ yearTotal | Format:'#,##0.00' }}</strong>
         </div>
         </div>
-        {% if forloop.index >= 3 and forloop.index == rowCount  %}
+        {% if forloop.index >= 3 and forloop.index == rowCount %}
         <div class="text-center margin-v-sm">
           <a href="#" class="btn btn-xs btn-default accounts-showless" style="display:none">
             <i class="fa fa-chevron-up"></i> Show Less <i class="fa fa-chevron-up"></i>
