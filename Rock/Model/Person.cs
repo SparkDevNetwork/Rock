@@ -1917,7 +1917,7 @@ namespace Rock.Model
                         {
                             PersonAlias = this.Aliases.First(),
                             SearchTypeValueId = alternateValueId,
-                            SearchValue = PersonSearchKeyService.GenerateRandomAlternateId( true )
+                            SearchValue = PersonSearchKeyService.GenerateRandomAlternateId( true, rockContext )
                         };
                         personSearchKeyService.Add( personSearchKey );
 
