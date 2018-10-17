@@ -169,22 +169,6 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Formats the filter value value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                return string.Format( "'{0}'", value );
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
         /// Gets the type of the filter comparison.
         /// </summary>
         /// <value>

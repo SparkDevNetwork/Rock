@@ -470,9 +470,10 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public override string FormatFilterValueValue(Dictionary<string,ConfigurationValue> configurationValues, string value)
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            return value;
+            string formattedValue = FormatValue( null, value, configurationValues, false );
+            return AddQuotes( formattedValue );
         }
 
         /// <summary>

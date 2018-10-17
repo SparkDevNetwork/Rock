@@ -351,10 +351,6 @@
             <Rock:NotificationBox ID="nbSuccessMessage" runat="server" Visible="false"></Rock:NotificationBox>
 
         </asp:Panel>
-        <script type="text/javascript">
-            Sys.Application.add_load(function () {
-                window.scrollTo = function (x, y) { return true; }
-            });
-        </script>
+
     </ContentTemplate>
 </asp:UpdatePanel>

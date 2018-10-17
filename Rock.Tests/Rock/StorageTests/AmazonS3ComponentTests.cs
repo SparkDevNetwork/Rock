@@ -272,7 +272,7 @@ namespace Rock.Tests.Rock.StorageTests
 
             try
             {
-                var responseAsset = s3Component.GetObject( assetStorageProvider, asset );
+                var responseAsset = s3Component.GetObject( assetStorageProvider, asset, false );
                 using ( responseAsset.AssetStream)
                 using ( FileStream fs = new FileStream( $@"C:\temp\{responseAsset.Name}", FileMode.Create ) )
                 {

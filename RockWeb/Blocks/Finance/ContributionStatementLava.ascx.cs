@@ -233,9 +233,9 @@ namespace RockWeb.Blocks.Finance
 
             var statementYear = RockDateTime.Now.Year;
 
-            if ( Request["StatementYear"] != null )
+            if ( PageParameter( "StatementYear" ).IsNotNullOrWhiteSpace() )
             {
-                Int32.TryParse( Request["StatementYear"].ToString(), out statementYear );
+                Int32.TryParse( PageParameter( "StatementYear" ), out statementYear );
             }
 
             FinancialTransactionDetailService financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
@@ -249,8 +249,8 @@ namespace RockWeb.Blocks.Finance
                 excludedCurrencyTypes = GetAttributeValue( "ExcludedCurrencyTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
             }
 
-            var personGuid = Request["PersonGuid"].AsGuidOrNull();
-            
+            var personGuid = PageParameter( "PersonGuid" ).AsGuidOrNull();
+
             if ( personGuid.HasValue )
             {
                 // if "AllowPersonQueryString is False", only use the PersonGuid if it is a Guid of one of the current person's businesses
