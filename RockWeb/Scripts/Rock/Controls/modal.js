@@ -55,6 +55,11 @@
                 modalOverflow: true,
                 replace: true
             });
+
+            if ($('.modal-backdrop').length == 0) {
+              // ensure that there is a modal-backdrop
+              $('<div class="modal-backdrop" />').appendTo('body');
+            }
         },
 
         exports = {
@@ -109,10 +114,11 @@
                     $modalDialog.modal('hide');
                 }
 
-                // if all modals are closed, remove all the modal-open class 
+                // if all modals are closed, remove all the modal-open class and modal-backdrop
                 if (!$('.modal').is(':visible')) {
                     {
-                        $('.modal-open').removeClass('modal-open');
+                      $('.modal-open').removeClass('modal-open');
+                      $('.modal-backdrop').remove();
                     }
                 }
             },

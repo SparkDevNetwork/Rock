@@ -15,15 +15,20 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+
+// This is to get the enums without the prefix
+using static Rock.Web.UI.Controls.SlidingDateRangePicker;
 
 namespace Rock.Reporting.DataFilter.Person
 {
@@ -59,7 +64,7 @@ namespace Rock.Reporting.DataFilter.Person
             get { return "Additional Filters"; }
         }
 
-        #endregion
+        #endregion Properties
 
         #region Public Methods
 
@@ -89,12 +94,18 @@ namespace Rock.Reporting.DataFilter.Person
         {
             return @"
 function() {
-    
-    var dateRangeText = $('.js-slidingdaterange-text-value', $content).val()
-    var accountPicker = $('.js-account-picker', $content);
-    var accountNames = accountPicker.find('.selected-names').text() 
+    var useSundayDate = $('.js-use-sunday-date', $content).is(':checked');
+    var sundayString = useSundayDate == true ? 'Sunday ' : '';
 
-   return 'First contribution date to accounts ' + accountNames  + '. DateRange: ' + dateRangeText;
+    var accountPicker = $('.account-picker', $content);
+    var accountNames = accountPicker.find('.selected-names').text();
+    if(accountNames) {
+        accountNames = ' to accounts: ' + accountNames;
+    }
+
+    var dateRangeText = $('.js-slidingdaterange-text-value', $content).val();
+
+    return 'First contribution ' + sundayString + 'date' + accountNames  + '. DateRange: ' + dateRangeText;
 }
 ";
         }
@@ -107,41 +118,23 @@ function() {
         /// <returns></returns>
         public override string FormatSelection( Type entityType, string selection )
         {
-            string result = "First Contribution Date";
-            string[] selectionValues = selection.Split( '|' );
-
-            if ( selectionValues.Length >= 3 )
+            SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
+            if ( selectionConfig == null )
             {
-                SlidingDateRangePicker fakeSlidingDateRangePicker = new SlidingDateRangePicker();
-
-                if ( selectionValues.Length >= 4 )
-                {
-                    // convert comma delimited to pipe
-                    fakeSlidingDateRangePicker.DelimitedValues = selectionValues[3].Replace( ',', '|' );
-                }
-                else
-                {
-                    // if converting from a previous version of the selection
-                    var lowerValue = selectionValues[0].AsDateTime();
-                    var upperValue = selectionValues[1].AsDateTime();
-
-                    fakeSlidingDateRangePicker.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.DateRange;
-                    fakeSlidingDateRangePicker.SetDateRangeModeValue( new DateRange( lowerValue, upperValue ) );
-                }
-
-                string accountNames = string.Empty;
-                var accountGuids = selectionValues[2].Split( ',' ).Select( a => a.AsGuid() ).ToList();
-                accountNames = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids ).Select( a => a.Name ).ToList().AsDelimited( "," );
-
-                result = string.Format(
-                    "First contribution date{0}. Date Range: {1}",
-                    !string.IsNullOrWhiteSpace( accountNames ) ? " to accounts:" + accountNames : string.Empty,
-                    SlidingDateRangePicker.FormatDelimitedValues( fakeSlidingDateRangePicker.DelimitedValues )
-                    )
-                    ;
+                return "First Contribution Date";
             }
 
-            return result;
+            string accountNames = string.Empty;
+            if ( selectionConfig.AccountGuids.Any() )
+            {
+                accountNames = new FinancialAccountService( new RockContext() ).GetByGuids( selectionConfig.AccountGuids ).Select( a => a.Name ).ToList().AsDelimited( "," );
+            }
+
+            string sundayDateString = selectionConfig.UseSundayDate == true ? "Sunday " : string.Empty;
+            string accountsString = accountNames.IsNullOrWhiteSpace() ? string.Empty : " to accounts: " + accountNames;
+            string dateRangeString = SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.DelimitedValues );
+
+            return $"First contribution {sundayDateString}date{accountsString}. Date Range: {dateRangeString}";
         }
 
         /// <summary>
@@ -153,7 +146,6 @@ function() {
             AccountPicker accountPicker = new AccountPicker();
             accountPicker.AllowMultiSelect = true;
             accountPicker.ID = filterControl.ID + "_accountPicker";
-            accountPicker.AddCssClass( "js-account-picker" );
             accountPicker.Label = "Accounts";
             filterControl.Controls.Add( accountPicker );
 
@@ -165,7 +157,14 @@ function() {
             slidingDateRangePicker.Required = true;
             filterControl.Controls.Add( slidingDateRangePicker );
 
-            var controls = new Control[2] { accountPicker, slidingDateRangePicker };
+            RockCheckBox cbUseSundayDate = new RockCheckBox();
+            cbUseSundayDate.ID = filterControl.ID + "_cbUseSundayDate";
+            cbUseSundayDate.Label = "Use Sunday Date";
+            cbUseSundayDate.Help = "Use the Sunday Date instead of the actual transaction date.";
+            cbUseSundayDate.AddCssClass( "js-use-sunday-date" );
+            filterControl.Controls.Add( cbUseSundayDate );
+
+            var controls = new Control[3] { accountPicker, slidingDateRangePicker, cbUseSundayDate };
 
             return controls;
         }
@@ -190,21 +189,26 @@ function() {
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
+            SelectionConfig selectionConfig = new SelectionConfig();
+
             var accountIdList = ( controls[0] as AccountPicker ).SelectedValuesAsInt().ToList();
             string accountGuids = string.Empty;
             var accounts = new FinancialAccountService( new RockContext() ).GetByIds( accountIdList );
             if ( accounts != null && accounts.Any() )
             {
-                accountGuids = accounts.Select( a => a.Guid ).ToList().AsDelimited( "," );
+                selectionConfig.AccountGuids = accounts.Select( a => a.Guid ).ToList();
             }
 
             SlidingDateRangePicker slidingDateRangePicker = controls[1] as SlidingDateRangePicker;
+            selectionConfig.StartDate = slidingDateRangePicker.DateRangeModeStart;
+            selectionConfig.EndDate = slidingDateRangePicker.DateRangeModeEnd;
+            selectionConfig.DateRangeMode = slidingDateRangePicker.SlidingDateRangeMode;
+            selectionConfig.TimeUnit = slidingDateRangePicker.TimeUnit;
+            selectionConfig.NumberOfTimeUnits = slidingDateRangePicker.NumberOfTimeUnits;
 
-            // convert pipe to comma delimited
-            var delimitedValues = slidingDateRangePicker.DelimitedValues.Replace( "|", "," );
+            selectionConfig.UseSundayDate = ( controls[2] as RockCheckBox ).Checked;
 
-            // {1} and {2} used to store the DateRange before, but now we using the SlidingDateRangePicker
-            return string.Format( "{0}|{1}|{2}|{3}", string.Empty, string.Empty, accountGuids, delimitedValues );
+            return selectionConfig.ToJson();
         }
 
         /// <summary>
@@ -215,34 +219,20 @@ function() {
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            string[] selectionValues = selection.Split( '|' );
-            if ( selectionValues.Length >= 3 )
+            SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
+
+            var accountPicker = controls[0] as AccountPicker;
+            var accounts = new FinancialAccountService( new RockContext() ).GetByGuids( selectionConfig.AccountGuids );
+            if ( accounts != null && accounts.Any() )
             {
-                var accountPicker = controls[0] as AccountPicker;
-                var slidingDateRangePicker = controls[1] as SlidingDateRangePicker;
-
-                if ( selectionValues.Length >= 4 )
-                {
-                    // convert comma delimited to pipe
-                    slidingDateRangePicker.DelimitedValues = selectionValues[3].Replace( ',', '|' );
-                }
-                else
-                {
-                    // if converting from a previous version of the selection
-                    var lowerValue = selectionValues[0].AsDateTime();
-                    var upperValue = selectionValues[1].AsDateTime();
-
-                    slidingDateRangePicker.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.DateRange;
-                    slidingDateRangePicker.SetDateRangeModeValue( new DateRange( lowerValue, upperValue ) );
-                }
-
-                var accountGuids = selectionValues[2].Split( ',' ).Select( a => a.AsGuid() ).ToList();
-                var accounts = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids );
-                if ( accounts != null && accounts.Any() )
-                {
-                    accountPicker.SetValues( accounts );
-                }
+                accountPicker.SetValues( accounts );
             }
+
+            var slidingDateRangePicker = controls[1] as SlidingDateRangePicker;
+            slidingDateRangePicker.DelimitedValues = selectionConfig.DelimitedValues;
+
+            var cbUseSundayDate = controls[2] as RockCheckBox;
+            cbUseSundayDate.Checked = selectionConfig.UseSundayDate;
         }
 
         /// <summary>
@@ -257,41 +247,20 @@ function() {
         {
             var rockContext = (RockContext)serviceInstance.Context;
 
-            string[] selectionValues = selection.Split( '|' );
-            if ( selectionValues.Length < 3 )
+            SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
+            if ( selectionConfig == null )
             {
                 return null;
             }
 
-            DateRange dateRange;
-
-            if ( selectionValues.Length >= 4 )
-            {
-                string slidingDelimitedValues = selectionValues[3].Replace( ',', '|' );
-                dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( slidingDelimitedValues );
-            }
-            else
-            {
-                // if converting from a previous version of the selection
-                DateTime? startDate = selectionValues[0].AsDateTime();
-                DateTime? endDate = selectionValues[1].AsDateTime();
-                dateRange = new DateRange( startDate, endDate );
-
-                if ( dateRange.End.HasValue )
-                {
-                    // the DateRange picker doesn't automatically add a full day to the end date
-                    dateRange.End.Value.AddDays( 1 );
-                }
-            }
-
-            var accountGuids = selectionValues[2].Split( ',' ).Select( a => a.AsGuid() ).ToList();
-            var accountIdList = new FinancialAccountService( (RockContext)serviceInstance.Context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
+            DateRange dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( selectionConfig.DelimitedValues );
 
             int transactionTypeContributionId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
-
-            var financialTransactionsQry = new FinancialTransactionService( rockContext ).Queryable()
+            var financialTransactionsQry = new FinancialTransactionService( rockContext )
+                .Queryable()
                 .Where( xx => xx.TransactionTypeValueId == transactionTypeContributionId );
 
+            var accountIdList = new FinancialAccountService( ( RockContext ) serviceInstance.Context ).GetByGuids( selectionConfig.AccountGuids ).Select( a => a.Id ).ToList();
             if ( accountIdList.Any() )
             {
                 if ( accountIdList.Count == 1 )
@@ -310,29 +279,195 @@ function() {
                 .Select( ss => new
                 {
                     PersonId = ss.Key,
-                    FirstTransactionSundayDate = ss.Min( a => a.SundayDate )
+                    FirstTransactionDate = ss.Min( a => selectionConfig.UseSundayDate == true ? a.SundayDate : a.TransactionDateTime )
                 } );
 
             if ( dateRange.Start.HasValue )
             {
-                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionSundayDate >= dateRange.Start.Value );
+                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionDate >= dateRange.Start.Value );
             }
 
             if ( dateRange.End.HasValue )
             {
-                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionSundayDate < dateRange.End.Value );
+                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionDate < dateRange.End.Value );
             }
 
             var innerQry = firstContributionDateQry.Select( xx => xx.PersonId ).AsQueryable();
+            var qry = new PersonService( rockContext ).Queryable().Where( p => innerQry.Any( xx => xx == p.Id ) );
 
-            var qry = new PersonService( rockContext ).Queryable()
-                .Where( p => innerQry.Any( xx => xx == p.Id ) );
-
-            Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
-
-            return extractedFilterExpression;
+            return FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
         }
 
-        #endregion
+        #endregion Public Methods
+
+        /// <summary>
+        /// Get and set the filter settings from DataViewFilter.Selection
+        /// </summary>
+        protected class SelectionConfig
+        {
+            /// <summary>
+            /// Gets or sets the account guids.
+            /// </summary>
+            /// <value>
+            /// The account guids.
+            /// </value>
+            public List<Guid> AccountGuids { get; set; }
+
+            /// <summary>
+            /// Gets a pipe delimited string of the property values. This is to use the SlidingDateRangePicker's existing logic.
+            /// </summary>
+            /// <value>
+            /// The delimited values.
+            /// </value>
+            public string DelimitedValues
+            {
+                get
+                {
+                    return CreateSlidingDateRangePickerDelimitedValues();
+                }
+            }
+
+            /// <summary>
+            /// Gets or sets the date range mode.
+            /// </summary>
+            /// <value>
+            /// The date range mode.
+            /// </value>
+            public SlidingDateRangeType DateRangeMode { get; set; }
+
+            /// <summary>
+            /// Gets or sets the number of time units.
+            /// </summary>
+            /// <value>
+            /// The number of time units.
+            /// </value>
+            public int? NumberOfTimeUnits { get; set; }
+
+            /// <summary>
+            /// Gets or sets the time unit.
+            /// </summary>
+            /// <value>
+            /// The time unit.
+            /// </value>
+            public TimeUnitType TimeUnit { get; set; }
+
+            /// <summary>
+            /// Gets or sets the start date.
+            /// </summary>
+            /// <value>
+            /// The start date.
+            /// </value>
+            public DateTime? StartDate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the end date.
+            /// </summary>
+            /// <value>
+            /// The end date.
+            /// </value>
+            public DateTime? EndDate { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [use sunday date].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [use sunday date]; otherwise, <c>false</c>.
+            /// </value>
+            public bool UseSundayDate { get; set; }
+
+            /// <summary>
+            /// Parses the specified selection from a JSON or delimited string.
+            /// </summary>
+            /// <param name="selection">The selection.</param>
+            /// <returns></returns>
+            public static SelectionConfig Parse( string selection )
+            {
+                var selectionConfig = selection.FromJsonOrNull<SelectionConfig>();
+                if ( selectionConfig == null )
+                {
+                    selectionConfig = new SelectionConfig();
+
+                    // If the configuration is a delimited string then try to parse it the old fashioned way
+                    string[] selectionValues = selection.Split( '|' );
+
+                    // The first two values in the delimited string are legacy, usually blank, and can be ignored.
+                    // Index 2 is the account guids
+                    if ( selectionValues.Count() > 2 )
+                    {
+                        selectionConfig.AccountGuids = selectionValues[2].Split( ',' ).AsGuidList();
+                    }
+                    else
+                    {
+                        // If there are not at least 3 values in the selection string then it is not valid.
+                        return null;
+                    }
+
+                    // Index 3 is the date range values
+                    if ( selectionValues.Count() > 3 )
+                    {
+                        string[] dateRangeValues = selectionValues[3].Split( ',' );
+                        if ( dateRangeValues.Count() > 3 )
+                        {
+                            // DateRange index 0 is the mode
+                            selectionConfig.DateRangeMode = dateRangeValues[0].ConvertToEnum<SlidingDateRangeType>();
+
+                            // DateRange index 1 is the number of time units
+                            selectionConfig.NumberOfTimeUnits = dateRangeValues[1].AsIntegerOrNull();
+
+                            // DateRange index 2 is the time unit
+                            selectionConfig.TimeUnit = dateRangeValues[2].ConvertToEnum<TimeUnitType>();
+
+                            // DateRange index 3 is the start date
+                            selectionConfig.StartDate = dateRangeValues[3].AsDateTime();
+
+                            // DateRange index 4 is the end date if it exists
+                            if ( dateRangeValues.Count() > 4 )
+                            {
+                                selectionConfig.EndDate = dateRangeValues[4].AsDateTime();
+                            }
+                        }
+                        else if ( dateRangeValues.Any() )
+                        {
+                            // Try to get a DateRange from what we have
+                            selectionConfig.DateRangeMode = SlidingDateRangeType.DateRange;
+                            selectionConfig.StartDate = dateRangeValues[0].AsDateTime();
+                            
+                            if ( dateRangeValues.Count() > 1 )
+                            {
+                                selectionConfig.EndDate = dateRangeValues[1].AsDateTime();
+                                if ( selectionConfig.EndDate.HasValue)
+                                {
+                                    // This value would have been from the DatePicker which does not automatically add a day.
+                                    selectionConfig.EndDate.Value.AddDays( 1 );
+                                }
+                            }
+                        }
+                    }
+
+                    // Index 4 is the UseSundayDate boolean
+                    if ( selectionValues.Count() > 4 )
+                    {
+                        selectionConfig.UseSundayDate = selectionValues[4].AsBooleanOrNull() ?? true;
+                    }
+                }
+
+                return selectionConfig;
+            }
+
+            /// <summary>
+            /// Creates the sliding date range picker delimited values.
+            /// </summary>
+            /// <returns></returns>
+            private string CreateSlidingDateRangePickerDelimitedValues()
+            {
+                return string.Format(
+                    "{0}|{1}|{2}|{3}|{4}",
+                    this.DateRangeMode,
+                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming ).HasFlag( DateRangeMode ) ? this.NumberOfTimeUnits : ( int? ) null,
+                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming | SlidingDateRangeType.Current ).HasFlag( this.DateRangeMode ) ? this.TimeUnit : ( TimeUnitType? ) null,
+                    this.DateRangeMode == SlidingDateRangeType.DateRange ? this.StartDate : null,
+                    this.DateRangeMode == SlidingDateRangeType.DateRange ? this.EndDate : null );
+            }
+        }
     }
 }

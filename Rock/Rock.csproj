@@ -389,6 +389,7 @@
     <Compile Include="Field\Types\AssetStorageProviderFieldType.cs" />
     <Compile Include="Model\CodeGenerated\NoteAttachmentService.cs" />
     <Compile Include="Model\NoteAttachment.cs" />
+    <Compile Include="Model\SpiritualGiftsService.cs" />
     <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
     <Compile Include="Data\NoAttributeFilterExpression.cs" />
     <Compile Include="Field\ICachedEntitiesFieldType.cs" />
@@ -417,6 +418,7 @@
     <Compile Include="SystemGuid\ContentChannelType.cs" />
     <Compile Include="Utility\RockColor.cs" />
     <Compile Include="Utility\RockObsolete.cs" />
+    <Compile Include="SystemGuid\SystemSetting.cs" />
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentChannelCache.cs" />
@@ -2253,7 +2255,13 @@
     <Content Include="Plugin\HotFixes\056_MigrationRollupsForV8_4_spCrm_FamilyAnalyticsEraDataset.sql">
       <DependentUpon>056_MigrationRollupsForV8_4.cs</DependentUpon>
     </Content>
+    <Content Include="Plugin\HotFixes\057_MigrationRollupsForV8_5_AddCheck-inLabelToInstallIconFont.sql">
+      <DependentUpon>057_MigrationRollupsForV8_5.cs</DependentUpon>
+    </Content>
     <Content Include="Plugin\HotFixes\057_MigrationRollupsForV8_5_spCheckin_BadgeAttendance.sql">
+      <DependentUpon>057_MigrationRollupsForV8_5.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\057_MigrationRollupsForV8_5_spCrm_FamilyAnalyticsFirstVisitsAttributeUpdate.sql">
       <DependentUpon>057_MigrationRollupsForV8_5.cs</DependentUpon>
     </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
