@@ -50,6 +50,16 @@ namespace Rock.Rest
         /// <returns></returns>
         protected virtual Rock.Model.Person GetPerson()
         {
+            return GetPerson( null );
+        }
+
+        /// <summary>
+        /// Gets the currently logged in Person
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        protected virtual Rock.Model.Person GetPerson( RockContext rockContext )
+        {
             if ( Request.Properties.Keys.Contains( "Person" ) )
             {
                 return Request.Properties["Person"] as Person;
@@ -60,7 +70,7 @@ namespace Rock.Rest
             {
                 if ( principal.Identity.Name.StartsWith( "rckipid=" ) )
                 {
-                    var personService = new Model.PersonService( new RockContext() );
+                    var personService = new Model.PersonService( rockContext ?? new RockContext() );
                     Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( principal.Identity.Name.Substring( 8 ), false, null );
                     if ( impersonatedPerson != null )
                     {
@@ -69,7 +79,7 @@ namespace Rock.Rest
                 }
                 else
                 {
-                    var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
+                    var userLoginService = new Rock.Model.UserLoginService( rockContext ?? new RockContext() );
                     var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
 
                     if ( userLogin != null )
@@ -90,7 +100,17 @@ namespace Rock.Rest
         /// <returns></returns>
         protected virtual Rock.Model.PersonAlias GetPersonAlias()
         {
-            var person = GetPerson();
+            return GetPersonAlias( null );
+        }
+
+        /// <summary>
+        /// Gets the primary person alias of the currently logged in person
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        protected virtual Rock.Model.PersonAlias GetPersonAlias( RockContext rockContext )
+        {
+            var person = GetPerson( rockContext );
             if ( person != null )
             {
                 return person.PrimaryAlias;
