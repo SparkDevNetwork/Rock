@@ -253,6 +253,23 @@ namespace Rock.Web.UI.Controls
 
         #region Properties
 
+
+        /// <summary>
+        /// Gets or sets the text displayed when the mouse pointer hovers over the Web server control.
+        /// </summary>
+        public override string ToolTip
+        {
+            get
+            {
+                return ViewState["ToolTip"] as string;
+            }
+
+            set
+            {
+                ViewState["ToolTip"] = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the binary file id.
         /// </summary>
@@ -647,6 +664,12 @@ namespace Rock.Web.UI.Controls
         {
             writer.AddAttribute( "class", "fileupload-group" );
             writer.AddAttribute( "id", this.ClientID );
+
+            if ( ToolTip.IsNotNullOrWhiteSpace() )
+            {
+                writer.AddAttribute( "title", ToolTip );
+            }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( BinaryFileId != null || !string.IsNullOrWhiteSpace( this.UploadedContentFilePath ) )

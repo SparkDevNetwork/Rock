@@ -1134,5 +1134,153 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201808062254493_Rollup_0806_ufnCrm_GetFamilyTitleIncludeInactive", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {% assign channelTitleSize  =  ContentChannel | Attribute:&apos;TitleSize&apos; | Default:&apos;h1&apos; %}
+        ///{% assign channelContentAlignment  =  ContentChannel | Attribute:&apos;ContentAlignment &apos; %}
+        ///{% assign channelForegroundColor  =  ContentChannel | Attribute:&apos;ForegroundColor&apos; %}
+        ///{% assign channelBackgroundColor =  ContentChannel | Attribute:&apos;BackgroundColor&apos; %}
+        ///{% assign contentItemStyle = &apos;&apos; %}
+        ///
+        ///{% for item in Items %}
+        ///    {% if channelBackgroundColor != &apos;&apos; %}
+        ///        {% capture contentItemStyle %}{{ contentItemStyle [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201809142151587_ContentComponents_AdUnit {
+            get {
+                return ResourceManager.GetString("_201809142151587_ContentComponents_AdUnit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {% assign channelTitleSize  =  ContentChannel | Attribute:&apos;TitleSize&apos; | Default:&apos;h1&apos; %}
+        ///{% assign channelContentAlignment  =  ContentChannel | Attribute:&apos;ContentAlignment &apos; %}
+        ///{% assign channelForegroundColor  =  ContentChannel | Attribute:&apos;ForegroundColor&apos; %}
+        ///{% assign channelBackgroundColor =  ContentChannel | Attribute:&apos;BackgroundColor&apos; %}
+        ///{% assign contentItemStyle = &apos;&apos; %}
+        ///
+        ///{% for item in Items %}
+        ///    {% if channelBackgroundColor != &apos;&apos; %}
+        ///        {% capture contentItemStyle %}{{ contentItemStyle [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201809142151587_ContentComponents_Card {
+            get {
+                return ResourceManager.GetString("_201809142151587_ContentComponents_Card", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF NOT EXISTS (
+        ///		SELECT *
+        ///		FROM [ContentChannelType]
+        ///		WHERE [Guid] = &apos;BCFE276D-96A3-46E5-BF9F-7B68CC44DA33&apos;
+        ///		)
+        ///	INSERT INTO [ContentChannelType] (
+        ///		[IsSystem]
+        ///		,[Name]
+        ///		,[DateRangeType]
+        ///		,[DisablePriority]
+        ///        ,[ShowInChannelList]
+        ///		,[Guid]
+        ///		)
+        ///	VALUES (
+        ///		1
+        ///		,&apos;Content Component&apos;
+        ///		,3
+        ///		,0
+        ///        ,0
+        ///		,&apos;BCFE276D-96A3-46E5-BF9F-7B68CC44DA33&apos;
+        ///		)
+        ///
+        ///DECLARE @ContentComponentContentChannelTypeId INT = (
+        ///		SELECT TOP 1 [Id]
+        ///		FROM [ContentChannelType]
+        ///		WHERE Guid = &apos;BCFE276 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201809142151587_ContentComponents_CreateContentComponentChannelType {
+            get {
+                return ResourceManager.GetString("_201809142151587_ContentComponents_CreateContentComponentChannelType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {% assign channelTitleSize  =  ContentChannel | Attribute:&apos;TitleSize&apos; | Default:&apos;h1&apos; %}
+        ///{% assign channelContentAlignment  =  ContentChannel | Attribute:&apos;ContentAlignment &apos; %}
+        ///{% assign channelForegroundColor  =  ContentChannel | Attribute:&apos;ForegroundColor&apos; %}
+        ///{% assign channelBackgroundColor =  ContentChannel | Attribute:&apos;BackgroundColor&apos; %}
+        ///{% assign contentItemStyle = &apos;&apos; %}
+        ///
+        ///{% for item in Items %}
+        ///    {% if channelBackgroundColor != &apos;&apos; %}
+        ///        {% capture contentItemStyle %}{{ contentItemStyle [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201809142151587_ContentComponents_Hero {
+            get {
+                return ResourceManager.GetString("_201809142151587_ContentComponents_Hero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {% assign channelTitleSize  =  ContentChannel | Attribute:&apos;TitleSize&apos; | Default:&apos;h1&apos; %}
+        ///{% assign channelContentAlignment  =  ContentChannel | Attribute:&apos;ContentAlignment &apos; %}
+        ///{% assign channelForegroundColor  =  ContentChannel | Attribute:&apos;ForegroundColor&apos; %}
+        ///{% assign channelBackgroundColor =  ContentChannel | Attribute:&apos;BackgroundColor&apos; %}
+        ///{% assign contentItemStyle = &apos;&apos; %}
+        ///
+        ///{% for item in Items %}
+        ///    {% if channelBackgroundColor != &apos;&apos; %}
+        ///        {% capture contentItemStyle %}{{ contentItemStyle [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201809142151587_ContentComponents_SideBySide {
+            get {
+                return ResourceManager.GetString("_201809142151587_ContentComponents_SideBySide", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure returns a data set used by the Rock eRA job to add/remove
+        ///		people from being an eRA. It should not be modified as it will be updated in the
+        ///		future to meet additional requirements.
+        ///
+        ///		The goal of the query is to return both those that meet the eRA requirements as well
+        ///		as those that are marked as already being an eRA and the criteria to ensure that
+        ///		they still should be an era.
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		For eRA we only consider adults for the c [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201809252117562_Rollup_0925_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_201809252117562_Rollup_0925_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the attendance data needed for the Attendance Badge. If no family role (adult/child)
+        ///		is given it is looked up.  If the individual is an adult it will return family attendance if it&apos;s a child
+        ///		it will return the individual&apos;s attendance. If a person is in two families once as a child once as an
+        ///		adult it will pick the first role it finds.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* AttendanceCount
+        ///		* SundaysInMonth
+        ///		* Month
+        ///		* Year
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;P [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201810021839212_Rollup_1002_spCheckin_BadgeAttendance {
+            get {
+                return ResourceManager.GetString("_201810021839212_Rollup_1002_spCheckin_BadgeAttendance", resourceCulture);
+            }
+        }
     }
 }

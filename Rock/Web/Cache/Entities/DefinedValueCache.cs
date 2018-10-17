@@ -142,6 +142,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete("Use Get Instead")]
         public static DefinedValueCache Read( string guid )
         {
@@ -153,16 +154,27 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
-        /// Gets the name.
+        /// Gets the Value of the DefinedValue
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public static string GetValue( int? id )
+        {
+            if ( !id.HasValue )
+                return null;
+
+            var definedValue = Get( id.Value );
+            return definedValue?.Value;
+        }
+
+        /// <summary>
+        /// Gets the Value of the DefinedValue
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
         public static string GetName( int? id )
         {
-            if ( !id.HasValue ) return null;
-
-            var definedValue = Get( id.Value );
-            return definedValue?.Value;
+            return GetValue( id );
         }
 
         #endregion

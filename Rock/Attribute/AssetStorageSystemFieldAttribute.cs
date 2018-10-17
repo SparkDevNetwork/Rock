@@ -19,11 +19,11 @@ using System;
 namespace Rock.Attribute
 {
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    class AssetStorageSystemFieldAttribute : FieldAttribute
+    class AssetStorageProviderFieldAttributeAttribute : FieldAttribute
     {
         
-        public AssetStorageSystemFieldAttribute( string name = "Asset Storage System", string description = "", bool required = true, string defaultFinancialGatewayGuid = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultFinancialGatewayGuid, category, order, key, typeof( Rock.Field.Types.AssetStorageSystemFieldType ).FullName )
+        public AssetStorageProviderFieldAttributeAttribute( string name = "Asset Storage System", string description = "", bool required = true, string defaultFinancialGatewayGuid = "", string category = "", int order = 0, string key = null )
+            : base( name, description, required, defaultFinancialGatewayGuid, category, order, key, typeof( Rock.Field.Types.AssetStorageProviderFieldType ).FullName )
         {
         }
     }

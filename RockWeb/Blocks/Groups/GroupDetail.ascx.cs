@@ -1405,7 +1405,14 @@ namespace RockWeb.Blocks.Groups
             GroupSyncState = new List<GroupSync>();
             foreach ( var sync in group.GroupSyncs )
             {
-                GroupSyncState.Add( sync );
+                // clone it first so that we don't end up with a giant JSON object in viewstate (that includes the Group and GroupMembers)
+                var syncClone = sync.Clone( false );
+
+                // add the stuff that the grid needs
+                syncClone.GroupTypeRole = new GroupTypeRoleService( rockContext ).Get( syncClone.GroupTypeRoleId );
+                syncClone.SyncDataView = new DataViewService( rockContext ).Get( syncClone.SyncDataViewId );
+
+                GroupSyncState.Add( syncClone );
             }
 
             BindGroupSyncGrid();

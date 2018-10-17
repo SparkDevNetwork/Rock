@@ -61,7 +61,7 @@
               <td>{{ connectionRequest.PersonAlias.Person.LastName }}, {{ connectionRequest.PersonAlias.Person.NickName }} </td>
             {% endif %}
             <td><i class="{{ connectionRequest.ConnectionOpportunity.IconCssClass }}"></i> {{ connectionRequest.ConnectionOpportunity.Name }}</td>
-            <td>{{ lastActivity.ConnectionActivityType.Name }} (<span class='small'>{{ lastActivity.CreatedDateTime | HumanizeDateTime  }}</span>)</td>
+            <td>{{ lastActivity.ConnectionActivityType.Name }} (<span class='small'>{{ lastActivity.CreatedDateTime | HumanizeDateTime }}</span>)</td>
             <td>{{ lastActivity.Note }}</td>
             {% if isCritical %}
               <td><span class='label label-warning'>{{ connectionRequest.ConnectionStatus.Name }}</span></td>

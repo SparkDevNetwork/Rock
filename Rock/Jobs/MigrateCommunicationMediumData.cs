@@ -38,6 +38,8 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     [IntegerField( "How Many Records", "The number of communication records to process on each run of this job.", false, 100000, "", 0, "HowMany" )]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the default for this job (3600). Note, it could take several minutes, so you might want to set it at 3600 (60 minutes) or higher", false, 60 * 60, "General", 1, "CommandTimeout" )]
+    [RockObsolete("1.7")]
+    [Obsolete( "The Communication.MediumDataJson and CommunicationTemplate.MediumDataJson fields will be removed in Rock 1.10" )]
     public class MigrateCommunicationMediumData : IJob
     {
         /// <summary>
@@ -45,6 +47,8 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="context">The context.</param>
         /// <exception cref="System.NotImplementedException"></exception>
+        [RockObsolete( "1.7" )]
+        [Obsolete( "The Communication.MediumDataJson and CommunicationTemplate.MediumDataJson fields will be removed in Rock 1.10")]
         public void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
@@ -144,7 +148,8 @@ END
         /// <param name="updateTemplates">if set to <c>true</c> [update templates].</param>
         /// <param name="howManyToConvert">The how many to convert.</param>
         /// <returns></returns>
-        [Obsolete( "Use the other UpdateCommunicationRecords" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use the other UpdateCommunicationRecords", true )]
         public static bool UpdateCommunicationRecords( bool updateTemplates, int howManyToConvert )
         {
             return UpdateCommunicationRecords( updateTemplates, howManyToConvert, null );

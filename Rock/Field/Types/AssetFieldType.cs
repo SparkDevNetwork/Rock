@@ -69,6 +69,7 @@ namespace Rock.Field.Types
                 SelectControlCssClass = "btn btn-xs btn-default imageupload-group",
                 CssClass = "picker-asset",
                 ModalSaveButtonText = "Select",
+                ModalSaveButtonCssClass = "js-singleselect aspNetDisabled",
                 ButtonTextTemplate = "Select Asset",
                 PickerButtonTemplate = pickerButtonTemplate,
                 ModalTitle = "Asset Manager"
@@ -127,19 +128,19 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            AssetStorageSystem assetStorageSystem = new AssetStorageSystem();
-            int? assetStorageId = asset.AssetStorageSystemId;
+            AssetStorageProvider assetStorageProvider = new AssetStorageProvider();
+            int? assetStorageId = asset.AssetStorageProviderId;
 
             if ( assetStorageId != null )
             {
-                var assetStorageService = new AssetStorageSystemService( new RockContext() );
-                assetStorageSystem = assetStorageService.Get( assetStorageId.Value );
-                assetStorageSystem.LoadAttributes();
+                var assetStorageService = new AssetStorageProviderService( new RockContext() );
+                assetStorageProvider = assetStorageService.Get( assetStorageId.Value );
+                assetStorageProvider.LoadAttributes();
             }
 
-            var component = assetStorageSystem.GetAssetStorageComponent();
+            var component = assetStorageProvider.GetAssetStorageComponent();
 
-            string uri = component.CreateDownloadLink( assetStorageSystem, asset );
+            string uri = component.CreateDownloadLink( assetStorageProvider, asset );
 
             return uri;
         }

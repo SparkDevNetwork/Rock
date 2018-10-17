@@ -166,13 +166,10 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                using ( var rockContext = new RockContext() )
+                var noteType = NoteTypeCache.Get( value.AsGuid() );
+                if ( noteType != null )
                 {
-                    var noteType = NoteTypeCache.Get( value.AsGuid() );
-                    if ( noteType != null )
-                    {
-                        formattedValue = noteType.Name;
-                    }
+                    formattedValue = noteType.Name;
                 }
             }
 
