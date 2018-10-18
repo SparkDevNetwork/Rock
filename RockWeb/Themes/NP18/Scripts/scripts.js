@@ -214,12 +214,20 @@ $("a[href*=\\#]:not([href=\\#])").click(function()
 		$('.sermon').removeClass('open');		
     $(container).removeClass('open').hide();
   });
-function init() {
-  $('.notification-bar').each(function(){
-	  $('body').css({'padding-top':$(this).outerHeight()});
-	  $('.navbar-subheader').css({'top':$(this).outerHeight()});	  
-  });
-}
+  
+	function init() {
+	  $('.notification-bar').each(function(){
+		  $('body').css({'padding-top':$(this).outerHeight()});
+		  $('.navbar-subheader').css({'top':$(this).outerHeight()});	  
+	  });
+  	if (windowWidth < 992) {
+			var navbarHeight = $('header nav').outerHeight() + $('header .navbar-subheader').outerHeight();
+			$('body').css('margin-top',navbarHeight);
+		} else {
+			$('body').css('margin-top',0);
+		}
+	}
+
   $(window).resize(function(){
     init();
     didScroll = true;

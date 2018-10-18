@@ -532,14 +532,14 @@ body header.opaque {
   background-position:center; 
   background-size:cover;
   //background-attachment: fixed;
-  min-height: 511px;
-  max-height: 95vh;
+  //min-height: 511px;
+  //max-height: 95vh;
   overflow: hidden;
+  .aspect-ratio(1600,584);
 	@media (min-width: @screen-sm) {
 		height: auto;
-		min-height: 500px;
+		//min-height: 500px;
 		max-height: 700px;
-	  .aspect-ratio(1920,700);
   }
   &:before {
 	  .overlay(@gray-lighter);
@@ -568,7 +568,7 @@ body header.opaque {
 		width: 100%;
 		bottom: 0;
 		left:0;
-		padding-bottom: 40px;
+		padding-bottom: 20px;
 		z-index: 100;
 		.center-block {
 			float:none;
@@ -613,6 +613,8 @@ body header.opaque {
 		z-index: 10;
 	}
   &.hero {
+		min-height: 511px;
+		max-height: 95vh;
 		@media (min-width: @screen-sm) {
 			height: auto;
 			min-height: 768px;
