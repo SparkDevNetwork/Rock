@@ -74,7 +74,7 @@ namespace Rock.Web.UI.Controls
             {
                 ItemId = connectionRequest.Id.ToString();
                 ItemName = connectionRequest.PersonAlias.Person.FullName;
-                InitialItemParentIds = string.Format( "T{0},O{1}",
+                InitialItemParentIds = string.Format( "'T{0}','O{1}'",
                     connectionRequest.ConnectionOpportunity.ConnectionTypeId,
                     connectionRequest.ConnectionOpportunity.Id );
             }
@@ -108,7 +108,7 @@ namespace Rock.Web.UI.Controls
                     {
                         ids.Add( connectionRequest.Id.ToString() );
                         names.Add( connectionRequest.PersonAlias.Person.FullName );
-                        parentConnectionRequestIds += string.Format( "T{0},O{1},",
+                        parentConnectionRequestIds += string.Format( "'T{0}','O{1}',",
                             connectionRequest.ConnectionOpportunity.ConnectionTypeId,
                             connectionRequest.ConnectionOpportunity.Id );
                     }
