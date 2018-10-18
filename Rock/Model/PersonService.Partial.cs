@@ -485,7 +485,7 @@ namespace Rock.Model
             public PersonMatchResult( PersonMatchQuery query, PersonSummary person )
             {
                 PersonId = person.Id;
-                FirstNameMatched = ( person.FirstName != null && person.FirstName != String.Empty && person.FirstName == query.FirstName ) || ( person.NickName != null && person.NickName != String.Empty && person.NickName == query.FirstName );
+                FirstNameMatched = ( person.FirstName != null && person.FirstName != String.Empty && person.FirstName.Equals(query.FirstName, StringComparison.CurrentCultureIgnoreCase) ) || ( person.NickName != null && person.NickName != String.Empty && person.NickName.Equals(query.FirstName, StringComparison.CurrentCultureIgnoreCase) );
                 SuffixMatched = query.SuffixValueId.HasValue && person.SuffixValueId != null && query.SuffixValueId == person.SuffixValueId;
                 GenderMatched = query.Gender.HasValue & query.Gender == person.Gender;
 
