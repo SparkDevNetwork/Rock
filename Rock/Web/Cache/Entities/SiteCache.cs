@@ -71,7 +71,7 @@ namespace Rock.Web.Cache
         public string Description { get; private set; }
 
         /// <summary>
-        /// Gets or sets the configured theme. The 'Theme' property will check to see if current request url/cookie has specified a different them and if so return that one
+        /// Gets or sets the configured theme. The <see cref="Theme"/> property will check to see if current request url/cookie has specified a different them and if so return that one
         /// </summary>
         /// <value>
         /// The configured theme.
@@ -80,7 +80,8 @@ namespace Rock.Web.Cache
         public string ConfiguredTheme { get; private set; }
 
         /// <summary>
-        /// Gets or sets the theme.
+        /// Gets or sets the *active* theme for the page. NOTE: This might be different than the <see cref="ConfiguredTheme"/>.
+        /// NOTE: The 'Theme' property will check to see if current request url/cookie has specified a different them and if so return that one. 
         /// </summary>
         /// <value>
         /// The theme.
