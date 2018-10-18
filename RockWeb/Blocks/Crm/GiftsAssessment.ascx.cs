@@ -43,14 +43,30 @@ namespace Rockweb.Blocks.Crm
     [BooleanField( "Allow Retakes", "If enabled, the person can retake the test after the minimum days passes.", true, order: 3 )]
     [IntegerField( "Min Days To Retake", "The number of days that must pass before the test can be taken again.", false, 360, order: 4 )]
     [CodeEditorField( "Instructions", "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
-            <h2>Welcome to Your Spiritual Gifts Assessment</h2>
-            <p>{{ Person.NickName }}, the purpose of this assessment is to help you identify spiritual gifts that are most naturally used in the life of the local church. This survey does not include all spiritual gifts, just those that are often seen in action for most churches and most people.</p>
-            <p>In churches it’s not uncommon to see 90% of the work being done by a weary 10%. Why does this happen? Partially due to ignorance and partially due to avoidance of spiritual gifts. Here’s the process:</p>
-            <ol><li>Discover the primary gifts given to us at our Spiritual birth.</li>
-            <li>Learn what these gifts are and what they are not.</li>
-            <li>See where these gifts fit into the functioning of the body. </li>
-            </ol>
-            <p>When you are working within your Spirit-given gifts, you will be most effective for the body of Christ in your local setting. </p> <p>     Before you begin, please take a moment and pray that the Holy Spirit would guide your thoughts, calm your mind, and help you respond to each item as honestly as you can. Don't spend much time on each item. Your first instinct is probably your best response.</p>" )]
+<h2>Welcome to Your Spiritual Gifts Assessment</h2>
+<p>
+    {{ Person.NickName }}, the purpose of this assessment is to help you identify spiritual gifts that are most naturally
+    used in the life of the local church. This survey does not include all spiritual gifts, just those that are often
+    seen in action for most churches and most people.
+</p>
+<p>
+    In churches it’s not uncommon to see 90% of the work being done by a weary 10%. Why does this happen?
+    Partially due to ignorance and partially due to avoidance of spiritual gifts. Here’s the process:
+</p>
+<ol>
+    <li>Discover the primary gifts given to us at our Spiritual birth.</li>
+    <li>Learn what these gifts are and what they are not.</li>
+    <li>See where these gifts fit into the functioning of the body. </li>
+</ol>
+<p>
+    When you are working within your Spirit-given gifts, you will be most effective for the body
+    of Christ in your local setting.
+</p>
+<p>
+    Before you begin, please take a moment and pray that the Holy Spirit would guide your thoughts,
+    calm your mind, and help you respond to each item as honestly as you can. Don't spend much time
+    on each item. Your first instinct is probably your best response.
+</p>" )]
     [CodeEditorField( "Results Message", "The text (HTML) to display at the top of the results section.<span class='tip tip-lava'></span><span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <div class='row'>
     <div class='col-md-12'>
