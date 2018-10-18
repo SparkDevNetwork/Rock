@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -142,6 +142,7 @@ namespace RockWeb.Blocks.Event
                     }
                 }
             }
+
             cblCalendars.SelectedIndexChanged += cblCalendars_SelectedIndexChanged;
 
             RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
@@ -160,7 +161,6 @@ namespace RockWeb.Blocks.Event
     });
 ";
             ScriptManager.RegisterStartupScript( btnDelete, btnDelete.GetType(), "deleteInstanceScript", deleteScript, true );
-
         }
 
         /// <summary>
@@ -249,7 +249,6 @@ namespace RockWeb.Blocks.Event
             return breadCrumbs;
         }
 
-
         /// <summary>
         /// Handles the BlockUpdated event of the control.
         /// </summary>
@@ -317,6 +316,7 @@ namespace RockWeb.Blocks.Event
             {
                 qryParams.Add( "EventCalendarId", _calendarId.Value.ToString() );
             }
+
             NavigateToParentPage( qryParams );
         }
 
@@ -360,6 +360,7 @@ namespace RockWeb.Blocks.Event
                     eventItem.ApprovedByPersonAliasId = CurrentPersonAliasId;
                     eventItem.ApprovedOnDateTime = RockDateTime.Now;
                 }
+
                 eventItem.IsApproved = cbIsApproved.Checked;
                 if ( !eventItem.IsApproved )
                 {
@@ -367,6 +368,7 @@ namespace RockWeb.Blocks.Event
                     eventItem.ApprovedByPersonAlias = null;
                     eventItem.ApprovedOnDateTime = null;
                 }
+
                 eventItem.Description = htmlDescription.Text;
                 eventItem.Summary = tbSummary.Text;
                 eventItem.DetailsUrl = tbDetailUrl.Text;
@@ -420,6 +422,7 @@ namespace RockWeb.Blocks.Event
                         eventCalendarItem = new EventCalendarItem();
                         eventItem.EventCalendarItems.Add( eventCalendarItem );
                     }
+
                     eventCalendarItem.CopyPropertiesFrom( calendar );
                 }
 
@@ -473,13 +476,13 @@ namespace RockWeb.Blocks.Event
                     }
                 } );
 
-
                 // Redirect back to same page so that item grid will show any attributes that were selected to show on grid
                 var qryParams = new Dictionary<string, string>();
                 if ( _calendarId.HasValue )
                 {
                     qryParams["EventCalendarId"] = _calendarId.Value.ToString();
                 }
+
                 qryParams["EventItemId"] = eventItem.Id.ToString();
                 NavigateToPage( RockPage.Guid, qryParams );
             }
@@ -500,6 +503,7 @@ namespace RockWeb.Blocks.Event
                 {
                     qryParams.Add( "EventCalendarId", _calendarId.Value.ToString() );
                 }
+
                 NavigateToParentPage( qryParams );
             }
             else
@@ -576,6 +580,7 @@ namespace RockWeb.Blocks.Event
             {
                 AudiencesState.Remove( audience.Id );
             }
+
             BindAudienceGrid();
         }
 
@@ -643,10 +648,11 @@ namespace RockWeb.Blocks.Event
 
             if ( eventItem == null )
             {
-                eventItem = new EventItem { Id = 0, IsActive = true, Name = "" };
+                eventItem = new EventItem { Id = 0, IsActive = true, Name = string.Empty };
                 eventItem.IsApproved = _canApprove;
-                var calendarItem = new EventCalendarItem { EventCalendarId = ( _calendarId ?? 0 ) };
+                var calendarItem = new EventCalendarItem { EventCalendarId = _calendarId ?? 0 };
                 eventItem.EventCalendarItems.Add( calendarItem );
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -690,7 +696,6 @@ namespace RockWeb.Blocks.Event
                 {
                     ShowEditDetails( eventItem );
                 }
-
             }
         }
 
@@ -722,6 +727,7 @@ namespace RockWeb.Blocks.Event
                 eventItem = new EventItem();
                 eventItem.IsApproved = _canApprove;
             }
+
             if ( eventItem.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( "Event Item" ).FormatAsHtmlTitle();
@@ -747,7 +753,8 @@ namespace RockWeb.Blocks.Event
                 eventItem.ApprovedByPersonAlias != null &&
                 eventItem.ApprovedByPersonAlias.Person != null )
             {
-                lApproval.Text = string.Format("Approved at {0} on {1} by {2}.",
+                lApproval.Text = string.Format(
+                    "Approved at {0} on {1} by {2}.",
                     eventItem.ApprovedOnDateTime.Value.ToShortTimeString(),
                     eventItem.ApprovedOnDateTime.Value.ToShortDateString(),
                     eventItem.ApprovedByPersonAlias.Person.FullName );
@@ -790,7 +797,7 @@ namespace RockWeb.Blocks.Event
             string imgTag = GetImageTag( eventItem.PhotoId, 300, 300, false, true );
             if ( eventItem.PhotoId.HasValue )
             {
-                string imageUrl = ResolveRockUrl( String.Format( "~/GetImage.ashx?id={0}", eventItem.PhotoId.Value ) );
+                string imageUrl = ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}", eventItem.PhotoId.Value ) );
                 lImage.Text = string.Format( "<a href='{0}'>{1}</a>", imageUrl, imgTag );
                 divImage.Visible = true;
             }
@@ -848,6 +855,10 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Sets the Status and Approved label properties.
+        /// </summary>
+        /// <param name="eventItem">The event item.</param>
         private void SetLabels( EventItem eventItem )
         {
             if ( eventItem.IsActive )
@@ -915,7 +926,7 @@ namespace RockWeb.Blocks.Event
                     if ( eventCalendarItem.Attributes.Count > 0 )
                     {
                         wpAttributes.Visible = true;
-                        phAttributes.Controls.Add( new LiteralControl( String.Format( "<h3>{0}</h3>", eventCalendarService.Get( eventCalendarId ).Name ) ) );
+                        phAttributes.Controls.Add( new LiteralControl( string.Format( "<h3>{0}</h3>", eventCalendarService.Get( eventCalendarId ).Name ) ) );
                         PlaceHolder phcalAttributes = new PlaceHolder();
                         Rock.Attribute.Helper.AddEditControls( eventCalendarItem, phAttributes, true, BlockValidationGroup );
                     }
@@ -959,6 +970,9 @@ namespace RockWeb.Blocks.Event
             return eventItem;
         }
 
+        /// <summary>
+        /// Shows the dialog specified in hfActiveDialog.
+        /// </summary>
         private void ShowDialog()
         {
             Dialogs dialogs;
@@ -1010,6 +1024,11 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #region EventOccurrence Attribute
+        /// <summary>
+        /// Handles the SaveClick event of the dlgEventOccurrenceAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgEventOccurrenceAttribute_SaveClick( object sender, EventArgs e )
         {
             Rock.Model.Attribute attribute = new Rock.Model.Attribute();
@@ -1036,17 +1055,32 @@ namespace RockWeb.Blocks.Event
             HideDialog();
         }
 
+        /// <summary>
+        /// Handles the Add event of the gEventOccurrenceAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gEventOccurrenceAttributes_Add( object sender, EventArgs e )
         {
             ShowEventOccurrenceAttributeEdit( Guid.Empty );
         }
 
+        /// <summary>
+        /// Handles the Edit event of the gEventOccurrenceAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gEventOccurrenceAttributes_Edit( object sender, RowEventArgs e )
         {
             Guid attributeGuid = ( Guid ) e.RowKeyValue;
             ShowEventOccurrenceAttributeEdit( attributeGuid );
         }
 
+        /// <summary>
+        /// Handles the Delete event of the gEventOccurrenceAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gEventOccurrenceAttributes_Delete( object sender, RowEventArgs e )
         {
             Guid attributeGuid = ( Guid ) e.RowKeyValue;
@@ -1055,18 +1089,31 @@ namespace RockWeb.Blocks.Event
             BindEventOccurrenceAttributesGrid();
         }
 
+        /// <summary>
+        /// Handles the GridReorder event of the gEventOccurrenceAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void gEventOccurrenceAttributes_GridReorder( object sender, GridReorderEventArgs e )
         {
             SortAttributes( EventOccurrenceAttributesState, e.OldIndex, e.NewIndex );
             ReOrderEventOccurrenceAttributes( EventOccurrenceAttributesState );
             BindEventOccurrenceAttributesGrid();
         }
-        
+
+        /// <summary>
+        /// Handles the GridRebind event of the gEventOccurrenceAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gEventOccurrenceAttributes_GridRebind( object sender, EventArgs e )
         {
             BindEventOccurrenceAttributesGrid();
         }
 
+        /// <summary>
+        /// And in the darkness Binds the event occurrence attributes grid.
+        /// </summary>
         private void BindEventOccurrenceAttributesGrid()
         {
             gEventOccurrenceAttributes.DataSource = EventOccurrenceAttributesState
@@ -1087,6 +1134,10 @@ namespace RockWeb.Blocks.Event
             gEventOccurrenceAttributes.DataBind();
         }
 
+        /// <summary>
+        /// Shows the event occurrence attribute edit Modal Dialog.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
         private void ShowEventOccurrenceAttributeEdit( Guid attributeGuid )
         {
             Attribute attribute;
@@ -1107,6 +1158,14 @@ namespace RockWeb.Blocks.Event
             ShowDialog( Dialogs.EventOccurrenceAttributes );
         }
 
+        /// <summary>
+        /// Saves the attributes.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="qualifierColumn">The qualifier column.</param>
+        /// <param name="qualifierValue">The qualifier value.</param>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="rockContext">The rock context.</param>
         private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<Attribute> attributes, RockContext rockContext )
         {
             // Get the existing attributes for this entity type and qualifier value
@@ -1181,6 +1240,10 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Renumber the order prop of attributes
+        /// </summary>
+        /// <param name="attributeList">The attribute list.</param>
         private void ReOrderEventOccurrenceAttributes( List<Attribute> attributeList )
         {
             attributeList = attributeList.OrderBy( a => a.Order ).ToList();
