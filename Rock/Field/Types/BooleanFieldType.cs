@@ -248,8 +248,9 @@ namespace Rock.Field.Types
         {
             if ( control != null && control is RockDropDownList )
             {
-                return ( (RockDropDownList)control ).SelectedValue;
+                return ( (RockDropDownList)control ).SelectedValue ?? string.Empty;
             }
+
             return null;
         }
 

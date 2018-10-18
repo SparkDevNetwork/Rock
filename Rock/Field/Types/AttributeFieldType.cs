@@ -343,20 +343,27 @@ namespace Rock.Field.Types
                         .Where( i => i.Selected )
                         .Select( i => i.Value ) );
                 }
-            }
 
-            var guids = new List<string>();
-
-            foreach ( int attributeId in ids.AsIntegerList() )
-            {
-                var attribute = Rock.Web.Cache.AttributeCache.Get( attributeId );
-                if ( attribute != null )
+                if ( ids.Count == 0 )
                 {
-                    guids.Add( attribute.Guid.ToString() );
+                    return string.Empty;
                 }
+
+                var guids = new List<string>();
+
+                foreach ( int attributeId in ids.AsIntegerList() )
+                {
+                    var attribute = Rock.Web.Cache.AttributeCache.Get( attributeId );
+                    if ( attribute != null )
+                    {
+                        guids.Add( attribute.Guid.ToString() );
+                    }
+                }
+
+                return guids.AsDelimited( "," );
             }
 
-            return guids.AsDelimited( "," );
+            return null;
         }
 
         /// <summary>

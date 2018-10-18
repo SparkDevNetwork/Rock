@@ -384,6 +384,10 @@ namespace Rock.Field.Types
                 {
                     return datePicker.SelectedDate.Value.ToString( "o" );
                 }
+                else
+                {
+                    return string.Empty;
+                }
             }
             else if ( datePartsPicker != null )
             {
@@ -391,9 +395,13 @@ namespace Rock.Field.Types
                 {
                     return datePartsPicker.SelectedDate.Value.ToString( "o" );
                 }
+                else
+                {
+                    return string.Empty;
+                }
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>
