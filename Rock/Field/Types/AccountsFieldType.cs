@@ -134,7 +134,7 @@ namespace Rock.Field.Types
                     var accounts = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) );
                     if ( accounts.Any() )
                     {
-                        formattedValue = string.Join( ", ", ( from account in accounts select displayPublicName ? account.PublicName : account.Name ).ToArray() );
+                        formattedValue = string.Join( ", ", ( from account in accounts select displayPublicName && account.PublicName != null && account.PublicName != string.Empty ? account.PublicName : account.Name ).ToArray() );
                     }
                 }
             }
@@ -175,7 +175,6 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as AccountPicker;
-            string result = null;
 
             if ( picker != null )
             {
@@ -191,10 +190,10 @@ namespace Rock.Field.Types
                     }
                 }
 
-                result = string.Join( ",", guids );
+                return string.Join( ",", guids );
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>
