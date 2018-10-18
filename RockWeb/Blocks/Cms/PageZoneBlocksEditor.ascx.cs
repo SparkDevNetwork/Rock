@@ -268,7 +268,7 @@ namespace RockWeb.Blocks.Cms
         /// <returns></returns>
         private List<string> FindZoneNames( PageCache page )
         {
-            string theme = page.Layout.Site.Theme;
+            string theme = page.Layout.Site.ConfiguredTheme;
             string layout = page.Layout.FileName;
             string layoutPath = PageCache.FormatPath( theme, layout );
 
