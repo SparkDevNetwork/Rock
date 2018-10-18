@@ -50,9 +50,8 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Restrict Future Occurrence Date", "Should user be prevented from selecting a future Occurrence date?", false, "", 8 )]
     [BooleanField( "Show Notes", "Should the notes field be displayed?", true, "", 9 )]
     [TextField( "Attendance Note Label", "The text to use to describe the notes", true, "Notes", "", 10 )]
-    [BooleanField( "Show Anonymous Count", "Should the anonymous count be displayed?", true, "", 11 )]
-    [EnumsField( "Send Summary Email To", "", typeof( SendSummaryEmailType ), false, "", "", 12 )]
-    [SystemEmailField( "Attendance Email", "The System Email to use to send the attendance", false, Rock.SystemGuid.SystemEmail.ATTENDANCE_NOTIFICATION, "", 13, "AttendanceEmailTemplate" )]
+    [EnumsField( "Send Summary Email To", "", typeof( SendSummaryEmailType ), false, "", "", 11 )]
+    [SystemEmailField( "Attendance Email", "The System Email to use to send the attendance", false, Rock.SystemGuid.SystemEmail.ATTENDANCE_NOTIFICATION, "", 12, "AttendanceEmailTemplate" )]
     public partial class GroupAttendanceDetail : RockBlock
     {
         #region Fields
@@ -377,24 +376,24 @@ namespace RockWeb.Blocks.Groups
                 if ( !_attendees.Any( a => a.PersonId == ppAddPerson.PersonId.Value ) )
                 {
                     var rockContext = new RockContext();
-                    var Person = new PersonService( rockContext ).Get( ppAddPerson.PersonId.Value );
-                    if ( Person != null )
+                    var person = new PersonService( rockContext ).Get( ppAddPerson.PersonId.Value );
+                    if ( person != null )
                     {
                         string addPersonAs = GetAttributeValue( "AddPersonAs" );
                         if ( !addPersonAs.IsNullOrWhiteSpace() && addPersonAs == "Group Member" )
                         {
-                            AddPersonAsGroupMember( Person, rockContext );
+                            AddPersonAsGroupMember( person, rockContext );
                         }
 
                         var attendee = new GroupAttendanceAttendee();
-                        attendee.PersonId = Person.Id;
-                        attendee.NickName = Person.NickName;
-                        attendee.LastName = Person.LastName;
+                        attendee.PersonId = person.Id;
+                        attendee.NickName = person.NickName;
+                        attendee.LastName = person.LastName;
                         attendee.Attended = true;
-                        attendee.CampusIds = Person.GetCampusIds();
+                        attendee.CampusIds = person.GetCampusIds();
 
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                        mergeFields.Add( "Person", Person );
+                        mergeFields.Add( "Person", person );
                         mergeFields.Add( "Attended", true );
                         attendee.MergedTemplate = template.ResolveMergeFields( mergeFields );
                         _attendees.Add( attendee );

@@ -943,7 +943,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         protected void ShowAnniversaryDate()
         {
-            if ( GetAttributeValue( "HideAnniversaryDate" ).AsBoolean() == false)
+            if ( GetAttributeValue( "HideAnniversaryDate" ).AsBoolean() == true)
             {
                 dpAnniversaryDate.Visible = false;
             }

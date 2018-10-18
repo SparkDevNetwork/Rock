@@ -63,10 +63,13 @@ namespace Rock.Field.Types
 
                 if ( guids.Any() )
                 {
-                    var workflowTypes = new WorkflowTypeService( new RockContext() ).Queryable().Where( a => guids.Contains( a.Guid ) );
-                    if ( workflowTypes.Any() )
+                    using ( var rockContext = new RockContext() )
                     {
-                        formattedValue = string.Join( ", ", ( from workflowType in workflowTypes select workflowType.Name ).ToArray() );
+                        var workflowTypes = new WorkflowTypeService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid ) );
+                        if ( workflowTypes.Any() )
+                        {
+                            formattedValue = string.Join( ", ", ( from workflowType in workflowTypes select workflowType.Name ).ToArray() );
+                        }
                     }
                 }
             }
