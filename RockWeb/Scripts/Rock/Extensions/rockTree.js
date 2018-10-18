@@ -22,12 +22,12 @@
 		        return null;
 		    }
 
+        // remove surrounding single quotes from id if they exist
+        var idCompare = id.toString().replace(/(^')|('$)/g, '');
+
 		    for (var i = 0; i < array.length; i++) {
 		        currentNode = array[i];
 		        
-		        // remove surrounding single quotes from id if they exist
-		        var idCompare = id.toString().replace(/(^')|('$)/g, '');
-                
 		        if (currentNode.id.toString() === idCompare) {
 		            return currentNode;
 		        } else if (currentNode.hasChildren) {
@@ -203,6 +203,10 @@
                         if (!currentId) {
                             return;
                         }
+
+                        // remove surrounding single quotes from id if they exist
+                        // Quotes should never get to this point. ItemPicker.cs: _hfInitialItemParentIds should be updated to not have quotes. Other places may also add quotes and should be updated
+                        currentId = currentId.toString().replace(/(^')|('$)/g, '');
 
                         currentNode = _findNodeById(currentId, self.nodes);
                         while (currentNode == null && toExpand.length > 0) {
