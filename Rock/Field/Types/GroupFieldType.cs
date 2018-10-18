@@ -98,7 +98,7 @@ namespace Rock.Field.Types
                     using ( var rockContext = new RockContext() )
                     {
                         itemGuid = new GroupService( rockContext ).GetNoTracking( itemId.Value ).Guid;
-                        return itemGuid?.ToString();
+                        return itemGuid?.ToString() ?? string.Empty;
                     }
                 }
 

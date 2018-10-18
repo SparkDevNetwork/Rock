@@ -189,9 +189,13 @@ namespace Rock.Field.Types
                 {
                     return dtp.SelectedDateTime.Value.ToString( "o" );
                 }
+                else
+                {
+                    return string.Empty;
+                }
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>

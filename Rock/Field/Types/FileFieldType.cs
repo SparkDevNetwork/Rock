@@ -75,7 +75,7 @@ namespace Rock.Field.Types
                     }
                 }
 
-                return binaryFileGuid?.ToString();
+                return binaryFileGuid?.ToString() ?? string.Empty;
             }
 
             return null;
