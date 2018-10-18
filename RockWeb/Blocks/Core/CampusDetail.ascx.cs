@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Core
 
             campus.PhoneNumber = tbPhoneNumber.Text;
 
-            lpLocation.Location = campus.Location;
+            campus.LocationId = lpLocation.Location.Id;
 
             campus.ShortCode = tbCampusCode.Text;
             campus.TimeZoneId = ddlTimeZone.SelectedValue;

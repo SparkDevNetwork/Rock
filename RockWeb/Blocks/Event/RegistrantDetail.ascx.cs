@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -739,9 +739,17 @@ namespace RockWeb.Blocks.Event
                         if ( field.AttributeId.HasValue )
                         {
                             object fieldValue = RegistrantState.FieldValues.ContainsKey( field.Id ) ? RegistrantState.FieldValues[field.Id].FieldValue : null;
-                            string value = setValues && fieldValue != null ? fieldValue.ToString() : string.Empty;
+                            string value = setValues && fieldValue != null ? fieldValue.ToString() : null;
 
                             var attribute = AttributeCache.Get( field.AttributeId.Value );
+
+                            if ( ( setValues && value == null ) || (value.IsNullOrWhiteSpace() && field.IsRequired == true ) )
+                            {
+                                // If the value was not set already, or if it is required and currently empty then use the default
+                                // Intentionally leaving the possibility of saving an empty string as the value for non-required fields.
+                                value = attribute.DefaultValue;
+                            }
+
                             attribute.AddControl( phFields.Controls, value, BlockValidationGroup, setValues, true, field.IsRequired, null, field.Attribute.Description );
                         }
                     }

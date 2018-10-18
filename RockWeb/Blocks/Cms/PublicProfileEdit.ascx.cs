@@ -758,7 +758,7 @@ namespace RockWeb.Blocks.Cms
                     lMaritalStatus.Text += string.Format( " {0} yrs <small>({1})</small>", CurrentPerson.AnniversaryDate.Value.Age(), CurrentPerson.AnniversaryDate.Value.ToMonthDayString() );
                 }
 
-                if ( CurrentPerson.GetFamily( rockContext ) != null )
+                if ( CurrentPerson.GetFamily( rockContext ) != null && ddlGroup.Items.Count > 1 )
                 {
                     ddlGroup.Visible = true;
                 }

@@ -1977,6 +1977,27 @@ namespace Rock.Lava
                         }
                     }
 
+                    if ( qualifier.Equals( "Object", StringComparison.OrdinalIgnoreCase ) && field is Rock.Field.ICachedEntitiesFieldType )
+                    {
+                        var cachedEntitiesField = ( Rock.Field.ICachedEntitiesFieldType ) field;
+                        var values = cachedEntitiesField.GetCachedEntities( rawValue );
+
+                        if ( values == null || values.Count == 0 )
+                        {
+                            return null;
+                        }
+
+                        // If the attribute is configured to allow multiple then return a collection, otherwise just return a single value. You're welcome Lava developers :)
+                        if ( attribute.QualifierValues != null && attribute.QualifierValues.ContainsKey( "allowmultiple") && attribute.QualifierValues["allowmultiple"].Value.AsBoolean() )
+                        {
+                            return values;
+                        }
+                        else
+                        {
+                            return values.FirstOrDefault();
+                        }
+                    }
+
                     // Otherwise return the formatted value
                     return field.FormatValue( null, attribute.EntityTypeId, entityId, rawValue, attribute.QualifierValues, false );
                 }
@@ -2618,6 +2639,27 @@ namespace Rock.Lava
         /// </returns>
         public static string ZebraPhoto( DotLiquid.Context context, object input, string size, double brightness, double contrast, string fileName )
         {
+            return ZebraPhoto( context, input, size, brightness, contrast, fileName, 0 );
+        }
+
+        /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input, which is the person.</param>
+        /// <param name="size">The size.</param>
+        /// <param name="brightness">The brightness adjustment (-1.0 to 1.0).</param>
+        /// <param name="contrast">The contrast adjustment (-1.0 to 1.0).</param>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="rotationDegree">The degree of rotation to apply to the image (0, 90, 180, 270).</param>
+        /// <returns>
+        /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
+        /// </returns>
+        public static string ZebraPhoto( DotLiquid.Context context, object input, string size, double brightness, double contrast, string fileName, int rotationDegree )
+        {
             var person = GetPerson( input );
             try
             {
@@ -2742,6 +2784,27 @@ namespace Rock.Lava
                     finally
                     {
                         outputBitmap.UnlockBits( outputData );
+                    }
+
+                    // Rotate image
+                    switch ( rotationDegree )
+                    {
+                        case 90:
+                            {
+                                outputBitmap.RotateFlip( RotateFlipType.Rotate90FlipNone );
+                                break;
+                            }
+                        case 180:
+                            {
+                                outputBitmap.RotateFlip( RotateFlipType.Rotate180FlipNone );
+                                break;
+                            }
+                        case 270:
+                        case -90:
+                            {
+                                outputBitmap.RotateFlip( RotateFlipType.Rotate270FlipNone );
+                                break;
+                            }
                     }
 
                     // Convert from x to .png
@@ -3927,6 +3990,16 @@ namespace Rock.Lava
                         {
                             return page.PageParameters();
                         }
+                    case "Cookies":
+                        {
+                            var cookies = new List<HttpCookieDrop>();
+                            foreach ( string cookieKey in System.Web.HttpContext.Current.Request.Cookies )
+                            {
+                                cookies.Add( new HttpCookieDrop( System.Web.HttpContext.Current.Request.Cookies[cookieKey] ) );
+                            }
+
+                            return cookies;
+                        }
                 }
             }
 
@@ -4689,6 +4762,138 @@ namespace Rock.Lava
             }
         }
 
+        #endregion
+
+        #region POCOs
+        /// <summary>
+        /// POCO to translate an HTTP cookie in to a Liquidizable form
+        /// </summary>
+        /// <seealso cref="DotLiquid.Drop" />
+        public class HttpCookieDrop : Drop
+        {
+            private readonly HttpCookie _cookie;
+
+            /// <summary>
+            /// Gets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
+            public string Name
+            {
+                get
+                {
+                    return _cookie.Name;
+                }
+            }
+
+            /// <summary>
+            /// Gets the path.
+            /// </summary>
+            /// <value>
+            /// The path.
+            /// </value>
+            public string Path
+            {
+                get
+                {
+                    return _cookie.Path;
+                }
+            }
+
+            /// <summary>
+            /// Gets a value indicating whether this <see cref="HttpCookieDrop"/> is secure.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if secure; otherwise, <c>false</c>.
+            /// </value>
+            public bool Secure
+            {
+                get
+                {
+                    return _cookie.Secure;
+                }
+            }
+
+            /// <summary>
+            /// Gets a value indicating whether this <see cref="HttpCookieDrop"/> is shareable.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if shareable; otherwise, <c>false</c>.
+            /// </value>
+            public bool Shareable
+            {
+                get
+                {
+                    return _cookie.Shareable;
+                }
+            }
+
+            /// <summary>
+            /// Gets the domain.
+            /// </summary>
+            /// <value>
+            /// The domain.
+            /// </value>
+            public string Domain
+            {
+                get
+                {
+                    return _cookie.Domain;
+                }
+            }
+
+            /// <summary>
+            /// Gets the expire date/time.
+            /// </summary>
+            /// <value>
+            /// The expires.
+            /// </value>
+            public DateTime Expires
+            {
+                get
+                {
+                    return _cookie.Expires;
+                }
+            }
+
+            /// <summary>
+            /// Gets the cookie's value.
+            /// </summary>
+            /// <value>
+            /// The value.
+            /// </value>
+            public string Value
+            {
+                get
+                {
+                    return _cookie.Value;
+                }
+            }
+
+            /// <summary>
+            /// Gets the cookie's values.
+            /// </summary>
+            /// <value>
+            /// The values.
+            /// </value>
+            public NameValueCollection Values
+            {
+                get
+                {
+                    return _cookie.Values;
+                }
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="HttpCookieDrop"/> class.
+            /// </summary>
+            /// <param name="cookie">The cookie.</param>
+            public HttpCookieDrop( HttpCookie cookie )
+            {
+                _cookie = cookie;
+            }
+        }
         #endregion
     }
 }

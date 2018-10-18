@@ -369,6 +369,7 @@ namespace RockWeb.Blocks.Finance
                     txn = new FinancialTransaction();
                     txnService.Add( txn );
                     txn.BatchId = batchId;
+                    txn.FinancialGatewayId = gpPaymentGateway.SelectedValueAsInt();
                 }
                 else
                 {
@@ -393,7 +394,8 @@ namespace RockWeb.Blocks.Finance
                 txn.TransactionDateTime = dtTransactionDateTime.SelectedDateTime;
                 txn.TransactionTypeValueId = ddlTransactionType.SelectedValue.AsInteger();
                 txn.SourceTypeValueId = ddlSourceType.SelectedValueAsInt();
-                txn.FinancialGatewayId = gpPaymentGateway.SelectedValueAsInt();
+                // DO NOT ALLOW changing a payment gateway once it's already saved.
+                //txn.FinancialGatewayId = gpPaymentGateway.SelectedValueAsInt();
                 txn.TransactionCode = tbTransactionCode.Text;
                 txn.FinancialPaymentDetail.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
                 txn.FinancialPaymentDetail.CreditCardTypeValueId = ddlCreditCardType.SelectedValueAsInt();
@@ -417,6 +419,13 @@ namespace RockWeb.Blocks.Finance
                     }
                     txn.RefundDetails.RefundReasonValueId = ddlRefundReasonEdit.SelectedValueAsId();
                     txn.RefundDetails.RefundReasonSummary = tbRefundSummaryEdit.Text;
+                }
+                else
+                {
+                    if ( txn.RefundDetails != null )
+                    {
+                        rockContext.FinancialTransactionRefunds.Remove( txn.RefundDetails );
+                    }
                 }
 
                 if ( !Page.IsValid || !txn.IsValid )
@@ -1558,11 +1567,13 @@ namespace RockWeb.Blocks.Finance
 
                 if ( txn.Id == 0 )
                 {
+                    gpPaymentGateway.Enabled = true;
                     btnSaveThenAdd.Visible = true;
                     btnSaveThenViewBatch.Visible = !string.IsNullOrEmpty( LinkedPageUrl( "BatchDetailPage" ) ) && txn.BatchId.HasValue;
                 }
                 else
                 {
+                    gpPaymentGateway.Enabled = false;
                     btnSaveThenAdd.Visible = false;
                     btnSaveThenViewBatch.Visible = false;
                 }

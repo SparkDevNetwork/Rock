@@ -127,7 +127,9 @@ namespace RockWeb.Blocks.Event
                         {
                             registrant.GroupMemberId = groupMemberId.Value;
                         }
+                        
                         registrant.OnWaitList = false;
+                        registrant.Registration.LastPaymentReminderDateTime = RockDateTime.Now;
 
                         _rockContext.SaveChanges();
                     }

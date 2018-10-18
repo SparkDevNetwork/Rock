@@ -488,9 +488,12 @@
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Data\NoAttributeFilterExpression.cs" />
+    <Compile Include="Field\ICachedEntitiesFieldType.cs" />
     <Compile Include="Jobs\NoRetryAggregateException.cs" />
     <Compile Include="Jobs\NoRetryException.cs" />
+    <Compile Include="Jobs\PostV84DataMigrations.cs" />
     <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
+    <Compile Include="Plugin\HotFixes\056_MigrationRollupsForV8_4.cs" />
     <Compile Include="Plugin\HotFixes\055_MigrationRollupsForV8_3.cs" />
     <Compile Include="Plugin\HotFixes\054_MigrationRollupsForV8_2.cs" />
     <Compile Include="Plugin\HotFixes\053_DuplicateDataIntegrityReports.cs" />
@@ -2130,6 +2133,7 @@
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Web\Utilities\RockUpdateHelper.cs" />
     <Compile Include="Web\Utilities\WebControlHelper.cs" />
+    <Compile Include="Web\BrowserClient.cs" />
     <Compile Include="Workflow\ActionCategoryAttribute.cs" />
     <Compile Include="Workflow\ActionComponent.cs" />
     <Compile Include="Workflow\ActionContainer.cs" />
@@ -2320,6 +2324,9 @@
     </Content>
     <Content Include="Plugin\HotFixes\052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive.sql">
       <DependentUpon>052_MigrationRollupsForV8_1.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\056_MigrationRollupsForV8_4_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>056_MigrationRollupsForV8_4.cs</DependentUpon>
     </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />
