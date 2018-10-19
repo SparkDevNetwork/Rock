@@ -566,11 +566,11 @@ namespace Rock.Model
                 throw new Exception( "Specified relationshipRoleId is not a known relationships role" );
             }
 
-            int? knownRelationshipGroupId = groupMemberService.Queryable(true)
+            int? knownRelationshipGroupId = groupMemberService.Queryable( true )
                 .Where( m =>
                     m.PersonId == personId &&
                     m.GroupRoleId == ownerRoleId.Value )
-                .Select( m => m.GroupId )
+                .Select( m => ( int? ) m.GroupId )
                 .FirstOrDefault();
 
             // Create known relationship group if doesn't exist
