@@ -113,6 +113,11 @@
                             <div class="col-xs-5 col-sm-3 col-md-1 text-center"><small><i class='fa fa-bolt fa-fw text-warning'></i></small></div>
                             <div class="col-xs-7 col-sm-9 col-md-10">These fields are available where Lava is supported.</div>
                         </div>
+                        <hr />
+                        <div class="row">
+                            <div class="col-xs-5 col-sm-3 col-md-1 text-center"><small><i class='fa fa-ban fa-fw text-danger'></i></small></div>
+                            <div class="col-xs-7 col-sm-9 col-md-10">These methods or fields are obsolete and should not be used anymore.</div>
+                        </div>
             </asp:Panel>
 
 
