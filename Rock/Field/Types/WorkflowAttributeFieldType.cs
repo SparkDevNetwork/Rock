@@ -202,7 +202,7 @@ namespace Rock.Field.Types
                 return picker.SelectedValue;
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>
