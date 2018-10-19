@@ -14,7 +14,7 @@ Import-Module WebAdministration;
 
 # Try to figure out the app path
 $webRoot = Coalesce $env:APPLICATION_PATH "$env:SystemDrive\inetpub\www";
-if( -not Test-Path $webRoot) { throw "Could not reliably determine app root directory.";}
+if( -not (Test-Path $webRoot)) { throw "Could not reliably determine app root directory.";}
 
 # Let's go!
 Write-Output "Running post-deploy script";

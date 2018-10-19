@@ -1,6 +1,6 @@
 # --------------------------------------------------
 # ./before-deploy.ps1
-# This script is run by AppVeyor's deploy agent after the deploy
+# This script is run by AppVeyor's deploy agent before the deploy
 # --------------------------------------------------
 
 
@@ -14,7 +14,7 @@ Import-Module WebAdministration;
 
 # Try to figure out the app path
 $webRoot = Coalesce $env:APPLICATION_PATH "$env:SystemDrive\inetpub\www";
-if( -not Test-Path $webRoot) { throw "Could not reliably determine app root directory.";}
+if( -not (Test-Path $webRoot)) { throw "Could not reliably determine app root directory.";}
 
 # Let's go!
 Write-Output "Running before-deploy script";

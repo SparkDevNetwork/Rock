@@ -19,64 +19,68 @@
 
 			{% assign current_start_day = null %}
 			{% for eventItemOccurrence in EventItemOccurrences %}
-				
+
  				{% assign currentDate = 'Now' | Date:'yyyyMMdd' %}
  				{% assign eventItemDate = eventItemOccurrence.Date | Date:'yyyyMMdd' %}
  				{% if eventItemDate >= currentDate %}
 
-				  {% if Filter == '' or eventItemOccurrence.Name contains Filter %}
+				    {% if Filter == '' or eventItemOccurrence.Name contains Filter %}
 
-				  {% assign calendarIds = eventItemOccurrence.EventItemOccurrence.EventItem.EventCalendarItems | Select:'EventCalendarId' %}
-				  {% if CalendarFilter == null or calendarIds contains CalendarFilter %}
+				        {% assign calendarIds = eventItemOccurrence.EventItemOccurrence.EventItem.EventCalendarItems | Select:'EventCalendarId' %}
+				        {% if CalendarFilter == null or calendarIds contains CalendarFilter %}
 
-				  {% if EventFilter == null or EventFilter == eventItemOccurrence.EventItemOccurrence.EventItem.Id %}
+				            {% if EventFilter == null or EventFilter == eventItemOccurrence.EventItemOccurrence.EventItem.Id %}
 
-	 					{% if eventItemOccurrence.Date != current_start_day %}
-							{% if current_start_day != null %}
-								</div></div></div>
-							{% endif %}
-							<div class='day_group_row'>
-								<div class='row'>
-									<div class='event_start_date col-sm-3'>
-										<p class="day">{{ eventItemOccurrence.Date  | Date: 'ddd' }}</p>
-										<p class="date">{{ eventItemOccurrence.Date  | Date: 'MMM dd' }}</p>
-							    </div>
-									<div class='day_event_list col-sm-9'>
-	    				{% endif %}
+                                {% assign OccurrenceApproved = eventItemOccurrence.EventItemOccurrence | Attribute:'Approved' %}
+                                {% if OccurrenceApproved == 'Approved' %}
 
-						<div class='event'>
-							<div class='row'>
+            	 					{% if eventItemOccurrence.Date != current_start_day %}
+            							{% if current_start_day != null %}
+            								</div></div></div>
+            							{% endif %}
+            							<div class='day_group_row'>
+            								<div class='row'>
+            									<div class='event_start_date col-sm-3'>
+            										<p class="day">{{ eventItemOccurrence.Date  | Date: 'ddd' }}</p>
+            										<p class="date">{{ eventItemOccurrence.Date  | Date: 'MMM dd' }}</p>
+            							    </div>
+            									<div class='day_event_list col-sm-9'>
+            	    				{% endif %}
 
-								<div class="col-md-2">
-									<span class='event_info'>
-										{{ eventItemOccurrence.Time }}
-						      </span>
-								</div>
+            						<div class='event'>
+            							<div class='row'>
 
-								<div class="col-md-7">
-				    		  <span class="event-title">
-										{% if eventItemOccurrence.DetailPage != null %}
-											<a href="{{ eventItemOccurrence.DetailPage }}">{{ eventItemOccurrence.Name }}</a>
-										{% else %}
-											{% assign EventOccurrenceId = eventItemOccurrence.EventItemOccurrence.Id %}
-											<a href="{[ FormatLink url:'{{ DetailsPage }}' keys:'EventOccurrenceId' ]}">{{ eventItemOccurrence.Name }}</a>
-										{% endif %}
-									</span>
-								</div>
+            								<div class="col-md-2">
+            									<span class='event_info'>
+            										{{ eventItemOccurrence.Time }}
+            						      </span>
+            								</div>
 
-								<div class="col-md-3">
-									<span class="event-location">
-				  						{{ eventItemOccurrence.Location }}
-									</span>
-								</div>
+            								<div class="col-md-7">
+            				    		  <span class="event-title">
+            										{% if eventItemOccurrence.DetailPage != null %}
+            											<a href="{{ eventItemOccurrence.DetailPage }}">{{ eventItemOccurrence.Name }}</a>
+            										{% else %}
+            											{% assign EventOccurrenceId = eventItemOccurrence.EventItemOccurrence.Id %}
+            											<a href="{[ FormatLink url:'{{ DetailsPage }}' keys:'EventOccurrenceId' ]}">{{ eventItemOccurrence.Name }}</a>
+            										{% endif %}
+            									</span>
+            								</div>
 
-							</div>
-						</div>
-	
-						{% assign current_start_day = eventItemOccurrence.Date %}
-		    		
-					{% endif %}
-					{% endif %}
+            								<div class="col-md-3">
+            									<span class="event-location">
+            				  						{{ eventItemOccurrence.Location }}
+            									</span>
+            								</div>
+
+            							</div>
+            						</div>
+
+            						{% assign current_start_day = eventItemOccurrence.Date %}
+
+					            {% endif %}
+					        {% endif %}
+					    {% endif %}
 					{% endif %}
 
 				{% endif %}

@@ -1,37 +1,29 @@
-﻿{% assign count = Items | Size %}
-{% if count > 0 %}
-<div class="row">
-  <div class="col-xs-12">
-    <h3>
+﻿{% assign prevCampus = '' %}
 
-      {% assign campusName = Items | First %}
-      {{ campusName.Campus }}
+{% for item in Items %}
 
-    </h3>
-  </div>
-</div>
-<div class="row" style="padding-bottom: 10px;">
+    {% assign newCampus = item | Attribute:'Campus' %}
+    {% if newCampus != prevCampus %}
+        <br/>
+        <h3>{{ newCampus }}</h3>
+        <hr/>
+        {% assign prevCampus = newCampus %}
+    {% endif %}
 
-  {% for item in Items %}
-  <div class="col-sm-12 col-md-12">
-	  <div class="col-sm-12 col-md-12" style="background-color: #DCDCDC;">
-				<div class="col-md-5">
-					<h4>{{ item.Title}}<br /><small>{{item.EmploymentType}}</small></h4>
-				</div>
-				<div class="col-md-4" style="padding-top: 10px;">
-				  <p>
-					<a href="/GetFile.ashx?guid={{ item | Attribute: 'Description', 'RawValue' }}" class="btn btn-newpointe" target="_blank">View Job Description</a>
-				  </p>
-				</div>
-				<div class="col-md-3" style="padding-top: 10px;">
-				  <p>
-					<a href="/employmentapplication?position={{ campusName.Campus }} - {{ item.Title}}" class="btn btn-newpointe" target="_blank">Apply Here</a>
-				  </p>
-				</div>
-			 </div> 
-		  </div>
-		  
-  {% endfor %}
+    <div class="row">
+	    <div class="col-md-5">
+			<h5>{{ item.Title }}<br /><small>{{ item | Attribute:'EmploymentType' }}</small></h5>
+		</div>
+		<div class="col-md-4" style="padding-top: 10px;">
+		    <p>
+			    <a href="/GetFile.ashx?guid={{ item | Attribute: 'Description','RawValue' }}" class="btn btn-primary" target="_blank">View Job Description</a>
+			</p>
+		</div>
+		<div class="col-md-3" style="padding-top: 10px;">
+		    <p>
+				<a href="/employmentapplication?position={{ newCampus }} - {{ item.Title}}" class="btn btn-primary" target="_blank">Apply Here</a>
+		    </p>
+		</div>
+    </div>
 
-</div>  
-{% endif %}
+ {% endfor %}

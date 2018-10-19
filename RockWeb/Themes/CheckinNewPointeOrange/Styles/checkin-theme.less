@@ -1,178 +1,54 @@
 /*
      
-     Rock Park Check-in Theme
-     Crafted by: Spark Development Network
+     NewPointe Orange Check-in Theme
+     Crafted by: NewPointe Community Church
 
  */
 
 //
 // Imports
 // --------------------------------------------------
-
 @import "../../../Styles/FontAwesome/font-awesome.less";
-@import "../../../Styles/Bootstrap/bootstrap.less"; 
+@import "../../../Styles/Bootstrap/bootstrap.less";
 @import "../../../Styles/_checkin-core.less";
 @import "../../../Styles/_modal.less";
+@import "../../../Styles/_helpers.less";
 
-//
-// Variables
-// --------------------------------------------------
-
-// Font Variables
-@font-family-base:     'Gotham','OpenSans', Helvetica, Arial, sans-serif;
-@font-weight-light:     300;
-@font-weight-bold:      700;
-@font-weight-semibold:  600;
-
-@bg-color:      #8bc540;
-@text-color:    #fff;
-
-@modal-body-bg: @bg-color;
-@modal-body-text-color: @text-color;
-@modal-header-bg: @bg-color;
-@modal-header-text-color: @text-color;
-@modal-footer-bg: @bg-color;
-@modal-footer-text-color: @text-color;
-
-@header-text-color:     #fff;
-@header-font-weight:    @font-weight-bold;
-
-@subheader-text-color:      #efefef;
-@subheader-font-weight:     @font-weight-light;
-
-// Button Styles
-@btn-default-bg: transparent;
-@btn-default-color:     #fff;
-@btn-default-border:   #fff;
-@checkin-button-text-weight:    @font-weight-bold;
-@checkin-button-alttext-weight: @font-weight-light;
-
-@btn-primary-color:    #fff;
-@btn-primary-border:   #fff;
-@btn-primary-bg:    transparent;
-
-@btn-disabled-color: @btn-primary-border;
-@btn-disabled-bg: darken(@btn-primary-bg, 20%);
-
-// scroll bar
-@scrollbar-bg: #000;
-@scrollbar-border: #adaeaf;
-
-// Fonts
-// -------------------------
-
-// regular (weight 'normal' aka 400)
-@font-face {
-    font-family: 'OpenSans';
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
-    font-weight: 400;
-    font-style: normal;
-}
-
-// light (weight 300)
-@font-face {
-    font-family: 'OpenSans';
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.ttf') format('truetype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
-    font-weight: 300;
-    font-style: normal;
-}
-
-// semi-bold (weight 600)
-@font-face {
-    font-family: 'OpenSans';
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.ttf') format('truetype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
-    font-weight: 600;
-    font-style: normal;
-}
-
-// bold (weight 700)
-@font-face {
-    font-family: 'OpenSans';
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.ttf') format('truetype'),
-         url('s../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
-    font-weight: 700;
-    font-style: normal;
-}
-
-@font-face{ 
-    font-family: 'Gotham';
-    src: url('../../../Assets/Fonts/Gotham/gotham-light-webfont.eot');
-    src: url('../../../Assets/Fonts/Gotham/gotham-light-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../Assets/Fonts/Gotham/gotham-light-webfont.woff') format('woff'),
-         url('../../../Assets/Fonts/Gotham/gotham-light-webfont.ttf') format('truetype'),
-         url('../../../Assets/Fonts/Gotham/gotham-light-webfont.svg#webfont') format('svg');
-    font-weight: 300;
-    font-style: normal;
-}
-
-@font-face{ 
-    font-family: 'Gotham';
-    src: url('../../../Assets/Fonts/Gotham/gotham-book-webfont.eot');
-    src: url('../../../Assets/Fonts/Gotham/gotham-book-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../Assets/Fonts/Gotham/gotham-book-webfont.woff') format('woff'),
-         url('../../../Assets/Fonts/Gotham/gotham-book-webfont.ttf') format('truetype'),
-         url('../../../Assets/Fonts/Gotham/gotham-book-webfont.svg#webfont') format('svg');
-    font-weight: 400;
-    font-style: normal;
-}
-
-@font-face{ 
-    font-family: 'Gotham';
-    src: url('../../../Assets/Fonts/Gotham/gotham-bold-webfont.eot');
-    src: url('../../../Assets/Fonts/Gotham/gotham-bold-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../Assets/Fonts/Gotham/gotham-bold-webfont.woff') format('woff'),
-         url('../../../Assets/Fonts/Gotham/gotham-bold-webfont.ttf') format('truetype'),
-         url('../../../Assets/Fonts/Gotham/gotham-bold-webfont.svg#webfont') format('svg');
-    font-weight: 600;
-    font-style: normal;
-}
-
-@font-face{ 
-    font-family: 'Gotham';
-    src: url('../../../Assets/Fonts/Gotham/gotham-black-webfont.eot');
-    src: url('../../../Assets/Fonts/Gotham/gotham-black-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../Assets/Fonts/Gotham/gotham-black-webfont.woff') format('woff'),
-         url('../../../Assets/Fonts/Gotham/gotham-black-webfont.ttf') format('truetype'),
-         url('../../../Assets/Fonts/Gotham/gotham-black-webfont.svg#webfont') format('svg');
-    font-weight: 700;
-    font-style: normal;
-}
+@import "_variables.less";
+@import "_variable-overrides.less";
 
 
 //
 // Mix-ins
 // --------------------------------------------------
-.checkinBackground () {
-    background: @bg-color url('../Assets/Images/background.jpg') top right no-repeat fixed;
-}
-
-.checkinBackgroundRetina()
-{
-    background-image: url('../Assets/Images/background@2x.jpg');
-    background-size: 1348px 1024px; // should be 1/2 of the actual
-}
-
-
+.checkinBackground () { }
+.checkinBackgroundRetina() { }
 
 
 //
 // Custom Overrides
 // --------------------------------------------------
+
+html {
+  background: linear-gradient(#f7941d, #f67a22);
+}
+
+body {
+  -ms-touch-action: none !important;
+  touch-action: none; /* Disable any special actions on tap/touch */
+  -ms-content-zooming: none; /* Disables zooming */
+
+  background: repeat top left;
+  background-image: url('../Assets/Images/background.svg');
+
+  animation: fadein 0.4s;
+}
+
+@keyframes fadein {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 
 .checkin-count h3,
 .checkin-count li {
@@ -187,10 +63,6 @@
 .checkin-header h1 {
     text-transform: uppercase;
     letter-spacing: 0px;
-}
-
-.checkin-body {
-    margin-top: 250px;
 }
 
 .checkin-search-actions {
@@ -236,18 +108,4 @@ input.checkin-phone-entry {
     margin: 3px;
 }
 
-#npcc-logo {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    opacity: .8;
-}
-
-#npcc-scroll {
-  position: absolute;
-  bottom: 39px;
-  right: 425px;
-  font-size: 1.2em;
-  font-weight: 100;
-  color: #FFF;
-  }
+@import "_css-overrides.less";
