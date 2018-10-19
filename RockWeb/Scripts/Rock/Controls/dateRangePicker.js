@@ -27,7 +27,7 @@
             // if required, then make sure that the date range has a start and/or end date (can't both be blank)
             if (lowerValue.dates.length == 0 && upperValue.dates.length == 0) {
                 isValid = false;
-                validator.errormessage = itemLabelText + " is Required";
+                validator.errormessage = itemLabelText + " is required";
             }
         }
 
