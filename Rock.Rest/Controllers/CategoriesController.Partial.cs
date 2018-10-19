@@ -397,7 +397,7 @@ namespace Rock.Rest.Controllers
                     if ( excludeInactiveItems )
                     {
                         MemberExpression isActivePropertyExpression = Expression.Property( paramExpression, "IsActive" );
-                        ConstantExpression isActiveConstantExpression = Expression.Constant( true );
+                        Expression isActiveConstantExpression = Expression.Convert( Expression.Constant( true ), isActivePropertyExpression.Type );
                         BinaryExpression isActiveExpression = Expression.Equal( isActivePropertyExpression, isActiveConstantExpression );
                         whereExpression = Expression.And( whereExpression, isActiveExpression );
                     }
