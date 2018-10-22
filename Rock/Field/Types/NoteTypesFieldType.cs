@@ -68,7 +68,8 @@ namespace Rock.Field.Types
                 formattedValue = names.AsDelimited( ", " );
             }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            // The parent is CategoryFieldType. CategoryFieldType's FormatValue expects a list of category guids, so we should not call the base FormatValue.
+            return formattedValue;
         }
 
         #endregion
