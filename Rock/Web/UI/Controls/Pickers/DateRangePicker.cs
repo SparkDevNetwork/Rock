@@ -263,40 +263,37 @@ namespace Rock.Web.UI.Controls
             dateFormat = dateFormat.Replace( "d", "dd" ).Replace( "dddd", "dd" );
 
             // a little javascript to make the daterange picker behave similar to the bootstrap-datepicker demo site's date range picker
-            var scriptFormat = @"
+            var script = $@"
 $(function() {{
-    $('#{3}').datepicker({{
-        format: '{2}',
+    $('#{this.ClientID}').datepicker({{
+        format: '{dateFormat}',
         todayHighlight: true,
         autoclose: true,
-        inputs: $('#{3} .form-control')
+        inputs: $('#{this.ClientID} .form-control')
     }});
 }});
 
 // if the guest clicks the addon select all the text in the input
-$('#{3}').find('.input-group-lower .input-group-addon').on('click', function () {{
+$('#{this.ClientID}').find('.input-group-lower .input-group-addon').on('click', function () {{
     $(this).siblings('.form-control').select();
 }});
 
-$('#{4}').on('changeDate', function (ev) {{
+$('#{_tbLowerValue.ClientID}').on('changeDate', function (ev) {{
     // set focus to the end date
-    $('#{5}')[0].focus();
+    $('#{_tbUpperValue.ClientID}')[0].focus();
 }});
 
 // if the guest clicks the addon select all the text in the input
-$('#{3}').find('.input-group-upper .input-group-addon').on('click', function () {{
+$('#{this.ClientID}').find('.input-group-upper .input-group-addon').on('click', function () {{
     $(this).siblings('.form-control').select();
 }});
 
 // if value changes then re-validate the custom validator.
-$('#{4},#{5}').on('change', function (ev) {{
-    ValidatorValidate({6});
+$('#{_tbLowerValue.ClientID},#{_tbUpperValue.ClientID}').on('change', function (ev) {{
+    ValidatorValidate({CustomValidator.ClientID});
 }});
 ";
-            string lowerSelector = string.Format( "{0} .input-group-lower.date", this.ClientID );
-            string upperSelector = string.Format( "{0} .input-group-upper.date", this.ClientID );
 
-            var script = string.Format( scriptFormat, lowerSelector, upperSelector, dateFormat, this.ClientID, _tbLowerValue.ClientID, _tbUpperValue.ClientID, CustomValidator.ClientID );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "daterange_picker-" + this.ClientID, script, true );
         }
 
@@ -480,7 +477,11 @@ $('#{4},#{5}').on('change', function (ev) {{
         /// </value>
         public string ValidationGroup
         {
-            get { return ViewState["ValidationGroup"] as string; }
+            get
+            {
+                return ViewState["ValidationGroup"] as string;
+            }
+
             set
             {
                 ViewState["ValidationGroup"] = value;
@@ -509,11 +510,13 @@ $('#{4},#{5}').on('change', function (ev) {{
                 else
                 {
                     // serialize the date using ISO 8601 standard
-                    return string.Format( "{0},{1}",
+                    return string.Format(
+                        "{0},{1}",
                         this.LowerValue.HasValue ? this.LowerValue.Value.ToString( "o" ) : null,
                         this.UpperValue.HasValue ? this.UpperValue.Value.ToString( "o" ) : null );
                 }
             }
+
             set
             {
                 if ( value != null )
