@@ -120,7 +120,7 @@ namespace Rock.UniversalSearch.Crawler
             _urlQueue.Enqueue( _site.IndexStartingLocation );
             while ( _urlQueue.Any() )
             {
-                string url = _urlQueue.Dequeue();
+                string url = _urlQueue.Dequeue().Replace( "?", "\\?" );
                 CrawlPage( url );
             }
 
@@ -507,11 +507,6 @@ namespace Rock.UniversalSearch.Crawler
         private bool IsValidUrl(string url )
         {
             if( url.Length > 2000 )
-            {
-                return false;
-            }
-
-            if( url.Split('?').Length > 1 )
             {
                 return false;
             }
