@@ -16,6 +16,7 @@
 //
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Web.UI.Adapters
 {
@@ -64,6 +65,41 @@ namespace Rock.Web.UI.Adapters
         {
             // only one input can be selected at a time, so don't append itemIndex
             return $"{listControl.UniqueID}";
+        }
+
+        /// <summary>
+        /// Gets the label class.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="listItem">The list item.</param>
+        /// <returns></returns>
+        public override string GetLabelClass( ListControl listControl, ListItem listItem )
+        {
+            var buttonGroup = ( listControl as ButtonGroup );
+            if ( buttonGroup != null )
+            {
+                string labelClass = string.Empty;
+                if ( listItem.Selected )
+                {
+                    labelClass += buttonGroup.SelectedItemClass + " " + buttonGroup.ItemHookClass;
+                }
+                else
+                {
+                    labelClass += buttonGroup.UnselectedItemClass + " " + buttonGroup.ItemHookClass;
+                }
+
+                if ( !listControl.Enabled )
+                {
+                    labelClass += " aspNetDisabled";
+                }
+
+                return labelClass;
+            }
+            else
+            {
+                return base.GetLabelClass( listControl, listItem );
+            }
+
         }
 
         /// <summary>
