@@ -11,7 +11,11 @@ Sys.Application.add_load(function () {
         $(function() {
             var navSelector = '#toc';
             var $myNav = $(navSelector);
-            Toc.init($myNav);
+            var $exampleHeaders = $('.r-example-nocodepreview,.r-example').find('h1,h2,h3,h4');
+            Toc.init({
+                $nav: $myNav,
+                $scope: $('h1,h2,h3,h4').not($exampleHeaders)
+            });
             $('body').scrollspy({
                 target: '#toc'
             });
@@ -40,7 +44,10 @@ Sys.Application.add_load(function () {
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title" data-toc-skip><i class="fa fa-magic"></i> Control Gallery</h1>
+                <h1 class="panel-title" data-toc-skip="1">
+                    <i class="fa fa-magic"></i>
+                    Control Gallery
+                </h1>
             </div>
             <div class="panel-body">
             <div class="row">
