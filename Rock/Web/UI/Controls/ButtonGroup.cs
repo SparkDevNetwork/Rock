@@ -247,7 +247,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ( ViewState["SelectedItemClass"] as string ?? "btn btn-default" );
+                return ( ViewState["UnselectedItemClass"] as string ?? "btn btn-default" );
             }
 
             set
