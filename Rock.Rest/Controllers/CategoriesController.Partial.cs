@@ -68,7 +68,7 @@ namespace Rock.Rest.Controllers
             bool includeInactiveItems = true,
             string itemFilterPropertyName = null,
             string itemFilterPropertyValue = null,
-            bool lazyLoad = true)
+            bool lazyLoad = true )
         {
             Person currentPerson = GetPerson();
 
@@ -196,39 +196,39 @@ namespace Rock.Rest.Controllers
                         }
                     }
                 }
+            }
 
-                if ( lazyLoad )
+            if ( lazyLoad )
+            {
+                // try to figure out which items have viewable children in the existing list and set them appropriately
+                foreach ( var categoryItemListItem in categoryItemList )
                 {
-                    // try to figure out which items have viewable children in the existing list and set them appropriately
-                    foreach ( var categoryItemListItem in categoryItemList )
+                    if ( categoryItemListItem.IsCategory )
                     {
-                        if ( categoryItemListItem.IsCategory )
+                        int parentId = int.Parse( categoryItemListItem.Id );
+
+                        foreach ( var childCategory in Get().Where( c => c.ParentCategoryId == parentId ) )
                         {
-                            int parentId = int.Parse( categoryItemListItem.Id );
-
-                            foreach ( var childCategory in Get().Where( c => c.ParentCategoryId == parentId ) )
+                            if ( childCategory.IsAuthorized( Authorization.VIEW, currentPerson ) )
                             {
-                                if ( childCategory.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                                {
-                                    categoryItemListItem.HasChildren = true;
-                                    break;
-                                }
+                                categoryItemListItem.HasChildren = true;
+                                break;
                             }
+                        }
 
-                            if ( !categoryItemListItem.HasChildren )
+                        if ( !categoryItemListItem.HasChildren )
+                        {
+                            if ( getCategorizedItems )
                             {
-                                if ( getCategorizedItems )
+                                var childItems = GetCategorizedItems( serviceInstance, parentId, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
+                                if ( childItems != null )
                                 {
-                                    var childItems = GetCategorizedItems( serviceInstance, parentId, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
-                                    if ( childItems != null )
+                                    foreach ( var categorizedItem in childItems )
                                     {
-                                        foreach ( var categorizedItem in childItems )
+                                        if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
                                         {
-                                            if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                                            {
-                                                categoryItemListItem.HasChildren = true;
-                                                break;
-                                            }
+                                            categoryItemListItem.HasChildren = true;
+                                            break;
                                         }
                                     }
                                 }
@@ -236,20 +236,21 @@ namespace Rock.Rest.Controllers
                         }
                     }
                 }
-                else
+            }
+            else
+            {
+                foreach ( var item in categoryItemList )
                 {
-                    foreach ( var item in categoryItemList )
+                    int parentId = int.Parse( item.Id );
+                    if ( item.Children == null )
                     {
-                        int parentId = int.Parse( item.Id );
-                        if ( item.Children == null )
-                        {
-                            item.Children = new List<Web.UI.Controls.TreeViewItem>();
-                        }
-
-                        GetAllDecendents( item, currentPerson, getCategorizedItems, defaultIconCssClass, hasActiveFlag, serviceInstance, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
+                        item.Children = new List<Web.UI.Controls.TreeViewItem>();
                     }
+
+                    GetAllDecendents( item, currentPerson, getCategorizedItems, defaultIconCssClass, hasActiveFlag, serviceInstance, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
                 }
             }
+
 
             if ( !showCategoriesThatHaveNoChildren )
             {
@@ -295,7 +296,7 @@ namespace Rock.Rest.Controllers
                             IconCssClass = childCategory.GetPropertyValue( "IconCssClass" ) as string ?? defaultIconCssClass,
                             IconSmallUrl = string.Empty
                         };
-                        
+
                         if ( hasActiveFlag )
                         {
                             IHasActiveFlag activatedItem = childCategory as IHasActiveFlag;
@@ -402,13 +403,13 @@ namespace Rock.Rest.Controllers
                         whereExpression = Expression.And( whereExpression, isActiveExpression );
                     }
 
-                    if ( !string.IsNullOrEmpty(itemFilterPropertyName) )
+                    if ( !string.IsNullOrEmpty( itemFilterPropertyName ) )
                     {
                         MemberExpression itemFilterPropertyNameExpression = Expression.Property( paramExpression, itemFilterPropertyName );
                         ConstantExpression itemFilterPropertyValueExpression;
                         if ( itemFilterPropertyNameExpression.Type == typeof( int? ) || itemFilterPropertyNameExpression.Type == typeof( int ) )
                         {
-                            itemFilterPropertyValueExpression = Expression.Constant( itemFilterPropertyValue.AsIntegerOrNull(), typeof(int?) );
+                            itemFilterPropertyValueExpression = Expression.Constant( itemFilterPropertyValue.AsIntegerOrNull(), typeof( int? ) );
                         }
                         else if ( itemFilterPropertyNameExpression.Type == typeof( Guid? ) || itemFilterPropertyNameExpression.Type == typeof( Guid ) )
                         {
@@ -418,7 +419,7 @@ namespace Rock.Rest.Controllers
                         {
                             itemFilterPropertyValueExpression = Expression.Constant( itemFilterPropertyValue );
                         }
-                        
+
                         BinaryExpression binaryExpression = Expression.Equal( itemFilterPropertyNameExpression, itemFilterPropertyValueExpression );
                         whereExpression = Expression.And( whereExpression, binaryExpression );
                     }
@@ -459,7 +460,7 @@ namespace Rock.Rest.Controllers
         /// </returns>
         public override string ToString()
         {
-            if (IsCategory)
+            if ( IsCategory )
             {
                 return "Category:" + this.Name;
             }
