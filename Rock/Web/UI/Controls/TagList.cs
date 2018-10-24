@@ -187,7 +187,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tagsinput.js" ) );
+            RockPage.AddScriptLink( Page, "~/Scripts/jquery.tagsinput.js" );
         }
 
         /// <summary>

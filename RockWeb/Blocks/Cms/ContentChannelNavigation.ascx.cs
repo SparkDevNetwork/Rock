@@ -111,7 +111,7 @@ namespace RockWeb.Blocks.Cms
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.visible.min.js" ) );
+            RockPage.AddScriptLink( "~/Scripts/jquery.visible.min.js" );
 
             string eventTarget = this.Page.Request.Params["__EVENTTARGET"] ?? string.Empty;
 
