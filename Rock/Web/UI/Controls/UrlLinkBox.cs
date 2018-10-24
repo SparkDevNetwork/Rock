@@ -29,7 +29,9 @@ namespace Rock.Web.UI.Controls
     public class UrlLinkBox : RockTextBox
     {
         private RegularExpressionValidator _regexValidator;
-        private readonly string _regex = @"http(s)?://([\w-]+\.)+[\w-]+(/[\w- ./?%&=,]*)?";
+        // https://www.regextester.com/1965
+        // Modified from link above to support urls like "http://localhost:6229/Person/1/Edit" (Url does not have a period)
+        private readonly string _regex = @"^(http[s]?:\/\/)?[^\s([" + '"' + @" <,>]*\.?[^\s[" + '"' + @",><]*$";
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
