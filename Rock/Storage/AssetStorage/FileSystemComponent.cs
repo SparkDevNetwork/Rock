@@ -157,6 +157,8 @@ namespace Rock.Storage.AssetStorage
                 throw;
             }
 
+            DeleteImageThumbnail( assetStorageProvider, asset );
+
             return true;
         }
 
@@ -166,7 +168,7 @@ namespace Rock.Storage.AssetStorage
         /// <param name="assetStorageProvider"></param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset )
+        public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset, bool createThumbnail )
         {
             try
             {
@@ -176,7 +178,7 @@ namespace Rock.Storage.AssetStorage
                 string physicalFile = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
                 FileInfo fileInfo = new FileInfo( physicalFile );
 
-                var objAsset = CreateAssetFromFileInfo( fileInfo );
+                var objAsset = CreateAssetFromFileInfo( assetStorageProvider, fileInfo, createThumbnail );
                 FileStream fs = new FileStream( physicalFile, FileMode.Open );
                 objAsset.AssetStream = fs;
 
@@ -218,7 +220,7 @@ namespace Rock.Storage.AssetStorage
             asset.Key = FixKey( asset, rootFolder );
             string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
 
-            return GetListOfObjects( physicalFolder, SearchOption.TopDirectoryOnly, AssetType.File );
+            return GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.TopDirectoryOnly, AssetType.File );
         }
 
         /// <summary>
@@ -249,7 +251,7 @@ namespace Rock.Storage.AssetStorage
             asset.Key = FixKey( asset, rootFolder );
             string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
 
-            return GetListOfObjects( physicalFolder, SearchOption.TopDirectoryOnly, AssetType.Folder );
+            return GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.TopDirectoryOnly, AssetType.Folder );
         }
 
         /// <summary>
@@ -284,8 +286,8 @@ namespace Rock.Storage.AssetStorage
 
             string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
 
-            assets.AddRange( GetListOfObjects( physicalFolder, SearchOption.AllDirectories, AssetType.Folder ) );
-            assets.AddRange( GetListOfObjects( physicalFolder, SearchOption.AllDirectories, AssetType.File ) );
+            assets.AddRange( GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.AllDirectories, AssetType.Folder ) );
+            assets.AddRange( GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.AllDirectories, AssetType.File ) );
             return assets.OrderBy( a => a.Key ).ToList();
         }
 
@@ -308,8 +310,8 @@ namespace Rock.Storage.AssetStorage
 
             string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
 
-            assets.AddRange( GetListOfObjects( physicalFolder, SearchOption.TopDirectoryOnly, AssetType.Folder ) );
-            assets.AddRange( GetListOfObjects( physicalFolder, SearchOption.TopDirectoryOnly, AssetType.File ) );
+            assets.AddRange( GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.TopDirectoryOnly, AssetType.Folder ) );
+            assets.AddRange( GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.TopDirectoryOnly, AssetType.File ) );
             return assets.OrderBy( a => a.Key ).ToList();
         }
 
@@ -330,8 +332,10 @@ namespace Rock.Storage.AssetStorage
                 string filePath = GetPathFromKey( asset.Key );
                 string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( filePath );
                 string physicalFile = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
+                string newPhysicalFile = Path.Combine( physicalFolder, newName );
 
-                File.Move( physicalFile, Path.Combine( physicalFolder, newName ) );
+                File.Move( physicalFile, newPhysicalFile );
+                DeleteImageThumbnail( assetStorageProvider, asset );
 
                 return true;
             }
@@ -374,6 +378,45 @@ namespace Rock.Storage.AssetStorage
             }
         }
 
+        public override string GetThumbnail( AssetStorageProvider assetStorageProvider, string assetKey, DateTime? lastModifiedDateTime )
+        {
+            string name = GetNameFromKey( assetKey );
+            string path = GetPathFromKey( assetKey ).TrimStart( '~', '/' );
+
+            // Let's not create thumbnails of thumbnails
+            if ( path.Contains( ThumbnailRootPath ) )
+            {
+                return assetKey;
+            }
+
+            string mimeType = System.Web.MimeMapping.GetMimeMapping( name );
+            if ( !mimeType.StartsWith( "image/" ) )
+            {
+                return GetFileTypeIcon( assetKey );
+            }
+
+            // check if thumbnail exists
+            string thumbDir = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{path}";
+            Directory.CreateDirectory( FileSystemCompontHttpContext.Server.MapPath( thumbDir ) );
+
+            string virtualThumbPath = Path.Combine( thumbDir, name );
+            string physicalThumbPath = FileSystemCompontHttpContext.Server.MapPath( virtualThumbPath );
+
+            if ( File.Exists( physicalThumbPath ) )
+            {
+                var thumbLastModDate = File.GetLastWriteTimeUtc( physicalThumbPath );
+                if ( lastModifiedDateTime <= thumbLastModDate )
+                {
+                    // thumbnail is still good so just return the virtual file path.
+                    return virtualThumbPath;
+                }
+            }
+
+            CreateImageThumbnail( assetStorageProvider, new Asset { Name = name, Key = assetKey, Type = AssetType.File }, physicalThumbPath, true );
+
+            return virtualThumbPath;
+        }
+
         #endregion Abstract Methods
 
         #region Private Methods
@@ -397,7 +440,7 @@ namespace Rock.Storage.AssetStorage
         /// <param name="searchOption">The search option.</param>
         /// <param name="assetType">Type of the asset.</param>
         /// <returns></returns>
-        private List<Asset> GetListOfObjects( string directoryName, SearchOption searchOption, AssetType assetType )
+        private List<Asset> GetListOfObjects( AssetStorageProvider assetStorageProvider, string directoryName, SearchOption searchOption, AssetType assetType )
         {
             List<Asset> assets = new List<Asset>();
             var baseDirectory = new DirectoryInfo( directoryName );
@@ -418,7 +461,7 @@ namespace Rock.Storage.AssetStorage
 
                 foreach( var fileInfo in fileInfos )
                 {
-                    var asset = CreateAssetFromFileInfo( fileInfo );
+                    var asset = CreateAssetFromFileInfo( assetStorageProvider, fileInfo, true );
                     assets.Add( asset );
                 }
             }
@@ -532,7 +575,7 @@ namespace Rock.Storage.AssetStorage
         /// </summary>
         /// <param name="fileInfo">The file information.</param>
         /// <returns></returns>
-        private Asset CreateAssetFromFileInfo( FileInfo fileInfo )
+        private Asset CreateAssetFromFileInfo( AssetStorageProvider assetStorageProvider, FileInfo fileInfo, bool createThumbnail )
         {
             string relativePath = ReverseMapPath( fileInfo.FullName );
 
@@ -542,7 +585,7 @@ namespace Rock.Storage.AssetStorage
                 Key = relativePath,
                 Uri = $"{FileSystemCompontHttpContext.Request.Url.GetLeftPart( UriPartial.Authority )}/{relativePath.TrimStart( '~' )}",
                 Type = AssetType.File,
-                IconPath = GetFileTypeIcon( fileInfo.Name ),
+                IconPath = createThumbnail ? GetThumbnail( assetStorageProvider, relativePath, fileInfo.LastWriteTime ) : string.Empty,
                 FileSize = fileInfo.Length,
                 LastModifiedDateTime = fileInfo.LastWriteTime,
                 Description = string.Empty
@@ -588,7 +631,5 @@ namespace Rock.Storage.AssetStorage
         }
 
         #endregion Private Methods
-
-
     }
 }

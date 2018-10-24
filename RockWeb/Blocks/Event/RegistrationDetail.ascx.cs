@@ -2281,11 +2281,13 @@ namespace RockWeb.Blocks.Event
                 {
                     lbAddPayment.Visible = true;
                     lbProcessPayment.Visible = RegistrationTemplateState.FinancialGateway != null;
+                    nbNoAssociatedPerson.Visible = false;
                 }
                 else
                 {
                     lbAddPayment.Visible = false;
                     lbProcessPayment.Visible = false;
+                    nbNoAssociatedPerson.Visible = registration.BalanceDue > 0.0m ? true : false;
                 }
             }
             else

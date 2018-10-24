@@ -663,6 +663,11 @@ namespace RockWeb.Blocks.Cms
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .ToList()
                 .ForEach( a => ChannelAttributesState.Add( a ) );
+            
+            // Set order 
+            int newOrder = 0;
+            ChannelAttributesState.ForEach( a => a.Order = newOrder++ );
+                
             BindChannelAttributesGrid();
 
             attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId, true ).AsQueryable()
@@ -671,6 +676,11 @@ namespace RockWeb.Blocks.Cms
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .ToList()
                 .ForEach( a => ItemAttributesState.Add( a ) );
+                
+            // Set order 
+            newOrder = 0;
+            ItemAttributesState.ForEach( a => a.Order = newOrder++ );
+            
             BindItemAttributesGrid();
         }
 

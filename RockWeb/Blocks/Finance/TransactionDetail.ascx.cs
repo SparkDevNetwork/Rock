@@ -1221,7 +1221,11 @@ namespace RockWeb.Blocks.Finance
 
                 if ( txn.FinancialGateway != null && txn.FinancialGateway.EntityType != null )
                 {
-                    detailsLeft.Add( "Payment Gateway", Rock.Financial.GatewayContainer.GetComponentName( txn.FinancialGateway.EntityType.Name ) );
+                    string fgName = txn.FinancialGateway.Name.IsNotNullOrWhiteSpace()
+                        ? txn.FinancialGateway.Name
+                        : Rock.Financial.GatewayContainer.GetComponentName( txn.FinancialGateway.EntityType.Name );
+
+                    detailsLeft.Add( "Payment Gateway", fgName );
                 }
 
                 detailsLeft.Add( "Foreign Key", txn.ForeignKey );
