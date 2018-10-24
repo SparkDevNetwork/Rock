@@ -1,9 +1,9 @@
 {%- if Page.DisplayChildPages == 'true' and Page.Pages != empty -%}
     <ul class="nav nav-stacked navbar-side">
-        <li class="visible-xs-block">
+        <li class="navbar-logo">
         {%- if CurrentPage.Layout.Site.SiteLogoBinaryFileId != null -%}
             <a href="{{ '~' | ResolveRockUrl }}" title="Rock RMS" class="navbar-brand-side has-logo">
-                <img src="/GetImage.ashx?id={{ CurrentPage.Layout.Site.SiteLogoBinaryFileId }}&width=42&height=42" alt="{{ 'Global' | Attribute:'OrganizationName' }}" class="logo">
+                <img src="{{ '~' | ResolveRockUrl }}GetImage.ashx?id={{ CurrentPage.Layout.Site.SiteLogoBinaryFileId }}&w=48&h=48" alt="{{ 'Global' | Attribute:'OrganizationName' }}" class="logo">
             </a>
         {%- else -%}
             <a href="{{ '~' | ResolveRockUrl }}" title="Rock RMS" class="navbar-brand-side no-logo"></a>
@@ -11,9 +11,9 @@
         </li>
 		{%- for childPage in Page.Pages -%}
             {%- if childPage.IsParentOfCurrent == 'true' -%}
-				<li class="current">
+				<li class="current {% if childPage.DisplayChildPages == 'true' and childPage.Pages != empty %}has-children{% endif %}">
 			{%- else -%}
-				<li>
+				<li {% if childPage.DisplayChildPages == 'true' and childPage.Pages != empty %}class="has-children"{% endif %}>
 			{%- endif -%}
 				<i class="{{ childPage.IconCssClass }}"></i>
 
@@ -36,7 +36,6 @@
                         {%- endfor -%}
                     </ul>
                 {%- endif -%}
-
             </li>
         {%- endfor -%}
     </ul>

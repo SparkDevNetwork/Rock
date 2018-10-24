@@ -36,8 +36,8 @@ namespace RockWeb.Blocks.Cms
 {
     [DisplayName( "Page Menu" )]
     [Category( "CMS" )]
-    [Description( "Renders a page menu based on a root page and liquid template." )]
-    [CodeEditorField( "Template", "The liquid template to use for rendering. This template would typically be in the theme's \"Assets/Lava\" folder.",
+    [Description( "Renders a page menu based on a root page and lava template." )]
+    [CodeEditorField( "Template", "The lava template to use for rendering. This template would typically be in the theme's \"Assets/Lava\" folder.",
         CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, @"{% include '~~/Assets/Lava/PageNav.lava' %}" )]
     [LinkedPage( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
     [TextField( "Number of Levels", "Number of parent-child page levels to display. Default 3.", false, "3" )]
@@ -142,6 +142,7 @@ namespace RockWeb.Blocks.Cms
                 pageProperties.Add( "Context", contextObjects );
                 pageProperties.Add( "Site", GetSiteProperties( RockPage.Site ) );
                 pageProperties.Add( "IncludePageList", GetIncludePageList() );
+                pageProperties.Add( "CurrentPage", this.PageCache );
 
                 using ( var rockContext = new RockContext() )
                 {
