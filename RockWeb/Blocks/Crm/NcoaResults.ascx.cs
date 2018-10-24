@@ -500,6 +500,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             var filteredRecords = query.ToList();
+            lTotal.Text = string.Format( "Records: {0}", filteredRecords.Count() );
 
             #region Grouping rows
 
