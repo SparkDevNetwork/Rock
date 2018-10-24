@@ -406,7 +406,7 @@ namespace RockWeb.Blocks.Cms
 
 //                if ( GetAttributeValue( "QuickEdit" ) == "AIREDIT" )
 //                {
-//                    RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/summernote/summernote.min.js" ), true );
+//                    RockPage.AddScriptLink( Page, "~/Scripts/summernote/summernote.min.js", true );
 
 //                    script = string.Format( @"
 //    Sys.Application.add_load( function () {{
