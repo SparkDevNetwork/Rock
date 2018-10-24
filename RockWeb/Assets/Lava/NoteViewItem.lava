@@ -154,8 +154,8 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                     <relative-time datetime="{{ note.EditedDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}" title="{{ note.EditedDateTime | Date:'MMMM d, yyyy, h:mm tt' }}">{{ noteDateTimeText }}</relative-time>
                 </a>
                 {%- else -%}
-                    <a href="#{{ note.NoteAnchorId }}" class="timestamp">
-                        <relative-time datetime="{{ noteDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}" title="{{ noteDateTime | Date:'MMMM d, yyyy - h:mm tt' }}">{{ noteDateTimeText }}</relative-time>
+                    <a href="#{{ note.NoteAnchorId }}" class="timestamp" data-toggle="tooltip" title="{{ noteDateTime | Date:'MMMM d, yyyy - h:mm tt' }}">
+                        <relative-time datetime="{{ noteDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}">{{ noteDateTimeText }}</relative-time>
                     </a>
                 {%- endif -%}
 
