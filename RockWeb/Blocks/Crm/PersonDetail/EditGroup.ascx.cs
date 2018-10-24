@@ -873,6 +873,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     LocationTypeName = homeLocType.Value,
                     LocationIsDirty = true,
                     State = DefaultState,
+                    Country = DefaultCountry,
                     IsMailing = true,
                     IsLocation = setLocation
                 } );
