@@ -415,6 +415,7 @@
     <Compile Include="Reporting\DataFilter\Person\InteractionsFilter.cs" />
     <Compile Include="Reporting\DataSelect\Person\InteractionCountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\InteractionDateSelect.cs" />
+    <Compile Include="Security\Authentication\SMSAuthentication.cs" />
     <Compile Include="SystemGuid\ContentChannelType.cs" />
     <Compile Include="Utility\RockColor.cs" />
     <Compile Include="Utility\RockObsolete.cs" />
