@@ -1899,6 +1899,22 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
+        /// Disables the idle redirect blocks if disable = true, or re-enables them if disable = false
+        /// </summary>
+        /// <param name="caller">The caller.</param>
+        /// <param name="disable">if set to <c>true</c> [disable].</param>
+        public void DisableIdleRedirectBlocks( RockBlock caller, bool disable )
+        {
+            foreach (  IIdleRedirectBlock idleRedirectBlock in this.RockBlocks.Where( a => a is IIdleRedirectBlock ) )
+            {
+                if ( idleRedirectBlock != caller )
+                {
+                    idleRedirectBlock.Disable( disable );
+                }
+            }
+        }
+
+        /// <summary>
         /// Logs the exception.
         /// </summary>
         /// <param name="ex">The <see cref="System.Exception"/> to log.</param>

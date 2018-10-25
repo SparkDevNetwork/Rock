@@ -103,7 +103,7 @@ namespace Rock.Field.Types
 
             if ( picker != null )
             {
-                return picker.Location?.Guid.ToString();
+                return picker.Location?.Guid.ToString() ?? string.Empty;
             }
 
             return null;

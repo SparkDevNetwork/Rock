@@ -90,7 +90,7 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as MetricCategoryPicker;
-            string result = null;
+            string result = string.Empty;
 
             if ( picker != null )
             {
@@ -105,9 +105,11 @@ namespace Rock.Field.Types
                         result = guidPairList.Select( s => string.Format( "{0}|{1}", s.MetricGuid, s.CategoryGuid ) ).ToList().AsDelimited( "," );
                     }
                 }
+
+                return result;
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>

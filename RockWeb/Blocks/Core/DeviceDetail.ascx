@@ -8,14 +8,18 @@
 
 <asp:UpdatePanel ID="upnlDevice" runat="server">
     <ContentTemplate>
+
+        <%-- Edit Device Details --%>
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block js-device-panel" runat="server" Visible="false">
 
             <asp:HiddenField ID="hfDeviceId" runat="server" />
             <asp:HiddenField ID="hfTypeId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-desktop"></i>
-                    <asp:Literal ID="lActionTitle" runat="server" /></h1>
+                <h1 class="panel-title">
+                    <i class="fa fa-desktop"></i>
+                    <asp:Literal ID="lActionTitle" runat="server" />
+                </h1>
 
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlInactive" runat="server" CssClass="js-inactivedevice-label" LabelType="Danger" Text="Inactive" />
@@ -78,7 +82,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
+                            <Rock:DynamicPlaceholder ID="phAttributes" runat="server" />
                         </div>
                     </div>
 
@@ -101,6 +105,7 @@
 
         </asp:Panel>
 
+        <%-- Location Modal --%>
         <Rock:ModalDialog ID="mdLocationPicker" runat="server" SaveButtonText="Save" OnSaveClick="btnAddLocation_Click" Title="Select Check-in Location" OnCancelScript="clearActiveDialog();" ValidationGroup="Location">
             <Content ID="mdLocationPickerContent">
                 <asp:HiddenField ID="hfAddLocationId" runat="server" />
@@ -108,7 +113,7 @@
             </Content>
         </Rock:ModalDialog>
 
-                <script>
+          <script>
 
             Sys.Application.add_load(function () {
                 function setIsActiveControls(activeCheckbox) {

@@ -81,7 +81,7 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var editControl = control as ListControl;
-            return editControl?.SelectedValue;
+            return editControl?.SelectedValue ?? string.Empty;
         }
 
         /// <summary>

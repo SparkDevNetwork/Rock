@@ -30,6 +30,7 @@ using Rock.Communication;
 using Rock.Web.Cache;
 using System.Data.Entity;
 using System.Linq.Expressions;
+using Rock.Web;
 
 namespace Rock.Model
 {
@@ -906,6 +907,36 @@ namespace Rock.Model
                 return;
             }
 
+            var isDNDActive = SystemSettings.GetValue( SystemKey.SystemSetting.DO_NOT_DISTURB_ACTIVE ).AsBoolean();
+            var startTime = SystemSettings.GetValue( SystemKey.SystemSetting.DO_NOT_DISTURB_START ).AsTimeSpan();
+            var endTime = SystemSettings.GetValue( SystemKey.SystemSetting.DO_NOT_DISTURB_END ).AsTimeSpan();
+
+            if ( isDNDActive && startTime.HasValue && endTime.HasValue )
+            {
+                var endDateTime = RockDateTime.Now.Date.Add( endTime.Value );
+                if ( startTime <= endTime )
+                {
+                    if ( RockDateTime.Now.TimeOfDay >= startTime && RockDateTime.Now.TimeOfDay <= endTime )
+                    {
+                        MarkCommunicationAfterDND( communication, endDateTime );
+                        return;
+                    }
+                }
+                else
+                {
+                    if ( RockDateTime.Now.TimeOfDay >= startTime || RockDateTime.Now.TimeOfDay <= endTime )
+                    {
+                        if ( RockDateTime.Now.TimeOfDay < TimeSpan.Parse( "00:00" ) && RockDateTime.Now.TimeOfDay >= startTime )
+                        {
+                            endDateTime = endDateTime.AddDays( 1 );
+                        }
+                        MarkCommunicationAfterDND( communication, endDateTime );
+                        return;
+                    }
+                }
+            }
+            
+
             if ( communication.ListGroupId.HasValue && !communication.SendDateTime.HasValue )
             {
                 using ( var rockContext = new RockContext() )
@@ -925,6 +956,22 @@ namespace Rock.Model
 
                 // Set the SendDateTime of the Communication
                 dbCommunication.SendDateTime = RockDateTime.Now;
+                rockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Update Communication FutureSendDateTime after DND Window
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <param name="endDateTime">The end date and time.</param>
+        /// <returns></returns>
+        private static void MarkCommunicationAfterDND( Communication communication, DateTime endDateTime )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
+                dbCommunication.FutureSendDateTime = endDateTime.AddMinutes( 5 );
                 rockContext.SaveChanges();
             }
         }

@@ -194,9 +194,13 @@ namespace Rock.Field.Types
                         }
                     }
                 }
+                else
+                {
+                    return string.Empty;
+                }
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>

@@ -14,7 +14,7 @@
             <div class="scroller">
 
                 <div class="control-group checkin-time-select" style="margin: 0 auto">
-                    <h1><asp:Literal ID="lCaption" runat="server" /></h1>
+                    <label class="control-label"><asp:Literal ID="lCaption" runat="server" /></label>
                     <div class="controls checkin-timelist btn-group" data-toggle="buttons-checkbox">
                         <asp:Repeater ID="rSelection" runat="server">
                             <ItemTemplate>
@@ -25,10 +25,6 @@
                                 </button>
                             </ItemTemplate>
                         </asp:Repeater>
-                    </div>
-
-                    <div class="checkin-actions">
-                        <asp:LinkButton CssClass="btn btn-primary" ID="lbSelect" runat="server" OnClientClick="return GetTimeSelection();" OnClick="lbSelect_Click" />
                     </div>
 
                 </div>
@@ -42,7 +38,7 @@
 
     <div class="checkin-footer">
         <div class="checkin-actions">
-
+            <asp:LinkButton CssClass="btn btn-primary" ID="lbSelect" runat="server" OnClientClick="return GetTimeSelection();" OnClick="lbSelect_Click" />
             <asp:LinkButton CssClass="btn btn-default btn-back" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
             <asp:LinkButton CssClass="btn btn-default btn-cancel" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
         </div>
