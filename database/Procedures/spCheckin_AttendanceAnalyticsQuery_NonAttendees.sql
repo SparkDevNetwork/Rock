@@ -235,7 +235,7 @@ BEGIN
 					A.[StartDateTime]
  				FROM [Attendance] A
 				INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
-				INNER JOIN @GroupTbl G ON G.[Id] = A.[GroupId]
+				INNER JOIN @GroupTbl G ON G.[Id] = O.[GroupId]
 				WHERE [StartDateTime] < @StartDate
 				AND [DidAttend] = 1
 			) A
