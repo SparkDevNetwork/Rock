@@ -439,7 +439,7 @@ namespace Rock.CheckIn
             {
                 if ( doNotProceedCondition() )
                 {
-                    modalAlert.Show( conditionMessage, Rock.Web.UI.Controls.ModalAlertType.Warning );
+                    modalAlert?.Show( conditionMessage, Rock.Web.UI.Controls.ModalAlertType.None );
                     return false;
                 }
                 else
@@ -452,7 +452,7 @@ namespace Rock.CheckIn
             else
             {
                 string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
-                modalAlert.Show( errorMsg.Replace( "'", @"\'" ), Rock.Web.UI.Controls.ModalAlertType.Warning );
+                modalAlert?.Show( errorMsg.Replace( "'", @"\'" ), Rock.Web.UI.Controls.ModalAlertType.Warning );
                 return false;
             }
         }

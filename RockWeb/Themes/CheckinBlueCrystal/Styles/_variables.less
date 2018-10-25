@@ -1,6 +1,7 @@
 // Colors *show in editor*
 @bg-color:      #4b5c65; // The page's background color #color
 @text-color:    #fff; // The text color #color
+@link-color:    #ffffff; // The link color #color
 //--
 @header-text-color:     #fff; // The header text color #color
 @header-font-weight:    @font-weight-bold; // The header text weight
@@ -19,6 +20,11 @@
 @btn-default-bg: #c4c5c6; // The default button background color #color
 @btn-default-color:     #626161; // The default button text color #color
 @btn-default-border:   #adaeaf; // The default button border color #color
+//--
+@btn-action-bg:    #23353d; // The action button background color #color
+@btn-action-color:    #fff; // The action button text color #color
+@btn-action-border:   #18272d; // The action button border color #color
+//--
 @checkin-button-text-weight:    @font-weight-bold; // The default button text weight
 @checkin-button-alttext-weight: @font-weight-light; // The default button alternative text weight (usually lighter)
 //--
@@ -35,12 +41,14 @@
 @logo-image-retina-size: 496px 504px; // The retina background logo image size (should be 1/2 of the actual)
 
 // Modal *show in editor*
-@modal-body-bg: @bg-color; // The background color of the modal #color
-@modal-body-text-color: @text-color; // The text color of the modal #color
-@modal-header-bg: @bg-color; // The modal's header background color #color
-@modal-header-text-color: @text-color; // The modal's header text color #color
-@modal-footer-bg: @bg-color; // The modal's footer background color #color
-@modal-footer-text-color: @text-color; // The modal's footer text color #color
+@modal-body-bg: #ffffff; // The background color of the modal #color
+@modal-body-text-color: #404040; // The text color of the modal #color
+@modal-header-bg: @modal-body-bg; // The modal's header background color #color
+@modal-header-text-color: @modal-body-text-color; // The modal's header text color #color
+@modal-footer-bg: @modal-body-bg; // The modal's footer background color #color
+@modal-footer-text-color: @modal-body-text-color; // The modal's footer text color #color
+@modal-header-border-color: @modal-body-bg; // The modal's header border color #color
+@modal-footer-border-color: @modal-body-bg; // The modal's footer border color #color
 
 // Fonts *show in editor*
 @font-family-base:     "OpenSans", "Helvetica Neue", Helvetica, Arial, sans-serif; // The primary font to use for the site (note: custom fonts must be registered in the CSS overrides section)
