@@ -49,7 +49,7 @@ namespace Rock.Web.UI.Controls
             string script;
             if ( alertType == ModalAlertType.None )
             {
-                script = $"bootbox.alert('{cleanMessage)}');";
+                script = $"bootbox.alert('{cleanMessage}');";
             }
             else
             {
