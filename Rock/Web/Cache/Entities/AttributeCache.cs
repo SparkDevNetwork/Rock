@@ -433,10 +433,7 @@ namespace Rock.Web.Cache
                 SetValue = setValue,
                 SetId = setId,
                 Required = required,
-                LabelText = labelText ?? Name,
-                HelpText = helpText ?? Description,
-                WarningText = warningText,
-                AttributeControlId = attributeControlId ?? $"attribute_field_{Id}"
+                WarningText = warningText
             };
 
             return AddControl( controls, attributeControlOptions );
@@ -451,6 +448,10 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Control AddControl( ControlCollection controls, AttributeControlOptions options )
         {
+            options.LabelText = options.LabelText ?? Name;
+            options.HelpText = options.HelpText ?? Description;
+            options.AttributeControlId = options.AttributeControlId ?? $"attribute_field_{Id}";
+
             var attributeControl = FieldType.Field.EditControl( QualifierValues, options.SetId ? options.AttributeControlId : string.Empty );
             if ( attributeControl == null ) return null;
 
