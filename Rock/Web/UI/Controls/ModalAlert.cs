@@ -73,6 +73,9 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public enum ModalAlertType
     {
+        /// <summary>
+        /// An alert without a heading
+        /// </summary>
         None,
 
         /// <summary>

@@ -487,6 +487,13 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="CheckIn\CheckInEditFamilyBlock.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CheckIn\CheckInSearchBlock.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CheckIn\Registration\FamilyRegistrationState.cs" />
     <Compile Include="Data\NoAttributeFilterExpression.cs" />
     <Compile Include="Field\ICachedEntitiesFieldType.cs" />
     <Compile Include="Jobs\NoRetryAggregateException.cs" />
@@ -498,6 +505,7 @@
     <Compile Include="Plugin\HotFixes\055_MigrationRollupsForV8_3.cs" />
     <Compile Include="Plugin\HotFixes\054_MigrationRollupsForV8_2.cs" />
     <Compile Include="Plugin\HotFixes\053_DuplicateDataIntegrityReports.cs" />
+    <Compile Include="Plugin\HotFixes\056_CheckinRegistration.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -511,6 +519,7 @@
     <Compile Include="Reporting\DataSelect\Person\InteractionCountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\InteractionDateSelect.cs" />
     <Compile Include="SystemGuid\SystemSetting.cs" />
+    <Compile Include="SystemKey\GroupTypeAttributeKey.cs" />
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentChannelCache.cs" />

@@ -1544,7 +1544,7 @@ namespace Rock.SystemGuid
         public const string WEBSITE = "F7105BFE-B28C-41B6-9CE6-F1018D77DD8F";
 
         /// <summary>
-        /// Gets the Welcome page guid
+        /// Gets the Check-in Welcome page guid
         /// ParentPage: Check-in
         /// </summary>
         public const string WELCOME = "432B615A-75FF-4B14-9C99-3E769F866950";

@@ -543,7 +543,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates the known relationship.
+        /// Creates the known relationship if it doesn't already exist
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="relatedPersonId">The related person identifier.</param>
