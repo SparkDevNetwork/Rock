@@ -38,7 +38,7 @@
 				.font(24,900);
 				padding-right: 22px;
 			}
-		}			
+		}
 	}
 }
 #blogpost {
@@ -66,7 +66,6 @@ body.blogslist {
 			  	padding-bottom: 120px;
 			  }
 			  position: relative;
-			  z-index: 10;
 			  //.make-row();
 				.container-fixed();
 				//padding-left: 0;
@@ -100,7 +99,7 @@ body.blogslist {
 					}
 					@media (min-width: @screen-xl) {
 						grid-gap: 40px;
-					}			
+					}
 					.block-instance.content-channel-view {
 						.box-shadow();
 						background-color: @truewhite;
@@ -120,7 +119,10 @@ body.blogslist {
 				}
 			}
 		}
-	}	
+	}
+}
+body.blogslist.modal-open #blogslist.css-grid-section .zone-instance .zone-content .block-instance.content-channel-view:hover {
+  transform: none;
 }
 #blogslist.css-grid {
 	@media (min-width: @screen-sm) {
