@@ -138,12 +138,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 // only show if the Impersonation button if the feature is enabled, and the current user is authorized to Administrate the person
                 bool enableImpersonation = this.GetAttributeValue( "EnableImpersonation" ).AsBoolean();
                 lbImpersonate.Visible = false;
-                if ( enableImpersonation )
+                if ( enableImpersonation && Person.Id != CurrentPersonId && Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) )
                 {
-                    if ( Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) )
-                    {
-                        lbImpersonate.Visible = true;
-                    }
+                    lbImpersonate.Visible = true;
                 }
             }
         }
