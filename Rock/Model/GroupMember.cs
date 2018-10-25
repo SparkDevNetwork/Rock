@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Configuration;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
@@ -468,7 +467,7 @@ namespace Rock.Model
                         historyItem.GroupId = historyItem.Group?.Id;
                     }
 
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_GROUP_MEMBERSHIP.AsGuid(),
+                    HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_GROUP_MEMBERSHIP.AsGuid(),
                         personId, historyItem.PersonHistoryChangeList, historyItem.Caption, typeof( Group ), historyItem.GroupId, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
 
                     HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( GroupMember ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(),
@@ -477,6 +476,18 @@ namespace Rock.Model
             }
 
             base.PostSaveChanges( dbContext );
+
+            // if this is a GroupMember record on a Family, ensure that AgeClassification, PrimaryFamily is updated
+            // NOTE: This is also done on Person.PostSaveChanges in case Birthdate changes
+            var groupTypeFamilyRoleIds = GroupTypeCache.GetFamilyGroupType()?.Roles?.Select( a => a.Id ).ToList();
+            if ( groupTypeFamilyRoleIds?.Any() == true )
+            {
+                if ( groupTypeFamilyRoleIds.Contains( this.GroupRoleId ) )
+                {
+                    PersonService.UpdatePersonAgeClassification( this.PersonId, dbContext as RockContext );
+                    PersonService.UpdatePrimaryFamily( this.PersonId, dbContext as RockContext );
+                }
+            }
         }
 
         /// <summary>
