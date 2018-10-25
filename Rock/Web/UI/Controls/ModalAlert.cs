@@ -45,7 +45,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="alertType">Type of the message.</param>
         public void Show( string message, ModalAlertType alertType )
         {
-			var cleanMessage = System.Net.WebUtility.HtmlEncode( message );
+            var cleanMessage = message.SanitizeHtml( false ).Replace( "'", "&#39;" );
             string script;
             if ( alertType == ModalAlertType.None )
             {
