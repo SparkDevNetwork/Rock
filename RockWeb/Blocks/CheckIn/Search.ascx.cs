@@ -168,8 +168,8 @@ namespace RockWeb.Blocks.CheckIn
             else
             {
                 string errorMsg = ( tbPhone.Text.Length > maxLength )
-                    ? string.Format( "<p>Please enter no more than {0} numbers</p>", maxLength )
-                    : string.Format( "<p>Please enter at least {0} numbers</p>", minLength );
+                    ? string.Format( "Please enter no more than {0} numbers", maxLength )
+                    : string.Format( "Please enter at least {0} numbers", minLength );
 
                 maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
             }
