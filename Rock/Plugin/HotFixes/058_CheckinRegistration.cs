@@ -26,7 +26,7 @@ namespace Rock.Plugin.HotFixes
     /// 
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 56, "1.8.2" )]
+    [MigrationNumber( 58, "1.8.2" )]
     public class CheckinRegistration : Migration
     {
         /// <summary>
