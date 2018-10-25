@@ -504,7 +504,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
                 packages.AddRange( new DefinedValueService( rockContext )
                     .GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() )
-                    .Where( v => v.ForeignId == 1 && v.IsActive && v.Value == null || !v.Value.StartsWith( TYPENAME_PREFIX ) )
+                    .Where( v => v.ForeignId == 1 && v.IsActive && (v.Value == null || !v.Value.StartsWith( TYPENAME_PREFIX ) ) )
                     .Select( v => v.Value )
                     .ToList() );
                 lPackages.Text = packages.AsDelimited( "<br/>" );
