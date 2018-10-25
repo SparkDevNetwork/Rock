@@ -250,6 +250,20 @@ namespace Rock.Rest.Controllers
                     }
                 }
             }
+            else if ( !lazyLoad )
+            {
+                // Load all of the categories without the categorized items
+                foreach ( var item in categoryItemList )
+                {
+                    int parentId = int.Parse( item.Id );
+                    if ( item.Children == null )
+                    {
+                        item.Children = new List<Web.UI.Controls.TreeViewItem>();
+                    }
+
+                    GetAllDecendents( item, currentPerson, getCategorizedItems, defaultIconCssClass, hasActiveFlag, serviceInstance, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
+                }
+            }
 
             if ( !showCategoriesThatHaveNoChildren )
             {
