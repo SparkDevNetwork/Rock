@@ -176,9 +176,11 @@ namespace Rock.Field.Types
                         return campus.Guid.ToString();
                     }
                 }
+
+                return string.Empty;
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>

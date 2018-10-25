@@ -106,7 +106,7 @@ namespace Rock.Field.Types
             if ( controls != null && controls.Count > 0 && configurationValues != null &&
                 controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( BINARY_FILE_TYPE ) )
             {
-                ( (DropDownList)controls[0] ).SetValue( configurationValues[BINARY_FILE_TYPE].Value.ToLower() );
+                ( (DropDownList)controls[0] ).SetValue( configurationValues[BINARY_FILE_TYPE].Value?.ToLower() ?? string.Empty );
             }
         }
 
@@ -208,7 +208,7 @@ namespace Rock.Field.Types
                     }
                 }
 
-                return itemGuid?.ToString();
+                return itemGuid?.ToString() ?? string.Empty;
             }
 
             return null;

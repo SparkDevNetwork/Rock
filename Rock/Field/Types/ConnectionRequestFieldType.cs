@@ -49,18 +49,10 @@ namespace Rock.Field.Types
 
             using ( var rockContext = new RockContext() )
             {
-                int? id = value.AsIntegerOrNull();
-                if ( id.HasValue )
+                Guid? guid = value.AsGuidOrNull();
+                if ( guid.HasValue )
                 {
-                    connectionRequest = new ConnectionRequestService( rockContext ).GetNoTracking( id.Value );
-                }
-                else
-                {
-                    Guid? guid = value.AsGuidOrNull();
-                    if ( guid.HasValue )
-                    {
-                        connectionRequest = new ConnectionRequestService( rockContext ).GetNoTracking( guid.Value );
-                    }
+                    connectionRequest = new ConnectionRequestService( rockContext ).GetNoTracking( guid.Value );
                 }
 
                 if ( connectionRequest != null &&
@@ -104,6 +96,7 @@ namespace Rock.Field.Types
             if ( picker != null )
             {
                 int? id = picker.ItemId.AsIntegerOrNull();
+
                 if ( id.HasValue )
                 {
                     using ( var rockContext = new RockContext() )
@@ -116,6 +109,8 @@ namespace Rock.Field.Types
                         }
                     }
                 }
+
+                return string.Empty;
             }
 
             return null;
@@ -135,18 +130,10 @@ namespace Rock.Field.Types
             {
                 ConnectionRequest connectionRequest = null;
 
-                int? id = value.AsIntegerOrNull();
-                if ( id.HasValue )
+                Guid? guid = value.AsGuidOrNull();
+                if ( guid.HasValue )
                 {
-                    connectionRequest = new ConnectionRequestService( new RockContext() ).Get( id.Value );
-                }
-                else
-                {
-                    Guid? guid = value.AsGuidOrNull();
-                    if ( guid.HasValue )
-                    {
-                        connectionRequest = new ConnectionRequestService( new RockContext() ).Get( guid.Value );
-                    }
+                    connectionRequest = new ConnectionRequestService( new RockContext() ).Get( guid.Value );
                 }
 
                 picker.SetValue( connectionRequest );
@@ -207,18 +194,10 @@ namespace Rock.Field.Types
         public IEntity GetEntity( string value, RockContext rockContext )
         {
             rockContext = rockContext ?? new RockContext();
-            int? id = value.AsIntegerOrNull();
-            if ( id.HasValue )
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
             {
-                return new ConnectionRequestService( rockContext ).Get( id.Value );
-            }
-            else
-            {
-                Guid? guid = value.AsGuidOrNull();
-                if ( guid.HasValue )
-                {
-                    return new ConnectionRequestService( rockContext ).Get( guid.Value );
-                }
+                return new ConnectionRequestService( rockContext ).Get( guid.Value );
             }
 
             return null;

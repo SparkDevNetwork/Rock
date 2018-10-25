@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Finance
                     var families = person.GetFamilies();
                     if ( families.Count() != 1 )
                     {
-                        nbError.Heading = "Cannot convert person record to a business";
+                        nbError.Heading = "Cannot convert person record to a business.";
                         nbError.Text = "To avoid data loss move this person to one family before proceeding.";
                         return;
                     }
@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Finance
                     var family = families.First();
                     if ( family.Members.Count != 1 )
                     {
-                        nbError.Heading = "Cannot convert person record to a business";
+                        nbError.Heading = "Cannot convert person record to a business.";
                         nbError.Text = "To avoid data loss move this person to their own family before proceeding.";
                         return;
                     }
@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Finance
                     //
                     if ( person.GivingGroup == null || person.GivingGroup.Members.Count != 1 || person.GivingLeaderId != person.Id )
                     {
-                        nbError.Heading = "Cannot convert person record to a business";
+                        nbError.Heading = "Cannot convert person record to a business.";
                         nbError.Text = "Please fix the giving group and then try again.";
                         return;
                     }

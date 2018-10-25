@@ -778,6 +778,8 @@ namespace RockWeb.Blocks.Crm
             pnlConfirm.Visible = false;
         }
 
+        private long _errorCount;
+
         /// <summary>
         /// Handles the Click event of the btnConfirm control.
         /// </summary>
@@ -787,6 +789,7 @@ namespace RockWeb.Blocks.Crm
         {
             if ( Page.IsValid )
             {
+                _errorCount = 0;
                 var individuals = Individuals.ToList();
 
                 var task = new Task( () =>
@@ -864,8 +867,17 @@ namespace RockWeb.Blocks.Crm
                     }
                     else
                     {
-                        var status = string.Format( "{0} {1} successfully updated.",
-                            Individuals.Count().ToString( "N0" ), ( Individuals.Count() > 1 ? "people were" : "person was" ) );
+                        string status;
+                        if ( _errorCount == 0 )
+                        {
+                            status = string.Format( "{0} {1} successfully updated.",
+                                Individuals.Count().ToString( "N0" ), ( Individuals.Count() > 1 ? "people were" : "person was" ) );
+                        }
+                        else
+                        {
+                            status = string.Format( "{0} {1} updated with {2} error(s). Please look in the exception log for more details.",
+                                Individuals.Count().ToString( "N0" ), ( Individuals.Count() > 1 ? "people were" : "person was" ), _errorCount );
+                        }
 
                         HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateStatus( status.EncodeHtml(), true );
                     }
@@ -935,6 +947,7 @@ namespace RockWeb.Blocks.Crm
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
             var ids = individuals.Select( i => i.PersonId ).ToList();
+            //int errorCount = 0;
 
             #region Individual Details Updates
 
@@ -1303,6 +1316,8 @@ namespace RockWeb.Blocks.Crm
                     string action = ddlGroupAction.SelectedValue;
                     if ( action == "Remove" )
                     {
+                        var groupTypeCache = GroupTypeCache.Get( group.GroupTypeId );
+
                         var existingIds = existingMembersQuery.Select( gm => gm.Id ).Distinct().ToList();
 
                         Action<RockContext, List<int>> deleteAction = ( context, items ) =>
@@ -1312,16 +1327,47 @@ namespace RockWeb.Blocks.Crm
 
                             var batchGroupMembers = groupMemberService.Queryable( true ).Where( x => items.Contains( x.Id ) ).ToList();
 
-                            // also unregister them from any registration groups
-                            RegistrationRegistrantService registrantService = new RegistrationRegistrantService( context );
-                            foreach ( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId.HasValue && items.Contains( r.GroupMemberId.Value ) ) )
+                            GroupMemberHistoricalService groupMemberHistoricalService = new GroupMemberHistoricalService( context );
+
+                            foreach( GroupMember groupMember in batchGroupMembers )
                             {
-                                registrant.GroupMemberId = null;
+                                try
+                                {
+                                    bool archive = false;
+                                    if ( groupTypeCache.EnableGroupHistory == true && groupMemberHistoricalService.Queryable().Any( a => a.GroupMemberId == groupMember.Id ) )
+                                    {
+                                        // if the group has GroupHistory enabled, and this group member has group member history snapshots, they were prompted to Archive
+                                        archive = true;
+                                    }
+                                    else
+                                    {
+                                        string errorMessage;
+                                        if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )
+                                        {
+                                            ExceptionLogService.LogException( new Exception( string.Format( "Error removing person {0} from group {1}: ", groupMember.Person.FullName, group.Name ) + errorMessage ), null );
+                                            Interlocked.Increment( ref _errorCount );
+                                            continue;
+                                        }
+                                    }
+
+                                    if ( archive )
+                                    {
+                                        // NOTE: Delete will AutoArchive, but since we know that we need to archive, we can call .Archive directly
+                                        groupMemberService.Archive( groupMember, this.CurrentPersonAliasId, true );
+                                    }
+                                    else
+                                    {
+                                        groupMemberService.Delete( groupMember, true );
+                                    }
+
+                                    context.SaveChanges();
+                                }
+                                catch (Exception ex)
+                                {
+                                    ExceptionLogService.LogException( new Exception( string.Format("Error removing person {0} from group {1}", groupMember.Person.FullName, group.Name), ex ), null );
+                                    Interlocked.Increment( ref _errorCount );
+                                }
                             }
-
-                            groupMemberService.DeleteRange( batchGroupMembers );
-
-                            context.SaveChanges();
                         };
 
                         ProcessBatchUpdate( existingIds, 50, deleteAction );

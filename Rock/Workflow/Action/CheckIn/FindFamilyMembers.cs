@@ -53,30 +53,8 @@ namespace Rock.Workflow.Action.CheckIn
                 var family = checkInState.CheckIn.CurrentFamily;
                 if ( family != null )
                 {
-                    var service = new GroupMemberService( rockContext );
-
-                    var people = service.GetByGroupId( family.Group.Id ).AsNoTracking();
-                    if ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeople )
-                    {
-                        var dvInactive = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
-                        if ( dvInactive != null )
-                        {
-                            people = people.Where( m => m.Person.RecordStatusValueId != dvInactive.Id );
-                        }
-                    }
-
-                    foreach ( var groupMember in people.ToList() )
-                    {
-                        if ( !family.People.Any( p => p.Person.Id == groupMember.PersonId ) )
-                        {
-                            var person = new CheckInPerson();
-                            person.Person = groupMember.Person.Clone( false );
-                            person.FamilyMember = true;
-                            family.People.Add( person );
-                        }
-                    }
-
-                    return true;
+                    bool preventInactivePeople = checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeople;
+                    return ProcessForFamily( rockContext, family, preventInactivePeople );
                 }
                 else
                 {
@@ -87,6 +65,41 @@ namespace Rock.Workflow.Action.CheckIn
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Processes for family.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="family">The family.</param>
+        /// <param name="preventInactivePeople">if set to <c>true</c> [prevent inactive people]. Usually get from CurrentCheckInState.CheckInType.PreventInactivePeople</param>
+        /// <returns></returns>
+        public static bool ProcessForFamily( RockContext rockContext, CheckInFamily family, bool preventInactivePeople )
+        {
+            var service = new GroupMemberService( rockContext );
+
+            var people = service.GetByGroupId( family.Group.Id ).AsNoTracking();
+            if ( preventInactivePeople )
+            {
+                var dvInactive = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+                if ( dvInactive != null )
+                {
+                    people = people.Where( m => m.Person.RecordStatusValueId != dvInactive.Id );
+                }
+            }
+
+            foreach ( var groupMember in people.ToList() )
+            {
+                if ( !family.People.Any( p => p.Person.Id == groupMember.PersonId ) )
+                {
+                    var person = new CheckInPerson();
+                    person.Person = groupMember.Person.Clone( false );
+                    person.FamilyMember = true;
+                    family.People.Add( person );
+                }
+            }
+
+            return true;
         }
     }
 }

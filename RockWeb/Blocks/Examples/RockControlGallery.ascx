@@ -5,23 +5,30 @@
 <script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v0.4.1/dist/bootstrap-toc.min.js"></script>
 
 <script type="text/javascript">
-Sys.Application.add_load(function () {
-    prettyPrint();
+    Sys.Application.add_load(function () {
+        prettyPrint();
 
-        $(function() {
+        $(function () {
             var navSelector = '#toc';
             var $myNav = $(navSelector);
-            Toc.init($myNav);
+            var $exampleHeaders = $('.r-example-nocodepreview,.r-example').find('h1,h2,h3,h4');
+            Toc.init({
+                $nav: $myNav,
+                $scope: $('h1,h2,h3,h4').not($exampleHeaders)
+            });
             $('body').scrollspy({
                 target: '#toc'
             });
         });
 
-        $(window).on('activate.bs.scrollspy', function (e) {
-            history.replaceState({}, "", $("a[href^='#']", e.target).attr("href"));
+        $(window).on('activate.bs.scrollspy', function (e,f,g) {
+            var href = $("a[href^='#']", e.target).attr("href");
+            if (href && href != '#') {
+                history.replaceState({}, "", href);
+            }
         });
 
-})
+    })
 
 </script>
 <style>
@@ -40,7 +47,10 @@ Sys.Application.add_load(function () {
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title" data-toc-skip><i class="fa fa-magic"></i> Control Gallery</h1>
+                <h1 class="panel-title" data-toc-skip="1">
+                    <i class="fa fa-magic"></i>
+                    Control Gallery
+                </h1>
             </div>
             <div class="panel-body">
             <div class="row">
@@ -159,7 +169,7 @@ Sys.Application.add_load(function () {
                     <div class="alert alert-warning">
                         <p><strong>Warning!</strong></p>
                         If you think you need to control the margin or padding, you might be 'doing it wrong.'
-                        These are for use in those cases when you know what you're doing.</em>
+                        <em>These are for use in those cases when you know what you're doing.</em>
                     </div>
 
                     <h3>Format</h3>
@@ -778,6 +788,17 @@ Sys.Application.add_load(function () {
                         <Rock:Toggle ID="tglExample8" runat="server" />
                         <Rock:Toggle ID="tglExample9" runat="server" ButtonSizeCssClass="btn-sm" />
                         <Rock:Toggle ID="tglExample10" runat="server" ButtonSizeCssClass="btn-xs" />
+                    </div>
+
+                    <a id="ButtonGroup"></a>
+                    <h2 runat="server">Rock:ButtonGroup</h2>
+                    <div runat="server" class="r-example">
+                        <Rock:ButtonGroup ID="bgExample" runat="server" Label="Favorite Fruit">
+                            <asp:ListItem Text="Apple" Value="1" />
+                            <asp:ListItem Text="Banana" Value="2" />
+                            <asp:ListItem Text="Strawberry" Value="3" />
+                            <asp:ListItem Text="Chicken" Value="4" />
+                        </Rock:ButtonGroup>
                     </div>
 
                     <a id="BootstrapButton"></a>
