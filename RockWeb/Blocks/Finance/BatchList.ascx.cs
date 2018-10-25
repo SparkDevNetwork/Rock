@@ -334,7 +334,7 @@ namespace RockWeb.Blocks.Finance
             gfBatchFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             gfBatchFilter.SaveUserPreference( "Campus", campCampus.SelectedValue );
             gfBatchFilter.SaveUserPreference( "Contains Transaction Type", dvpTransactionType.SelectedValue );
-            gfBatchFilter.SaveUserPreference( "Contains Source Type", ddlSourceType.SelectedValue );
+            gfBatchFilter.SaveUserPreference( "Contains Source Type", dvpSourceType.SelectedValue );
 
             if ( AvailableAttributes != null )
             {
@@ -618,8 +618,8 @@ namespace RockWeb.Blocks.Finance
             drpBatchDate.DelimitedValues = gfBatchFilter.GetUserPreference( "Date Range" );
 
             var definedTypeSourceTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() );
-            ddlSourceType.BindToDefinedType( definedTypeSourceTypes, true );
-            ddlSourceType.SetValue( gfBatchFilter.GetUserPreference( "Contains Source Type" ) );
+            dvpSourceType.DefinedTypeId = definedTypeSourceTypes.Id;
+            dvpSourceType.SetValue( gfBatchFilter.GetUserPreference( "Contains Source Type" ) );
 
             BindAttributes();
             AddDynamicControls();

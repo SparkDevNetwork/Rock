@@ -21,7 +21,7 @@
                             <Rock:DefinedValuePicker ID="dvpTransactionType" runat="server"  Label="Contains Transaction Type" />
                             <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title"></Rock:RockTextBox>
                             <Rock:RockTextBox ID="tbAccountingCode" runat="server" Label="Accounting Code"></Rock:RockTextBox>
-                            <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Contains Source Type" />
+                            <Rock:DefinedValuePicker ID="dvpSourceType" runat="server" Label="Contains Source Type" />
                             <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                         </Rock:GridFilter>
 
