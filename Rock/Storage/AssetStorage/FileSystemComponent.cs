@@ -176,8 +176,9 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Gets the object as an Asset with the option to create a thumbnail.
         /// </summary>
-        /// <param name="assetStorageProvider"></param>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="asset">The asset.</param>
+        /// <param name="createThumbnail">if set to <c>true</c> [create thumbnail].</param>
         /// <returns></returns>
         public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset, bool createThumbnail )
         {
@@ -389,6 +390,14 @@ namespace Rock.Storage.AssetStorage
             }
         }
 
+        /// <summary>
+        /// Gets the thumbnail image for the provided Asset key. If one does not exist it will be created. If one exists but is older than the file
+        /// a new thumbnail is created and the old one overwritten.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="assetKey">The asset key.</param>
+        /// <param name="lastModifiedDateTime">The last modified date time.</param>
+        /// <returns></returns>
         public override string GetThumbnail( AssetStorageProvider assetStorageProvider, string assetKey, DateTime? lastModifiedDateTime )
         {
             string name = GetNameFromKey( assetKey );
@@ -447,6 +456,7 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Gets the list of objects.
         /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="directoryName">Name of the directory.</param>
         /// <param name="searchOption">The search option.</param>
         /// <param name="assetType">Type of the asset.</param>
@@ -584,7 +594,9 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Creates an Asset from FileInfo
         /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="fileInfo">The file information.</param>
+        /// <param name="createThumbnail">if set to <c>true</c> [create thumbnail].</param>
         /// <returns></returns>
         private Asset CreateAssetFromFileInfo( AssetStorageProvider assetStorageProvider, FileInfo fileInfo, bool createThumbnail )
         {

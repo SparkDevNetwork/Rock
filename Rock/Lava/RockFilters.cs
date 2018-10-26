@@ -4975,6 +4975,7 @@ namespace Rock.Lava
         /// Returns the amount string as a proper int for the color functions.
         /// </summary>
         /// <param name="amount">The amount.</param>
+        /// <param name="unit">The unit.</param>
         /// <returns></returns>
         private static int CleanColorAmount( string amount, string unit = "%" )
         {
