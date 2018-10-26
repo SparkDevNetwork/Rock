@@ -306,8 +306,9 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Returns an asset with the stream of the specified file with the option to create a thumbnail.
         /// </summary>
-        /// <param name="assetStorageProvider"></param>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="asset">The asset.</param>
+        /// <param name="createThumbnail">if set to <c>true</c> [create thumbnail].</param>
         /// <returns></returns>
         public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset, bool createThumbnail )
         {
@@ -597,6 +598,14 @@ namespace Rock.Storage.AssetStorage
             }
         }
 
+        /// <summary>
+        /// Gets the thumbnail image for the provided Asset key. If one does not exist it will be created. If one exists but is older than the file
+        /// a new thumbnail is created and the old one overwritten.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="assetKey">The asset key.</param>
+        /// <param name="lastModifiedDateTime">The last modified date time.</param>
+        /// <returns></returns>
         public override string GetThumbnail( AssetStorageProvider assetStorageProvider, string assetKey, DateTime? lastModifiedDateTime )
         {
             string name = GetNameFromKey( assetKey );
@@ -630,6 +639,12 @@ namespace Rock.Storage.AssetStorage
             return virtualThumbPath;
         }
 
+        /// <summary>
+        /// Deletes the image thumbnail for the provided Asset. If the asset is a file then the singel thumbnail
+        /// is deleted. If the asset is a directory then a recurrsive delete is done.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="asset">The asset.</param>
         protected override void DeleteImageThumbnail( AssetStorageProvider assetStorageProvider, Asset asset )
         {
             base.DeleteImageThumbnail( assetStorageProvider, asset );
@@ -691,6 +706,7 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Creates the asset from the AWS S3Object.
         /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="s3Object">The s3 object.</param>
         /// <param name="regionEndpoint">The region endpoint.</param>
         /// <returns></returns>
@@ -717,8 +733,10 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Creates the asset from AWS S3 Client GetObjectResponse.
         /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="response">The response.</param>
         /// <param name="regionEndpoint">The region endpoint.</param>
+        /// <param name="createThumbnail">if set to <c>true</c> [create thumbnail].</param>
         /// <returns></returns>
         private Asset CreateAssetFromGetObjectResponse( AssetStorageProvider assetStorageProvider, GetObjectResponse response, string regionEndpoint, bool createThumbnail )
         {
