@@ -740,7 +740,8 @@ namespace RockWeb.Blocks.Groups
                         .Where( a =>
                             a.OccurrenceId == _occurrence.Id &&
                             a.DidAttend.HasValue &&
-                            a.DidAttend.Value )
+                            a.DidAttend.Value &&
+                            a.PersonAlias != null)
                         .Select( a => a.PersonAlias.PersonId )
                         .Distinct()
                         .ToList();
