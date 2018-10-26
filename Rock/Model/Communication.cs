@@ -902,35 +902,16 @@ namespace Rock.Model
                 return;
             }
 
-            var isDNDActive = SystemSettings.GetValue( SystemKey.SystemSetting.DO_NOT_DISTURB_ACTIVE ).AsBoolean();
-            var startTime = SystemSettings.GetValue( SystemKey.SystemSetting.DO_NOT_DISTURB_START ).AsTimeSpan();
-            var endTime = SystemSettings.GetValue( SystemKey.SystemSetting.DO_NOT_DISTURB_END ).AsTimeSpan();
-
-            if ( isDNDActive && startTime.HasValue && endTime.HasValue )
-            {
-                var endDateTime = RockDateTime.Now.Date.Add( endTime.Value );
-                if ( startTime <= endTime )
-                {
-                    if ( RockDateTime.Now.TimeOfDay >= startTime && RockDateTime.Now.TimeOfDay <= endTime )
-                    {
-                        MarkCommunicationAfterDND( communication, endDateTime );
-                        return;
-                    }
-                }
-                else
-                {
-                    if ( RockDateTime.Now.TimeOfDay >= startTime || RockDateTime.Now.TimeOfDay <= endTime )
-                    {
-                        if ( RockDateTime.Now.TimeOfDay < TimeSpan.Parse( "00:00" ) && RockDateTime.Now.TimeOfDay >= startTime )
-                        {
-                            endDateTime = endDateTime.AddDays( 1 );
-                        }
-                        MarkCommunicationAfterDND( communication, endDateTime );
-                        return;
-                    }
-                }
-            }
             
+            DateTime? endDateTime = null;
+            bool isCommunicationInsideDND = CheckCommunicationForDND( RockDateTime.Now, out endDateTime );
+
+            if ( isCommunicationInsideDND )
+            {
+                MarkCommunicationAfterDND( communication, endDateTime.Value );
+                return;
+            }
+
 
             if ( communication.ListGroupId.HasValue && !communication.SendDateTime.HasValue )
             {
@@ -953,6 +934,45 @@ namespace Rock.Model
                 dbCommunication.SendDateTime = RockDateTime.Now;
                 rockContext.SaveChanges();
             }
+        }
+
+        /// <summary>
+        /// Check the specified communication if falling inside DND window.
+        /// </summary>
+        /// <param name="communicationDateTime">The communication date and time.</param>
+        public static bool CheckCommunicationForDND( DateTime communicationDateTime, out DateTime? endDateTime )
+        {
+            endDateTime = null;
+            bool isCommunicationForDND = false;
+            var isDNDActive = SystemSettings.GetValue( SystemKey.SystemSetting.DO_NOT_DISTURB_ACTIVE ).AsBoolean();
+            var startTime = SystemSettings.GetValue( SystemKey.SystemSetting.DO_NOT_DISTURB_START ).AsTimeSpan();
+            var endTime = SystemSettings.GetValue( SystemKey.SystemSetting.DO_NOT_DISTURB_END ).AsTimeSpan();
+
+            if ( isDNDActive && startTime.HasValue && endTime.HasValue )
+            {
+                endDateTime = communicationDateTime.Date.Add( endTime.Value );
+                if ( startTime <= endTime )
+                {
+                    if ( communicationDateTime.TimeOfDay >= startTime && communicationDateTime.TimeOfDay <= endTime )
+                    {
+                        isCommunicationForDND = true;
+                    }
+                }
+                else
+                {
+                    if ( communicationDateTime.TimeOfDay >= startTime || communicationDateTime.TimeOfDay <= endTime )
+                    {
+                        if ( communicationDateTime.TimeOfDay < TimeSpan.Parse( "00:00" ) && communicationDateTime.TimeOfDay >= startTime )
+                        {
+                            endDateTime = endDateTime.Value.AddDays( 1 );
+                        }
+                        isCommunicationForDND = true;
+
+                    }
+                }
+            }
+
+            return isCommunicationForDND;
         }
 
         /// <summary>
