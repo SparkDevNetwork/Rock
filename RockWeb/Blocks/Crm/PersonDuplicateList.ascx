@@ -18,7 +18,7 @@
                                     <%# GetConfidenceScoreColumnHtml((double?)Eval("MaxConfidenceScore")) %>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
-                            
+                            <Rock:DefinedValueField DataField="SuffixValueId" HeaderText="Suffix" SortExpression="SuffixValue.Value"/>
                             <Rock:RockBoundField DataField="FirstName" HeaderText="First Name" SortExpression="FirstName, LastName" />
                             <Rock:RockBoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName, FirstName" />
                             <Rock:RockBoundField DataField="MatchCount" HeaderText="Match Count" SortExpression="MatchCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"/>
