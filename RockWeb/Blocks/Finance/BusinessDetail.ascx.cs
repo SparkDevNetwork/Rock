@@ -52,8 +52,8 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
-            ddlReason.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
+            dvpRecordStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ).Id;
+            dvpReason.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ).Id;
 
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
@@ -159,13 +159,13 @@ namespace RockWeb.Blocks.Finance
             business.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
             // Record Status
-            business.RecordStatusValueId = ddlRecordStatus.SelectedValueAsInt(); ;
+            business.RecordStatusValueId = dvpRecordStatus.SelectedValueAsInt(); ;
 
             // Record Status Reason
             int? newRecordStatusReasonId = null;
             if ( business.RecordStatusValueId.HasValue && business.RecordStatusValueId.Value == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id )
             {
-                newRecordStatusReasonId = ddlReason.SelectedValueAsInt();
+                newRecordStatusReasonId = dvpReason.SelectedValueAsInt();
             }
             business.RecordStatusReasonValueId = newRecordStatusReasonId;
 
@@ -290,7 +290,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            ddlReason.Visible = ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+            dvpReason.Visible = dvpRecordStatus.SelectedValueAsInt() == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
         }
 
         /// <summary>
@@ -678,9 +678,9 @@ namespace RockWeb.Blocks.Finance
                 tbEmail.Text = business.Email;
                 rblEmailPreference.SelectedValue = business.EmailPreference.ToString();
 
-                ddlRecordStatus.SelectedValue = business.RecordStatusValueId.HasValue ? business.RecordStatusValueId.Value.ToString() : string.Empty;
-                ddlReason.SelectedValue = business.RecordStatusReasonValueId.HasValue ? business.RecordStatusReasonValueId.Value.ToString() : string.Empty;
-                ddlReason.Visible = business.RecordStatusReasonValueId.HasValue &&
+                dvpRecordStatus.SelectedValue = business.RecordStatusValueId.HasValue ? business.RecordStatusValueId.Value.ToString() : string.Empty;
+                dvpReason.SelectedValue = business.RecordStatusReasonValueId.HasValue ? business.RecordStatusReasonValueId.Value.ToString() : string.Empty;
+                dvpReason.Visible = business.RecordStatusReasonValueId.HasValue &&
                     business.RecordStatusValueId.Value == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
             }
             else
