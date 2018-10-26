@@ -1336,6 +1336,7 @@ namespace Rock.Data
 
         /// <summary>
         /// Adds a new EntityType Attribute for the given EntityType, FieldType, and name (key).
+        /// NOTE: If the Attribute already exists, it will be deleted and recreated. So consider using UpdateEntityAttribute instead
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="fieldTypeGuid">The field type GUID.</param>
@@ -1606,7 +1607,7 @@ namespace Rock.Data
                     name,
                     description.Replace( "'", "''" ),
                     order,
-                    defaultValue,
+                    defaultValue.Replace( "'", "''" ),
                     guid,
                     entityTypeQualifierColumn,
                     entityTypeQualifierValue )
