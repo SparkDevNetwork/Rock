@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.Finance
         protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
             gfSettings.SaveUserPreference( "Amount", nreAmount.DelimitedValues );
-            gfSettings.SaveUserPreference( "Frequency", ddlFrequency.SelectedValue != All.Id.ToString() ? ddlFrequency.SelectedValue : string.Empty );
+            gfSettings.SaveUserPreference( "Frequency", dvpFrequency.SelectedValue != All.Id.ToString() ? dvpFrequency.SelectedValue : string.Empty );
             gfSettings.SaveUserPreference( "Created", drpDates.DelimitedValues );
             gfSettings.SaveUserPreference( "Account", ddlAccount.SelectedValue != All.Id.ToString() ? ddlAccount.SelectedValue : string.Empty );
             gfSettings.SaveUserPreference( "Include Inactive", cbIncludeInactive.Checked ? "Yes" : string.Empty );
@@ -240,12 +240,12 @@ namespace RockWeb.Blocks.Finance
         {
             nreAmount.DelimitedValues = gfSettings.GetUserPreference( "Amount" );
 
-            ddlFrequency.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ) );
-            ddlFrequency.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+            dvpFrequency.DefinedTypeId =DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ).Id;
+            dvpFrequency.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
             string freqPreference = gfSettings.GetUserPreference( "Frequency" );
             if ( !string.IsNullOrWhiteSpace( freqPreference ))
             {
-                ddlFrequency.SetValue( freqPreference );
+                dvpFrequency.SetValue( freqPreference );
             }
 
             drpDates.DelimitedValues = gfSettings.GetUserPreference( "Created" );

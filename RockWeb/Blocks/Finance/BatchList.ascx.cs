@@ -333,8 +333,8 @@ namespace RockWeb.Blocks.Finance
 
             gfBatchFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             gfBatchFilter.SaveUserPreference( "Campus", campCampus.SelectedValue );
-            gfBatchFilter.SaveUserPreference( "Contains Transaction Type", ddlTransactionType.SelectedValue );
-            gfBatchFilter.SaveUserPreference( "Contains Source Type", ddlSourceType.SelectedValue );
+            gfBatchFilter.SaveUserPreference( "Contains Transaction Type", dvpTransactionType.SelectedValue );
+            gfBatchFilter.SaveUserPreference( "Contains Source Type", dvpSourceType.SelectedValue );
 
             if ( AvailableAttributes != null )
             {
@@ -607,8 +607,8 @@ namespace RockWeb.Blocks.Finance
             ddlStatus.SetValue( statusFilter );
 
             var definedTypeTransactionTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid() );
-            ddlTransactionType.BindToDefinedType( definedTypeTransactionTypes, true );
-            ddlTransactionType.SetValue( gfBatchFilter.GetUserPreference( "Contains Transaction Type" ) );
+            dvpTransactionType.DefinedTypeId = definedTypeTransactionTypes.Id;
+            dvpTransactionType.SetValue( gfBatchFilter.GetUserPreference( "Contains Transaction Type" ) );
 
             var campusi = CampusCache.All();
             campCampus.Campuses = campusi;
@@ -618,8 +618,8 @@ namespace RockWeb.Blocks.Finance
             drpBatchDate.DelimitedValues = gfBatchFilter.GetUserPreference( "Date Range" );
 
             var definedTypeSourceTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() );
-            ddlSourceType.BindToDefinedType( definedTypeSourceTypes, true );
-            ddlSourceType.SetValue( gfBatchFilter.GetUserPreference( "Contains Source Type" ) );
+            dvpSourceType.DefinedTypeId = definedTypeSourceTypes.Id;
+            dvpSourceType.SetValue( gfBatchFilter.GetUserPreference( "Contains Source Type" ) );
 
             BindAttributes();
             AddDynamicControls();

@@ -15,7 +15,7 @@
                     <div class="grid grid-panel">
                         <Rock:GridFilter ID="gfSettings" runat="server">
                             <Rock:NumberRangeEditor ID="nreAmount" runat="server" Label="Amount Range" NumberType="Double" />
-                            <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Frequency" />
+                            <Rock:DefinedValuePicker ID="dvpFrequency" runat="server" Label="Frequency" />
                             <Rock:DateRangePicker ID="drpDates" runat="server" Label="Created" />
                             <Rock:RockDropDownList ID="ddlAccount" runat="server" Label="Account" EnhanceForLongLists="true" />
                             <Rock:RockCheckBox ID="cbIncludeInactive" runat="server" Label="Include Inactive Schedules" Text="Yes" />

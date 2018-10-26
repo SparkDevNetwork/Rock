@@ -757,9 +757,9 @@ namespace RockWeb.Blocks.Event
 
                 using ( var rockContext = new RockContext() )
                 {
-                    ddlCurrencyType.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid(), rockContext ), true );
-                    ddlCreditCardType.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid(), rockContext ), true );
-                    ddlCreditCardType.Visible = false;
+                    dvpCurrencyType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid(), rockContext ).Id;
+                    dvpCreditCardType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid(), rockContext ).Id;
+                    dvpCreditCardType.Visible = false;
                 }
 
                 pnlCosts.Visible = false;
@@ -1227,15 +1227,15 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlCurrencyType control.
+        /// Handles the SelectedIndexChanged event of the dvpCurrencyType control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlCurrencyType_SelectedIndexChanged( object sender, EventArgs e )
+        protected void dvpCurrencyType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            int? currencyType = ddlCurrencyType.SelectedValueAsInt();
+            int? currencyType = dvpCurrencyType.SelectedValueAsInt();
             var creditCardCurrencyType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
-            ddlCreditCardType.Visible = currencyType.HasValue && currencyType.Value == creditCardCurrencyType.Id;
+            dvpCreditCardType.Visible = currencyType.HasValue && currencyType.Value == creditCardCurrencyType.Id;
         }
 
         #endregion
@@ -1927,8 +1927,8 @@ namespace RockWeb.Blocks.Event
         {
             var transaction = new FinancialTransaction();
             transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
-            transaction.FinancialPaymentDetail.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
-            transaction.FinancialPaymentDetail.CreditCardTypeValueId = ddlCreditCardType.SelectedValueAsInt();
+            transaction.FinancialPaymentDetail.CurrencyTypeValueId = dvpCurrencyType.SelectedValueAsInt();
+            transaction.FinancialPaymentDetail.CreditCardTypeValueId = dvpCreditCardType.SelectedValueAsInt();
             transaction.TransactionCode = tbTransactionCode.Text;
 
             registrationChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, string.Format( "Manual payment of {0}.", amount.FormatAsCurrency() ) );

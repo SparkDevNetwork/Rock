@@ -121,7 +121,7 @@
                                     <div class="col-md-6">
                                         <Rock:RockCheckBox ID="cbShowMap" runat="server" Label="Map" Text="Yes"
                                             Help="Should a map be displayed that shows the location of each group?" ValidationGroup="GroupFinderSettings" />
-                                        <Rock:RockDropDownList ID="ddlMapStyle" runat="server" Label="Map Style"
+                                        <Rock:DefinedValuePicker ID="dvpMapStyle" runat="server" Label="Map Style"
                                             Help="The map theme that should be used for styling the map." ValidationGroup="GroupFinderSettings" />
                                         <Rock:NumberBox ID="nbMapHeight" runat="server" Label="Map Height"
                                             Help="The pixel height to use for the map." ValidationGroup="GroupFinderSettings" />
