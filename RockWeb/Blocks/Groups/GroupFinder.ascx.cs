@@ -310,7 +310,7 @@ namespace RockWeb.Blocks.Groups
             SetAttributeValue( "AttributeFilters", cblAttributes.Items.Cast<ListItem>().Where( i => i.Selected ).Select( i => i.Value ).ToList().AsDelimited( "," ) );
 
             SetAttributeValue( "ShowMap", cbShowMap.Checked.ToString() );
-            SetAttributeValue( "MapStyle", ddlMapStyle.SelectedValue );
+            SetAttributeValue( "MapStyle", dvpMapStyle.SelectedValue );
             SetAttributeValue( "MapHeight", nbMapHeight.Text );
             SetAttributeValue( "ShowFence", cbShowFence.Checked.ToString() );
             SetAttributeValue( "PolygonColors", vlPolygonColors.Value );
@@ -469,8 +469,8 @@ namespace RockWeb.Blocks.Groups
             cbCampusContext.Checked = GetAttributeValue( "EnableCampusContext" ).AsBoolean();
 
             cbShowMap.Checked = GetAttributeValue( "ShowMap" ).AsBoolean();
-            ddlMapStyle.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MAP_STYLES.AsGuid() ) );
-            ddlMapStyle.SetValue( GetAttributeValue( "MapStyle" ) );
+            dvpMapStyle.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MAP_STYLES.AsGuid() ).Id;
+            dvpMapStyle.SetValue( GetAttributeValue( "MapStyle" ) );
             nbMapHeight.Text = GetAttributeValue( "MapHeight" );
             cbShowFence.Checked = GetAttributeValue( "ShowFence" ).AsBoolean();
             vlPolygonColors.Value = GetAttributeValue( "PolygonColors" );
