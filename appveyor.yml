@@ -39,8 +39,6 @@ install:
 
     Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
 
-    git clone -q --depth=1 git@github.com:NewSpring/rock-spiritual-gifts.git c:\projects\rock-spiritual-gifts
-
     git clone -q --depth=1 git@github.com:NewSpring/rock-misc.git c:\projects\rock-misc
 
     git clone -q --depth=1 git@github.com:NewSpring/rock-f1.git c:\projects\rock-f1
