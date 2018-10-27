@@ -33,6 +33,17 @@ namespace Rock
         #region String Extensions
 
         /// <summary>
+        /// Joins and array of strings using the provided separator.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="separator">The separator.</param>
+        /// <returns>Concatencated string.</returns>
+        public static string JoinStrings( this IEnumerable<string> source, string separator )
+        {
+            return string.Join( separator, source.ToArray() );
+        }
+
+        /// <summary>
         /// Removes special characters from the string so that only Alpha, Numeric, '.' and '_' remain;
         /// </summary>
         /// <param name="str">The identifier.</param>
