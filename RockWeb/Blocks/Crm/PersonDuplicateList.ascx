@@ -18,9 +18,9 @@
                                     <%# GetConfidenceScoreColumnHtml((double?)Eval("MaxConfidenceScore")) %>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
-                            <Rock:DefinedValueField DataField="SuffixValueId" HeaderText="Suffix" SortExpression="SuffixValue.Value"/>
                             <Rock:RockBoundField DataField="FirstName" HeaderText="First Name" SortExpression="FirstName, LastName" />
                             <Rock:RockBoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName, FirstName" />
+                            <Rock:DefinedValueField DataField="SuffixValueId" HeaderText="Suffix" SortExpression="SuffixValue.Value"/>
                             <Rock:RockBoundField DataField="MatchCount" HeaderText="Match Count" SortExpression="MatchCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"/>
                             <Rock:DateTimeField DataField="PersonModifiedDateTime" HeaderText="Modified" SortExpression="PersonModifiedDateTime" />
                             <Rock:RockBoundField DataField="CreatedByPerson" HeaderText="Created By" SortExpression="CreatedByPerson" />
