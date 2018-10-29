@@ -45,7 +45,7 @@ namespace Rock.Model
             return Queryable()
                 .Where( g =>
                     g.LocationId == locationId &&
-                    g.Group.IsActive );
+                    g.Group.IsActive && !g.Group.IsArchived );
 
         }
 
@@ -58,7 +58,7 @@ namespace Rock.Model
         {
             return Queryable().Where( g =>
                     locationIds.Contains( g.LocationId ) &&
-                    g.Group.IsActive );
+                    g.Group.IsActive && ! g.Group.IsArchived );
         }
 
         /// <summary>
