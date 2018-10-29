@@ -80,7 +80,7 @@
 
                 var locale = window.navigator.userLanguage || window.navigator.language;
                 moment.locale(locale);
-                var checkDate = moment($datepicker.val());
+                var checkDate = moment($datepicker.val(), 'l');
 
                 if (!checkDate.isValid) {
                     // invalid date entered, color red and return
@@ -242,11 +242,15 @@
 
             // validate on Save.  Make sure they have at least a StartDate and Time set
             $modal.find('.js-modaldialog-save-link').off('click').on('click', function (event) {
+
+                var locale = window.navigator.userLanguage || window.navigator.language;
+                moment.locale(locale);
+
                 var $datetimepicker = $modal.find('[id*="dpStartDateTime"]').find('input'),
-                    startDateValue = Date.parse($datetimepicker.first().val()) || -1,
+                    startDateValue = moment($datetimepicker.first().val(), 'l'),
                     startTimeValue = $datetimepicker.last().val();
 
-                if (startDateValue < 0 || !startTimeValue) {
+                if (!startDateValue.isValid) {
                     $datetimepicker.parents(".form-group").first().toggleClass("has-error", 1);
                     event.preventDefault();
                     return;
