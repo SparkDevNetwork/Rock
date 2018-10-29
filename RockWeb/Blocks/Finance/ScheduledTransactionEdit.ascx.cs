@@ -244,8 +244,8 @@ achieve our mission.  We are so grateful for your commitment.
                     if ( page != null )
                     {
                         page.PageNavigate += page_PageNavigate;
-                        page.AddScriptLink( "~/Scripts/moment.min.js", true );
-                        page.AddScriptLink( "~/Scripts/moment-with-locales.min.js", true );
+                        page.AddScriptLink( "~/Scripts/moment.min.js", false );
+                        page.AddScriptLink( "~/Scripts/moment-with-locales.min.js", false );
                     }
 
                     FluidLayout = GetAttributeValue( "LayoutStyle" ) == "Fluid";
