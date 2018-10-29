@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Finance
             base.OnInit( e );
 
             // Setup for being able to copy text to clipboard
-            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
+            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js", false );
             string script = string.Format( @"
     new ClipboardJS('#{0}');
     $('#{0}').tooltip();

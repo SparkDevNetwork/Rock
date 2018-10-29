@@ -80,8 +80,8 @@ namespace RockWeb.Blocks.Core
             ddlPrinter.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
 
             RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
-            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
-            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js", false );
             ScriptManager.RegisterStartupScript( lImage, lImage.GetType(), "image-fluidbox", "$('.photo a').fluidbox();", true );
         }
 

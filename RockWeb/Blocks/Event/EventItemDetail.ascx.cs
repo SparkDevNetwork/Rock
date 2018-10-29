@@ -146,8 +146,8 @@ namespace RockWeb.Blocks.Event
             cblCalendars.SelectedIndexChanged += cblCalendars_SelectedIndexChanged;
 
             RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
-            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
-            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js", false );
             ScriptManager.RegisterStartupScript( lImage, lImage.GetType(), "image-fluidbox", "$('.photo a').fluidbox();", true );
 
             string deleteScript = @"

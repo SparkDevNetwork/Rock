@@ -1,7 +1,7 @@
 ﻿/* NOTE: Requires this on the init of the block
 
 RockPage.AddScriptLink("~/Scripts/d3-cloud/d3.layout.cloud.js");
-RockPage.AddScriptLink("~/Scripts/d3-cloud/d3.min.js");
+RockPage.AddScriptLink("~/Scripts/d3-cloud/d3.min.js", false);
 
 */
 

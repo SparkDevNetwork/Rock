@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js", false );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;

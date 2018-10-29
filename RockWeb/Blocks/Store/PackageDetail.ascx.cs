@@ -72,8 +72,8 @@ namespace RockWeb.Blocks.Store
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
-            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
-            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js", false );
         }
 
         /// <summary>
