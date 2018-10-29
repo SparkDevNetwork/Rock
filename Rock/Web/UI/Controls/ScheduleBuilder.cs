@@ -260,6 +260,14 @@ namespace Rock.Web.UI.Controls
 
             if ( sm != null )
             {
+                var rockPage = Page as RockPage;
+
+                if ( rockPage != null )
+                {
+                    rockPage.AddScriptLink( "/Scripts/moment.min.js", true );
+                    rockPage.AddScriptLink( "https://momentjs.com/downloads/moment-with-locales.js", false );
+                }
+
                 sm.RegisterAsyncPostBackControl( _btnShowPopup );
             }
         }
