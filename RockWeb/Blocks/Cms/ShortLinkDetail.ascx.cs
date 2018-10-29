@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Crm
 
         protected override void OnInit( EventArgs e )
         {
-            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
+            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js", false );
             string script = @"
     new ClipboardJS('.js-copy-clipboard');
     $('.js-copy-clipboard').tooltip();

@@ -387,51 +387,51 @@ namespace RockWeb.Blocks.Cms
 
         #region Methods
 
-// Disable QuickEdit for v7
-//        private void RegisterScript()
-//        {
-//            if ( UserCanEdit )
-//            {
-//                string script = "";
-//                if ( GetAttributeValue( "QuickEdit" ) == "DBLCLICK" )
-//                {
-//                    script = string.Format( @"
-//    Sys.Application.add_load( function () {{
-//        $('#{0} > div.html-content-view').dblclick(function (e) {{
-//            {1};
-//        }});
-//    }});
-//", upnlHtmlContent.ClientID, this.Page.ClientScript.GetPostBackEventReference( lbQuickEdit, "" ) );
-//                }
+        // Disable QuickEdit for v7
+        //        private void RegisterScript()
+        //        {
+        //            if ( UserCanEdit )
+        //            {
+        //                string script = "";
+        //                if ( GetAttributeValue( "QuickEdit" ) == "DBLCLICK" )
+        //                {
+        //                    script = string.Format( @"
+        //    Sys.Application.add_load( function () {{
+        //        $('#{0} > div.html-content-view').dblclick(function (e) {{
+        //            {1};
+        //        }});
+        //    }});
+        //", upnlHtmlContent.ClientID, this.Page.ClientScript.GetPostBackEventReference( lbQuickEdit, "" ) );
+        //                }
 
-//                if ( GetAttributeValue( "QuickEdit" ) == "AIREDIT" )
-//                {
-//                    RockPage.AddScriptLink( Page, "~/Scripts/summernote/summernote.min.js", true );
+        //                if ( GetAttributeValue( "QuickEdit" ) == "AIREDIT" )
+        //                {
+        //                    RockPage.AddScriptLink( Page, "~/Scripts/summernote/summernote.min.js", false );
 
-//                    script = string.Format( @"
-//    Sys.Application.add_load( function () {{
-//        $('#{0} > div.html-content-view').summernote( {{
-//            airMode: true,
-//            callbacks: {{
-//                onChange: function( contents, $editable ) {{
-//                    var htmlContents = {{
-//                        EntityValue: $('#{2}').val(),
-//                        Content: contents
-//                    }};
-//                    $.post( Rock.settings.get('baseUrl') + 'api/HtmlContents/UpdateContents/{1}', htmlContents, null, 'application/json' );
-//                }}
-//            }}
-//        }});
-//    }});
-//", upnlHtmlContent.ClientID, this.BlockId, hfEntityValue.ClientID );
-//                }
+        //                    script = string.Format( @"
+        //    Sys.Application.add_load( function () {{
+        //        $('#{0} > div.html-content-view').summernote( {{
+        //            airMode: true,
+        //            callbacks: {{
+        //                onChange: function( contents, $editable ) {{
+        //                    var htmlContents = {{
+        //                        EntityValue: $('#{2}').val(),
+        //                        Content: contents
+        //                    }};
+        //                    $.post( Rock.settings.get('baseUrl') + 'api/HtmlContents/UpdateContents/{1}', htmlContents, null, 'application/json' );
+        //                }}
+        //            }}
+        //        }});
+        //    }});
+        //", upnlHtmlContent.ClientID, this.BlockId, hfEntityValue.ClientID );
+        //                }
 
-//                if ( !string.IsNullOrWhiteSpace( script ) )
-//                {
-//                    ScriptManager.RegisterStartupScript( lbQuickEdit, lbQuickEdit.GetType(), string.Format( "html-content-block-{0}", this.BlockId ), script, true );
-//                }
-//            }
-//        }
+        //                if ( !string.IsNullOrWhiteSpace( script ) )
+        //                {
+        //                    ScriptManager.RegisterStartupScript( lbQuickEdit, lbQuickEdit.GetType(), string.Format( "html-content-block-{0}", this.BlockId ), script, true );
+        //                }
+        //            }
+        //        }
 
         /// <summary>
         /// Binds the grid.

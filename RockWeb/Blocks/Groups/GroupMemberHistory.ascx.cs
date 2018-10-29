@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Groups
             gGroupMembers.GridRebind += ( sender, ge ) => { BindMembersGrid(); };
 
             /// add lazyload js so that person-link-popover javascript works (see GroupMemberList.ascx)
-            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js", false );
         }
 
         /// <summary>

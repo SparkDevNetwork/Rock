@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.BulkImport
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", fingerprint: false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", false );
         }
 
         /// <summary>

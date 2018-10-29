@@ -55,8 +55,8 @@ namespace RockWeb.Blocks.Security
             base.OnInit( e );
 
             RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
-            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
-            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js", false );
 
             if ( CurrentPerson != null )
             {

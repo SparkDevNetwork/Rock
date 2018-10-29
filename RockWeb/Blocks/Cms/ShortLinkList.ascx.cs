@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Cms
             gShortLinks.Actions.ShowAdd = canAddEditDelete;
             gShortLinks.IsDeleteEnabled = canAddEditDelete;
 
-            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
+            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js", false );
             string script = @"
     new ClipboardJS('.js-copy-clipboard');
     $('.js-copy-clipboard').tooltip();

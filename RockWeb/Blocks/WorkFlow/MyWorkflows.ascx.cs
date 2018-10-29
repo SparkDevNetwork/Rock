@@ -118,7 +118,7 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnLoad( e );
 
-            RockPage.AddScriptLink( "~/Scripts/jquery.visible.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.visible.min.js", false );
 
             if ( !Page.IsPostBack )
             {
