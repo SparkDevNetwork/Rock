@@ -587,6 +587,7 @@ namespace Rock.Web.UI.Controls
             string defaultState = GetDefaultState();
 
             BindCountries();
+            _ddlCountry.SetValue( defaultCountry );
 
             BindStates( defaultCountry );
             _ddlState.SetValue( defaultState );
