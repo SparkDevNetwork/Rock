@@ -36,7 +36,8 @@ namespace Rock.Model
     [DataContract]
     public partial class PhoneNumber : Model<PhoneNumber>
     {
-        #region Constants
+        #region 
+        private static Regex DIGITS_ONLY_REGEX = new Regex( @"[^\d]" );
 
         public static readonly string US_COUNTRY_CODE = "1";
         public static readonly string UK_COUNTRY_CODE = "44";
@@ -443,7 +444,7 @@ namespace Rock.Model
         {
             if ( !string.IsNullOrEmpty( number ) )
             {
-                return digitsOnly.Replace( number, string.Empty );
+                return DIGITS_ONLY_REGEX.Replace( number, string.Empty );
             }
             else
             {
@@ -451,7 +452,33 @@ namespace Rock.Model
             }
         }
 
-        private static Regex digitsOnly = new Regex( @"[^\d]" );
+        /// <summary>
+        /// Converts a phone number in E164 format to a Rock like concatenation of phone number and countrycode excluding a leading +.
+        /// </summary>
+        /// <param name="e164Number">The e164 number.</param>
+        /// <returns></returns>
+        public static string E164ToNumberWithCountryCode(string e164Number)
+        {
+            if ( e164Number.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            string numberWithCountryCode = e164Number;
+
+            // Reinsert 0 into UK numbers: https://support.twilio.com/hc/en-us/articles/223183008-Formatting-International-Phone-Numbers
+            if ( e164Number.StartsWith( INTERNATIONAL_PREFIX + UK_COUNTRY_CODE ) && e164Number[3] != '0' )
+            {
+                numberWithCountryCode = UK_COUNTRY_CODE + "0" + e164Number.Substring( 3 );
+            }
+            // Remove leading +
+            else if ( e164Number.StartsWith( INTERNATIONAL_PREFIX) )
+            {
+                numberWithCountryCode = e164Number.Substring( 1 );
+            }
+
+            return CleanNumber( numberWithCountryCode);
+        }
 
         #endregion
     }

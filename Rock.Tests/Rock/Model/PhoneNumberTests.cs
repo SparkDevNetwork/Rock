@@ -15,7 +15,7 @@ namespace Rock.Tests.Rock.Model
             phoneNumber.Number = "6235553322";
             phoneNumber.CountryCode = "1"; // This would be set on pre-save if not specified
 
-            Assert.Equal( phoneNumber.E164Format, "+16235553322" );
+            Assert.Equal( "+16235553322", phoneNumber.E164Format );
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Rock.Tests.Rock.Model
             phoneNumber.Number = "07351777888";
             phoneNumber.CountryCode = "44";
 
-            Assert.Equal( phoneNumber.E164Format, "+447351777888" );
+            Assert.Equal( "+447351777888", phoneNumber.E164Format );
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Rock.Tests.Rock.Model
             phoneNumber.Number = "123456";
             phoneNumber.CountryCode = "44";
 
-            Assert.Equal( phoneNumber.E164Format, "+44123456" );
+            Assert.Equal( "+44123456", phoneNumber.E164Format );
         }
 
         [Fact]
@@ -50,11 +50,42 @@ namespace Rock.Tests.Rock.Model
             var nullPhoneNumber = new PhoneNumber();
             nullPhoneNumber.Number = null;
 
-            Assert.Equal( nullPhoneNumber.E164Format, string.Empty );
+            Assert.Equal( string.Empty, nullPhoneNumber.E164Format );
 
             var whiteSpacePhoneNumber = new PhoneNumber();
             whiteSpacePhoneNumber.Number = " ";
-            Assert.Equal( whiteSpacePhoneNumber.E164Format, string.Empty );
+            Assert.Equal( string.Empty, whiteSpacePhoneNumber.E164Format );
+        }
+
+        [Fact]
+        public void USE164ToCountryCodeandNumber()
+        {
+            string e164 = "+14155552671";
+            Assert.Equal( "14155552671", PhoneNumber.E164ToNumberWithCountryCode( e164 ) );
+        }
+
+        [Fact]
+        public void UKE164ToCountryCodeandNumber()
+        {
+            string e164 = "+441536737441";
+            Assert.Equal( "4401536737441", PhoneNumber.E164ToNumberWithCountryCode( e164 ) );
+        }
+
+        [Fact]
+        public void NullWhiteSpaceE164ToCountryCodeandNumber()
+        {
+            string e164Null = null;
+            Assert.Equal( string.Empty, PhoneNumber.E164ToNumberWithCountryCode( e164Null ) );
+
+            string e164WhiteSpace = " ";
+            Assert.Equal( string.Empty, PhoneNumber.E164ToNumberWithCountryCode( e164WhiteSpace ) );
+        }
+
+        [Fact]
+        public void BadFormatE164ToCountryCodeandNumber()
+        {
+            string badNumber = "Bad Number";
+            Assert.Equal(PhoneNumber.E164ToNumberWithCountryCode( badNumber ), string.Empty );
         }
 
         [Fact]
@@ -64,7 +95,7 @@ namespace Rock.Tests.Rock.Model
             unlistedNumber.Number = "123";
             unlistedNumber.IsUnlisted = true;
 
-            Assert.Equal( unlistedNumber.ToString(), "Unlisted" );
+            Assert.Equal("Unlisted", unlistedNumber.ToString() );
         }
     }
 }
