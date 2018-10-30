@@ -477,12 +477,12 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private List<CommunicationType> GetAllowedCommunicationTypes()
         {
-            var communicationTypes = this.GetAttributeValue( "CommunicationTypes" ).SplitDelimitedValues();
+            var communicationTypes = this.GetAttributeValue( "CommunicationTypes" ).SplitDelimitedValues(false);
             var result = new List<CommunicationType>();
             if ( communicationTypes.Any() )
             {
                 // Recipient Preference,Email,SMS
-                if ( communicationTypes.Contains( "RecipientPreference" ) )
+                if ( communicationTypes.Contains( "Recipient Preference" ) )
                 {
                     result.Add( CommunicationType.RecipientPreference );
                 }
