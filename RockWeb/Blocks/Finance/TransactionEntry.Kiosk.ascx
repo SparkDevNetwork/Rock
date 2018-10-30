@@ -7,119 +7,119 @@
 
         <script>
 
-            var isTouchDevice = 'ontouchstart' in document.documentElement;
+            Sys.Application.add_load(function () {
+                $(document).ready(function() {
+                    var isTouchDevice = 'ontouchstart' in document.documentElement;
 
-            //
-            // setup swipe detection
-            //
-            var lastKeyPress = 0;
-            var keyboardBuffer = '';
-            var swipeProcessing = false;
+                    //
+                    // setup swipe detection
+                    //
+                    var lastKeyPress = 0;
+                    var keyboardBuffer = '';
+                    var swipeProcessing = false;
 
-            $(document).keypress(function (e) {
-                //console.log('Keypressed: ' + e.which + ' - ' + String.fromCharCode(e.which));
-                var date = new Date();
+                    $(document).keypress(function (e) {
+                        //console.log('Keypressed: ' + e.which + ' - ' + String.fromCharCode(e.which));
+                        var date = new Date();
 
-                if ($(".js-swipe").is(":visible")) {
+                        if ($(".js-swipe").is(":visible")) {
 
-                    if (e.which == 37 && (date.getTime() - lastKeyPress) > 500) { // start buffering if first character of the swipe (always '%')
-                        //console.log('Start the buffering');
-                        keyboardBuffer = String.fromCharCode(e.which);
-                    } else if ((date.getTime() - lastKeyPress) < 100) {  // continuing the reading into the buffer if the stream of characters is still coming
-                        keyboardBuffer += String.fromCharCode(e.which);
-                    }
+                            if (e.which == 37 && (date.getTime() - lastKeyPress) > 500) { // start buffering if first character of the swipe (always '%')
+                                //console.log('Start the buffering');
+                                keyboardBuffer = String.fromCharCode(e.which);
+                            } else if ((date.getTime() - lastKeyPress) < 100) {  // continuing the reading into the buffer if the stream of characters is still coming
+                                keyboardBuffer += String.fromCharCode(e.which);
+                            }
 
-                    // if the character is a line break stop buffering and call postback
-                    if (e.which == 13 && keyboardBuffer.length != 0) {
-                        if (!swipeProcessing) {
-                            $('#hfSwipe').val(keyboardBuffer);
-                            keyboardBuffer = '';
-                            swipeProcessing = true;
-                            window.location = "javascript:__doPostBack('hfSwipe', 'Swipe_Complete')";
+                            // if the character is a line break stop buffering and call postback
+                            if (e.which == 13 && keyboardBuffer.length != 0) {
+                                if (!swipeProcessing) {
+                                    $('#hfSwipe').val(keyboardBuffer);
+                                    keyboardBuffer = '';
+                                    swipeProcessing = true;
+                                    window.location = "javascript:__doPostBack('hfSwipe', 'Swipe_Complete')";
+                                }
+                            }
+
+                            // stop the keypress
+                            e.preventDefault();
+
+                        } else {
+                            // if not the swipe panel ignore characters from the swipe
+                            if (e.which == 37 || ((date.getTime() - lastKeyPress) < 50)) {
+                                //console.log('Swiper... no swiping...');
+                                e.preventDefault();
+                            }
+                        }
+
+                        lastKeyPress = date.getTime();
+                    });
+
+                    //
+                    // search
+                    //
+                    if ($(".js-pnlsearch").is(":visible")) {
+
+                        // setup digits buttons
+                        $('.js-pnlsearch .tenkey a.digit').click(function () {
+                            $phoneNumber = $("input[id$='tbPhone']");
+                            $phoneNumber.val($phoneNumber.val() + $(this).html());
+                            return false;
+                        });
+                        $('.js-pnlsearch .tenkey a.back').click(function () {
+                            $phoneNumber = $("input[id$='tbPhone']");
+                            $phoneNumber.val($phoneNumber.val().slice(0, -1));
+                            return false;
+                        });
+                        $('.js-pnlsearch .tenkey a.clear').click(function () {
+                            $phoneNumber = $("input[id$='tbPhone']");
+                            $phoneNumber.val('');
+                            return false;
+                        });
+
+                        // set focus to the input unless on a touch device
+                        if (!isTouchDevice) {
+                            $('.kiosk-phoneentry').focus();
                         }
                     }
 
-                    // stop the keypress
-                    e.preventDefault();
+                    //
+                    // account entry
+                    //
+                    if ($(".js-pnlaccountentry").is(":visible")) {
 
-                } else {
-                    // if not the swipe panel ignore characters from the swipe
-                    if (e.which == 37 || ((date.getTime() - lastKeyPress) < 50)) {
-                        //console.log('Swiper... no swiping...');
-                        e.preventDefault();
+                        // set focus
+                        if (!isTouchDevice) {
+                            $(".input-account .form-control:first").focus();
+                        }
+
+                        // setup digits buttons
+                        $('.js-pnlaccountentry .tenkey a.digit').on('click', function () {
+                            $amount = $(".input-group.active .form-control");
+                            $amount.val($amount.val() + $(this).html());
+                            return false;
+                        });
+                        $('.js-pnlaccountentry .tenkey a.clear').on('click', function () {
+                            $amount = $(".input-group.active .form-control");
+                            $amount.val('');
+                            return false;
+                        });
+
+                        $('.form-control').on('click', function () {
+                            $('.input-group').removeClass("active");
+                            $(this).closest('.input-group').addClass("active");
+                        });
                     }
-                }
 
-                lastKeyPress = date.getTime();
-            });
-
-            Sys.Application.add_load(function () {
-
-
-                //
-                // search 
-                //
-                if ($(".js-pnlsearch").is(":visible")) {
-
-                    // setup digits buttons
-                    $('.js-pnlsearch .tenkey a.digit').click(function () {
-                        $phoneNumber = $("input[id$='tbPhone']");
-                        $phoneNumber.val($phoneNumber.val() + $(this).html());
-                        return false;
-                    });
-                    $('.js-pnlsearch .tenkey a.back').click(function () {
-                        $phoneNumber = $("input[id$='tbPhone']");
-                        $phoneNumber.val($phoneNumber.val().slice(0, -1));
-                        return false;
-                    });
-                    $('.js-pnlsearch .tenkey a.clear').click(function () {
-                        $phoneNumber = $("input[id$='tbPhone']");
-                        $phoneNumber.val('');
-                        return false;
-                    });
-
-                    // set focus to the input unless on a touch device
-                    if (!isTouchDevice) {
-                        $('.kiosk-phoneentry').focus();
-                    }
-                }
-
-                //
-                // account entry
-                //
-                if ($(".js-pnlaccountentry").is(":visible")) {
-
-                    // set focus
-                    if (!isTouchDevice) {
+                    //
+                    // register entry
+                    //
+                    if ($(".js-pnlregister").is(":visible")) {
                         $(".input-account .form-control:first").focus();
                     }
-
-                    // setup digits buttons
-                    $('.js-pnlaccountentry .tenkey a.digit').on('click', function () {
-                        $amount = $(".input-group.active .form-control");
-                        $amount.val($amount.val() + $(this).html());
-                        return false;
-                    });
-                    $('.js-pnlaccountentry .tenkey a.clear').on('click', function () {
-                        $amount = $(".input-group.active .form-control");
-                        $amount.val('');
-                        return false;
-                    });
-
-                    $('.form-control').on('click', function () {
-                        $('.input-group').removeClass("active");
-                        $(this).closest('.input-group').addClass("active");
-                    });
-                }
-
-                //
-                // register entry
-                //
-                if ($(".js-pnlregister").is(":visible")) {
-                    $(".input-account .form-control:first").focus();
-                }
+                });
             });
-        
+
         </script>
 
         <Rock:NotificationBox ID="nbBlockConfigErrors" runat="server" NotificationBoxType="Danger" />
@@ -133,7 +133,7 @@
                 <div class="row">
                     <div class="col-md-8 margin-b-lg">
                         <Rock:NotificationBox ID="nbSearch" runat="server" NotificationBoxType="Warning"></Rock:NotificationBox>
-                    
+
                         <Rock:RockTextBox ID="tbPhone" type="number" CssClass="kiosk-phoneentry" runat="server" Label="Phone Number" />
 
                         <div class="tenkey kiosk-phone-keypad">
@@ -177,7 +177,7 @@
                     </div>
                 </div>
             </footer>
-            
+
         </asp:Panel>
 
         <asp:Panel ID="pnlGivingUnitSelect" runat="server" Visible="false" CssClass="js-pnlgivingunitselect js-kioskscrollpanel">
@@ -238,7 +238,7 @@
             <header>
                 <h1>Enter An Amount</h1>
             </header>
-            
+
             <main>
                 <div class="row">
                     <div class="col-md-8">
@@ -275,9 +275,9 @@
                         <asp:LinkButton ID="lbAccountEntryNext" runat="server" OnClick="lbAccountEntryNext_Click" CssClass="btn btn-primary btn-kiosk btn-kiosk-lg">Next</asp:LinkButton>
                     </div>
                 </div>
-                
+
             </main>
-            
+
             <footer>
                 <div class="container">
                     <asp:LinkButton ID="lbAccountEntryBack" runat="server" OnClick="lbAccountEntryBack_Click" CssClass="btn btn-default btn-kiosk">Back</asp:LinkButton>
@@ -305,7 +305,7 @@
                     <asp:Image ID="imgSwipe" runat="server" ImageUrl="<%$ Fingerprint:~/Assets/Images/Kiosk/card_swipe.png %>" />
                 </div>
             </main>
-            
+
             <footer>
                 <div class="container">
                     <asp:LinkButton ID="lbSwipeBack" runat="server" OnClick="lbSwipeBack_Click" CssClass="btn btn-default btn-kiosk">Back</asp:LinkButton>
@@ -329,8 +329,8 @@
                         <asp:LinkButton id="lbReceiptDone" runat="server" OnClick="lbReceiptDone_Click" CssClass="btn btn-primary btn-kiosk btn-kiosk-lg">Done</asp:LinkButton>
                     </div>
                 </div>
-                
-                
+
+
             </main>
         </asp:Panel>
 

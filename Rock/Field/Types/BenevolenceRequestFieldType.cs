@@ -90,7 +90,7 @@ namespace Rock.Field.Types
             RockTextBox picker = control as RockTextBox;
             if ( picker != null )
             {
-                return picker.Text;
+                return picker.Text ?? string.Empty;
             }
 
             return null;

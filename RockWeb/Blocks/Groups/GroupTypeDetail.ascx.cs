@@ -511,7 +511,7 @@ namespace RockWeb.Blocks.Groups
             groupType.AttendancePrintTo = ddlPrintTo.SelectedValueAsEnum<PrintTo>();
             groupType.AllowedScheduleTypes = allowedScheduleTypes;
             groupType.LocationSelectionMode = locationSelectionMode;
-            groupType.GroupTypePurposeValueId = ddlGroupTypePurpose.SelectedValueAsInt();
+            groupType.GroupTypePurposeValueId = dvpGroupTypePurpose.SelectedValueAsInt();
             groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
             groupType.InheritedGroupTypeId = gtpInheritedGroupType.SelectedGroupTypeId;
             groupType.IgnorePersonInactivated = cbDontInactivateMembers.Checked;
@@ -784,8 +784,8 @@ namespace RockWeb.Blocks.Groups
             tbGroupMemberTerm.ReadOnly = groupType.IsSystem;
             tbGroupMemberTerm.Text = groupType.GroupMemberTerm;
 
-            ddlGroupTypePurpose.Enabled = !groupType.IsSystem;
-            ddlGroupTypePurpose.SetValue( groupType.GroupTypePurposeValueId );
+            dvpGroupTypePurpose.Enabled = !groupType.IsSystem;
+            dvpGroupTypePurpose.SetValue( groupType.GroupTypePurposeValueId );
 
             ddlGroupStatusDefinedType.Enabled = !groupType.IsSystem;
             ddlGroupStatusDefinedType.SetValue( groupType.GroupStatusDefinedTypeId );
@@ -984,14 +984,8 @@ namespace RockWeb.Blocks.Groups
                 .Where( g => g.Id != groupTypeId )
                 .ToList();
 
-            var groupTypePurposeList = new DefinedValueService( rockContext ).GetByDefinedTypeGuid( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ).OrderBy( a => a.Value ).ToList();
-
-            ddlGroupTypePurpose.Items.Clear();
-            ddlGroupTypePurpose.Items.Add( Rock.Constants.None.ListItem );
-            foreach ( var item in groupTypePurposeList )
-            {
-                ddlGroupTypePurpose.Items.Add( new ListItem( item.Value, item.Id.ToString() ) );
-            }
+            var groupTypePurposeDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid() ).Id;
+            dvpGroupTypePurpose.DefinedTypeId = groupTypePurposeDefinedTypeId;
 
             ddlGroupStatusDefinedType.Items.Clear();
             ddlGroupStatusDefinedType.Items.Add( new ListItem() );

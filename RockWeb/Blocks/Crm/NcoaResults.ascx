@@ -5,10 +5,16 @@
         <asp:Panel id="pnlDetails" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title">
-                    <i class="fa fa-people-carry"></i>
-                    NCOA Results
-                </h1>
+                <div class="pull-left">
+                    <h1 class="panel-title">
+                        <i class="fa fa-people-carry"></i>
+                        NCOA Results
+                    </h1>
+                </div>
+                <div class="pull-right">
+                    <asp:Literal id="lTotal" runat="server" />
+                </div>
+                <div class="clearfix"></div>
             </div>
 
             <div class="panel-body">

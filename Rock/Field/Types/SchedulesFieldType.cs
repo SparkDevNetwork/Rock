@@ -102,7 +102,7 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as SchedulePicker;
-            string result = null;
+            string result = string.Empty;
 
             if ( picker != null )
             {
@@ -116,9 +116,11 @@ namespace Rock.Field.Types
                         result = schedules.Select( s => s.Guid.ToString() ).ToList().AsDelimited( "," );
                     }
                 }
+
+                return result;
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>
