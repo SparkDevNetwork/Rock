@@ -1313,16 +1313,7 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to USE [Rock-develop]
-        ///GO
-        ///
-        ///SET ANSI_NULLS ON
-        ///GO
-        ///
-        ///SET QUOTED_IDENTIFIER ON
-        ///GO
-        ///
-        ////*
+        ///   Looks up a localized string similar to /*
         ///&lt;doc&gt;
         ///	&lt;summary&gt;
         /// 		This stored procedure attempts to update an indivdiual&apos;s first and second visit
@@ -1331,11 +1322,33 @@ namespace Rock.Migrations.Migrations {
         ///		+ A child&apos;s date will only be calculated looking at their check-in data.
         ///		+ An adult&apos;s date will be calculated looking at the check-in data of all the children.
         ///
-        ///		+ When calculating a first-visit date it will only write the date if the first checkin [rest of string was truncated]&quot;;.
+        ///		+ When calculating a first-visit date it will only write the date if the first checkin date
+        ///		  is within 14 days of the record being created. This helps eliminate bad  [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201810161814574_Rollup_1016_spCrm_FamilyAnalyticsFirstVisitsAttributeUpdate {
             get {
                 return ResourceManager.GetString("_201810161814574_Rollup_1016_spCrm_FamilyAnalyticsFirstVisitsAttributeUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns any person ids for people that have attended previously but who have not attended since the beginning date
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId 
+        ///		* SundayDate - Last time attended
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeIds&apos; datatype=&apos;varchar(max)&apos;&gt;The Group Type Ids (only attendance for these group types will be included&lt;/param&gt;
+        ///	&lt;param name=&apos;StartDateTime&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///	&lt;param name=&apos;GroupIds&apos; datatype=&apos;varchar( [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201810301818354_Rollup_1030_spCheckin_AttendanceAnalyticsQuery_NonAttendees {
+            get {
+                return ResourceManager.GetString("_201810301818354_Rollup_1030_spCheckin_AttendanceAnalyticsQuery_NonAttendees", resourceCulture);
             }
         }
     }
