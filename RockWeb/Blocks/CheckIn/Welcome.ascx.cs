@@ -65,8 +65,8 @@ namespace RockWeb.Blocks.CheckIn
                 return;
             }
 
-            RockPage.AddScriptLink( "~/scripts/jquery.plugin.min.js", false );
-            RockPage.AddScriptLink( "~/scripts/jquery.countdown.min.js", false );
+            RockPage.AddScriptLink( "~/scripts/jquery.plugin.min.js" );
+            RockPage.AddScriptLink( "~/scripts/jquery.countdown.min.js" );
 
             RegisterScript();
 

@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.Connection
 
                 GetSummaryData();
 
-                RockPage.AddScriptLink( "~/Scripts/jquery.visible.min.js", false );
+                RockPage.AddScriptLink( "~/Scripts/jquery.visible.min.js" );
             }
         }
 

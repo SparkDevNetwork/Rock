@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Utility
         {
             base.OnInit( e );
 
-            RockPage.AddScriptLink( "~/Scripts/idle-timer.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/idle-timer.min.js" );
         }
 
         /// <summary>
