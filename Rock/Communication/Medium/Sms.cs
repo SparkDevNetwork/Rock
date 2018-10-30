@@ -98,7 +98,7 @@ namespace Rock.Communication.Medium
 
                 // get from person
                 var fromPerson = new PersonService( rockContext ).Queryable()
-                    .Where( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == fromPhone.Replace( "+", "" ) && n.NumberTypeValueId == mobilePhoneNumberValueId ) )
+                    .Where( p => p.PhoneNumbers.Any( n => n.E164Format == fromPhone && n.NumberTypeValueId == mobilePhoneNumberValueId ) )
                     .OrderBy( p => p.Id ).FirstOrDefault(); // order by person id to get the oldest person to help with duplicate records of the response recipient
 
                 // get recipient from defined value

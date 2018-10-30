@@ -36,6 +36,14 @@ namespace Rock.Model
     [DataContract]
     public partial class PhoneNumber : Model<PhoneNumber>
     {
+        #region Constants
+
+        public static readonly string US_COUNTRY_CODE = "1";
+        public static readonly string UK_COUNTRY_CODE = "44";
+        public static readonly string INTERNATIONAL_PREFIX = "+";
+
+        #endregion
+
         #region Entity Properties
 
         /// <summary>
@@ -195,19 +203,23 @@ namespace Rock.Model
         /// Formats the phone number in IE64 format. Should be used when formatting numbers for sending SMS. https://support.twilio.com/hc/en-us/articles/223183008-Formatting-International-Phone-Numbers
         /// </summary>
         /// <value>
-        public string E164Format
+        [NotMapped]
+        public virtual string E164Format
         {
             get {
                 if ( this.Number.IsNullOrWhiteSpace() )
-                    return string.Empty;
-
-                // UK numbers (+44) take off leading 0
-                if (this.CountryCode.IsNullOrWhiteSpace() && this.CountryCode == "44" && this.Number.StartsWith("0") )
                 {
-                    return "+" + this.CountryCode + this.Number.Substring( 1 );
+                    return string.Empty;
                 }
 
-                return "+" + ( this.CountryCode ?? string.Empty ) + this.Number;
+
+                // UK numbers (+44) take off leading 0
+                if (this.CountryCode.IsNotNullOrWhiteSpace() && this.CountryCode == UK_COUNTRY_CODE && this.Number.StartsWith("0") )
+                {
+                    return INTERNATIONAL_PREFIX + this.CountryCode + this.Number.Substring( 1 );
+                }
+
+                return INTERNATIONAL_PREFIX + ( this.CountryCode ?? string.Empty ) + this.Number;
             }
         }
 
@@ -365,7 +377,7 @@ namespace Rock.Model
                 }
             }
 
-            return "1";
+            return US_COUNTRY_CODE;
         }
 
         /// <summary>
@@ -413,10 +425,10 @@ namespace Rock.Model
             {
                 if ( string.IsNullOrWhiteSpace( countryCode ) )
                 {
-                    countryCode = "1";
+                    countryCode = US_COUNTRY_CODE;
                 }
 
-                number = string.Format( "+{0} {1}", countryCode, number );
+                number = string.Format( "{0}{1} {2}", INTERNATIONAL_PREFIX, countryCode, number );
             }
 
             return number;

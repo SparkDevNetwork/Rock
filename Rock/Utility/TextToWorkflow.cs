@@ -190,13 +190,11 @@ namespace Rock.Utility
             var personService = new PersonService( rockContext );
             var phoneNumberService = new PhoneNumberService( rockContext );
 
-            var phoneNumber = fromPhone.Replace( "+", "" );
-
             // Get the person ids for people who's Mobile number matches the received From number
             var mobilePhoneType = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
             var peopleWithMobileNumber = phoneNumberService
                 .Queryable().AsNoTracking()
-                .Where( n => ( n.CountryCode ?? "" ) + ( n.Number ?? "" ) == phoneNumber )
+                .Where( n => n.E164Format == fromPhone )
                 .Select( n => new
                 {
                     n.PersonId,
@@ -225,7 +223,7 @@ namespace Rock.Utility
             // Otherwise, See if a person matches by any other type of phone (other than mobile)
             var peopleWithAnyNumber = phoneNumberService
                 .Queryable().AsNoTracking()
-                .Where( n => ( n.CountryCode ?? "" ) + ( n.Number ?? "" ) == phoneNumber )
+                .Where( n => n.E164Format == fromPhone )
                 .Select( n => n.PersonId )
                 .ToList();
 
