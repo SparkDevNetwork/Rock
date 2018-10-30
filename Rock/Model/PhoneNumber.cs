@@ -206,15 +206,15 @@ namespace Rock.Model
         [NotMapped]
         public virtual string E164Format
         {
-            get {
+            get
+            {
                 if ( this.Number.IsNullOrWhiteSpace() )
                 {
                     return string.Empty;
                 }
 
-
                 // UK numbers (+44) take off leading 0
-                if (this.CountryCode.IsNotNullOrWhiteSpace() && this.CountryCode == UK_COUNTRY_CODE && this.Number.StartsWith("0") )
+                if ( this.CountryCode.IsNotNullOrWhiteSpace() && this.CountryCode == UK_COUNTRY_CODE && this.Number.StartsWith( "0" ) )
                 {
                     return INTERNATIONAL_PREFIX + this.CountryCode + this.Number.Substring( 1 );
                 }
@@ -240,17 +240,17 @@ namespace Rock.Model
                 {
                     CountryCode = PhoneNumber.DefaultCountryCode();
                 }
-                
+
                 NumberFormatted = PhoneNumber.FormattedNumber( CountryCode, Number );
                 Number = PhoneNumber.CleanNumber( NumberFormatted );
             }
 
-			// Check for duplicate
-			if ( entry.State == System.Data.Entity.EntityState.Added || entry.State == System.Data.Entity.EntityState.Modified )
-			{
-				var rockContext = ( RockContext ) dbContext;
-				var phoneNumberService = new PhoneNumberService( rockContext );
-				var duplicates = phoneNumberService.Queryable().Where( pn => pn.PersonId == PersonId && pn.Number == Number && pn.CountryCode == CountryCode );
+            // Check for duplicate
+            if ( entry.State == System.Data.Entity.EntityState.Added || entry.State == System.Data.Entity.EntityState.Modified )
+            {
+                var rockContext = ( RockContext ) dbContext;
+                var phoneNumberService = new PhoneNumberService( rockContext );
+                var duplicates = phoneNumberService.Queryable().Where( pn => pn.PersonId == PersonId && pn.Number == Number && pn.CountryCode == CountryCode );
 
                 // Make sure this number isn't considered a duplicate
                 if ( entry.State == System.Data.Entity.EntityState.Modified )
@@ -259,25 +259,25 @@ namespace Rock.Model
                 }
 
                 if ( duplicates.Any() )
-				{
-					var highestOrderedDuplicate = duplicates.Where( p => p.NumberTypeValue != null ).OrderBy(p => p.NumberTypeValue.Order).FirstOrDefault();
-					if ( NumberTypeValueId.HasValue && highestOrderedDuplicate != null && highestOrderedDuplicate.NumberTypeValue != null )
-					{
+                {
+                    var highestOrderedDuplicate = duplicates.Where( p => p.NumberTypeValue != null ).OrderBy( p => p.NumberTypeValue.Order ).FirstOrDefault();
+                    if ( NumberTypeValueId.HasValue && highestOrderedDuplicate != null && highestOrderedDuplicate.NumberTypeValue != null )
+                    {
                         // Ensure that we preserve the PhoneNumber with the highest preference phone type
-						var numberType = DefinedValueCache.Get( NumberTypeValueId.Value, rockContext );
-						if ( highestOrderedDuplicate.NumberTypeValue.Order < numberType.Order )
-						{
-							entry.State = entry.State == System.Data.Entity.EntityState.Added ? System.Data.Entity.EntityState.Detached : System.Data.Entity.EntityState.Deleted;
-						}
-						else
-						{
-							phoneNumberService.DeleteRange( duplicates);
-						}
-					}
-				}
-			}
+                        var numberType = DefinedValueCache.Get( NumberTypeValueId.Value, rockContext );
+                        if ( highestOrderedDuplicate.NumberTypeValue.Order < numberType.Order )
+                        {
+                            entry.State = entry.State == System.Data.Entity.EntityState.Added ? System.Data.Entity.EntityState.Detached : System.Data.Entity.EntityState.Deleted;
+                        }
+                        else
+                        {
+                            phoneNumberService.DeleteRange( duplicates );
+                        }
+                    }
+                }
+            }
 
-			int personId = PersonId;
+            int personId = PersonId;
             PersonHistoryChanges = new Dictionary<int, History.HistoryChangeList> { { personId, new History.HistoryChangeList() } };
 
             switch ( entry.State )
@@ -286,8 +286,8 @@ namespace Rock.Model
                     {
 
                         History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( NumberTypeValueId ) ), string.Empty, NumberFormatted );
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", DefinedValueCache.GetName( NumberTypeValueId ) ), (bool?)null, IsUnlisted );
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", DefinedValueCache.GetName( NumberTypeValueId ) ), (bool?)null, IsMessagingEnabled );
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", DefinedValueCache.GetName( NumberTypeValueId ) ), ( bool? ) null, IsUnlisted );
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", DefinedValueCache.GetName( NumberTypeValueId ) ), ( bool? ) null, IsMessagingEnabled );
                         break;
                     }
 
@@ -336,7 +336,7 @@ namespace Rock.Model
                 foreach ( var keyVal in PersonHistoryChanges )
                 {
                     int personId = keyVal.Key > 0 ? keyVal.Key : PersonId;
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), personId, keyVal.Value, true, this.ModifiedByPersonAliasId );
+                    HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), personId, keyVal.Value, true, this.ModifiedByPersonAliasId );
                 }
             }
 
