@@ -151,6 +151,14 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["Required"] = value;
+                EnsureChildControls();
+                _tbStreet1.Required = value;
+                _tbCity.Required = value;
+                _tbCounty.Required = value;
+                _tbState.Required = value;
+                _ddlState.Required = value;
+                _tbPostalCode.Required = value;
+                _ddlCountry.Required = value;
             }
         }
 
@@ -225,13 +233,13 @@ namespace Rock.Web.UI.Controls
 
         #region Controls
 
-        private TextBox _tbStreet1;
-        private TextBox _tbStreet2;
-        private TextBox _tbCity;
-        private TextBox _tbCounty;
-        private TextBox _tbState;
-        private DropDownList _ddlState;
-        private TextBox _tbPostalCode;
+        private RockTextBox _tbStreet1;
+        private RockTextBox _tbStreet2;
+        private RockTextBox _tbCity;
+        private RockTextBox _tbCounty;
+        private RockTextBox _tbState;
+        private RockDropDownList _ddlState;
+        private RockTextBox _tbPostalCode;
         private RockDropDownList _ddlCountry;
 
         #endregion
@@ -506,6 +514,7 @@ namespace Rock.Web.UI.Controls
                 _tbCounty.ValidationGroup = value;
                 _tbState.ValidationGroup = value;
                 _ddlState.ValidationGroup = value;
+                _tbPostalCode.ValidationGroup = value;
                 _ddlCountry.ValidationGroup = value;
             }
         }
@@ -536,43 +545,51 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
             RockControlHelper.CreateChildControls( this, Controls );
 
-            _tbStreet1 = new TextBox();
+            _tbStreet1 = new RockTextBox();
             Controls.Add( _tbStreet1 );
             _tbStreet1.ID = "tbStreet1";
             _tbStreet1.CssClass = "form-control";
+            _tbStreet1.ValidationGroup = this.ValidationGroup;
+            _tbStreet1.RequiredErrorMessage = "Street is Required.";
 
-            this.RequiredFieldValidator.ControlToValidate = _tbStreet1.ID;
-
-            _tbStreet2 = new TextBox();
+            _tbStreet2 = new RockTextBox();
             Controls.Add( _tbStreet2 );
             _tbStreet2.ID = "tbStreet2";
             _tbStreet2.CssClass = "form-control";
 
-            _tbCity = new TextBox();
+            _tbCity = new RockTextBox();
             Controls.Add( _tbCity );
             _tbCity.ID = "tbCity";
             _tbCity.CssClass = "form-control";
+            _tbCity.ValidationGroup = this.ValidationGroup;
+            _tbCity.RequiredErrorMessage = "City is Required.";
 
-            _tbCounty = new TextBox();
+            _tbCounty = new RockTextBox();
             Controls.Add( _tbCounty );
             _tbCounty.ID = "tbCounty";
             _tbCounty.CssClass = "form-control";
 
-            _tbState = new TextBox();
+            _tbState = new RockTextBox();
             Controls.Add( _tbState );
             _tbState.ID = "tbState";
             _tbState.CssClass = "form-control";
+            _tbState.ValidationGroup = this.ValidationGroup;
+            _tbState.RequiredErrorMessage = "State is Required.";
 
-            _ddlState = new DropDownList();
+            _ddlState = new RockDropDownList();
             Controls.Add( _ddlState );
             _ddlState.ID = "ddlState";
             _ddlState.DataValueField = "Id";
             _ddlState.CssClass = "form-control";
+            _ddlState.ValidationGroup = this.ValidationGroup;
+            _ddlState.RequiredErrorMessage = "State is Required.";
 
-            _tbPostalCode = new TextBox();
+            _tbPostalCode = new RockTextBox();
             Controls.Add( _tbPostalCode );
             _tbPostalCode.ID = "tbPostalCode";
             _tbPostalCode.CssClass = "form-control";
+            _tbPostalCode.ValidationGroup = this.ValidationGroup;
+            _tbPostalCode.RequiredErrorMessage = "Zip Code is Required.";
 
             _ddlCountry = new RockDropDownList();
             _ddlCountry.EnhanceForLongLists = true;
@@ -582,6 +599,9 @@ namespace Rock.Web.UI.Controls
             _ddlCountry.AutoPostBack = true;
             _ddlCountry.SelectedIndexChanged += _ddlCountry_SelectedIndexChanged;
             _ddlCountry.CssClass = "form-control";
+            _ddlCountry.ValidationGroup = this.ValidationGroup;
+            _ddlCountry.RequiredErrorMessage = "Country is Required.";
+            this.RequiredFieldValidator.ControlToValidate = _ddlCountry.ID;
 
             string defaultCountry = GetDefaultCountry();
             string defaultState = GetDefaultState();
