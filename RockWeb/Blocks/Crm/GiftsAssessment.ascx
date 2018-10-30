@@ -37,7 +37,7 @@
     ///</summary>
     function initQuestionsValidation() {
         $('.js-gift-questions input[type=radio]').change(function () {
-            $(this).first().closest(".form-group").removeClass("has-error has-feedback").addClass("text-muted");
+            $(this).first().closest(".form-group").removeClass("has-error has-feedback").addClass("answered");
         });
     }
 
@@ -81,17 +81,15 @@
                     </div>
                     <asp:Repeater ID="rQuestions" runat="server" OnItemDataBound="rQuestions_ItemDataBound">
                         <ItemTemplate>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <asp:HiddenField ID="hfQuestionCode" runat="server" Value='<%# Eval( "Code") %>' />
-                                    <Rock:RockRadioButtonList ID="rblQuestion" runat="server" RepeatDirection="Horizontal" Label='<%# Eval( "Question") %>' CssClass="js-gift-questions">
-                                        <asp:ListItem Text="Strongly Agree" Value="4"></asp:ListItem>
-                                        <asp:ListItem Text="Agree" Value="3"></asp:ListItem>
-                                        <asp:ListItem Text="Somewhat Agree" Value="2"></asp:ListItem>
-                                        <asp:ListItem Text="Neutral" Value="1"></asp:ListItem>
-                                        <asp:ListItem Text="Disagree" Value="0"></asp:ListItem>
-                                    </Rock:RockRadioButtonList>
-                                </div>
+                            <div class="question-row">
+                                <asp:HiddenField ID="hfQuestionCode" runat="server" Value='<%# Eval( "Code") %>' />
+                                <Rock:RockRadioButtonList ID="rblQuestion" runat="server" RepeatDirection="Horizontal" Label='<%# Eval( "Question") %>' FormGroupCssClass="likert" CssClass="js-gift-questions">
+                                    <asp:ListItem Text="Strongly Agree" Value="4"></asp:ListItem>
+                                    <asp:ListItem Text="Agree" Value="3"></asp:ListItem>
+                                    <asp:ListItem Text="Somewhat Agree" Value="2"></asp:ListItem>
+                                    <asp:ListItem Text="Neutral" Value="1"></asp:ListItem>
+                                    <asp:ListItem Text="Disagree" Value="0"></asp:ListItem>
+                                </Rock:RockRadioButtonList>
                             </div>
                         </ItemTemplate>
                     </asp:Repeater>
