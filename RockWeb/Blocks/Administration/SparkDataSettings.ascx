@@ -43,17 +43,17 @@
                                         <img src='<%= ResolveRockUrl( "~/Blocks/Administration/Assets/spark.png") %>' class="img-responsive" alt="Spark Data" />
                                     </div>
                                     <div class="col-md-10">
-                                        <h1>Enhance Your Data</h1>
+                                        <h2 class="margin-t-none">Enhance Your Data</h2>
 
                                         <p> Spark Data is a set of services that allows you to easily clean and enhance your data with
                                         little effort. Before you can begin you’ll need to get an API key from the Rock RMS website
                                         and ensure that a credit card is on file for use with paid services.</p>
-                                        <p><a href="https://www.rockrms.com/sparkdatalink" target="_blank" >Sign Up Now</a></p>
+                                        <p><a href="https://www.rockrms.com/sparkdatalink" target="_blank">Sign Up Now</a></p>
 
                                         <asp:ValidationSummary ID="vsSignIn" runat="server" HeaderText="Please Correct the Following" ValidationGroup="SignInValidationGroup" CssClass="alert alert-validation" />
                                         <div class="row">
                                             <div class="col-md-6">
-                                                <Rock:RockTextBox ID="txtSparkDataApiKeyLogin" runat="server" Label="Spark Data Api Key" Required="true" ValidationGroup="SignInValidationGroup"/>
+                                                <Rock:RockTextBox ID="txtSparkDataApiKeyLogin" runat="server" Label="Spark Data API Key" Required="true" ValidationGroup="SignInValidationGroup"/>
                                             </div>
                                             <div class="col-md-6">
                                                 <Rock:GroupPicker ID="grpNotificationGroupLogin" runat="server" Label="Notification Group" Help="Members of this group will receive notifications when specific jobs and tasks complete." />
@@ -73,7 +73,7 @@
                         <asp:ValidationSummary ID="vsSparkDataEdit" runat="server" HeaderText="Please Correct the Following" ValidationGroup="SparkDataEditValidationGroup" CssClass="alert alert-validation" />
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="txtSparkDataApiKeyEdit" runat="server" Label="Spark Data Api Key" Required="true" ValidationGroup="SparkDataEditValidationGroup" />
+                                <Rock:RockTextBox ID="txtSparkDataApiKeyEdit" runat="server" Label="Spark Data API Key" Required="true" ValidationGroup="SparkDataEditValidationGroup" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:GroupPicker ID="grpNotificationGroupEdit" runat="server" Label="Notification Group" Help="Members of this group will receive notifications when specific jobs and tasks complete." />
