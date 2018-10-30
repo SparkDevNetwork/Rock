@@ -34,10 +34,10 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            FixTextToWorkflowKeywordExpression();
-            FixTrueWiringIcon();
-            FixCurrentDayDateMergeField();
-            FixspCheckin_AttendanceAnalyticsQuery_NonAttendees();
+            //FixTextToWorkflowKeywordExpression();
+            //FixTrueWiringIcon();
+            //FixCurrentDayDateMergeField();
+            //FixspCheckin_AttendanceAnalyticsQuery_NonAttendees();
         }
 
 
