@@ -362,7 +362,7 @@ namespace RockWeb.Blocks.Reporting
 
             var qryLocationGroupMembers = qryGroupMembers
                 .Where( a => a.Group.GroupTypeId == groupTypeFamilyId )
-                .Where( a => a.Group.IsActive )
+                .Where( a => a.Group.IsActive && !a.Group.IsArchived )
                 .Select( a => new
                 {
                     GroupGeoPoint = a.Group.GroupLocations.Where( gl => gl.IsMappedLocation && gl.GroupLocationTypeValueId == groupLocationTypeHomeId && gl.Location.IsActive && gl.Location.GeoPoint != null ).Select( x => x.Location.GeoPoint ).FirstOrDefault(),
