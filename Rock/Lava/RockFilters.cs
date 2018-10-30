@@ -2904,7 +2904,7 @@ namespace Rock.Lava
                     .Where( m =>
                         m.PersonId == person.Id &&
                         m.Group.GroupTypeId == numericalGroupTypeId.Value &&
-                        m.Group.IsActive );
+                        m.Group.IsActive && !m.Group.IsArchived );
 
                 if ( status != "All" )
                 {
@@ -2945,7 +2945,7 @@ namespace Rock.Lava
                     .Where( m =>
                         m.PersonId == person.Id &&
                         m.Group.Id == numericalGroupId.Value &&
-                        m.Group.IsActive );
+                        m.Group.IsActive && !m.Group.IsArchived );
 
                 if ( status != "All" )
                 {
