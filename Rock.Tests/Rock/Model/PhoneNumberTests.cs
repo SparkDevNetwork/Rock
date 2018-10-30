@@ -57,5 +57,14 @@ namespace Rock.Tests.Rock.Model
             Assert.Equal( whiteSpacePhoneNumber.E164Format, string.Empty );
         }
 
+        [Fact]
+        public void ToStringUnlisted()
+        {
+            var unlistedNumber = new PhoneNumber();
+            unlistedNumber.Number = "123";
+            unlistedNumber.IsUnlisted = true;
+
+            Assert.Equal( unlistedNumber.ToString(), "Unlisted" );
+        }
     }
 }
