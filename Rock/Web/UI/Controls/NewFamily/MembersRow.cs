@@ -34,13 +34,13 @@ namespace Rock.Web.UI.Controls
     public class NewGroupMembersRow : CompositeControl
     {
         private RockRadioButtonList _rblRole;
-        private DropDownList _ddlTitle;
+        private DefinedValuePicker _dvpTitle;
         private RockTextBox _tbFirstName;
         private RockTextBox _tbNickName;
         private RockTextBox _tbMiddleName;
         private RockTextBox _tbLastName;
-        private DropDownList _ddlSuffix;
-        private DropDownList _ddlConnectionStatus;
+        private DefinedValuePicker _dvpSuffix;
+        private DefinedValuePicker _dvpConnectionStatus;
         private RockRadioButtonList _rblGender;
         private DatePicker _dpBirthdate;
         private GradePicker _ddlGradePicker;
@@ -125,8 +125,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public int? TitleValueId
         {
-            get { return _ddlTitle.SelectedValueAsInt(); }
-            set { SetListValue( _ddlTitle, value ); }
+            get { return _dvpTitle.SelectedValueAsInt(); }
+            set { SetListValue( _dvpTitle, value ); }
         }
 
         /// <summary>
@@ -193,8 +193,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public int? SuffixValueId
         {
-            get { return _ddlSuffix.SelectedValueAsInt(); }
-            set { SetListValue( _ddlSuffix, value ); }
+            get { return _dvpSuffix.SelectedValueAsInt(); }
+            set { SetListValue( _dvpSuffix, value ); }
         }
 
         /// <summary>
@@ -205,8 +205,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public int? ConnectionStatusValueId
         {
-            get { return _ddlConnectionStatus.SelectedValueAsInt(); }
-            set { SetListValue( _ddlConnectionStatus, value ); }
+            get { return _dvpConnectionStatus.SelectedValueAsInt(); }
+            set { SetListValue( _dvpConnectionStatus, value ); }
         }
 
         /// <summary>
@@ -382,13 +382,13 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _rblRole.ValidationGroup = value;
-                _ddlTitle.ValidationGroup = value;
+                _dvpTitle.ValidationGroup = value;
                 _tbFirstName.ValidationGroup = value;
                 _tbNickName.ValidationGroup = value;
                 _tbMiddleName.ValidationGroup = value;
                 _tbLastName.ValidationGroup = value;
-                _ddlSuffix.ValidationGroup = value;
-                _ddlConnectionStatus.ValidationGroup = value;
+                _dvpSuffix.ValidationGroup = value;
+                _dvpConnectionStatus.ValidationGroup = value;
                 _rblGender.ValidationGroup = value;
                 _dpBirthdate.ValidationGroup = value;
                 _ddlGradePicker.ValidationGroup = value;
@@ -402,13 +402,13 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             _rblRole = new RockRadioButtonList();
-            _ddlTitle = new DropDownList();
+            _dvpTitle = new DefinedValuePicker();
             _tbFirstName = new RockTextBox();
             _tbNickName = new RockTextBox();
             _tbMiddleName = new RockTextBox();
             _tbLastName = new RockTextBox();
-            _ddlSuffix = new DropDownList();
-            _ddlConnectionStatus = new DropDownList();
+            _dvpSuffix = new DefinedValuePicker();
+            _dvpConnectionStatus = new DefinedValuePicker();
             _rblGender = new RockRadioButtonList();
             _dpBirthdate = new DatePicker();
             _ddlGradePicker = new GradePicker { UseAbbreviation = true, UseGradeOffsetAsValue = true };
@@ -425,26 +425,26 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
 
             _rblRole.ID = "_rblRole";
-            _ddlTitle.ID = "_ddlTitle";
+            _dvpTitle.ID = "_ddlTitle";
             _tbFirstName.ID = "_tbFirstName";
             _tbNickName.ID = "_tbNickName";
             _tbMiddleName.ID = "_tbMiddleName";
             _tbLastName.ID = "_tbLastName";
-            _ddlSuffix.ID = "_ddlSuffix";
-            _ddlConnectionStatus.ID = "_ddlConnectionStatus";
+            _dvpSuffix.ID = "_ddlSuffix";
+            _dvpConnectionStatus.ID = "_ddlConnectionStatus";
             _rblGender.ID = "_rblGender";
             _dpBirthdate.ID = "_dtBirthdate";
             _ddlGradePicker.ID = "_ddlGrade";
             _lbDelete.ID = "_lbDelete";
 
             Controls.Add( _rblRole );
-            Controls.Add( _ddlTitle );
+            Controls.Add( _dvpTitle );
             Controls.Add( _tbFirstName );
             Controls.Add( _tbNickName );
             Controls.Add( _tbMiddleName );
             Controls.Add( _tbLastName );
-            Controls.Add( _ddlSuffix );
-            Controls.Add( _ddlConnectionStatus );
+            Controls.Add( _dvpSuffix );
+            Controls.Add( _dvpConnectionStatus );
             Controls.Add( _rblGender );
             Controls.Add( _dpBirthdate );
             Controls.Add( _ddlGradePicker );
@@ -460,8 +460,8 @@ namespace Rock.Web.UI.Controls
             _rblRole.DataSource = GroupRoles;
             _rblRole.DataBind();
 
-            _ddlTitle.CssClass = "form-control";
-            BindListToDefinedType( _ddlTitle, Rock.SystemGuid.DefinedType.PERSON_TITLE, true );
+            _dvpTitle.CssClass = "form-control";
+            _dvpTitle.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ).Id;
 
             _tbFirstName.CssClass = "form-control";
             _tbFirstName.Placeholder = "First Name";
@@ -480,11 +480,11 @@ namespace Rock.Web.UI.Controls
             _tbLastName.Required = true;
             _tbLastName.RequiredErrorMessage = "Last Name is required for all group members";
 
-            _ddlSuffix.CssClass = "form-control";
-            BindListToDefinedType( _ddlSuffix, Rock.SystemGuid.DefinedType.PERSON_SUFFIX, true );
+            _dvpSuffix.CssClass = "form-control";
+            _dvpSuffix.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ).Id;
 
-            _ddlConnectionStatus.CssClass = "form-control";
-            BindListToDefinedType( _ddlConnectionStatus, Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, true );
+            _dvpConnectionStatus.CssClass = "form-control";
+            _dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ).Id;
 
             _rblGender.RepeatDirection = RepeatDirection.Vertical;
             _rblGender.RequiredErrorMessage = "Gender is required for all group members";
@@ -529,7 +529,7 @@ namespace Rock.Web.UI.Controls
                 if ( this.ShowTitle )
                 {
                     writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                    _ddlTitle.RenderControl( writer );
+                    _dvpTitle.RenderControl( writer );
                     writer.RenderEndTag();
                 }
 
@@ -566,12 +566,12 @@ namespace Rock.Web.UI.Controls
                 if ( this.ShowSuffix )
                 {
                     writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                    _ddlSuffix.RenderControl( writer );
+                    _dvpSuffix.RenderControl( writer );
                     writer.RenderEndTag();
                 }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                _ddlConnectionStatus.RenderControl( writer );
+                _dvpConnectionStatus.RenderControl( writer );
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
@@ -622,18 +622,6 @@ namespace Rock.Web.UI.Controls
             }
 
             _rblGender.SelectedValue = selectedValue;
-        }
-
-        /// <summary>
-        /// Binds the type of the list to defined.
-        /// </summary>
-        /// <param name="listControl">The list control.</param>
-        /// <param name="definedTypeGuid">The defined type GUID.</param>
-        /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
-        protected void BindListToDefinedType( ListControl listControl, string definedTypeGuid, bool insertBlankOption = false )
-        {
-            var definedType = DefinedTypeCache.Get( new Guid( definedTypeGuid ) );
-            listControl.BindToDefinedType( definedType, insertBlankOption );
         }
 
         /// <summary>

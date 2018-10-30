@@ -184,6 +184,8 @@ namespace RockWeb.Blocks.Crm
                 new
                 {
                     PersonId = person.Id,
+                    person.SuffixValueId,
+                    person.SuffixValue,
                     person.LastName,
                     person.FirstName,
                     PersonModifiedDateTime = person.ModifiedDateTime,

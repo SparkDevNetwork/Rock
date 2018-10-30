@@ -67,6 +67,9 @@ namespace Rock.Field.Types
             ddl.Help = "The Workflow Type to select activities from.";
             var originalValue = ddl.SelectedValue;
 
+            // Add empty field because the default value dropdown list will only be populated after the workflow type index have been changed.
+            ddl.Items.Add( new ListItem( string.Empty, string.Empty ) );
+
             Rock.Model.WorkflowTypeService workflowTypeService = new Model.WorkflowTypeService( new RockContext() );
             foreach ( var workflowType in workflowTypeService.Queryable().OrderBy( w => w.Name ) )
             {
@@ -208,13 +211,9 @@ namespace Rock.Field.Types
                         editControl.Items.Add( new ListItem( activityType.Name ?? "[New Activity]", activityType.Guid.ToString().ToUpper() ) );
                     }
                 }
-
-                return editControl;
             }
 
-            return null;
-
-
+            return editControl;
         }
 
         /// <summary>
@@ -231,7 +230,7 @@ namespace Rock.Field.Types
                 return picker.SelectedValue;
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>

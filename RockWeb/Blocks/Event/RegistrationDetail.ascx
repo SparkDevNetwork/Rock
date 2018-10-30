@@ -187,8 +187,8 @@
                                     </asp:PlaceHolder>
 
                                     <asp:PlaceHolder ID="phManualDetails" runat="server">
-                                        <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
-                                        <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
+                                        <Rock:DefinedValuePicker ID="dvpCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="dvpCurrencyType_SelectedIndexChanged" />
+                                        <Rock:DefinedValuePicker ID="dvpCreditCardType" runat="server" Label="Credit Card Type" />
                                         <Rock:RockTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code" />
                                     </asp:PlaceHolder>
 
@@ -240,6 +240,7 @@
 
                                     <div class="row">
                                         <div class="col-md-12">
+                                            <Rock:NotificationBox ID="nbNoAssociatedPerson" runat="server" CssClass="margin-t-md" NotificationBoxType="Info" Text="In order to process a payment you will need to link this registration to an individual." Visible="false" />
                                             <asp:LinkButton ID="lbProcessPayment" runat="server" CssClass="btn btn-primary btn-xs margin-t-sm" Text="Process New Payment" OnClick="lbProcessPayment_Click" CausesValidation="false"></asp:LinkButton>
                                             <asp:LinkButton ID="lbAddPayment" runat="server" CssClass="btn btn-default btn-xs margin-t-sm margin-l-sm" Text="Add Manual Payment" OnClick="lbAddPayment_Click" CausesValidation="false"></asp:LinkButton>
                                             <asp:LinkButton ID="lbCancelPaymentDetails" runat="server" Text="Cancel" CssClass="btn btn-link pull-right" OnClick="lbCancelPaymentDetails_Click" CausesValidation="false" />

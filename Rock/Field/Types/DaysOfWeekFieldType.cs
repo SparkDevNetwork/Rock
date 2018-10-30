@@ -49,7 +49,7 @@ namespace Rock.Field.Types
             {
                 List<DayOfWeek> daysOfWeek = value.Split( ',' ).Select( a => (DayOfWeek)( a.AsInteger() ) ).ToList();
                 List<string> dayNames = daysOfWeek.Select( a => a.ConvertToString() ).ToList();
-                return dayNames.AsDelimited( "," );
+                return dayNames.AsDelimited( ", " );
             }
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
@@ -121,6 +121,26 @@ namespace Rock.Field.Types
             {
                 return ComparisonHelper.ContainsFilterComparisonTypes;
             }
+        }
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                List<DayOfWeek> daysOfWeek = value.Split( ',' ).Select( a => ( DayOfWeek ) ( a.AsInteger() ) ).ToList();
+                List<string> dayNames = daysOfWeek.Select( a => a.ConvertToString() ).ToList();
+                return AddQuotes( dayNames.AsDelimited( "' AND '" ) );
+            }
+
+            return string.Empty;
         }
 
         #endregion

@@ -45,6 +45,7 @@ namespace Rock.Storage.AssetStorage
 
         #endregion Constructors
 
+        #region Properties
         /// <summary>
         /// Gets or sets the file system compont HTTP context.
         /// </summary>
@@ -67,68 +68,8 @@ namespace Rock.Storage.AssetStorage
         private System.Web.HttpContext _fileSystemCompontHttpContext;
 
         /// <summary>
-        /// Fixes the root folder syntax if it was entered incorrectly.
-        /// </summary>
-        /// <param name="rootFolder">The root folder.</param>
-        /// <returns></returns>
-        protected virtual string FixRootFolder( string rootFolder )
-        {
-            if ( rootFolder.IsNullOrWhiteSpace() )
-            {
-                return string.Empty;
-            }
-            else if ( rootFolder.EndsWith("/") )
-            {
-                return rootFolder;
-            }
-            else
-            {
-                return rootFolder + "/";
-            }
-        }
-
-        /// <summary>
-        /// Gets the icon for the file type based on the extension of the provided file name.
-        /// </summary>
-        /// <param name="fileName">Name of the file.</param>
-        /// <returns></returns>
-        protected virtual string GetFileTypeIcon( string fileName )
-        {
-            string fileExtension = Path.GetExtension( fileName ).TrimStart( '.' );
-            string virtualThumbnailFilePath = string.Format( "/Assets/Icons/FileTypes/{0}.png", fileExtension );
-            string thumbnailFilePath = FileSystemCompontHttpContext.Request.MapPath( virtualThumbnailFilePath );
-
-            if ( !File.Exists( thumbnailFilePath ) )
-            {
-                virtualThumbnailFilePath = "/Assets/Icons/FileTypes/other.png";
-                thumbnailFilePath = FileSystemCompontHttpContext.Request.MapPath( virtualThumbnailFilePath );
-            }
-
-            return virtualThumbnailFilePath;
-        }
-
-        //// #TODO: We are going to want to flesh this out more and use it instead of the Icon files in the Assets folder.
-        ////protected string GetIconCssClass( string name )
-        ////{
-        ////    if ( name.EndsWith( "/" ) )
-        ////    {
-        ////        return "fa fa-folder";
-        ////    }
-        ////    else if ( name.EndsWith( ".jpg" ) || name.EndsWith(".jpeg" ) || name.EndsWith( ".gif" ) || name.EndsWith( ".png" ) || name.EndsWith( ".bmp" ) || name.EndsWith( ".svg" ) )
-        ////    {
-        ////        return "fa fa-image";
-        ////    }
-        ////    else if ( name.EndsWith(".txt"))
-        ////    {
-        ////        return "fa fa-file-alt";
-        ////    }
-
-        ////    return "fa fa-file";
-        ////}
-
-        /// <summary>
-        /// Specify the icon for the AssetStorageComponent here. It will display in the folder tree.
-        /// Default is server.png.
+        /// Specify the font awesome icon for the AssetStorageComponent here. It will display in the folder tree.
+        /// Default is fa fa-server.
         /// </summary>
         /// <value>
         /// The component icon path.
@@ -141,11 +82,18 @@ namespace Rock.Storage.AssetStorage
             }
             set
             {
-                _componentIconPath = value;
+                _iconCssClass = value;
             }
         }
 
-        private string _componentIconPath;
+        private string _iconCssClass;
+
+        /// <summary>
+        /// The thumbnail root path.
+        /// </summary>
+        protected readonly string ThumbnailRootPath = "/Content/ASM_Thumbnails";
+
+        #endregion Properties
 
         #region Component Overrides
         /// <summary>
@@ -218,12 +166,31 @@ namespace Rock.Storage.AssetStorage
         #region Abstract Methods
 
         /// <summary>
+        /// Gets the thumbnail image for the provided Asset key. If one does not exist it will be created. If one exists but is older than the file
+        /// a new thumbnail is created and the old one overwritten.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="assetKey">The asset key.</param>
+        /// <param name="lastModifiedDateTime">The last modified date time.</param>
+        /// <returns></returns>
+        public abstract string GetThumbnail( AssetStorageProvider assetStorageProvider, string assetKey, DateTime? lastModifiedDateTime );
+
+        /// <summary>
         /// Gets the object as an Asset.
         /// </summary>
         /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
         public abstract Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset );
+
+        /// <summary>
+        /// Gets the object as an asset with an option to also create a thumbnail
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="asset">The asset.</param>
+        /// <param name="createThumbnail">if set to <c>true</c> [create thumbnail].</param>
+        /// <returns></returns>
+        public abstract Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset, bool createThumbnail );
 
         /// <summary>
         /// Lists the objects from the current root folder.
@@ -336,5 +303,160 @@ namespace Rock.Storage.AssetStorage
 
         #endregion Abstract Methods
 
+        #region Protected Methods
+
+        /// <summary>
+        /// Fixes the root folder syntax if it was entered incorrectly.
+        /// </summary>
+        /// <param name="rootFolder">The root folder.</param>
+        /// <returns></returns>
+        protected virtual string FixRootFolder( string rootFolder )
+        {
+            if ( rootFolder.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+            else if ( rootFolder.EndsWith( "/" ) )
+            {
+                return rootFolder;
+            }
+            else
+            {
+                return rootFolder + "/";
+            }
+        }
+
+        /// <summary>
+        /// Gets the icon for the file type based on the extension of the provided file name.
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
+        /// <returns></returns>
+        protected virtual string GetFileTypeIcon( string fileName )
+        {
+            string fileExtension = Path.GetExtension( fileName ).TrimStart( '.' );
+            string virtualThumbnailFilePath = string.Format( "/Assets/Icons/FileTypes/{0}.png", fileExtension );
+            string thumbnailFilePath = FileSystemCompontHttpContext.Request.MapPath( virtualThumbnailFilePath );
+
+            if ( !File.Exists( thumbnailFilePath ) )
+            {
+                virtualThumbnailFilePath = "/Assets/Icons/FileTypes/other.png";
+                thumbnailFilePath = FileSystemCompontHttpContext.Request.MapPath( virtualThumbnailFilePath );
+            }
+
+            return virtualThumbnailFilePath;
+        }
+
+        /// <summary>
+        /// Creates the image thumbnail using the provided Asset. If a thumbnail already exists it will be overwritten.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="asset">The asset.</param>
+        /// <param name="physicalThumbPath">The physical thumb path.</param>
+        /// <param name="isLocal">True if the image is on the local server, false if not.</param>
+        /// <param name="width">The width.</param>
+        /// <param name="height">The height.</param>
+        protected virtual void CreateImageThumbnail( AssetStorageProvider assetStorageProvider, Asset asset, string physicalThumbPath, bool isLocal = true, int? width = null, int? height = null )
+        {
+            if ( isLocal )
+            {
+                CreateImageThumbnailFromFile( assetStorageProvider, asset, physicalThumbPath, width, height );
+            }
+            else
+            {
+                CreateImageThumbnailFromStream( assetStorageProvider, asset, physicalThumbPath, width, height );
+            }
+        }
+
+        /// <summary>
+        /// Deletes the image thumbnail for the provided Asset. If the asset is a file then the singel thumbnail
+        /// is deleted. If the asset is a directory then a recurrsive delete is done.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="asset">The asset.</param>
+        protected virtual void DeleteImageThumbnail( AssetStorageProvider assetStorageProvider, Asset asset )
+        {
+            string cleanKey = asset.Key.TrimStart( '~' );
+            string virtualPath = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{cleanKey}";
+            string physicalPath = FileSystemCompontHttpContext.Server.MapPath( virtualPath );
+
+            if ( asset.Type == AssetType.File )
+            {
+                File.Delete( physicalPath );
+            }
+            else if ( asset.Type == AssetType.Folder )
+            {
+                Directory.Delete( physicalPath, true );
+            }
+        }
+
+        #endregion Protected Methods
+
+        #region Private Methods
+
+        /// <summary>
+        /// Creates the image thumbnail from file.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="asset">The asset.</param>
+        /// <param name="physicalThumbPath">The physical thumb path.</param>
+        /// <param name="width">The width.</param>
+        /// <param name="height">The height.</param>
+        private void CreateImageThumbnailFromFile( AssetStorageProvider assetStorageProvider, Asset asset, string physicalThumbPath, int? width = null, int? height = null )
+        {
+            string assetFilePath = FileSystemCompontHttpContext.Request.MapPath( asset.Key );
+
+            if ( Path.GetExtension( asset.Name ).Equals( ".svg", StringComparison.OrdinalIgnoreCase ) ||
+                Path.GetExtension( asset.Name ).Equals( ".ico", StringComparison.OrdinalIgnoreCase ) )
+            {
+                // just save the ico or svg to the thumbnail dir as there is no need to make a thumbnail
+                File.Copy( assetFilePath, physicalThumbPath, true );
+                return;
+            }
+
+            using ( var resizedStream = new FileStream( physicalThumbPath, FileMode.Create ) )
+            using ( var origImageStream = new MemoryStream() )
+            using ( var image = System.Drawing.Image.FromFile( assetFilePath ) )
+            {
+                image.Save( origImageStream, image.RawFormat );
+                origImageStream.Position = 0;
+                ImageResizer.ImageBuilder.Current.Build( origImageStream, resizedStream, new ImageResizer.ResizeSettings { Width = width ?? 100, Height = height ?? 100 } );
+                resizedStream.Flush();
+            }
+        }
+
+        /// <summary>
+        /// Creates the image thumbnail from stream.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="asset">The asset.</param>
+        /// <param name="physicalThumbPath">The physical thumb path.</param>
+        /// <param name="width">The width.</param>
+        /// <param name="height">The height.</param>
+        private void CreateImageThumbnailFromStream( AssetStorageProvider assetStorageProvider, Asset asset, string physicalThumbPath, int? width = null, int? height = null )
+        {
+            asset = GetObject( assetStorageProvider, asset, false );
+
+            using ( var resizedStream = new FileStream( physicalThumbPath, FileMode.Create ) )
+            {
+                if ( Path.GetExtension( asset.Name ).Equals( ".svg", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    // just save the svg to the thumbnail dir
+                    asset.AssetStream.CopyTo( resizedStream );
+                }
+                else
+                {
+                    using ( var origImageStream = new MemoryStream() )
+                    {
+                        asset.AssetStream.CopyTo( origImageStream );
+                        origImageStream.Position = 0;
+                        ImageResizer.ImageBuilder.Current.Build( origImageStream, resizedStream, new ImageResizer.ResizeSettings { Width = width ?? 100, Height = height ?? 100 } );
+                    }
+                }
+
+                resizedStream.Flush();
+            }
+        }
+
+        #endregion Private Methods
     }
 }

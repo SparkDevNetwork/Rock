@@ -57,15 +57,15 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
-            var ddl = new RockDropDownList();
-            controls.Add( ddl );
-            ddl.AutoPostBack = true;
-            ddl.SelectedIndexChanged += OnQualifierUpdated;
+            var dvp = new DefinedValuePicker();
+            controls.Add( dvp );
+            dvp.AutoPostBack = true;
+            dvp.SelectedIndexChanged += OnQualifierUpdated;
 
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid() );
-            ddl.BindToDefinedType( definedType, true );
-            ddl.Label = "Purpose";
-            ddl.Help = "An optional setting to limit the selection of group types to those that have the selected purpose.";
+            dvp.BindToDefinedType( definedType, true );
+            dvp.Label = "Purpose";
+            dvp.Help = "An optional setting to limit the selection of group types to those that have the selected purpose.";
 
             return controls;
         }
@@ -81,9 +81,9 @@ namespace Rock.Field.Types
             configurationValues.Add( GROUP_TYPE_PURPOSE_VALUE_GUID, new ConfigurationValue( "Purpose", "An optional setting to limit the selection of group types to those that have the selected purpose.", string.Empty ) );
 
             if ( controls != null && controls.Count == 1 &&
-                controls[0] != null && controls[0] is DropDownList )
+                controls[0] != null && controls[0] is DefinedValuePicker )
             {
-                int? definedValueId = ( (DropDownList)controls[0] ).SelectedValueAsInt();
+                int? definedValueId = ( ( DefinedValuePicker ) controls[0] ).SelectedValueAsInt();
                 if ( definedValueId.HasValue )
                 {
                     var definedValue = DefinedValueCache.Get( definedValueId.Value );
@@ -105,7 +105,7 @@ namespace Rock.Field.Types
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( controls != null && controls.Count == 1 && configurationValues != null &&
-                controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( GROUP_TYPE_PURPOSE_VALUE_GUID ) )
+                controls[0] != null && controls[0] is DefinedValuePicker && configurationValues.ContainsKey( GROUP_TYPE_PURPOSE_VALUE_GUID ) )
             {
                 Guid? definedValueGuid = configurationValues[GROUP_TYPE_PURPOSE_VALUE_GUID].Value.AsGuidOrNull();
                 if ( definedValueGuid.HasValue )
@@ -113,7 +113,7 @@ namespace Rock.Field.Types
                     var definedValue = DefinedValueCache.Get( definedValueGuid.Value );
                     if ( definedValue != null )
                     {
-                        ( (DropDownList)controls[0] ).SetValue( definedValue.Id.ToString() );
+                        ( ( DefinedValuePicker ) controls[0] ).SetValue( definedValue.Id.ToString() );
                     }
                 }
             }

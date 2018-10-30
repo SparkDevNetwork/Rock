@@ -509,7 +509,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 foreach ( var entityId in entities )
                 {
                     // get entities search model name
-                    var entityType = entityTypeService.Get( entityId );
+                    var entityType = entityTypeService.GetNoTracking( entityId );
                     indexModelTypes.Add( entityType.IndexModelType );
 
                     // check if this is a person model, if so we need to add two model types one for person and the other for businesses

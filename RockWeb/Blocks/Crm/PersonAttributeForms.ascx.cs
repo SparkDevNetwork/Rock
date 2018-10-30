@@ -1042,7 +1042,7 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void RegisterClientScript()
         {
-            RockPage.AddScriptLink( ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
+            RockPage.AddScriptLink( "~/Scripts/jquery.creditCardTypeDetector.js" );
 
             string script = string.Format( @"
 

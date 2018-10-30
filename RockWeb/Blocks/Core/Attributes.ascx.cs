@@ -78,6 +78,10 @@ namespace RockWeb.Blocks.Core
             {
                 rFilter.Visible = false;
             }
+            else
+            {
+                cpCategoriesFilter.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
+            }
 
             edtAttribute.IsShowInGridVisible = GetAttributeValue( "EnableShowInGrid" ).AsBooleanOrNull() ?? false;
 
@@ -161,8 +165,6 @@ namespace RockWeb.Blocks.Core
                 mdAttribute.SaveClick += mdAttribute_SaveClick;
                 mdAttributeValue.SaveClick += mdAttributeValue_SaveClick;
 
-
-
                 BindFilter();
             }
             else
@@ -219,10 +221,11 @@ namespace RockWeb.Blocks.Core
             _entityTypeId = ddlEntityType.SelectedValue.AsIntegerOrNull();
             if ( IsEntityTypeValid() )
             {
+                // Clear out any old saved Categories since they are not compatible with a new Entity Type
+                rFilter.SaveUserPreference( "Categories", string.Empty );
                 BindFilterForSelectedEntityType();
                 BindGrid();
             }
-
         }
 
         /// <summary>
@@ -609,11 +612,14 @@ namespace RockWeb.Blocks.Core
         {
             cpCategoriesFilter.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
             cpCategoriesFilter.EntityTypeQualifierColumn = "EntityTypeId";
-            cpCategoriesFilter.EntityTypeQualifierValue = _entityTypeId.ToString();
+
+            // Global attributes have an EntityTypeQualifierValue of NULL, so don't set it to "0", it won't work.
+            cpCategoriesFilter.EntityTypeQualifierValue = ( _entityTypeId != 0 ) ? _entityTypeId.ToString() : null;
 
             var selectedIDs = new List<int>();
-
-            if ( ( _entityTypeId ?? 0 ).ToString() == rFilter.GetUserPreference( "Entity Type" ) )
+            var entityTypePreference = rFilter.GetUserPreference( "Entity Type" );
+            // if the entityTypePreference is empty, it may be the default (usable for Global Attributes)
+            if ( ( _entityTypeId ?? 0 ).ToString() == entityTypePreference || entityTypePreference.IsNullOrWhiteSpace() )
             {
                 foreach ( var idVal in rFilter.GetUserPreference( "Categories" ).SplitDelimitedValues() )
                 {
