@@ -176,14 +176,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 cpCampus.Required = GetAttributeValue( "RequireCampus" ).AsBoolean( true );
 
-                ddlRecordStatus.Visible = true;
-                ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() ), true );
-                ddlReason.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() ), true );
+                dvpRecordStatus.Visible = true;
+                dvpRecordStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() ).Id;
+                dvpReason.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() ).Id;
             }
             else
             {
                 cpCampus.Required = false;
-                ddlRecordStatus.Visible = false;
+                dvpRecordStatus.Visible = false;
             }
 
             dvpGroupStatus.DefinedTypeId = _groupType.GroupStatusDefinedTypeId;
@@ -194,10 +194,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             dvpGroupStatus.Visible = _groupType.GroupStatusDefinedTypeId.HasValue;
 
-            ddlNewPersonTitle.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ), true );
-            ddlNewPersonSuffix.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ), true );
-            ddlNewPersonMaritalStatus.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
-            ddlNewPersonConnectionStatus.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ), true );
+            dvpNewPersonTitle.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ).Id;
+            dvpNewPersonSuffix.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ).Id;
+            dvpNewPersonMaritalStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
+            dvpNewPersonConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Id;
 
             lvMembers.DataKeyNames = new string[] { "Index" };
             lvMembers.ItemDataBound += lvMembers_ItemDataBound;
@@ -303,27 +303,27 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         // If all group members have the same record status, display that value
                         if ( _group.Members.Select( m => m.Person.RecordStatusValueId ).Distinct().Count() == 1 )
                         {
-                            ddlRecordStatus.SetValue( _group.Members.Select( m => m.Person.RecordStatusValueId ).FirstOrDefault() );
+                            dvpRecordStatus.SetValue( _group.Members.Select( m => m.Person.RecordStatusValueId ).FirstOrDefault() );
                         }
                         else
                         {
-                            ddlRecordStatus.Warning = String.Format( "{0} members have different record statuses", _groupType.Name );
+                            dvpRecordStatus.Warning = String.Format( "{0} members have different record statuses", _groupType.Name );
                         }
 
                         // If all group members have the same inactive reason, set that value
                         if ( _group.Members.Select( m => m.Person.RecordStatusReasonValueId ).Distinct().Count() == 1 )
                         {
-                            ddlReason.SetValue( _group.Members.Select( m => m.Person.RecordStatusReasonValueId ).FirstOrDefault() );
+                            dvpReason.SetValue( _group.Members.Select( m => m.Person.RecordStatusReasonValueId ).FirstOrDefault() );
                         }
                         else
                         {
-                            if ( String.IsNullOrWhiteSpace( ddlRecordStatus.Warning ) )
+                            if ( String.IsNullOrWhiteSpace( dvpRecordStatus.Warning ) )
                             {
-                                ddlRecordStatus.Warning = String.Format( "{0} members have different record status reasons", _groupType.Name );
+                                dvpRecordStatus.Warning = String.Format( "{0} members have different record status reasons", _groupType.Name );
                             }
                             else
                             {
-                                ddlRecordStatus.Warning += " and record status reasons";
+                                dvpRecordStatus.Warning += " and record status reasons";
                             }
                         }
 
@@ -445,7 +445,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     tbNewPersonLastName.ClientID,                                   // {3}
                     rblNewPersonRole.RequiredFieldValidator.ClientID,               // {4}
                     rblNewPersonGender.RequiredFieldValidator.ClientID,             // {5}
-                    ddlNewPersonConnectionStatus.ClientID,                          // {6}
+                    dvpNewPersonConnectionStatus.ClientID,                          // {6}
                     valSummaryAddPerson.ClientID,                                   // {7}
                     divExistingPerson.ClientID,                                     // {8}
                     hfActiveTab.ClientID,                                           // {9}
@@ -486,12 +486,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
             var inactiveStatus = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
-            if ( HasDeceasedMembers && ddlRecordStatus.SelectedValueAsInt() != inactiveStatus )
+            if ( HasDeceasedMembers && dvpRecordStatus.SelectedValueAsInt() != inactiveStatus )
             {
-                ddlRecordStatus.Warning = "Note: the status of deceased people will not be changed.";
+                dvpRecordStatus.Warning = "Note: the status of deceased people will not be changed.";
             }
 
-            ddlReason.Visible = ddlRecordStatus.SelectedValueAsInt() == inactiveStatus;
+            dvpReason.Visible = dvpRecordStatus.SelectedValueAsInt() == inactiveStatus;
             confirmExit.Enabled = true;
         }
 
@@ -620,14 +620,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbNewPersonLastName.Required = true;
             rblNewPersonRole.Required = true;
             rblNewPersonGender.Required = true;
-            ddlNewPersonConnectionStatus.Required = true;
+            dvpNewPersonConnectionStatus.Required = true;
             var connectionStatusGuid = GetAttributeValue( "DefaultConnectionStatus" ).AsGuidOrNull();
             if ( connectionStatusGuid.HasValue )
             {
                 var defaultConnectionStatus = DefinedValueCache.Get( connectionStatusGuid.Value );
                 if ( defaultConnectionStatus != null )
                 {
-                    ddlNewPersonConnectionStatus.SetValue( defaultConnectionStatus.Id );
+                    dvpNewPersonConnectionStatus.SetValue( defaultConnectionStatus.Id );
                 }
             }
 
@@ -636,8 +636,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ppPerson.SetValue( null );
 
-            ddlNewPersonTitle.SelectedIndex = 0;
-            ddlNewPersonTitle.Visible = !GetAttributeValue( "HideTitle" ).AsBoolean();
+            dvpNewPersonTitle.SelectedIndex = 0;
+            dvpNewPersonTitle.Visible = !GetAttributeValue( "HideTitle" ).AsBoolean();
 
             tbNewPersonFirstName.Text = string.Empty;
 
@@ -652,15 +652,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 tbNewPersonLastName.Text = string.Empty;
             }
 
-            ddlNewPersonSuffix.SelectedIndex = 0;
-            ddlNewPersonSuffix.Visible = !GetAttributeValue( "HideSuffix" ).AsBoolean();
+            dvpNewPersonSuffix.SelectedIndex = 0;
+            dvpNewPersonSuffix.Visible = !GetAttributeValue( "HideSuffix" ).AsBoolean();
 
             foreach ( ListItem li in rblNewPersonRole.Items )
             {
                 li.Selected = false;
             }
 
-            ddlNewPersonMaritalStatus.SelectedIndex = 0;
+            dvpNewPersonMaritalStatus.SelectedIndex = 0;
             foreach ( ListItem li in rblNewPersonGender.Items )
             {
                 li.Selected = false;
@@ -752,13 +752,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             else
             {
                 var groupMember = new GroupMemberInfo();
-                groupMember.TitleValueId = ddlNewPersonTitle.SelectedValueAsId();
+                groupMember.TitleValueId = dvpNewPersonTitle.SelectedValueAsId();
                 groupMember.FirstName = tbNewPersonFirstName.Text;
                 groupMember.NickName = tbNewPersonFirstName.Text;
                 groupMember.LastName = tbNewPersonLastName.Text;
-                groupMember.SuffixValueId = ddlNewPersonSuffix.SelectedValueAsId();
+                groupMember.SuffixValueId = dvpNewPersonSuffix.SelectedValueAsId();
                 groupMember.Gender = rblNewPersonGender.SelectedValueAsEnum<Gender>();
-                groupMember.MaritalStatusValueId = ddlNewPersonMaritalStatus.SelectedValueAsInt();
+                groupMember.MaritalStatusValueId = dvpNewPersonMaritalStatus.SelectedValueAsInt();
 
                 if ( _showEmail )
                 {
@@ -787,7 +787,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 groupMember.BirthDate = birthdate;
                 groupMember.GradeOffset = ddlGradePicker.SelectedValueAsInt();
-                groupMember.ConnectionStatusValueId = ddlNewPersonConnectionStatus.SelectedValueAsId();
+                groupMember.ConnectionStatusValueId = dvpNewPersonConnectionStatus.SelectedValueAsId();
                 var role = _groupType.Roles.Where( r => r.Id == ( rblNewPersonRole.SelectedValueAsInt() ?? 0 ) ).FirstOrDefault();
                 if ( role != null )
                 {
@@ -804,7 +804,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbNewPersonLastName.Required = false;
             rblNewPersonRole.Required = false;
             rblNewPersonGender.Required = false;
-            ddlNewPersonConnectionStatus.Required = false;
+            dvpNewPersonConnectionStatus.Required = false;
 
             confirmExit.Enabled = true;
 
@@ -1101,8 +1101,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                    // SAVE GROUP MEMBERS
 	                    var recordStatusInactiveId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
 	                    var reasonStatusReasonDeceasedId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ) ).Id;
-	                    int? recordStatusValueID = ddlRecordStatus.SelectedValueAsInt();
-	                    int? reasonValueId = ddlReason.SelectedValueAsInt();
+	                    int? recordStatusValueID = dvpRecordStatus.SelectedValueAsInt();
+	                    int? reasonValueId = dvpReason.SelectedValueAsInt();
 	                    var newGroups = new List<Group>();
 	
 	                    foreach ( var groupMemberInfo in GroupMembers )

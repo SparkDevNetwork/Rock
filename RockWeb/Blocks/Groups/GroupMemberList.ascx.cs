@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Groups
             cpCampusFilter.Visible = GetAttributeValue( "ShowCampusFilter" ).AsBoolean();
 
             /// add lazyload js so that person-link-popover javascript works (see GroupMemberList.ascx)
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.lazyload.min.js" ) );
+            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js" );
 
             // if this block has a specific GroupId set, use that, otherwise, determine it from the PageParameters
             Guid groupGuid = GetAttributeValue( "Group" ).AsGuid();

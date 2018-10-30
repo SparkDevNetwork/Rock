@@ -109,6 +109,32 @@ namespace Rock.Utility
         }
 
         /// <summary>
+        /// Apply the value to the comparison expression and return the result.
+        /// </summary>
+        /// <param name="attributeValueParameterExpression">The attribute value parameter expression.</param>
+        /// <param name="comparisonExpression">The comparison expression.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if the comparison expression result in a true result; otherwise, <c>false</c>.
+        /// </returns>
+        private static bool IsComparedToValue( ParameterExpression attributeValueParameterExpression, Expression comparisonExpression, string value )
+        {
+            // Creates a dummy attribute value that uses the default value
+            AttributeValue attributeValue = AttributeValue.CreateNonPersistedAttributeValue( value );
+
+            // Assign the dummy attribute to the comparison expression
+            Expression assignExpr = Expression.Assign( attributeValueParameterExpression, Expression.Constant( attributeValue ) );
+            BlockExpression blockExpr = Expression.Block(
+                new ParameterExpression[] { attributeValueParameterExpression },
+                assignExpr,
+                comparisonExpression
+                );
+
+            // Execute the comparison expression
+            return Expression.Lambda<Func<bool>>( blockExpr ).Compile()();
+        }
+
+        /// <summary>
         /// Builds an expression for an attribute field
         /// </summary>
         /// <param name="serviceInstance">The service instance.</param>
@@ -212,7 +238,9 @@ namespace Rock.Utility
 
             if ( attributeCache != null )
             {
-                var comparedToDefault = entityField.FieldType.Field.IsComparedToValue( values, attributeCache.DefaultValue );
+                // Test the default value against the expression filter. If it pass, then we can include all the attribute values with no value.
+                var comparedToDefault = IsComparedToValue( attributeValueParameterExpression, filterExpression, attributeCache.DefaultValue );
+
                 if ( comparedToDefault )
                 {
                     var allAttributeValueIds = service.Queryable().Where( v => v.Attribute.Id == attributeCache.Id && v.EntityId.HasValue && !string.IsNullOrEmpty( v.Value ) ).Select( a => a.EntityId.Value );

@@ -568,11 +568,18 @@ td.grid-select-field {
 
   .navbar-toggle {
     float: left;
-    margin-top: 12px;
-    margin-left: @navbarside-width * .24;
     font-size: 1.5em;
+    line-height: @navbar-top-height;
+    width: @navbarside-width;
+    height: @navbar-top-height;
+    padding: 0 28px;
+    margin: 0;
     color: #fff;
     cursor: pointer;
+
+    .navbar-side-open & {
+      position: fixed;
+    }
   }
 
   .navbar-nav.contextsetter,
@@ -611,14 +618,9 @@ td.grid-select-field {
       background-size: (@navbarside-width * .525);
     }
 
-    &:hover {
-      background-color: @navbarside-background-color;
-      background-color: var(--navbarside-background-color);
-    }
-
     .logo {
-      width: 47px;
-      height: 47px;
+      width: 48px;
+      height: 48px;
       margin: 10px;
     }
 
@@ -848,9 +850,9 @@ td.grid-select-field {
   }
 
   .logo {
-    width: 47px;
-    height: 47px;
-    margin: 10px;
+    width: 48px;
+    height: 48px;
+    margin: 3px 0;
   }
 
   @media (min-width: @screen-sm-min) {
@@ -867,22 +869,54 @@ td.grid-select-field {
   }
 }
 
+.navbar-side-open {
+  &::before {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    width: inherit;
+    content: "";
+    width: @navbarside-width;
+    background-color: @navbarside-background-color;
+    background-color: var(--navbarside-background-color);
+  }
+}
+
 .navbar-static-side {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1031;
+  bottom: 0;
+  z-index: @zindex-navbar-fixed + 50;
   display: none;
   width: @navbarside-width;
   height: 100%;
   color: @navbarside-color;
+  overflow-x: hidden;
+  overflow-y: auto;
   background-color: @navbarside-background-color;
   background-color: var(--navbarside-background-color);
 
+  &.open-secondary-nav {
+    width: @navbarside-width + 280px;
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    width: 6px;
+    background-color: rgba(0,0,0, .2);
+    border-radius: 10px;
+  }
+
   @media (min-width: @screen-sm-min) {
-    position: absolute;
-    top: auto;
-    z-index: auto;
+    top: 80px;
+    margin-top: 0;
   }
 
   // Disable Bootstrap Toggle Animation
@@ -906,26 +940,22 @@ td.grid-select-field {
     }
   }
 
-  &::before {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    z-index: -1;
-    width: inherit;
-    content: "";
-    background-color: inherit;
-  }
-
   .navbar-side {
-    position: fixed;
-    z-index: @zindex-navbar-fixed;
-    display: inline-block;
-    width: 100%;
-    width: @navbarside-width;
     cursor: default;
 
+    .navbar-logo {
+      @media (min-width: @screen-sm-min) {
+        display: none;
+      }
+
+      a:hover {
+        background-color: @navbarside-background-color;
+        background-color: var(--navbarside-background-color);
+      }
+    }
+
     & > li {
+      width: @navbarside-width;
       margin-top: 0;
       text-align: center;
       cursor: pointer;
@@ -986,11 +1016,11 @@ td.grid-select-field {
       .nav-childpages {
         position: fixed;
         top: 0;
+        bottom: 0;
         left: @navbarside-width;
-        z-index: 9999;
+        z-index: 2000;
         display: none;
         width: 280px;
-        height: 100%;
         padding: 0 @padding-base-horizontal;
         overflow-x: hidden;
         overflow-y: auto;
@@ -1093,7 +1123,7 @@ td.grid-select-field {
 
     > li.open {
       .nav-childpages {
-        display: block;
+        display: inline-block;
 
         li.header {
           padding-left: 0;
@@ -1103,10 +1133,15 @@ td.grid-select-field {
   }
 }
 
+.navbar-side-open #cms-admin-footer {
+  padding-left: @navbarside-width;
+}
+
 // expanded view
 @media (min-width: @screen-sm-min) {
   .navbar-static-side {
     display: block;
+    height: 100% !important; // Overrides collapse if window is resized
   }
 
   #content-wrapper {

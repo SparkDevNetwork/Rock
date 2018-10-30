@@ -39,6 +39,7 @@ namespace Rock.Plugin.HotFixes
             //FixShortcodeFunctionality();
             //AddDefaultBackgroundCheckSystemSetting();
             //EnableNCOA();
+            //FixLavaIfStatementIssues();
         }
 
 
@@ -47,6 +48,213 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Down()
         {
+        }
+
+        /// <summary>
+        /// Fixes the lava *If* statement issues.
+        /// </summary>
+        private void FixLavaIfStatementIssues()
+        {
+            Sql( @"
+-- Fix Body AttributeValue for Complete Notify Originator for the Person Data Error workflow
+UPDATE [AttributeValue]
+SET [Value] = '{{ ''Global'' | Attribute:''EmailHeader'' }}
+
+<p>{{ Workflow | Attribute:''ReportedBy'' }},</p>
+<p>The data error that you reported for {{ Workflow.Name }} has been completed.<p>
+
+<h4>Details:</h4>
+<p>{{ Workflow | Attribute:''Details'' }}</p>
+
+{% assign Resolution = Workflow | Attribute:''Resolution'' %}
+{% if Resolution != empty %}
+
+    <h4>Resolution:</h4>
+    <p>{{ Resolution }}</p>
+
+{% endif %}
+
+{{ ''Global'' | Attribute:''EmailFooter'' }}
+
+'
+WHERE AttributeId in (select Id from Attribute where [Guid] = '4D245B9E-6B03-46E7-8482-A51FBA190E4D')
+	AND [Value] = '{{ ''Global'' | Attribute:''EmailHeader'' }}
+
+<p>{{ Workflow | Attribute:''ReportedBy'' }},</p>
+<p>The data error that you reported for {{ Workflow.Name }} has been completed.<p>
+
+<h4>Details:</h4>
+<p>{{ Workflow | Attribute:''Details'' }}</p>
+
+{% if Workflow | Attribute:''Resolution'' != Empty %}
+
+    <h4>Resolution:</h4>
+    <p>{{ Workflow | Attribute:''Resolution'' }}</p>
+
+{% endif %}
+
+{{ ''Global'' | Attribute:''EmailFooter'' }}
+
+';
+----------------------------------------------------------------------------------------------------------------
+
+-- Fix Body AttributeValue for Approved Email Requester for the Position Approval workflow
+UPDATE [AttributeValue]
+SET [Value] = '{{ ''Global'' | Attribute:''EmailHeader'' }}
+<p>
+    {{Person.NickName}}, your request for the {{Workflow | Attribute:''PositionTitle''}} position has been 
+    approved by {{Workflow | Attribute:''Approver''}}. HR will be getting with you soon to arrange next steps
+    for the posting process.
+</p>
+{% assign ApprovalNotes = Workflow | Attribute:''ApprovalNotes'' %}
+{% if ApprovalNotes != empty %}
+    <b>Approval Notes:</b>
+    <p>
+        {{ ApprovalNotes }}
+    </p>
+{% endif %}
+{{ ''Global'' | Attribute:''EmailFooter'' }}'
+WHERE AttributeId in (select Id from Attribute where [Guid] = '4D245B9E-6B03-46E7-8482-A51FBA190E4D')
+	AND [Value] = '{{ ''Global'' | Attribute:''EmailHeader'' }}
+<p>
+    {{Person.NickName}}, your request for the {{Workflow | Attribute:''PositionTitle''}} position has been 
+    approved by {{Workflow | Attribute:''Approver''}}. HR will be getting with you soon to arrange next steps
+    for the posting process.
+</p>
+{% if Workflow | Attribute:''ApprovalNotes'' != null %}
+    <b>Approval Notes:</b>
+    <p>
+        {{Workflow | Attribute:''ApprovalNotes''}}
+    </p>
+{% endif %}
+{{ ''Global'' | Attribute:''EmailFooter'' }}';
+----------------------------------------------------------------------------------------------------------------
+
+
+-- Fix Body AttributeValue for Approved Email HR for the Position Approval workflow
+UPDATE [AttributeValue]
+SET [Value] = '{{ ''Global'' | Attribute:''EmailHeader'' }}
+<p>
+    The request for the {{Workflow | Attribute:''PositionTitle''}} position has been 
+    approved by {{Workflow | Attribute:''Approver''}}. Please follow up with {{Workflow | Attribute:''Requester''}} with
+    next steps for posting the position.
+</p>
+{% assign ApprovalNotes = Workflow | Attribute:''ApprovalNotes'' %}
+{% if ApprovalNotes != empty %}
+    <b>Approval Notes:</b>
+    <p>
+        {{ ApprovalNotes }}
+    </p>
+{% endif %}
+{{ ''Global'' | Attribute:''EmailFooter'' }}' 
+WHERE AttributeId in (select Id from Attribute where [Guid] = '4D245B9E-6B03-46E7-8482-A51FBA190E4D')
+	AND [Value] = '{{ ''Global'' | Attribute:''EmailHeader'' }}
+<p>
+    The request for the {{Workflow | Attribute:''PositionTitle''}} position has been 
+    approved by {{Workflow | Attribute:''Approver''}}. Please follow up with {{Workflow | Attribute:''Requester''}} with
+    next steps for posting the position.
+</p>
+{% if Workflow | Attribute:''ApprovalNotes'' != null %}
+    <b>Approval Notes:</b>
+    <p>
+        {{Workflow | Attribute:''ApprovalNotes''}}
+    </p>
+{% endif %}
+{{ ''Global'' | Attribute:''EmailFooter'' }}';
+----------------------------------------------------------------------------------------------------------------
+
+-- Fix Body AttributeValue for Denied Email Requester for the Position Approval workflow
+UPDATE [AttributeValue]
+SET [Value] = '{{ ''Global'' | Attribute:''EmailHeader'' }}
+<p>
+    {{Person.NickName}}, your request for the {{Workflow | Attribute:''PositionTitle''}} position was not approved by
+    {{Workflow | Attribute:''Approver''}}. HR will be getting with you soon to arrange next steps
+    for this process.
+</p>
+{% assign ApprovalNotes = Workflow | Attribute:''ApprovalNotes'' %}
+{% if ApprovalNotes != empty %}
+    <b>Approval Notes:</b>
+    <p>
+        {{ ApprovalNotes }}
+    </p>
+{% endif %}
+{{ ''Global'' | Attribute:''EmailFooter'' }}'
+WHERE AttributeId in (select Id from Attribute where [Guid] = '4D245B9E-6B03-46E7-8482-A51FBA190E4D')
+	AND [Value] = '{{ ''Global'' | Attribute:''EmailHeader'' }}
+<p>
+    {{Person.NickName}}, your request for the {{Workflow | Attribute:''PositionTitle''}} position was not approved by
+    {{Workflow | Attribute:''Approver''}}. HR will be getting with you soon to arrange next steps
+    for this process.
+</p>
+{% if Workflow | Attribute:''ApprovalNotes'' != null %}
+    <b>Approval Notes:</b>
+    <p>
+        {{Workflow | Attribute:''ApprovalNotes''}}
+    </p>
+{% endif %}
+{{ ''Global'' | Attribute:''EmailFooter'' }}';
+----------------------------------------------------------------------------------------------------------------
+
+-- Fix Subject AttributeValue for Approved Email Requester for the Position Approval workflow
+-- Fix Subject AttributeValue for Approved Email HR for the Position Approval workflow
+-- Fix Subject AttributeValue for Denied Email Requester for the Position Approval workflow
+-- Fix Subject AttributeValue for Denied Email HR for the Position Approval workflow
+UPDATE [AttributeValue]
+SET [Value] = 'UPDATE: {{Workflow | Attribute:''PositionTitle''}}'
+WHERE AttributeId in (select Id from Attribute where [Guid] = '5D9B13B6-CD96-4C7C-86FA-4512B9D28386')
+	AND [Value] = 'UPDATE: {{Workflow.PositionTitle}}';
+----------------------------------------------------------------------------------------------------------------
+
+-- Fix Body AttributeValue for Denied Email HR for the Position Approval workflow
+UPDATE [AttributeValue]
+SET [Value] = '{{ ''Global'' | Attribute:''EmailHeader'' }}
+<p>
+    The request for the {{Workflow | Attribute:''PositionTitle''}} position was not 
+    approved by {{Workflow | Attribute:''Approver''}}. Please follow up with {{Workflow | Attribute:''Requester''}} with
+    next steps for this process.
+</p>
+{% assign ApprovalNotes = Workflow | Attribute:''ApprovalNotes'' %}
+{% if ApprovalNotes != empty %}
+    <b>Approval Notes:</b>
+    <p>
+        {{ ApprovalNotes }}
+    </p>
+{% endif %}
+{{ ''Global'' | Attribute:''EmailFooter'' }}'
+WHERE AttributeId in (select Id from Attribute where [Guid] = '4D245B9E-6B03-46E7-8482-A51FBA190E4D')
+	AND [Value] = '{{ ''Global'' | Attribute:''EmailHeader'' }}
+<p>
+    The request for the {{Workflow | Attribute:''PositionTitle''}} position was not 
+    approved by {{Workflow | Attribute:''Approver''}}. Please follow up with {{Workflow | Attribute:''Requester''}} with
+    next steps for this process.
+</p>
+{% if Workflow | Attribute:''ApprovalNotes'' != null %}
+    <b>Approval Notes:</b>
+    <p>
+        {{Workflow | Attribute:''ApprovalNotes''}}
+    </p>
+{% endif %}
+{{ ''Global'' | Attribute:''EmailFooter'' }}';
+----------------------------------------------------------------------------------------------------------------
+" );
+
+
+
+
+            Sql( @"UPDATE [WorkflowActionForm]
+SET [Header] = '{% assign WarnOfRecent = Workflow | Attribute:''WarnOfRecent'' %}<h1>Background Request Details</h1>
+<p>
+    {{CurrentPerson.NickName}}, please complete the form below to start the background
+    request process.
+</p>
+{% if WarnOfRecent == ''Yes'' %}
+    <div class=''alert alert-warning''>
+        Notice: It''s been less than a year since this person''s last background check was processed.
+        Please make sure you want to continue with this request!
+    </div>
+{% endif %}
+<hr />'
+WHERE [Guid] = '644D005C-CC28-4050-994C-C6E53A930F69'" );
         }
 
         /// <summary>

@@ -740,7 +740,8 @@ namespace RockWeb.Blocks.Groups
                         .Where( a =>
                             a.OccurrenceId == _occurrence.Id &&
                             a.DidAttend.HasValue &&
-                            a.DidAttend.Value )
+                            a.DidAttend.Value &&
+                            a.PersonAlias != null)
                         .Select( a => a.PersonAlias.PersonId )
                         .Distinct()
                         .ToList();
@@ -954,6 +955,15 @@ namespace RockWeb.Blocks.Groups
                     }
                     else
                     {
+                        _occurrence.Schedule = _occurrence.Schedule == null && _occurrence.ScheduleId.HasValue ? new ScheduleService( rockContext ).Get( _occurrence.ScheduleId.Value ) : _occurrence.Schedule;
+
+                        cvAttendance.IsValid = _occurrence.IsValid;
+                        if ( !cvAttendance.IsValid )
+                        {
+                            cvAttendance.ErrorMessage = _occurrence.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                            return false;
+                        }
+
                         foreach ( var attendee in _attendees )
                         {
                             var attendance = existingAttendees
@@ -968,7 +978,7 @@ namespace RockWeb.Blocks.Groups
                                     attendance = new Attendance();
                                     attendance.PersonAliasId = personAliasId;
                                     attendance.CampusId = campusId;
-                                    attendance.StartDateTime = _occurrence.OccurrenceDate;
+                                    attendance.StartDateTime = _occurrence.Schedule != null && _occurrence.Schedule.HasSchedule() ? _occurrence.OccurrenceDate.Add( _occurrence.Schedule.StartTimeOfDay ) : _occurrence.OccurrenceDate;
 
                                     // check that the attendance record is valid
                                     cvAttendance.IsValid = attendance.IsValid;

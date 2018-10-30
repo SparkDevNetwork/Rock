@@ -189,8 +189,8 @@ namespace RockWeb.Blocks.Groups
                 // Only use current person if the name entered matches the current person's name and autofill mode is true
                 if ( _autoFill )
                 {
-                    if ( CurrentPerson != null &&
-                        tbFirstName.Text.Trim().Equals( CurrentPerson.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) &&
+                    if ( CurrentPerson != null && CurrentPerson.NickName.IsNotNullOrWhiteSpace() && CurrentPerson.LastName.IsNotNullOrWhiteSpace() &&
+                        tbFirstName.Text.Trim().Equals( CurrentPerson.NickName.Trim(), StringComparison.OrdinalIgnoreCase ) &&
                         tbLastName.Text.Trim().Equals( CurrentPerson.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
                     {
                         person = personService.Get( CurrentPerson.Id );
@@ -305,7 +305,7 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     // Check for the spouse
-                    if ( IsFullWithSpouse && !string.IsNullOrWhiteSpace(tbSpouseFirstName.Text) && !string.IsNullOrWhiteSpace(tbSpouseLastName.Text) )
+                    if ( IsFullWithSpouse && tbSpouseFirstName.Text.IsNotNullOrWhiteSpace() && tbSpouseLastName.Text.IsNotNullOrWhiteSpace() )
                     {
                         spouse = person.GetSpouse( rockContext );
                         bool isSpouseMatch = true;
@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Groups
                 string template = GetAttributeValue( "ResultLavaTemplate" );
                 lResult.Text = template.ResolveMergeFields( mergeFields );
 
-                // Will only redirect if a value is specified
+                // Will only redirect if a value is specifed
                 NavigateToLinkedPage( "ResultPage" );
             }
         }

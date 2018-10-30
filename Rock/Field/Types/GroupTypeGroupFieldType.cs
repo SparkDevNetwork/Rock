@@ -61,6 +61,7 @@ namespace Rock.Field.Types
             controls.Add( textBoxGroupPickerLabel );
             textBoxGroupPickerLabel.Label = "Group Picker Label";
             textBoxGroupPickerLabel.Help = "The label for the group picker";
+            textBoxGroupPickerLabel.Text = "Group";
 
             return controls;
         }
@@ -73,7 +74,7 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( CONFIG_GROUP_PICKER_LABEL, new ConfigurationValue( "Group Picker Label", "The label for the group picker.", string.Empty ) );
+            configurationValues.Add( CONFIG_GROUP_PICKER_LABEL, new ConfigurationValue( "Group Picker Label", "The label for the group picker.", "Group" ) );
 
             if ( controls != null && controls.Count == 1 )
             {

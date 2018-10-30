@@ -192,7 +192,7 @@ namespace Rock.Field.Types
         public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             PersonPicker ppPerson = control as PersonPicker;
-            string result = null;
+            string result = string.Empty;
 
             if ( ppPerson != null )
             {
@@ -210,9 +210,11 @@ namespace Rock.Field.Types
                         }
                     }
                 }
+
+                return result;
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>

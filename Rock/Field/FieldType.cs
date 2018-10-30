@@ -601,7 +601,7 @@ namespace Rock.Field
                     string filterValue = FormatFilterValueValue( configurationValues, filterValues[0] );
                     if ( !string.IsNullOrWhiteSpace( filterValue ) )
                     {
-                        return "is " + filterValue;
+                        return "Is " + filterValue;
                     }
                 }
                 else if ( filterValues.Count >= 2 )
@@ -624,7 +624,7 @@ namespace Rock.Field
                                 {
                                     // if IsBlank is one of the allowed FilterComparisonTypes, and if EqualTo or NotEqualTo specified with blank value, this will get converted is IsBlank/IsNotBlank
                                     // so we can render this as "Equal To ''" or '"Not Equal To ''" 
-                                    return string.Format( "{0} '{1}'", comparisonType.ConvertToString(), filterValueValue );
+                                    return string.Format( "{0} {1}", comparisonType.ConvertToString(), filterValueValue );
                                 }
 
                                 // if there is no value specified, just return String.Empty
@@ -650,10 +650,20 @@ namespace Rock.Field
         /// <returns></returns>
         public virtual string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            string formattedValue = FormatValue( null, value, configurationValues, false );
-            if ( !string.IsNullOrWhiteSpace( formattedValue ) )
+            string formattedValue = FormatValue( null, value, configurationValues, true );
+            return AddQuotes( formattedValue );
+        }
+
+        /// <summary>
+        /// Adds quotes to a value if it is not empty or whitespace.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>A value surrounded with quotes</returns>
+        public string AddQuotes( string value )
+        {
+            if (value.IsNotNullOrWhiteSpace())
             {
-                return string.Format( "'{0}'", formattedValue );
+                return string.Format( "'{0}'", value );
             }
 
             return string.Empty;

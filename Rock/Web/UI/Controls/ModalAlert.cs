@@ -45,8 +45,17 @@ namespace Rock.Web.UI.Controls
         /// <param name="alertType">Type of the message.</param>
         public void Show( string message, ModalAlertType alertType )
         {
-            //string script = "bootbox.alert('" + message + "');";
-            string script = string.Format( "bootbox.alert('<h4>{0}</h4>{1}');", alertType.ConvertToString(), message.EscapeQuotes() );
+            var cleanMessage = message.SanitizeHtml( false ).Replace( "'", "&#39;" );
+            string script;
+            if ( alertType == ModalAlertType.None )
+            {
+                script = $"bootbox.alert('{cleanMessage}');";
+            }
+            else
+            {
+                script = $"bootbox.alert('<h4>{alertType.ConvertToString()}</h4>{cleanMessage}');";
+            }
+
             ScriptManager.RegisterStartupScript( this, this.GetType(), ScriptKey, script, true );
         }
 
@@ -67,16 +76,21 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// 
         /// </summary>
-        Alert,
-        
+        Alert = 0,
+
         /// <summary>
         /// 
         /// </summary>
-        Information,
-        
+        Information = 1,
+
         /// <summary>
         /// 
         /// </summary>
-        Warning,
+        Warning = 2,
+
+        /// <summary>
+        /// An alert without a heading
+        /// </summary>
+        None = 3,
     }
 }
