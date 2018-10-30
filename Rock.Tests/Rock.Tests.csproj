@@ -104,6 +104,7 @@
     <Compile Include="Rock\Model\PageRouteTests.cs" />
     <Compile Include="Rock\Model\PageTests.cs" />
     <Compile Include="Rock\Model\PersonTests.cs" />
+    <Compile Include="Rock\Model\PhoneNumberTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\StringExtensionsTests.cs" />
     <Compile Include="Rock\Utility\NcoaApi\TrueNcoaApiTests.cs" />
     <Compile Include="Rock\Workflow\Action\BackgroundCheckRequestTests.cs" />
