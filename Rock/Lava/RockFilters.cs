@@ -2918,7 +2918,8 @@ namespace Rock.Lava
                     .AsNoTracking()
                     .Where( m =>
                         m.PersonId == person.Id &&
-                        m.Group.GroupTypeId == numericalGroupTypeId.Value );
+                        m.Group.GroupTypeId == numericalGroupTypeId.Value &&
+                        m.Group.IsActive && !m.Group.IsArchived );
 
                 if ( groupStatus != "All" )
                 {
@@ -2965,7 +2966,7 @@ namespace Rock.Lava
                     .Where( m =>
                         m.PersonId == person.Id &&
                         m.Group.Id == numericalGroupId.Value &&
-                        m.Group.IsActive );
+                        m.Group.IsActive && !m.Group.IsArchived );
 
                 if ( status != "All" )
                 {

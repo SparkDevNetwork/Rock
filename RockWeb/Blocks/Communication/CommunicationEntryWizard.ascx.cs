@@ -32,6 +32,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -476,12 +477,12 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private List<CommunicationType> GetAllowedCommunicationTypes()
         {
-            var communicationTypes = this.GetAttributeValue( "CommunicationTypes" ).SplitDelimitedValues();
+            var communicationTypes = this.GetAttributeValue( "CommunicationTypes" ).SplitDelimitedValues(false);
             var result = new List<CommunicationType>();
             if ( communicationTypes.Any() )
             {
                 // Recipient Preference,Email,SMS
-                if ( communicationTypes.Contains( "RecipientPreference" ) )
+                if ( communicationTypes.Contains( "Recipient Preference" ) )
                 {
                     result.Add( CommunicationType.RecipientPreference );
                 }
@@ -2203,6 +2204,17 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             SetNavigationHistory( pnlResult );
             pnlConfirmation.Visible = false;
             pnlResult.Visible = true;
+
+            var communicationDateTime = communication.FutureSendDateTime.HasValue ?
+                communication.FutureSendDateTime.Value :
+                communication.CreatedDateTime.Value;
+            DateTime? dndEndingTime = null;
+            var isCommunicationInsideDND = Rock.Model.Communication.CheckCommunicationForDND( communicationDateTime, out dndEndingTime );
+            nbWarning.Visible = isCommunicationInsideDND;
+            if ( isCommunicationInsideDND )
+            {
+                nbWarning.Text = "Do not disturb is active and it's falling inside the DND window. It will only be sent once the DND window has passed";
+            }
 
             nbResult.Text = message;
 

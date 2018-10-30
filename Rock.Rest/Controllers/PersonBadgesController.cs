@@ -78,7 +78,7 @@ namespace Rock.Rest.Controllers
                                         .Where( t => t.Group.GroupType.Guid == groupTypeGuid
                                                  && t.PersonId == personId
                                                  && t.GroupMemberStatus == GroupMemberStatus.Active
-                                                 && t.Group.IsActive )
+                                                 && t.Group.IsActive && !t.Group.IsArchived )
                                         .OrderBy( g => g.GroupRole.Order );
 
             foreach ( GroupMember member in groupMembershipsQuery )

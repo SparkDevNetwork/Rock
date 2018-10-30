@@ -72,10 +72,10 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockDropDownList ID="ddlTransactionType" runat="server" Label="Transaction Type" Required="true" />
-                            <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source" />
-                            <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" Required="true" />
-                            <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
+                            <Rock:DefinedValuePicker ID="dvpTransactionType" runat="server" Label="Transaction Type" Required="true" />
+                            <Rock:DefinedValuePicker ID="dvpSourceType" runat="server" Label="Source" />
+                            <Rock:DefinedValuePicker ID="dvpCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" Required="true" />
+                            <Rock:DefinedValuePicker ID="dvpCreditCardType" runat="server" Label="Credit Card Type" />
                             <Rock:DynamicPlaceholder ID="phPaymentAttributeEdits" runat="server" />
                             <Rock:FinancialGatewayPicker ID="gpPaymentGateway" runat="server" Label="Payment Gateway" ShowAll="true" />
                             <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"
@@ -84,7 +84,7 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsRefund" runat="server" Label="This is a Refund" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbIsRefund_CheckedChanged" />
-                            <Rock:RockDropDownList ID="ddlRefundReasonEdit" runat="server" Label="Refund Reason" Visible="false" />
+                            <Rock:DefinedValuePicker ID="dvpRefundReasonEdit" runat="server" Label="Refund Reason" Visible="false" />
                             <Rock:RockTextBox ID="tbRefundSummaryEdit" runat="server" Label="Refund Reason Summary" TextMode="MultiLine" Rows="3" Visible="false" />
                             <h4>Images</h4>
                             <asp:DataList ID="dlImages" runat="server" RepeatDirection="Horizontal" RepeatColumns="2" OnItemDataBound="dlImages_ItemDataBound">
@@ -253,7 +253,7 @@
                         <Rock:CurrencyBox ID="tbRefundAmount" runat="server" Label="Amount" Required="true" ValidationGroup="Refund" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlRefundReason" runat="server" Label="Reason" Required="true" ValidationGroup="Refund" />
+                        <Rock:DefinedValuePicker ID="dvpRefundReason" runat="server" Label="Reason" Required="true" ValidationGroup="Refund" />
                     </div>
                 </div>
                 <div class="row">

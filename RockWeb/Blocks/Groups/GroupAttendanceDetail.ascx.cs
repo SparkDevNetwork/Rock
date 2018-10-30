@@ -740,7 +740,8 @@ namespace RockWeb.Blocks.Groups
                         .Where( a =>
                             a.OccurrenceId == _occurrence.Id &&
                             a.DidAttend.HasValue &&
-                            a.DidAttend.Value )
+                            a.DidAttend.Value &&
+                            a.PersonAlias != null)
                         .Select( a => a.PersonAlias.PersonId )
                         .Distinct()
                         .ToList();
@@ -955,6 +956,13 @@ namespace RockWeb.Blocks.Groups
                     else
                     {
                         _occurrence.Schedule = _occurrence.Schedule == null && _occurrence.ScheduleId.HasValue ? new ScheduleService( rockContext ).Get( _occurrence.ScheduleId.Value ) : _occurrence.Schedule;
+
+                        cvAttendance.IsValid = _occurrence.IsValid;
+                        if ( !cvAttendance.IsValid )
+                        {
+                            cvAttendance.ErrorMessage = _occurrence.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                            return false;
+                        }
 
                         foreach ( var attendee in _attendees )
                         {
