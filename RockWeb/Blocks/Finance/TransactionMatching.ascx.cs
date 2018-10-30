@@ -105,8 +105,8 @@ namespace RockWeb.Blocks.Finance
             base.OnInit( e );
 
             RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
-            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js", false );
-            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
             string script = string.Format( @"
     $('.transaction-image-thumbnail').click( function() {{

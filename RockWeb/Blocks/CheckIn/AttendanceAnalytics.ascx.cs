@@ -115,7 +115,7 @@ namespace RockWeb.Blocks.CheckIn
             else
             {
                 btnCopyToClipboard.Visible = true;
-                RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js", false );
+                RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
                 string script = string.Format( @"
     new ClipboardJS('#{0}');
     $('#{0}').tooltip();

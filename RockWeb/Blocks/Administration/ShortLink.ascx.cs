@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Administration
 
             _minTokenLength = GetAttributeValue( "MinimumTokenLength" ).AsIntegerOrNull() ?? 7;
 
-            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js", false );
+            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
             string script = string.Format( @"
     function updateClipboardText() {{
         var scLink = $('#{0}').val() + $('#{1}').val();

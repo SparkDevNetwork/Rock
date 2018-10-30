@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Event
             this.AddConfigurationUpdateTrigger( upEventCalendar );
 
             // Setup for being able to copy text to clipboard
-            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js", false );
+            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
             string script = string.Format( @"
     new ClipboardJS('#{0}');
     $('#{0}').tooltip();
