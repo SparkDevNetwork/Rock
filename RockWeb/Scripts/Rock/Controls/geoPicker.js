@@ -450,8 +450,9 @@
             */
             $('#' + controlId + ' a.picker-label').click(function (e) {
                 e.preventDefault();
-                var $control = $('#' + controlId)
-                $control.find('.picker-menu').first().toggle(function () {
+                var $control = $('#' + controlId);
+                $(this).toggleClass("active");
+                $control.find('.picker-menu').first().toggle(0, function () {
                     Rock.dialogs.updateModalScrollBar(controlId);
                 });
 

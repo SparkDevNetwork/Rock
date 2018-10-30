@@ -34,7 +34,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "EntityType" )]
     [DataContract]
-    public partial class EntityType : Entity<EntityType>
+    public partial class EntityType : Entity<EntityType>, ICacheable
     {
 
         #region Entity Properties
@@ -158,6 +158,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is analytic supported; otherwise, <c>false</c>.
         /// </value>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use EntityTypeCache.IsAnalyticsSupported(..) instead") ]
         public bool IsAnalyticSupported
         {
@@ -184,6 +185,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is analytic historical supported; otherwise, <c>false</c>.
         /// </value>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use EntityTypeCache.IsAnalyticHistoricalSupported(..) instead" )]
         public bool IsAnalyticHistoricalSupported
         {
@@ -326,7 +328,7 @@ namespace Rock.Model
                 object entity = null;
                 try
                 {
-                    var type = EntityTypeCache.Read( this ).GetEntityType();
+                    var type = EntityTypeCache.Get( this ).GetEntityType();
                     entity = System.Activator.CreateInstance( type );
                 }
                 catch
@@ -344,6 +346,29 @@ namespace Rock.Model
 
             return true;
         }
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return EntityTypeCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            EntityTypeCache.UpdateCachedEntity( this.Id, entityState );
+        }
+
         #endregion
 
     }

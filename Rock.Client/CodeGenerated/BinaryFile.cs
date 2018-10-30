@@ -56,6 +56,9 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public int? Height { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
@@ -74,6 +77,9 @@ namespace Rock.Client
 
         /// <summary />
         public string StorageEntitySettings { get; set; }
+
+        /// <summary />
+        public int? Width { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -115,12 +121,14 @@ namespace Rock.Client
             this.FileSize = source.FileSize;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.Height = source.Height;
             this.IsSystem = source.IsSystem;
             this.IsTemporary = source.IsTemporary;
             this.MimeType = source.MimeType;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Path = source.Path;
             this.StorageEntitySettings = source.StorageEntitySettings;
+            this.Width = source.Width;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

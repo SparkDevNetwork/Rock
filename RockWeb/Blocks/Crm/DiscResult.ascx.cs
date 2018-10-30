@@ -37,7 +37,7 @@ namespace Rockweb.Blocks.Crm
     /// View a person's DISC assessment.
     /// This is used with permission from Greg Wiens: http://www.gregwiens.com/scid/
     /// </summary>
-    [DisplayName( "Disc Result" )]
+    [DisplayName( "DISC Result" )]
     [Category( "CRM" )]
     [Description( "View the results of a DISC assessment." )]
     public partial class DiscResult : Rock.Web.UI.RockBlock
@@ -138,7 +138,7 @@ namespace Rockweb.Blocks.Crm
         /// <param name="personalityType">The one or two letter personality type.</param>
         private void ShowExplaination( string personalityType )
         {
-            var personalityValue = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid() ).DefinedValues.Where( v => v.Value == personalityType ).FirstOrDefault();
+            var personalityValue = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid() ).DefinedValues.Where( v => v.Value == personalityType ).FirstOrDefault();
             if ( personalityValue != null )
             {
                 lDescription.Text = personalityValue.Description;

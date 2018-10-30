@@ -35,11 +35,11 @@
                         </Rock:RockDropDownList>
                     </Rock:GridFilter>
 
-                    <Rock:Grid ID="gUserLogins" runat="server" AllowSorting="true" RowItemText="Login">
+                    <Rock:Grid ID="gUserLogins" runat="server" AllowSorting="true" RowItemText="Login" OnRowDataBound="gUserLogins_RowDataBound">
                         <Columns>
-                            <Rock:RockBoundField DataField="UserName" HeaderText="Username" SortExpression="Name" />
-                            <asp:HyperLinkField DataNavigateUrlFields="PersonId" DataTextField="PersonName" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="Person" />
-                            <Rock:RockBoundField DataField="ProviderName" HeaderText="Provider" SortExpression="EntityType.FriendlyName" />
+                            <Rock:RockLiteralField ID="lUserNameOrRemoteProvider" HeaderText="Username" SortExpression="UserName" />
+                            <Rock:PersonField DataField="Person" HeaderText="Person" SortExpression="Person.LastName, Person.NickName" />
+                            <Rock:RockLiteralField ID="lProviderName" HeaderText="Provider" SortExpression="EntityType.FriendlyName" />
                             <Rock:DateField DataField="CreatedDateTime" HeaderText="Created" SortExpression="CreatedDateTime" />
                             <Rock:DateField DataField="LastLoginDateTime" HeaderText="Last Login" SortExpression="LastLoginDateTime" />
                             <Rock:BoolField DataField="IsConfirmed" HeaderText="Confirmed" SortExpression="IsConfirmed" />
@@ -51,8 +51,6 @@
                 </div>
             </div>
 
-
-
         </asp:Panel>
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
@@ -61,7 +59,7 @@
             <Content>
 
                 <asp:HiddenField ID="hfIdValue" runat="server" />
-                <asp:ValidationSummary ID="valUserLoginSummary" runat="server" ValidationGroup="Login"  CssClass="alert alert-danger" HeaderText="Please correct the following"/>
+                <asp:ValidationSummary ID="valUserLoginSummary" runat="server" ValidationGroup="Login"  CssClass="alert alert-validation" HeaderText="Please correct the following:"/>
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
                 <div class="row">
                     <div class="col-md-6">
@@ -72,15 +70,17 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbUserName" runat="server" SourceTypeName="Rock.Model.UserLogin, Rock" PropertyName="UserName" ValidationGroup="Login" />
+                        <Rock:DataTextBox ID="tbUserNameEdit" runat="server" SourceTypeName="Rock.Model.UserLogin, Rock" PropertyName="UserName" ValidationGroup="Login" />
                         <Rock:RockCheckBox ID="cbIsConfirmed" runat="server" Label="Confirmed" Text="Yes" Help="Has the user confirmed this login?" />
                         <Rock:RockCheckBox ID="cbIsLockedOut" runat="server" Label="Locked Out" Text="Yes" Help="Has the user been locked out of using this login?" />
                         <Rock:RockCheckBox ID="cbIsRequirePasswordChange" runat="server" Label="Require Password Change" Text="Yes" Help="Require the user to change the password on next login." Visible="false" />
                     </div>
                     <div class="col-md-6">
                         <Rock:ComponentPicker ID="compProvider" runat="server" Label="Authentication Provider" ContainerType="Rock.Security.AuthenticationContainer, Rock" Required="true" AutoPostBack="true" ValidationGroup="Login" />
-                        <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" ValidateRequestMode="Disabled" TextMode="Password" Enabled="false"></Rock:RockTextBox>
-                        <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirm" ValidateRequestMode="Disabled" TextMode="Password" Enabled="false"></Rock:RockTextBox>
+                        <Rock:RockControlWrapper ID="rcwPassword" runat="server" Label="Set Password">
+                            <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" ValidateRequestMode="Disabled" TextMode="Password" Enabled="false" />
+                            <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirm" ValidateRequestMode="Disabled" TextMode="Password" Enabled="false" />
+                        </Rock:RockControlWrapper>
                     </div>
                 </div>
 

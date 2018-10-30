@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -36,11 +37,6 @@ namespace Rock.Apps.StatementGenerator
         /// The _rock rest client
         /// </summary>
         private RockRestClient _rockRestClient;
-
-        /// <summary>
-        /// The _lastTypedSearchTerm to assist in reducing unneccessary searches if the person is still typing
-        /// </summary>
-        private string _lastTypedSearchTerm;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SelectPersonsPage"/> class.
@@ -76,55 +72,82 @@ namespace Rock.Apps.StatementGenerator
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnNext_Click( object sender, RoutedEventArgs e )
         {
+
+            if ( SaveChanges( true ) )
+            {
+                var nextPage = new SelectLavaTemplatePage();
+                this.NavigationService.Navigate( nextPage );
+            }
+        }
+
+        /// <summary>
+        /// Saves the changes.
+        /// </summary>
+        /// <param name="showWarnings">if set to <c>true</c> [show warnings].</param>
+        /// <returns></returns>
+        private bool SaveChanges( bool showWarnings )
+        {
+            var rockConfig = RockConfig.Load();
             if ( radAllPersons.IsChecked ?? false )
             {
+                rockConfig.PersonSelectionOption = PersonSelectionOption.AllIndividuals;
                 ReportOptions.Current.DataViewId = null;
                 ReportOptions.Current.PersonId = null;
             }
             else if ( radDataView.IsChecked ?? false )
             {
-                if ( ddlDataView.SelectedValue != null )
+                rockConfig.PersonSelectionOption = PersonSelectionOption.DataView;
+                var selectedDataView = ddlDataView.SelectedValue as Rock.Client.DataView;
+                if ( selectedDataView != null )
                 {
-                    ReportOptions.Current.DataViewId = (int)ddlDataView.SelectedValue.GetPropertyValue( "Id" );
+                    ReportOptions.Current.DataViewId = selectedDataView.Id;
                     ReportOptions.Current.PersonId = null;
                 }
                 else
                 {
-                    // no dataview is selected, show a warning message 
-                    lblWarning.Content = "Please select a Dataview when 'Dataview' is checked.";
-                    lblWarning.Visibility = Visibility.Visible;
-                    return;
+                    if ( showWarnings )
+                    {
+                        // no dataview is selected, show a warning message 
+                        lblWarning.Content = "Please select a Dataview when 'Dataview' is checked.";
+                        lblWarning.Visibility = Visibility.Visible;
+                        return false;
+                    }
                 }
             }
             else
             {
-                if ( grdPersons.SelectedValue != null )
+                rockConfig.PersonSelectionOption = PersonSelectionOption.SingleIndividual;
+                PersonSearchResult personSearchResult = grdPersons.SelectedValue as PersonSearchResult;
+                if ( personSearchResult == null && grdPersons.Items.Count == 1 )
                 {
-                    // they selected a person in the grid
-                    ReportOptions.Current.PersonId = (int)grdPersons.SelectedValue.GetPropertyValue( "Id" );
+                    personSearchResult = grdPersons.Items[0] as PersonSearchResult;
                 }
-                else if ( grdPersons.Items.Count == 1 )
+
+                if ( personSearchResult != null )
                 {
-                    // they didn't select a person in the grid, but there is only one listed. So, that is who they want to run the report for
-                    ReportOptions.Current.PersonId = (int)grdPersons.Items[0].GetPropertyValue( "Id" );
+                    ReportOptions.Current.PersonId = personSearchResult.Id;
                 }
                 else
                 {
-                    // no person is selected, show a warning message 
-                    lblWarning.Content = "Please select a person when 'Single individual' is checked.";
-                    lblWarning.Visibility = Visibility.Visible;
-                    return;
+                    if ( showWarnings )
+                    {
+                        // no person is selected, show a warning message 
+                        lblWarning.Content = "Please select a person when 'Single individual' is checked.";
+                        lblWarning.Visibility = Visibility.Visible;
+                        return false;
+                    }
                 }
             }
 
             ReportOptions.Current.IncludeIndividualsWithNoAddress = ckIncludeIndividualsWithNoAddress.IsChecked ?? false;
-
-            SelectAccountsPage nextPage = new SelectAccountsPage();
-            this.NavigationService.Navigate( nextPage );
+            ReportOptions.Current.ExcludeInActiveIndividuals = ckExcludeInActiveIndividuals.IsChecked ?? false;
+            ReportOptions.Current.ExcludeOptedOutIndividuals = ckExcludeOptedOutIndividuals.IsChecked ?? false;
+            ReportOptions.Current.IncludeBusinesses = ckIncludeBusinesses.IsChecked ?? false;
+            return true;
         }
 
         /// <summary>
-        /// Handles the Checked event of the radPersons control.
+        /// Handles the Checked event of any of the person selection radioboxes are checked
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
@@ -132,12 +155,13 @@ namespace Rock.Apps.StatementGenerator
         {
             if ( this.IsInitialized )
             {
-                txtPersonSearch.Visibility = radSingle.IsChecked ?? false ? Visibility.Visible : Visibility.Collapsed;
-                grdPersons.Visibility = radSingle.IsChecked ?? false ? Visibility.Visible : Visibility.Collapsed;
-                ckIncludeIndividualsWithNoAddress.Visibility = radAllPersons.IsChecked ?? false ? Visibility.Visible : Visibility.Collapsed;
-                ddlDataView.Visibility = radDataView.IsChecked ?? false ? Visibility.Visible : Visibility.Collapsed;
+                pnlSingleIndividualOptions.Visibility = radSingle.IsChecked ?? false ? Visibility.Visible : Visibility.Collapsed;
+                pnlAllIndividualsOptions.Visibility = radAllPersons.IsChecked ?? false ? Visibility.Visible : Visibility.Collapsed;
+                pnlDataViewOptions.Visibility = radDataView.IsChecked ?? false ? Visibility.Visible : Visibility.Collapsed;
             }
         }
+
+        private ConcurrentBag<BackgroundWorker> activeSearchBackgroundWorkers = new ConcurrentBag<BackgroundWorker>();
 
         /// <summary>
         /// Handles the TextChanged event of the txtPersonSearch control.
@@ -147,9 +171,19 @@ namespace Rock.Apps.StatementGenerator
         private void txtPersonSearch_TextChanged( object sender, TextChangedEventArgs e )
         {
             var searchTerm = txtPersonSearch.Text.Trim();
-            _lastTypedSearchTerm = searchTerm;
 
-            BackgroundWorker searchBackgroundWorker = new BackgroundWorker();
+
+            var searchBackgroundWorkersList = activeSearchBackgroundWorkers.ToList();
+            for ( int i = 0; i < searchBackgroundWorkersList.Count; i++ )
+            {
+                var bw = searchBackgroundWorkersList[i];
+                bw?.CancelAsync();
+            }
+
+            var searchBackgroundWorker = new BackgroundWorker();
+            activeSearchBackgroundWorkers.Add( searchBackgroundWorker );
+            searchBackgroundWorker.WorkerSupportsCancellation = true;
+
             searchBackgroundWorker.DoWork += bw_DoWork;
             searchBackgroundWorker.RunWorkerCompleted += bw_RunWorkerCompleted;
             searchBackgroundWorker.RunWorkerAsync( searchTerm );
@@ -176,6 +210,8 @@ namespace Rock.Apps.StatementGenerator
             {
                 grdPersons.DataContext = e.Result as List<object>;
             }
+
+            activeSearchBackgroundWorkers = new ConcurrentBag<BackgroundWorker>( activeSearchBackgroundWorkers.Where( a => a != sender as BackgroundWorker ) );
         }
 
         /// <summary>
@@ -189,43 +225,63 @@ namespace Rock.Apps.StatementGenerator
 
             //// sleep a few ms to make sure they are done typing, then only fire off the query if this bw was launched with the most recent search term
             //// this helps reduce the chance that the webclient will get overloaded with multiple requested
-
             System.Threading.Thread.Sleep( 50 );
+
             string searchValue = e.Argument as string;
 
-            if ( searchValue != _lastTypedSearchTerm )
+            // if the search term has changed and new backgroundworker is doing a search, cancel this one
+            BackgroundWorker backgroundWorker = sender as BackgroundWorker;
+            if ( backgroundWorker.CancellationPending )
             {
                 e.Cancel = true;
                 return;
             }
 
-            if ( searchValue.Length > 2 )
+            if ( searchValue.Length < 3 )
             {
-                string uriFormat = "api/People/Search?name={0}&includeHtml=false&includeDetails=true&includeBusinesses=true&includeDeceased=true";
-                var searchResult = _rockRestClient.GetXml( string.Format( uriFormat, HttpUtility.UrlEncode( searchValue ) ), 10000 );
-                if ( searchResult != null )
+                e.Result = personResults;
+                return;
+            }
+
+            string uriFormat = "api/People/Search?name={0}&includeHtml=false&includeDetails=true&includeBusinesses=true&includeDeceased=true";
+            var searchResult = _rockRestClient.GetXml( string.Format( uriFormat, HttpUtility.UrlEncode( searchValue ) ), 10000 );
+
+            // if the search term has changed and new backgroundworker is doing a search, cancel this one
+            if ( backgroundWorker.CancellationPending )
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            if ( searchResult != null )
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml( searchResult );
+                XmlNode root = doc.DocumentElement;
+                foreach ( var node in root.ChildNodes.OfType<XmlNode>() )
                 {
-                    XmlDocument doc = new XmlDocument();
-                    doc.LoadXml( searchResult );
-                    XmlNode root = doc.DocumentElement;
-                    foreach ( var node in root.ChildNodes.OfType<XmlNode>() )
+                    personResults.Add( new PersonSearchResult
                     {
-                        personResults.Add( new
-                         {
-                             Id = node["Id"].InnerText.AsInteger(),
-                             FullName = node["Name"].InnerText,
-                             Age = node["Age"].InnerText == "-1" ? "" : node["Age"].InnerText,
-                             Gender = node["Gender"].InnerText,
-                             ToolTip = string.Format(
-                                 string.IsNullOrWhiteSpace( node["SpouseName"].InnerText ) ? "-" : node["SpouseName"].InnerText,
-                                 node["Email"].InnerText,
-                                 node["Address"].InnerText ),
-                             SpouseName = node["SpouseName"].InnerText,
-                             Email = node["Email"].InnerText,
-                             Address = node["Address"].InnerText
-                         } );
-                    }
+                        Id = node["Id"].InnerText.AsInteger(),
+                        FullName = node["Name"].InnerText,
+                        Age = node["Age"].InnerText == "-1" ? "" : node["Age"].InnerText,
+                        Gender = node["Gender"].InnerText,
+                        ToolTip = string.Format(
+                             string.IsNullOrWhiteSpace( node["SpouseName"].InnerText ) ? "-" : node["SpouseName"].InnerText,
+                             node["Email"].InnerText,
+                             node["Address"].InnerText ),
+                        SpouseName = node["SpouseName"].InnerText,
+                        Email = node["Email"].InnerText,
+                        Address = node["Address"].InnerText
+                    } );
                 }
+            }
+
+            // if the search term has changed and new backgroundworker is doing a search, cancel this one
+            if ( backgroundWorker.CancellationPending )
+            {
+                e.Cancel = true;
+                return;
             }
 
             e.Result = personResults;
@@ -254,6 +310,7 @@ namespace Rock.Apps.StatementGenerator
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnPrev_Click( object sender, RoutedEventArgs e )
         {
+            SaveChanges( false );
             this.NavigationService.GoBack();
         }
 
@@ -264,7 +321,35 @@ namespace Rock.Apps.StatementGenerator
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
+            var rockConfig = RockConfig.Load();
+            radAllPersons.IsChecked = rockConfig.PersonSelectionOption == PersonSelectionOption.AllIndividuals;
+            radDataView.IsChecked = rockConfig.PersonSelectionOption == PersonSelectionOption.DataView;
+            radSingle.IsChecked = rockConfig.PersonSelectionOption == PersonSelectionOption.SingleIndividual;
+
+            ckIncludeIndividualsWithNoAddress.IsChecked = ReportOptions.Current.IncludeIndividualsWithNoAddress;
+            ckExcludeInActiveIndividuals.IsChecked = ReportOptions.Current.ExcludeInActiveIndividuals;
+            ckExcludeOptedOutIndividuals.IsChecked = ReportOptions.Current.ExcludeOptedOutIndividuals;
+            ckIncludeBusinesses.IsChecked = ReportOptions.Current.IncludeBusinesses;
+
+            if ( ReportOptions.Current.DataViewId.HasValue )
+            {
+                ddlDataView.SelectedValue = ddlDataView.Items.OfType<Rock.Client.DataView>().FirstOrDefault( a => a.Id == ReportOptions.Current.DataViewId.Value );
+            }
+
             radPersons_Checked( sender, e );
+            lblWarning.Visibility = Visibility.Collapsed;
         }
+    }
+
+    internal class PersonSearchResult
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; }
+        public string Age { get; set; }
+        public string Gender { get; set; }
+        public string ToolTip { get; set; }
+        public string SpouseName { get; set; }
+        public string Email { get; set; }
+        public string Address { get; set; }
     }
 }

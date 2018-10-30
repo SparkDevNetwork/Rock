@@ -17,9 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Communication;
+
 using Rock.Data;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -43,7 +42,8 @@ namespace Rock.Model
         /// <param name="recipientStatus">The recipient status.</param>
         /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
         /// <returns></returns>
-        [Obsolete( "Use method without textMessage argument")]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use method without textMessage argument", true )]
         public Communication CreateEmailCommunication
         (
             List<string> recipientEmails,
@@ -73,6 +73,8 @@ namespace Rock.Model
         /// <param name="recipientStatus">The recipient status.</param>
         /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
         /// <returns></returns>
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use method with send date time argument", true )]
         public Communication CreateEmailCommunication
         (
             List<string> recipientEmails,
@@ -85,73 +87,143 @@ namespace Rock.Model
             CommunicationRecipientStatus recipientStatus = CommunicationRecipientStatus.Delivered,
             int? senderPersonAliasId = null )
         {
-            var recipients = new PersonService( (RockContext)this.Context )
+            DateTime? sendDateTime = null;
+            if ( recipientStatus == CommunicationRecipientStatus.Delivered )
+            {
+                sendDateTime = RockDateTime.Now;
+            }
+
+            return CreateEmailCommunication( recipientEmails, fromName, fromAddress, replyTo, subject, message, bulkCommunication, sendDateTime, recipientStatus, senderPersonAliasId );
+        }
+
+        /// <summary>
+        /// Creates the email communication.
+        /// </summary>
+        /// <param name="recipientEmails">The recipient emails.</param>
+        /// <param name="fromName">From name.</param>
+        /// <param name="fromAddress">From address.</param>
+        /// <param name="replyTo">The reply to.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="bulkCommunication">if set to <c>true</c> [bulk communication].</param>\
+        /// <param name="sendDateTime">The send date time.</param>
+        /// <param name="recipientStatus">The recipient status.</param>
+        /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
+        /// <returns></returns>
+        public Communication CreateEmailCommunication
+        (
+            List<string> recipientEmails,
+            string fromName,
+            string fromAddress,
+            string replyTo,
+            string subject,
+            string message,
+            bool bulkCommunication,
+            DateTime? sendDateTime,
+            CommunicationRecipientStatus recipientStatus = CommunicationRecipientStatus.Delivered,
+            int? senderPersonAliasId = null)
+        {
+            var recipients = new PersonService( (RockContext)Context )
                 .Queryable()
                 .Where( p => recipientEmails.Contains( p.Email ) )
                 .ToList();
 
-            if ( recipients.Any() )
+            if (!recipients.Any()) return null;
+
+            var communication = new Communication
             {
-                Rock.Model.Communication communication = new Rock.Model.Communication();
-                Add( communication );
+                CommunicationType = CommunicationType.Email,
+                Status = CommunicationStatus.Approved,
+                SenderPersonAliasId = senderPersonAliasId
+            };
+            communication.FromName = fromName.TrimForMaxLength( communication, "FromName" );
+            communication.FromEmail = fromAddress.TrimForMaxLength( communication, "FromEmail" );
+            communication.ReplyToEmail = replyTo.TrimForMaxLength( communication, "ReplyToEmail" );
+            communication.Subject = subject.TrimForMaxLength( communication, "Subject" );
+            communication.Message = message;
+            communication.IsBulkCommunication = bulkCommunication;
+            communication.FutureSendDateTime = null;
+            communication.SendDateTime = sendDateTime;
+            Add( communication );
 
-                communication.CommunicationType = CommunicationType.Email;
-                communication.Status = CommunicationStatus.Approved;
-                communication.SenderPersonAliasId = senderPersonAliasId;
-                communication.FromName = fromName;
-                communication.FromEmail = fromAddress;
-                communication.ReplyToEmail = replyTo;
-                communication.Subject = subject;
-                communication.Message = message;
-                communication.IsBulkCommunication = bulkCommunication;
-                communication.FutureSendDateTime = null;
+            // add each person as a recipient to the communication
+            foreach ( var person in recipients )
+            {
+                var personAliasId = person.PrimaryAliasId;
+                if (!personAliasId.HasValue) continue;
 
-                // add each person as a recipient to the communication
-                foreach ( var person in recipients )
+                var communicationRecipient = new CommunicationRecipient
                 {
-                    int? personAliasId = person.PrimaryAliasId;
-                    if ( personAliasId.HasValue )
-                    {
-                        var communicationRecipient = new CommunicationRecipient();
-                        communicationRecipient.PersonAliasId = personAliasId.Value;
-                        communicationRecipient.Status = recipientStatus;
-                        communication.Recipients.Add( communicationRecipient );
-                    }
-                }
-
-                return communication;
+                    PersonAliasId = personAliasId.Value,
+                    Status = recipientStatus,
+                    SendDateTime = sendDateTime
+                };
+                communication.Recipients.Add( communicationRecipient );
             }
 
-            return null;
+            return communication;
+
         }
 
 
         /// <summary>
-        /// Gets the queued communications
+        /// Gets the queued communications.
         /// </summary>
         /// <param name="expirationDays">The expiration days.</param>
         /// <param name="delayMinutes">The delay minutes.</param>
         /// <param name="includeFuture">if set to <c>true</c> [include future].</param>
-        /// <param name="includePending">if set to <c>true</c> [include pending].</param>
+        /// <param name="includePendingApproval">if set to <c>true</c> communications that haven't been approved yet will be included.</param>
         /// <returns></returns>
-        public IQueryable<Communication> GetQueued( int expirationDays, int delayMinutes, bool includeFuture, bool includePending )
+        public IQueryable<Communication> GetQueued( int expirationDays, int delayMinutes, bool includeFuture, bool includePendingApproval )
         {
             var beginWindow = RockDateTime.Now.AddDays( 0 - expirationDays );
             var endWindow = RockDateTime.Now.AddMinutes( 0 - delayMinutes );
-            var nowDate = RockDateTime.Now;
+            var currentDateTime = RockDateTime.Now;
 
-            var qryPendingRecipients = new CommunicationRecipientService( (RockContext)Context )
+            // Conditions for communications that should be queued for Sending (indicated by includeFuture == false and includePending == false)
+            // -  communications that haven't been sent yet (SendDateTime is null)
+            // -  communication is approved (or includePendingApproval == false)
+            // - FutureSendDateTime is not set (not scheduled), and communication was created within a reasonable window based on expiration days (for example, no older than 3 days ago)
+            //   - OR - FutureSendDateTime IS set (scheduled), and the FutureSendDateTime is Now (or within the expiration window)
+
+            // Limit to communications that haven't been sent yet
+            var queuedQry = Queryable().Where( c => !c.SendDateTime.HasValue);
+
+            var qryPendingRecipients = new CommunicationRecipientService( ( RockContext ) Context )
                 .Queryable()
                 .Where( a => a.Status == CommunicationRecipientStatus.Pending );
 
-            return Queryable()
-                .Where( c =>
-                    ( c.Status == CommunicationStatus.Approved || ( includePending && c.Status == CommunicationStatus.PendingApproval ) ) &&
-                    qryPendingRecipients.Where( r => r.CommunicationId == c.Id ).Any() &&
-                    (
-                        ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value.CompareTo( beginWindow ) >= 0 && c.CreatedDateTime.Value.CompareTo( endWindow ) <= 0 ) ||
-                        ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) >= 0 && ( includeFuture || c.FutureSendDateTime.Value.CompareTo( nowDate ) <= 0 ) )
-                    ) );
+            if ( includePendingApproval )
+            {
+                // Also limit to communications that are Approved or Pending Approval
+                queuedQry = queuedQry.Where( c => c.Status == CommunicationStatus.Approved || c.Status == CommunicationStatus.PendingApproval );
+            }
+            else
+            {
+                // Also limit to communications that are Approved 
+                queuedQry = queuedQry.Where( c => c.Status == CommunicationStatus.Approved );
+            }
+
+            if ( includeFuture )
+            {
+                // Also limit to communications that have either been created within a reasonable timeframe (typically no older than 3 days ago) or are Scheduled to be sent at some point
+                queuedQry = queuedQry.Where( c =>
+                    ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value >= beginWindow && c.CreatedDateTime.Value <= endWindow )
+                    || ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value >= beginWindow ) );
+            }
+            else
+            {
+                // Also limit to communications that have either been created within a reasonable timeframe (typically no older than 3 days ago)
+                // or are Scheduled to be sent (also within that reasonable timeframe. In other words, if it was scheduled to be sent, but stil hasn't been sent 3 days after it was scheduled, don't include it)
+                queuedQry = queuedQry.Where( c =>
+                    ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value >= beginWindow && c.CreatedDateTime.Value <= endWindow )
+                    || ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value >= beginWindow && c.FutureSendDateTime.Value <= currentDateTime ) );
+            }
+
+            // just in case SendDateTime is null (pre-v8 communication), also limit to communications that either have a ListGroupId or has PendingRecipients
+            queuedQry = queuedQry.Where( c => c.ListGroupId.HasValue || qryPendingRecipients.Any( r => r.CommunicationId == c.Id ) );
+
+            return queuedQry;
         }
 
     }

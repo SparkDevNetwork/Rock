@@ -16,7 +16,8 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-credit-card"></i> Financial Transaction
+                    <i class="fa fa-credit-card"></i>
+                    Financial Transaction
                 </h1>
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlBatchId" LabelType="Info" runat="server" />
@@ -29,7 +30,7 @@
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
                 <div id="pnlEditDetails" runat="server">
-                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" Visible="false" />
 
                     <div class="row">
@@ -41,7 +42,7 @@
                         <div class="col-md-6">
                             <asp:Panel ID="pnlSingleAccount" runat="server" Visible="false" CssClass="row">
                                 <div class="col-sm-6">
-                                    <Rock:CurrencyBox id="tbSingleAccountAmount" runat="server" CssClass="input-width-lg"></Rock:CurrencyBox>
+                                    <Rock:CurrencyBox ID="tbSingleAccountAmount" runat="server" CssClass="input-width-lg"></Rock:CurrencyBox>
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="form-group">
@@ -54,14 +55,14 @@
                             </asp:Panel>
                             <asp:Panel ID="pnlAccounts" runat="server">
                                 <div class="grid">
-                                    <Rock:Grid ID="gAccountsEdit" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" 
+                                    <Rock:Grid ID="gAccountsEdit" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light"
                                         ShowConfirmDeleteDialog="false">
                                         <Columns>
                                             <Rock:RockTemplateField HeaderText="Accounts">
                                                 <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                             </Rock:RockTemplateField>
                                             <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
-                                            <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
+                                            <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                         </Columns>
                                     </Rock:Grid>
                                 </div>
@@ -73,13 +74,13 @@
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlTransactionType" runat="server" Label="Transaction Type" Required="true" />
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source" />
-                            <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
+                            <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" Required="true" />
                             <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
-                            <Rock:DynamicPlaceHolder ID="phPaymentAttributeEdits" runat="server" />
+                            <Rock:DynamicPlaceholder ID="phPaymentAttributeEdits" runat="server" />
                             <Rock:FinancialGatewayPicker ID="gpPaymentGateway" runat="server" Label="Payment Gateway" ShowAll="true" />
                             <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"
                                 SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionCode" />
-                            <Rock:DynamicPlaceHolder ID="phAttributeEdits" runat="server" />
+                            <Rock:DynamicPlaceholder ID="phAttributeEdits" runat="server" />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsRefund" runat="server" Label="This is a Refund" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbIsRefund_CheckedChanged" />
@@ -101,7 +102,7 @@
 
                     <div class="actions">
                         <asp:LinkButton ID="lbSave" runat="server" Text="Save" AccessKey="s" ToolTip="Alt+s" CssClass="btn btn-primary" OnClick="lbSave_Click" />
-                        <asp:LinkButton ID="btnSaveThenAdd" runat="server" AccessKey="a"  ToolTip="Alt+a" Text="Save Then Add" CssClass="btn btn-link" OnClick="btnSaveThenAdd_Click" />
+                        <asp:LinkButton ID="btnSaveThenAdd" runat="server" AccessKey="a" ToolTip="Alt+a" Text="Save Then Add" CssClass="btn btn-link" OnClick="btnSaveThenAdd_Click" />
                         <asp:LinkButton ID="btnSaveThenViewBatch" runat="server" Text="Save Then View Batch" CssClass="btn btn-link" OnClick="btnSaveThenViewBatch_Click" />
                         <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" AccessKey="c" ToolTip="Alt+c" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                     </div>
@@ -109,13 +110,49 @@
 
                 <fieldset id="fieldsetViewSummary" runat="server">
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                    
+                    <div class="well">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4 class="margin-t-none">Authorized Person Information</h4>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="margin-t-none">Addresses</h4>
+                            </div>
+
+                            <div class="col-md-3">
+                                <asp:Literal ID="lAuthorizedPerson" runat="server" />
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <asp:Literal ID="lCampus" runat="server" />
+                            </div>
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <asp:Repeater ID="rptAddresses" runat="server">
+                                        <ItemTemplate>
+                                            <div class="col-md-4">
+                                                <p>
+                                                    <strong>
+                                                        <%# FormatAddressType(Eval("GroupLocationTypeValue.Value")) %>
+                                                    </strong>
+                                                    <br>
+                                                    <%# Eval("Location.FormattedHtmlAddress") %>
+                                                </p>
+                                            </div>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="row">
                         <div class="col-md-6">
                             <asp:Literal ID="lDetailsLeft" runat="server" />
                             <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
                         </div>
                         <div class="col-md-6">
-                            
                             <label>Accounts</label>
                             <Rock:Grid ID="gAccountsView" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" ShowHeader="false">
                                 <Columns>
@@ -123,7 +160,7 @@
                                         <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
-                                    <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
+                                    <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                 </Columns>
                             </Rock:Grid>
 
@@ -145,11 +182,11 @@
                                 <label>Refunds</label>
                                 <Rock:Grid ID="gRefunds" runat="server" RowItemText="Refund" DisplayType="Light" ShowHeader="false">
                                     <Columns>
-                                        <asp:HyperLinkField DataTextField="TransactionDateTime" DataNavigateUrlFields="Id"/>
+                                        <asp:HyperLinkField DataTextField="TransactionDateTime" DataNavigateUrlFields="Id" />
                                         <Rock:RockBoundField DataField="TransactionCode" />
                                         <Rock:RockBoundField DataField="RefundReasonValue" />
                                         <Rock:RockBoundField DataField="RefundReasonSummary" />
-                                        <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" />
+                                        <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                     </Columns>
                                 </Rock:Grid>
                             </asp:Panel>
@@ -160,7 +197,7 @@
                                     <Columns>
                                         <asp:HyperLinkField DataTextField="TransactionDateTime" DataNavigateUrlFields="Id" />
                                         <Rock:RockBoundField DataField="TransactionCode" />
-                                        <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" />
+                                        <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"/>
                                     </Columns>
                                 </Rock:Grid>
                             </asp:Panel>
@@ -173,6 +210,7 @@
                         <div class="pull-right">
                             <asp:LinkButton ID="lbRefund" runat="server" Text="Refund" AccessKey="r" ToolTip="Alt+r" CssClass="btn btn-default margin-r-sm" CausesValidation="false" OnClick="lbRefundTransaction_Click" />
                             <asp:LinkButton ID="lbAddTransaction" runat="server" Text="Add New Transaction" AccessKey="a" ToolTip="Alt+a" CssClass="btn btn-default margin-r-sm" CausesValidation="false" OnClick="lbAddTransaction_Click" />
+                            <asp:HyperLink ID="lbBack" runat="server" AccessKey="b" ToolTip="Alt+b" CssClass="btn btn-default margin-r-sm" OnClick="lbBack_Click"><i class="fa fa-chevron-left"></i> Back</asp:HyperLink>
                             <asp:HyperLink ID="lbNext" runat="server" AccessKey="n" ToolTip="Alt+n" CssClass="btn btn-default margin-r-sm">Next <i class="fa fa-chevron-right"></i></asp:HyperLink>
                         </div>
                     </div>
@@ -189,7 +227,7 @@
 
         <Rock:ModalDialog ID="mdAccount" runat="server" Title="Account" OnSaveClick="mdAccount_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Account">
             <Content>
-                <asp:ValidationSummary ID="valSummaryAccount" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Account" />
+                <asp:ValidationSummary ID="valSummaryAccount" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Account" />
                 <asp:HiddenField ID="hfAccountGuid" runat="server" />
                 <div class="row">
                     <div class="col-md-6">
@@ -208,7 +246,7 @@
 
         <Rock:ModalDialog ID="mdRefund" runat="server" Title="Refund" OnSaveClick="mdRefund_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Refund">
             <Content>
-                <asp:ValidationSummary ID="valSummaryRefund" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Refund" />
+                <asp:ValidationSummary ID="valSummaryRefund" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Refund" />
                 <Rock:NotificationBox ID="nbRefundError" runat="server" NotificationBoxType="Danger" Visible="false" />
                 <div class="row">
                     <div class="col-md-6">

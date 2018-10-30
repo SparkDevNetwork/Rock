@@ -42,12 +42,12 @@ namespace Rock.Transactions
         public int CommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the approval page URL.
+        /// Gets or sets the approval page URL. Defaults to ~/Communication/{communicationId}.
         /// </summary>
         /// <value>
         /// The approval page URL.
         /// </value>
-        public string ApprovalPageUrl { get; set; }
+        public string ApprovalPageUrl { get; set; } = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SendCommunicationApprovalEmail"/> class.
@@ -77,10 +77,10 @@ namespace Rock.Transactions
 
                     if ( approvers.Any() )
                     {
-                        string fromName = Rock.Web.Cache.GlobalAttributesCache.Value("OrganizationName");
-                        string fromEmail = Rock.Web.Cache.GlobalAttributesCache.Value( "OrganizationEmail" );
+                        string fromName = GlobalAttributesCache.Value("OrganizationName");
+                        string fromEmail = GlobalAttributesCache.Value( "OrganizationEmail" );
                         string subject = "Pending Communication Requires Approval";
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
+                        var appRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
                         string communicationDetails = string.Empty;
                         string typeName = communication.CommunicationType.ConvertToString();
 
@@ -105,9 +105,10 @@ namespace Rock.Transactions
                         }
 
                         // create approval link if one was not provided
-                        if ( ApprovalPageUrl == null )
+                        if ( string.IsNullOrEmpty( ApprovalPageUrl ) )
                         {
-                            ApprovalPageUrl = string.Format( "{0}Communication/{1}", Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" ), communication.Id );
+                            var internalApplicationRoot = GlobalAttributesCache.Value( "InternalApplicationRoot" ).EnsureTrailingForwardslash();
+                            ApprovalPageUrl = $"{internalApplicationRoot}Communication/{communication.Id}";
                         }
 
                         foreach ( var approver in approvers )
@@ -135,8 +136,8 @@ namespace Rock.Transactions
                                                     communication.SenderPersonAlias.Person.FullName,
                                                     typeName,
                                                     communicationDetails,
-                                                    communication.GetRecipientCount(rockContext),
-                                                    ApprovalPageUrl);
+                                                    communication.GetRecipientsQry( rockContext ).Count(),
+                                                    ApprovalPageUrl );
 
                             var emailMessage = new RockEmailMessage();
                             emailMessage.AddRecipient( approver.Person.Email );

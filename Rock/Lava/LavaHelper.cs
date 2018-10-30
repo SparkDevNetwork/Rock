@@ -65,10 +65,10 @@ namespace Rock.Lava
 
             if ( options.GetLegacyGlobalMergeFields )
             {
-                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                var globalAttributes = GlobalAttributesCache.Get();
                 if ( globalAttributes.LavaSupportLevel != Lava.LavaSupportLevel.NoLegacy )
                 {
-                    var legacyGlobalAttributeMergeFields = Rock.Web.Cache.GlobalAttributesCache.GetLegacyMergeFields( currentPerson );
+                    var legacyGlobalAttributeMergeFields = GlobalAttributesCache.GetLegacyMergeFields( currentPerson );
                     foreach ( var legacyGlobalAttributeMergeField in legacyGlobalAttributeMergeFields )
                     {
                         mergeFields.Add( legacyGlobalAttributeMergeField.Key, legacyGlobalAttributeMergeField.Value );
@@ -159,7 +159,8 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="rockPage">The rock page.</param>
         /// <returns></returns>
-        [Obsolete("Just use the PageCache of the CurrentPage instead")]
+        [RockObsolete( "1.7" )]
+        [Obsolete("Just use the PageCache of the CurrentPage instead", true )]
         public static Dictionary<string, object> GetPagePropertiesMergeObject( RockPage rockPage )
         {
             Dictionary<string, object> pageProperties = new Dictionary<string, object>();

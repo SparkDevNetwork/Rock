@@ -59,7 +59,7 @@
 
                 <div class="actions ">
                     <div class="pull-right">
-                        <asp:LinkButton ID="btnAddBlock" runat="server" ToolTip="Add Block" Text="<i class='fa fa-plus-circle'></i>" CssClass="btn btn-default btn-sm" OnClick="btnAddBlock_Click" />
+                        <asp:LinkButton ID="btnAddBlock" runat="server" Text="<i class='fa fa-plus-circle'></i> Add Block to Zone" CssClass="btn btn-default btn-sm" OnClick="btnAddBlock_Click" />
                     </div>
 
                 </div>
@@ -84,20 +84,23 @@
 
         <Rock:ModalDialog ID="mdAddBlock" runat="server" ValidationGroup="vgAddBlock" OnSaveClick="mdAddBlock_SaveClick" Title="Add Block">
             <Content>
-                <asp:ValidationSummary ID="vsAddBlock" runat="server" ValidationGroup="vgAddBlock" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="vsAddBlock" runat="server" ValidationGroup="vgAddBlock" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <Rock:RockTextBox ID="tbNewBlockName" runat="server" Label="Name" Required="true" ValidationGroup="vgAddBlock" />
                 
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-sm-6">
                         <Rock:RockDropDownList ID="ddlBlockType" runat="server" Label="Type" AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" EnhanceForLongLists="true" />
                     </div>
-                    <div class="col-md-6 padding-t-md">
-                        <label>Common Block Types</label><br />
-                        <asp:Repeater ID="rptCommonBlockTypes" runat="server" OnItemDataBound="rptCommonBlockTypes_ItemDataBound">
-                            <ItemTemplate>
-                                <asp:LinkButton ID="btnNewBlockQuickSetting" runat="server" Text="Todo" CssClass="btn btn-default btn-xs" OnClick="btnNewBlockQuickSetting_Click" />
-                            </ItemTemplate>
-                        </asp:Repeater>
+                    <div class="col-sm-6">
+                        <Rock:RockControlWrapper ID="rcwCommonBlockTypes" runat="server" Label="Common Block Types">
+                            <asp:Panel ID="pnlCommonBlockTypes" runat="server">
+                                <asp:Repeater ID="rptCommonBlockTypes" runat="server" OnItemDataBound="rptCommonBlockTypes_ItemDataBound">
+                                    <ItemTemplate>
+                                        <asp:LinkButton ID="btnNewBlockQuickSetting" runat="server" Text="Todo" CssClass="btn btn-default btn-xs" OnClick="btnNewBlockQuickSetting_Click" />
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </asp:Panel>
+                        </Rock:RockControlWrapper>
                     </div>
                 </div>
 
@@ -131,7 +134,8 @@
                     update: function (event, ui) {
                         {
                             var newItemIndex = $(ui.item).prevAll('.panel-widget').length;
-                            __doPostBack('<%=upPages.ClientID %>', 're-order-panel-widget:' + ui.item.attr('id') + ';' + newItemIndex);
+                            var postbackArg = 're-order-panel-widget:' + ui.item.attr('id') + ';' + newItemIndex;
+                            window.location = "javascript:__doPostBack('<%=upPages.ClientID %>', '" +  postbackArg + "')";
                         }
                     }
                 });

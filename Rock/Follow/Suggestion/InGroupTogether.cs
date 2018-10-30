@@ -66,7 +66,7 @@ namespace Rock.Follow.Suggestion
         public override List<PersonEntitySuggestion> GetSuggestions( FollowingSuggestionType followingSuggestionType, List<int> followerPersonIds )
         {
             var suggestions = new List<PersonEntitySuggestion>();
-            var personAliasEntityType = EntityTypeCache.Read( typeof( Rock.Model.PersonAlias ) );
+            var personAliasEntityType = EntityTypeCache.Get( typeof( Rock.Model.PersonAlias ) );
 
             bool isAutoFollow = GetAttributeValue( followingSuggestionType, "AutoFollow" ).AsBoolean();
 
@@ -88,7 +88,7 @@ namespace Rock.Follow.Suggestion
                             m.Group.GroupType.Guid.Equals( groupTypeGuid.Value ) &&
                             followerPersonIds.Contains( m.PersonId ) );
 
-                    // If a specific group or security role was specifed, limit groupmembers to only those of the selected group
+                    // If a specific group or security role was specified, limit groupmembers to only those of the selected group
                     Guid? groupGuid = GetAttributeValue( followingSuggestionType, "Group" ).AsGuidOrNull();
                     if ( !groupGuid.HasValue )
                     {
@@ -124,7 +124,7 @@ namespace Rock.Follow.Suggestion
                     // Start building query to get the people to follow from any group that contains a follower
                     var followed = groupMemberService
                         .Queryable().AsNoTracking()
-                        .Where( m => followedGroupIds.Contains( m.GroupId ) );
+                        .Where( m => followedGroupIds.Contains( m.GroupId ) && m.GroupMemberStatus == GroupMemberStatus.Active );
 
                     // If a specific role for the people being followed was specified, limit the query to only those with the selected role
                     Guid? followedRoleGuid = GetAttributeValue( followingSuggestionType, "FollowedGroupType" ).AsGuidOrNull();

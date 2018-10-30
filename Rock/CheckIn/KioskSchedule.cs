@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -48,6 +49,37 @@ namespace Rock.CheckIn
         public List<CheckInTimes> CheckInTimes { get; set; }
 
         /// <summary>
+        /// Gets or sets the campus identifier.
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
+        [DataMember]
+        public int? CampusId { get; set; }
+
+        /// <summary>
+        /// Gets the campus current date time.
+        /// </summary>
+        /// <value>
+        /// The campus current date time.
+        /// </value>
+        public DateTime CampusCurrentDateTime
+        {
+            get
+            {
+                if ( CampusId.HasValue )
+                {
+                    var campus = CampusCache.Get( CampusId.Value );
+                    if ( campus != null )
+                    {
+                        return campus.CurrentDateTime;
+                    }
+                }
+                return RockDateTime.Now;
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether check in is active
         /// </summary>
         /// <value>
@@ -57,7 +89,7 @@ namespace Rock.CheckIn
         {
             get
             {
-                var now = RockDateTime.Now;
+                var now = CampusCurrentDateTime;
                 return CheckInTimes.Any( t =>
                     t.CheckInStart <= now &&
                     t.CheckInEnd > now );
@@ -71,13 +103,13 @@ namespace Rock.CheckIn
         /// The start time.
         /// </value>
         [LavaInclude]
-        public DateTime? StartTime 
+        public DateTime? StartTime
         {
             get
             {
-                var now = RockDateTime.Now;
+                var now = CampusCurrentDateTime;
                 var times = CheckInTimes
-                    .Where( t => 
+                    .Where( t =>
                         t.CheckInStart <= now &&
                         t.CheckInEnd > now )
                     .OrderBy( t => t.Start )
@@ -96,7 +128,7 @@ namespace Rock.CheckIn
         {
             get
             {
-                var now = RockDateTime.Now;
+                var now = CampusCurrentDateTime;
                 var times = CheckInTimes
                     .Where( t => t.CheckInStart > now )
                     .OrderBy( t => t.CheckInStart )

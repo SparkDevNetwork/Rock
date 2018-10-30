@@ -19,9 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Security;
-using Rock.Web.UI;
 using Rock.Web.Cache;
+using Rock.Security;
 using Rock.Data;
 
 namespace Rock.Extension
@@ -51,7 +50,7 @@ namespace Rock.Extension
     /// </summary>
     [IntegerField( "Order", "The order that this service should be used (priority)" )]
     [BooleanField( "Active", "Should Service be used?", false, "", 0)]
-    public abstract class Component : Rock.Attribute.IHasAttributes, Rock.Security.ISecured
+    public abstract class Component : Attribute.IHasAttributes, ISecured
     {
         /// <summary>
         /// Gets the id.
@@ -176,14 +175,14 @@ namespace Rock.Extension
                 int order = 0;
 
                 string value = GetAttributeValue( "Order" );
-                if ( Int32.TryParse( value, out order ) )
+                if ( int.TryParse( value, out order ) )
                 {
                     return order;
                 }
 
                 if (Attributes.ContainsKey("Order"))
                 {
-                    if ( Int32.TryParse( Attributes["Order"].DefaultValue, out order ) )
+                    if ( int.TryParse( Attributes["Order"].DefaultValue, out order ) )
                     {
                         return order;
                     }
@@ -254,7 +253,7 @@ namespace Rock.Extension
         /// </value>
         public EntityTypeCache EntityType
         {
-            get { return EntityTypeCache.Read( this.GetType() ); }
+            get { return EntityTypeCache.Get( this.GetType() ); }
         }
 
         /// <summary>
@@ -393,7 +392,7 @@ namespace Rock.Extension
             var type = this.GetType();
             using ( var rockContext = new RockContext() )
             {
-                Rock.Attribute.Helper.UpdateAttributes( type, Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ), rockContext );
+                Rock.Attribute.Helper.UpdateAttributes( type, EntityTypeCache.GetId( type.FullName ), rockContext );
                 this.LoadAttributes( rockContext );
             }
         }

@@ -127,8 +127,8 @@ namespace RockWeb.Blocks.Communication
             base.OnInit( e );
 
             // NOTE: moment.js needs to be loaded before chartjs
-            RockPage.AddScriptLink( "/Scripts/moment.min.js", true );
-            RockPage.AddScriptLink( "/Scripts/Chartjs/Chart.js", true );
+            RockPage.AddScriptLink( "~/Scripts/moment.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/Chartjs/Chart.js" );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -298,11 +298,9 @@ namespace RockWeb.Blocks.Communication
                 } )
                 .ToList();
 
-            List<SummaryInfo> interactionsSummary = new List<SummaryInfo>();
             TimeSpan roundTimeSpan = TimeSpan.FromDays( 1 );
 
             this.SeriesColorsJSON = this.GetAttributeValue( "SeriesColors" ).SplitDelimitedValues().ToArray().ToJson();
-
             this.LineChartTimeFormat = "LL";
 
             if ( interactionsList.Any() )
@@ -329,6 +327,7 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
+            List<SummaryInfo> interactionsSummary = new List<SummaryInfo>();
             interactionsSummary = interactionsList.GroupBy( a => new { a.CommunicationRecipientId, a.Operation } )
                 .Select( a => new
                 {
@@ -405,13 +404,13 @@ namespace RockWeb.Blocks.Communication
 
             /* Actions Pie Chart and Stats */
             int totalOpens = interactionsList.Where( a => a.Operation == "Opened" ).Count();
-            int totalClicks = interactionsList.Where( a => a.Operation == "Click" && !string.IsNullOrEmpty( a.InteractionData ) ).Count();
+            int totalClicks = interactionsList.Where( a => a.Operation == "Click" ).Count();
 
             // Unique Opens is the number of times a Recipient opened at least once
             int uniqueOpens = interactionsList.Where( a => a.Operation == "Opened" ).GroupBy( a => a.CommunicationRecipientId ).Count();
 
             // Unique Clicks is the number of times a Recipient clicked at least once in an email
-            int uniqueClicks = interactionsList.Where( a => a.Operation == "Click" && !string.IsNullOrEmpty( a.InteractionData ) ).GroupBy( a => a.CommunicationRecipientId ).Count();
+            int uniqueClicks = interactionsList.Where( a => a.Operation == "Click" ).GroupBy( a => a.CommunicationRecipientId ).Count();
 
             string actionsStatFormatNumber =  "<span class='{0}'>{1}</span><br><span class='js-actions-statistic' title='{2}' style='font-size: 45px; font-weight: 700; line-height: 40px;'>{3:#,##0}</span>";
             string actionsStatFormatPercent = "<span class='{0}'>{1}</span><br><span class='js-actions-statistic' title='{2}' style='font-size: 45px; font-weight: 700; line-height: 40px;'>{3:P2}</span>";

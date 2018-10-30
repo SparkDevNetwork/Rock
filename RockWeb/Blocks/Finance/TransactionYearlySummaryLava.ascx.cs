@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Finance
 
     [ContextAware( typeof( Person ) )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the transaction summary.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/TransactionYearlySummary.lava' %}", "", 1 )]
+    [AccountsField( "Accounts", "Limit the results to transactions that match the selected accounts.", false, "", "", 2 )]
     public partial class TransactionYearlySummaryLava : RockBlock, ISecondaryBlock
     {
         #region Base Control Methods
@@ -99,7 +100,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
-            var contributionType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            var contributionType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
             if ( contributionType != null )
             {
                 var rockContext = new RockContext();
@@ -113,6 +114,13 @@ namespace RockWeb.Blocks.Finance
                 if ( targetPerson != null )
                 {
                     qry = qry.Where( t => t.Transaction.AuthorizedPersonAlias.Person.GivingId == targetPerson.GivingId );
+                }
+
+                // Filter to configured Accounts.
+                var accountGuids = GetAttributeValue( "Accounts" ).SplitDelimitedValues().AsGuidList();
+                if ( accountGuids.Any() )
+                {
+                    qry = qry.Where( t => accountGuids.Contains( t.Account.Guid ) );
                 }
 
                 List<SummaryRecord> summaryList;

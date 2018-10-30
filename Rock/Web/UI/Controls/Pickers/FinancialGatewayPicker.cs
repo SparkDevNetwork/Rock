@@ -14,10 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
-
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -54,13 +55,19 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialGatewayPicker" /> class.
+        /// Handles the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
-        public FinancialGatewayPicker()
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
         {
-            LoadItems( false );
+            base.OnInit( e );
+            LoadItems( ShowAll );
         }
 
+        /// <summary>
+        /// Loads the items.
+        /// </summary>
+        /// <param name="showAll">if set to <c>true</c> [show all].</param>
         private void LoadItems( bool showAll )
         {
             int? selectedItem = this.SelectedValueAsInt();
@@ -72,11 +79,12 @@ namespace Rock.Web.UI.Controls
             {
                 foreach ( var gateway in new FinancialGatewayService( rockContext )
                     .Queryable().AsNoTracking()
-                    .Where( g => g.EntityType != null )
+                    .Where( g => g.EntityTypeId.HasValue )
                     .OrderBy( g => g.Name )
                     .ToList() )
                 {
-                    GatewayComponent component = GatewayContainer.GetComponent( gateway.EntityType.Name );
+                    var entityType = EntityTypeCache.Get( gateway.EntityTypeId.Value );
+                    GatewayComponent component = GatewayContainer.GetComponent( entityType.Name );
                     if ( showAll || ( gateway.IsActive && component != null && component.IsActive && component.SupportsRockInitiatedTransactions ) )
                     {
                         this.Items.Add( new ListItem( gateway.Name, gateway.Id.ToString() ) );

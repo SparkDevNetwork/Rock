@@ -125,7 +125,7 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var campus = CampusCache.Read( value.AsGuid() );
+                var campus = CampusCache.Get( value.AsGuid() );
                 if ( campus != null )
                 {
                     formattedValue = campus.Name;
@@ -168,17 +168,19 @@ namespace Rock.Field.Types
             if ( campusPicker != null )
             {
                 int? campusId = campusPicker.SelectedCampusId;
-                if (campusId.HasValue)
+                if ( campusId.HasValue )
                 {
-                    var campus = CampusCache.Read( campusId.Value );
-                    if (campus != null )
+                    var campus = CampusCache.Get( campusId.Value );
+                    if ( campus != null )
                     {
                         return campus.Guid.ToString();
                     }
                 }
+
+                return string.Empty;
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>
@@ -194,11 +196,16 @@ namespace Rock.Field.Types
 
             if ( campusPicker != null )
             {
-                Guid guid = value.AsGuid();
+                Guid? guid = value.AsGuidOrNull();
+                int? campusId = null;
 
                 // get the item (or null) and set it
-                var campus = CampusCache.Read( guid );
-                campusPicker.SelectedCampusId = campus == null ? 0 : campus.Id;
+                if ( guid.HasValue )
+                {
+                    campusId = CampusCache.Get( guid.Value )?.Id;
+                }
+
+                campusPicker.SelectedCampusId = campusId;
             }
         }
 
@@ -269,8 +276,8 @@ namespace Rock.Field.Types
         {
             var campusGuids = value.SplitDelimitedValues().AsGuidList();
 
-            var campuses = campusGuids.Select( a => CampusCache.Read( a ) ).Where( c => c != null );
-            return campuses.Select( a => a.Name ).ToList().AsDelimited( ", ", " or " );
+            var campuses = campusGuids.Select( a => CampusCache.Get( a ) ).Where( c => c != null );
+            return AddQuotes( campuses.Select( a => a.Name ).ToList().AsDelimited( "' OR '" ) );
         }
 
         /// <summary>
@@ -359,9 +366,21 @@ namespace Rock.Field.Types
             if ( filterValues.Count == 1 )
             {
                 List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                if ( selectedValues.Any() )
+                int valueCount = selectedValues.Count();
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                if ( valueCount == 0 )
                 {
-                    MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                    // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
+                    return new NoAttributeFilterExpression();
+                }
+                else if ( valueCount == 1 )
+                {
+                    // only one value, so do an Equal instead of Contains which might compile a little bit faster
+                    ComparisonType comparisonType = ComparisonType.EqualTo;
+                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( selectedValues[0] ) );
+                }
+                else
+                {
                     ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
                     return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
                 }
@@ -383,7 +402,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = CampusCache.Read( guid );
+            var item = CampusCache.Get( guid );
             return item != null ? item.Id : (int?)null;
         }
 
@@ -398,7 +417,7 @@ namespace Rock.Field.Types
             CampusCache item = null;
             if ( id.HasValue )
             {
-                item = CampusCache.Read( id.Value );
+                item = CampusCache.Get( id.Value );
             }
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );

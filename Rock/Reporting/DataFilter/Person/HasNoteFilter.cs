@@ -112,7 +112,7 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 int noteTypeId = selectionValues[0].AsInteger();
-                var selectedNoteType = new NoteTypeService( new RockContext() ).Get( noteTypeId );
+                var selectedNoteType = NoteTypeCache.Get( noteTypeId );
                 if ( selectedNoteType != null )
                 {
                     result = $"Has a {selectedNoteType.Name} note";
@@ -123,7 +123,7 @@ function() {
                 }
 
                 var containingText = selectionValues[1];
-                if ( containingText.IsNotNullOrWhitespace() )
+                if ( containingText.IsNotNullOrWhiteSpace() )
                 {
                     result += $" containing '{containingText}'";
                 }
@@ -233,12 +233,18 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                int noteTypeId = selectionValues[0].AsInteger();
+                var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
                 var containsText = selectionValues[1];
                 var noteQry = new NoteService( ( RockContext ) serviceInstance.Context ).Queryable()
-                    .Where( x => x.NoteTypeId == noteTypeId );
+                    .Where( x => x.NoteType.EntityTypeId == entityTypeIdPerson );
 
-                if ( containsText.IsNotNullOrWhitespace() )
+                int? noteTypeId = selectionValues[0].AsIntegerOrNull();
+                if ( noteTypeId.HasValue )
+                {
+                    noteQry = noteQry.Where( x => x.NoteTypeId == noteTypeId );
+                }
+
+                if ( containsText.IsNotNullOrWhiteSpace() )
                 {
                     noteQry = noteQry.Where( a => a.Text.Contains( containsText ) );
                 }

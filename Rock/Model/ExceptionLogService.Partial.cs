@@ -29,6 +29,15 @@ namespace Rock.Model
     /// </summary>
     public partial class ExceptionLogService 
     {
+        #region Fields
+
+        /// <summary>
+        /// When true, indicates that exceptions should always be logged to file in addition to the database.
+        /// </summary>
+        public static bool AlwaysLogToFile = false;
+
+        #endregion
+
         /// <summary>
         /// Gets a collection of <see cref="Rock.Model.ExceptionLog"/> entities by the Id of their Parent exceptionId. 
         /// Under most instances, only one child <see cref="Rock.Model.ExceptionLog"/> entity will be returned in the collection.
@@ -111,6 +120,8 @@ namespace Rock.Model
         /// </param>
         private static void LogExceptions( Exception ex, ExceptionLog log, bool isParent )
         {
+            bool logToFile = AlwaysLogToFile;
+
             // First, attempt to log exception to the database.
             try
             {
@@ -156,8 +167,8 @@ namespace Rock.Model
                     var exceptionLogService = new ExceptionLogService( rockContext );
                     exceptionLogService.Add( exceptionLog );
 
-                    // call SaveChanges with 'disablePrePostProcessing=true' just in case the pre/post processing would also cause exceptions
-                    rockContext.SaveChanges( true );
+                    // make sure to call the regular SaveChanges so that CreatedBy,CreatedByDateTime, etc get set properly. If any of the post processing happens to also create an exception, we can just log to the exception file instead
+                    rockContext.SaveChanges();
                 }
 
                 // Recurse if inner exception is found
@@ -180,6 +191,11 @@ namespace Rock.Model
             catch ( Exception )
             {
                 // If logging the exception fails, write the exceptions to a file
+                logToFile = true;
+            }
+
+            if ( logToFile )
+            {
                 try
                 {
                     string directory = AppDomain.CurrentDomain.BaseDirectory;
@@ -311,7 +327,7 @@ namespace Rock.Model
                     formItems.Append( "<table class=\"form-items exception-table\">" );
                     foreach ( string formItem in formList )
                     {
-                        if ( formItem.IsNotNullOrWhitespace() )
+                        if ( formItem.IsNotNullOrWhiteSpace() )
                         {
                             string formValue = formList[formItem].EncodeHtml();
                             string lc = formItem.ToLower();
@@ -339,7 +355,20 @@ namespace Rock.Model
                     serverVars.Append( "<table class=\"server-variables exception-table\">" );
 
                     foreach ( string serverVar in serverVarList )
-                        serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + serverVarList[serverVar].EncodeHtml() + "</td></tr>" );
+                    {
+                        string val = string.Empty;
+                        try
+                        {
+                            // 'serverVarList[serverVar]' throws an exception if the value is empty, even if the key exists. Was not able to find a more elegant way to avoid an exception. 
+                            val = serverVarList[serverVar].ToStringSafe().EncodeHtml();
+                        }
+                        catch
+                        {
+
+                        }
+
+                        serverVars.Append( $"<tr><td><b>{serverVar}</b></td><td>{val}</td></tr>" );
+                    }
 
                     serverVars.Append( "</table>" );
                 }

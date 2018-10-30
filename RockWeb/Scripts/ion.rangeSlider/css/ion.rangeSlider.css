@@ -119,11 +119,14 @@
     background: rgba(0,0,0,0.0);
     z-index: 2;
 }
+.lt-ie9 .irs-disable-mask {
+    background: #000;
+    filter: alpha(opacity=0);
+    cursor: not-allowed;
+}
+
 .irs-disabled {
     opacity: 0.4;
-}
-.lt-ie9 .irs-disabled {
-    filter: alpha(opacity=40);
 }
 
 
@@ -138,6 +141,7 @@
     line-height: 0 !important;
     padding: 0 !important;
     margin: 0 !important;
+    overflow: hidden;
     outline: none !important;
     z-index: -9999 !important;
     background: none !important;

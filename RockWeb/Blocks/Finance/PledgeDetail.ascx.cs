@@ -108,7 +108,7 @@ namespace RockWeb.Blocks.Finance
             pledge.StartDate = dpDateRange.LowerValue.HasValue ? dpDateRange.LowerValue.Value : DateTime.MinValue;
             pledge.EndDate = dpDateRange.UpperValue.HasValue ? dpDateRange.UpperValue.Value : DateTime.MaxValue;
 
-            pledge.PledgeFrequencyValueId = ddlFrequencyType.SelectedValue.AsIntegerOrNull();
+            pledge.PledgeFrequencyValueId = dvpFrequencyType.SelectedValue.AsIntegerOrNull();
 
             pledge.LoadAttributes( rockContext );
             Rock.Attribute.Helper.GetEditValues( phAttributes, pledge );
@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Finance
         {
             pnlDetails.Visible = true;
             var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY );
-            ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ), true );
+            dvpFrequencyType.DefinedTypeId = DefinedTypeCache.Get( frequencyTypeGuid ).Id;
 
             using ( var rockContext = new RockContext() )
             {
@@ -206,8 +206,8 @@ namespace RockWeb.Blocks.Finance
                 dpDateRange.UpperValue = pledge.EndDate;
                 dpDateRange.ReadOnly = isReadOnly;
 
-                ddlFrequencyType.SelectedValue = !isNewPledge ? pledge.PledgeFrequencyValueId.ToString() : string.Empty;
-                ddlFrequencyType.Enabled = !isReadOnly;
+                dvpFrequencyType.SelectedValue = !isNewPledge ? pledge.PledgeFrequencyValueId.ToString() : string.Empty;
+                dvpFrequencyType.Enabled = !isReadOnly;
 
                 if ( isReadOnly )
                 {

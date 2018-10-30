@@ -493,9 +493,9 @@ namespace Rock.Web.UI.Controls
                 //_btnOn.RemoveCssClass( this.OnCssClass );
             }
 
-            _btnOn.RenderControl( writer );
             _btnOff.RenderControl( writer );
-
+            _btnOn.RenderControl( writer );
+            
             writer.RenderEndTag();
 
             _hfChecked.RenderControl( writer );

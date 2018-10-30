@@ -25,6 +25,8 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Storage;
 using Rock.Web.Cache;
+using System.Drawing;
+using ImageResizer;
 
 namespace Rock.Model
 {
@@ -128,7 +130,7 @@ namespace Rock.Model
                 StorageProvider = null;
                 if ( value.HasValue )
                 {
-                    var entityType = EntityTypeCache.Read( value.Value );
+                    var entityType = EntityTypeCache.Get( value.Value );
                     if ( entityType != null )
                     {
                         StorageProvider = ProviderContainer.GetComponent( entityType.Name );
@@ -166,6 +168,24 @@ namespace Rock.Model
         [MaxLength( 2083 )]
         [DataMember]
         public string Path { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating the width of a file type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the width in pixels of a file type.
+        /// </value>
+        [DataMember]
+        public int? Width { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating the height of a file type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the height in pixels of a file type.
+        /// </value>
+        [DataMember]
+        public int? Height { get; set; }
 
         /// <summary>
         /// Gets or sets the content last modified.
@@ -324,7 +344,17 @@ namespace Rock.Model
                 if ( StorageProvider != null )
                 {
                     this.BinaryFileTypeId = entry.OriginalValues["BinaryFileTypeId"].ToString().AsInteger();
-                    StorageProvider.DeleteContent( this );
+
+                    try
+                    {
+                        StorageProvider.DeleteContent( this );
+                    }
+                    catch ( Exception ex )
+                    {
+                        // If an exception occurred while trying to delete provider's file, log the exception, but continue with the delete.
+                        ExceptionLogService.LogException( ex );
+                    }
+
                     this.BinaryFileTypeId = null;
                 }
             }
@@ -332,7 +362,72 @@ namespace Rock.Model
             {
                 if ( BinaryFileType == null && BinaryFileTypeId.HasValue )
                 {
-                    BinaryFileType = new BinaryFileTypeService( (RockContext)dbContext ).Get( BinaryFileTypeId.Value );
+                    BinaryFileType = new BinaryFileTypeService( ( RockContext ) dbContext ).Get( BinaryFileTypeId.Value );
+                }
+
+                if ( this.MimeType.StartsWith( "image/" ) )
+                {
+                    try
+                    {
+                        using ( Bitmap bm = new Bitmap( this.ContentStream ) )
+                        {
+                            if ( bm != null )
+                            {
+                                this.Width = bm.Width;
+                                this.Height = bm.Height;
+                            }
+                        }
+                        ContentStream.Seek( 0, SeekOrigin.Begin );
+
+                        if ( !IsTemporary )
+                        {
+                            if ( BinaryFileType.MaxHeight.HasValue &&
+                                BinaryFileType.MaxHeight != 0 &&
+                                BinaryFileType.MaxWidth.HasValue && 
+                                BinaryFileType.MaxWidth != 0 )
+                            {
+                                ResizeSettings settings = new ResizeSettings();
+                                MemoryStream resizedStream = new MemoryStream();
+                                if ( BinaryFileType.MaxWidth.Value < Width || BinaryFileType.MaxHeight < Height )
+                                {
+                                    settings.Add( "mode", "max" );
+                                    if ( BinaryFileType.MaxHeight < Height && BinaryFileType.MaxWidth < Width )
+                                    {
+                                        if ( BinaryFileType.MaxHeight >= BinaryFileType.MaxWidth )
+                                        {
+                                            settings.Add( "height", BinaryFileType.MaxHeight.Value.ToString() );
+                                        }
+                                        if ( BinaryFileType.MaxHeight <= BinaryFileType.MaxWidth )
+                                        {
+                                            settings.Add( "width", BinaryFileType.MaxWidth.Value.ToString() );
+                                        }
+                                    }
+                                    else if ( BinaryFileType.MaxHeight < Height )
+                                    {
+
+                                        settings.Add( "height", BinaryFileType.MaxHeight.Value.ToString() );
+                                    }
+                                    else
+                                    {
+                                        settings.Add( "width", BinaryFileType.MaxWidth.Value.ToString() );
+
+                                    }
+                                    ImageBuilder.Current.Build( this.ContentStream, resizedStream, settings );
+                                    ContentStream = resizedStream;
+
+                                    using ( Bitmap bm = new Bitmap( this.ContentStream ) )
+                                    {
+                                        if ( bm != null )
+                                        {
+                                            this.Width = bm.Width;
+                                            this.Height = bm.Height;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch ( Exception ) { } // if the file is an invalid photo keep moving
                 }
 
                 if ( entry.State == System.Data.Entity.EntityState.Added )
@@ -370,6 +465,7 @@ namespace Rock.Model
                     }
                 }
 
+
                 else if ( entry.State == System.Data.Entity.EntityState.Modified )
                 {
                     // when a file is saved (unless it is getting Deleted/Added), 
@@ -395,8 +491,11 @@ namespace Rock.Model
                                 StorageEntityTypeId.Value != BinaryFileType.StorageEntityTypeId.Value ||
                                 StorageEntitySettings != settingsJson ) )
                             {
-                                // Save the file contents before deleting
-                                var contentStream = ContentStream;
+
+                                var ms = new MemoryStream();
+                                ContentStream.Position = 0;
+                                ContentStream.CopyTo( ms );
+                                ContentStream.Dispose();
 
                                 // Delete the current provider's storage
                                 StorageProvider.DeleteContent( this );
@@ -404,7 +503,12 @@ namespace Rock.Model
                                 // Set the new storage provider with its settings
                                 StorageEntityTypeId = BinaryFileType.StorageEntityTypeId;
                                 StorageEntitySettings = settingsJson;
-                                ContentStream = contentStream;
+
+                                ContentStream = new MemoryStream();
+                                ms.Position = 0;
+                                ms.CopyTo( ContentStream );
+                                ContentStream.Position = 0;
+                                FileSize = ContentStream.Length;
                             }
                         }
                     }

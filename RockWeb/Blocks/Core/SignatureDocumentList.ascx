@@ -22,7 +22,7 @@
                                 <Rock:PersonField DataField="AssignedToPersonAlias.Person" HeaderText="Assigned To" />
                                 <Rock:PersonField DataField="SignedByPersonAlias.Person" HeaderText="Signed By" />
                                 <Rock:EnumField DataField="Status" HeaderText="Status" SortExpression="Status" />
-                                <asp:HyperLinkField HeaderText="Document" DataNavigateUrlFields="FileId" DataNavigateUrlFormatString="~/GetFile.ashx?id={0}" DataTextField="FileText" Target="_blank" ItemStyle-HorizontalAlign="Center"  />
+                                <asp:HyperLinkField HeaderText="Document" DataNavigateUrlFields="FileId" DataNavigateUrlFormatString="~/GetFile.ashx?id={0}" DataTextField="FileText" Target="_blank" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center"/>
                                 <Rock:DeleteField OnClick="gSignatureDocuments_Delete" HeaderText="Delete" />
                             </Columns>
                         </Rock:Grid>

@@ -27,6 +27,7 @@ using System.Web.Http;
 using System.Web.Http.OData;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -489,7 +490,7 @@ namespace Rock.Rest
 
             CheckCanEdit( model );
 
-            Rock.Attribute.IHasAttributes modelWithAttributes = model as Rock.Attribute.IHasAttributes;
+            IHasAttributes modelWithAttributes = model as IHasAttributes;
             if ( modelWithAttributes != null )
             {
                 using ( var rockContext = new RockContext() )

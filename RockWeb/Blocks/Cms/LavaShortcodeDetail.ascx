@@ -17,7 +17,7 @@
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <div id="pnlEditDetails" runat="server">
                     <fieldset>
                         <div class="row">
@@ -70,7 +70,16 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <asp:Literal ID="lblMainDetails" runat="server" />
+                            
+                            <asp:Literal ID="lblHeaderFields" runat="server" />
+
+                            <Rock:CodeEditor ID="ceView" runat="server" ReadOnly="true" Label="Shortcode Markup" EditorHeight="600" />
+
+                            <strong>Parameters</strong>
+                            <pre><asp:Literal ID="lblParameters" runat="server" /></pre>
+
+                            <strong>Enabled Commands</strong>
+                            <asp:Literal ID="lblEnabledCommands" runat="server" />
                         </div>
                     </div>
 

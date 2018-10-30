@@ -6,6 +6,7 @@
         <script>
             
             $(document).ready(function () {
+                $('.js-file-browser').fadeIn(50);
                 Sys.Application.add_load(function () {
                     $('.js-file-browser').fadeIn(50);
                 });

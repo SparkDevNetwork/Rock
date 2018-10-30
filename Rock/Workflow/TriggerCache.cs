@@ -16,26 +16,20 @@
 //
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
+
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Workflow
 {
     /// <summary>
-    /// MEF Container class for WorkflowAction Componenets
+    /// MEF Container class for WorkflowAction Components
     /// </summary>
+    [RockObsolete( "1.8" )]
+    [Obsolete( "Use WorkflowTriggersCache instead" )]
     public class TriggerCache
     {
-        #region Static Fields
-
-        // Locking object
-        private static readonly Object obj = new object();
-
-        // All workflow triggers grouped by EntityTypeName
-        private static Dictionary<string, List<WorkflowTrigger>> EntityTriggers { get; set; }
-
-        #endregion
 
         #region Constructors
 
@@ -44,7 +38,6 @@ namespace Rock.Workflow
         /// </summary>
         static TriggerCache()
         {
-            Refresh();
         }
 
         #endregion
@@ -54,53 +47,36 @@ namespace Rock.Workflow
         /// <summary>
         /// Refreshes this instance.
         /// </summary>
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use WorkflowTriggersCache.Refresh() method instead" )]
         public static void Refresh()
         {
-            lock ( obj )
-            {
-                EntityTriggers = new Dictionary<string, List<WorkflowTrigger>>();
-
-                using ( var rockContext = new RockContext() )
-                {
-                    var service = new WorkflowTriggerService( rockContext );
-
-                    foreach ( var trigger in service.Queryable() )
-                    {
-                        if ( !EntityTriggers.ContainsKey( trigger.EntityType.Name ) )
-                        {
-                            EntityTriggers.Add( trigger.EntityType.Name, new List<WorkflowTrigger>() );
-                        }
-                        EntityTriggers[trigger.EntityType.Name].Add( trigger.Clone() as WorkflowTrigger );
-                    }
-                }
-            }
+            WorkflowTriggersCache.Refresh();
         }
 
         /// <summary>
-        /// Triggerses the specified entity type name.
+        /// Gets a collection of Workflow Triggers for the specified criteria.
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use WorkflowTriggersCache.Triggers() method instead" )]
+        public static List<WorkflowTrigger> Triggers( string entityTypeName )
+        {
+            return WorkflowTriggersCache.Triggers( entityTypeName );
+        }
+
+        /// <summary>
+        /// Gets a collection of Workflow Triggers for the specified criteria.
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="triggerType">Type of the trigger.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use WorkflowTriggersCache.Triggers() method instead" )]
         public static List<WorkflowTrigger> Triggers( string entityTypeName, WorkflowTriggerType triggerType )
         {
-            var triggers = new List<WorkflowTrigger>();
-
-            lock ( obj )
-            {
-                if ( EntityTriggers != null && EntityTriggers.ContainsKey( entityTypeName ) )
-                {
-                    foreach ( var trigger in EntityTriggers[entityTypeName] )
-                    {
-                        if ( trigger.WorkflowTriggerType == triggerType )
-                        {
-                            triggers.Add( trigger );
-                        }
-                    }
-                }
-            }
-
-            return triggers;
+            return WorkflowTriggersCache.Triggers( entityTypeName, triggerType );
         }
 
         #endregion

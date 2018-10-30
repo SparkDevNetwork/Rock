@@ -132,7 +132,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
 
                 string lblAddControlId = subTargetList.Last();
-                var lblAdd = _gCheckinLabels.Actions.FindControl( lblAddControlId );
+                var lblAdd = _gCheckinLabels.Actions.FindControl( lblAddControlId ) as LinkButton;
                 if ( lblAdd != null )
                 {
                     AddCheckinLabel_Click( this, new EventArgs() );
@@ -251,9 +251,7 @@ namespace Rock.Web.UI.Controls
         public static Dictionary<string, Rock.Web.Cache.AttributeCache> GetCheckinLabelAttributes( Dictionary<string, Rock.Web.Cache.AttributeCache> groupTypeAttribute )
         {
             return groupTypeAttribute
-                .Where( a => a.Value.FieldType.Guid.Equals( new Guid( Rock.SystemGuid.FieldType.BINARY_FILE ) ) )
-                .Where( a => a.Value.QualifierValues.ContainsKey( "binaryFileType" ) )
-                .Where( a => a.Value.QualifierValues["binaryFileType"].Value.Equals( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL, StringComparison.OrdinalIgnoreCase ) )
+                .Where( a => a.Value.FieldType.Guid.Equals( new Guid( Rock.SystemGuid.FieldType.LABEL ) ) )
                 .ToDictionary( k => k.Key, v => v.Value );
         }
 

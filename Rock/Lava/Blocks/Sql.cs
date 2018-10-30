@@ -29,7 +29,7 @@ namespace Rock.Lava.Blocks
 {
     /// <summary>
     /// Sql stores the result of provided SQL query into a variable.
-    /// 
+    ///
     /// {% sql results %}
     /// SELECT [FirstName], [LastName] FROM [Person]
     /// {% endsql %}
@@ -85,13 +85,20 @@ namespace Rock.Lava.Blocks
 
                 if ( parms["statement"] == "select" )
                 {
-                    var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, null, null );
+                    var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, parms.ToDictionary( i => i.Key, i => ( object ) i.Value ), null );
 
                     context.Scopes.Last()[parms["return"]] = results.Tables[0].ToDynamic();
                 }
                 else if (parms["statement"] == "command" )
                 {
-                    int numOfRowEffected = new RockContext().Database.ExecuteSqlCommand( sql.ToString() );
+                    var sqlParameters = new List<System.Data.SqlClient.SqlParameter>();
+
+                    foreach ( var p in parms )
+                    {
+                        sqlParameters.Add( new System.Data.SqlClient.SqlParameter( p.Key, p.Value ) );
+                    }
+
+                    int numOfRowEffected = new RockContext().Database.ExecuteSqlCommand( sql.ToString(), sqlParameters.ToArray() );
 
                     context.Scopes.Last()[parms["return"]] = numOfRowEffected;
                 }
@@ -104,7 +111,6 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
         private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup
@@ -127,13 +133,12 @@ namespace Rock.Lava.Blocks
                     internalMergeFields.AddOrReplace( item.Key, item.Value );
                 }
             }
-            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
             var parms = new Dictionary<string, string>();
             parms.Add( "return", "results" );
             parms.Add( "statement", "select" );
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( markup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();
@@ -143,7 +148,14 @@ namespace Rock.Lava.Blocks
                 var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
                 if ( itemParts.Length > 1 )
                 {
-                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
+                    var value = itemParts[1];
+
+                    if ( value.HasMergeFields() )
+                    {
+                        value = value.ResolveMergeFields( internalMergeFields );
+                    }
+
+                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), value.Substring( 1, value.Length - 2 ).Trim() );
                 }
             }
             return parms;

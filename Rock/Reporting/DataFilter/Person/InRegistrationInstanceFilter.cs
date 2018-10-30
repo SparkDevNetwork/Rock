@@ -362,7 +362,7 @@ function() {
                     }
 
                     qry = new PersonService( rockContext ).Queryable()
-                        .Where( p => registrantQuery.Where( xx => xx.PersonAlias.PersonId == p.Id ).Count() == 1 );
+                        .Where( p => registrantQuery.Where( xx => xx.PersonAlias.PersonId == p.Id ).Count() >= 1 );
                 }
                 // Registrar 
                 else
@@ -376,7 +376,7 @@ function() {
                     }
                     
                     qry = new PersonService( rockContext ).Queryable()
-                        .Where( p => registrationQuery.Where( xx => xx.PersonAlias.PersonId == p.Id ).Count() == 1 );
+                        .Where( p => registrationQuery.Where( xx => xx.PersonAlias.PersonId == p.Id ).Count() >= 1 );
                 }
                 
                 Expression result = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

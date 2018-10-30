@@ -107,9 +107,9 @@ namespace Rock.Jobs
 
                     resultsMessage.Append( errorMessage );
 
-                    if ( alertEmail.IsNotNullOrWhitespace() )
+                    if ( alertEmail.IsNotNullOrWhiteSpace() )
                     {
-                        var globalAttributes = GlobalAttributesCache.Read();
+                        var globalAttributes = GlobalAttributesCache.Get();
                         string emailHeader = globalAttributes.GetValue( "EmailHeader" );
                         string emailFooter = globalAttributes.GetValue( "EmailFooter" );
                         string messageBody = $"{emailHeader} {errorMessage} <p><small>This message was generated from the Rock Database Maintenance Job</small></p>{emailFooter}";
@@ -144,7 +144,42 @@ namespace Rock.Jobs
                 // update statistics
                 if ( runStatisticsUpdate )
                 {
-                    string statisticsQuery = "EXEC sp_MSForEachtable 'UPDATE STATISTICS ?'";
+                    // derived from http://www.sqlservercentral.com/scripts/Indexing/31823/
+                    // NOTE: Can't use sp_MSForEachtable because it isn't supported on AZURE (and it is undocumented)
+                    // NOTE: Can't use sp_updatestats because it requires membership in the sysadmin fixed server role, or ownership of the database (dbo)
+                    string statisticsQuery = @"
+DECLARE updatestats CURSOR
+FOR
+SELECT TABLE_NAME
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_TYPE = 'BASE TABLE'
+ORDER BY TABLE_NAME
+
+OPEN updatestats
+
+DECLARE @tablename NVARCHAR(max)
+DECLARE @Statement NVARCHAR(max)
+
+FETCH NEXT
+FROM updatestats
+INTO @tablename
+
+WHILE (@@FETCH_STATUS = 0)
+BEGIN
+	PRINT N'UPDATING STATISTICS [' + @tablename + ']'
+	SET @Statement = 'UPDATE STATISTICS [' + @tablename + ']'
+
+	EXEC sp_executesql @Statement
+
+	FETCH NEXT
+	FROM updatestats
+	INTO @tablename
+END
+
+CLOSE updatestats
+
+DEALLOCATE updatestats
+";
 
                     stopwatch = Stopwatch.StartNew();
                     DbService.ExecuteCommand( statisticsQuery, System.Data.CommandType.Text, null, commandTimeout );

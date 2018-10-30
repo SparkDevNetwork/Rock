@@ -394,6 +394,26 @@ namespace Rock
             return dt.ToShortDateString() + " " + dt.ToShortTimeString();
         }
 
+        /// <summary>
+        /// To the RFC822 date time.
+        /// From https://madskristensen.net/blog/convert-a-date-to-the-rfc822-standard-for-use-in-rss-feeds/
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static string ToRfc822DateTime(this DateTime dateTime )
+        {
+            int offset = TimeZone.CurrentTimeZone.GetUtcOffset( DateTime.Now ).Hours;
+            string timeZone = "+" + offset.ToString().PadLeft( 2, '0' );
+
+            if ( offset < 0 )
+            {
+                int i = offset * -1;
+                timeZone = "-" + i.ToString().PadLeft( 2, '0' );
+            }
+
+            return dateTime.ToString( "ddd, dd MMM yyyy HH:mm:ss " + timeZone.PadRight( 5, '0' ) );
+        }
+
         #endregion DateTime Extensions
 
         #region TimeSpan Extensions

@@ -59,10 +59,11 @@ BEGIN
 	INSERT INTO @PersonIdTbl
 	SELECT DISTINCT PA.[PersonId]
 	FROM [Attendance] A
+	INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
     INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
-	INNER JOIN @GroupTbl [G] ON [G].[Id] = A.[GroupId]
+	INNER JOIN @GroupTbl [G] ON [G].[Id] = O.[GroupId]
 	LEFT OUTER JOIN @CampusTbl [C] ON [C].[id] = [A].[CampusId]
-	LEFT OUTER JOIN @ScheduleTbl [S] ON [S].[id] = [A].[ScheduleId]
+	LEFT OUTER JOIN @ScheduleTbl [S] ON [S].[id] = [O].[ScheduleId]
     WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
 	AND [DidAttend] = 1
 	AND ( 

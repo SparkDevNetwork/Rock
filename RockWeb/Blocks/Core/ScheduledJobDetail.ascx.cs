@@ -26,6 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Administration
@@ -167,6 +168,20 @@ namespace RockWeb.Blocks.Administration
 
             job.Class = ddlJobTypes.SelectedValue;
             job.LoadAttributes();
+            if ( tbDescription.Text.IsNullOrWhiteSpace() && tbName.Text.IsNullOrWhiteSpace() )
+            {
+                try
+                {
+                    Type selectedJobType = Rock.Reflection.FindType( typeof( Quartz.IJob ), job.Class );
+                    tbName.Text = Rock.Reflection.GetDisplayName( selectedJobType );
+                    tbDescription.Text = Rock.Reflection.GetDescription( selectedJobType );
+                }
+                catch
+                {
+                    // ignore if there is a problem getting the description from the selected job.class
+                }
+            }
+
             phAttributes.Controls.Clear();
             Rock.Attribute.Helper.AddEditControls( job, phAttributes, true, BlockValidationGroup );
         }
@@ -212,7 +227,7 @@ namespace RockWeb.Blocks.Administration
             tbName.Text = job.Name;
             tbDescription.Text = job.Description;
             cbActive.Checked = job.IsActive.HasValue ? job.IsActive.Value : false;
-            if ( job.Class.IsNotNullOrWhitespace() )
+            if ( job.Class.IsNotNullOrWhiteSpace() )
             {
                 if ( ddlJobTypes.Items.FindByValue( job.Class ) == null )
                 {
@@ -290,7 +305,7 @@ namespace RockWeb.Blocks.Administration
         {
             ddlNotificationStatus.BindToEnum<JobNotificationStatus>();
 
-            int? jobEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.ServiceJob" ).Id;
+            int? jobEntityTypeId = EntityTypeCache.Get( "Rock.Model.ServiceJob" ).Id;
 
             var jobs = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values;
 

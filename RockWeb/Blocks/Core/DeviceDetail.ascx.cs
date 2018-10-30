@@ -13,13 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -39,18 +39,26 @@ namespace RockWeb.Blocks.Core
     {
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the locations.
+        /// </summary>
+        /// <value>
+        /// The locations.
+        /// </value>
         private Dictionary<int, string> Locations
         {
             get
             {
                 var locations = ViewState["Locations"] as Dictionary<int, string>;
-                if (locations == null)
+                if ( locations == null )
                 {
                     locations = new Dictionary<int, string>();
                     ViewState["Locations"] = locations;
                 }
+
                 return locations;
             }
+
             set
             {
                 ViewState["Locations"] = value;
@@ -107,7 +115,6 @@ namespace RockWeb.Blocks.Core
             {
                 mdLocationPicker.Show();
             }
-
         }
 
         #endregion
@@ -133,26 +140,27 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Device Device = null;
+            Device device = null;
 
             var rockContext = new RockContext();
             var deviceService = new DeviceService( rockContext );
             var attributeService = new AttributeService( rockContext );
             var locationService = new LocationService( rockContext );
 
-            int DeviceId = int.Parse( hfDeviceId.Value );
+            int deviceId = hfDeviceId.Value.AsInteger();
 
-            if ( DeviceId != 0 )
+            if ( deviceId != 0 )
             {
-                Device = deviceService.Get( DeviceId );
+                device = deviceService.Get( deviceId );
             }
 
-            if ( Device == null )
+            if ( device == null )
             {
                 // Check for existing
                 var existingDevice = deviceService.Queryable()
                     .Where( d => d.Name == tbName.Text )
                     .FirstOrDefault();
+
                 if ( existingDevice != null )
                 {
                     nbDuplicateDevice.Text = string.Format( "A device already exists with the name '{0}'. Please use a different device name.", existingDevice.Name );
@@ -160,63 +168,64 @@ namespace RockWeb.Blocks.Core
                 }
                 else
                 {
-                    Device = new Device();
-                    deviceService.Add( Device );
+                    device = new Device();
+                    deviceService.Add( device );
                 }
             }
 
-            if ( Device != null )
+            if ( device != null )
             {
-                Device.Name = tbName.Text;
-                Device.Description = tbDescription.Text;
-                Device.IPAddress = tbIpAddress.Text;
-                Device.DeviceTypeValueId = ddlDeviceType.SelectedValueAsInt().Value;
-                Device.PrintToOverride = (PrintTo)System.Enum.Parse( typeof( PrintTo ), ddlPrintTo.SelectedValue );
-                Device.PrinterDeviceId = ddlPrinter.SelectedValueAsInt();
-                Device.PrintFrom = (PrintFrom)System.Enum.Parse( typeof( PrintFrom ), ddlPrintFrom.SelectedValue );
+                device.Name = tbName.Text;
+                device.Description = tbDescription.Text;
+                device.IPAddress = tbIpAddress.Text;
+                device.DeviceTypeValueId = dvpDeviceType.SelectedValueAsInt().Value;
+                device.PrintToOverride = ( PrintTo ) System.Enum.Parse( typeof( PrintTo ), ddlPrintTo.SelectedValue );
+                device.PrinterDeviceId = ddlPrinter.SelectedValueAsInt();
+                device.PrintFrom = ( PrintFrom ) System.Enum.Parse( typeof( PrintFrom ), ddlPrintFrom.SelectedValue );
+                device.IsActive = cbIsActive.Checked;
 
-                if ( Device.Location == null )
+                if ( device.Location == null )
                 {
-                    Device.Location = new Location();
+                    device.Location = new Location();
                 }
-                Device.Location.GeoPoint = geopPoint.SelectedValue;
-                Device.Location.GeoFence = geopFence.SelectedValue;
 
-                Device.LoadAttributes( rockContext );
-                Rock.Attribute.Helper.GetEditValues( phAttributes, Device );
+                device.Location.GeoPoint = geopPoint.SelectedValue;
+                device.Location.GeoFence = geopFence.SelectedValue;
 
-                if ( !Device.IsValid || !Page.IsValid )
+                device.LoadAttributes( rockContext );
+                Rock.Attribute.Helper.GetEditValues( phAttributes, device );
+
+                if ( !device.IsValid || !Page.IsValid )
                 {
                     // Controls will render the error messages
                     return;
                 }
 
                 // Remove any deleted locations
-                foreach ( var location in Device.Locations
-                    .Where( l =>
-                        !Locations.Keys.Contains( l.Id ) )
+                foreach ( var location in device.Locations
+                    .Where( l =>!Locations.Keys.Contains( l.Id ) )
                     .ToList() )
                 {
-                    Device.Locations.Remove( location );
+                    device.Locations.Remove( location );
                 }
 
                 // Add any new locations
-                var existingLocationIDs = Device.Locations.Select( l => l.Id ).ToList();
+                var existingLocationIDs = device.Locations.Select( l => l.Id ).ToList();
                 foreach ( var location in locationService.Queryable()
                     .Where( l =>
                         Locations.Keys.Contains( l.Id ) &&
                         !existingLocationIDs.Contains( l.Id ) ) )
                 {
-                    Device.Locations.Add( location );
+                    device.Locations.Add( location );
                 }
 
                 rockContext.WrapTransaction( () =>
                 {
                     rockContext.SaveChanges();
-                    Device.SaveAttributeValues( rockContext );
+                    device.SaveAttributeValues( rockContext );
                 } );
 
-                Rock.CheckIn.KioskDevice.Flush( Device.Id );
+                Rock.CheckIn.KioskDevice.Remove( device.Id );
 
                 NavigateToParentPage();
             }
@@ -276,26 +285,47 @@ namespace RockWeb.Blocks.Core
             SetPrinterVisibility();
         }
 
+        /// <summary>
+        /// Handles the AddClick event of the gLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gLocations_AddClick( object sender, EventArgs e )
         {
             hfAddLocationId.Value = "0";
             mdLocationPicker.Show();
         }
 
+        /// <summary>
+        /// Handles the Delete event of the gLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gLocations_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            if (Locations.ContainsKey(e.RowKeyId))
+            if ( Locations.ContainsKey( e.RowKeyId ) )
             {
                 Locations.Remove( e.RowKeyId );
             }
+
             BindLocations();
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gLocations_GridRebind( object sender, EventArgs e )
         {
             BindLocations();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnAddLocation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddLocation_Click( object sender, EventArgs e )
         {
             // Add the location (ignore if they didn't pick one, or they picked one that already is selected)
@@ -309,6 +339,7 @@ namespace RockWeb.Blocks.Core
                     path = parentLocation.Name + " > " + path;
                     parentLocation = parentLocation.ParentLocation;
                 }
+
                 Locations.Add( location.Id, path );
             }
 
@@ -327,8 +358,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlDeviceType.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ) );
-            ddlDeviceType.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+            dvpDeviceType.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ).Id;
 
             ddlPrintFrom.BindToEnum<PrintFrom>();
 
@@ -337,74 +367,73 @@ namespace RockWeb.Blocks.Core
                 .GetByDeviceTypeGuid( new Guid( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER ) )
                 .OrderBy( d => d.Name )
                 .ToList();
+
             ddlPrinter.DataBind();
-            ddlPrinter.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
+            ddlPrinter.Items.Insert( 0, new ListItem() );
         }
 
         /// <summary>
         /// Shows the edit.
         /// </summary>
-        /// <param name="DeviceId">The device identifier.</param>
-        public void ShowDetail( int DeviceId )
+        /// <param name="deviceId">The device identifier.</param>
+        public void ShowDetail( int deviceId )
         {
             pnlDetails.Visible = true;
-            Device Device = null;
+            Device device = null;
 
             var rockContext = new RockContext();
 
-            if ( !DeviceId.Equals( 0 ) )
+            if ( !deviceId.Equals( 0 ) )
             {
-                Device = new DeviceService( rockContext ).Get( DeviceId );
+                device = new DeviceService( rockContext ).Get( deviceId );
                 lActionTitle.Text = ActionTitle.Edit( Device.FriendlyTypeName ).FormatAsHtmlTitle();
-                pdAuditDetails.SetEntity( Device, ResolveRockUrl( "~" ) );
+                pdAuditDetails.SetEntity( device, ResolveRockUrl( "~" ) );
             }
 
-            if ( Device == null )
+            if ( device == null )
             {
-                Device = new Device { Id = 0 };
+                device = new Device { Id = 0 };
                 lActionTitle.Text = ActionTitle.Add( Device.FriendlyTypeName ).FormatAsHtmlTitle();
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
 
             LoadDropDowns();
 
-            hfDeviceId.Value = Device.Id.ToString();
+            hfDeviceId.Value = device.Id.ToString();
 
-            tbName.Text = Device.Name;
-            tbDescription.Text = Device.Description;
-            tbIpAddress.Text = Device.IPAddress;
-            ddlDeviceType.SetValue( Device.DeviceTypeValueId );
-            ddlPrintTo.SetValue( Device.PrintToOverride.ConvertToInt().ToString() );
-            ddlPrinter.SetValue( Device.PrinterDeviceId );
-            ddlPrintFrom.SetValue( Device.PrintFrom.ConvertToInt().ToString() );
+            tbName.Text = device.Name;
+            tbDescription.Text = device.Description;
+            tbIpAddress.Text = device.IPAddress;
+            cbIsActive.Checked = device.IsActive;
+            dvpDeviceType.SetValue( device.DeviceTypeValueId );
+            ddlPrintTo.SetValue( device.PrintToOverride.ConvertToInt().ToString() );
+            ddlPrinter.SetValue( device.PrinterDeviceId );
+            ddlPrintFrom.SetValue( device.PrintFrom.ConvertToInt().ToString() );
 
             SetPrinterVisibility();
             SetPrinterSettingsVisibility();
 
-            string orgLocGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" );
-            if ( !string.IsNullOrWhiteSpace( orgLocGuid ) )
+            Guid? orgLocGuid = GlobalAttributesCache.Get().GetValue( "OrganizationAddress" ).AsGuidOrNull();
+            if ( orgLocGuid.HasValue )
             {
-                Guid locGuid = Guid.Empty;
-                if ( Guid.TryParse( orgLocGuid, out locGuid ) )
+                var locationGeoPoint = new LocationService( rockContext ).GetSelect( orgLocGuid.Value, a => a.GeoPoint );
+                if ( locationGeoPoint != null )
                 {
-                    var location = new LocationService( rockContext ).Get( locGuid );
-                    if ( location != null )
-                    {
-                        geopPoint.CenterPoint = location.GeoPoint;
-                        geopFence.CenterPoint = location.GeoPoint;
-                    }
+                    geopPoint.CenterPoint = locationGeoPoint;
+                    geopFence.CenterPoint = locationGeoPoint;
                 }
             }
 
-            if ( Device.Location != null )
+            if ( device.Location != null )
             {
-                geopPoint.SetValue( Device.Location.GeoPoint );
-                geopFence.SetValue( Device.Location.GeoFence );
+                geopPoint.SetValue( device.Location.GeoPoint );
+                geopFence.SetValue( device.Location.GeoFence );
             }
 
-            Locations = new Dictionary<int,string>();
-            foreach ( var location in Device.Locations)
+            Locations = new Dictionary<int, string>();
+            foreach ( var location in device.Locations )
             {
                 string path = location.Name;
                 var parentLocation = location.ParentLocation;
@@ -413,15 +442,17 @@ namespace RockWeb.Blocks.Core
                     path = parentLocation.Name + " > " + path;
                     parentLocation = parentLocation.ParentLocation;
                 }
+
                 Locations.Add( location.Id, path );
             }
+
             BindLocations();
 
             Guid mapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
             geopPoint.MapStyleValueGuid = mapStyleValueGuid;
             geopFence.MapStyleValueGuid = mapStyleValueGuid;
 
-            UpdateControlsForDeviceType( Device );
+            UpdateControlsForDeviceType( device );
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -442,10 +473,12 @@ namespace RockWeb.Blocks.Core
             tbName.ReadOnly = readOnly;
             tbDescription.ReadOnly = readOnly;
             tbIpAddress.ReadOnly = readOnly;
-            ddlDeviceType.Enabled = !readOnly;
+            cbIsActive.Enabled = !readOnly;
+            dvpDeviceType.Enabled = !readOnly;
             ddlPrintTo.Enabled = !readOnly;
             ddlPrinter.Enabled = !readOnly;
             ddlPrintFrom.Enabled = !readOnly;
+            SetHighlightLabelVisibility( device, readOnly );
 
             btnSave.Visible = !readOnly;
         }
@@ -454,9 +487,9 @@ namespace RockWeb.Blocks.Core
         /// Adds the attribute controls.
         /// </summary>
         /// <param name="device">The device.</param>
-        private void AddAttributeControls( Device device)
+        private void AddAttributeControls( Device device )
         {
-            int typeId = ddlDeviceType.SelectedValueAsInt() ?? 0;
+            int typeId = dvpDeviceType.SelectedValueAsInt() ?? 0;
             hfTypeId.Value = typeId.ToString();
 
             device.DeviceTypeValueId = typeId;
@@ -481,7 +514,7 @@ namespace RockWeb.Blocks.Core
         {
             bool isValid = true;
             int currentDeviceId = int.Parse( hfDeviceId.Value );
-            int? deviceTypeId = ddlDeviceType.SelectedValueAsInt().Value;
+            int? deviceTypeId = dvpDeviceType.SelectedValueAsInt().Value;
             if ( !string.IsNullOrWhiteSpace( tbIpAddress.Text ) && deviceTypeId != null )
             {
                 var rockContext = new RockContext();
@@ -496,12 +529,35 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Sets the highlight label visibility.
+        /// </summary>
+        /// <param name="device">The group.</param>
+        private void SetHighlightLabelVisibility( Device device, bool readOnly )
+        {
+            if ( readOnly )
+            {
+                // if we are just showing readonly detail of the group, we don't have to worry about the highlight labels changing while editing on the client
+                hlInactive.Visible = !device.IsActive;
+            }
+            else
+            {
+                // in edit mode, the labels will have javascript handle if/when they are shown
+                hlInactive.Visible = true;
+            }
+
+            if ( device.IsActive )
+            {
+                hlInactive.Style[HtmlTextWriterStyle.Display] = "none";
+            }
+        }
+
+        /// <summary>
         /// Decide if the printer settings section should be hidden.
         /// </summary>
         private void SetPrinterSettingsVisibility()
         {
-            var checkinKioskDeviceTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
-            pnlPrinterSettings.Visible = ( ddlDeviceType.SelectedValue.AsIntegerOrNull() == checkinKioskDeviceTypeId );
+            var checkinKioskDeviceTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid() ).Id;
+            pnlPrinterSettings.Visible = dvpDeviceType.SelectedValue.AsIntegerOrNull() == checkinKioskDeviceTypeId;
         }
 
         /// <summary>
@@ -509,24 +565,27 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void SetPrinterVisibility()
         {
-            var printTo = (PrintTo)System.Enum.Parse( typeof( PrintTo ), ddlPrintTo.SelectedValue );
+            var printTo = ( PrintTo ) System.Enum.Parse( typeof( PrintTo ), ddlPrintTo.SelectedValue );
             ddlPrinter.Visible = printTo != PrintTo.Location;
         }
 
+        /// <summary>
+        /// Binds the locations.
+        /// </summary>
         private void BindLocations()
         {
             gLocations.DataSource = Locations
-                .OrderBy( l => l.Value)
+                .OrderBy( l => l.Value )
                 .Select( l => new
-                    {
-                        Id = l.Key,
-                        LocationPath = l.Value
-                    } )
+                {
+                    Id = l.Key,
+                    LocationPath = l.Value
+                } )
                 .ToList();
+
             gLocations.DataBind();
         }
 
         #endregion
-
     }
 }

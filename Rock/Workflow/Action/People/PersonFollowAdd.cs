@@ -62,7 +62,7 @@ namespace Rock.Workflow.Action
             Guid? guidPersonAttribute = personAttributeValue.AsGuidOrNull();
             if ( guidPersonAttribute.HasValue )
             {
-                var attributePerson = AttributeCache.Read( guidPersonAttribute.Value, rockContext );
+                var attributePerson = AttributeCache.Get( guidPersonAttribute.Value, rockContext );
                 if ( attributePerson != null && attributePerson.FieldType.Class == "Rock.Field.Types.PersonFieldType" )
                 {
                     Guid? attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute.Value ).AsGuidOrNull();
@@ -85,7 +85,7 @@ namespace Rock.Workflow.Action
             Guid? guidEntityType = GetAttributeValue( action, "EntityType" ).AsGuidOrNull();
             if ( guidEntityType.HasValue )
             {
-                entityType = EntityTypeCache.Read( guidEntityType.Value );
+                entityType = EntityTypeCache.Get( guidEntityType.Value );
                 if ( entityType == null )
                 {
                     errorMessages.Add( string.Format( "Entity Type could not be found for selected value ('{0}')!", guidPersonAttribute.ToString() ) );
@@ -157,7 +157,7 @@ namespace Rock.Workflow.Action
             {
                 // If the value is a Guid, it could either be a guid of an attribute, or the entity's guid.
                 // Check for an attribute first.
-                var attribute = AttributeCache.Read( guidEntity.Value, rockContext );
+                var attribute = AttributeCache.Get( guidEntity.Value, rockContext );
                 if ( attribute != null )
                 {
                     // It was for an attribute, get the value

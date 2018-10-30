@@ -16,10 +16,10 @@
                     <Rock:Grid ID="gThemes" runat="server" AllowSorting="true" DataKeyNames="Name" OnRowSelected="gThemes_RowSelected">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <Rock:BoolField DataField="AllowsCompile" HeaderText="Allows Compile" HeaderStyle-HorizontalAlign="Center" />
-                            <Rock:BoolField DataField="IsSystem" HeaderText="System" HeaderStyle-HorizontalAlign="Center" />
-                            <Rock:LinkButtonField HeaderText="Compile" CssClass="btn btn-default btn-sm fa fa-refresh" OnClick="gCompileTheme_Click" HeaderStyle-HorizontalAlign="Center" />
-                            <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="gCloneTheme_Click" HeaderStyle-HorizontalAlign="Center" />
+                            <Rock:BoolField DataField="AllowsCompile" HeaderText="Allows Compile" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                            <Rock:BoolField DataField="IsSystem" HeaderText="System" HeaderStyle-HorizontalAlign="Center"  ItemStyle-HorizontalAlign="Center"/>
+                            <Rock:LinkButtonField HeaderText="Compile" CssClass="btn btn-default btn-sm fa fa-refresh" OnClick="gCompileTheme_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
+                            <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="gCloneTheme_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
                             <Rock:DeleteField OnClick="gThemes_Delete" />
                         </Columns>
                     </Rock:Grid>
@@ -31,7 +31,7 @@
 
             <Rock:ModalDialog ID="mdThemeClone" runat="server" Title="Clone Theme" ValidationGroup="vgClone" SaveButtonText="Clone" OnSaveClick="mdThemeClone_SaveClick" OnCancelScript="clearActiveDialog();">
                 <Content>
-                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Enter A New Theme Name" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Enter A New Theme Name" CssClass="alert alert-validation" />
                     <Rock:RockTextBox ID="tbNewThemeName" runat="server" Label="New Theme Name" Required="true" ValidationGroup="vgClone" />
                     <small>Note: Spaces and special characters will be removed.</small>
                 </Content>

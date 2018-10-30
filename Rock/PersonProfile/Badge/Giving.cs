@@ -84,7 +84,7 @@ namespace Rock.PersonProfile.Badge
                 // fetch all the possible PersonAliasIds that have this GivingID to help optimize the SQL
                 var personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == this.Person.GivingId ).Select( a => a.Id ).ToList();
 
-                var transactionTypeContributionValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+                var transactionTypeContributionValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
                 var qry = new FinancialTransactionService( rockContext ).Queryable().Where( a => a.TransactionTypeValueId == transactionTypeContributionValueId );
 
                 // get the transactions for the person or all the members in the person's giving group (Family)

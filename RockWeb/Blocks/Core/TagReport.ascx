@@ -13,7 +13,7 @@
                 </div>
                 <div class="panel-body">
                     <div class="grid grid-panel">
-                        <Rock:Grid ID="gReport" runat="server" AllowSorting="true" RowItemText="Tag" EmptyDataText="No Results" OnRowSelected="gReport_RowSelected" >
+                        <Rock:Grid ID="gReport" runat="server" AllowSorting="true" RowItemText="Tag" EmptyDataText="No Results" OnRowSelected="gReport_RowSelected" ExportSource="ColumnOutput" ExportTitleName="Tagged People" >
                             <Columns>
                                 <Rock:SelectField Visible="false" />
                                 <Rock:RockBoundField DataField="Id" Visible="false" />
@@ -30,9 +30,18 @@
                 </div>
             </asp:Panel>
 
-            
-
         </asp:Panel>
+
+        <Rock:ModalDialog ID="mdAddPerson" runat="server" Title="Add Person" OnSaveClick="mdAddPerson_SaveClick" OnSaveThenAddClick="mdAddPerson_SaveThenAddClick" ValidationGroup="AddPerson">
+            <Content>
+                <asp:ValidationSummary ID="vsAddPerson" runat="server" CssClass="alert alert-danger" ValidationGroup="AddPerson" />
+                <Rock:NotificationBox ID="nbAddPersonExists" runat="server" NotificationBoxType="Danger" Visible="false">
+                    Person already exists in the tag.
+                </Rock:NotificationBox>
+
+                <Rock:PersonPicker ID="ppNewPerson" runat="server" Label="Person" Required="true" CssClass="js-newperson" ValidationGroup="AddPerson" />
+            </Content>
+        </Rock:ModalDialog>
 
     </ContentTemplate>
 </asp:UpdatePanel>

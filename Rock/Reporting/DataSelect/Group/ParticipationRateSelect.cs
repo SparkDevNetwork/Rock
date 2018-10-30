@@ -239,16 +239,16 @@ namespace Rock.Reporting.DataSelect.Group
         public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
             // Define Control: Person Data View Picker
-            int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+            int entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
 
-            var ddlDataView = new DataViewPicker();
-            ddlDataView.ID = string.Format( "{0}_ddlDataView", parentControl.ID );
-            ddlDataView.Label = "Candidate Data View";
-            ddlDataView.Help = "The Data View that returns the set of people from which participation in the Group is measured.";
+            var dvpDataView = new DataViewItemPicker();
+            dvpDataView.ID = string.Format( "{0}_ddlDataView", parentControl.ID );
+            dvpDataView.Label = "Candidate Data View";
+            dvpDataView.Help = "The Data View that returns the set of people from which participation in the Group is measured.";
 
-            parentControl.Controls.Add( ddlDataView );
+            parentControl.Controls.Add( dvpDataView );
 
-            ddlDataView.EntityTypeId = entityTypeId;
+            dvpDataView.EntityTypeId = entityTypeId;
 
             RockDropDownList ddlFormat = new RockDropDownList();
             ddlFormat.ID = string.Format( "{0}_ddlFormat", parentControl.ID );
@@ -258,7 +258,7 @@ namespace Rock.Reporting.DataSelect.Group
             ddlFormat.Items.Add( new ListItem( "Participation Rate of Candidates", MeasureTypeSpecifier.ParticipationRateOfCandidates.ToString() ) );
             parentControl.Controls.Add( ddlFormat );
 
-            return new System.Web.UI.Control[] { ddlDataView, ddlFormat };
+            return new System.Web.UI.Control[] { dvpDataView, ddlFormat };
         }
 
         /// <summary>
@@ -269,13 +269,13 @@ namespace Rock.Reporting.DataSelect.Group
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
         {
-            var ddlDataView = (DataViewPicker)controls[0];
+            var dvpDataView = ( DataViewItemPicker ) controls[0];
             var ddlFormat = (DropDownList)controls[1];
 
             var settings = new ParticipationRateSelectSettings();
 
             settings.ParseMeasureType(ddlFormat.SelectedValue);
-            settings.ParseDataViewId(ddlDataView.SelectedValue);
+            settings.ParseDataViewId(dvpDataView.SelectedValue);
 
             return settings.ToSelectionString();
         }
@@ -294,7 +294,7 @@ namespace Rock.Reporting.DataSelect.Group
                 return;
             }
 
-            var ddlDataView = (DataViewPicker)controls[0];
+            var dvpDataView = ( DataViewItemPicker ) controls[0];
             var ddlFormat = (DropDownList)controls[1];
 
             if ( settings.DataViewGuid.HasValue )
@@ -303,10 +303,7 @@ namespace Rock.Reporting.DataSelect.Group
 
                 var dataView = dsService.Get( settings.DataViewGuid.Value );
 
-                if ( dataView != null )
-                {
-                    ddlDataView.SelectedValue = dataView.Id.ToString();
-                }
+                dvpDataView.SetValue( dataView );
             }
 
             ddlFormat.SelectedValue = settings.MeasureType.ToString();

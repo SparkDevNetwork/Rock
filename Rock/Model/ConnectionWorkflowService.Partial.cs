@@ -38,30 +38,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static List<ConnectionWorkflow> GetCachedTriggers()
         {
-            return GetOrAddExisting( () => LoadCache() );
-        }
-
-        /// <summary>
-        /// Gets the or add existing.
-        /// </summary>
-        /// <param name="factory">The factory.</param>
-        /// <returns></returns>
-        private static List<ConnectionWorkflow> GetOrAddExisting( Func<List<ConnectionWorkflow>> factory )
-        {
-            RockMemoryCache cache = RockMemoryCache.Default;
-
-            var value = cache.Get( CACHE_KEY ) as List<ConnectionWorkflow>;
-            if ( value != null )
-            {
-                return value;
-            }
-
-            value = factory();
-            if ( value != null )
-            {
-                cache.Set( CACHE_KEY, value, new CacheItemPolicy() );
-            }
-            return value;
+            return RockCache.GetOrAddExisting( CACHE_KEY, () => LoadCache() ) as List<ConnectionWorkflow>;
         }
 
         /// <summary>
@@ -87,10 +64,19 @@ namespace Rock.Model
         /// <summary>
         /// Flushes the cached triggers.
         /// </summary>
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use RemoveCachedTriggers() instead.")]
         public static void FlushCachedTriggers()
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-            cache.Remove( CACHE_KEY );
+            RemoveCachedTriggers();
+        }
+
+        /// <summary>
+        /// Flushes the cached triggers.
+        /// </summary>
+        public static void RemoveCachedTriggers()
+        {
+            RockCache.Remove( CACHE_KEY );
         }
 
     }

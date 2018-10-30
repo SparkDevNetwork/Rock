@@ -169,7 +169,7 @@ namespace RockWeb.Blocks.Groups
             AttributeService attributeService = new AttributeService( rockContext );
 
             // Load all the group member attributes for comparison below.
-            var attributes = attributeService.GetGroupMemberAttributesCombined( group.Id, group.GroupTypeId );
+            var attributes = attributeService.GetGroupMemberAttributesCombined( group.Id, group.GroupTypeId, true ).ToCacheAttributeList();
 
             // In order to add attributes to the person, you have to first load them all
             groupMember.LoadAttributes( rockContext );

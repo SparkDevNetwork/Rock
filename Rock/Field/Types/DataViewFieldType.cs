@@ -92,7 +92,7 @@ namespace Rock.Field.Types
                     int? entityTypeId = ( (EntityTypePicker)controls[0] ).SelectedValueAsInt();
                     if ( entityTypeId.HasValue )
                     {
-                        var entityType = EntityTypeCache.Read( entityTypeId.Value );
+                        var entityType = EntityTypeCache.Get( entityTypeId.Value );
                         configurationValues[ENTITY_TYPE_NAME_KEY].Value = entityType != null ? entityType.Name : string.Empty;
                     }
                 }
@@ -112,7 +112,7 @@ namespace Rock.Field.Types
             {
                 if ( controls[0] != null && controls[0] is EntityTypePicker && configurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
                 {
-                    var entityType = EntityTypeCache.Read( configurationValues[ENTITY_TYPE_NAME_KEY].Value );
+                    var entityType = EntityTypeCache.Get( configurationValues[ENTITY_TYPE_NAME_KEY].Value );
                     ( (EntityTypePicker)controls[0] ).SetValue( entityType != null ? entityType.Id : (int?)null );
                 }
             }
@@ -137,12 +137,15 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var service = new DataViewService( new RockContext() );
-                var dataview = service.Get( guid.Value );
-
-                if ( dataview != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = dataview.Name;
+                    var service = new DataViewService( rockContext );
+                    var dataview = service.GetNoTracking( guid.Value );
+
+                    if ( dataview != null )
+                    {
+                        formattedValue = dataview.Name;
+                    }
                 }
             }
 
@@ -173,7 +176,7 @@ namespace Rock.Field.Types
                     entityTypeName = configurationValues[ENTITY_TYPE_NAME_KEY].Value;
                     if ( !string.IsNullOrWhiteSpace( entityTypeName ) && entityTypeName != None.IdValue )
                     {
-                        var entityType = EntityTypeCache.Read( entityTypeName );
+                        var entityType = EntityTypeCache.Get( entityTypeName );
                         if ( entityType != null )
                         {
                             entityTypeId = entityType.Id;
@@ -182,7 +185,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return new DataViewPicker { ID = id, EntityTypeId = entityTypeId };
+            return new DataViewItemPicker { ID = id, EntityTypeId = entityTypeId };
         }
 
         /// <summary>
@@ -194,23 +197,28 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            var picker = control as DataViewPicker;
+            var picker = control as DataViewItemPicker;
 
             if ( picker != null )
             {
                 int? id = picker.SelectedValue.AsIntegerOrNull();
                 if ( id.HasValue )
                 {
-                    var dataview = new DataViewService( new RockContext() ).Get( id.Value );
-
-                    if ( dataview != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        return dataview.Guid.ToString();
+                        var dataview = new DataViewService( rockContext ).GetNoTracking( id.Value );
+
+                        if ( dataview != null )
+                        {
+                            return dataview.Guid.ToString();
+                        }
                     }
                 }
+
+                return string.Empty;
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>
@@ -222,7 +230,7 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            var picker = control as DataViewPicker;
+            var picker = control as DataViewItemPicker;
 
             if ( picker != null )
             {

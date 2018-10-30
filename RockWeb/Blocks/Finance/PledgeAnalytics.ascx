@@ -7,7 +7,10 @@
 
             <div class="panel panel-block panel-analytics">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-list"></i>Pledge Analytics</h1>
+                    <h1 class="panel-title">
+                        <i class="fa fa-list"></i>
+                        Pledge Analytics
+                    </h1>
 
                     <div class="panel-labels">
                     </div>
@@ -62,8 +65,8 @@
                                         <Rock:RockBoundField DataField="Email" HeaderText="Email" SortExpression="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:CurrencyField DataField="PledgeAmount" HeaderText="Pledge Total" SortExpression="PledgeAmount" />
                                         <Rock:CurrencyField DataField="GiftAmount" HeaderText="Total Giving Amount" SortExpression="GiftAmount" />
-                                        <Rock:RockBoundField DataField="PercentComplete" HeaderText="Percent Complete" SortExpression="PercentComplete" DataFormatString="{0:P0}" ItemStyle-HorizontalAlign="Right" />
-                                        <Rock:RockBoundField DataField="GiftCount" HeaderText="Giving Count" SortExpression="GiftCount" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
+                                        <Rock:RockBoundField DataField="PercentComplete" HeaderText="Percent Complete" SortExpression="PercentComplete" DataFormatString="{0:P0}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                                        <Rock:RockBoundField DataField="GiftCount" HeaderText="Giving Count" SortExpression="GiftCount" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"/>
                                     </Columns>
                                 </Rock:Grid>
 

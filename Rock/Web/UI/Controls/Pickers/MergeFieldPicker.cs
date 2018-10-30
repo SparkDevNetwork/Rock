@@ -285,7 +285,7 @@ namespace Rock.Web.UI.Controls
                 if ( idParts.Count == 1 && idParts[0].StartsWith( "AdditionalMergeField" ) ) 
                 {
                     string mFields = idParts[0].Replace( "AdditionalMergeField_", "" ).Replace( "AdditionalMergeFields_", "" );
-                    if ( mFields.IsNotNullOrWhitespace() )
+                    if ( mFields.IsNotNullOrWhiteSpace() )
                     {
                         string beginFor = "{% for field in AdditionalFields %}";
                         string endFor = "{% endfor %}";
@@ -353,7 +353,7 @@ namespace Rock.Web.UI.Controls
                     string itemName = itemParts.Length > 1 ? itemParts[0] : string.Empty;
                     string itemType = itemParts.Length > 1 ? itemParts[1] : item;
 
-                    entityType = EntityTypeCache.Read( itemType, false );
+                    entityType = EntityTypeCache.Get( itemType, false );
 
                     workingParts.Add( entityType != null ? 
                         ( itemName != string.Empty ? itemName : entityType.FriendlyName.Replace( " ", string.Empty) ) :

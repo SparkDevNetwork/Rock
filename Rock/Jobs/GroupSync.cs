@@ -36,7 +36,7 @@ namespace Rock.Jobs
     /// Job to run quick SQL queries on a schedule
     /// </summary>
     [DisallowConcurrentExecution]
-    [BooleanField("Require Password Reset On New Logins", "Determines if new logins should be created in such a way that the individual will need to reset the password on their first login.", Key = "RequirePasswordReset")]
+    [BooleanField( "Require Password Reset On New Logins", "Determines if new logins should be created in such a way that the individual will need to reset the password on their first login.", Key = "RequirePasswordReset" )]
     public class GroupSync : IJob
     {
         /// <summary> 
@@ -59,105 +59,194 @@ namespace Rock.Jobs
         /// </summary>
         public virtual void Execute( IJobExecutionContext context )
         {
+            // Get the job setting(s)
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-
             bool requirePasswordReset = dataMap.GetBoolean( "RequirePasswordReset" );
 
+            // Counters for displaying results
             int groupsSynced = 0;
             int groupsChanged = 0;
+            string groupName = string.Empty;
+            string dataViewName = string.Empty;
+            var errors = new List<string>();
 
             try
             {
                 // get groups set to sync
-                GroupService groupService = new GroupService( new RockContext() );
-                var groupIdsThatSync = groupService.Queryable().Where( g => g.SyncDataViewId != null ).Select( a => a.Id ).ToList();
-
-                foreach ( var syncGroupId in groupIdsThatSync )
+                var activeSyncIds = new List<int>();
+                using ( var rockContext = new RockContext() )
                 {
-                    bool hasGroupChanged = false;
+                    activeSyncIds = new GroupSyncService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Select( x => x.Id )
+                        .ToList();
+                }
 
-                    // use a fresh rockContext per group so that ChangeTracker doesn't get bogged down
+                foreach ( var syncId in activeSyncIds )
+                {
+                    bool hasSyncChanged = false;
+
+                    // Use a fresh rockContext per syc so that ChangeTracker doesn't get bogged down
                     using ( var rockContext = new RockContext() )
                     {
-                        var syncGroup = new GroupService( rockContext ).Get( syncGroupId );
-                        GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-
                         // increase the timeout just in case the dataview source is slow
                         rockContext.Database.CommandTimeout = 180;
+                        rockContext.SourceOfChange = "Group Sync";
 
-                        var syncSource = new DataViewService( rockContext ).Get( syncGroup.SyncDataViewId.Value );
+                        // Get the Sync
+                        var sync = new GroupSyncService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .FirstOrDefault( s => s.Id == syncId );
 
-                        // ensure this is a person dataview
-                        bool isPersonDataSet = syncSource.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
-
-                        if ( isPersonDataSet )
+                        // Ensure that the group's Sync Data View is a person dataview
+                        if ( sync != null && sync.SyncDataView.EntityTypeId == EntityTypeCache.Get( typeof( Person ) ).Id )
                         {
-                            SortProperty sortById = new SortProperty();
-                            sortById.Property = "Id";
-                            sortById.Direction = System.Web.UI.WebControls.SortDirection.Ascending;
-                            List<string> errorMessages = new List<string>();
+                            List<string> syncErrors = new List<string>();
 
+                            dataViewName = sync.SyncDataView.Name;
+                            groupName = sync.Group.Name;
+
+                            // Get the person id's from the dataview (source)
                             var personService = new PersonService( rockContext );
                             var parameterExpression = personService.ParameterExpression;
-                            var whereExpression = syncSource.GetExpression( personService, parameterExpression, out errorMessages );
-                            var sourceItems = personService.Get( parameterExpression, whereExpression ).Select( q => q.Id ).ToList();
-                            var targetItems = groupMemberService.Queryable().Where( gm => gm.GroupId == syncGroup.Id ).ToList();
-
-                            // delete items from the target not in the source
-                            foreach ( var targetItem in targetItems.Where( t => !sourceItems.Contains( t.PersonId ) ) )
+                            var whereExpression = sync.SyncDataView.GetExpression( personService, parameterExpression, out syncErrors );
+                            var sourcePersonIds = new PersonService( rockContext )
+                                .Get( parameterExpression, whereExpression )
+                                .Select( q => q.Id )
+                                .ToList();
+                            
+                            // If any error occurred, just skip this sync for now.
+                            if ( syncErrors.Count > 0 )
                             {
-                                // made a clone of the person as it will be detached when the group member is deleted. Also
-                                // saving the delete before the email is sent in case an exception occurs so the user doesn't
-                                // get an email everytime the agent runs.
-                                Person recipient = (Person)targetItem.Person.Clone();
-                                groupMemberService.Delete( targetItem );
-
-                                rockContext.SaveChanges();
-
-                                hasGroupChanged = true;
-
-                                if ( syncGroup.ExitSystemEmailId.HasValue )
-                                {
-                                    SendExitEmail( syncGroup.ExitSystemEmailId.Value, recipient, syncGroup );
-                                }
+                                errors.AddRange( syncErrors );
+                                ExceptionLogService.LogException( new Exception( string.Format( "An error occurred while trying to GroupSync group '{0}' and data view '{1}' so the sync was skipped. Error: {2}", groupName, dataViewName, String.Join( ",", syncErrors ) ) ) );
+                                continue;
                             }
 
-                            // add items not in target but in the source
-                            foreach ( var sourceItem in sourceItems.Where( s => !targetItems.Select( t => t.PersonId ).Contains( s ) ) )
+                            // Get the person id's in the group (target)
+                            var targetPersonIds = new GroupMemberService( rockContext )
+                                .Queryable().AsNoTracking()
+                                .Where( gm => gm.GroupId == sync.GroupId )
+                                .Select( gm => gm.PersonId )
+                                .ToList();
+
+                            // Delete people from the group/role that are no longer in the dataview
+                            foreach ( var personId in targetPersonIds.Where( t => !sourcePersonIds.Contains( t ) ) )
                             {
-                                // add source to target
-                                var newGroupMember = new GroupMember { Id = 0 };
-                                newGroupMember.PersonId = sourceItem;
-                                newGroupMember.Group = syncGroup;
-                                newGroupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                                newGroupMember.GroupRoleId = syncGroup.GroupType.DefaultGroupRoleId ?? syncGroup.GroupType.Roles.FirstOrDefault().Id;
-                                groupMemberService.Add( newGroupMember );
-
-                                hasGroupChanged = true;
-
-                                if ( syncGroup.WelcomeSystemEmailId.HasValue )
+                                // Use a new context to limit the amount of change-tracking required
+                                using ( var groupMemberContext = new RockContext() )
                                 {
-                                    SendWelcomeEmail( syncGroup.WelcomeSystemEmailId.Value, sourceItem, syncGroup, syncGroup.AddUserAccountsDuringSync ?? false, requirePasswordReset );
+                                    // Delete any group members for the role with the person id
+                                    var groupMemberService = new GroupMemberService( groupMemberContext );
+                                    foreach ( var groupMember in groupMemberService
+                                        .Queryable()
+                                        .Where( m =>
+                                            m.GroupId == sync.GroupId &&
+                                            m.GroupRoleId == sync.GroupTypeRoleId &&
+                                            m.PersonId == personId )
+                                        .ToList() )
+                                    {
+                                        groupMemberService.Delete( groupMember );
+                                    }
+
+                                    groupMemberContext.SaveChanges();
+
+                                    // If the Group has an exit email, and person has an email address, send them the exit email
+                                    if ( sync.ExitSystemEmail != null )
+                                    {
+                                        var person = new PersonService( groupMemberContext ).Get( personId );
+                                        if ( person.Email.IsNotNullOrWhiteSpace() )
+                                        {
+                                            // Send the exit email
+                                            var mergeFields = new Dictionary<string, object>();
+                                            mergeFields.Add( "Group", sync.Group );
+                                            mergeFields.Add( "Person", person );
+                                            var emailMessage = new RockEmailMessage( sync.ExitSystemEmail );
+                                            emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                            var emailErrors = new List<string>();
+                                            emailMessage.Send( out emailErrors );
+                                            errors.AddRange( emailErrors);
+                                        }
+                                    }
                                 }
+
+                                hasSyncChanged = true;
                             }
 
-                            if ( hasGroupChanged )
+                            foreach ( var personId in sourcePersonIds.Where( s => !targetPersonIds.Contains( s ) ) )
+                            {
+                                // Use a new context to limit the amount of change-tracking required
+                                using ( var groupMemberContext = new RockContext() )
+                                {
+                                    // Add new person to the group with the role specified in the sync
+                                    var groupMemberService = new GroupMemberService( groupMemberContext );
+                                    var newGroupMember = new GroupMember { Id = 0 };
+                                    newGroupMember.PersonId = personId;
+                                    newGroupMember.GroupId = sync.GroupId;
+                                    newGroupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                                    newGroupMember.GroupRoleId = sync.GroupTypeRoleId;
+                                    groupMemberService.Add( newGroupMember );
+                                    groupMemberContext.SaveChanges();
+
+                                    // If the Group has a welcome email, and person has an email address, send them the welcome email and possibly create a login
+                                    if ( sync.WelcomeSystemEmail != null )
+                                    {
+                                        var person = new PersonService( groupMemberContext ).Get( personId );
+                                        if ( person.Email.IsNotNullOrWhiteSpace() )
+                                        {
+                                            // If the group is configured to add a user account for anyone added to the group, and person does not yet have an
+                                            // account, add one for them.
+                                            string newPassword = string.Empty;
+                                            bool createLogin = sync.AddUserAccountsDuringSync;
+                                            
+                                            // Only create a login if requested, no logins exist and we have enough information to generate a username.
+                                            if ( createLogin && !person.Users.Any() && !string.IsNullOrWhiteSpace( person.NickName ) && !string.IsNullOrWhiteSpace( person.LastName ) )
+                                            {
+                                                newPassword = System.Web.Security.Membership.GeneratePassword( 9, 1 );
+                                                string username = Rock.Security.Authentication.Database.GenerateUsername( person.NickName, person.LastName );
+
+                                                UserLogin login = UserLoginService.Create(
+                                                    groupMemberContext,
+                                                    person,
+                                                    AuthenticationServiceType.Internal,
+                                                    EntityTypeCache.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                                                    username,
+                                                    newPassword,
+                                                    true,
+                                                    requirePasswordReset );
+                                            }
+
+                                            // Send the welcome email
+                                            var mergeFields = new Dictionary<string, object>();
+                                            mergeFields.Add( "Group", sync.Group );
+                                            mergeFields.Add( "Person", person );
+                                            mergeFields.Add( "NewPassword", newPassword );
+                                            mergeFields.Add( "CreateLogin", createLogin );
+                                            var emailMessage = new RockEmailMessage( sync.WelcomeSystemEmail );
+                                            emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                            var emailErrors = new List<string>();
+                                            emailMessage.Send( out emailErrors );
+                                            errors.AddRange( emailErrors );
+                                        }
+                                    }
+                                }
+
+                                hasSyncChanged = true;
+                            }
+
+                            // Increment Groups Changed Counter (if people were deleted or added to the group)
+                            if ( hasSyncChanged )
                             {
                                 groupsChanged++;
                             }
 
+                            // Increment the Groups Synced Counter
                             groupsSynced++;
-
-                            rockContext.SaveChanges();
-
-                            if ( hasGroupChanged && ( syncGroup.IsSecurityRole || syncGroup.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) ) )
-                            {
-                                Rock.Security.Role.Flush( syncGroup.Id );
-                            }
                         }
                     }
                 }
 
+                // Format the result message
                 var resultMessage = string.Empty;
                 if ( groupsSynced == 0 )
                 {
@@ -174,6 +263,17 @@ namespace Rock.Jobs
 
                 resultMessage += string.Format( " and {0} groups were changed", groupsChanged );
 
+                if ( errors.Any() )
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine();
+                    sb.Append( "Errors: " );
+                    errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
+                    string errorMessage = sb.ToString();
+                    resultMessage += errorMessage;
+                    throw new Exception( errorMessage );
+                }
+
                 context.Result = resultMessage;
             }
             catch ( System.Exception ex )
@@ -181,94 +281,6 @@ namespace Rock.Jobs
                 HttpContext context2 = HttpContext.Current;
                 ExceptionLogService.LogException( ex, context2 );
                 throw;
-            }
-        }
-
-        /// <summary>
-        /// Sends the welcome email.
-        /// </summary>
-        /// <param name="systemEmailId">The system email identifier.</param>
-        /// <param name="personId">The person identifier.</param>
-        /// <param name="syncGroup">The synchronize group.</param>
-        /// <param name="createLogin">if set to <c>true</c> [create login].</param>
-        /// <param name="requirePasswordReset">if set to <c>true</c> [require password reset].</param>
-        private void SendWelcomeEmail( int systemEmailId, int personId, Group syncGroup, bool createLogin, bool requirePasswordReset )
-        {
-
-            using ( var rockContext = new RockContext() )
-            {
-                SystemEmailService emailService = new SystemEmailService( rockContext );
-
-                var systemEmail = emailService.Get( systemEmailId );
-
-                if ( systemEmail != null )
-                {
-                    string newPassword = string.Empty;
-
-                    var recipients = new List<RecipientData>();
-
-                    var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "Group", syncGroup );
-
-                    // get person
-                    var recipient = new PersonService( rockContext ).Queryable( "Users" ).Where( p => p.Id == personId ).FirstOrDefault();
-
-                    if ( !string.IsNullOrWhiteSpace( recipient.Email ) )
-                    {
-                        if ( createLogin && recipient.Users.Count == 0 )
-                        {
-                            newPassword = System.Web.Security.Membership.GeneratePassword( 9, 1 );
-
-                            // create user
-                            string username = Rock.Security.Authentication.Database.GenerateUsername( recipient.NickName, recipient.LastName );
-
-                            UserLogin login = UserLoginService.Create(
-                                rockContext,
-                                recipient,
-                                Rock.Model.AuthenticationServiceType.Internal,
-                                EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
-                                username,
-                                newPassword,
-                                true,
-                                requirePasswordReset );
-                        }
-                        mergeFields.Add( "Person", recipient );
-                        mergeFields.Add( "NewPassword", newPassword );
-                        mergeFields.Add( "CreateLogin", createLogin );
-                        recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
-
-                        var emailMessage = new RockEmailMessage( systemEmail.Guid );
-                        emailMessage.SetRecipients( recipients );
-                        emailMessage.Send();
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Sends the exit email.
-        /// </summary>
-        /// <param name="systemEmailId">The system email identifier.</param>
-        /// <param name="recipient">The recipient.</param>
-        /// <param name="syncGroup">The synchronize group.</param>
-        private void SendExitEmail( int systemEmailId, Person recipient, Group syncGroup )
-        {
-            if ( !string.IsNullOrWhiteSpace( recipient.Email ) )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var systemEmail = new SystemEmailService( rockContext ).Get( systemEmailId );
-                    if ( systemEmail != null )
-                    {
-                        var mergeFields = new Dictionary<string, object>();
-                        mergeFields.Add( "Group", syncGroup );
-                        mergeFields.Add( "Person", recipient );
-
-                        var emailMessage = new RockEmailMessage( systemEmail );
-                        emailMessage.AddRecipient( new RecipientData( recipient.Email, mergeFields ) );
-                        emailMessage.Send();
-                    }
-                }
             }
         }
     }

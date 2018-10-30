@@ -44,7 +44,7 @@
             </div>
 
             <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
-            
+
             <div class="treeview-scroll scroll-container scroll-container-horizontal">
 
                 <div class="viewport">
@@ -67,9 +67,27 @@
         </div>
 
         <script type="text/javascript">
+            var <%=pnlTreeviewContent.ClientID%>IScroll = null;
 
             var scrollbCategory = $('#<%=pnlTreeviewContent.ClientID%>').closest('.treeview-scroll');
-            scrollbCategory.tinyscrollbar({ axis: 'x', sizethumb: 60, size: 200 });
+            var scrollContainer = scrollbCategory.find('.viewport');
+            var scrollIndicator = scrollbCategory.find('.track');
+                <%=pnlTreeviewContent.ClientID%>IScroll = new IScroll(scrollContainer[0], {
+                    mouseWheel: false,
+                    eventPassthrough: true,
+                    preventDefault: false,
+                    scrollX: true,
+                    scrollY: false,
+                    indicators: {
+                        el: scrollIndicator[0],
+                        interactive: true,
+                        resize: false,
+                        listenX: true,
+                        listenY: false,
+                    },
+                    click: false,
+                    preventDefaultException: { tagName: /.*/ }
+            });
 
             // resize scrollbar when the window resizes
             $(document).ready(function () {
@@ -193,7 +211,9 @@
 
                 $(scrollControl).find('.viewport').height(overviewHeight);
 
-                scrollControl.tinyscrollbar_update('relative');
+                if (<%=pnlTreeviewContent.ClientID%>IScroll) {
+                        <%=pnlTreeviewContent.ClientID%>IScroll.refresh();
+                }
             }
 
 

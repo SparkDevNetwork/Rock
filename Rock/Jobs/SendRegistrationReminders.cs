@@ -18,7 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-
+using System.Text;
+using System.Web;
 using Quartz;
 
 using Rock.Attribute;
@@ -52,9 +53,10 @@ namespace Rock.Jobs
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            var expireDays = dataMap.GetIntFromString( "ExpireDate" );
+            var expireDays = dataMap.GetString( "ExpireDate" ).AsIntegerOrNull() ?? 1;
 
             int remindersSent = 0;
+            var errors = new List<string>();
 
             using ( var rockContext = new RockContext() )
             {
@@ -66,7 +68,7 @@ namespace Rock.Jobs
                     .Where( i =>
                         i.IsActive &&
                         i.RegistrationTemplate.IsActive &&
-                        i.RegistrationTemplate.ReminderEmailTemplate != "" &&
+                        i.RegistrationTemplate.ReminderEmailTemplate != string.Empty &&
                         !i.ReminderSent &&
                         i.SendReminderDateTime.HasValue &&
                         i.SendReminderDateTime <= now &&
@@ -79,7 +81,7 @@ namespace Rock.Jobs
                         .Where( r =>
                             !r.IsTemporary &&
                             r.ConfirmationEmail != null &&
-                            r.ConfirmationEmail != "" ) )
+                            r.ConfirmationEmail != string.Empty ) )
                     {
                         var mergeFields = new Dictionary<string, object>();
                         mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
@@ -92,8 +94,14 @@ namespace Rock.Jobs
                         emailMessage.FromName = template.ReminderFromName;
                         emailMessage.Subject = template.ReminderSubject;
                         emailMessage.Message = template.ReminderEmailTemplate;
-                        emailMessage.Send();
+
+                        var emailErrors = new List<string>();
+                        emailMessage.Send(out emailErrors);
+                        errors.AddRange( emailErrors );
                     }
+
+                    // Even if an error occurs, still mark as completed to prevent _everyone_ being sent the reminder multiple times due to a single failing address
+
 
                     instance.SendReminderDateTime = now;
                     instance.ReminderSent = true;
@@ -113,6 +121,20 @@ namespace Rock.Jobs
                 else
                 {
                     context.Result = string.Format( "{0} reminders were sent", remindersSent );
+                }
+
+                if ( errors.Any() )
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine();
+                    sb.Append( string.Format( "{0} Errors: ", errors.Count() ) );
+                    errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
+                    string errorMessage = sb.ToString();
+                    context.Result += errorMessage;
+                    var exception = new Exception( errorMessage );
+                    HttpContext context2 = HttpContext.Current;
+                    ExceptionLogService.LogException( exception, context2 );
+                    throw exception;
                 }
             }
         }

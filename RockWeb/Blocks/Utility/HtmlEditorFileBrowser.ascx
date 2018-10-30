@@ -5,20 +5,21 @@
         <asp:Literal ID="lTitle" runat="server"></asp:Literal>
         <span class="js-cancel-file-button cursor-pointer pull-right" style="opacity: .5">&times;</span>
     </h3>
-    
+
 </asp:Panel>
 
 <div class="picker-wrapper clearfix">
     <div class="picker-folders">
-        <%-- Folders - Separate UpdatePanel so that Tree doesn't get rebuilt on postbacks (unless the server explicity wants it to get rebuilt) --%>
+        <%-- Folders - Separate UpdatePanel so that Tree doesn't get rebuilt on postbacks (unless the server explicitly wants it to get rebuilt) --%>
         <asp:UpdatePanel ID="upnlFolders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
             <ContentTemplate>
                 <div class="actions btn-group">
                     <asp:LinkButton ID="lbCreateFolder" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbCreateFolder_Click" CausesValidation="false" ToolTip="New Folder"><i class="fa fa-plus"></i></asp:LinkButton>
-                    <asp:LinkButton ID="lbRenameFolder" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbRenameFolder_Click" CausesValidation="false" ToolTip="Rename Folder"><i class="fa fa-pencil"></i></asp:LinkButton>
-                    <asp:LinkButton ID="lbMoveFolder" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbMoveFolder_Click" CausesValidation="false" ToolTip="Move Folder"><i class="fa fa-external-link"></i></asp:LinkButton>
-                    <asp:LinkButton ID="lbDeleteFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="Rock.dialogs.confirmDelete(event, 'folder and all its contents');" OnClick="lbDeleteFolder_Click" CausesValidation="false" ToolTip="Delete Folder"><i class="fa fa-times"></i></asp:LinkButton>
-                    <asp:LinkButton ID="lbRefresh" runat="server" CssClass="btn btn-sm  btn-default" OnClick="lbRefresh_Click" CausesValidation="false" ToolTip="Refresh"><i class="fa fa-refresh"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbRenameFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbRenameFolder_Click" CausesValidation="false" ToolTip="Rename Folder"><i class="fa fa-pencil"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbMoveFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbMoveFolder_Click" CausesValidation="false" ToolTip="Move Folder"><i class="fa fa-external-link"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbDeleteFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; } Rock.dialogs.confirmDelete(event, 'folder and all its contents');" OnClick="lbDeleteFolder_Click" CausesValidation="false" ToolTip="Delete Folder"><i class="fa fa-times"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbRefresh" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbRefresh_Click" CausesValidation="false" ToolTip="Refresh"><i class="fa fa-refresh"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbArchive" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbArchive_Click" CausesValidation="false" ToolTip="Archive"><i class="fa fa-archive"></i></asp:LinkButton>
                 </div>
 
                 <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" Text="Folder not found" Visible="false" />
@@ -26,21 +27,22 @@
                 <div>
                     <div class="scroll-container scroll-container-vertical scroll-container-picker js-folder-treeview">
                         <div class="scrollbar">
-                            <div class="track">
+                            <asp:Panel ID="pnlTreeTrack" runat="server" CssClass="track">
                                 <div class="thumb">
                                     <div class="end"></div>
                                 </div>
-                            </div>
+                            </asp:Panel>
                         </div>
-                        <div class="viewport">
+                        <asp:Panel ID="pnlTreeViewPort" runat="server" CssClass="viewport">
                             <div class="overview">
                                 <asp:Label ID="lblFolders" CssClass="treeview treeview-items" runat="server" />
                             </div>
-                        </div>
+                        </asp:Panel>
                     </div>
                 </div>
 
                 <script type="text/javascript">
+                    var <%=pnlTreeViewPort.ClientID%>IScroll = null;
                     Sys.Application.add_load(function () {
 
                         var folderTreeData = $('.js-folder-treeview .treeview').data('rockTree');
@@ -54,17 +56,41 @@
                             });
 
                             // init scroll bars for folder divs
-                            $('.js-folder-treeview').tinyscrollbar({ size: $('.js-folder-treeview').innerHeight(), sizethumb: 20 });
+                            <%=pnlTreeViewPort.ClientID%>IScroll = new IScroll('#<%=pnlTreeViewPort.ClientID%>', {
+                                mouseWheel: false,
+                                indicators: {
+                                    el: '#<%=pnlTreeTrack.ClientID%>',
+                                    interactive: true,
+                                    resize: false,
+                                    listenY: true,
+                                    listenX: false,
+                                },
+                                click: false,
+                                preventDefaultException: { tagName: /.*/ }
+                            });
 
                             $('.js-folder-treeview .treeview').on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
                                 // update the folder treeview scroll bar
-                                $('.js-folder-treeview').tinyscrollbar_update('relative');
+                                if (<%=pnlTreeViewPort.ClientID%>IScroll) {
+                                    <%=pnlTreeViewPort.ClientID%>IScroll.refresh();
+                                }
                             });
                         }
 
                         // init the file list RockList on every load
                         $('.js-file-list .js-listview').rockList();
-                        $('.js-file-list').tinyscrollbar({ size: $('.js-file-list').innerHeight(), sizethumb: 20 });
+                        new IScroll('#<%=pnlListViewPort.ClientID%>', {
+                            mouseWheel: false,
+                            indicators: {
+                                el: '#<%=pnlListTrack.ClientID%>',
+                                interactive: true,
+                                resize: false,
+                                listenY: true,
+                                listenX: false,
+                            },
+                            click: false,
+                            preventDefaultException: { tagName: /.*/ }
+                        });
 
                         // js for when a file delete is clicked
                         $('.js-file-list .js-delete-file').off('click');
@@ -74,7 +100,8 @@
                                 if (confirmResult) {
                                     // use setTimeout so that the doPostBack happens later (to avoid javascript exception that occurs due to timing)
                                     setTimeout(function () {
-                                        __doPostBack('<%=upnlFiles.ClientID %>', 'file-delete:' + selectedFileId + '');
+                                        var postbackArg = 'file-delete:' + selectedFileId.replace(/\\/g, "/");
+                                        window.location = "javascript:__doPostBack('<%=upnlFiles.ClientID %>', '" + postbackArg + "')";
                                     });
                                 }
                             });
@@ -86,6 +113,15 @@
                             e.stopPropagation();
                         });
 
+                        // js for when a file download is clicked, allow standard href functionality.
+                        $('.js-file-list .js-edit-file').off('click');
+                        $('.js-file-list .js-edit-file').on('click', function (e, data) {
+                            e.stopPropagation();
+                            if ($(this).data("href") && $(this).data("href") !== '') {
+                                window.top.location.href = $(this).data("href");
+                            }
+                        });
+
                         // js for when a folder is selected
                         $('.js-folder-treeview .treeview').off('rockTree:selected');
                         $('.js-folder-treeview .treeview').on('rockTree:selected', function (e, data) {
@@ -93,7 +129,8 @@
                             $('#<%=hfSelectedFolder.ClientID%>').val(data);
                             // use setTimeout so that the doPostBack happens later (to avoid javascript exception that occurs due to timing)
                             setTimeout(function () {
-                                __doPostBack('<%=upnlFiles.ClientID %>', 'folder-selected:' + relativeFolderPath + '');
+                                var postbackArg = 'folder-selected:' + relativeFolderPath.replace(/\\/g, "/");
+                                window.location = "javascript:__doPostBack('<%=upnlFiles.ClientID %>', '" + postbackArg + "')";
                             });
                         });
 
@@ -111,14 +148,17 @@
                                 context: this
                             }).done(function (returnData) {
                                 $('#<%=hfResultValue.ClientID%>').val(returnData);
-                            });
+                                });
 
                             var selectedFileId = data;
                         });
 
                         // disable/hide actions depending on if a folder is selected
+                        var isRestrictedFolder = $('#<%=hfIsRestrictedFolder.ClientID%>').val();
                         var selectedFolderPath = $('#<%=hfSelectedFolder.ClientID%>').val();
-                        if (selectedFolderPath && selectedFolderPath != '') {
+                        var isUploadRestrictedFolder = $('#<%=hfIsUploadRestrictedFolder.ClientID%>').val();
+
+                        if (selectedFolderPath && selectedFolderPath != '' && isRestrictedFolder === 'False') {
                             $('#<%=lbRenameFolder.ClientID%>').removeAttr('disabled');
                             $('#<%=lbMoveFolder.ClientID%>').removeAttr('disabled');
                             $('#<%=lbDeleteFolder.ClientID%>').removeAttr('disabled');
@@ -127,6 +167,13 @@
                             $('#<%=lbRenameFolder.ClientID%>').attr('disabled', 'disabled');
                             $('#<%=lbMoveFolder.ClientID%>').attr('disabled', 'disabled');
                             $('#<%=lbDeleteFolder.ClientID%>').attr('disabled', 'disabled');
+                        }
+
+                        if (selectedFolderPath && selectedFolderPath != '' && isUploadRestrictedFolder === 'False') {
+                            $('#<%=lbArchive.ClientID%>').removeAttr('disabled');
+                        }
+                        else {
+                            $('#<%=lbArchive.ClientID%>').attr('disabled', 'disabled');
                         }
                     });
 
@@ -143,15 +190,23 @@
 
                 <Rock:ModalDialog runat="server" Title="Rename Folder" ID="mdRenameFolder" OnSaveClick="mdRenameFolder_SaveClick" ValidationGroup="vgRenameFolder" ScrollbarEnabled="false">
                     <Content>
-                        <Rock:RockTextBox runat="server" ID="tbOrigFolderName" Label="Folder Name" ReadOnly="true" />
+                        <div class="row">
+                            <div class="col-md-12 margin-b-sm">
+                                <Rock:TermDescription runat="server"  ID="tbOrigFolderName" Term="Current Location" />
+                            </div>
+                        </div>
                         <Rock:RockTextBox runat="server" ID="tbRenameFolderName" Label="New Folder Name" Required="true" ValidationGroup="vgRenameFolder" />
                     </Content>
                 </Rock:ModalDialog>
 
                 <Rock:ModalDialog runat="server" Title="Move Folder" ID="mdMoveFolder" OnSaveClick="mdMoveFolder_SaveClick" ValidationGroup="vgMoveFolder" ScrollbarEnabled="false">
                     <Content>
-                        <Rock:RockTextBox runat="server" ID="tbMoveOrigFolderName" Label="Folder Name" ReadOnly="true" />
-                        <Rock:RockDropDownList runat="server" ID="ddlMoveFolderTarget" Label="Move To Folder" Required="true" ValidationGroup="vgMoveFolder" />
+                        <div class="row">
+                            <div class="col-md-12 margin-b-sm">
+                                <Rock:TermDescription runat="server"  ID="tbMoveOrigFolderName" Term="Current Location" />
+                            </div>
+                        </div>
+                        <Rock:RockDropDownList runat="server" ID="ddlMoveFolderTarget" Label="Move To Folder" Required="true" ValidationGroup="vgMoveFolder" EnhanceForLongLists="true" />
                     </Content>
                 </Rock:ModalDialog>
 
@@ -162,7 +217,19 @@
                     </Content>
                 </Rock:ModalDialog>
 
+                <Rock:ModalDialog runat="server" Title="Archive Files" ID="mdArchive" OnSaveClick="mdArchive_SaveClick" ValidationGroup="vgArchiveFiles" ScrollbarEnabled="false">
+                    <Content>
+                        <div class="row">
+                            <div class="col-md-4">
+                            <Rock:FileUploader ID="fupZipUpload" runat="server" Label="Select Zip Upload" Required="true" FormGroupCssClass="zip-upload" IsBinaryFile="false" ValidationGroup="vgArchiveFiles" RootFolder="~/App_Data"  />
+                            </div>
+                        </div>
+                    </Content>
+                </Rock:ModalDialog>
+
                 <asp:HiddenField ID="hfSelectedFolder" runat="server" />
+                <asp:HiddenField ID="hfIsRestrictedFolder" runat="server" />
+                <asp:HiddenField ID="hfIsUploadRestrictedFolder" runat="server" />
                 <div style="height: 45px;">
                     <Rock:FileUploader ID="fuprFileUpload" runat="server" IsBinaryFile="false" DisplayMode="Button" />
                 </div>
@@ -170,18 +237,19 @@
                 <div>
                     <div class="scroll-container scroll-container-vertical scroll-container-picker js-file-list">
                         <div class="scrollbar">
-                            <div class="track">
+                            <asp:Panel ID="pnlListTrack" runat="server" CssClass="track">
                                 <div class="thumb">
                                     <div class="end"></div>
                                 </div>
-                            </div>
+                            </asp:Panel>
                         </div>
-                        <div class="viewport">
+                        <asp:Panel ID="pnlListViewPort" runat="server" CssClass="viewport">
                             <div class="overview">
-                                <Rock:NotificationBox ID="nbNoFilesInfo" runat="server" Text="No Files Found" Visible="false" NotificationBoxType="Info" />
+                                <%--<Rock:NotificationBox ID="nbNoFilesInfo" runat="server" Text="No Files Found" Visible="false" NotificationBoxType="Info" />--%>
+                                <asp:Label ID="lbNoFilesFound" runat="server" Visible="false" Text="No files found." CssClass="text-muted" />
                                 <asp:Label ID="lblFiles" CssClass="js-listview" runat="server" />
                             </div>
-                        </div>
+                        </asp:Panel>
                     </div>
                 </div>
 

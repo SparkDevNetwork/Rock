@@ -207,7 +207,8 @@ namespace Rock.Model
         /// <returns></returns>
         public List<object> GetDataSource( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, int? databaseTimeoutSeconds, out List<string> errorMessages )
         {
-            var qry = GetQueryable( entityType, entityFields, attributes, selectComponents, sortProperty, databaseTimeoutSeconds, out errorMessages );
+            System.Data.Entity.DbContext reportDbContext;
+            var qry = GetQueryable( entityType, entityFields, attributes, selectComponents, sortProperty, null, databaseTimeoutSeconds, false, out errorMessages, out reportDbContext );
 
             // enumerate thru the query results and put into a list
             var reportResult = new List<object>();
@@ -219,8 +220,6 @@ namespace Rock.Model
 
             return reportResult;
         }
-
-
 
         /// <summary>
         /// Returns a IQueryable of the report
@@ -236,7 +235,7 @@ namespace Rock.Model
         public IQueryable GetQueryable( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, int? databaseTimeoutSeconds, out List<string> errorMessages )
         {
             System.Data.Entity.DbContext reportDbContext;
-            return GetQueryable( entityType, entityFields, attributes, selectComponents, sortProperty, databaseTimeoutSeconds, false, out errorMessages, out reportDbContext );
+            return GetQueryable( entityType, entityFields, attributes, selectComponents, sortProperty, null, databaseTimeoutSeconds, false, out errorMessages, out reportDbContext );
         }
 
         /// <summary>
@@ -253,7 +252,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable GetQueryable( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, int? databaseTimeoutSeconds, out List<string> errorMessages, out System.Data.Entity.DbContext reportDbContext )
         {
-            return GetQueryable( entityType, entityFields, attributes, selectComponents, sortProperty, databaseTimeoutSeconds, false, out errorMessages, out reportDbContext );
+            return GetQueryable( entityType, entityFields, attributes, selectComponents, sortProperty, null, databaseTimeoutSeconds, false, out errorMessages, out reportDbContext );
         }
 
         /// <summary>
@@ -272,6 +271,26 @@ namespace Rock.Model
         /// <exception cref="Exception"></exception>
         /// <exception cref="System.Exception"></exception>
         public IQueryable GetQueryable( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, int? databaseTimeoutSeconds, bool isCommunication, out List<string> errorMessages, out System.Data.Entity.DbContext reportDbContext )
+        {
+            return GetQueryable( entityType, entityFields, attributes, selectComponents, sortProperty, null, databaseTimeoutSeconds, isCommunication, out errorMessages, out reportDbContext );
+        }
+
+        /// <summary>
+        /// Gets the queryable.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="entityFields">The entity fields.</param>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="selectComponents">The select components.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <param name="dataViewFilterOverrides">The data view filter overrides.</param>
+        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
+        /// <param name="isCommunication">if set to <c>true</c> [is communication].</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <param name="reportDbContext">The report database context.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public IQueryable GetQueryable( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, DataViewFilterOverrides dataViewFilterOverrides, int? databaseTimeoutSeconds, bool isCommunication, out List<string> errorMessages, out System.Data.Entity.DbContext reportDbContext )
         {
             errorMessages = new List<string>();
             reportDbContext = null;
@@ -414,7 +433,7 @@ namespace Rock.Model
                     Expression whereExpression = null;
                     if ( this.DataView != null )
                     {
-                        whereExpression = this.DataView.GetExpression( serviceInstance, paramExpression, out errorMessages );
+                        whereExpression = this.DataView.GetExpression( serviceInstance, paramExpression, dataViewFilterOverrides, out errorMessages );
                     }
 
                     MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
@@ -514,7 +533,7 @@ namespace Rock.Model
 
             Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( AttributeValue ) }, match );
 
-            var attributeCache = AttributeCache.Read( attributeId );
+            var attributeCache = AttributeCache.Get( attributeId );
             var attributeValueFieldName = "Value";
             Type attributeValueFieldType = typeof( string );
             if ( attributeCache != null )

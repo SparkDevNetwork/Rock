@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Connection
                     RockPage.SaveSharedItem( key, _connectionType );
                 }
 
-                if ( _connectionType != null && _connectionType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( _connectionType != null )
                 {
                     _canEdit = UserCanEdit || _connectionType.IsAuthorized( Authorization.EDIT, CurrentPerson );
                     _canView = _canEdit || _connectionType.IsAuthorized( Authorization.VIEW, CurrentPerson );
@@ -113,14 +113,12 @@ namespace RockWeb.Blocks.Connection
                     gConnectionOpportunities.Actions.AddClick += gConnectionOpportunities_AddClick;
                     gConnectionOpportunities.GridRebind += gConnectionOpportunities_GridRebind;
                     gConnectionOpportunities.ExportFilename = _connectionType.Name;
-                    if ( _canEdit )
-                    {
-                        gConnectionOpportunities.Actions.ShowAdd = _canEdit;
-                        gConnectionOpportunities.IsDeleteEnabled = _canEdit;
-                    }
-
+                    gConnectionOpportunities.RowDataBound += GConnectionOpportunities_RowDataBound;
+                    gConnectionOpportunities.Actions.ShowAdd = _canEdit;
+                    gConnectionOpportunities.IsDeleteEnabled = _canEdit;
                 }
             }
+
         }
 
         /// <summary>
@@ -232,7 +230,7 @@ namespace RockWeb.Blocks.Connection
                 ConnectionOpportunity connectionOpportunity = connectionOpportunityService.Get( e.RowKeyId );
                 if ( connectionOpportunity != null )
                 {
-                    if ( _canEdit )
+                    if ( _canEdit || connectionOpportunity.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                     {
                         string errorMessage;
                         if ( !connectionOpportunityService.CanDelete( connectionOpportunity, out errorMessage ) )
@@ -245,7 +243,7 @@ namespace RockWeb.Blocks.Connection
                         connectionOpportunityService.Delete( connectionOpportunity );
                         rockContext.SaveChanges();
 
-                        ConnectionWorkflowService.FlushCachedTriggers();
+                        ConnectionWorkflowService.RemoveCachedTriggers();
 
                     }
                     else
@@ -255,6 +253,24 @@ namespace RockWeb.Blocks.Connection
                 }
             }
             BindConnectionOpportunitiesGrid();
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the GConnectionOpportunities control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        private void GConnectionOpportunities_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var connectionOpportunity = e.Row.DataItem as ConnectionOpportunity;
+                var lStatus = e.Row.FindControl( "lStatus" ) as Literal;
+                if ( connectionOpportunity != null && lStatus != null )
+                {
+                    lStatus.Text = connectionOpportunity.IsActive ? "<span class='label label-success'>Active</span>" : "<span class='label label-default'>Inactive</span>";
+                }
+            }
         }
 
         /// <summary>
@@ -338,7 +354,7 @@ namespace RockWeb.Blocks.Connection
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name ) )
                 {
-                    AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+                    AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
                 }
             }
         }
@@ -350,6 +366,18 @@ namespace RockWeb.Blocks.Connection
         {
             // Clear the filter controls
             phAttributeFilters.Controls.Clear();
+
+            var deleteCol = gConnectionOpportunities.Columns.OfType<DeleteField>().FirstOrDefault();
+            if ( deleteCol != null )
+            {
+                gConnectionOpportunities.Columns.Remove( deleteCol );
+            }
+
+            var securityCol = gConnectionOpportunities.Columns.OfType<SecurityField>().FirstOrDefault();
+            if ( securityCol != null )
+            {
+                gConnectionOpportunities.Columns.Remove( securityCol );
+            }
 
             // Remove attribute columns
             foreach ( var column in gConnectionOpportunities.Columns.OfType<AttributeField>().ToList() )
@@ -401,7 +429,7 @@ namespace RockWeb.Blocks.Connection
                         boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
 
-                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                         if ( attributeCache != null )
                         {
                             boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -411,6 +439,15 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
             }
+
+            securityCol = new SecurityField();
+            securityCol.TitleField = "Name";
+            securityCol.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ConnectionOpportunity ) ).Id;
+            gConnectionOpportunities.Columns.Add( securityCol );
+
+            deleteCol = new DeleteField();
+            gConnectionOpportunities.Columns.Add( deleteCol );
+            deleteCol.Click += DeleteConnectionOpportunity_Click;
         }
 
         /// <summary>
@@ -440,27 +477,10 @@ namespace RockWeb.Blocks.Connection
                 // Filter query by any configured attribute filters
                 if ( AvailableAttributes != null && AvailableAttributes.Any() )
                 {
-                    var attributeValueService = new AttributeValueService( rockContext );
-                    var parameterExpression = attributeValueService.ParameterExpression;
-
                     foreach ( var attribute in AvailableAttributes )
                     {
                         var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                        if ( filterControl != null )
-                        {
-                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                            var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                            if ( expression != null )
-                            {
-                                var attributeValues = attributeValueService
-                                    .Queryable()
-                                    .Where( v => v.Attribute.Id == attribute.Id );
-
-                                attributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                                qry = qry.Where( w => attributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                            }
-                        }
+                        qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, connectionOpportunityService, Rock.Reporting.FilterMode.SimpleFilter );
                     }
                 }
                 SortProperty sortProperty = gConnectionOpportunities.SortProperty;
@@ -474,8 +494,18 @@ namespace RockWeb.Blocks.Connection
                 {
                     connectionOpportunities = qry.ToList().OrderBy( a => a.Name ).ToList();
                 }
+                
+                // Only include opportunities that current person is allowed to view
+                var authorizedOpportunities = new List<ConnectionOpportunity>();
+                foreach( var opportunity in connectionOpportunities )
+                {
+                    if ( opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        authorizedOpportunities.Add( opportunity );
+                    }
+                }
 
-                gConnectionOpportunities.DataSource = connectionOpportunities;
+                gConnectionOpportunities.DataSource = authorizedOpportunities;
                 gConnectionOpportunities.DataBind();
             }
             else

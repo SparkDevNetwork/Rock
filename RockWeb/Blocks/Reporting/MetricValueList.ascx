@@ -22,11 +22,11 @@
                         <Columns>
                             <Rock:DateField DataField="MetricValueDateTime" HeaderText="Date" SortExpression="MetricValueDateTime" />
                             <Rock:EnumField DataField="MetricValueType" HeaderText="Type" SortExpression="MetricValueType" />
-                            <Rock:RockBoundField DataField="YValue" HeaderText="Value" SortExpression="YValue" ItemStyle-HorizontalAlign="Right" />
+                            <Rock:RockBoundField DataField="YValue" HeaderText="Value" SortExpression="YValue" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                             <Rock:RockLiteralField ID="lMetricValuePartitions" HeaderText="Partitions" />
 
                             <%-- Hide X Value for now until we implement XValue (In most cases, the Metric.Xaxis is ignored and MetricValueDateTime is used as the X-Axis --%>
-                            <Rock:RockBoundField DataField="XValue" HeaderText="X Value" SortExpression="XValue" ItemStyle-HorizontalAlign="Right" Visible="false" />
+                            <Rock:RockBoundField DataField="XValue" HeaderText="X Value" SortExpression="XValue" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" Visible="false" />
 
                             <Rock:DeleteField OnClick="gMetricValues_Delete" />
                         </Columns>

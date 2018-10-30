@@ -49,6 +49,8 @@ namespace RockWeb.Blocks.Cms
 
         private List<int> ChildContentChannelsList { get; set; }
 
+        private List<string> ItemInheritedKey { get; set; }
+
         /// <summary>
         /// Gets or sets the state of the item attributes.
         /// </summary>
@@ -71,6 +73,7 @@ namespace RockWeb.Blocks.Cms
 
             ChildContentChannelsList = ViewState["ChildContentChannelList"] as List<int> ?? new List<int>();
 
+            ItemInheritedKey = ViewState["ItemInheritedKey"] as List<string> ?? new List<string>();
             string json = ViewState["ItemAttributesState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
@@ -103,7 +106,7 @@ namespace RockWeb.Blocks.Cms
             gItemAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
             gItemAttributes.GridReorder += gItemAttributes_GridReorder;
 
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannel ) ).Id;
+            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannel ) ).Id;
             
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -170,6 +173,8 @@ namespace RockWeb.Blocks.Cms
         protected override object SaveViewState()
         {
             ViewState["ChildContentChannelList"] = ChildContentChannelsList;
+
+            ViewState["ItemInheritedKey"] = ItemInheritedKey;
 
             var jsonSetting = new JsonSerializerSettings
             {
@@ -260,6 +265,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="channel">The channel.</param>
         private void UpdateControlsForContentChannelType( ContentChannel channel )
         {
+            SetInheritedAttributeKeys( channel.Id );
+
             AddAttributeControls( channel );
 
             int contentChannelTypeId = ddlChannelType.SelectedValueAsInt() ?? 0;
@@ -365,7 +372,7 @@ namespace RockWeb.Blocks.Cms
                     rockContext.SaveChanges();
 
                     // Save the Item Attributes
-                    int entityTypeId = EntityTypeCache.Read( typeof( ContentChannelItem ) ).Id;
+                    int entityTypeId = EntityTypeCache.Get( typeof( ContentChannelItem ) ).Id;
                     SaveAttributes( contentChannel.Id, entityTypeId, ItemAttributesState, rockContext );
 
                 } );
@@ -374,10 +381,6 @@ namespace RockWeb.Blocks.Cms
                 pageReference.Parameters.AddOrReplace( "contentChannelId", contentChannel.Id.ToString() );
                 Response.Redirect( pageReference.BuildUrl(), false );
             }
-
-            // flush cache
-            ContentChannelCache.Flush( contentChannel.Id );
-
         }
 
         /// <summary>
@@ -436,16 +439,16 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Gs the marketing campaign ad attribute type_ show edit.
+        /// gs the item attributes show edit.
         /// </summary>
-        /// <param name="attributeId">The attribute id.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
         protected void gItemAttributes_ShowEdit( Guid attributeGuid )
         {
             Attribute attribute;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtItemAttributes.ActionTitle = ActionTitle.Add( tbName.Text + " Item Attribute" );
 
             }
@@ -455,7 +458,10 @@ namespace RockWeb.Blocks.Cms
                 edtItemAttributes.ActionTitle = ActionTitle.Edit( tbName.Text + " Item Attribute" );
             }
 
-            edtItemAttributes.ReservedKeyNames = ItemAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
+        
+            List<string> reservedKeys = ItemAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
+            reservedKeys.AddRange( ItemInheritedKey );
+            edtItemAttributes.ReservedKeyNames = reservedKeys;
 
             edtItemAttributes.SetAttributeProperties( attribute, typeof( ContentChannelItem ) );
 
@@ -554,7 +560,7 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Binds the marketing campaign ad attribute type grid.
+        /// Binds the item attributes grid.
         /// </summary>
         private void BindItemAttributesGrid()
         {
@@ -590,7 +596,7 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="contentChannelId">The marketing campaign ad type identifier.</param>
+        /// <param name="contentChannelId">The content channel identifier.</param>
         public void ShowDetail( int contentChannelId )
         {
             ContentChannel contentChannel = null;
@@ -685,7 +691,7 @@ namespace RockWeb.Blocks.Cms
                 var descriptionListLeft = new DescriptionList();
                 var descriptionListRight = new DescriptionList();
 
-                descriptionListLeft.Add( "Item's Require Approval", contentChannel.RequiresApproval.ToYesNo() );
+                descriptionListLeft.Add( "Items Require Approval", contentChannel.RequiresApproval.ToYesNo() );
                 descriptionListRight.Add( "Is Indexed", contentChannel.IsIndexEnabled.ToYesNo() );
 
                 if ( contentChannel.EnableRss )
@@ -767,7 +773,7 @@ namespace RockWeb.Blocks.Cms
 
                 string qualifierValue = contentChannel.Id.ToString();
 
-                attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId ).AsQueryable()
+                attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId, true ).AsQueryable()
                     .Where( a =>
                         a.EntityTypeQualifierColumn.Equals( "ContentChannelId", StringComparison.OrdinalIgnoreCase ) &&
                         a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -779,6 +785,28 @@ namespace RockWeb.Blocks.Cms
                 ItemAttributesState.ForEach( a => a.Order = newOrder++ );
 
                 BindItemAttributesGrid();
+            }
+        }
+
+        /// <summary>
+        /// Sets the inherited attribute keys.
+        /// </summary>
+        /// <param name="contentChannelTypeId">The content channel type identifier.</param>
+        private void SetInheritedAttributeKeys( int? contentChannelTypeId )
+        {
+            ItemInheritedKey = new List<string>();
+            if ( contentChannelTypeId.HasValue && contentChannelTypeId.Value > 0 )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    int entityTypeID = new ContentChannelItem().TypeId;
+                    string qualifierValue = contentChannelTypeId.Value.ToString();
+
+                    ItemInheritedKey = new AttributeService( rockContext )
+                        .GetByEntityTypeQualifier( entityTypeID, "ContentChannelTypeId", qualifierValue, true )
+                        .Select( a => a.Key )
+                        .ToList();
+                }
             }
         }
 
@@ -856,13 +884,12 @@ namespace RockWeb.Blocks.Cms
             AttributeService attributeService = new AttributeService( rockContext );
 
             // Get the existing attributes for this entity type and qualifier value
-            var existingAttributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+            var existingAttributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
 
             // Delete any of those attributes that were removed in the UI
             var selectedAttributeGuids = attributes.Select( a => a.Guid );
             foreach ( var attr in existingAttributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
-                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
                 attributeService.Delete( attr );
             }
 
@@ -877,8 +904,6 @@ namespace RockWeb.Blocks.Cms
                 attr.Order = newOrder++;
                 Rock.Attribute.Helper.SaveAttributeEdits( attr, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
-
-            AttributeCache.FlushEntityAttributes();
         }
 
         /// <summary>

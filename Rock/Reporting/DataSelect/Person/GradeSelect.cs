@@ -115,7 +115,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         private string GetGlobalGradeLabel()
         {
-            var value = GlobalAttributesCache.Read().GetValue( "core.GradeLabel" );
+            var value = GlobalAttributesCache.Get().GetValue( "core.GradeLabel" );
             return string.IsNullOrWhiteSpace( value ) ? "Grade" : value;
         }
 

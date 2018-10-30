@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Administration
                 query = query.Sort( gExceptionOccurrences.SortProperty );
             }
 
-            gExceptionOccurrences.EntityTypeId = EntityTypeCache.Read<ExceptionLog>().Id;
+            gExceptionOccurrences.EntityTypeId = EntityTypeCache.Get<ExceptionLog>().Id;
             gExceptionOccurrences.SetLinqDataSource( query );
             gExceptionOccurrences.DataBind();
         }

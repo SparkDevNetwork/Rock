@@ -16,6 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Data;
@@ -50,7 +52,7 @@ namespace Rock.Field.Types
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var eventItem = new EventItemService( rockContext ).Get( eventItemGuid.Value );
+                    var eventItem = new EventItemService( rockContext ).GetNoTracking( eventItemGuid.Value );
                     if ( eventItem != null )
                     {
                         formattedValue = eventItem.Name;
@@ -87,46 +89,47 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is EventItemPicker )
+            var picker = control as EventItemPicker;
+            if ( picker != null )
             {
-                int id = int.MinValue;
-                if ( Int32.TryParse( ( (EventItemPicker)control ).SelectedValue, out id ) )
+                int? itemId = picker.SelectedValue.AsIntegerOrNull();
+                Guid? itemGuid = null;
+                if ( itemId.HasValue )
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        var eventItem = new EventItemService( rockContext ).Get( id );
-                        if ( eventItem != null )
-                        {
-                            return eventItem.Guid.ToString();
-                        }
+                        itemGuid = new EventItemService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
+
+                return itemGuid?.ToString();
             }
+
             return null;
         }
 
         /// <summary>
-        /// Sets the value.
+        /// Sets the value where value is the EventItem.Guid as a string (or null)
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="configurationValues"></param>
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            Guid eventItemGuid = Guid.Empty;
-            if ( Guid.TryParse( value, out eventItemGuid ) )
+            var picker = control as EventItemPicker;
+            if ( picker != null )
             {
-                if ( control != null && control is EventItemPicker )
+                EventItem eventItem = null;
+                Guid? eventItemGuid = value.AsGuidOrNull();
+                if ( eventItemGuid.HasValue )
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        var eventItem = new EventItemService( rockContext ).Get( eventItemGuid );
-                        if ( eventItem != null )
-                        {
-                            ( (EventItemPicker)control ).SetValue( eventItem.Id.ToString() );
-                        }
+                        eventItem = new EventItemService( rockContext ).Get( eventItemGuid.Value );
                     }
                 }
+
+                picker.SetValue( eventItem );
             }
         }
 

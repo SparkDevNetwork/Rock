@@ -27,16 +27,11 @@
                                 <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" RepeatDirection="Horizontal" />
                                 <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gConnectionOpportunities" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gConnectionOpportunities_Edit">
+                            <Rock:Grid ID="gConnectionOpportunities" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gConnectionOpportunities_Edit" >
                                 <Columns>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                                    <Rock:RockBoundField DataField="Summary" HeaderText="Summary" TruncateLength="300"  />
-                                    <Rock:RockTemplateField HeaderText="Status" SortExpression="IsActive">
-                                        <ItemTemplate>
-                                            <%# (bool)Eval("IsActive") ? "<span class='label label-success'>Active</span>" : "<span class='label label-default'>Inactive</span>" %>
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateField>
-                                    <Rock:DeleteField OnClick="DeleteConnectionOpportunity_Click" />
+                                    <Rock:HtmlField DataField="Summary" HeaderText="Summary" TruncateLength="300" DisplayMode="PlainText" />
+                                    <Rock:RockLiteralField ID="lStatus" HeaderText="Status" SortExpression="IsActive" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

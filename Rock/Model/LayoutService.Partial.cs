@@ -92,7 +92,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override Guid? GetGuid( int id )
         {
-            var cacheItem = Rock.Web.Cache.LayoutCache.Read( id );
+            var cacheItem = LayoutCache.Get( id );
             if ( cacheItem != null )
             {
                 return cacheItem.Guid;

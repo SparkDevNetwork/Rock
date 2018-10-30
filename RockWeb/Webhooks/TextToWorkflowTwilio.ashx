@@ -33,7 +33,7 @@ public class TextToWorkflowTwilio : IHttpAsyncHandler
     /// <returns></returns>
     public IAsyncResult BeginProcessRequest( HttpContext context, AsyncCallback cb, Object extraData )
     {
-        TextToWorkflowReponseAsync twilioAsync = new TextToWorkflowReponseAsync( cb, context, extraData );
+        var twilioAsync = new TextToWorkflowReponseAsync( cb, context, extraData );
         twilioAsync.StartAsyncWork();
         return twilioAsync;
     }
@@ -74,13 +74,13 @@ public class TextToWorkflowTwilio : IHttpAsyncHandler
 class TextToWorkflowReponseAsync : IAsyncResult
 {
     private bool _completed;
-    private Object _state;
-    private AsyncCallback _callback;
-    private HttpContext _context;
+    private readonly object _state;
+    private readonly AsyncCallback _callback;
+    private readonly HttpContext _context;
 
     bool IAsyncResult.IsCompleted { get { return _completed; } }
     WaitHandle IAsyncResult.AsyncWaitHandle { get { return null; } }
-    Object IAsyncResult.AsyncState { get { return _state; } }
+    object IAsyncResult.AsyncState { get { return _state; } }
     bool IAsyncResult.CompletedSynchronously { get { return false; } }
 
     /// <summary>
@@ -90,7 +90,7 @@ class TextToWorkflowReponseAsync : IAsyncResult
     /// <param name="context"></param>
     /// <param name="state"></param>
     /// <returns>true if the asynchronous operation completed synchronously; otherwise, false.</returns>
-    public TextToWorkflowReponseAsync( AsyncCallback callback, HttpContext context, Object state )
+    public TextToWorkflowReponseAsync( AsyncCallback callback, HttpContext context, object state )
     {
         _callback = callback;
         _context = context;
@@ -103,14 +103,27 @@ class TextToWorkflowReponseAsync : IAsyncResult
     /// </summary>
     public void StartAsyncWork()
     {
-        ThreadPool.QueueUserWorkItem( new WaitCallback( StartAsyncTask ), null );
+        ThreadPool.QueueUserWorkItem( ( workItemState ) =>
+        {
+            try
+            {
+                StartAsyncTask( workItemState );
+            }
+            catch ( Exception ex )
+            {
+                Rock.Model.ExceptionLogService.LogException( ex );
+                _context.Response.StatusCode = 500;
+                _completed = true;
+                _callback( this );
+            }
+        }, null );
     }
 
     /// <summary>
     /// Starts the asynchronous task.
     /// </summary>
     /// <param name="workItemState">State of the work item.</param>
-    private void StartAsyncTask( Object workItemState )
+    private void StartAsyncTask( object workItemState )
     {
         var request = _context.Request;
         var response = _context.Response;
@@ -129,9 +142,9 @@ class TextToWorkflowReponseAsync : IAsyncResult
                 {
                     case "received":
 
-                        string fromPhone = string.Empty;
-                        string toPhone = string.Empty;
-                        string message = string.Empty;
+                        var fromPhone = string.Empty;
+                        var toPhone = string.Empty;
+                        var message = string.Empty;
 
                         if ( !string.IsNullOrEmpty( request.Form["To"] ) )
                         {
@@ -148,8 +161,7 @@ class TextToWorkflowReponseAsync : IAsyncResult
                             message = request.Form["Body"];
                         }
 
-                        string processResponse = string.Empty;
-
+                        var processResponse = string.Empty;
                         Rock.Utility.TextToWorkflow.MessageRecieved( toPhone, fromPhone, message, out processResponse );
 
                         if ( processResponse != string.Empty )

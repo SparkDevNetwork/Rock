@@ -51,7 +51,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if (guid.HasValue)
             {
-                var definedType = DefinedTypeCache.Read( guid.Value );
+                var definedType = DefinedTypeCache.Get( guid.Value );
                 if (definedType != null)
                 { 
                     formattedValue = definedType.Name;
@@ -75,7 +75,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var definedType = DefinedTypeCache.Read( guid.Value );
+                var definedType = DefinedTypeCache.Get( guid.Value );
 
                 // sort by Order then Name (using a padded string)
                 var sortValue = definedType.Order.ToString().PadLeft( 10 ) + "," + definedType.Name;
@@ -143,10 +143,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            var picker = control as DropDownList;
-            if ( picker != null )
+            var editControl = control as ListControl;
+            if ( editControl != null )
             {
-                picker.SelectedValue = value.ToUpper();
+                editControl.SetValue( value );
             }
         }
 
@@ -163,7 +163,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = DefinedTypeCache.Read( guid );
+            var item = DefinedTypeCache.Get( guid );
             return item != null ? item.Id : (int?)null;
         }
 
@@ -178,7 +178,7 @@ namespace Rock.Field.Types
             DefinedTypeCache item = null;
             if ( id.HasValue )
             {
-                item = DefinedTypeCache.Read( id.Value );
+                item = DefinedTypeCache.Get( id.Value );
             }
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );

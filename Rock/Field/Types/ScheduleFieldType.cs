@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
@@ -47,10 +48,13 @@ namespace Rock.Field.Types
 
             if ( scheduleGuid.HasValue )
             {
-                var schedule = new ScheduleService( new RockContext() ).Get( scheduleGuid.Value );
-                if ( schedule != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    return schedule.Name;
+                    var schedule = new ScheduleService( rockContext ).GetNoTracking( scheduleGuid.Value );
+                    if ( schedule != null )
+                    {
+                        return schedule.Name;
+                    }
                 }
             }
 
@@ -83,22 +87,22 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as SchedulePicker;
-            string result = null;
-
             if ( picker != null )
             {
-                var id = picker.SelectedValue.AsIntegerOrNull();
-                if ( id.HasValue )
+                int? itemId = picker.SelectedValue.AsIntegerOrNull();
+                Guid? itemGuid = null;
+                if ( itemId.HasValue && itemId > 0 )
                 {
-                    var schedule = new ScheduleService( new RockContext() ).Get( id.Value );
-                    if (schedule != null)
+                    using ( var rockContext = new RockContext() )
                     {
-                        return schedule.Guid.ToString();
+                        itemGuid = new ScheduleService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
+
+                return itemGuid?.ToString() ?? string.Empty;
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>
@@ -109,19 +113,22 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as SchedulePicker;
+            if ( picker != null )
             {
-                var picker = control as SchedulePicker;
-
-                if ( picker != null )
+                Schedule item = null;
+                Guid? itemGuid = value.AsGuidOrNull();
+                if ( itemGuid.HasValue )
                 {
-                    var guid = value.AsGuidOrNull();
-
-                    if ( guid.HasValue )
+                    using ( var rockContext = new RockContext() )
                     {
-                        var schedule = new ScheduleService( new RockContext() ).Get( guid.Value );
-                        picker.SetValue( schedule );
-                    }                    
+                        item = new ScheduleService( rockContext ).Get( itemGuid.Value );
+                        picker.SetValue( item );
+                    }
+                }
+                else
+                {
+                    picker.SetValue( null );
                 }
             }
         }

@@ -183,7 +183,7 @@ namespace Rock.Model
 
             if ( this.EntitySetPurposeValueId != null )
             {
-                var purpose = DefinedValueCache.Read( this.EntitySetPurposeValueId.Value );
+                var purpose = DefinedValueCache.Get( this.EntitySetPurposeValueId.Value );
                 if ( purpose != null )
                 {
                     return purpose.Value;
@@ -192,7 +192,7 @@ namespace Rock.Model
 
             if ( this.EntityTypeId.HasValue )
             {
-                var entityType = EntityTypeCache.Read( this.EntityTypeId.Value );
+                var entityType = EntityTypeCache.Get( this.EntityTypeId.Value );
                 if ( entityType != null )
                 {
                     return string.Format( "{0} Entity Set", entityType.Name );

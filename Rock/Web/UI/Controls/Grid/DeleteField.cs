@@ -207,10 +207,22 @@ namespace Rock.Web.UI.Controls
                     lbDelete.CssClass = deleteField.ButtonCssClass;
                     lbDelete.PreRender += ( s, e ) =>
                     {
-                        if ( lbDelete.Enabled && ( !ParentGrid.Enabled || !ParentGrid.IsDeleteEnabled ) )
+                        if ( lbDelete.Enabled )
                         {
-                            lbDelete.AddCssClass( "disabled" );
-                            lbDelete.Enabled = false;
+                            if ( !ParentGrid.Enabled || !ParentGrid.IsDeleteEnabled )
+                            {
+                                lbDelete.AddCssClass( "disabled" );
+                                lbDelete.Enabled = false;
+                            }
+
+                            if ( lbDelete.Enabled )
+                            {
+                                // if the lbDelete button is Enabled, make sure delete button is registered for async postback (needed just in case the grid was created at runtime)
+                                var sm = ScriptManager.GetCurrent( this.ParentGrid.Page );
+
+                                // note: this get's slower and slower when the Grid has lots of rows (for example on an Export), so it would be nice to figure out if this is needed
+                                sm.RegisterAsyncPostBackControl( lbDelete );
+                            }
                         }
                     };
 
@@ -222,12 +234,6 @@ namespace Rock.Web.UI.Controls
 
                     lbDelete.Click += lbDelete_Click;
                     lbDelete.DataBinding += lbDelete_DataBinding;
-
-                    // make sure delete button is registered for async postback (needed just in case the grid was created at runtime)
-                    var sm = ScriptManager.GetCurrent( this.ParentGrid.Page );
-
-                    // note: this get's slower and slower when the Grid has lots of rows (for example on an Export), so it would be nice to figure out if this is needed
-                    sm.RegisterAsyncPostBackControl( lbDelete );
 
                     cell.Controls.Add( lbDelete );
                 }

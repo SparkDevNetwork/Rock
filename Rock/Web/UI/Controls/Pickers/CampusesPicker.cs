@@ -25,7 +25,6 @@ namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// Select multiple campuses
-    /// NOTE: Campuses must be set first (it doesn't automatically load campuses). Hint: Use CampusCache.All()
     /// </summary>
     public class CampusesPicker : RockCheckBoxList
     {
@@ -36,7 +35,7 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             Label = "Campuses";
-            CampusIds = CampusCache.All().Select( c => c.Id ).ToList();
+            this.RepeatDirection = RepeatDirection.Horizontal;
         }
 
         /// <summary>
@@ -60,8 +59,15 @@ namespace Rock.Web.UI.Controls
         /// </value>
         private List<int> CampusIds
         {
-            get { return ViewState["CampusIds"] as List<int> ?? new List<int>(); }
-            set { ViewState["CampusIds"] = value; }
+            get
+            {
+                return ViewState["CampusIds"] as List<int>;
+            }
+
+            set
+            {
+                ViewState["CampusIds"] = value;
+            }
         }
 
         /// <summary>
@@ -72,7 +78,11 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool IncludeInactive
         {
-            get { return ViewState["IncludeInactive"] as bool? ?? true; }
+            get
+            {
+                return ViewState["IncludeInactive"] as bool? ?? true;
+            }
+
             set
             {
                 ViewState["IncludeInactive"] = value;
@@ -90,7 +100,7 @@ namespace Rock.Web.UI.Controls
         {
             set
             {
-                CampusIds = value != null ? value.Select( c => c.Id ).ToList() : new List<int>();
+                CampusIds = value?.Select( c => c.Id ).ToList();
                 LoadItems( null );
             }
         }
@@ -146,7 +156,7 @@ namespace Rock.Web.UI.Controls
                 foreach ( int value in values )
                 {
                     if ( this.Items.FindByValue( value.ToString() ) == null &&
-                    CampusCache.Read( value ) != null )
+                    CampusCache.Get( value ) != null )
                     {
                         LoadItems( values );
                         return;
@@ -155,6 +165,10 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Loads the items.
+        /// </summary>
+        /// <param name="selectedValues">The selected values.</param>
         private void LoadItems( List<int> selectedValues )
         {
             var selectedItems = Items.Cast<ListItem>()
@@ -163,9 +177,13 @@ namespace Rock.Web.UI.Controls
 
             Items.Clear();
 
-            var campuses = CampusCache.All()
+            var allCampuses = CampusCache.All();
+
+            var campusIds = this.CampusIds ?? allCampuses.Select( a => a.Id ).ToList();
+
+            var campuses = allCampuses
                 .Where( c =>
-                    ( CampusIds.Contains( c.Id ) && ( !c.IsActive.HasValue || c.IsActive.Value || IncludeInactive ) ) ||
+                    ( campusIds.Contains( c.Id ) && ( !c.IsActive.HasValue || c.IsActive.Value || IncludeInactive ) ) ||
                     ( selectedValues != null && selectedValues.Contains( c.Id ) ) )
                 .OrderBy( c => c.Name )
                 .ToList();

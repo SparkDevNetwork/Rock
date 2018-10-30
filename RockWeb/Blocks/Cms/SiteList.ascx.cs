@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Cms
             var securityField = gSites.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Site ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Site ) ).Id;
             }
         }
 
@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Cms
                 gSites.DataSource = qry.OrderBy( s => s.Name ).ToList();
             }
 
-            gSites.EntityTypeId = EntityTypeCache.Read<Site>().Id;
+            gSites.EntityTypeId = EntityTypeCache.Get<Site>().Id;
             gSites.DataBind();
         }
 

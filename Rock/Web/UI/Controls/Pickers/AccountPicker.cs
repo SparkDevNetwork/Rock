@@ -62,7 +62,27 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["DisplayActiveOnly"] = value;
-                this.ItemRestUrlExtraParams = "/" + value.ToString();
+                SetExtraRestParams();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [display public name].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display public name]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayPublicName
+        {
+            get
+            {
+                return ViewState["DisplayPublicName"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["DisplayPublicName"] = value;
+                SetExtraRestParams();
             }
         }
 
@@ -102,7 +122,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            this.ItemRestUrlExtraParams = "/" + DisplayActiveOnly.ToString();
+            SetExtraRestParams();
             this.IconCssClass = "fa fa-building-o";
             this.CssClass = "picker-lg";
         }
@@ -132,7 +152,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 InitialItemParentIds = parentAccountIds.AsDelimited( "," );
-                ItemName = account.PublicName;
+                ItemName = this.DisplayPublicName ? account.PublicName : account.Name;
             }
             else
             {
@@ -193,7 +213,7 @@ namespace Rock.Web.UI.Controls
                     if ( account != null )
                     {
                         ids.Add( account.Id.ToString() );
-                        names.Add( account.Name );
+                        names.Add( this.DisplayPublicName ? account.PublicName : account.Name );
                         var parentAccount = account.ParentAccount;
                         var accountParentIds = GetFinancialAccountAncestorsIdList( parentAccount );
                         foreach ( var accountParentId in accountParentIds )
@@ -247,6 +267,16 @@ namespace Rock.Web.UI.Controls
         public override string ItemRestUrl
         {
             get { return "~/api/financialaccounts/getchildren/"; }
+        }
+
+        /// <summary>
+        /// Sets the extra rest parameters.
+        /// </summary>
+        private void SetExtraRestParams()
+        {
+            var extraParams = new System.Text.StringBuilder();
+            extraParams.Append( $"/{this.DisplayActiveOnly.ToString()}/{this.DisplayPublicName.ToString()}" );
+            ItemRestUrlExtraParams = extraParams.ToString();
         }
     }
 }

@@ -37,7 +37,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// The Group role key
         /// </summary>
-        /// 
+        ///
         private PhoneNumberBox _pnbHomePhone;
         private PhoneNumberBox _pnbCellPhone;
         private RockCheckBox _cbIsMessagingEnabled;
@@ -103,15 +103,15 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string HomePhoneCountryCode
         {
-            get 
+            get
             {
                 EnsureChildControls();
-                return _pnbHomePhone.CountryCode; 
+                return _pnbHomePhone.CountryCode;
             }
-            set 
+            set
             {
                 EnsureChildControls();
-                _pnbHomePhone.CountryCode = value; 
+                _pnbHomePhone.CountryCode = value;
             }
         }
 
@@ -123,15 +123,15 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string HomePhoneNumber
         {
-            get 
+            get
             {
                 EnsureChildControls();
-                return _pnbHomePhone.Number; 
+                return _pnbHomePhone.Number;
             }
-            set 
+            set
             {
                 EnsureChildControls();
-                _pnbHomePhone.Number = value; 
+                _pnbHomePhone.Number = value;
             }
         }
 
@@ -143,13 +143,13 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string CellPhoneCountryCode
         {
-            get 
+            get
             {
                 EnsureChildControls();
-                return _pnbCellPhone.CountryCode; 
+                return _pnbCellPhone.CountryCode;
             }
-            set 
-            { 
+            set
+            {
                 _pnbCellPhone.CountryCode = value;
                 EnsureChildControls();
             }
@@ -163,15 +163,15 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string CellPhoneNumber
         {
-            get 
+            get
             {
                 EnsureChildControls();
-                return _pnbCellPhone.Number; 
+                return _pnbCellPhone.Number;
             }
-            set 
+            set
             {
                 EnsureChildControls();
-                _pnbCellPhone.Number = value; 
+                _pnbCellPhone.Number = value;
             }
         }
 
@@ -183,15 +183,15 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string Email
         {
-            get 
+            get
             {
                 EnsureChildControls();
-                return _ebEmail.Text; 
+                return _ebEmail.Text;
             }
-            set 
+            set
             {
                 EnsureChildControls();
-                _ebEmail.Text = value; 
+                _ebEmail.Text = value;
             }
         }
 
@@ -299,19 +299,19 @@ namespace Rock.Web.UI.Controls
             _pnbCellPhone.ID = "_pnbCellPhone";
             _cbIsMessagingEnabled.ID = "_cbIsMessagingEnabled";
             _ebEmail.ID = "_ebEmail";
-            
+
 
             Controls.Add( _pnbHomePhone );
             Controls.Add( _pnbCellPhone );
             Controls.Add(_cbIsMessagingEnabled);
             Controls.Add(_ebEmail);
 
-            var homePhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+            var homePhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
             _pnbHomePhone.Placeholder = homePhone != null ? homePhone.Value.EndsWith("Phone") ? homePhone.Value : homePhone.Value + " Phone" : "Home Phone";
             _pnbHomePhone.Required = false;
             _pnbHomePhone.Attributes.Add( "autocomplete", "off" );
 
-            var cellPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+            var cellPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
             _pnbCellPhone.Placeholder = cellPhone != null ? cellPhone.Value.EndsWith( "Phone" ) ? cellPhone.Value : cellPhone.Value + " Phone" : "Cell Phone";
             _pnbCellPhone.Required = false;
             _pnbCellPhone.Attributes.Add( "autocomplete", "off" );
@@ -331,7 +331,9 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "rowid", ID );
                 writer.RenderBeginTag( HtmlTextWriterTag.Tr );
 
+                writer.AddAttribute( "class", "person-name" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
+
                 writer.Write( PersonName );
                 writer.RenderEndTag();
 
@@ -346,6 +348,7 @@ namespace Rock.Web.UI.Controls
                     RenderCellPhone( writer );
                 }
 
+                writer.AddAttribute( "class", "person-email" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 writer.AddAttribute( "class", "form-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -359,6 +362,7 @@ namespace Rock.Web.UI.Controls
 
         private void RenderHomePhone( HtmlTextWriter writer )
         {
+            writer.AddAttribute( "class", "person-home-phone" );
             writer.RenderBeginTag( HtmlTextWriterTag.Td );
             writer.AddAttribute( "class", "form-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -369,6 +373,7 @@ namespace Rock.Web.UI.Controls
 
         private void RenderCellPhone( HtmlTextWriter writer )
         {
+            writer.AddAttribute( "class", "person-cell-phone" );
             writer.RenderBeginTag( HtmlTextWriterTag.Td );
             writer.AddAttribute( "class", "form-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -378,6 +383,7 @@ namespace Rock.Web.UI.Controls
 
             if ( IsMessagingVisible )
             {
+                writer.AddAttribute( "class", "person-sms" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 writer.AddAttribute( "class", "text-center" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );

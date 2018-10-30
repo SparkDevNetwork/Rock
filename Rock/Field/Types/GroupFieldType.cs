@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
@@ -48,10 +49,13 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var group = new GroupService( new RockContext() ).Get( guid.Value );
-                if (group != null)
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = group.Name;
+                    var groupName = new GroupService( rockContext ).GetSelect( guid.Value, a => a.Name );
+                    if ( groupName != null )
+                    {
+                        formattedValue = groupName;
+                    }
                 }
             }
 
@@ -84,17 +88,17 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            GroupPicker picker = control as GroupPicker;
+            var picker = control as GroupPicker;
             if ( picker != null )
             {
-                int? id = picker.ItemId.AsIntegerOrNull();
-                if ( id.HasValue )
+                int? itemId = picker.SelectedValue.AsIntegerOrNull();
+                Guid? itemGuid = null;
+                if ( itemId.HasValue && itemId > 0 )
                 {
-                    var group = new GroupService( new RockContext() ).Get( id.Value );
-
-                    if ( group != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        return group.Guid.ToString();
+                        itemGuid = new GroupService( rockContext ).GetNoTracking( itemId.Value ).Guid;
+                        return itemGuid?.ToString() ?? string.Empty;
                     }
                 }
 
@@ -113,14 +117,21 @@ namespace Rock.Field.Types
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             var picker = control as GroupPicker;
-
             if ( picker != null )
             {
-                Guid guid = value.AsGuid();
-
-                // get the item (or null) and set it
-                var group = new GroupService( new RockContext() ).Get( guid );
-                picker.SetValue( group );
+                Guid? itemGuid = value.AsGuidOrNull();
+                if ( itemGuid.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var group = new GroupService( rockContext ).Get( itemGuid.Value );
+                        picker.SetValue( group );
+                    }
+                }
+                else
+                {
+                    picker.SetValue( null );
+                }
             }
         }
 

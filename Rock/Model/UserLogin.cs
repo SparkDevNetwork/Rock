@@ -229,7 +229,7 @@ namespace Rock.Model
         {
             get
             {
-                System.Web.Security.FormsIdentity identity = HttpContext.Current.User.Identity as System.Web.Security.FormsIdentity;
+                System.Web.Security.FormsIdentity identity = HttpContext.Current.User?.Identity as System.Web.Security.FormsIdentity;
                 if ( identity == null )
                     return false;
 

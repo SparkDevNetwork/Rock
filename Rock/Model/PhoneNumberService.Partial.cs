@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -40,7 +41,7 @@ namespace Rock.Model
         /// Returns a list of phone numbers that match the given search term.
         /// </summary>
         /// <param name="searchterm">A partial phone number search string (everything but digits will be removed before attempting the search).</param>
-        /// <returns>A querable list of <see cref="System.String"/> phone numbers (as strings)</returns>
+        /// <returns>A queryable list of <see cref="System.String"/> phone numbers (as strings)</returns>
         public IQueryable<string> GetNumbersBySearchterm( string searchterm )
         {
             return GetBySearchterm( searchterm ).OrderBy( n => n.Number ).
@@ -51,17 +52,17 @@ namespace Rock.Model
         /// Returns a list of PersonIds <see cref="System.Int32"/> of people who have a phone number that match the given search term.
         /// </summary>
         /// <param name="searchterm">A partial phone number search string (everything but digits will be removed before attempting the search).</param>
-        /// <returns>A querable list of <see cref="System.Int32"/> PersonIds</returns>
+        /// <returns>A queryable list of <see cref="System.Int32"/> PersonIds</returns>
         public IQueryable<int> GetPersonIdsByNumber( string searchterm )
         {
             return GetBySearchterm( searchterm ).Select( n => n.PersonId ).Distinct();
         }
 
         /// <summary>
-        /// Returns a querable set of <see cref="Rock.Model.PhoneNumber">Phone Numbers</see> that match the given search term.
+        /// Returns a queryable set of <see cref="Rock.Model.PhoneNumber">Phone Numbers</see> that match the given search term.
         /// </summary>
         /// <param name="searchterm">A partial phone number search string (everything but digits will be removed before attempting the search).</param>
-        /// <returns>A querable list of <see cref="Rock.Model.PhoneNumber">PhoneNumbers</see></returns>
+        /// <returns>A queryable list of <see cref="Rock.Model.PhoneNumber">PhoneNumbers</see></returns>
         public IQueryable<PhoneNumber> GetBySearchterm( string searchterm )
         {
             // remove everything but numbers
@@ -78,6 +79,18 @@ namespace Rock.Model
             {
                 return Queryable().Where( n => n.Id == -1);
             }
+        }
+
+        /// <summary>
+        /// Gets a PhoneNumber object for the supplied person ID and DefinedValue GUID
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="definedValueGuid">The type value unique identifier.</param>
+        /// <returns></returns>
+        public PhoneNumber GetNumberByPersonIdAndType( int personId, string definedValueGuid)
+        {
+            int mobilePhoneTypeId = DefinedValueCache.Get( definedValueGuid ).Id;
+            return Queryable().Where( p => p.PersonId == personId && p.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault();
         }
     }
 }

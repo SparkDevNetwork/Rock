@@ -213,10 +213,10 @@ namespace Rock.Model
         public string CalendarMonthName { get; set; }
 
         /// <summary>
-        /// Gets or sets the calendar in month name abbrevated. Format: "MMM"
+        /// Gets or sets the calendar in month name abbreviated. Format: "MMM"
         /// </summary>
         /// <value>
-        /// The calendar in month name abbrevated.
+        /// The calendar in month name abbreviated.
         /// </value>
         [DataMember]
         [MaxLength( 450 )]
@@ -300,10 +300,10 @@ namespace Rock.Model
         public string FiscalMonth { get; set; }
 
         /// <summary>
-        /// Gets or sets the fiscal month abbrevated.
+        /// Gets or sets the fiscal month abbreviated.
         /// </summary>
         /// <value>
-        /// The fiscal month abbrevated.
+        /// The fiscal month abbreviated.
         /// </value>
         [DataMember]
         [MaxLength( 450 )]
@@ -420,6 +420,20 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool ChristmasWeekIndicator { get; set; }
+
+        #endregion
+
+        #region Entity Properties specific to Analytics
+
+        /// <summary>
+        /// Gets or sets the count.
+        /// NOTE: this always has a hardcoded value of 1. It is stored in the table because it is supposed to help do certain types of things in analytics
+        /// </summary>
+        /// <value>
+        /// The count.
+        /// </value>
+        [DataMember]
+        public int Count { get; set; } = 1;
 
         #endregion
 
@@ -612,6 +626,8 @@ namespace Rock.Model
                     analyticsSourceDate.ChristmasWeekIndicator
                     || analyticsSourceDate.EasterWeekIndicator
                     || holidayDatesForYear.Any( a => a.HolidayWeekNumberOfYear == analyticsSourceDate.CalendarWeek );
+
+                analyticsSourceDate.Count = 1;
 
                 generatedDates.Add( analyticsSourceDate );
 

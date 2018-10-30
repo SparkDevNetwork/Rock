@@ -16,10 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
 using System.ServiceModel.Web;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.SessionState;
 
@@ -40,8 +42,7 @@ namespace RockWeb
         /// Gets a value indicating whether another request can use the <see cref="T:System.Web.IHttpHandler" /> instance.
         /// </summary>
         /// <returns>true if the <see cref="T:System.Web.IHttpHandler" /> instance is reusable; otherwise, false.</returns>
-        public bool IsReusable
-        {
+        public bool IsReusable {
             get { return false; }
         }
 
@@ -103,7 +104,14 @@ namespace RockWeb
                     }
                     else
                     {
-                        ProcessContentFile( context, uploadedFile );
+                        if ( context.Request.Form["IsAssetStorageProviderAsset"].AsBoolean() )
+                        {
+                            ProcessAssetStorageProviderAsset( context, uploadedFile );
+                        }
+                        else
+                        {
+                            ProcessContentFile( context, uploadedFile );
+                        }
                     }
                 }
             }
@@ -111,14 +119,44 @@ namespace RockWeb
             {
                 ExceptionLogService.LogException( fex, context );
                 context.Response.TrySkipIisCustomErrors = true;
-                context.Response.StatusCode = (int)fex.StatusCode;
+                context.Response.StatusCode = ( int ) fex.StatusCode;
                 context.Response.Write( fex.Detail );
             }
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, context );
-                context.Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                context.Response.StatusCode = ( int ) System.Net.HttpStatusCode.InternalServerError;
                 context.Response.Write( "error: " + ex.Message );
+            }
+        }
+
+        private void ProcessAssetStorageProviderAsset( HttpContext context, HttpPostedFile uploadedFile )
+        {
+            int? assetStorageId = context.Request.Form["StorageId"].AsIntegerOrNull();
+            string assetKey = context.Request.Form["Key"] + uploadedFile.FileName;
+
+            if ( assetStorageId == null || assetKey.IsNullOrWhiteSpace() )
+            {
+                throw new Rock.Web.FileUploadException( "Insufficient info to upload a file of this type.", System.Net.HttpStatusCode.Forbidden );
+            }
+
+            var assetStorageService = new AssetStorageProviderService( new RockContext() );
+            AssetStorageProvider assetStorageProvider = assetStorageService.Get( (int)assetStorageId );
+            assetStorageProvider.LoadAttributes();
+            var component = assetStorageProvider.GetAssetStorageComponent();
+
+            var asset = new Rock.Storage.AssetStorage.Asset();
+            asset.Key = assetKey;
+            asset.Type = Rock.Storage.AssetStorage.AssetType.File;
+            asset.AssetStream = uploadedFile.InputStream;
+
+            if ( component.UploadObject( assetStorageProvider, asset ) )
+            {
+                context.Response.Write( new { Id = string.Empty, FileName = assetKey }.ToJson() );
+            }
+            else
+            {
+                throw new Rock.Web.FileUploadException( "Unable to upload file", System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -132,9 +170,15 @@ namespace RockWeb
             // validate file type (child FileUploader classes, like ImageUploader, can do additional validation);
             this.ValidateFileType( context, uploadedFile );
 
+            //
+            // Get filename and scrub invalid characters.
+            //
+            var filename = Path.GetFileName( uploadedFile.FileName );
+            filename = Regex.Replace( filename, @"[<>*%&:\\]", string.Empty, RegexOptions.CultureInvariant );
+
             // get folderPath and construct filePath
             string relativeFolderPath = context.Request.Form["folderPath"] ?? string.Empty;
-            string relativeFilePath = Path.Combine( relativeFolderPath, Path.GetFileName( uploadedFile.FileName ) );
+            string relativeFilePath = Path.Combine( relativeFolderPath, filename );
             string rootFolderParam = context.Request.QueryString["rootFolder"];
 
             string rootFolder = string.Empty;
@@ -153,7 +197,14 @@ namespace RockWeb
 
             string physicalRootFolder = context.Request.MapPath( rootFolder );
             string physicalContentFolderName = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( new char[] { '/', '\\' } ) );
-            string physicalFilePath = Path.Combine( physicalContentFolderName, uploadedFile.FileName );
+
+            // Make sure the physicalContentFolderName doesn't have any special directory navigation indicators
+            if ( physicalContentFolderName != System.IO.Path.GetFullPath( physicalContentFolderName ) )
+            {
+                throw new Rock.Web.FileUploadException( "Unable to upload file", System.Net.HttpStatusCode.BadRequest );
+            }
+
+            string physicalFilePath = Path.Combine( physicalContentFolderName, filename );
             var fileContent = GetFileContentStream( context, uploadedFile );
 
             // store the content file in the specified physical content folder
@@ -225,7 +276,7 @@ namespace RockWeb
 
             if ( uploadedFile.FileName.IndexOfAny( illegalCharacters ) >= 0 )
             {
-                throw new Rock.Web.FileUploadException( "Invalid Filename.  Please remove any special characters (" + string.Join(" ", illegalCharacters) + ").", System.Net.HttpStatusCode.UnsupportedMediaType );
+                throw new Rock.Web.FileUploadException( "Invalid Filename.  Please remove any special characters (" + string.Join( " ", illegalCharacters ) + ").", System.Net.HttpStatusCode.UnsupportedMediaType );
             }
 
             // always create a new BinaryFile record of IsTemporary when a file is uploaded
@@ -278,7 +329,7 @@ namespace RockWeb
         public virtual void ValidateFileType( HttpContext context, HttpPostedFile uploadedFile )
         {
             // validate file type (applies to all uploaded files)
-            var globalAttributesCache = GlobalAttributesCache.Read();
+            var globalAttributesCache = GlobalAttributesCache.Get();
             IEnumerable<string> contentFileTypeBlackList = ( globalAttributesCache.GetValue( "ContentFiletypeBlacklist" ) ?? string.Empty ).Split( new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries );
 
             // clean up list

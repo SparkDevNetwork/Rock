@@ -35,6 +35,9 @@ namespace Rock.Apps.StatementGenerator
             InitializeComponent();
         }
 
+        /// <summary>
+        /// The statement count
+        /// </summary>
         private int _statementCount;
 
         /// <summary>
@@ -72,18 +75,15 @@ namespace Rock.Apps.StatementGenerator
                 lblReportProgress.Content = "Error: " + e.Error.Message;
                 throw e.Error;
             }
-
-            if ( e.Result == null )
+            
+            if ( _statementCount == 0 )
             {
-                if ( _statementCount == 0 )
-                {
-                    lblReportProgress.Content = @"Warning: No records matched your criteria. No statements have been created.";
-                }
-                else
-                {
-                    lblReportProgress.Style = this.FindResource( "labelStyleAlertSuccess" ) as Style;
-                    lblReportProgress.Content = string.Format( @"Success:{1}Your statements have been created.{1}( {0} statements created )", _statementCount, Environment.NewLine );
-                }
+                lblReportProgress.Content = @"Warning: No records matched your criteria. No statements have been created.";
+            }
+            else
+            {
+                lblReportProgress.Style = this.FindResource( "labelStyleAlertSuccess" ) as Style;
+                lblReportProgress.Content = string.Format( @"Success:{1}Your statements have been created.{1}( {0} statements created )", _statementCount, Environment.NewLine );
             }
         }
 
@@ -96,20 +96,23 @@ namespace Rock.Apps.StatementGenerator
         protected void bw_DoWork( object sender, DoWorkEventArgs e )
         {
             ContributionReport contributionReport = new ContributionReport( ReportOptions.Current );
-            contributionReport.OnProgress += contributionReport_OnProgress;
+            contributionReport.OnProgress += ContributionReport_OnProgress;
 
             _statementCount = contributionReport.RunReport();
+
+            e.Result = _statementCount > 0;
         }
 
         /// <summary>
-        /// Handles the OnProgress event of the contributionReport control.
+        /// Handles the OnProgress event of the ContributionReport control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ContributionReport.ProgressEventArgs"/> instance containing the event data.</param>
-        protected void contributionReport_OnProgress( object sender, ContributionReport.ProgressEventArgs e )
+        /// <param name="e">The <see cref="ProgressEventArgs"/> instance containing the event data.</param>
+        private void ContributionReport_OnProgress( object sender, ProgressEventArgs e )
         {
             ShowProgress( e.Position, e.Max, e.ProgressMessage );
         }
+
 
         /// <summary>
         /// The _start progress date time
@@ -133,9 +136,20 @@ namespace Rock.Apps.StatementGenerator
 
                 if ( max > 0 )
                 {
-                    lblReportProgress.Content = progressMessage;
-                    pgReportProgress.Maximum = max;
-                    pgReportProgress.Value = position;
+                    if ( (string)lblReportProgress.Content != progressMessage )
+                    {
+                        lblReportProgress.Content = progressMessage;
+                    }
+                    if ( pgReportProgress.Maximum != max )
+                    {
+                        pgReportProgress.Maximum = max;
+                    }
+
+                    if ( pgReportProgress.Value != position )
+                    {
+                        pgReportProgress.Value = position;
+                    }
+
                     if ( pgReportProgress.Visibility != Visibility.Visible )
                     {
                         pgReportProgress.Visibility = Visibility.Visible;
@@ -143,10 +157,14 @@ namespace Rock.Apps.StatementGenerator
                     
                     // put the current statements/second in the tooltip
                     var duration = DateTime.Now - _startProgressDateTime;
-                    if ( duration.TotalSeconds > 10 )
+                    if ( duration.TotalSeconds > 1 )
                     {
                         double rate = position / duration.TotalSeconds;
-                        lblReportProgress.ToolTip = string.Format( "{1}/{2} @ {0:F2} per second", rate, position, max );
+                        string toolTip = string.Format( "{1}/{2} @ {0:F2} per second", rate, position, max );
+                        if ( (string)lblReportProgress.ToolTip != toolTip )
+                        {
+                            lblReportProgress.ToolTip = toolTip;
+                        }
                     }
                 }
                 else
@@ -165,6 +183,26 @@ namespace Rock.Apps.StatementGenerator
         private void btnPrev_Click( object sender, RoutedEventArgs e )
         {
             this.NavigationService.GoBack();
+        }
+
+        /// <summary>
+        /// Handles the MouseDoubleClick event of the lblReportProgress control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Windows.Input.MouseButtonEventArgs"/> instance containing the event data.</param>
+        private void lblReportProgress_MouseDoubleClick( object sender, System.Windows.Input.MouseButtonEventArgs e )
+        {
+            if ( ReportOptions.Current.StatementsPerChapter > 1 )
+            {
+                // open the folder that the pdfs are in
+                System.Diagnostics.Process.Start( ReportOptions.Current.SaveDirectory );
+            }
+            else
+            {
+                // open the pdf
+                string filePath = string.Format( @"{0}\{1}.pdf", ReportOptions.Current.SaveDirectory, ReportOptions.Current.BaseFileName );
+                System.Diagnostics.Process.Start( filePath );
+            }
         }
     }
 }

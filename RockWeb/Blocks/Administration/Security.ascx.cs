@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.Administration
             // Get Entity Type
             if ( entityTypeId.HasValue )
             {
-                var entityType = EntityTypeCache.Read( entityTypeId.Value );
+                var entityType = EntityTypeCache.Get( entityTypeId.Value );
                 if ( entityType != null )
                 {
                     entityTypeName = entityType.FriendlyName;
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Administration
                 {
                     // If the entity is a block, get any actions that were updated or added by the block type using
                     // one or more SecurityActionAttributes.
-                    var blockCache = BlockCache.Read( block.Id );
+                    var blockCache = BlockCache.Get( block.Id );
                     if ( blockCache != null && blockCache.BlockType != null )
                     {
                         // just in case the block hasn't had its security actions set (they get loaded on page load), set them
@@ -251,7 +251,7 @@ namespace RockWeb.Blocks.Administration
             authService.Reorder( rules, e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
 
-            Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
+            Authorization.RefreshAction( iSecured.TypeId, iSecured.Id, CurrentAction );
 
             BindGrid();
         }
@@ -286,7 +286,7 @@ namespace RockWeb.Blocks.Administration
                 authService.Delete( auth );
                 rockContext.SaveChanges();
 
-                Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
+                Authorization.RefreshAction( iSecured.TypeId, iSecured.Id, CurrentAction );
             }
 
             BindGrid();
@@ -346,7 +346,7 @@ namespace RockWeb.Blocks.Administration
                     auth.AllowOrDeny = rblAllowDeny.SelectedValue;
                     rockContext.SaveChanges();
 
-                    Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
+                    Authorization.RefreshAction( iSecured.TypeId, iSecured.Id, CurrentAction );
                 }
             }
 
@@ -450,7 +450,7 @@ namespace RockWeb.Blocks.Administration
 
                             rockContext.SaveChanges();
 
-                            Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, li.Text );
+                            Authorization.RefreshAction( iSecured.TypeId, iSecured.Id, li.Text );
                         }
                     }
                 }
@@ -496,7 +496,7 @@ namespace RockWeb.Blocks.Administration
 
                             rockContext.SaveChanges();
 
-                            Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
+                            Authorization.RefreshAction( iSecured.TypeId, iSecured.Id, CurrentAction );
                         }
                     }
                 }
@@ -551,7 +551,7 @@ namespace RockWeb.Blocks.Administration
         {
             if ( parent != null )
             {
-                var entityType = Rock.Web.Cache.EntityTypeCache.Read( parent.TypeId );
+                var entityType = EntityTypeCache.Get( parent.TypeId );
                 foreach ( var auth in authService.GetAuths( parent.TypeId, parent.Id, action ) )
                 {
                     var rule = new AuthRule( auth );
@@ -589,9 +589,9 @@ namespace RockWeb.Blocks.Administration
             ddlRoles.Items.Add( new ListItem( "[All Authenticated Users]", "-2" ) );
             ddlRoles.Items.Add( new ListItem( "[All Un-Authenticated Users]", "-3" ) );
 
-            var securityRoleType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+            var securityRoleType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
             
-            foreach ( var role in Role.AllRoles() )
+            foreach ( var role in RoleCache.AllRoles() )
             {
                 string name = role.IsSecurityTypeGroup ? role.Name : "GROUP - " + role.Name;
                 ddlRoles.Items.Add( new ListItem( name, role.Id.ToString() ) );

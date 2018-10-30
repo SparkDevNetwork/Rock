@@ -229,7 +229,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="cblRole">The CBL role.</param>
         private void PopulateGroupRolesCheckList( int groupTypeId, RockCheckBoxList cblRole )
         {
-            var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeId );
+            var groupType = GroupTypeCache.Get( groupTypeId );
             if ( groupType != null )
             {
                 cblRole.Items.Clear();
@@ -270,7 +270,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             int groupTypeId = groupTypePicker.SelectedValueAsId() ?? 0;
             Guid? groupTypeGuid = null;
-            var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeId );
+            var groupType = GroupTypeCache.Get( groupTypeId );
             if ( groupType != null )
             {
                 groupTypeGuid = groupType.Guid;

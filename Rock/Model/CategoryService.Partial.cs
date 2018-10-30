@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -30,14 +31,14 @@ namespace Rock.Model
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Model.Category">Categories</see> by parent <see cref="Rock.Model.Category"/> and <see cref="Rock.Model.EntityType"/>.
         /// </summary>
-        /// <param name="ParentId">A <see cref="System.Int32"/> representing the CategoryID of the parent <see cref="Rock.Model.Category"/> to search by. To find <see cref="Rock.Model.Category">Categories</see>
+        /// <param name="parentId">A <see cref="System.Int32"/> representing the CategoryID of the parent <see cref="Rock.Model.Category"/> to search by. To find <see cref="Rock.Model.Category">Categories</see>
         /// that do not inherit from a parent category, this value will be null.</param>
         /// <param name="entityTypeId">A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> to search by.</param>
         /// <returns>A queryable collection of <see cref="Rock.Model.Category">Categories</see> that meet the specified criteria. </returns>
-        public IQueryable<Category> Get( int? ParentId, int? entityTypeId )
+        public IQueryable<Category> Get( int? parentId, int? entityTypeId )
         {
             var query = Queryable()
-                .Where( c => ( c.ParentCategoryId ?? 0 ) == ( ParentId ?? 0 ) );
+                .Where( c => ( c.ParentCategoryId ?? 0 ) == ( parentId ?? 0 ) );
 
             if ( entityTypeId.HasValue )
             {
@@ -115,6 +116,43 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets all ancestors for the provided Category ID.
+        /// If the ID is available use it over the GUID and the GUID overload finds the ID
+        /// and then executes this method.
+        /// </summary>
+        /// <param name="childCategoryId">The child category identifier.</param>
+        /// <returns></returns>
+        public IEnumerable<Category> GetAllAncestors( int childCategoryId )
+        {
+            return ExecuteQuery( $@"
+                WITH CTE AS (
+	                SELECT *
+	                FROM [Category]
+	                WHERE [Id] = {childCategoryId}
+	                UNION ALL
+	                SELECT c.*
+	                FROM [Category] c
+	                JOIN CTE on c.[Id] = CTE.ParentCategoryId
+                )
+
+                SELECT * FROM CTE
+                ORDER BY [ParentCategoryId]" );
+        }
+
+        /// <summary>
+        /// Gets all ancestors for the provided Category GUID.
+        /// If the ID is available then use the ID overload instead. This method
+        /// looks up the ID and then executes the ID overload.
+        /// </summary>
+        /// <param name="childCategoryGuid">The child category unique identifier.</param>
+        /// <returns></returns>
+        public IEnumerable<Category> GetAllAncestors( Guid childCategoryGuid )
+        {
+            var childCategory = this.Get( childCategoryGuid );
+            return GetAllAncestors( childCategory != null ? childCategory.Id : 0 );
+        }
+
+        /// <summary>
         /// Gets all of the categories that were selected and optionally all the child categories of the selected categories
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
@@ -188,7 +226,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override Guid? GetGuid( int id )
         {
-            var cacheItem = Rock.Web.Cache.CategoryCache.Read( id );
+            var cacheItem = CategoryCache.Get( id );
             if ( cacheItem != null )
             {
                 return cacheItem.Guid;

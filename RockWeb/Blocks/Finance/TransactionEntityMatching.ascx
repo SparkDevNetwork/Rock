@@ -14,21 +14,15 @@
                 <Rock:NotificationBox ID="nbBlockConfigurationWarning" runat="server" NotificationBoxType="Warning" Text="Please set the Entity Type in block settings" Visible="false" />
                 <div class="row">
                     <div class="col-md-4">
-                        <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Dataview" AutoPostBack="true" OnSelectedIndexChanged="FilterChanged" EnhanceForLongLists="true"/>
-                        <Rock:RockDropDownList ID="ddlBatch" runat="server" Label="Open Batches" AutoPostBack="true" OnSelectedIndexChanged="FilterChanged" EnhanceForLongLists="true"/>
+                        <Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Dataview" OnSelectItem="FilterChanged" />
+                        <Rock:RockDropDownList ID="ddlBatch" runat="server" Label="Open Batches" AutoPostBack="true" OnSelectedIndexChanged="FilterChanged" EnhanceForLongLists="true" />
                     </div>
                 </div>
-                <div class="grid grid-panel">
-                    <asp:Panel ID="pnlTransactions" runat="server" ViewStateMode="Disabled">
+                <div class="grid grid-panel margin-t-md">
+                    <asp:Panel ID="pnlTransactions" runat="server">
                         <table class="grid-table table table-striped">
                             <thead>
-                                <th>Person</th>
-                                <th>Amount</th>
-                                <th>Account</th>
-                                <th>Transaction Type</th>
-                                <asp:Literal ID="thTransactionDateTime" runat="server"><th>Date/Time</th></asp:Literal>
-                                <th>
-                                    <asp:Literal ID="lEntityHeaderText" runat="server" /></th>
+                                <asp:Literal ID="lHeaderHtml" runat="server" />
                             </thead>
                             <tbody>
                                 <asp:PlaceHolder ID="phTableRows" runat="server" />
@@ -61,8 +55,9 @@
                                     <Rock:EntityTypePicker ID="etpEntityType" runat="server" AutoPostBack="true" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged" />
                                     <Rock:RockTextBox ID="tbEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
                                     <Rock:RockTextBox ID="tbEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
-                                    <Rock:RockDropDownList ID="ddlDefinedTypePicker" runat="server" Visible="false" Label="Defined Type" EnhanceForLongLists="true"/>
+                                    <Rock:RockDropDownList ID="ddlDefinedTypePicker" runat="server" Visible="false" Label="Defined Type" EnhanceForLongLists="true" />
                                     <Rock:GroupTypePicker ID="gtpGroupType" runat="server" Visible="false" Label="Group Type" EnhanceForLongLists="true" />
+                                    <Rock:RockCheckBox ID="cbLimitToActiveGroups" runat="server" Visible="false" Text="Limit to Active Groups" Checked="true" />
                                 </div>
                                 <div class="col-md-6">
                                 </div>

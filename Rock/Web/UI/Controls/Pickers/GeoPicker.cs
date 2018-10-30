@@ -626,7 +626,7 @@ namespace Rock.Web.UI.Controls
                     <h4>Geography Picker <a class='pull-right btn btn-link btn-minimal' title='Toggle Fullscreen' id='btnExpandToggle_{0}'><i class='fa fa-expand'></i></a></h4>
                     <!-- Our custom delete button that we add to the map for deleting polygons. -->
                     <div style='display:none; z-index: 10; position: absolute; left: 200px; margin-top: 5px; line-height:0;' id='gmnoprint-delete-button_{0}'>
-                        <div onmouseover=""this.style.background='WhiteSmoke';"" onmouseout=""this.style.background='white';""style='direction: ltr; overflow: hidden; text-align: left; position: relative; color: rgb(140, 75, 75); font-family: Arial, sans-serif; font-size: 13px; background-color: rgb(255, 255, 255); padding: 4px; border-radius: 2px; -webkit-background-clip: padding-box; background-clip: padding-box; -webkit-box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; font-weight: 500; background-position: initial initial; background-repeat: initial initial;' title='Delete selected shape'>
+                        <div onmouseover=""this.style.background='WhiteSmoke';"" onmouseout=""this.style.background='white';"" style='direction: ltr; overflow: hidden; text-align: left; position: relative; color: rgb(140, 75, 75); font-family: Arial, sans-serif; font-size: 13px; background-color: rgb(255, 255, 255); padding: 4px; border-radius: 2px; -webkit-background-clip: padding-box; background-clip: padding-box; -webkit-box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; font-weight: 500; background-position: initial initial; background-repeat: initial initial;' title='Delete selected shape'>
                             <span style='display: inline-block;'><div style='width: 16px; height: 16px; overflow: hidden; position: relative;'><i class='fa fa-times' style='font-size: 16px; padding-left: 2px; color: #aaa;'></i></div></span>
                         </div>
                     </div>
@@ -693,7 +693,7 @@ namespace Rock.Web.UI.Controls
 
             try
             {
-                DefinedValueCache dvcMapStyle = DefinedValueCache.Read( this.MapStyleValueGuid );
+                DefinedValueCache dvcMapStyle = DefinedValueCache.Get( this.MapStyleValueGuid );
                 if ( dvcMapStyle != null )
                 {
                     mapStyle = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
@@ -716,12 +716,12 @@ namespace Rock.Web.UI.Controls
             else
             {
                 // If no centerpoint was defined, try to get it from organization address
-                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                var globalAttributes = GlobalAttributesCache.Get();
                 Guid guid = globalAttributes.GetValue( "OrganizationAddress" ).AsGuid();
                 if ( !guid.Equals( Guid.Empty ) )
                 {
                     var location = new Rock.Model.LocationService( new Rock.Data.RockContext() ).Get( guid );
-                    if (location != null && location.GeoPoint != null && location.GeoPoint.Latitude != null && location.GeoPoint.Latitude != null )
+                    if (location != null && location.GeoPoint != null && location.GeoPoint.Latitude != null && location.GeoPoint.Longitude != null )
                     {
                         CenterPoint = location.GeoPoint;
                         options += string.Format( ", centerLatitude: '{0}', centerLongitude: '{1}'", location.GeoPoint.Latitude, location.GeoPoint.Longitude );

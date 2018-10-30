@@ -1,4 +1,4 @@
-{% if AllowedActions.View == true or AllowedActions.Edit == true or AllowedActions.Administrate == true %}
+{% if AllowedActions.View == true or AllowedActions.Edit == true or AllowedActions.ManageMembers == true or AllowedActions.Administrate == true %}
 
 	{% assign countActive = -1 %}
 	{% assign countInactive = -1 %}
@@ -138,7 +138,7 @@
 							<a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
 						</div>
 
-						{% if AllowedActions.Edit == true %}
+						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
 							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
 							<i class="fa fa-times"></i>
@@ -149,7 +149,7 @@
 						</div>
 						{% endif %}
 
-						{% if LinkedPages.PersonDetailPage  %}
+						{% if LinkedPages.PersonDetailPage %}
 							</a>
 						{% endif %}
 					</div>
@@ -205,7 +205,7 @@
 							<a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
 						</div>
 
-						{% if AllowedActions.Edit == true %}
+						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
 							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
 							<i class="fa fa-times"></i>
@@ -272,7 +272,7 @@
 							<a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
 						</div>
 
-						{% if AllowedActions.Edit == true %}
+						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
 							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
 							<i class="fa fa-times"></i>
@@ -306,11 +306,20 @@
 					<i class="fa fa-plus"></i> Add Member
 				</a>
 			{% endif %}
-			{% if LinkedPages.CommunicationPage != '' and AllowedActions.Edit == true %}
-				<a href="#" onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
-					<i class="fa fa-envelope-o"></i> Email Roster
-				</a>
+			{% if LinkedPages.CommunicationPage != '' %}
+				{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
+					<a href="#" onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
+						<i class="fa fa-envelope-o"></i> Email Roster
+					</a>
+				{% endif %}
 			{% endif %}
+            {% if LinkedPages.AlternateCommunicationPage %}
+                {% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
+                <a href="#" onclick="{{ '' | Postback:'SendAlternateCommunication' }}" class="btn btn-default btn-xs">
+                    <i class="fa fa-mobile-phone"></i> Text Roster
+                </a>
+                {% endif %}
+            {% endif %}
 		</div>
 		</p>
 	{% endif %}

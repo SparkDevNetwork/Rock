@@ -14,19 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Net;
+using System.Linq;
 
 using Quartz;
-using Rock.Data;
-using Rock.Store;
-using System.Linq;
-using RestSharp;
-using Newtonsoft.Json;
+
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -59,47 +53,7 @@ namespace Rock.Jobs
 
             if ( group != null )
             {
-                var installedPackages = InstalledPackageService.GetInstalledPackages();
-
-                var sparkLinkRequest = new SparkLinkRequest();
-                sparkLinkRequest.RockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
-                sparkLinkRequest.OrganizationName = GlobalAttributesCache.Value( "OrganizationName" );
-                sparkLinkRequest.VersionIds = installedPackages.Select( i => i.VersionId ).ToList();
-                sparkLinkRequest.RockVersion = VersionInfo.VersionInfo.GetRockSemanticVersionNumber();
-
-                var notifications = new List<Notification>();
-
-                var sparkLinkRequestJson = JsonConvert.SerializeObject( sparkLinkRequest );
-
-                var client = new RestClient( "https://www.rockrms.com/api/SparkLink/update" );
-                //var client = new RestClient( "http://localhost:57822/api/SparkLink/update" );
-                var request = new RestRequest( Method.POST );
-                request.AddParameter( "application/json", sparkLinkRequestJson, ParameterType.RequestBody );
-                IRestResponse response = client.Execute( request );
-                if ( response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Accepted )
-                {
-                    foreach ( var notification in JsonConvert.DeserializeObject<List<Notification>>( response.Content ) )
-                    {
-                        notifications.Add( notification );
-                    }
-                }
-
-                if ( sparkLinkRequest.VersionIds.Any() )
-                {
-                    client = new RestClient( "https://www.rockrms.com/api/Packages/VersionNotifications" );
-                    //client = new RestClient( "http://localhost:57822/api/Packages/VersionNotifications" );
-                    request = new RestRequest( Method.GET );
-                    request.AddParameter( "VersionIds", sparkLinkRequest.VersionIds.AsDelimited( "," ) );
-                    response = client.Execute( request );
-                    if ( response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Accepted )
-                    {
-                        foreach ( var notification in JsonConvert.DeserializeObject<List<Notification>>( response.Content ) )
-                        {
-                            notifications.Add( notification );
-                        }
-                    }
-                }
-
+                var notifications = Utility.SparkLinkHelper.SendToSpark( rockContext );
                 if ( notifications.Count == 0 )
                 {
                     return;
@@ -126,7 +80,7 @@ namespace Rock.Jobs
                     {
                         if ( member.Person.PrimaryAliasId.HasValue )
                         {
-                            var recipientNotification = new Rock.Model.NotificationRecipient();
+                            var recipientNotification = new NotificationRecipient();
                             recipientNotification.NotificationId = notification.Id;
                             recipientNotification.PersonAliasId = member.Person.PrimaryAliasId.Value;
                             notificationRecipientService.Add( recipientNotification );
@@ -137,48 +91,6 @@ namespace Rock.Jobs
                 
             }
         }
-
-        #region Helper Class
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public class SparkLinkRequest
-        {
-            /// <summary>
-            /// Gets or sets the rock instance identifier.
-            /// </summary>
-            /// <value>
-            /// The rock instance identifier.
-            /// </value>
-            public Guid RockInstanceId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the name of the organization.
-            /// </summary>
-            /// <value>
-            /// The name of the organization.
-            /// </value>
-            public string OrganizationName { get;  set;}
-
-            /// <summary>
-            /// Gets or sets the rock version.
-            /// </summary>
-            /// <value>
-            /// The rock version.
-            /// </value>
-            public string RockVersion { get; set; }
-
-            /// <summary>
-            /// Gets or sets the version ids.
-            /// </summary>
-            /// <value>
-            /// The version ids.
-            /// </value>
-            public List<int> VersionIds { get; set; }
-        }
-
-        #endregion
 
     }
 }

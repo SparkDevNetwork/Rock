@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Reporting
     [Description( "This block displays a selected report from Power BI." )]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS, "Power BI Account", "The Power BI account to use to retrieve the report.", true, false, "", "CustomSetting", 0, "PowerBiAccount" )]
-    [TextField( "GroupId", "The PowerBI GroupId that the report belongs to", true, "", "CustomSetting", 1, "GroupId" )]
+    [TextField( "Workspace", "The PowerBI workspace that the report belongs to", true, "", "CustomSetting", 1, key: "GroupId" )]
     [TextField( "Report URL", "The URL of the report to display.", true, "", "CustomSetting", 2, "ReportUrl" )]
     public partial class PowerBiReportViewer : Rock.Web.UI.RockBlockCustomSettings
     {
@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.Reporting
         {
             pnlEditModal.Visible = true;
 
-            var biAccounts = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() );
+            var biAccounts = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() );
 
             ddlSettingPowerBiAccount.Items.Clear();
             ddlSettingPowerBiAccount.Items.Add( new ListItem() );
@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Reporting
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PowerBiAccount" ) ) )
             {
                 // ensure that the account still exists as a defined value
-                var accountValue = DefinedValueCache.Read( GetAttributeValue( "PowerBiAccount" ) );
+                var accountValue = DefinedValueCache.Get( GetAttributeValue( "PowerBiAccount" ) );
 
                 if ( accountValue != null )
                 {

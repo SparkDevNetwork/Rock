@@ -16,137 +16,108 @@
 //
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Web.UI.WebControls.Adapters;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Web.UI.Adapters
 {
     /// <summary>
-    /// Control adapter for radio button list
+    /// Control adapter for checkbox list
     /// </summary>
-    public class RadioButtonListAdapter : WebControlAdapter
+    public class RadioButtonListAdapter : ListControlAdaptor
     {
         /// <summary>
-        /// Creates the beginning tag for the Web control in the markup that is transmitted to the target browser.
+        /// Gets the type of the input tag.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> containing methods to render the target-specific output.</param>
-        protected override void RenderBeginTag( System.Web.UI.HtmlTextWriter writer )
+        /// <param name="listControl">The list control.</param>
+        /// <returns></returns>
+        public override string GetInputTagType( ListControl listControl )
         {
-            // Preserve any classes that a developer put on the control (such as a "well") by wrapping it in a <div>.
-            CheckBoxList cbl = Control as CheckBoxList;
-            if ( cbl != null && !string.IsNullOrEmpty( cbl.CssClass ) )
-            {
-                writer.AddAttribute( "class", cbl.CssClass );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            }
+            return "radio";
         }
 
         /// <summary>
-        /// Creates the ending tag for the Web control in the markup that is transmitted to the target browser.
+        /// Gets the repeat columns.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> containing methods to render the target-specific output.</param>
-        protected override void RenderEndTag( System.Web.UI.HtmlTextWriter writer )
+        /// <param name="listControl">The list control.</param>
+        /// <returns></returns>
+        public override int GetRepeatColumns( ListControl listControl )
         {
-            // Close the <div> tag we may have started in the BeginTag above.
-            CheckBoxList cbl = Control as CheckBoxList;
-            if ( cbl != null && !string.IsNullOrEmpty( cbl.CssClass ) )
+            return ( listControl as RadioButtonList )?.RepeatColumns ?? 0;
+        }
+
+        /// <summary>
+        /// Gets the repeat direction.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <returns></returns>
+        protected override RepeatDirection GetRepeatDirection( ListControl listControl )
+        {
+            return ( listControl as RadioButtonList )?.RepeatDirection ?? RepeatDirection.Vertical;
+        }
+
+        /// <summary>
+        /// Gets the name of the input.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="itemIndex">Index of the item.</param>
+        /// <returns></returns>
+        public override string GetInputName( ListControl listControl, int itemIndex )
+        {
+            // only one input can be selected at a time, so don't append itemIndex
+            return $"{listControl.UniqueID}";
+        }
+
+        /// <summary>
+        /// Gets the label class.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="listItem">The list item.</param>
+        /// <returns></returns>
+        public override string GetLabelClass( ListControl listControl, ListItem listItem )
+        {
+            var buttonGroup = ( listControl as ButtonGroup );
+            if ( buttonGroup != null )
             {
-                writer.RenderEndTag();
+                string labelClass = string.Empty;
+                if ( listItem.Selected )
+                {
+                    labelClass += buttonGroup.SelectedItemClass + " " + buttonGroup.ItemHookClass;
+                }
+                else
+                {
+                    labelClass += buttonGroup.UnselectedItemClass + " " + buttonGroup.ItemHookClass;
+                }
+
+                if ( !listControl.Enabled )
+                {
+                    labelClass += " aspNetDisabled";
+                }
+
+                return labelClass;
             }
+            else
+            {
+                return base.GetLabelClass( listControl, listItem );
+            }
+
         }
 
         /// <summary>
         /// Generates the target-specific inner markup for the Web control to which the control adapter is attached.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> containing methods to render the target-specific output.</param>
-        protected override void RenderContents( System.Web.UI.HtmlTextWriter writer )
+        protected override void RenderContents( HtmlTextWriter writer )
         {
-            RadioButtonList rbl = Control as RadioButtonList;
-            if ( rbl != null )
-            {
-                PostBackOptions postBackOption = null;
+            // make sure any special base attributes from the RadioButton get written
+            WebControl control = new WebControl( HtmlTextWriterTag.Span );
+            control.ID = this.Control.ClientID;
+            control.CopyBaseAttributes( this.Control );
+            control.RenderBeginTag( writer );
 
-                if ( rbl.AutoPostBack )
-                {
-                    postBackOption = new PostBackOptions( rbl, string.Empty );
-                    if ( rbl.CausesValidation && this.Page.GetValidators( rbl.ValidationGroup ).Count > 0 )
-                    {
-                        postBackOption.PerformValidation = true;
-                        postBackOption.ValidationGroup = rbl.ValidationGroup;
-                    }
-                    if ( this.Page.Form != null )
-                    {
-                        postBackOption.AutoPostBack = true;
-                    }
-                }
+            // call ListControlAdaptor RenderContents
+            base.RenderContents( writer );
 
-                WebControl control = new WebControl(HtmlTextWriterTag.Span);
-                control.ID = rbl.ClientID;
-                control.CopyBaseAttributes(rbl);
-                control.RenderBeginTag(writer);
-
-                int i = 0;
-                foreach ( ListItem li in rbl.Items )
-                {
-                    writer.WriteLine();
-
-                    if ( rbl.RepeatDirection == RepeatDirection.Vertical )
-                    {
-                        writer.AddAttribute( "class", "radio" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    }
-                    else
-                    {
-                        writer.AddAttribute( "class", "radio-inline" );
-                    }
-
-                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
-
-                    string itemId = string.Format( "{0}_{1}", rbl.ClientID, i++ );
-                    writer.AddAttribute( "id", itemId );
-                    writer.AddAttribute( "type", "radio" );
-                    writer.AddAttribute( "name", rbl.UniqueID );
-                    writer.AddAttribute( "value", li.Value );
-                    if ( li.Selected )
-                    {
-                        writer.AddAttribute( "checked", "checked" );
-                    }
-
-                    foreach ( var attributeKey in li.Attributes.Keys )
-                    {
-                        var key = attributeKey as string;
-                        writer.AddAttribute( key, li.Attributes[key] );
-                    }
-
-                    if ( postBackOption != null )
-                    {
-                        writer.AddAttribute( HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference( postBackOption, true ) );
-                    }
-
-                    writer.RenderBeginTag( HtmlTextWriterTag.Input );
-                    writer.RenderEndTag();
-
-                    writer.Write( li.Text );
-
-                    writer.RenderEndTag();      // Label
-
-                    if ( rbl.RepeatDirection == RepeatDirection.Vertical )
-                    {
-                        writer.RenderEndTag();  // Div
-                    }
-
-                    if ( rbl.Page != null )
-                    {
-                        rbl.Page.ClientScript.RegisterForEventValidation( rbl.UniqueID, li.Value );
-                    }
-                }
-
-                control.RenderEndTag( writer );
-
-                if ( rbl.Page != null )
-                {
-                    rbl.Page.ClientScript.RegisterForEventValidation( rbl.UniqueID );
-                }
-            }
+            control.RenderEndTag( writer );
         }
     }
 }

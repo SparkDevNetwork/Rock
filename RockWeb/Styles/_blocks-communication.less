@@ -1,4 +1,4 @@
-﻿/*
+/*
     Used to manage styles for specific blocks.
 
     1. Communication Blocks - styles for the communication blocks
@@ -42,25 +42,25 @@ iframe.email-body {
 // 2. Communication Entry
 // -------------------------
 .emaileditor-wrapper {
-    position: relative;
-    margin: -15px;
-    height: 900px;
+  position: relative;
+  height: 900px;
+  margin: -15px;
 }
 
 #emaileditor {
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	right: 0;
-    top: 0;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
 }
 
 #section-email {
-	width: 60%;
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	left: 0;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60%;
 }
 
 #email-editor {
@@ -74,32 +74,32 @@ iframe.email-body {
 }
 
 #emaileditor-designer {
-    width: 60%;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60%;
 }
 
 .emaileditor-iframe {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
-    border-right: 1px solid @panel-border;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-right: 1px solid @panel-border;
 }
 
 #emaileditor-properties {
-	width: 40%;
-	background-color: @panel-heading-bg;
-	padding: 12px;
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	right: 0;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 40%;
+  padding: 12px;
+  background-color: @panel-heading-bg;
 }
 
 
@@ -107,22 +107,22 @@ iframe.email-body {
 // -------------------------
 
 .communication-template {
-  border: 1px solid @panel-border;
-  color: @text-color;
-  display: block;
-  padding: 15px;
   position: relative;
-  margin-bottom: 24px;
+  display: block;
   height: 192px;
+  padding: 15px;
+  margin-bottom: 24px;
   overflow: hidden;
+  color: @text-color;
+  border: 1px solid @panel-border;
 
   &:focus {
     color: @text-color;
   }
 
   &:hover {
-    border: 2px solid @alert-info-border;
     color: @text-color;
+    border: 2px solid @alert-info-border;
   }
 
   label {
@@ -138,15 +138,15 @@ iframe.email-body {
   }
 
   &:before {
-    font-family: FontAwesome;
-    content: @fa-var-check-circle;
-    color: @alert-info-text;
-    font-family: FontAwesome;
     position: absolute;
     top: -4px;
     left: 8px;
     z-index: 1;
+    font-family: @fa-font-face;
     font-size: 36px;
+    font-weight: @fa-theme-weight;
+    color: @alert-info-text;
+    content: @fa-var-check-circle;
   }
 }
 
@@ -158,13 +158,13 @@ iframe.email-body {
 // -------------------------
 
 .label-clicked {
-  background-color: #60BD68;
+  background-color: #60bd68;
 }
 
 .label-opened {
-  background-color: #5DA5DA;
+  background-color: #5da5da;
 }
 
 .label-unopened {
-  background-color: #FFB70F;
+  background-color: #ffb70f;
 }

@@ -143,10 +143,10 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // get group role id from url
-                if ( Request["GroupMemberRoleId"] != null )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupMemberRoleId" ) ) )
                 {
                     int groupMemberRoleId = 0;
-                    if ( Int32.TryParse( Request["GroupMemberRoleId"], out groupMemberRoleId ) )
+                    if ( Int32.TryParse( PageParameter( "GroupMemberRoleId" ), out groupMemberRoleId ) )
                     {
                         groupMemberRole = new GroupTypeRoleService( rockContext ).Get( groupMemberRoleId );
                     }
@@ -171,9 +171,9 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // get person
-                if ( Request["PersonGuid"] != null )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonGuid" ) ) )
                 {
-                    Guid.TryParse( Request["PersonGuid"], out personGuid );
+                    Guid.TryParse( PageParameter( "PersonGuid" ), out personGuid );
                 }
 
                 if ( personGuid == Guid.Empty )

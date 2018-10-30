@@ -23,8 +23,8 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Security;
 
 namespace Rock.Workflow.Action
 {
@@ -86,7 +86,7 @@ namespace Rock.Workflow.Action
             Guid? noteGuid = noteValue.AsGuidOrNull();
             if ( noteGuid.HasValue )
             {
-                var attribute = AttributeCache.Read( noteGuid.Value, rockContext );
+                var attribute = AttributeCache.Get( noteGuid.Value, rockContext );
                 if ( attribute != null )
                 {
                     note  = action.GetWorklowAttributeValue( noteGuid.Value );

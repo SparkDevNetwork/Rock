@@ -2,21 +2,13 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en">
 <head runat="server">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Rock Installer</title>
-    <link rel='stylesheet' href='//fonts.googleapis.com/css?family=Open+Sans:300,400,600,700' type='text/css' />
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
-    <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" />
-    
-    <style type="text/css">
-
-        body {
-            background-color: #dbd5cb;
-            border-top: 24px solid #282526;
-        }
-
-    </style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 
     <script src="//code.jquery.com/jquery-1.9.0.min.js"></script>
 
@@ -127,16 +119,23 @@
             });
 
             //
-            // logic for install start
+            // logic for install start (install occurs after filling out Organization Information settings)
             //
 
-            $('body').on('click', '#btnEmailSettingsNext', function (e) {
+            $('body').on('click', '#btnOrgInfoNext', function (e) {
 
-                var formIsValid = validateForm('#pnlEmailSettings');
+                var formIsValid = validateForm('#pnlOrgInfo');
                 var validationMessages = '';
 
+                // ensure inputs are valid urls
+                if (!validateURL($('#txtOrgWebsite').val())) {
+                    $('#txtOrgWebsite').closest('.form-group').addClass('has-error');
+                    validationMessages += "<p>Organization website must be in the format http://www.yoursite.com</p>";
+                    formIsValid = false;
+                }
+
                 if (formIsValid) {
-                    $('#pnlEmailSettings').fadeOut(function () {
+                    $('#pnlOrgInfo').fadeOut(function () {
                         $('#pnlInstallWatch').fadeIn();
                         startInstall();
                     });
@@ -171,16 +170,16 @@
                         "website": $('#txtOrgWebsite').val()
                     },
                     "emailSettings": {
-                        "server": $('#txtEmailServer').val(),
-                        "port": $('#txtEmailServerPort').val(),
-                        "useSsl": $('#cbEmailUseSsl').is(':checked'),
-                        "relayUsername": $('#txtEmailUsername').val(),
-                        "relayPassword": $('#txtEmailPassword').val()
+                        "server": "",
+                        "port": "",
+                        "useSsl": false,
+                        "relayUsername": "",
+                        "relayPassword": ""
                     },
                     "installerProperties": {
                         "installVersion": baseVersion,
                         "isDebug": '<%=isDebug %>'
-                    }   
+                    }
                 };
 
                 console.log(installData);
@@ -200,17 +199,17 @@
                 <div id="content-box" class="no-fade">
                     <!-- welcome panel -->
                     <div id="pnlWelcome">
-                        
+
                         <div class="content-narrow">
                             <img src="<%=storageUrl %>Images/laptop.png" />
 
                             <h1>It's Time For Something New...</h1>
 
-                        
+
 
                             <div class="btn-list clearfix">
-						        <a href="http://www.rockrms.com/Learn/Install" target="_blank" class="btn btn-default pull-left"><i class="fa fa-desktop"></i> Install Video</a>
-                                <a id="btnWelcomeNext" class="btn btn-primary pull-right">Get Started <i class='fa fa-chevron-right'></i></a>
+						        <a href="http://www.rockrms.com/Learn/Install" target="_blank" class="btn btn-default pull-left"><i class="fas fa-desktop"></i> Install Video</a>
+                                <a id="btnWelcomeNext" class="btn btn-primary pull-right">Get Started <i class="fas fa-chevron-right"></i></a>
 					        </div>
                         </div>
 
@@ -236,25 +235,25 @@
                         <h1>Database Configuration</h1>
 					    <p>Please provide configuration information to the database below.  This information should come from your server
 						    administrator or hosting provider.</p>
-                        	
+
 					    <div class="form-group">
 						    <label class="control-label" for="inputEmail">Database Server</label>
 						    <asp:TextBox ID="txtServerName" Text="" runat="server" CssClass="required-field form-control"></asp:TextBox>
 					    </div>
-							
+
 					    <div class="form-group">
 						    <label class="control-label" for="inputEmail">Database Name</label>
 						    <asp:TextBox ID="txtDatabaseName" Text="" runat="server" CssClass="required-field form-control"></asp:TextBox>
 					    </div>
-							
+
 					    <div class="form-group">
 						    <label class="control-label" for="inputEmail">Database Username</label>
 						    <asp:TextBox ID="txtUsername" Text="" runat="server" CssClass="required-field form-control"></asp:TextBox>
 					    </div>
-							
+
 					    <div class="form-group">
 						    <label class="control-label" for="inputEmail">Database Password</label>
-								
+
                             <div class="row">
                                 <div class="col-md-8">
                                     <asp:TextBox ID="txtPassword" TextMode="Password" runat="server" CssClass="required-field form-control password-field"></asp:TextBox>
@@ -265,11 +264,11 @@
                                 </div>
                             </div>
 					    </div>
-							
+
 					    <div id="dbMessages"></div>
-							
+
 					    <div class="btn-list clearfix">
-						    <a id="btnDatabaseConfigNext" class="btn btn-primary pull-right">Next <i class='fa fa-chevron-right'></i></a>
+						    <a id="btnDatabaseConfigNext" class="btn btn-primary pull-right">Next <i class='fas fa-chevron-right'></i></a>
 					    </div>
                     </div>
 
@@ -279,9 +278,9 @@
                         <div id="envTestResults"></div>
 
                         <div class="btn-list clearfix">
-                            <a id="btnEnvChecksBack" class="btn btn-default pull-left"><i class='fa fa-chevron-left'></i>  Back</a>
-						    <a id="btnEnvChecksNext" class="btn btn-primary pull-right">Next <i class='fa fa-chevron-right'></i></a>
-                            <a id="btnEnvChecksRetry" class="btn btn-primary pull-right"><i class='fa fa-refresh'></i> Retry</a>
+                            <a id="btnEnvChecksBack" class="btn btn-default pull-left"><i class='fas fa-chevron-left'></i>  Back</a>
+						    <a id="btnEnvChecksNext" class="btn btn-primary pull-right">Next <i class='fas fa-chevron-right'></i></a>
+                            <a id="btnEnvChecksRetry" class="btn btn-primary pull-right"><i class="fas fa-sync-alt"></i> Retry</a>
 					    </div>
 
                         <script>
@@ -303,7 +302,7 @@
                     <div id="pnlAdminUser" style="display: none;">
 
                         <h1>Administrator Login</h1>
-						
+
 					    <p>Please provide a username and password for the administrator's account</p>
 
                         <div class="validation-summary"></div>
@@ -312,7 +311,7 @@
 						    <label class="control-label" for="inputEmail">Administrator Username</label>
 						    <asp:TextBox ID="txtAdminUsername" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 					    </div>
-							
+
 					    <div class="form-group">
 						    <label class="control-label" for="inputEmail">Administrator Password</label>
                             <asp:TextBox ID="txtAdminPassword" TextMode="Password" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
@@ -323,8 +322,8 @@
 					    </div>
 
                         <div class="btn-list clearfix">
-                            <a id="btnAdminUserBack" class="btn btn-default pull-left"><i class='fa fa-chevron-left'></i>  Back</a>
-						    <a id="btnAdminUserNext" class="btn btn-primary pull-right">Next <i class='fa fa-chevron-right'></i></a>
+                            <a id="btnAdminUserBack" class="btn btn-default pull-left"><i class='fas fa-chevron-left'></i>  Back</a>
+						    <a id="btnAdminUserNext" class="btn btn-primary pull-right">Next <i class='fas fa-chevron-right'></i></a>
 					    </div>
 
                         <script>
@@ -361,7 +360,7 @@
                     <!-- hosting config panel -->
                     <div id="pnlHostingConfig" style="display: none;">
                         <h1>Hosting Configuration</h1>
-						
+
                         <h4>Hosting Addresses</h4>
 					    <p>Rock needs to know where you are installing the application so it can correctly assemble links when
                             you go to do things like send emails. These settings can be changed at anytime in your <span class="navigation-tip">Global Settings</span>.
@@ -374,7 +373,7 @@
 						    <label class="control-label" for="inputEmail">Internal URL <small>Used Inside Organization</small></label>
 						    <asp:TextBox ID="txtInternalAddress" runat="server" placeholder="http://yourinternalsite.com/" CssClass="required-field form-control" Text=""></asp:TextBox>
 					    </div>
-							
+
 					    <div class="form-group">
 						    <label class="control-label" for="inputEmail">Public URL <small>Used Externally</small></label>
 						    <asp:TextBox ID="txtPublicAddress" runat="server" placeholder="http://(www.)yoursite.com/" CssClass="required-field form-control" Text=""></asp:TextBox>
@@ -386,8 +385,8 @@
 					    </div>
 
                         <div class="btn-list clearfix">
-                            <a id="btnHostingConfigBack" class="btn btn-default pull-left"><i class='fa fa-chevron-left'></i>  Back</a>
-						    <a id="btnHostingConfigNext" class="btn btn-primary pull-right">Next <i class='fa fa-chevron-right'></i></a>
+                            <a id="btnHostingConfigBack" class="btn btn-default pull-left"><i class='fas fa-chevron-left'></i>  Back</a>
+						    <a id="btnHostingConfigNext" class="btn btn-primary pull-right">Next <i class='fas fa-chevron-right'></i></a>
 					    </div>
 
                         <script>
@@ -436,7 +435,7 @@
                     <!-- hosting config panel -->
                     <div id="pnlOrgInfo" style="display: none;">
                         <h1>Organization Information</h1>
-						
+
 					    <p>Please enter some information about your organization.  These fields are used to provide default information in the database. It
 						    is in no way shared with us or anyone else.
 					    </p>
@@ -447,108 +446,31 @@
 						    <label class="control-label" for="inputEmail">Organization Name</label>
 						    <asp:TextBox ID="txtOrgName" runat="server" placeholder="Your Organization" CssClass="required-field form-control" Text=""></asp:TextBox>
 					    </div>
-							
+
 					    <div class="form-group">
 						    <label class="control-label" for="inputEmail">Organization Default Email Address</label>
 						    <asp:TextBox ID="txtOrgEmail" runat="server" placeholder="info@yourorg.com" CssClass="required-field form-control" Text=""></asp:TextBox>
 					    </div>
-							
+
 					    <div class="form-group">
 						    <label class="control-label" for="inputEmail">Organization Phone Number</label>
 						    <asp:TextBox ID="txtOrgPhone" placeholder="(555) 555-5555" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 					    </div>
-							
+
 					    <div class="form-group">
 						    <label class="control-label" for="inputEmail">Organization Website</label>
 						    <asp:TextBox ID="txtOrgWebsite" placeholder="http://www.yourorg.com" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 					    </div>
 
                         <div class="btn-list clearfix">
-                            <a id="btnOrgInfoBack" class="btn btn-default pull-left"><i class='fa fa-chevron-left'></i>  Back</a>
-						    <a id="btnOrgInfoNext" class="btn btn-primary pull-right">Next <i class='fa fa-chevron-right'></i></a>
+                            <a id="btnOrgInfoBack" class="btn btn-default pull-left"><i class='fas fa-chevron-left'></i>  Back</a>
+						    <a id="btnOrgInfoNext" class="btn btn-primary pull-right">Next <i class='fas fa-chevron-right'></i></a>
 					    </div>
 
                         <script>
                             $('body').on('click', '#btnOrgInfoBack', function (e) {
                                 $('#pnlOrgInfo').fadeOut(function () {
                                     $('#pnlHostingConfig').fadeIn();
-                                });
-                            });
-
-                            $('body').on('click', '#btnOrgInfoNext', function (e) {
-
-                                var formIsValid = validateForm('#pnlOrgInfo');
-                                var validationMessages = '';
-
-                                // ensure inputs are valid urls
-                                if (!validateURL($('#txtOrgWebsite').val())) {
-                                    $('#txtOrgWebsite').closest('.form-group').addClass('has-error');
-                                    validationMessages += "<p>Organization website must be in the format http://www.yoursite.com</p>";
-                                    formIsValid = false;
-                                }
-
-                                if (formIsValid) {
-                                    $('#pnlOrgInfo').fadeOut(function () {
-                                        $('#pnlEmailSettings').fadeIn();
-                                    });
-                                } else {
-                                    if (validationMessages.length > 0) {
-                                        $("#pnlOrgInfo .validation-summary").html("<div class='alert alert-danger'>" + validationMessages + "</div>");
-                                    }
-                                }
-                            });
-                        </script>
-
-                    </div>
-
-                    <!-- email config panel -->
-                    <div id="pnlEmailSettings" style="display: none;">
-                        <h1>Email Server Settings</h1>
-						
-					    <p>Email is an essential part of the Rock RMS.  Please provide a few details about your email environment.  You can change 
-					    these values at any time inside the app. 
-					    </p>
-
-					    <div class="form-group">
-						    <label class="control-label" for="inputEmail">Email Server</label>
-						    <asp:TextBox ID="txtEmailServer" runat="server" placeholder="mail.yourorg.com" CssClass="required-field form-control" Text=""></asp:TextBox>
-					    </div>
-							
-					    <div class="form-group">
-						    <label class="control-label" for="inputEmail">Email Server SMTP Port (default is 25)</label>
-						    <asp:TextBox ID="txtEmailServerPort" runat="server" placeholder="mail.yourorg.com" CssClass="required-field form-control" Text="25"></asp:TextBox>
-					    </div>
-							
-					    <div class="form-group">
-						    <label class="control-label" for="inputEmail">Use SSL For SMTP (default no)</label>
-						    <asp:CheckBox ID="cbEmailUseSsl" runat="server" />
-					    </div>
-							
-					    <div class="form-group">
-						    <label class="control-label" for="inputEmail">Relay Email Username (optional) * if server requires authentication</label>
-						    <asp:TextBox ID="txtEmailUsername" runat="server" Text="" CssClass="form-control"></asp:TextBox>
-					    </div>
-							
-					    <div class="form-group">
-						    <label class="control-label" for="inputEmail">Relay Email Password (optional )</label>
-						    <div class="row">
-                                <div class="col-md-8"><asp:TextBox ID="txtEmailPassword" TextMode="Password" runat="server" Text="" CssClass="form-control password-field"></asp:TextBox></div>
-							    <div class="col-md-4" style="padding-top: 6px;">
-                                    <input id="show-password-email" type="checkbox" class="show-password" />
-                                    <label for="show-password-email" id="show-password-email-label" style="font-weight:normal;">Show Password</label>
-                                </div>
-                            </div>
-					    </div>
-
-                        <div class="btn-list clearfix">
-                            <a id="btnEmailSettingsBack" class="btn btn-default pull-left"><i class='fa fa-chevron-left'></i>  Back</a>
-						    <a id="btnEmailSettingsNext" class="btn btn-primary pull-right">Next <i class='fa fa-chevron-right'></i></a>
-					    </div>
-
-                        <script>
-                            $('body').on('click', '#btnEmailSettingsBack', function (e) {
-                                $('#pnlEmailSettings').fadeOut(function () {
-                                    $('#pnlOrgInfo').fadeIn();
                                 });
                             });
                         </script>
@@ -572,7 +494,7 @@
 
 
                         <!-- progress bar -->
-                        
+
                         <div class="row progress-header">
                             <div class="col-sm-6">
                                 <h4 id="step-name">Step 1: Downloading Database</h4>
@@ -597,7 +519,7 @@
 
                         <!-- console -->
                         <div class="clearfix">
-                            <button id="btn-showconsole" class="btn btn-default btn-xs pull-right"><i class="fa fa-chevron-down"></i> <span>Show Console</span></button>
+                            <button id="btn-showconsole" class="btn btn-default btn-xs pull-right"><i class="fas fa-chevron-down"></i> <span>Show Console</span></button>
                         </div>
                         <div id="console">
                             <ol></ol>
@@ -619,11 +541,11 @@
 
                     <!-- show success -->
                     <div id="pnlRedirect" style="display: none;">
-                        
+
                         <script>
 
                         </script>
-                    
+
                     </div>
                 </div>
 
@@ -632,18 +554,18 @@
 </body>
 
 <script language="CS" runat="server">
-    
+
     const string baseStorageUrl = "https://rockrms.blob.core.windows.net/install/";
-    const string baseVersion = "2_7_0";
+    const string baseVersion = "2_8_0";
 
     string storageUrl = string.Empty;
     bool isDebug = false;
-    
+
     void Page_Init( object sender, EventArgs e )
     {
         // toggle the SSL warning
         lSslWarning.Visible = !Request.IsSecureConnection;
-        
+
         if ( Request["Version"] != null )
         {
             storageUrl = String.Format( "{0}{1}/", baseStorageUrl, Request["Version"] );
@@ -680,11 +602,9 @@
             txtOrgEmail.Text = "info@rocksolidchurchdemo.com";
             txtOrgPhone.Text = "(602) 555-5555";
 
-            txtEmailServer.Text = "mail.rocksolidchurchdemo.com";
-
             storageUrl = "/";
         }
-        
+
         // load timezones
         // add timezones to dropdown
         foreach ( TimeZoneInfo timeZone in TimeZoneInfo.GetSystemTimeZones() )

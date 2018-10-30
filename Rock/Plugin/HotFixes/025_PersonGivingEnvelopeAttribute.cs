@@ -29,9 +29,10 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.UpdatePersonAttributeCategory( "Finance Internal", "fa fa-money", "Internal Finance Attributes", SystemGuid.Category.PERSON_ATTRIBUTES_FINANCE_INTERNAL );
-            RockMigrationHelper.UpdatePersonAttribute( SystemGuid.FieldType.INTEGER, SystemGuid.Category.PERSON_ATTRIBUTES_FINANCE_INTERNAL, "Envelope Number", "core_GivingEnvelopeNumber", "fa fa-money", "The Giving Envelope Number that is associated with this Person", 1, "", SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER );
-            RockMigrationHelper.AddGlobalAttribute( SystemGuid.FieldType.BOOLEAN, null, null, "Enable Giving Envelope Number", "Enables the Giving Envelope Number feature", 0, false.ToString(), Rock.SystemGuid.Attribute.GLOBAL_ENABLE_GIVING_ENVELOPE, "core.EnableGivingEnvelopeNumber" );
+            // Moved to core migration: 201711271827181_V7Rollup
+            //RockMigrationHelper.UpdatePersonAttributeCategory( "Finance Internal", "fa fa-money", "Internal Finance Attributes", SystemGuid.Category.PERSON_ATTRIBUTES_FINANCE_INTERNAL );
+            //RockMigrationHelper.UpdatePersonAttribute( SystemGuid.FieldType.INTEGER, SystemGuid.Category.PERSON_ATTRIBUTES_FINANCE_INTERNAL, "Envelope Number", "core_GivingEnvelopeNumber", "fa fa-money", "The Giving Envelope Number that is associated with this Person", 1, "", SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER );
+            //RockMigrationHelper.AddGlobalAttribute( SystemGuid.FieldType.BOOLEAN, null, null, "Enable Giving Envelope Number", "Enables the Giving Envelope Number feature", 0, false.ToString(), Rock.SystemGuid.Attribute.GLOBAL_ENABLE_GIVING_ENVELOPE, "core.EnableGivingEnvelopeNumber" );
         }
 
         /// <summary>

@@ -44,7 +44,7 @@ namespace Rock.Model
             var personToken = this.Queryable().FirstOrDefault( a => a.Token == decryptedToken );
             if ( personToken == null )
             {
-                bool tokenUseLegacyFallback = GlobalAttributesCache.Read().GetValue( "core.PersonTokenUseLegacyFallback" ).AsBoolean();
+                bool tokenUseLegacyFallback = GlobalAttributesCache.Get().GetValue( "core.PersonTokenUseLegacyFallback" ).AsBoolean();
                 if ( tokenUseLegacyFallback )
                 {
                     var person = new PersonService( this.Context as Rock.Data.RockContext ).GetByLegacyEncryptedKey( impersonationToken, true );

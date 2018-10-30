@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -105,7 +106,7 @@ namespace Rock.Field.Types
             if ( controls != null && controls.Count > 0 && configurationValues != null &&
                 controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( BINARY_FILE_TYPE ) )
             {
-                ( (DropDownList)controls[0] ).SetValue( configurationValues[BINARY_FILE_TYPE].Value.ToLower() );
+                ( (DropDownList)controls[0] ).SetValue( configurationValues[BINARY_FILE_TYPE].Value?.ToLower() ?? string.Empty );
             }
         }
 
@@ -128,8 +129,11 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue && !guid.Value.IsEmpty() )
             {
-                var binaryFileInfo = new BinaryFileService( new RockContext() )
+                using ( var rockContext = new RockContext() )
+                {
+                    var binaryFileInfo = new BinaryFileService( rockContext )
                     .Queryable()
+                    .AsNoTracking()
                     .Where( f => f.Guid == guid.Value )
                     .Select( f =>
                         new
@@ -140,16 +144,17 @@ namespace Rock.Field.Types
                         } )
                     .FirstOrDefault();
 
-                if ( binaryFileInfo != null )
-                {
-                    if ( condensed )
+                    if ( binaryFileInfo != null )
                     {
-                        return binaryFileInfo.FileName;
-                    }
-                    else
-                    {
-                        var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
-                        return string.Format( "<a href='{0}?guid={1}' title='{2}' class='btn btn-xs btn-default'>View</a>", filePath, binaryFileInfo.Guid, System.Web.HttpUtility.HtmlEncode(binaryFileInfo.FileName) );
+                        if ( condensed )
+                        {
+                            return binaryFileInfo.FileName;
+                        }
+                        else
+                        {
+                            var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                            return string.Format( "<a href='{0}?guid={1}' title='{2}' class='btn btn-xs btn-default'>View</a>", filePath, binaryFileInfo.Guid, System.Web.HttpUtility.HtmlEncode( binaryFileInfo.FileName ) );
+                        }
                     }
                 }
             }
@@ -191,18 +196,19 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as BinaryFilePicker;
-
             if ( picker != null )
             {
-                int? id = picker.SelectedValue.AsIntegerOrNull();
-                if ( id.HasValue )
+                int? itemId = picker.SelectedValue.AsIntegerOrNull();
+                Guid? itemGuid = null;
+                if ( itemId.HasValue )
                 {
-                    var binaryFile = new BinaryFileService( new RockContext() ).Get( id.Value );
-                    if ( binaryFile != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        return binaryFile.Guid.ToString();
+                        itemGuid = new BinaryFileService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
+
+                return itemGuid?.ToString() ?? string.Empty;
             }
 
             return null;
@@ -220,10 +226,18 @@ namespace Rock.Field.Types
 
             if ( picker != null )
             {
-                Guid guid = value.AsGuid();
+                BinaryFile binaryFile = null;
+                Guid? guid = value.AsGuidOrNull();
 
                 // get the item (or null) and set it
-                var binaryFile = new BinaryFileService( new RockContext() ).Get( guid );
+                if ( guid.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        binaryFile = new BinaryFileService( rockContext ).Get( guid.Value );
+                    }
+                }
+
                 picker.SetValue( binaryFile );
             }
         }

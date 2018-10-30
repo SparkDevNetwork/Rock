@@ -95,7 +95,7 @@ namespace Rock.CheckIn
         public KioskGroupType( int groupTypeid )
             : base()
         {
-            GroupType = GroupTypeCache.Read( groupTypeid );
+            GroupType = GroupTypeCache.Get( groupTypeid );
             KioskGroups = new List<KioskGroup>();
         }
 

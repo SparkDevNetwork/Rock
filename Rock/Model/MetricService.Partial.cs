@@ -84,7 +84,7 @@ WHERE o.type = 'V'
                 List<string> partitionEntityLookupJOINs = new List<string>();
                 foreach ( var metricPartition in metricEntityPartitions )
                 {
-                    var metricPartitionEntityType = EntityTypeCache.Read( metricPartition.EntityTypeId.Value );
+                    var metricPartitionEntityType = EntityTypeCache.Get( metricPartition.EntityTypeId.Value );
                     if ( metricPartitionEntityType != null )
                     {
                         var tableAttribute = metricPartitionEntityType.GetEntityType().GetCustomAttribute<TableAttribute>();

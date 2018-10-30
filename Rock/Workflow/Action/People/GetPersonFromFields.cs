@@ -36,22 +36,48 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Person Attribute From Fields" )]
 
+    // Person Search Fields
     [WorkflowTextOrAttribute( "First Name", "Attribute Value", "The first name or an attribute that contains the first name of the person. <span class='tip tip-lava'></span>",
-        false, "", "", 0, "FirstName", new string[] { "Rock.Field.Types.TextFieldType" } )]
+        false, "", "", 0, FIRST_NAME_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
     [WorkflowTextOrAttribute( "Last Name", "Attribute Value", "The last name or an attribute that contains the last name of the person. <span class='tip tip-lava'></span>",
-        false, "", "", 1, "LastName", new string[] { "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Email Address", "Attribute Value", "The email address or an attribute that contains the email address of the person. <span class='tip tip-lava'></span>", 
-        false, "", "", 2, "Email", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType" } )]
-    [WorkflowAttribute( "Person Attribute", "The person attribute to set the value to the person found or created.", 
-        true, "", "", 3, "PersonAttribute", new string[] { "Rock.Field.Types.PersonFieldType" } )]
+        false, "", "", 1, LAST_NAME_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowTextOrAttribute( "Email Address", "Attribute Value", "The email address or an attribute that contains the email address of the person. <span class='tip tip-lava'></span>",
+        false, "", "", 2, EMAIL_KEY, new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType" } )]
+    [WorkflowTextOrAttribute( "Mobile Number", "Attribute Value", "The mobile phone number or an attribute that contains the mobile phone number of the person ) <span class='tip tip-lava'></span>",
+        false, "", "", 3, MOBILE_NUMBER_KEY, new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PhoneNumberFieldType" } )]
+
+    // Person Search Birth Date Fields
+    [WorkflowTextOrAttribute( "Birth Day", "Attribute Value", "The number corresponding to the birth day of a person or the attribute that contains the number corresponding to a birth day for a person  <span class='tip tip-lava'></span>",
+        false, "", "", 4, BIRTH_DAY_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowTextOrAttribute( "Birth Month", "Attribute Value", "The number corresponding to the birth month of a person or the attribute that contains the number corresponding to a birth month for a person  <span class='tip tip-lava'></span>",
+        false, "", "", 5, BIRTH_MONTH_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowTextOrAttribute( "Birth Year", "Attribute Value", "The number corresponding to the birth year of a person or the attribute that contains the number corresponding to a birth year for a person  <span class='tip tip-lava'></span>",
+        false, "", "", 6, BIRTH_YEAR_KEY, new string[] { "Rock.Field.Types.TextFieldType" } )]
+
+    // New Person Config
+    [WorkflowAttribute( "Person Attribute", "The person attribute to set the value to the person found or created.",
+        true, "", "", 7, PERSON_ATTRIBUTE_KEY, new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Default Record Status", "The record status to use when creating a new person", false, false,
-        Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING, "", 4 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status", "The connection status to use when creating a new person", false, false, 
-        Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT, "", 5)]
+        Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING, "", 8 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status", "The connection status to use when creating a new person", false, false,
+        Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT, "", 9 )]
     [WorkflowAttribute( "Default Campus", "The attribute value to use as the default campus when creating a new person.",
-        true, "", "", 6, "DefaultCampus", new string[] { "Rock.Field.Types.CampusFieldType" } )]
+        true, "", "", 10, DEFAULT_CAMPUS_KEY, new string[] { "Rock.Field.Types.CampusFieldType" } )]
+
     public class GetPersonFromFields : ActionComponent
     {
+        private const string FIRST_NAME_KEY = "FirstName";
+        private const string LAST_NAME_KEY = "LastName";
+        private const string EMAIL_KEY = "Email";
+        private const string PERSON_ATTRIBUTE_KEY = "PersonAttribute";
+        private const string DEFAULT_CONNECTION_STATUS_KEY = "DefaultConnectionStatus";
+        private const string DEFAULT_RECORD_STATUS_KEY = "DefaultRecordStatus";
+        private const string DEFAULT_CAMPUS_KEY = "DefaultCampus";
+        private const string MOBILE_NUMBER_KEY = "MobileNumber";
+        private const string BIRTH_MONTH_KEY = "BirthMonth";
+        private const string BIRTH_DAY_KEY = "BirthDay";
+        private const string BIRTH_YEAR_KEY = "BirthYear";
+
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
@@ -64,29 +90,37 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            var attribute = AttributeCache.Read( GetAttributeValue( action, "PersonAttribute" ).AsGuid(), rockContext );
+            var attribute = AttributeCache.Get( GetAttributeValue( action, PERSON_ATTRIBUTE_KEY ).AsGuid(), rockContext );
             if ( attribute != null )
             {
                 var mergeFields = GetMergeFields( action );
-                string firstName = GetAttributeValue( action, "FirstName", true ).ResolveMergeFields( mergeFields );
-                string lastName = GetAttributeValue( action, "LastName", true ).ResolveMergeFields( mergeFields );
-                string email = GetAttributeValue( action, "Email", true ).ResolveMergeFields( mergeFields );
+                string firstName = GetAttributeValue( action, FIRST_NAME_KEY, true ).ResolveMergeFields( mergeFields );
+                string lastName = GetAttributeValue( action, LAST_NAME_KEY, true ).ResolveMergeFields( mergeFields );
+                string email = GetAttributeValue( action, EMAIL_KEY, true ).ResolveMergeFields( mergeFields );
+                string mobileNumber = GetAttributeValue( action, MOBILE_NUMBER_KEY, true ).ResolveMergeFields( mergeFields ) ?? string.Empty;
+
+                int? birthDay = GetAttributeValue( action, BIRTH_DAY_KEY, true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
+                int? birthMonth = GetAttributeValue( action, BIRTH_MONTH_KEY, true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
+                int? birthYear = GetAttributeValue( action, BIRTH_YEAR_KEY, true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
+
 
                 if ( string.IsNullOrWhiteSpace( firstName ) ||
                     string.IsNullOrWhiteSpace( lastName ) ||
-                    string.IsNullOrWhiteSpace( email ) )
+                    ( string.IsNullOrWhiteSpace( email ) && string.IsNullOrWhiteSpace( mobileNumber ) ) )
                 {
-                    errorMessages.Add( "First Name, Last Name, and Email are required. One or more of these values was not provided!" );
+                    errorMessages.Add( "First Name, Last Name, and either Email or Mobile Number are required. One or more of these values was not provided!" );
                 }
                 else
                 {
                     Person person = null;
                     PersonAlias personAlias = null;
                     var personService = new PersonService( rockContext );
-                    var people = personService.GetByMatch( firstName, lastName, email ).ToList();
-                    if ( people.Count == 1 )
+
+                    var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobileNumber, null, birthMonth, birthDay, birthYear );
+                    person = personService.FindPerson( personQuery, true );
+
+                    if ( person.IsNotNull() )
                     {
-                        person = people.First();
                         personAlias = person.PrimaryAlias;
                     }
                     else
@@ -98,28 +132,35 @@ namespace Rock.Workflow.Action
                         person.IsEmailActive = true;
                         person.Email = email;
                         person.EmailPreference = EmailPreference.EmailAllowed;
-                        person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                        person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                        person.BirthMonth = birthMonth;
+                        person.BirthDay = birthDay;
+                        person.BirthYear = birthYear;
 
-                        var defaultConnectionStatus = DefinedValueCache.Read( GetAttributeValue( action, "DefaultConnectionStatus" ).AsGuid() );
+                        UpdatePhoneNumber( person, mobileNumber );
+
+                        var defaultConnectionStatus = DefinedValueCache.Get( GetAttributeValue( action, DEFAULT_CONNECTION_STATUS_KEY ).AsGuid() );
                         if ( defaultConnectionStatus != null )
                         {
                             person.ConnectionStatusValueId = defaultConnectionStatus.Id;
                         }
 
-                        var defaultRecordStatus = DefinedValueCache.Read( GetAttributeValue( action, "DefaultRecordStatus" ).AsGuid() );
+                        var defaultRecordStatus = DefinedValueCache.Get( GetAttributeValue( action, DEFAULT_RECORD_STATUS_KEY ).AsGuid() );
                         if ( defaultRecordStatus != null )
                         {
                             person.RecordStatusValueId = defaultRecordStatus.Id;
                         }
 
-                        var defaultCampus = CampusCache.Read( GetAttributeValue( action, "DefaultCampus", true ).AsGuid() );
-                        var familyGroup = PersonService.SaveNewPerson( person, rockContext, ( defaultCampus != null ? defaultCampus.Id : (int?)null ), false );
+                        var defaultCampus = CampusCache.Get( GetAttributeValue( action, DEFAULT_CAMPUS_KEY, true ).AsGuid() );
+                        var familyGroup = PersonService.SaveNewPerson( person, rockContext, ( defaultCampus != null ? defaultCampus.Id : ( int? ) null ), false );
                         if ( familyGroup != null && familyGroup.Members.Any() )
                         {
                             person = familyGroup.Members.Select( m => m.Person ).First();
                             personAlias = person.PrimaryAlias;
                         }
                     }
+
+
 
                     if ( person != null && personAlias != null )
                     {
@@ -145,6 +186,33 @@ namespace Rock.Workflow.Action
             }
 
             return true;
+        }
+
+        void UpdatePhoneNumber(Person person, string mobileNumber)
+        {
+            if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( mobileNumber ) ) )
+            {
+                var phoneNumberType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+                if ( phoneNumberType == null )
+                {
+                    return;
+                }
+
+                var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
+                string oldPhoneNumber = string.Empty;
+                if ( phoneNumber == null )
+                {
+                    phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberType.Id };
+                    person.PhoneNumbers.Add( phoneNumber );
+                }
+                else
+                {
+                    oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
+                }
+
+                // TODO handle country code here
+                phoneNumber.Number = PhoneNumber.CleanNumber( mobileNumber );
+            }
         }
 
     }

@@ -69,14 +69,14 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            var activityType = WorkflowActivityTypeCache.Read( workflowActivityGuid );
+            var activityType = WorkflowActivityTypeCache.Get( workflowActivityGuid );
             if ( activityType == null )
             {
                 action.AddLogEntry( "Invalid Activity Property", true );
                 return false;
             }
 
-            var entityType = EntityTypeCache.Read( typeof( Rock.Model.Workflow ) );
+            var entityType = EntityTypeCache.Get( typeof( Rock.Model.Workflow ) );
 
             var workflowIds = new AttributeValueService( rockContext )
                 .Queryable()

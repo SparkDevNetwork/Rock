@@ -116,6 +116,9 @@ namespace Rock.Client
         public Attribute Attribute { get; set; }
 
         /// <summary />
+        public ICollection<AttributeValueHistorical> AttributeValuesHistorical { get; set; }
+
+        /// <summary />
         public bool? ValueAsBoolean { get; set; }
 
         /// <summary />

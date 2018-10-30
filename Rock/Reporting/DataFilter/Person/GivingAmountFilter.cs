@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -181,7 +182,7 @@ function() {
             comparisonControl.ID = filterControl.ID + "_comparisonControl";
             filterControl.Controls.Add( comparisonControl );
 
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+            var globalAttributes = GlobalAttributesCache.Get();
 
             NumberBox numberBoxAmount = new NumberBox();
             numberBoxAmount.PrependText = globalAttributes.GetValue( "CurrencySymbol" ) ?? "$";
@@ -376,7 +377,7 @@ function() {
                 combineGiving = selectionValues[5].AsBooleanOrNull() ?? false;
             }
 
-            int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+            int transactionTypeContributionId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
             var financialTransactionQry = new FinancialTransactionService( rockContext ).Queryable()
                 .Where( xx => xx.AuthorizedPersonAliasId.HasValue )
@@ -411,12 +412,19 @@ function() {
                     new
                     {
                         PersonId = xx.Key,
+                        AnyAmount = xx.Any(ss => ss.TransactionDetails.Where( td => !limitToAccounts || accountIdList.Contains( td.AccountId ) ).Any() ),
                         TotalAmount = xx.Sum( ss => ss.TransactionDetails.Where( td => !limitToAccounts || accountIdList.Contains( td.AccountId ) ).Sum( td => td.Amount ) )
                     } );
 
+            bool excludePersonsWithTransactions = false;
+
             if ( comparisonType == ComparisonType.LessThan )
             {
-                financialTransactionDetailsIndividualQry = financialTransactionDetailsIndividualQry.Where( xx => xx.TotalAmount < amount );
+                // NOTE: Since we want people that have less than the specified, but also want to include people to didn't give anything at all (no transactions)
+                // make this query the same as the GreaterThan, but use it to EXCLUDE people that gave MORE than the specified amount. That
+                // way the filter will include people that had no transactions for the specified date/range and account 
+                financialTransactionDetailsIndividualQry = financialTransactionDetailsIndividualQry.Where( xx => xx.TotalAmount >= amount );
+                excludePersonsWithTransactions = true;
             }
             else if ( comparisonType == ComparisonType.EqualTo )
             {
@@ -424,10 +432,11 @@ function() {
             }
             else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
             {
-                // NOTE: if the amount filter is 'they gave $0.00 or more', there no account filter, and doing a GreaterThanOrEqualTo, then we don't need to calculate and compare against TotalAmount
-                if ( amount == 0.00M && !accountIdList.Any())
+                // NOTE: if the amount filter is 'they gave $0.00 or more', and doing a GreaterThanOrEqualTo, then we don't need to calculate and compare against TotalAmount
+                if ( amount == 0.00M )
                 {
-                    // don't query against TotalAmount if we don't care about amount or accounts
+                    // just query if there is 'any' amount
+                    financialTransactionDetailsIndividualQry = financialTransactionDetailsIndividualQry.Where( xx => xx.AnyAmount );
                 }
                 else
                 {
@@ -450,12 +459,17 @@ function() {
                     new
                     {
                         GivingGroupId = xx.Key,
+                        AnyAmount = xx.Any( ss => ss.Txn.TransactionDetails.Where( td => !limitToAccounts || accountIdList.Contains( td.AccountId ) ).Any() ),
                         TotalAmount = xx.Sum( ss => ss.Txn.TransactionDetails.Where( td => !limitToAccounts || accountIdList.Contains( td.AccountId ) ).Sum( td => td.Amount ) )
                     } );
 
                 if ( comparisonType == ComparisonType.LessThan )
                 {
-                    financialTransactionDetailsGivingGroupQry = financialTransactionDetailsGivingGroupQry.Where( xx => xx.TotalAmount < amount );
+                    // NOTE: Since we want people that have less than the specified amount, but also want to include people to didn't give anything at all (no transactions)
+                    // make this query the same as the GreaterThan, but use it to EXCLUDE people that gave MORE than the specified amount. That
+                    // way the filter will include people that had no transactions for the specified date/range and account
+                    financialTransactionDetailsGivingGroupQry = financialTransactionDetailsGivingGroupQry.Where( xx => xx.TotalAmount >= amount );
+                    excludePersonsWithTransactions = true;
                 }
                 else if ( comparisonType == ComparisonType.EqualTo )
                 {
@@ -464,10 +478,11 @@ function() {
                 }
                 else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
                 {
-                    // NOTE: if the amount filter is 'they gave $0.00 or more', there no account filter, and doing a GreaterThanOrEqualTo, then we don't need to calculate and compare against TotalAmount
-                    if ( amount == 0.00M && !accountIdList.Any() )
+                    // NOTE: if the amount filter is 'they gave $0.00 or more', and doing a GreaterThanOrEqualTo, then we don't need to calculate and compare against TotalAmount
+                    if ( amount == 0.00M )
                     {
                         // don't query against TotalAmount if we don't care about amount or accounts
+                        financialTransactionDetailsGivingGroupQry = financialTransactionDetailsGivingGroupQry.Where( xx => xx.AnyAmount );
                     }
                     else
                     {
@@ -489,8 +504,17 @@ function() {
                 qryTransactionPersonIds = innerQryIndividual;
             }
 
-            var qry = new PersonService( rockContext ).Queryable()
-                       .Where( p => qryTransactionPersonIds.Any( xx => xx == p.Id ) );
+            IQueryable<Rock.Model.Person> qry;
+
+            if ( excludePersonsWithTransactions )
+            {
+                // the filter is for people that gave LESS than the specified amount, so return people that didn't give MORE than the specified amount
+                qry = new PersonService( rockContext ).Queryable().Where( p => !qryTransactionPersonIds.Any( xx => xx == p.Id ) );
+            }
+            else
+            {
+                qry = new PersonService( rockContext ).Queryable().Where( p => qryTransactionPersonIds.Any( xx => xx == p.Id ) );
+            }
 
             Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
 

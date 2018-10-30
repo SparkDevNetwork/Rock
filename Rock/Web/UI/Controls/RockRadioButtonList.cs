@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.ComponentModel;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -295,7 +296,22 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "controls " + this.CssClass );
+            StringBuilder cssClassBuilder = new StringBuilder( "controls js-rockradiobuttonlist rockradiobuttonlist" );
+            if ( this.RepeatDirection == RepeatDirection.Horizontal )
+            {
+                cssClassBuilder.Append( " rockradiobuttonlist-horizontal" );
+            }
+            else
+            {
+                cssClassBuilder.Append( " rockradiobuttonlist-vertical" );
+            }
+
+            if ( this.RepeatColumns > 0 )
+            {
+                cssClassBuilder.Append( " in-columns" );
+            }
+
+            writer.AddAttribute( "class", cssClassBuilder.ToString() );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             base.RenderControl( writer );

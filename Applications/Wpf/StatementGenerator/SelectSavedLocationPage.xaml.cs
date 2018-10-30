@@ -33,7 +33,9 @@ namespace Rock.Apps.StatementGenerator
         {
             InitializeComponent();
 
-            txtFolderLocation.Text = Environment.GetFolderPath( Environment.SpecialFolder.Desktop );
+            txtFolderLocation.Text = ReportOptions.Current.SaveDirectory ?? Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Desktop ), "Statements" );
+            txtFileName.Text = ReportOptions.Current.BaseFileName ?? "contribution-statements";
+            txtChapterSize.Text = ReportOptions.Current.StatementsPerChapter.ToString();
         }
 
         /// <summary>
@@ -53,54 +55,78 @@ namespace Rock.Apps.StatementGenerator
         }
 
         /// <summary>
+        /// Saves the changes.
+        /// </summary>
+        /// <param name="showWarnings">if set to <c>true</c> [show warnings].</param>
+        /// <returns></returns>
+        private bool SaveChanges( bool showWarnings )
+        {
+            if ( showWarnings )
+            {
+                if ( txtFolderLocation.Text.Trim() == string.Empty )
+                {
+                    MessageBoxResult result = MessageBox.Show( "Please select a folder to save contribution statements to.", "Folder Location Required", MessageBoxButton.OK, MessageBoxImage.Warning );
+                    return false;
+                }
+
+                if ( !Directory.Exists( txtFolderLocation.Text ) )
+                {
+                    try
+                    {
+                        System.IO.Directory.CreateDirectory( txtFolderLocation.Text );
+                    }
+                    catch ( Exception )
+                    {
+                        MessageBoxResult result = MessageBox.Show( "Couldn't create the directory provided. Please double-check that it is a valid path.", "Path Not Valid", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+                        return false;
+                    }
+                }
+
+                if ( txtFileName.Text == string.Empty )
+                {
+                    MessageBoxResult result = MessageBox.Show( "Please provide a base file name.", "Filename Required", MessageBoxButton.OK, MessageBoxImage.Warning );
+                    return false;
+                }
+            }
+
+            ReportOptions.Current.BaseFileName = txtFileName.Text;
+            ReportOptions.Current.SaveDirectory = txtFolderLocation.Text;
+
+            int? chapterSize = txtChapterSize.Text.AsIntegerOrNull();
+
+            if ( showWarnings )
+            {
+                if ( txtChapterSize.Text.Trim() != string.Empty && chapterSize == null )
+                {
+                    MessageBoxResult result = MessageBox.Show( "Please provide a number for the chapter size or leave blank.", "Invalid Chapter Size", MessageBoxButton.OK, MessageBoxImage.Warning );
+                    return false;
+                }
+            }
+
+            if ( chapterSize > 0 )
+            {
+                ReportOptions.Current.StatementsPerChapter = chapterSize;
+            }
+            else
+            {
+                ReportOptions.Current.StatementsPerChapter = null;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnNext control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnNext_Click( object sender, RoutedEventArgs e )
         {
-            if (txtFolderLocation.Text.Trim() == string.Empty )
+            if ( SaveChanges( true ) )
             {
-                MessageBoxResult result = MessageBox.Show( "Please select a folder to save contribution statements to.", "Folder Location Required", MessageBoxButton.OK, MessageBoxImage.Warning );
-                return;
+                var nextPage = new ProgressPage();
+                this.NavigationService.Navigate( nextPage );
             }
-
-            if ( !Directory.Exists( txtFolderLocation.Text ) )
-            {
-                try {
-                    System.IO.Directory.CreateDirectory( txtFolderLocation.Text );
-                }
-                catch(Exception ex )
-                {
-                    MessageBoxResult result = MessageBox.Show( "Could create the directory provided. Please double-check that it is a valid path.", "Path Not Valid", MessageBoxButton.OK, MessageBoxImage.Exclamation );
-                    return;
-                }
-            }
-
-            if ( txtFileName.Text == string.Empty )
-            {
-                MessageBoxResult result = MessageBox.Show( "Please provide a base file name.", "Filename Required", MessageBoxButton.OK, MessageBoxImage.Warning );
-                return;
-            }
-
-            ReportOptions.Current.BaseFileName = txtFileName.Text;
-            ReportOptions.Current.SaveDirectory = txtFolderLocation.Text;
-
-            int chapterSize = 0;
-
-            if(txtChapterSize.Text.Trim() != string.Empty && !int.TryParse(txtChapterSize.Text.Trim(), out chapterSize ) )
-            {
-                MessageBoxResult result = MessageBox.Show( "Please provide a number for the chapter size or leave blank.", "Invalid Chapter Size", MessageBoxButton.OK, MessageBoxImage.Warning );
-                return;
-            }
-
-            if (chapterSize > 0 )
-            {
-                ReportOptions.Current.ChapterSize = chapterSize;
-            }
-
-            ProgressPage nextPage = new ProgressPage();
-            this.NavigationService.Navigate( nextPage );
         }
 
         /// <summary>
@@ -110,6 +136,7 @@ namespace Rock.Apps.StatementGenerator
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnPrev_Click( object sender, RoutedEventArgs e )
         {
+            SaveChanges( false );
             this.NavigationService.GoBack();
         }
     }

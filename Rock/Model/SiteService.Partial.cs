@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -73,7 +74,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override Guid? GetGuid( int id )
         {
-            var cacheItem = Rock.Web.Cache.SiteCache.Read( id );
+            var cacheItem = SiteCache.Get( id );
             if ( cacheItem != null )
             {
                 return cacheItem.Guid;
@@ -96,7 +97,7 @@ namespace Rock.Model
                 return site.DefaultDomainUri;
             }
 
-            return new Uri( Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ) );
+            return new Uri( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) );
         }
     }
 }

@@ -105,22 +105,22 @@ namespace Rock.Transactions
         {
             if ( PageShortLinkId.HasValue )
             { 
-            using ( var rockContext = new RockContext() )
-            {
-                var userAgent = (this.UserAgent ?? string.Empty).Trim();
-                if ( userAgent.Length > 450 )
+                using ( var rockContext = new RockContext() )
                 {
-                    userAgent = userAgent.Substring( 0, 450 ); // trim super long useragents to fit in pageViewUserAgent.UserAgent
-                }
+                    var userAgent = (this.UserAgent ?? string.Empty).Trim();
+                    if ( userAgent.Length > 450 )
+                    {
+                        userAgent = userAgent.Substring( 0, 450 ); // trim super long useragents to fit in pageViewUserAgent.UserAgent
+                    }
 
-                // get user agent info
-                var clientType = InteractionDeviceType.GetClientType( userAgent );
+                    // get user agent info
+                    var clientType = InteractionDeviceType.GetClientType( userAgent );
 
                     // don't log visits from crawlers
                     if ( clientType != "Crawler" )
                     {
                         // lookup the interaction channel, and create it if it doesn't exist
-                        int channelMediumTypeValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_URLSHORTENER.AsGuid() ).Id;
+                        int channelMediumTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_URLSHORTENER.AsGuid() ).Id;
                         InteractionChannelService interactionChannelService = new InteractionChannelService( rockContext );
                         var interactionChannel = interactionChannelService.Queryable()
                             .Where( a => a.ChannelTypeMediumValueId == channelMediumTypeValueId )
@@ -128,22 +128,38 @@ namespace Rock.Transactions
                         if ( interactionChannel == null )
                         {
                             interactionChannel = new InteractionChannel();
-                            interactionChannel.Name = "UrlShortener";
+                            interactionChannel.Name = "Short Links";
                             interactionChannel.ChannelTypeMediumValueId = channelMediumTypeValueId;
-                            interactionChannel.ComponentEntityTypeId = EntityTypeCache.Read<Rock.Model.PageShortLink>().Id; ;
+                            interactionChannel.ComponentEntityTypeId = EntityTypeCache.Get<Rock.Model.PageShortLink>().Id; ;
+                            interactionChannel.Guid = SystemGuid.InteractionChannel.SHORT_LINKS.AsGuid();
                             interactionChannelService.Add( interactionChannel );
                             rockContext.SaveChanges();
                         }
 
                         // check that the page exists as a component
                         var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByEntityId( interactionChannel.Id, PageShortLinkId.Value, Token );
+                        if ( Url.IsNotNullOrWhiteSpace() )
+                        {
+                            
+                            if ( interactionComponent.ComponentSummary != Url )
+                            {
+                                interactionComponent.ComponentSummary = Url;
+                            }
+
+                            var urlDataJson = new { Url = Url }.ToJson();
+                            if ( interactionComponent.ComponentData != urlDataJson )
+                            {
+                                interactionComponent.ComponentData = urlDataJson;
+                            }
+                        }
+                        
                         rockContext.SaveChanges();
 
                         // Add the interaction
                         if ( interactionComponent != null )
                         {
                             int? personAliasId = null;
-                            if ( UserName.IsNotNullOrWhitespace() )
+                            if ( UserName.IsNotNullOrWhiteSpace() )
                             {
                                 var currentUser = new UserLoginService( rockContext ).GetByUserName( UserName );
                                 personAliasId = currentUser?.Person?.PrimaryAlias?.Id;

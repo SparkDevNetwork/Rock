@@ -36,30 +36,6 @@ namespace Rock.Web.UI.Controls
             var style = new Style();
             this.Style = style.GetStyleAttributes( this );
         }
-        
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( System.EventArgs e )
-        {
-            base.OnInit( e );
-
-            string script = @"
-$(document).ready(function() {
-    $('a.help').click(function (e) {
-        e.preventDefault();
-        $(this).siblings('div.alert-info').slideToggle(function(){
-            Rock.controls.modal.updateSize(this);
-        });
-        $(this).siblings('a.warning').insertAfter($(this));
-        $(this).siblings('div.alert-warning').slideUp();
-    });
-});
-";
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "help-block", script, true );
-
-        }
 
         /// <summary>
         /// Gets or sets the style.
@@ -86,17 +62,14 @@ $(document).ready(function() {
                     writer.AddStyleAttribute( key, this.Style[key] );
                 }
 
+                writer.AddAttribute("data-toggle", "tooltip");
+                writer.AddAttribute("data-placement", "auto");
+                writer.AddAttribute("data-container", "body");
+                writer.AddAttribute("data-html", "true");
+                writer.AddAttribute("title", this.Text.ConvertCrLfToHtmlBr().Trim() );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute("class", "fa fa-question-circle");
+                writer.AddAttribute("class", "fa fa-info-circle");
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
-                writer.RenderEndTag();
-                writer.RenderEndTag();
-
-                writer.AddAttribute( "class", "alert alert-info help-message" );
-                writer.AddAttribute( "style", "display:none" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.RenderBeginTag( HtmlTextWriterTag.Small );
-                writer.Write( this.Text.ConvertCrLfToHtmlBr().Trim() );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
             }

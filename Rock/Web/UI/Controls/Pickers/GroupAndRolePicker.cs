@@ -296,7 +296,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                _ddlGroupType.SelectedValue = value.ToString();
+                _ddlGroupType.SetValue( value );
                 if ( value.HasValue )
                 {
                     LoadGroupsAndRoles( value.Value );
@@ -336,7 +336,7 @@ namespace Rock.Web.UI.Controls
                         }
                     }
 
-                    _ddlGroup.SelectedValue = groupId.ToString();
+                    _ddlGroup.SetValue( groupId );
                 }
             }
         }
@@ -392,7 +392,7 @@ namespace Rock.Web.UI.Controls
                         }
                     }
 
-                    _ddlGroupRole.SelectedValue = groupRoleId.ToString();
+                    _ddlGroupRole.SetValue( groupRoleId );
                 }
             }
         }

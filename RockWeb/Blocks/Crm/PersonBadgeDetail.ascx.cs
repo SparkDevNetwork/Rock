@@ -73,7 +73,7 @@ namespace RockWeb.Blocks.Crm
                         tbDescription.Text = personBadge.Description;
                         if ( personBadge.EntityTypeId.HasValue )
                         {
-                            var badgeType = EntityTypeCache.Read( personBadge.EntityTypeId.Value );
+                            var badgeType = EntityTypeCache.Get( personBadge.EntityTypeId.Value );
                             compBadgeType.SelectedValue = badgeType.Guid.ToString().ToUpper();
                         }
 
@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Crm
             {
                 if ( !string.IsNullOrWhiteSpace( compBadgeType.SelectedValue ) )
                 {
-                    var badgeType = EntityTypeCache.Read( compBadgeType.SelectedValue.AsGuid() );
+                    var badgeType = EntityTypeCache.Get( compBadgeType.SelectedValue.AsGuid() );
                     if ( badgeType != null )
                     {
                         var personBadge = new PersonBadge { EntityTypeId = badgeType.Id };
@@ -114,7 +114,7 @@ namespace RockWeb.Blocks.Crm
         {
             if ( !string.IsNullOrWhiteSpace( compBadgeType.SelectedValue ) )
             {
-                var badgeType = EntityTypeCache.Read( compBadgeType.SelectedValue.AsGuid() );
+                var badgeType = EntityTypeCache.Get( compBadgeType.SelectedValue.AsGuid() );
                 if ( badgeType != null )
                 {
                     var personBadge = new PersonBadge { EntityTypeId = badgeType.Id };
@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( !string.IsNullOrWhiteSpace( compBadgeType.SelectedValue ) )
             {
-                var badgeType = EntityTypeCache.Read( compBadgeType.SelectedValue.AsGuid() );
+                var badgeType = EntityTypeCache.Get( compBadgeType.SelectedValue.AsGuid() );
                 if ( badgeType != null )
                 {
                     personBadge.EntityTypeId = badgeType.Id;
@@ -176,8 +176,6 @@ namespace RockWeb.Blocks.Crm
                 personBadge.SaveAttributeValues( rockContext );
             } );
 
-            PersonBadgeCache.Flush( personBadge.Id );
-
             NavigateToParentPage();
         }
 
@@ -199,7 +197,7 @@ namespace RockWeb.Blocks.Crm
         {
             personBadge.LoadAttributes();
             phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( personBadge, phAttributes, setValues, "", new List<string> { "Active", "Order" } );
+            Rock.Attribute.Helper.AddEditControls( personBadge, phAttributes, setValues, BlockValidationGroup, new List<string> { "Active", "Order" } );
         }
 
         #endregion

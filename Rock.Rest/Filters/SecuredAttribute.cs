@@ -25,6 +25,7 @@ using System.Web.Http.Filters;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Filters
 {
@@ -54,10 +55,10 @@ namespace Rock.Rest.Filters
                 actionPath += "?" + actionPathQueryString;
             }
 
-            ISecured item = Rock.Web.Cache.RestActionCache.Read( actionMethod + actionPath );
+            ISecured item = RestActionCache.Get( actionMethod + actionPath );
             if ( item == null )
             {
-                item = Rock.Web.Cache.RestControllerCache.Read( controllerClassName );
+                item = RestControllerCache.Get( controllerClassName );
                 if ( item == null )
                 {
                     item = new RestController();
@@ -82,7 +83,7 @@ namespace Rock.Rest.Filters
                         if ( userName.StartsWith( "rckipid=" ) )
                         {
                             Rock.Model.PersonService personService = new Model.PersonService( rockContext );
-                            Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( userName.Substring( 8 ), false, null );
+                            Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( userName.Substring( 8 ) );
                             if ( impersonatedPerson != null )
                             {
                                 userLogin = impersonatedPerson.GetImpersonatedUser();

@@ -1,0 +1,21 @@
+//
+// Panel helpers
+//
+// --------------------------------------------------
+
+// the .panel-parent class allow you to wrap a child panel removing the child's heading.
+.panel-parent {
+
+  & > .panel-body {
+    padding: 0;
+  }
+
+  .panel {
+    margin-bottom: 0;
+    border: 0;
+
+    .panel-heading {
+      display: none;
+    }
+  }
+}

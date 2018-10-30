@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             EntityTypeCache entityType = null;
             if ( entityValues.Length >= 1 )
             {
-                entityType = EntityTypeCache.Read( entityValues[0].AsGuid() );
+                entityType = EntityTypeCache.Get( entityValues[0].AsGuid() );
             }
 
             if ( entityValues.Length == 2 )

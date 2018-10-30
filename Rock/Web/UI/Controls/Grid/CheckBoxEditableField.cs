@@ -22,7 +22,7 @@ namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// The ASP:CheckBoxField doesn't work very well for retrieving changed values, especially when the value is changed from True to False (weird)
-    /// This CheckBoxEditableField works like the ASP:CheckBoxField except it gives the CheckBox's IDs so their changed values will consistantly persist on postbacks
+    /// This CheckBoxEditableField works like the ASP:CheckBoxField except it gives the CheckBox's IDs so their changed values will consistently persist on postbacks
     /// </summary>
     public class CheckBoxEditableField : RockTemplateField, INotRowSelectedField
     {

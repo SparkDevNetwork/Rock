@@ -33,7 +33,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialTransaction" )]
     [DataContract]
-    [Analytics(false, false)]
+    [Analytics( false, false )]
     public partial class FinancialTransaction : Model<FinancialTransaction>
     {
         #region Entity Properties
@@ -105,17 +105,6 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         public string TransactionCode { get; set; }
-
-        /// <summary>
-        /// For Credit Card transactions, this is the Gateway's Transaction Key
-        /// </summary>
-        /// <value>
-        /// The gateway transaction key.
-        /// </value>
-        [MaxLength( 100 )]
-        [DataMember]
-        [Index( "IX_GatewayTransactionKey" )]
-        public string GatewayTransactionKey { get; set; }
 
         /// <summary>
         /// Gets or sets a summary of the transaction.
@@ -332,7 +321,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual FinancialPaymentDetail FinancialPaymentDetail { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the transaction type <see cref="Rock.Model.DefinedValue"/> indicating the type of transaction that occurred.
         /// </summary>
@@ -443,7 +432,18 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use HistoryChangeList instead" )]
         public virtual List<string> HistoryChanges { get; set; }
+
+        /// <summary>
+        /// Gets or sets the history change list.
+        /// </summary>
+        /// <value>
+        /// The history change list.
+        /// </value>
+        [NotMapped]
+        public virtual History.HistoryChangeList HistoryChangeList { get; set; }
 
         /// <summary>
         /// Gets or sets the batch history changes.
@@ -452,7 +452,18 @@ namespace Rock.Model
         /// The batch history changes.
         /// </value>
         [NotMapped]
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use BatchHistoryChangeList instead" )]
         public virtual Dictionary<int, List<string>> BatchHistoryChanges { get; set; }
+
+        /// <summary>
+        /// Gets or sets the batch history change list.
+        /// </summary>
+        /// <value>
+        /// The batch history change list.
+        /// </value>
+        [NotMapped]
+        public virtual Dictionary<int, History.HistoryChangeList> BatchHistoryChangeList { get; set; }
 
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
@@ -483,6 +494,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Processes the refund.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public FinancialTransaction ProcessRefund( out string errorMessage )
+        {
+            return this.ProcessRefund( null, null, string.Empty, true, string.Empty, out errorMessage );
+        }
+
+        /// <summary>
         /// Pres the save.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
@@ -491,35 +512,37 @@ namespace Rock.Model
         {
             var rockContext = (RockContext)dbContext;
 
-            HistoryChanges = new List<string>();
-            BatchHistoryChanges = new Dictionary<int, List<string>>();
+            HistoryChangeList = new History.HistoryChangeList();
+            BatchHistoryChangeList = new Dictionary<int, History.HistoryChangeList> ();
 
             switch ( entry.State )
             {
                 case System.Data.Entity.EntityState.Added:
                     {
-                        HistoryChanges.Add( "Created Transaction" );
+                        HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" );
 
                         string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
 
-                        History.EvaluateChange( HistoryChanges, "Authorized Person", string.Empty, person );
-                        History.EvaluateChange( HistoryChanges, "Batch", string.Empty, History.GetValue<FinancialBatch>( Batch, BatchId, rockContext ) );
-                        History.EvaluateChange( HistoryChanges, "Gateway", string.Empty, History.GetValue<FinancialGateway>( FinancialGateway, FinancialGatewayId, rockContext ) );
-                        History.EvaluateChange( HistoryChanges, "Transaction Date/Time", (DateTime?)null, TransactionDateTime );
-                        History.EvaluateChange( HistoryChanges, "Transaction Code", string.Empty, TransactionCode );
-                        History.EvaluateChange( HistoryChanges, "Summary", string.Empty, Summary );
-                        History.EvaluateChange( HistoryChanges, "Type", (int?)null, TransactionTypeValue, TransactionTypeValueId );
-                        History.EvaluateChange( HistoryChanges, "Source", (int?)null, SourceTypeValue, SourceTypeValueId );
-                        History.EvaluateChange( HistoryChanges, "Scheduled Transaction Id", (int?)null, ScheduledTransactionId );
-                        History.EvaluateChange( HistoryChanges, "Processed By", string.Empty, History.GetValue<PersonAlias>( ProcessedByPersonAlias, ProcessedByPersonAliasId, rockContext ) );
-                        History.EvaluateChange( HistoryChanges, "Processed Date/Time", (DateTime?)null, ProcessedDateTime );
-                        History.EvaluateChange( HistoryChanges, "Status", string.Empty, Status );
-                        History.EvaluateChange( HistoryChanges, "Status Message", string.Empty, StatusMessage );
+                        History.EvaluateChange( HistoryChangeList, "Authorized Person", string.Empty, person );
+                        History.EvaluateChange( HistoryChangeList, "Batch", string.Empty, History.GetValue<FinancialBatch>( Batch, BatchId, rockContext ) );
+                        History.EvaluateChange( HistoryChangeList, "Gateway", string.Empty, History.GetValue<FinancialGateway>( FinancialGateway, FinancialGatewayId, rockContext ) );
+                        History.EvaluateChange( HistoryChangeList, "Transaction Date/Time", (DateTime?)null, TransactionDateTime );
+                        History.EvaluateChange( HistoryChangeList, "Transaction Code", string.Empty, TransactionCode );
+                        History.EvaluateChange( HistoryChangeList, "Summary", string.Empty, Summary );
+                        History.EvaluateChange( HistoryChangeList, "Type", (int?)null, TransactionTypeValue, TransactionTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Source", (int?)null, SourceTypeValue, SourceTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Scheduled Transaction Id", (int?)null, ScheduledTransactionId );
+                        History.EvaluateChange( HistoryChangeList, "Processed By", string.Empty, History.GetValue<PersonAlias>( ProcessedByPersonAlias, ProcessedByPersonAliasId, rockContext ) );
+                        History.EvaluateChange( HistoryChangeList, "Processed Date/Time", (DateTime?)null, ProcessedDateTime );
+                        History.EvaluateChange( HistoryChangeList, "Status", string.Empty, Status );
+                        History.EvaluateChange( HistoryChangeList, "Status Message", string.Empty, StatusMessage );
 
                         int? batchId = Batch != null ? Batch.Id : BatchId;
                         if ( batchId.HasValue )
                         {
-                            BatchHistoryChanges.Add( batchId.Value, new List<string> { string.Format( "Added <span class='field-name'>{0:C2}</span> transaction for <span class='field-value'>{1}</span>.", this.TotalAmount, person ) } );
+                            var batchChanges = new History.HistoryChangeList();
+                            batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" ).SetNewValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
+                            BatchHistoryChangeList.Add( batchId.Value, batchChanges );
                         }
 
                         break;
@@ -529,7 +552,7 @@ namespace Rock.Model
                     {
                         string origPerson = History.GetValue<PersonAlias>( null, entry.OriginalValues["AuthorizedPersonAliasId"].ToStringSafe().AsIntegerOrNull(), rockContext );
                         string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
-                        History.EvaluateChange( HistoryChanges, "Authorized Person", origPerson, person );
+                        History.EvaluateChange( HistoryChangeList, "Authorized Person", origPerson, person );
 
                         int? origBatchId = entry.OriginalValues["BatchId"].ToStringSafe().AsIntegerOrNull();
                         int? batchId = Batch != null ? Batch.Id : BatchId;
@@ -537,42 +560,48 @@ namespace Rock.Model
                         {
                             string origBatch = History.GetValue<FinancialBatch>( null, origBatchId, rockContext );
                             string batch = History.GetValue<FinancialBatch>( Batch, BatchId, rockContext );
-                            History.EvaluateChange( HistoryChanges, "Batch", origBatch, batch );
+                            History.EvaluateChange( HistoryChangeList, "Batch", origBatch, batch );
                         }
 
                         int? origGatewayId = entry.OriginalValues["FinancialGatewayId"].ToStringSafe().AsIntegerOrNull();
                         if ( !FinancialGatewayId.Equals( origGatewayId ) )
                         {
-                            History.EvaluateChange( HistoryChanges, "Gateway", History.GetValue<FinancialGateway>( null, origGatewayId, rockContext ), History.GetValue<FinancialGateway>( FinancialGateway, FinancialGatewayId, rockContext ) );
+                            History.EvaluateChange( HistoryChangeList, "Gateway", History.GetValue<FinancialGateway>( null, origGatewayId, rockContext ), History.GetValue<FinancialGateway>( FinancialGateway, FinancialGatewayId, rockContext ) );
                         }
 
-                        History.EvaluateChange( HistoryChanges, "Transaction Date/Time", entry.OriginalValues["TransactionDateTime"].ToStringSafe().AsDateTime(), TransactionDateTime );
-                        History.EvaluateChange( HistoryChanges, "Transaction Code", entry.OriginalValues["TransactionCode"].ToStringSafe(), TransactionCode );
-                        History.EvaluateChange( HistoryChanges, "Summary", entry.OriginalValues["Summary"].ToStringSafe(), Summary );
-                        History.EvaluateChange( HistoryChanges, "Type", entry.OriginalValues["TransactionTypeValueId"].ToStringSafe().AsIntegerOrNull(), TransactionTypeValue, TransactionTypeValueId );
-                        History.EvaluateChange( HistoryChanges, "Source", entry.OriginalValues["SourceTypeValueId"].ToStringSafe().AsIntegerOrNull(), SourceTypeValue, SourceTypeValueId );
-                        History.EvaluateChange( HistoryChanges, "Scheduled Transaction Id", entry.OriginalValues["ScheduledTransactionId"].ToStringSafe().AsIntegerOrNull(), ScheduledTransactionId );
-                        History.EvaluateChange( HistoryChanges, "Processed By", entry.OriginalValues["ProcessedByPersonAliasId"].ToStringSafe().AsIntegerOrNull(), ProcessedByPersonAlias, ProcessedByPersonAliasId, rockContext );
-                        History.EvaluateChange( HistoryChanges, "Processed Date/Time", entry.OriginalValues["ProcessedDateTime"].ToStringSafe().AsDateTime(), ProcessedDateTime );
-                        History.EvaluateChange( HistoryChanges, "Status", entry.OriginalValues["Status"].ToStringSafe(), Status );
-                        History.EvaluateChange( HistoryChanges, "Status Message", entry.OriginalValues["StatusMessage"].ToStringSafe(), StatusMessage );
+                        History.EvaluateChange( HistoryChangeList, "Transaction Date/Time", entry.OriginalValues["TransactionDateTime"].ToStringSafe().AsDateTime(), TransactionDateTime );
+                        History.EvaluateChange( HistoryChangeList, "Transaction Code", entry.OriginalValues["TransactionCode"].ToStringSafe(), TransactionCode );
+                        History.EvaluateChange( HistoryChangeList, "Summary", entry.OriginalValues["Summary"].ToStringSafe(), Summary );
+                        History.EvaluateChange( HistoryChangeList, "Type", entry.OriginalValues["TransactionTypeValueId"].ToStringSafe().AsIntegerOrNull(), TransactionTypeValue, TransactionTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Source", entry.OriginalValues["SourceTypeValueId"].ToStringSafe().AsIntegerOrNull(), SourceTypeValue, SourceTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Scheduled Transaction Id", entry.OriginalValues["ScheduledTransactionId"].ToStringSafe().AsIntegerOrNull(), ScheduledTransactionId );
+                        History.EvaluateChange( HistoryChangeList, "Processed By", entry.OriginalValues["ProcessedByPersonAliasId"].ToStringSafe().AsIntegerOrNull(), ProcessedByPersonAlias, ProcessedByPersonAliasId, rockContext );
+                        History.EvaluateChange( HistoryChangeList, "Processed Date/Time", entry.OriginalValues["ProcessedDateTime"].ToStringSafe().AsDateTime(), ProcessedDateTime );
+                        History.EvaluateChange( HistoryChangeList, "Status", entry.OriginalValues["Status"].ToStringSafe(), Status );
+                        History.EvaluateChange( HistoryChangeList, "Status Message", entry.OriginalValues["StatusMessage"].ToStringSafe(), StatusMessage );
 
                         if ( !batchId.Equals( origBatchId ) )
                         {
+                            var batchChanges = new History.HistoryChangeList();
+
                             if ( origBatchId.HasValue )
                             {
-                                BatchHistoryChanges.Add( origBatchId.Value, new List<string> { string.Format( "Removed <span class='field-name'>{0:C2}</span> transaction for <span class='field-value'>{1}</span>.", this.TotalAmount, person ) } );
+                                batchChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" ).SetOldValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
                             }
                             if ( batchId.HasValue )
                             {
-                                BatchHistoryChanges.Add( batchId.Value, new List<string> { string.Format( "Added <span class='field-name'>{0:C2}</span> transaction for <span class='field-value'>{1}</span>.", this.TotalAmount, person ) } );
+                                batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" ).SetNewValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
                             }
+
+                            BatchHistoryChangeList.Add( batchId.Value, batchChanges );
                         }
                         else
                         {
                             if ( batchId.HasValue )
                             {
-                                BatchHistoryChanges.Add( batchId.Value, new List<string> { string.Format( "Updated <span class='field-name'>Transaction</span> ID: <span class='field-value'>{0}</span>.", Id ) } );
+                                var batchChanges = new History.HistoryChangeList();
+                                batchChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, $"Transaction Id:{Id}" );
+                                BatchHistoryChangeList.Add( batchId.Value, batchChanges );
                             }
                         }
                         break;
@@ -580,14 +609,17 @@ namespace Rock.Model
 
                 case System.Data.Entity.EntityState.Deleted:
                     {
-                        HistoryChanges.Add( "Deleted Transaction" );
+                        HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" );
 
                         int? batchId = Batch != null ? Batch.Id : BatchId;
                         if ( batchId.HasValue )
                         {
                             string batch = History.GetValue<FinancialBatch>( Batch, BatchId, rockContext );
                             string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
-                            BatchHistoryChanges.Add( batchId.Value, new List<string> { string.Format( "Deleted <span class='field-name'>{0:C2}</span> transaction for <span class='field-value'>{1}</span>.", this.TotalAmount, person ) } );
+                            var batchChanges = new History.HistoryChangeList();
+                            batchChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" ).SetOldValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
+
+                            BatchHistoryChangeList.Add( batchId.Value, batchChanges );
                         }
 
                         // since images have a cascade delete relationship, make sure the PreSaveChanges gets called 
@@ -609,16 +641,16 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( DbContext dbContext )
         {
-            if ( HistoryChanges.Any() )
+            if ( HistoryChangeList.Any() )
             {
-                HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.Id, HistoryChanges, true, this.ModifiedByPersonAliasId );
+                HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId );
             }
 
-            foreach ( var keyVal in BatchHistoryChanges )
+            foreach ( var keyVal in BatchHistoryChangeList )
             {
                 if ( keyVal.Value.Any() )
                 {
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), keyVal.Key, keyVal.Value, string.Empty, typeof( FinancialTransaction ), this.Id, true, this.ModifiedByPersonAliasId );
+                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), keyVal.Key, keyVal.Value, string.Empty, typeof( FinancialTransaction ), this.Id, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                 }
             }
 
@@ -737,4 +769,42 @@ namespace Rock.Model
     }
 
     #endregion
+
+    #region Extension Methods
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static partial class FinancialTransactionExtensionMethods
+    {
+        /// <summary>
+        /// Process a refund for a transaction.
+        /// </summary>
+        /// <param name="transaction">The refund transaction.</param>
+        /// <param name="amount">The amount.</param>
+        /// <param name="reasonValueId">The reason value identifier.</param>
+        /// <param name="summary">The summary.</param>
+        /// <param name="process">if set to <c>true</c> [process].</param>
+        /// <param name="batchNameSuffix">The batch name suffix.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public static FinancialTransaction ProcessRefund( this FinancialTransaction transaction, decimal? amount, int? reasonValueId, string summary, bool process, string batchNameSuffix, out string errorMessage )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var service = new FinancialTransactionService( rockContext );
+                var refundTransaction = service.ProcessRefund( transaction, null, null, string.Empty, true, string.Empty, out errorMessage );
+
+                if ( refundTransaction != null )
+                {
+                    rockContext.SaveChanges();
+                }
+
+                return refundTransaction;
+            }
+        }
+    }
+
+    #endregion
+
 }

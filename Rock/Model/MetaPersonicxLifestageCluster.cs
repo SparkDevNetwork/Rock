@@ -262,6 +262,15 @@ namespace Rock.Model
         [DataMember]
         public int? OrganizationIndividualCount { get; set; }
 
+        /// <summary>
+        /// Gets or sets the mean age.
+        /// </summary>
+        /// <value>
+        /// The mean age.
+        /// </value>
+        [DataMember]
+        public int? MeanAge { get; set; }
+
         #endregion
 
         #region Virtual Properties

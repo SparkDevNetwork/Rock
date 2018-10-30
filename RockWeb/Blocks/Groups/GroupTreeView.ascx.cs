@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Groups
 
             var detailPageReference = new Rock.Web.PageReference( GetAttributeValue( "DetailPage" ) );
 
-            // NOTE: if the detail page is the current page, use the current route instead of route specified in the DetailPage (to preserve old behavoir)
+            // NOTE: if the detail page is the current page, use the current route instead of route specified in the DetailPage (to preserve old behavior)
             if ( detailPageReference == null || detailPageReference.PageId == this.RockPage.PageId )
             {
                 hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
@@ -79,7 +79,7 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 hfPageRouteTemplate.Value = string.Empty;
-                var pageCache = PageCache.Read( detailPageReference.PageId );
+                var pageCache = PageCache.Get( detailPageReference.PageId );
                 if ( pageCache != null )
                 {
                     var route = pageCache.PageRoutes.FirstOrDefault( a => a.Id == detailPageReference.RouteId );
@@ -119,6 +119,8 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 tglHideInactiveGroups.Checked = hideInactiveGroups ?? true;
+
+                tglLimitPublicGroups.Checked = this.GetUserPreference( "LimitPublicGroups" ).AsBooleanOrNull() ?? false;
             }
             else
             {
@@ -148,20 +150,20 @@ namespace RockWeb.Blocks.Groups
 
             ddlCampuses.Campuses = CampusCache.All( GetAttributeValue( "DisplayInactiveCampuses" ).AsBoolean() );
 
-            var CampusFilter = this.GetUserPreference( "CampusFilter" );
+            var campusFilter = this.GetUserPreference( "CampusFilter" );
             if ( pnlConfigPanel.Visible )
             {
-                ddlCampuses.SetValue( CampusFilter );
+                ddlCampuses.SetValue( campusFilter );
             }
             else
             {
                 ddlCampuses.SetValue( "" );
             }
 
-            var IncludeNoCampus = this.GetUserPreference( "IncludeNoCampus" ).AsBoolean();
+            var includeNoCampus = this.GetUserPreference( "IncludeNoCampus" ).AsBoolean();
             if ( pnlConfigPanel.Visible )
             {
-                tglIncludeNoCampus.Checked = IncludeNoCampus;
+                tglIncludeNoCampus.Checked = includeNoCampus;
             }
 
         }
@@ -306,7 +308,7 @@ namespace RockWeb.Blocks.Groups
                             canAddChildGroup = selectedGroup.IsAuthorized( Authorization.EDIT, CurrentPerson );
                             if ( !canAddChildGroup )
                             {
-                                var groupType = GroupTypeCache.Read( selectedGroup.GroupTypeId );
+                                var groupType = GroupTypeCache.Get( selectedGroup.GroupTypeId );
                                 if ( groupType != null )
                                 {
                                     foreach ( var childGroupType in groupType.ChildGroupTypes )
@@ -342,6 +344,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             hfIncludeInactiveGroups.Value = ( !tglHideInactiveGroups.Checked ).ToTrueFalse();
+            hfLimitPublicGroups.Value = tglLimitPublicGroups.Checked.ToTrueFalse();
             hfCountsType.Value = ddlCountsType.SelectedValue;
             hfCampusFilter.Value = ddlCampuses.SelectedValue;
             hfIncludeNoCampus.Value = tglIncludeNoCampus.Checked.ToTrueFalse();
@@ -426,7 +429,7 @@ namespace RockWeb.Blocks.Groups
                 var groupTypeIdIncludeList = new List<int>();
                 foreach ( Guid guid in groupTypeIncludeGuids )
                 {
-                    var groupType = GroupTypeCache.Read( guid );
+                    var groupType = GroupTypeCache.Get( guid );
                     if ( groupType != null )
                     {
                         groupTypeIdIncludeList.Add( groupType.Id );
@@ -443,7 +446,7 @@ namespace RockWeb.Blocks.Groups
                 var groupTypeIdExcludeList = new List<int>();
                 foreach ( Guid guid in groupTypeExcludeGuids )
                 {
-                    var groupType = GroupTypeCache.Read( guid );
+                    var groupType = GroupTypeCache.Get( guid );
                     if ( groupType != null )
                     {
                         groupTypeIdExcludeList.Add( groupType.Id );
@@ -462,6 +465,19 @@ namespace RockWeb.Blocks.Groups
         protected void tglHideInactiveGroups_CheckedChanged( object sender, EventArgs e )
         {
             this.SetUserPreference( "HideInactiveGroups", tglHideInactiveGroups.Checked.ToTrueFalse() );
+
+            // reload the whole page
+            NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglLimitPublicGroups control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglLimitPublicGroups_CheckedChanged( object sender, EventArgs e )
+        {
+            this.SetUserPreference( "LimitPublicGroups", tglLimitPublicGroups.Checked.ToTrueFalse() );
 
             // reload the whole page
             NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );
@@ -514,7 +530,7 @@ namespace RockWeb.Blocks.Groups
         protected void btnSearch_OnClick( object sender, EventArgs e )
         {
             // redirect to search
-            NavigateToPage( Rock.SystemGuid.Page.GROUP_SEARCH_RESULTS.AsGuid(), new Dictionary<string, string>() { { "SearchType", "name" },{ "SearchTerm", tbSearch.Text.Trim() } } );
+            NavigateToPage( Rock.SystemGuid.Page.GROUP_SEARCH_RESULTS.AsGuid(), new Dictionary<string, string>() { { "SearchType", "name" }, { "SearchTerm", tbSearch.Text.Trim() } } );
         }
 
         /// <summary>
@@ -530,7 +546,7 @@ namespace RockWeb.Blocks.Groups
             // if specific group types are specified, show the groups regardless of ShowInNavigation
             bool limitToShowInNavigation = !includedGroupTypeIds.Any();
 
-            var qry = groupService.GetChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), includedGroupTypeIds, excludedGroupTypeIds, !tglHideInactiveGroups.Checked, limitToShowInNavigation, hfCampusFilter.ValueAsInt(), tglIncludeNoCampus.Checked );
+            var qry = groupService.GetChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), includedGroupTypeIds, excludedGroupTypeIds, !tglHideInactiveGroups.Checked, limitToShowInNavigation, hfCampusFilter.ValueAsInt(), tglIncludeNoCampus.Checked, tglHideInactiveGroups.Checked );
 
             foreach ( var group in qry.OrderBy( g => g.Name ) )
             {

@@ -47,6 +47,11 @@ namespace Rock.SystemGuid
         public const string BLOCK = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65";
 
         /// <summary>
+        /// The checkr provider
+        /// </summary>
+        public const string CHECKR_PROVIDER = "8D9DE88A-C649-47B2-BA5C-92A24F60AE61";
+
+        /// <summary>
         /// The content channel type
         /// </summary>
         public const string CONTENT_CHANNEL = "44484685-477E-4668-89A6-84F29739EB68";
@@ -163,6 +168,11 @@ namespace Rock.SystemGuid
         public const string GROUP_MEMBER = "49668B95-FEDC-43DD-8085-D2B0D6343C48";
 
         /// <summary>
+        /// The HTTP module component
+        /// </summary>
+        public const string HTTP_MODULE_COMPONENT = "EDE69F48-5E05-4260-B360-DA37DFD1AB83";
+
+        /// <summary>
         /// The guid for the Rock.Model.MetricCategory entity
         /// </summary>
         public const string METRICCATEGORY = "3D35C859-DF37-433F-A20A-0FFD0FCB9862";
@@ -193,6 +203,16 @@ namespace Rock.SystemGuid
         public const string PERSON_ALIAS = "90F5E87B-F0D5-4617-8AE9-EB57E673F36F";
 
         /// <summary>
+        /// The guid for the Rock.Model.PersonSignal entity
+        /// </summary>
+        public const string PERSON_SIGNAL = "0FFF77A1-E92D-4A05-8B36-1D2B6D46660F";
+
+        /// <summary>
+        /// The protect my ministry provider
+        /// </summary>
+        public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
+
+        /// <summary>
         /// The guid for the Rock.Model.RegistrationTemplate entity
         /// </summary>
         public const string REGISTRATION_TEMPLATE = "A01E3E99-A8AD-4C6C-BAAC-98795738BA70";
@@ -213,6 +233,11 @@ namespace Rock.SystemGuid
         public const string SERVICE_JOB = "52766196-A72F-4F60-997A-78E19508843D";
 
         /// <summary>
+        /// The Signal Type entity type
+        /// </summary>
+        public const string SIGNAL_TYPE = "0BA03B9B-E974-4526-9B21-5037424B6D16";
+
+        /// <summary>
         /// The guid for the database storage provider entity
         /// </summary>
         public const string STORAGE_PROVIDER_DATABASE = "0AA42802-04FD-4AEC-B011-FEB127FC85CD";
@@ -226,11 +251,6 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.WorkflowType entity
         /// </summary>
         public const string WORKFLOW_TYPE = "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE";
-
-        /// <summary>
-        /// The protect my ministry provider
-        /// </summary>
-        public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
 
         /// <summary>
         /// The guid for the Test Financial Gateway entity type

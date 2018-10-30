@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -92,7 +93,18 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
+        [RockObsolete( "1.8" )]
+        [Obsolete("Use HistoryChangeList instead")]
         public virtual List<string> HistoryChanges { get; set; }
+
+        /// <summary>
+        /// Gets or sets the history change list.
+        /// </summary>
+        /// <value>
+        /// The history change list.
+        /// </value>
+        [NotMapped]
+        public virtual History.HistoryChangeList HistoryChangeList { get; set; }
 
         #endregion
 
@@ -109,7 +121,7 @@ namespace Rock.Model
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
             var binaryFile = binaryFileService.Get( BinaryFileId );
 
-            HistoryChanges = new List<string>();
+            HistoryChangeList = new History.HistoryChangeList();
 
             switch ( entry.State )
             {
@@ -121,7 +133,7 @@ namespace Rock.Model
                             binaryFile.IsTemporary = false;
                         }
 
-                        HistoryChanges.Add( "Added Image" );
+                        HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Image" );
                         break;
                     }
 
@@ -133,7 +145,7 @@ namespace Rock.Model
                             binaryFile.IsTemporary = false;
                         }
 
-                        HistoryChanges.Add( "Updated Image" );
+                        HistoryChangeList.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, "Image" );
                         break;
                     }
                 case System.Data.Entity.EntityState.Deleted:
@@ -145,7 +157,7 @@ namespace Rock.Model
                             binaryFile.IsTemporary = true;
                         }
 
-                        HistoryChanges.Add( "Removed Image" );
+                        HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Image" );
                         break;
                     }
             }
@@ -159,15 +171,17 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( DbContext dbContext )
         {
-            if ( HistoryChanges.Any() )
+            if ( HistoryChangeList.Any() )
             {
-                HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.TransactionId, HistoryChanges, true, this.ModifiedByPersonAliasId );
+                HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.TransactionId, HistoryChangeList, true, this.ModifiedByPersonAliasId );
 
                 var txn = new FinancialTransactionService( (RockContext)dbContext ).Get( this.TransactionId );
                 if ( txn != null && txn.BatchId != null )
                 {
-                    var batchHistory = new List<string> { string.Format( "Updated <span class='field-name'>Transaction</span> ID: <span class='field-value'>{0}</span>.", txn.Id ) };
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), this.TransactionId, true, this.ModifiedByPersonAliasId );
+                    var batchHistory = new History.HistoryChangeList();
+
+                    batchHistory.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, "Transaction" );
+                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), this.TransactionId, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                 }
             }
 

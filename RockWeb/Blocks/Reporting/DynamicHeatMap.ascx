@@ -15,7 +15,7 @@
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlUserDataView" runat="server" Label="Dataview" Help="Select the dataview to use to filter the results." Required="true" />
                         <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campus Filter" Help="Select the campuses to narrow the results down to families with that home campus." Required="false" />
-                        <Rock:GroupPicker ID="gpGroupToMap" runat="server" Label="Geo-fencing Group" Help="Select a Group to show the geofences for that group and it's child groups" />
+                        <Rock:GroupPicker ID="gpGroupToMap" runat="server" Label="Geo-fencing Group" Help="Select a Group to show the geofences for that group and its child groups" />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbShowCampusLocations" runat="server" Label="Show Campus Locations On Map" Checked="true" />
@@ -659,7 +659,7 @@
                 var locationId = $('#<%=lpLocation.ClientID%> .js-item-id-value').val();
                 var locationName = $('#<%=lpLocation.ClientID%> .js-item-name-value').val();
                 $('#<%=hfLocationId.ClientID%>').val(locationId);
-                __doPostBack('<%=upSaveLocation.ClientID%>');
+                window.location = "javascript:__doPostBack('<%=upSaveLocation.ClientID%>')";
 
                 var map = $('#map_canvas').data().googleMap;
 

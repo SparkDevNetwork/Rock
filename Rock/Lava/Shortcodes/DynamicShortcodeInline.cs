@@ -31,7 +31,7 @@ using System;
 namespace Rock.Lava.Shortcodes
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class DynamicShortcodeInline : RockLavaShortcodeBase
     {
@@ -43,13 +43,15 @@ namespace Rock.Lava.Shortcodes
 
         Dictionary<string, object> _internalMergeFields;
 
+        const int _maxRecursionDepth = 10;
+
         /// <summary>
         /// Method that will be run at Rock startup
         /// </summary>
         public override void OnStartup()
         {
             // get all the inline dynamic shortcodes and register them
-            var inlineShortCodes = LavaShortcodeCache.All( false ).Where( s => s.TagType == TagType.Inline );
+            var inlineShortCodes = LavaShortcodeCache.All().Where( s => s.TagType == TagType.Inline );
 
             foreach(var shortcode in inlineShortCodes )
             {
@@ -69,7 +71,7 @@ namespace Rock.Lava.Shortcodes
         {
             _markup = markup;
             _tagName = tagName;
-            _shortcode = LavaShortcodeCache.Read( _tagName );
+            _shortcode = LavaShortcodeCache.All().Where( c => c.TagName == tagName ).FirstOrDefault();
 
             base.Initialize( tagName, markup, tokens );
         }
@@ -86,7 +88,21 @@ namespace Rock.Lava.Shortcodes
                 var parms = ParseMarkup( _markup, context );
 
                 // add a unique id so shortcodes have easy access to one
-                parms.Add( "uniqueid", "id-" + Guid.NewGuid().ToString() );
+                parms.AddOrReplace( "uniqueid", "id-" + Guid.NewGuid().ToString() );
+
+                // keep track of the recursion depth
+                int currentRecurrsionDepth = 0;
+                if ( parms.ContainsKey( "RecursionDepth" ) )
+                {
+                    currentRecurrsionDepth = parms["RecursionDepth"].ToString().AsInteger() + 1;
+
+                    if ( currentRecurrsionDepth > _maxRecursionDepth )
+                    {
+                        result.Write( "A recursive loop was detected and processing of this shortcode has stopped." );
+                        return;
+                    }
+                }
+                parms.AddOrReplace( "RecursionDepth", currentRecurrsionDepth );
 
                 var results = _shortcode.Markup.ResolveMergeFields( parms, _shortcode.EnabledLavaCommands );
                 result.Write( results );
@@ -105,13 +121,22 @@ namespace Rock.Lava.Shortcodes
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
         private Dictionary<string, object> ParseMarkup( string markup, Context context )
         {
             var parms = new Dictionary<string, object>();
 
             // first run lava across the inputted markup
             _internalMergeFields = new Dictionary<string, object>();
+
+            // get merge fields loaded by the block or container
+            if ( context.Environments.Count > 0 )
+            {
+                foreach ( var item in context.Environments[0] )
+                {
+                    _internalMergeFields.AddOrReplace( item.Key, item.Value );
+                    parms.AddOrReplace( item.Key, item.Value );
+                }
+            }
 
             // get variables defined in the lava source
             foreach ( var scope in context.Scopes )
@@ -123,15 +148,6 @@ namespace Rock.Lava.Shortcodes
                 }
             }
 
-            // get merge fields loaded by the block or container
-            if ( context.Environments.Count > 0 )
-            {
-                foreach ( var item in context.Environments[0] )
-                {
-                    _internalMergeFields.AddOrReplace( item.Key, item.Value );
-                    parms.AddOrReplace( item.Key, item.Value );
-                }
-            }
             var resolvedMarkup = markup.ResolveMergeFields( _internalMergeFields );
 
             // create all the parameters from the shortcode with their default values
@@ -145,7 +161,7 @@ namespace Rock.Lava.Shortcodes
                 }
             }
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

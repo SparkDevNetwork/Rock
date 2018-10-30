@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Event
             // Filter by campus (always include the "All Campuses" events)
             if ( GetAttributeValue( "UseCampusContext" ).AsBoolean() )
             {
-                var campusEntityType = EntityTypeCache.Read<Campus>();
+                var campusEntityType = EntityTypeCache.Get<Campus>();
                 var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
                 if ( contextCampus != null )

@@ -65,6 +65,9 @@ namespace Rock.Client
         public bool ChristmasWeekIndicator { get; set; }
 
         /// <summary />
+        public int Count { get; set; }
+
+        /// <summary />
         public DateTime Date { get; set; }
 
         /// <summary />
@@ -165,6 +168,7 @@ namespace Rock.Client
             this.CalendarYearQuarter = source.CalendarYearQuarter;
             this.ChristmasIndicator = source.ChristmasIndicator;
             this.ChristmasWeekIndicator = source.ChristmasWeekIndicator;
+            this.Count = source.Count;
             this.Date = source.Date;
             this.DayNumberInCalendarMonth = source.DayNumberInCalendarMonth;
             this.DayNumberInCalendarYear = source.DayNumberInCalendarYear;

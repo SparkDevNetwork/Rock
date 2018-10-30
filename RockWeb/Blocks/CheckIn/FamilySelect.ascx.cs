@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -36,14 +36,16 @@ namespace RockWeb.Blocks.CheckIn
     [TextField( "Title", "Title to display.", false, "Families", "Text", 5 )]
     [TextField( "Caption", "", false, "Select Your Family", "Text", 6 )]
     [TextField( "No Option Message", "", false, "Sorry, no one in your family is eligible to check-in at this location.", "Text", 7 )]
-
     public partial class FamilySelect : CheckInBlock
     {
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
 
-            RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
             var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
@@ -61,6 +63,7 @@ namespace RockWeb.Blocks.CheckIn
                 if ( !Page.IsPostBack )
                 {
                     ClearSelection();
+                    lbAddFamily.Visible = CurrentCheckInState.Kiosk.RegistrationModeEnabled;
                     if ( CurrentCheckInState.CheckIn.Families.Count == 1 &&
                         !CurrentCheckInState.CheckIn.ConfirmSingleFamily )
                     {
@@ -91,6 +94,26 @@ namespace RockWeb.Blocks.CheckIn
                         rSelection.DataBind();
                     }
                 }
+                else
+                {
+                    if ( this.Request.Params["__EVENTTARGET"] == rSelection.UniqueID )
+                    {
+                        HandleRepeaterPostback( this.Request.Params["__EVENTARGUMENT"] );
+                    }
+
+                    // make sure the ShowEditFamilyPrompt is disabled so that it doesn't show again until explicitly enabled after doing a Search
+                    hfShowEditFamilyPrompt.Value = "0";
+
+                    if ( this.Request.Params["__EVENTARGUMENT"] == "EditFamily" )
+                    {
+                        var editFamilyBlock = this.RockPage.ControlsOfTypeRecursive<CheckInEditFamilyBlock>().FirstOrDefault();
+                        if ( editFamilyBlock != null )
+                        {
+                            var firstListedFamily = this.CurrentCheckInState.CheckIn.Families.FirstOrDefault();
+                            editFamilyBlock.ShowEditFamily( firstListedFamily );
+                        }
+                    }
+                }
             }
         }
 
@@ -108,12 +131,62 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
-        protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
+        /// <summary>
+        /// Handles the ItemDataBound event of the rSelection control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rSelection_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item == null )
+            {
+                return;
+            }
+
+            CheckInFamily checkInFamily = e.Item.DataItem as CheckInFamily;
+            if ( checkInFamily == null )
+            {
+                return;
+            }
+
+            Panel pnlSelectFamilyPostback = e.Item.FindControl( "pnlSelectFamilyPostback" ) as Panel;
+            pnlSelectFamilyPostback.Attributes["onclick"] = this.Page.ClientScript.GetPostBackClientHyperlink( rSelection, checkInFamily.Group.Id.ToString() );
+            Literal lSelectFamilyButtonHtml = e.Item.FindControl( "lSelectFamilyButtonHtml" ) as Literal;
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            mergeFields.Add( "Family", checkInFamily );
+            mergeFields.Add( "Kiosk", CurrentCheckInState.Kiosk );
+            mergeFields.Add( "RegistrationModeEnabled", CurrentCheckInState.Kiosk.RegistrationModeEnabled );
+
+            // prepare a query with a new context in case the Lava wants to access Members of this family, and so that lazy loading will work
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                var familyMembersQuery = new GroupMemberService( rockContext ).Queryable().Include( a => a.Person ).Include( a => a.GroupRole )
+                    .AsNoTracking()
+                    .Where( a => a.GroupId == checkInFamily.Group.Id )
+                    .OrderBy( m => m.GroupRole.Order )
+                                    .ThenBy( m => m.Person.BirthYear )
+                                    .ThenBy( m => m.Person.BirthMonth )
+                                    .ThenBy( m => m.Person.BirthDay )
+                                    .ThenBy( m => m.Person.Gender );
+
+                var familySelectLavaTemplate = CurrentCheckInState.CheckInType.FamilySelectLavaTemplate;
+
+                mergeFields.Add( "FamilyMembers", familyMembersQuery );
+
+                lSelectFamilyButtonHtml.Text = familySelectLavaTemplate.ResolveMergeFields( mergeFields );
+            }
+        }
+
+        /// <summary>
+        /// Handles the repeater postback.
+        /// </summary>
+        /// <param name="commandArgument">The command argument.</param>
+        protected void HandleRepeaterPostback( string commandArgument )
         {
             if ( KioskCurrentlyActive )
             {
-                int id = Int32.Parse( e.CommandArgument.ToString() );
-                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Group.Id == id ).FirstOrDefault();
+                int groupId = commandArgument.AsInteger();
+                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Group.Id == groupId ).FirstOrDefault();
                 if ( family != null )
                 {
                     family.Selected = true;
@@ -122,11 +195,21 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbBack control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbBack_Click( object sender, EventArgs e )
         {
             GoBack();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
             CancelCheckin();
@@ -156,16 +239,71 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        /// <summary>
+        /// Gets the condition message.
+        /// </summary>
+        /// <value>
+        /// The condition message.
+        /// </value>
+        protected string ConditionMessage
+        {
+            get
+            {
+                string conditionMessage = string.Format( "<p>{0}</p>", GetAttributeValue( "NoOptionMessage" ) );
+                return conditionMessage;
+            }
+        }
+
+        /// <summary>
+        /// Processes the selection.
+        /// </summary>
         private void ProcessSelection()
         {
-            if ( !ProcessSelection( maWarning, () =>
-                ( 
-                    CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ) && 
-                    CurrentCheckInState.CheckIn.Families.All( f => f.Action == CheckinAction.CheckIn )
-                ),
-                string.Format( "<p>{0}</p>", GetAttributeValue( "NoOptionMessage" ) ) ) )            
+            var editFamilyBlock = this.RockPage.ControlsOfTypeRecursive<CheckInEditFamilyBlock>().FirstOrDefault();
+
+            hfShowEditFamilyPrompt.Value = "0";
+
+            Func<bool> doNotProceedCondition = () =>
+            {
+                var noMatchingFamilies = CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ) &&
+                    CurrentCheckInState.CheckIn.Families.All( f => f.Action == CheckinAction.CheckIn );
+
+                if ( noMatchingFamilies )
+                {
+                    if ( CurrentCheckInState.Kiosk.RegistrationModeEnabled && editFamilyBlock != null )
+                    {
+                        hfShowEditFamilyPrompt.Value = "1";
+                        return true;
+                    }
+                    else
+                    {
+                        maWarning.Show( this.ConditionMessage, Rock.Web.UI.Controls.ModalAlertType.None );
+                        return true;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            };
+
+            if ( !ProcessSelection( null, doNotProceedCondition, this.ConditionMessage ) )
             {
                 ClearSelection();
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddFamily control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddFamily_Click( object sender, EventArgs e )
+        {
+            var editFamilyBlock = this.RockPage.ControlsOfTypeRecursive<CheckInEditFamilyBlock>().FirstOrDefault();
+            if ( editFamilyBlock != null )
+            {
+                editFamilyBlock.ShowAddFamily();
             }
         }
     }

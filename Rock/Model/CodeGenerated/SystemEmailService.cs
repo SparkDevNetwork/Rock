@@ -52,15 +52,15 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<Group>( Context ).Queryable().Any( a => a.ExitSystemEmailId == item.Id ) )
+            if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.ExitSystemEmailId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, Group.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, GroupSync.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<Group>( Context ).Queryable().Any( a => a.WelcomeSystemEmailId == item.Id ) )
+            if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.WelcomeSystemEmailId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, Group.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, GroupSync.FriendlyTypeName );
                 return false;
             }  
  

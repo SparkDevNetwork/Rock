@@ -46,7 +46,13 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public string PackageName { get; set; }
+
+        /// <summary />
         public int PersonAliasId { get; set; }
+
+        /// <summary />
+        public int? ProcessorEntityTypeId { get; set; }
 
         /// <summary />
         public bool? RecordFound { get; set; }
@@ -55,13 +61,22 @@ namespace Rock.Client
         public DateTime RequestDate { get; set; }
 
         /// <summary />
+        public string RequestId { get; set; }
+
+        /// <summary />
+        public string ResponseData { get; set; }
+
+        /// <summary />
         public DateTime? ResponseDate { get; set; }
 
         /// <summary />
         public int? ResponseDocumentId { get; set; }
 
         /// <summary />
-        public string ResponseXml { get; set; }
+        public string ResponseId { get; set; }
+
+        /// <summary />
+        public string Status { get; set; }
 
         /// <summary />
         public int? WorkflowId { get; set; }
@@ -102,12 +117,17 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.PackageName = source.PackageName;
             this.PersonAliasId = source.PersonAliasId;
+            this.ProcessorEntityTypeId = source.ProcessorEntityTypeId;
             this.RecordFound = source.RecordFound;
             this.RequestDate = source.RequestDate;
+            this.RequestId = source.RequestId;
+            this.ResponseData = source.ResponseData;
             this.ResponseDate = source.ResponseDate;
             this.ResponseDocumentId = source.ResponseDocumentId;
-            this.ResponseXml = source.ResponseXml;
+            this.ResponseId = source.ResponseId;
+            this.Status = source.Status;
             this.WorkflowId = source.WorkflowId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -124,6 +144,9 @@ namespace Rock.Client
     /// </summary>
     public partial class BackgroundCheck : BackgroundCheckEntity
     {
+        /// <summary />
+        public EntityType ProcessorEntityType { get; set; }
+
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>

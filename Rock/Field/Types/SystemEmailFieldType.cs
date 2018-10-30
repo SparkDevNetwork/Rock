@@ -49,10 +49,13 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( value, out guid ) )
             {
-                var systemEmail = new SystemEmailService( new RockContext() ).Get( guid );
-                if ( systemEmail != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = systemEmail.Title;
+                    var systemEmail = new SystemEmailService( rockContext ).GetNoTracking( guid );
+                    if ( systemEmail != null )
+                    {
+                        formattedValue = systemEmail.Title;
+                    }
                 }
             }
 
@@ -101,8 +104,11 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is ListControl )
-                return ( (ListControl)control ).SelectedValue;
+            var editControl = control as ListControl;
+            if ( editControl != null )
+            {
+                return editControl.SelectedValue;
+            }
 
             return null;
         }
@@ -115,10 +121,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var editControl = control as ListControl;
+            if ( editControl != null )
             {
-                if ( control != null && control is ListControl )
-                    ( (ListControl)control ).SelectedValue = value;
+                editControl.SetValue( value );
             }
         }
 

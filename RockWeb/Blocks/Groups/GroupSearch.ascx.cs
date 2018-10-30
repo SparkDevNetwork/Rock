@@ -20,7 +20,9 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -35,9 +37,16 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Search" )]
     [Category( "Groups" )]
     [Description( "Handles displaying group search results and redirects to the group detail page (via route ~/Group/) when only one match was found." )]
+    [CodeEditorField( "Group URL Format", "The URL to use for linking to a group. <span class='tip tip-lava'></span>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"~/Group/{{ Group.Id }}" )]
 
     public partial class GroupSearch : RockBlock
     {
+        #region Fields
+
+        private Dictionary<string, object> _commonMergeFields = new Dictionary<string, object>();
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -85,21 +94,29 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            var _commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+
             if ( groups.Count == 1 )
             {
-                Response.Redirect( string.Format( "~/Group/{0}", groups[0].Id ), false );
+                var mergeFields = new Dictionary<string, object>(_commonMergeFields)
+                {
+                    {"Group", groups[0]}
+                };
+                var url = GetAttributeValue("GroupURLFormat").ResolveMergeFields(mergeFields);
+
+                Response.Redirect( url, false );
                 Context.ApplicationInstance.CompleteRequest();
             }
             else
             {
-                gGroups.EntityTypeId = EntityTypeCache.Read<Group>().Id;
+                gGroups.EntityTypeId = EntityTypeCache.Get<Group>().Id;
                 gGroups.DataSource = groups
                     .Select( g => new
                     {
                         g.Id,
                         GroupType = g.GroupType.Name,
                         Structure = ParentStructure( g ),
-                        MemberCount = g.Members.Count()
+                        MemberCount = g.Members.Count
                     } )
                     .ToList();
                 gGroups.DataBind();
@@ -137,9 +154,12 @@ namespace RockWeb.Blocks.Groups
                 prefix += " <i class='fa fa-angle-right'></i> ";
             }
 
-            string pageUrl = RockPage.ResolveUrl( "~/Group/" );
-
-            return string.Format( "{0}<a href='{1}{2}'>{3}</a>", prefix, pageUrl, group.Id, group.Name );
+            var mergeFields = new Dictionary<string, object>( _commonMergeFields )
+            {
+                {"Group", group }
+            };
+            var url = RockPage.ResolveRockUrl(GetAttributeValue("GroupURLFormat").ResolveMergeFields(mergeFields));
+            return string.Format( "{0}<a href='{1}'>{2}</a>", prefix, url, group.Name );
         }
 
         #endregion

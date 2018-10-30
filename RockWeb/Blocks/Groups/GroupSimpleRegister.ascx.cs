@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Groups
                         }
                         else
                         {
-                            ShowError( "Configuration Error", "The configured group does not exist, or it's group type does not have a default role configured." );
+                            ShowError( "Configuration Error", "The configured group does not exist, or its group type does not have a default role configured." );
                         }
                     }
                     else
@@ -206,8 +206,8 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                DefinedValueCache dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-                DefinedValueCache dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+                DefinedValueCache dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+                DefinedValueCache dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
 
                 Person person = new Person();
                 person.FirstName = txtFirstName.Text;
@@ -215,7 +215,7 @@ namespace RockWeb.Blocks.Groups
                 person.Email = txtEmail.Text;
                 person.IsEmailActive = true;
                 person.EmailPreference = EmailPreference.EmailAllowed;
-                person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                 if ( dvcConnectionStatus != null )
                 {
                     person.ConnectionStatusValueId = dvcConnectionStatus.Id;

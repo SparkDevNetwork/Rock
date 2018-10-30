@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         private List<WorkflowNavigationCategory> GetData()
         {
-            int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.WorkflowType ) ).Id;
+            int entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.WorkflowType ) ).Id;
 
             var selectedCategories = new List<Guid>();
             GetAttributeValue( "Categories" ).SplitDelimitedValues().ToList().ForEach( c => selectedCategories.Add( c.AsGuid() ) );
@@ -415,15 +415,7 @@ namespace RockWeb.Blocks.WorkFlow
             CanManage = canManage;
             CanViewList = canViewList;
 
-            if ( workflowType.IsActive.HasValue )
-            {
-                IsActive = workflowType.IsActive.Value;
-            }
-            else
-            {
-                IsActive = true;
-            }
-            
+            IsActive = workflowType.IsActive == true;
         }
     }
 }

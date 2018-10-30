@@ -22,6 +22,7 @@ using System.Reflection;
 using Rock;
 using Rock.Data;
 using Rock.Web.Cache;
+using System.Data.Entity;
 
 namespace Rock.Model
 {
@@ -62,12 +63,12 @@ namespace Rock.Model
                 // Create a new context so type can be saved independing of current context
                 using ( var rockContext = new RockContext() )
                 {
-                    var EntityTypeService = new EntityTypeService( rockContext );
+                    var entityTypeService = new EntityTypeService( rockContext );
                     entityType = new EntityType();
                     entityType.Name = type.FullName;
                     entityType.FriendlyName = type.Name.SplitCase();
                     entityType.AssemblyName = type.AssemblyQualifiedName;
-                    EntityTypeService.Add( entityType );
+                    entityTypeService.Add( entityType );
                     rockContext.SaveChanges();
                 }
 
@@ -97,10 +98,10 @@ namespace Rock.Model
             {
                 // Create a new context so type can be saved independing of current context
                 var rockContext = new RockContext();
-                var EntityTypeService = new EntityTypeService( rockContext );
+                var entityTypeService = new EntityTypeService( rockContext );
                 entityType = new EntityType();
                 entityType.Name = name;
-                EntityTypeService.Add( entityType );
+                entityTypeService.Add( entityType );
                 rockContext.SaveChanges();
 
                 // Read type using current context
@@ -130,7 +131,7 @@ namespace Rock.Model
                 .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
                 .Select( s => new
                 {
-                    EntityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( s ),
+                    EntityTypeCache = EntityTypeCache.Get( s ),
                     Entity = s,
                 } )
                 .Where( a => a.EntityTypeCache != null && a.EntityTypeCache.GetEntityType() != null && !a.EntityTypeCache.GetEntityType().GetCustomAttributes( typeof( HideFromReportingAttribute ), true ).Any() )
@@ -183,6 +184,23 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets an Entity by type and entity Id, without loading the entity into EF ChangeTracking
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <returns></returns>
+        public IEntity GetEntityNoTracking( int entityTypeId, int entityId )
+        {
+            var entityQry = GetQueryable( entityTypeId );
+            if ( entityQry != null )
+            {
+                return entityQry.Where( i => i.Id == entityId ).AsNoTracking().FirstOrDefault();
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets an Entity by type and entity Guid.
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
@@ -206,7 +224,7 @@ namespace Rock.Model
         /// <returns></returns>
         private IQueryable<IEntity> GetQueryable( int entityTypeId )
         {
-            EntityTypeCache itemEntityType = EntityTypeCache.Read( entityTypeId );
+            EntityTypeCache itemEntityType = EntityTypeCache.Get( entityTypeId );
             if ( itemEntityType != null )
             {
                 Type entityType = itemEntityType.GetEntityType();
@@ -279,7 +297,6 @@ namespace Rock.Model
                         oldEntityType.IsSecured = false;
                         oldEntityType.IsEntity = false;
                         oldEntityType.AssemblyName = null;
-                        EntityTypeCache.Flush( oldEntityType.Id );
                     }
                 }
 
@@ -303,8 +320,8 @@ namespace Rock.Model
                         existingEntityType.IsSecured = entityType.IsSecured;
                         existingEntityType.FriendlyName = existingEntityType.FriendlyName ?? entityType.FriendlyName;
                         existingEntityType.AssemblyName = entityType.AssemblyName;
-                        EntityTypeCache.Flush( existingEntityType.Id );
                     }
+
                     entityTypes.Remove( key );
                 }
 
@@ -324,7 +341,7 @@ namespace Rock.Model
                 // make sure the EntityTypeCache is synced up with any changes that were made
                 foreach (var entityTypeModel in entityTypeService.Queryable())
                 {
-                    EntityTypeCache.Read( entityTypeModel );
+                    EntityTypeCache.Get( entityTypeModel );
                 }
             }
         }
@@ -336,7 +353,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override Guid? GetGuid( int id )
         {
-            var cacheItem = Rock.Web.Cache.EntityTypeCache.Read( id );
+            var cacheItem = EntityTypeCache.Get( id );
             if ( cacheItem != null )
             {
                 return cacheItem.Guid;

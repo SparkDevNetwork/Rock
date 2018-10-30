@@ -55,6 +55,9 @@ namespace Rock.Client
         /// <summary />
         public string IconCssClass { get; set; }
 
+        /// <summary />
+        public bool IsActive { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -109,6 +112,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;
+            this.IsActive = source.IsActive;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.OwnerPersonAliasId = source.OwnerPersonAliasId;

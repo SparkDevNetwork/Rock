@@ -253,6 +253,23 @@ namespace Rock.Web.UI.Controls
 
         #region Properties
 
+
+        /// <summary>
+        /// Gets or sets the text displayed when the mouse pointer hovers over the Web server control.
+        /// </summary>
+        public override string ToolTip
+        {
+            get
+            {
+                return ViewState["ToolTip"] as string;
+            }
+
+            set
+            {
+                ViewState["ToolTip"] = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the binary file id.
         /// </summary>
@@ -279,7 +296,15 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                _hfBinaryFileId.Value = value.ToString();
+
+                if ( value.HasValue )
+                {
+                    _hfBinaryFileId.Value = value.ToString();
+                }
+                else
+                {
+                    _hfBinaryFileId.Value = "0";
+                }
             }
         }
 
@@ -548,9 +573,14 @@ namespace Rock.Web.UI.Controls
             DropZone,
 
             /// <summary>
-            /// As a button
+            /// As a primary button
             /// </summary>
-            Button
+            Button,
+
+            /// <summary>
+            /// As a default button
+            /// </summary>
+            DefaultButton
         }
 
         /// <summary>
@@ -626,7 +656,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// This is where you implement the simple aspects of rendering your control.  The rest
         /// will be handled by calling RenderControlHelper's RenderControl() method.
         /// </summary>
         /// <param name="writer">The writer.</param>
@@ -634,6 +664,12 @@ namespace Rock.Web.UI.Controls
         {
             writer.AddAttribute( "class", "fileupload-group" );
             writer.AddAttribute( "id", this.ClientID );
+
+            if ( ToolTip.IsNotNullOrWhiteSpace() )
+            {
+                writer.AddAttribute( "title", ToolTip );
+            }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( BinaryFileId != null || !string.IsNullOrWhiteSpace( this.UploadedContentFilePath ) )
@@ -684,15 +720,22 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
-                writer.Write( @"
-                    <div class='js-upload-progress upload-progress' style='display:none;'>
-                        <i class='fa fa-refresh fa-3x fa-spin'></i>
+                string uploadClass = this.DisplayMode == UploaderDisplayMode.DefaultButton ? "upload-progress-sm" : "upload-progress";
+                string spinnerSize = this.DisplayMode == UploaderDisplayMode.DefaultButton ? "fa-lg" : "fa-3x";
+
+                writer.Write( $@"
+                    <div class='js-upload-progress {uploadClass}' style='display:none;'>
+                        <i class='fa fa-refresh {spinnerSize} fa-spin'></i>
                         <div class='js-upload-progress-percent'></div>
                     </div>" );
 
                 if (this.DisplayMode == UploaderDisplayMode.Button)
                 {
                     writer.AddAttribute(HtmlTextWriterAttribute.Class, "fileupload-button");
+                }
+                else if ( this.DisplayMode == UploaderDisplayMode.DefaultButton )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileuploaddefault-button" );
                 }
                 else
                 {
@@ -828,27 +871,28 @@ Rock.controls.fileUploader.initialize({{
             if ( eventArgument == "FileUploaded" && FileUploaded != null )
             {
                 EnsureChildControls();
-                
+
                 // grab the _hfBinaryFileId value of the Request.Params
                 _hfBinaryFileId.Value = System.Web.HttpContext.Current?.Request?.Params[_hfBinaryFileId.UniqueID];
 
-                if (IsBinaryFile)
+                if ( IsBinaryFile )
                 {
-                    FileUploaded( this, new FileUploaderEventArgs( this.UploadedContentFilePath ));
+                    FileUploaded( this, new FileUploaderEventArgs( this.BinaryFileId ) );
                 }
                 else
                 {
-                    FileUploaded( this, new FileUploaderEventArgs( this.BinaryFileId ));
+                    FileUploaded( this, new FileUploaderEventArgs( this.UploadedContentFilePath ) );
                 }
             }
 
             if ( eventArgument == "FileRemoved" )
             {
+                int? deletedBinaryFileId = this.BinaryFileId;
                 this.BinaryFileId = 0;
 
                 if ( FileRemoved != null )
                 {
-                    FileRemoved( this, new FileUploaderEventArgs( this.BinaryFileId ) );
+                    FileRemoved( this, new FileUploaderEventArgs( deletedBinaryFileId ) );
                 }
             }
         }

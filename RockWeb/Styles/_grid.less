@@ -1,4 +1,4 @@
-﻿/*
+/*
     Used to manage styles related to Rock's internal grid component
 
     1. Bootstrap Overrides
@@ -18,15 +18,31 @@
 // 1. Bootstrap Overrides
 // -------------------------
 
-
+/* If th has a required class, render the required field indicator after the column heading */
+.table thead th.required::after {
+  margin-left: 4px;
+  font-family: @fa-font-face;
+  font-size: 6px;
+  font-weight: 900;
+  color: #eca9a7;
+  vertical-align: super;
+  content: "\f111";
+}
 
 .table > tbody > tr > td {
   color: @grid-row-even-color;
 }
 
-.table-striped > tbody > tr:nth-child(odd) > td, .table-striped > tbody > tr:nth-child(odd) > th {
-  color: @grid-row-odd-color;
-  background-color: @grid-row-odd-bg;
+.table-striped {
+  > tbody > tr:nth-of-type(odd) {
+    color: @grid-row-odd-color;
+    background-color: @grid-row-odd-bg;
+  }
+
+  > tbody > tr:nth-of-type(even) {
+    color: @grid-row-even-color;
+    background-color: @grid-row-even-bg;
+  }
 }
 
 .table.table-hover > tbody > tr:hover > td {
@@ -40,13 +56,13 @@ td.grid-select-cell {
 
 td.wrap-contents {
   -webkit-hyphens: auto;
-     -moz-hyphens: auto;
-          hyphens: auto;
+  -moz-hyphens: auto;
+
+  -ms-hyphens: auto;
+  hyphens: auto;
   // keep cells from scrolling off screen
   -ms-word-break: break-all;
-      word-break: break-all;
-
-      -ms-hyphens: auto;
+  word-break: break-all;
 }
 
 .table {
@@ -104,22 +120,21 @@ td.wrap-contents {
 // 3. Filter
 // -------------------------
 .grid-filter {
-  padding: 6px 12px;
+  padding: 0;
   color: @grid-filter-color;
   background-color: @grid-filter-bg;
   border-bottom: 1px solid @grid-border-color;
   border-radius: @border-radius-base;
 
   header {
-    height: 24px;
-    padding: 4px;
-    text-align: right;
+    position: absolute;
+    display: inline;
     cursor: pointer;
     border-radius: @border-radius-base @border-radius-base 0 0;
 
     h3 {
       display: inline;
-      margin: 0 2px 0 2px;
+      margin: 0 2px 0 6px;
       font-size: 12px;
       font-weight: @font-weight-light;
       line-height: 16px;
@@ -134,6 +149,19 @@ td.wrap-contents {
     }
   }
 
+  .btn-link {
+    position: absolute;
+    z-index: 100;
+    margin: @table-cell-padding;
+    color: @ui-5;
+    text-decoration: none;
+    background: @grid-footer-bg;
+
+    &.is-open {
+      background: @grid-filter-bg;
+    }
+  }
+
   h4 {
     padding-bottom: 8px;
     margin: 12px 0 20px;
@@ -141,7 +169,11 @@ td.wrap-contents {
   }
 
   .grid-filter-entry {
-    margin-bottom: 12px;
+    padding: @panel-body-padding;
+    padding-top: 37px;
+    border-bottom: 1px solid darken(@grid-filter-bg, 10%);
+
+    h4 { display: none; }
   }
 
   // adjust the background color of pickers in the filters
@@ -163,7 +195,7 @@ td.wrap-contents {
   }
 
   fieldset {
-    margin-bottom: 12px;
+    padding: 37px 16px 8px;
   }
 }
 
@@ -177,22 +209,42 @@ td.wrap-contents {
   background-color: @grid-column-header-bg;
   border-color: @grid-column-header-border-color;
 
-   > a:not(.btn) {
-    display: block;
+  > a:not(.btn) {
+    display: inline;
     color: @grid-column-header-text-color;
+    &::after{
+      display: inline;
+      width: 15px;
+      padding-left: 5px;
+      font-family: @fa-font-face;
+      font-weight: @fa-theme-weight;
+      color: #8c9ba5;
+      text-decoration: none;
+      content: @fa-var-caret-down;
+      opacity: 0;
+    }
+
+    &:active,
+    &:active::after {
+      color: @link-color;
+    }
+  }
+  &:hover a:not(.btn)::after{
+    content: @fa-var-caret-down;
+    opacity: 1;
   }
 
   // sorting
-  &.ascending a::before {
-    padding-right: 5px;
-    font-family: FontAwesome;
-    content: "\f0d8";
+  &.descending a:not(.btn)::after {
+    color: @grid-column-header-text-color;
+    content: @fa-var-caret-down;
+    opacity: 1;
   }
 
-  &.descending a::before {
-    padding-right: 5px;
-    font-family: FontAwesome;
-    content: "\f0d7";
+  &.ascending a:not(.btn)::after {
+    color: @grid-column-header-text-color;
+    content: @fa-var-caret-up;
+    opacity: 1;
   }
 }
 
@@ -207,22 +259,31 @@ td.wrap-contents {
 
 // pagination
 .grid-paging {
-  color: @grid-pager-color;
-  background-color: @grid-pager-bg;
+  padding: 5px 0;
 
-  .pagination {
+  .grid-pager {
     margin-top: 0;
     margin-bottom: 0;
 
     li {
-       > a {
+      > a {
+        min-width: 23px;
+        padding: 5px 12px;
+        margin: 0 8px 0 0;
         color: @grid-pager-button-color;
+        text-align: center;
         background-color: @grid-pager-button-bg;
         border-color: @grid-pager-button-border;
       }
 
+      &.disabled > a {
+        cursor: default;
+      }
+
       &.active > a {
+        color: @grid-pager-button-active-color;
         background-color: @grid-pager-button-active-bg;
+        border-color: @grid-pager-button-active-border;
       }
     }
   }
@@ -233,13 +294,19 @@ td.wrap-contents {
 
   .grid-pagesize {
     float: left;
+    margin: 0 (@padding-base-horizontal / 2) 0 0;
+  }
+
+  .pagination-text {
+    float: left;
+    font-size: 12px;
   }
 
   .grid-itemcount {
     float: left;
     margin-top: 7px;
     margin-left: 10px;
-    font-size: 11px;
+    font-size: 12px;
   }
 }
 
@@ -293,24 +360,29 @@ td.grid-col-actions {
   }
 }
 
-// 7. Disabled Styles
+// 7. Reusable Styles
 // -------------------------
 
 .table-padded {
-  td, th {
+  td,
+  th {
     padding: 12px !important;
   }
 }
 
+.table-empty {
+  opacity: .6;
+}
+
 // 8. Column Types
 // -------------------------
-
 .grid-select-field {
   min-width: 40px;
   // checkbox field
   text-align: center;
 
-  .checkbox, .radio {
+  .checkbox,
+  .radio {
     padding-left: 0;
     margin: 4px 0 0 0;
 
@@ -374,15 +446,24 @@ td.grid-col-actions {
 }
 
 .table .grid-icon img {
-  width: 72px;
-  height: 72px;
+  width: 100%;
+  max-width: 120px;
+}
+
+.grid-select-cell {
+  .photo-icon {
+    display: inline-block;
+    width: @line-height-computed;
+    height: @line-height-computed;
+    vertical-align: top;
+  }
 }
 
 
 // 9. Row Types
 // -------------------------
 .table > tbody > tr.grid-section-header {
-   > td {
+  > td {
     color: @grid-section-color;
     background-color: @grid-section-bg;
   }
@@ -417,25 +498,26 @@ tr.row-highlight {
   }
 
   &:hover td {
+    color: @grid-column-header-bold-color !important;
     background-color: lighten(@grid-column-header-bold-bg, 10%);
   }
 }
 
 // inactive row
 .table > tbody > tr.is-inactive {
-   > td {
+  > td {
     color: lighten(@grid-row-even-color, 30%);
   }
 }
 
 .table > tbody > tr.is-inactive-person {
-   > td {
+  > td {
     color: lighten(@grid-row-even-color, 30%);
   }
 }
 
 .table > tbody > tr.is-deceased {
-   > td {
+  > td {
     color: @brand-danger;
   }
 }

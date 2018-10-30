@@ -50,6 +50,7 @@ namespace Rock.Rest.Controllers
         /// <param name="countsType">Type of the counts.</param>
         /// <param name="campusId">if set it will filter groups based on campus</param>
         /// <param name="includeNoCampus">if campus set and set to <c>true</c> [include groups with no campus].</param>
+        /// <param name="limitToPublic">if set to <c>true</c> [limit to public groups].</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetChildren/{id}" )]
@@ -62,7 +63,8 @@ namespace Rock.Rest.Controllers
             bool includeInactiveGroups = false,
             TreeViewItem.GetCountsType countsType = TreeViewItem.GetCountsType.None,
             int campusId = 0,
-            bool includeNoCampus = false )
+            bool includeNoCampus = false,
+            bool limitToPublic  = false)
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
             SetProxyCreation( true );
@@ -75,7 +77,7 @@ namespace Rock.Rest.Controllers
             // if specific group types are specified, show the groups regardless of ShowInNavigation
             bool limitToShowInNavigation = !includedGroupTypeIdList.Any();
 
-            var qry = groupService.GetChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList, includeInactiveGroups, limitToShowInNavigation, campusId, includeNoCampus );
+            var qry = groupService.GetChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList, includeInactiveGroups, limitToShowInNavigation, campusId, includeNoCampus, limitToPublic );
 
             List<Group> groupList = new List<Group>();
             List<TreeViewItem> groupNameList = new List<TreeViewItem>();
@@ -93,7 +95,7 @@ namespace Rock.Rest.Controllers
                     treeViewItem.IsActive = group.IsActive;
 
                     // if there a IconCssClass is assigned, use that as the Icon.
-                    var groupType = Rock.Web.Cache.GroupTypeCache.Read( group.GroupTypeId );
+                    var groupType = GroupTypeCache.Get( group.GroupTypeId );
                     if ( groupType != null )
                     {
                         treeViewItem.IconCssClass = groupType.IconCssClass;
@@ -284,7 +286,6 @@ namespace Rock.Rest.Controllers
                                                     && g.GroupRole.Guid == knownRelationshipOwner
                                                     && familyMembers.Contains( g.PersonId ) )
                                     .Select( m => m.GroupId );
-            rockContext.Database.Log = s => System.Diagnostics.Debug.WriteLine( s );
             var guests = groupMemberService.Queryable()
                                     .Where( g => g.GroupRole.Guid == knownRelationshipCanCheckin
                                                     && familyMembersKnownRelationshipGroups.Contains( g.GroupId ) )
@@ -330,30 +331,6 @@ namespace Rock.Rest.Controllers
             }
 
             return guestFamilies.AsQueryable();
-        }
-
-        /// <summary>
-        /// Gets a group by location.
-        /// </summary>
-        /// <param name="geofenceGroupTypeId">The geofence group type identifier.</param>
-        /// <param name="groupTypeId">The group type identifier.</param>
-        /// <param name="locationId">The location identifier.</param>
-        /// <param name="queryOptions">The query options.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        [Obsolete( "Use one of the other ~/api/Groups/ByLocation endpoint(s)" )]
-        [System.Web.Http.Route( "api/Groups/ByLocation/{geofenceGroupTypeId}/{groupTypeId}/{locationId}" )]
-        public IQueryable GetByLocation( int geofenceGroupTypeId, int groupTypeId, int locationId, System.Web.Http.OData.Query.ODataQueryOptions<Group> queryOptions )
-        {
-            // Get the location record
-            var rockContext = (RockContext)Service.Context;
-            var specifiedLocation = new LocationService( rockContext ).Get( locationId );
-
-            // If location was valid and address was geocoded successfully
-            DbGeography geoPoint = specifiedLocation != null ? specifiedLocation.GeoPoint : null;
-
-            return GetByGeoPoint( groupTypeId, geoPoint, false, null, geofenceGroupTypeId, queryOptions );
         }
 
         /// <summary>
@@ -540,7 +517,7 @@ namespace Rock.Rest.Controllers
             var rockContext = (RockContext)Service.Context;
             var group = new GroupService( rockContext ).Get( groupId );
 
-            var locationType = DefinedValueCache.Read( locationTypeId );
+            var locationType = DefinedValueCache.Get( locationTypeId );
             if ( group == null || locationType == null )
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
@@ -549,60 +526,6 @@ namespace Rock.Rest.Controllers
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
 
             GroupService.AddNewGroupAddress( rockContext, group, locationType.Guid.ToString(), street1, street2, city, state, postalCode, country, true );
-        }
-
-        /// <summary>
-        /// Puts the specified identifier.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="group">The group.</param>
-        public override void Put( int id, Group group )
-        {
-            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
-            if ( familyGroupType != null && familyGroupType.Id == group.GroupTypeId )
-            {
-                SetProxyCreation( true );
-
-                var rockContext = (RockContext)Service.Context;
-                var existingGroup = Service.Get( id );
-                if ( existingGroup != null )
-                {
-                    var changes = new List<string>();
-                    string oldCampus = existingGroup.Campus != null ? existingGroup.Campus.Name : string.Empty;
-                    string newCampus = group.Campus != null ? group.Campus.Name : string.Empty;
-                    if ( group.CampusId.HasValue && string.IsNullOrWhiteSpace( newCampus ) )
-                    {
-                        var campus = CampusCache.Read( group.CampusId.Value );
-                        newCampus = campus != null ? campus.Name : string.Empty;
-                    }
-
-                    History.EvaluateChange( changes, "Campus", oldCampus, newCampus );
-
-                    if ( changes.Any() )
-                    {
-                        System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
-
-                        int? modifiedByPersonAliasId = group.ModifiedAuditValuesAlreadyUpdated ? group.ModifiedByPersonAliasId : (int?)null;
-
-                        foreach ( var fm in existingGroup.Members )
-                        {
-                            HistoryService.SaveChanges(
-                                rockContext,
-                                typeof( Person ),
-                                Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                fm.PersonId,
-                                changes,
-                                existingGroup.Name,
-                                typeof( Group ),
-                                existingGroup.Id,
-                                true,
-                                modifiedByPersonAliasId );
-                        }
-                    }
-                }
-            }
-
-            base.Put( id, group );
         }
 
         #region MapInfo methods
@@ -637,7 +560,7 @@ namespace Rock.Rest.Controllers
                         .Select( l => l.Location ) )
                     {
                         var mapItem = new MapItem( location );
-                        mapItem.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
+                        mapItem.EntityTypeId = EntityTypeCache.Get( "Rock.Model.Group" ).Id;
                         mapItem.EntityId = group.Id;
                         mapItem.Name = group.Name;
                         if ( mapItem.Point != null || mapItem.PolygonPoints.Any() )
@@ -716,7 +639,7 @@ namespace Rock.Rest.Controllers
                     foreach ( var location in groupLocations )
                     {
                         var mapItem = new MapItem( location );
-                        mapItem.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
+                        mapItem.EntityTypeId = EntityTypeCache.Get( "Rock.Model.Group" ).Id;
                         mapItem.EntityId = group.Id;
                         mapItem.Name = group.Name;
                         if ( mapItem.Point != null || mapItem.PolygonPoints.Any() )
@@ -734,12 +657,13 @@ namespace Rock.Rest.Controllers
         /// Gets the member map information.
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
+        /// <param name="groupMemberStatus">The group member status.</param>
         /// <returns></returns>
         /// <exception cref="System.Web.Http.HttpResponseException">
         /// </exception>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Members" )]
-        public IQueryable<MapItem> GetMemberMapInfo( int groupId )
+        [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Members/{groupMemberStatus?}" )]
+        public IQueryable<MapItem> GetMemberMapInfo( int groupId, GroupMemberStatus? groupMemberStatus = null )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
             SetProxyCreation( true );
@@ -757,7 +681,14 @@ namespace Rock.Rest.Controllers
                     var mapItems = new List<MapItem>();
 
                     Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-                    var memberIds = group.Members.Select( m => m.PersonId ).Distinct().ToList();
+                    var members = group.Members;
+
+                    if ( groupMemberStatus.HasValue )
+                    {
+                        members = members.Where(a=>a.GroupMemberStatus == groupMemberStatus.Value).ToList();
+                    }
+
+                    var memberIds = members.Select( m => m.PersonId ).Distinct().ToList();
                     var families = ( (GroupService)Service ).Queryable( "GroupLocations.Location" )
                         .Where( g =>
                             g.GroupType.Guid == familyGuid &&
@@ -771,7 +702,7 @@ namespace Rock.Rest.Controllers
                             .Select( g => g.Location ) )
                         {
                             var mapItem = new MapItem( location );
-                            mapItem.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
+                            mapItem.EntityTypeId = EntityTypeCache.Get( "Rock.Model.Group" ).Id;
                             mapItem.EntityId = family.Id;
                             mapItem.Name = family.Name;
                             if ( mapItem.Point != null || mapItem.PolygonPoints.Any() )
@@ -841,7 +772,7 @@ namespace Rock.Rest.Controllers
                         .Select( l => l.Location ) )
                     {
                         var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
-                        var recordStatusActiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                        var recordStatusActiveId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
                         
                         var families = new GroupLocationService( (RockContext)Service.Context ).Queryable()
                             .Where( l =>
@@ -878,7 +809,7 @@ namespace Rock.Rest.Controllers
                         foreach ( var family in families.Where( f => f.MinStatus == statusId ) )
                         {
                             var mapItem = new MapItem( family.Location );
-                            mapItem.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
+                            mapItem.EntityTypeId = EntityTypeCache.Get( "Rock.Model.Group" ).Id;
                             mapItem.EntityId = family.Id;
                             mapItem.Name = family.Name;
                             if ( mapItem.Point != null || mapItem.PolygonPoints.Any() )

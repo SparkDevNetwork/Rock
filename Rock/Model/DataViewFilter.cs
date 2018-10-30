@@ -26,6 +26,7 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Reporting;
+using Rock.Web.Cache;
 using Rock.Security;
 
 namespace Rock.Model
@@ -190,9 +191,9 @@ namespace Rock.Model
             // and all the child models/components
             if ( authorized && string.Compare( action, Authorization.VIEW, true ) == 0 )
             {
-                if ( EntityType != null )
+                if ( EntityTypeId.HasValue )
                 {
-                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityType.Name );
+                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityTypeCache.Get( this.EntityTypeId.Value )?.Name );
                     if ( filterComponent != null )
                     {
                         authorized = filterComponent.IsAuthorized( action, person );
@@ -213,7 +214,7 @@ namespace Rock.Model
 
             return authorized;
         }
-        
+
         /// <summary>
         /// Gets the Linq expression for the DataViewFilter.
         /// </summary>
@@ -224,13 +225,27 @@ namespace Rock.Model
         /// <returns></returns>
         public virtual Expression GetExpression( Type filteredEntityType, IService serviceInstance, ParameterExpression parameter, List<string> errorMessages )
         {
+            return GetExpression( filteredEntityType, serviceInstance, parameter, null, errorMessages );
+        }
+
+        /// <summary>
+        /// Gets the Linq expression for the DataViewFilter.
+        /// </summary>
+        /// <param name="filteredEntityType">Type of the filtered entity.</param>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="parameter">The parameter.</param>
+        /// <param name="dataViewFilterOverrides">The data view filter overrides.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public virtual Expression GetExpression( Type filteredEntityType, IService serviceInstance, ParameterExpression parameter, DataViewFilterOverrides dataViewFilterOverrides, List<string> errorMessages )
+        {
             switch ( ExpressionType )
             {
                 case FilterExpressionType.Filter:
 
                     if ( this.EntityTypeId.HasValue )
                     {
-                        var entityType = Rock.Web.Cache.EntityTypeCache.Read( this.EntityTypeId.Value );
+                        var entityType = EntityTypeCache.Get( this.EntityTypeId.Value );
                         if ( entityType != null )
                         {
                             var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
@@ -238,7 +253,32 @@ namespace Rock.Model
                             {
                                 try
                                 {
-                                    return component.GetExpression( filteredEntityType, serviceInstance, parameter, this.Selection );
+                                    string selection; // A formatted string representing the filter settings: FieldName, <see cref="ComparisonType">Comparison Type</see>, (optional) Comparison Value(s)
+                                    var dataViewFilterOverride = dataViewFilterOverrides?.GetOverride( this.Guid );
+                                    if ( dataViewFilterOverride != null )
+                                    {
+                                        if ( dataViewFilterOverride.IncludeFilter == false )
+                                        {
+                                            return null;
+                                        }
+                                        else
+                                        {
+                                            selection = dataViewFilterOverride.Selection;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        selection = this.Selection;
+                                    }
+
+                                    if ( component is IDataFilterWithOverrides )
+                                    {
+                                        return ( component as IDataFilterWithOverrides ).GetExpressionWithOverrides( filteredEntityType, serviceInstance, parameter, dataViewFilterOverrides, selection );
+                                    }
+                                    else
+                                    {
+                                        return component.GetExpression( filteredEntityType, serviceInstance, parameter, selection );
+                                    }
                                 }
                                 catch (SystemException ex)
                                 {
@@ -256,7 +296,7 @@ namespace Rock.Model
                     Expression andExp = null;
                     foreach ( var filter in this.ChildFilters )
                     {
-                        Expression exp = filter.GetExpression( filteredEntityType, serviceInstance, parameter, errorMessages );
+                        Expression exp = filter.GetExpression( filteredEntityType, serviceInstance, parameter, dataViewFilterOverrides, errorMessages );
                         if ( exp != null )
                         {
                             if ( andExp == null )
@@ -286,7 +326,7 @@ namespace Rock.Model
                     Expression orExp = null;
                     foreach ( var filter in this.ChildFilters )
                     {
-                        Expression exp = filter.GetExpression( filteredEntityType, serviceInstance, parameter, errorMessages );
+                        Expression exp = filter.GetExpression( filteredEntityType, serviceInstance, parameter, dataViewFilterOverrides, errorMessages );
                         if ( exp != null )
                         {
                             if ( orExp == null )
@@ -323,9 +363,10 @@ namespace Rock.Model
         {
             if ( this.ExpressionType == FilterExpressionType.Filter )
             {
-                if ( EntityType != null )
+                if ( EntityTypeId.HasValue )
                 {
-                    var component = Rock.Reporting.DataFilterContainer.GetComponent( EntityType.Name );
+                    var entityType = EntityTypeCache.Get( EntityTypeId.Value );
+                    var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
                     if ( component != null )
                     {
                         return component.FormatSelection( filteredEntityType, this.Selection );
@@ -377,6 +418,24 @@ namespace Rock.Model
             return string.Empty;
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            if ( this.ExpressionType == FilterExpressionType.Filter && this.EntityTypeId.HasValue )
+            {
+                return this.ToString( EntityTypeCache.Get( this.EntityTypeId.Value ).GetEntityType() );
+            }
+            else 
+            {
+                return this.ExpressionType.ConvertToString();
+            }
+        }
+
         #endregion
 
     }
@@ -399,6 +458,112 @@ namespace Rock.Model
     }
 
     #endregion
+
+    #region Classes
+
+    /// <summary>
+    /// DataViewFilterOverrides with a Dictionary of Filter Overrides where the Key is the DataViewFilter.Guid
+    /// </summary>
+    [System.Diagnostics.DebuggerDisplay( "{DebuggerDisplay}" )]
+    public class DataViewFilterOverrides : Dictionary<Guid, DataViewFilterOverride>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataViewFilterOverrides"/> class.
+        /// </summary>
+        public DataViewFilterOverrides() : base()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataViewFilterOverrides"/> class.
+        /// </summary>
+        /// <param name="list">The list.</param>
+        public DataViewFilterOverrides( List<DataViewFilterOverride> list ) :
+            base( list.ToDictionary( k => k.DataFilterGuid, v => v ) )
+        { }
+
+        /// <summary>
+        /// List of DataViewIds that should not use Persisted Values
+        /// </summary>
+        /// <value>
+        /// The ignore data view persisted values.
+        /// </value>
+        public HashSet<int> IgnoreDataViewPersistedValues { get; set; } = new HashSet<int>();
+
+        /// <summary>
+        /// Gets the override.
+        /// </summary>
+        /// <param name="dataViewFilterGuid">The data view filter unique identifier.</param>
+        /// <returns></returns>
+        public DataViewFilterOverride GetOverride( Guid dataViewFilterGuid )
+        {
+            if ( this.ContainsKey( dataViewFilterGuid ) )
+            {
+                return this[dataViewFilterGuid];
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the debugger display.
+        /// </summary>
+        /// <value>
+        /// The debugger display.
+        /// </value>
+        private string DebuggerDisplay
+        {
+            get
+            {
+                return $@"IgnoreDataViewPersistedValues for DataViewIds: {IgnoreDataViewPersistedValues.ToList().AsDelimited( "," )},DataViewFilterOverrides.Count:{this.Count}";
+            }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class DataViewFilterOverride
+    {
+        /// <summary>
+        /// Gets or sets the data filter unique identifier.
+        /// </summary>
+        /// <value>
+        /// The data filter unique identifier.
+        /// </value>
+        public Guid DataFilterGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [include filter].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [include filter]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeFilter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the selection.
+        /// </summary>
+        /// <value>
+        /// The selection.
+        /// </value>
+        public string Selection { get; set; }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return $"[{DataFilterGuid}]  [{IncludeFilter}] Selection='{Selection}'";
+        }
+    }
+
+    #endregion 
 
     #region Enumerations
 

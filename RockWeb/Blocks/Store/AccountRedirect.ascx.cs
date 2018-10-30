@@ -84,10 +84,9 @@ namespace RockWeb.Blocks.Store
             {
                 if ( StoreService.OrganizationIsConfigured() )
                 {
-                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-                    string storeKey = globalAttributes.GetValue( "StoreOrganizationKey" );
-                    
-                    Response.Redirect("http://www.rockrms.com/Rock/Organization/" + storeKey);
+                    string storeKey = StoreService.GetOrganizationKey();
+
+                    Response.Redirect("http://www.rockrms.com/Rock/Organization/" + storeKey );
                 }
                 else
                 {

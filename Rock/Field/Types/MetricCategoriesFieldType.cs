@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
@@ -50,10 +51,13 @@ namespace Rock.Field.Types
 
                 var metricGuids = guidPairs.Select( a => a.MetricGuid );
 
-                var metrics = new MetricService( new RockContext() ).Queryable().Where( a => metricGuids.Contains( a.Guid ) );
-                if ( metrics.Any() )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = string.Join( ", ", ( from metric in metrics select metric.Title ).ToArray() );
+                    var metrics = new MetricService( rockContext ).Queryable().AsNoTracking().Where( a => metricGuids.Contains( a.Guid ) );
+                    if ( metrics.Any() )
+                    {
+                        formattedValue = string.Join( ", ", ( from metric in metrics select metric.Title ).ToArray() );
+                    }
                 }
             }
 
@@ -86,21 +90,26 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as MetricCategoryPicker;
-            string result = null;
+            string result = string.Empty;
 
             if ( picker != null )
             {
                 var ids = picker.SelectedValuesAsInt();
-                var metricCategories = new MetricCategoryService( new RockContext() ).Queryable().Where( a => ids.Contains( a.Id ) );
-
-                if ( metricCategories.Any() )
+                using ( var rockContext = new RockContext() )
                 {
-                    var guidPairList = metricCategories.Select( a => new { MetricGuid = a.Metric.Guid, CategoryGuid = a.Category.Guid } ).ToList();
-                    result = guidPairList.Select( s => string.Format( "{0}|{1}", s.MetricGuid, s.CategoryGuid ) ).ToList().AsDelimited( "," );
+                    var metricCategories = new MetricCategoryService( rockContext ).Queryable().AsNoTracking().Where( a => ids.Contains( a.Id ) );
+
+                    if ( metricCategories.Any() )
+                    {
+                        var guidPairList = metricCategories.Select( a => new { MetricGuid = a.Metric.Guid, CategoryGuid = a.Category.Guid } ).ToList();
+                        result = guidPairList.Select( s => string.Format( "{0}|{1}", s.MetricGuid, s.CategoryGuid ) ).ToList().AsDelimited( "," );
+                    }
                 }
+
+                return result;
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>
@@ -111,34 +120,31 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as MetricCategoryPicker;
+
+            if ( picker != null )
             {
-                var picker = control as MetricCategoryPicker;
+                List<MetricCategory> metricCategories = new List<MetricCategory>();
+                var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( value );
+                MetricCategoryService metricCategoryService = new MetricCategoryService( new RockContext() );
 
-                if ( picker != null )
+                foreach ( var guidPair in guidPairs )
                 {
-                    List<MetricCategory> metricCategories = new List<MetricCategory>();
-                    var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( value );
-                    MetricCategoryService metricCategoryService = new MetricCategoryService( new RockContext() );
-
-                    foreach (var guidPair in guidPairs)
+                    // first try to get each metric from the category that it was selected from
+                    var metricCategory = metricCategoryService.Queryable().Where( a => a.Metric.Guid == guidPair.MetricGuid && a.Category.Guid == guidPair.CategoryGuid ).FirstOrDefault();
+                    if (metricCategory == null)
                     {
-                        // first try to get each metric from the category that it was selected from
-                        var metricCategory = metricCategoryService.Queryable().Where( a => a.Metric.Guid == guidPair.MetricGuid && a.Category.Guid == guidPair.CategoryGuid ).FirstOrDefault();
-                        if (metricCategory == null)
-                        {
-                            // if the metric isn't found in the original category, just the first one, ignoring category
-                            metricCategory = metricCategoryService.Queryable().Where( a => a.Metric.Guid == guidPair.MetricGuid ).FirstOrDefault();
-                        }
-
-                        if (metricCategory != null)
-                        {
-                            metricCategories.Add( metricCategory );
-                        }
+                        // if the metric isn't found in the original category, just the first one, ignoring category
+                        metricCategory = metricCategoryService.Queryable().Where( a => a.Metric.Guid == guidPair.MetricGuid ).FirstOrDefault();
                     }
-                    
-                    picker.SetValues( metricCategories );
+
+                    if (metricCategory != null)
+                    {
+                        metricCategories.Add( metricCategory );
+                    }
                 }
+                    
+                picker.SetValues( metricCategories );
             }
         }
 

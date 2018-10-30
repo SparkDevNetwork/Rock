@@ -23,8 +23,8 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Security;
 
 namespace Rock.Web.UI.Controls
 {
@@ -32,6 +32,8 @@ namespace Rock.Web.UI.Controls
     /// Displays a Rock Note.
     /// </summary>
     [ToolboxData( "<{0}:NoteControl runat=server></{0}:NoteControl>" )]
+    [RockObsolete( "1.8" )]
+    [Obsolete("No Longer Supported")]
     public class NoteControl : CompositeControl
     {
 
@@ -107,7 +109,7 @@ namespace Rock.Web.UI.Controls
                     int? id = li.Value.AsIntegerOrNull();
                     if ( id.HasValue )
                     {
-                        var noteType = NoteTypeCache.Read( id.Value );
+                        var noteType = NoteTypeCache.Get( id.Value );
                         {
                             if ( noteType != null )
                             {
@@ -135,7 +137,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public int? NoteTypeId
         {
-            get 
+            get
             {
                 int? noteTypeId = ViewState["NoteTypeId"] as int?;
                 if ( !noteTypeId.HasValue && NoteTypes.Any() )
@@ -144,7 +146,7 @@ namespace Rock.Web.UI.Controls
                 }
                 return noteTypeId ?? 0;
             }
-            set 
+            set
             {
                 ViewState["NoteTypeId"] = value;
 
@@ -158,8 +160,8 @@ namespace Rock.Web.UI.Controls
                     _ddlNoteType.SelectedIndex = -1;
                 }
             }
-        }        
-        
+        }
+
         /// <summary>
         /// Gets or sets the note id.
         /// </summary>
@@ -292,11 +294,11 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string Label
         {
-            get 
+            get
             {
                 return ViewState["Label"] as string ?? "Note";
             }
-            set 
+            set
             {
                 ViewState["Label"] = value;
                 if (value != null)
@@ -305,7 +307,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets or sets the text.
         /// </summary>
@@ -470,7 +472,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( NoteTypeId.HasValue )
                 {
-                    var noteType = NoteTypeCache.Read( NoteTypeId.Value );
+                    var noteType = NoteTypeCache.Get( NoteTypeId.Value );
                     if ( noteType != null )
                     {
                         return noteType.CssClass;
@@ -487,7 +489,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( NoteTypeId.HasValue )
                 {
-                    var noteType = NoteTypeCache.Read( NoteTypeId.Value );
+                    var noteType = NoteTypeCache.Get( NoteTypeId.Value );
                     if ( noteType != null )
                     {
                         return noteType.IconCssClass;
@@ -614,7 +616,7 @@ namespace Rock.Web.UI.Controls
 
             _sbSecurity.ID = "_sbSecurity";
             _sbSecurity.Attributes["class"] = "btn btn-security btn-xs security pull-right";
-            _sbSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Note ) ).Id;
+            _sbSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Note ) ).Id;
 
             _dtCreateDate.ID = this.ID + "_tbCreateDate";
             _dtCreateDate.Label = "Note Created Date";
@@ -637,7 +639,7 @@ namespace Rock.Web.UI.Controls
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "note" );
             }
-            
+
             if ( this.NoteId.HasValue )
             {
                 writer.AddAttribute( "rel", this.NoteId.Value.ToStringSafe() );
@@ -710,7 +712,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-footer" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            
+
             _lbSaveNote.Text = "Save " + Label;
             _lbSaveNote.RenderControl( writer );
 
@@ -754,7 +756,7 @@ namespace Rock.Web.UI.Controls
 
                 // convert any http, etc text into clickable links (do this before applying Markdown)
                 renderedText = renderedText.Linkify();
-                
+
                 // convert any markdown into HTML, and convert into crlf into <br />
                 renderedText = renderedText.ConvertMarkdownToHtml( true );
 
@@ -765,7 +767,7 @@ namespace Rock.Web.UI.Controls
 
                     if ( DisplayNoteTypeHeading & this.NoteTypeId.HasValue )
                     {
-                        var noteType = NoteTypeCache.Read( this.NoteTypeId.Value );
+                        var noteType = NoteTypeCache.Get( this.NoteTypeId.Value );
                         if ( noteType != null )
                         {
                             writer.RenderBeginTag( HtmlTextWriterTag.Strong );
@@ -948,53 +950,6 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public event EventHandler<NoteEventArgs> DeleteButtonClick;
 
-
-
         #endregion
-
     }
-
-    /// <summary>
-    /// Note Event Argument includes id of note updated
-    /// </summary>
-    public class NoteEventArgs : EventArgs
-    {
-        /// <summary>
-        /// Gets the note identifier.
-        /// </summary>
-        /// <value>
-        /// The note identifier.
-        /// </value>
-        public int? NoteId { get; private set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NoteEventArgs"/> class.
-        /// </summary>
-        /// <param name="noteId">The note identifier.</param>
-        public NoteEventArgs(int? noteId)
-        {
-            NoteId = noteId;
-        }
-    }
-    
-    #region Enums
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum NoteDisplayType
-    {
-        /// <summary>
-        /// The full
-        /// </summary>
-        Full,
-
-        /// <summary>
-        /// The light
-        /// </summary>
-        Light
-    }
-
-    #endregion
-
 }

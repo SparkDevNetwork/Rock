@@ -55,6 +55,8 @@ namespace Rock.Model
             // ignoring ContentChannelItemAssociation,ChildContentChannelItemId 
             
             // ignoring ContentChannelItemAssociation,ContentChannelItemId 
+            
+            // ignoring ContentChannelItemSlug,ContentChannelItemId 
             return true;
         }
     }

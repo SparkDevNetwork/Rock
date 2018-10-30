@@ -144,9 +144,9 @@
                   + '&id=' + binaryFileId
                   + '&fileName=' + Rock.controls.emailEditor.$currentImageComponent.attr('data-image-filename');
         }
-
-        var imageWidth = parseInt($('#component-image-imagewidth').val());
-        var imageHeight = parseInt($('#component-image-imageheight').val());
+        
+        var imageWidth = parseInt($('#component-image-imagewidth').val()) || '';
+        var imageHeight = parseInt($('#component-image-imageheight').val()) || '';
         var imageResizeMode = $('#component-image-resizemode').val();
 
         Rock.controls.emailEditor.$currentImageComponent.attr('data-image-width', imageWidth);

@@ -19,10 +19,10 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
-
+using System.Text;
 using Rock;
-using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -31,6 +31,11 @@ namespace Rock.Model
     /// </summary>
     public partial class PersonService
     {
+        /// <summary>
+        /// The cut off (inclusive) score 
+        /// </summary>
+        private const int MATCH_SCORE_CUTOFF = 35;
+
         /// <summary>
         /// Gets the specified unique identifier.
         /// </summary>
@@ -102,7 +107,7 @@ namespace Rock.Model
             var qry = base.Queryable( includes );
             if ( !includeBusinesses )
             {
-                var definedValueBusinessType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
+                var definedValueBusinessType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
                 if ( definedValueBusinessType != null )
                 {
                     int recordTypeBusiness = definedValueBusinessType.Id;
@@ -149,18 +154,500 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use FindPersons instead.", false )]
         public IEnumerable<Person> GetByMatch( string firstName, string lastName, string email, bool includeDeceased = false, bool includeBusinesses = false )
         {
-            firstName = firstName ?? string.Empty;
-            lastName = lastName ?? string.Empty;
-            email = email ?? string.Empty;
+            return this.FindPersons( firstName, lastName, email, includeDeceased, includeBusinesses );
+        }
 
-            return Queryable( includeDeceased, includeBusinesses )
-                .Where( p =>
-                    email != "" && p.Email == email &&
-                    firstName != "" && ( p.FirstName == firstName || p.NickName == firstName ) &&
-                    lastName != "" && p.LastName == lastName )
-                .ToList();
+        /// <summary>
+        /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities that have a matching email address, firstname and lastname.
+        /// </summary>
+        /// <param name="firstName">The first name.</param>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="email">The email.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
+        /// <returns></returns>
+        public IEnumerable<Person> FindPersons( string firstName, string lastName, string email, bool includeDeceased = false, bool includeBusinesses = false )
+        {
+            return FindPersons( new PersonMatchQuery( firstName, lastName, email, string.Empty ) );
+        }
+
+
+        /// <summary>
+        /// Finds people who are considered to be good matches based on the query provided.
+        /// </summary>
+        /// <param name="searchParameters">The search parameters.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
+        /// <returns>A IEnumerable of person, ordered by the likelihood they are a good match for the query.</returns>
+        public IEnumerable<Person> FindPersons( PersonMatchQuery searchParameters, bool includeDeceased = false, bool includeBusinesses = false )
+        {
+            // Because we are search different tables (PhoneNumber, PreviousName, etc.) we do multiple queries, store the results in a dictionary, and then find good matches by scoring the results of the dictionary.
+            // The large query we're building is: (email matches AND suffix matches AND DoB loose matches AND gender matches) OR last name matches OR phone number matches OR previous name matches
+            // The dictionary is PersonId => PersonMatchResult, a class that stores the items that match and calculates the score
+
+            // Query by last name, suffix, dob, and gender
+            var query = Queryable( includeDeceased, includeBusinesses )
+                .AsNoTracking()
+                .Where( p => p.LastName == searchParameters.LastName );
+
+
+            if ( searchParameters.SuffixValueId.HasValue )
+            {
+                query = query.Where( a => a.SuffixValueId == searchParameters.SuffixValueId.Value || a.SuffixValueId == null );
+            }
+
+            // Check for a DOB match here ignoring year and we award higher points if the year *does* match later, this allows for two tiers of scoring for birth dates
+            if ( searchParameters.BirthDate.HasValue )
+            {
+                query = query.Where( a => ( a.BirthMonth == searchParameters.BirthDate.Value.Month && a.BirthDay == searchParameters.BirthDate.Value.Day ) || a.BirthDate == null );
+            }
+
+            if ( searchParameters.Gender.HasValue )
+            {
+                query = query.Where( a => a.Gender == searchParameters.Gender.Value || a.Gender == Gender.Unknown );
+            }
+
+            // Create dictionary
+            var foundPeople = query
+                .Select( p => new PersonSummary()
+                {
+                    Id = p.Id,
+                    FirstName = p.FirstName,
+                    NickName = p.NickName,
+                    Gender = p.Gender,
+                    BirthDate = p.BirthDate,
+                    SuffixValueId = p.SuffixValueId
+                } )
+                .ToList()
+                .ToDictionary(
+                    p => p.Id,
+                    p => {
+                        var result = new PersonMatchResult( searchParameters, p )
+                        {
+                            LastNameMatched = true
+                        };
+                        return result;
+                    }
+                );
+
+            if ( searchParameters.Email.IsNotNullOrWhiteSpace() )
+            {
+                var searchTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() ).Id;
+
+                // OR query for email or previous email
+                var previousEmailQry = new PersonSearchKeyService( this.Context as RockContext ).Queryable();
+                Queryable( includeDeceased, includeBusinesses )
+                    .AsNoTracking()
+                    .Where(
+                        p => p.Email != String.Empty && p.Email != null && p.Email == searchParameters.Email ||
+                        previousEmailQry.Any( a => a.PersonAlias.PersonId == p.Id && a.SearchValue == searchParameters.Email && a.SearchTypeValueId == searchTypeValueId )
+                    )
+                    .Select( p => new PersonSummary()
+                    {
+                        Id = p.Id,
+                        FirstName = p.FirstName,
+                        NickName = p.NickName,
+                        Gender = p.Gender,
+                        BirthDate = p.BirthDate,
+                        SuffixValueId = p.SuffixValueId
+                    } )
+                    .ToList()
+                    .ForEach( p =>
+                    {
+                        if ( foundPeople.ContainsKey( p.Id ) )
+                        {
+                            foundPeople[p.Id].EmailMatched = true;
+                        }
+                        else
+                        {
+                            foundPeople[p.Id] = new PersonMatchResult( searchParameters, p )
+                            {
+                                EmailMatched = true
+                            };
+                        }
+                    } );
+            }
+
+            var rockContext = new RockContext();
+
+            // OR query for previous name matches
+            var previousNameService = new PersonPreviousNameService( rockContext );
+            previousNameService.Queryable( "PersonAlias.Person" )
+                .AsNoTracking()
+                .Where( n => n.LastName == searchParameters.LastName )
+                .Select( n => new PersonSummary()
+                {
+                    Id = n.PersonAlias.Person.Id,
+                    FirstName = n.PersonAlias.Person.FirstName,
+                    NickName = n.PersonAlias.Person.NickName,
+                    Gender = n.PersonAlias.Person.Gender,
+                    BirthDate = n.PersonAlias.Person.BirthDate,
+                    SuffixValueId = n.PersonAlias.Person.SuffixValueId
+                } )
+                .ToList()
+                .ForEach( p =>
+                {
+                    if ( foundPeople.ContainsKey( p.Id ) )
+                    {
+                        foundPeople[p.Id].PreviousNameMatched = true;
+                    }
+                    else
+                    {
+                        foundPeople[p.Id] = new PersonMatchResult( searchParameters, p )
+                        {
+                            PreviousNameMatched = true
+                        };
+                    }
+                } );
+
+            // OR query for mobile phone numbers
+            if ( searchParameters.MobilePhone.IsNotNullOrWhiteSpace() )
+            {
+                var mobilePhoneTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+                var phoneNumberService = new PhoneNumberService( rockContext );
+                phoneNumberService.Queryable( "Person" )
+                    .AsNoTracking()
+                    .Where( n => n.Number == searchParameters.MobilePhone && n.NumberTypeValueId == mobilePhoneTypeId )
+                    .Select( n => new PersonSummary()
+                    {
+                        Id = n.Person.Id,
+                        FirstName = n.Person.FirstName,
+                        NickName = n.Person.NickName,
+                        Gender = n.Person.Gender,
+                        BirthDate = n.Person.BirthDate,
+                        SuffixValueId = n.Person.SuffixValueId
+                    } )
+                    .ToList()
+                    .ForEach( p =>
+                    {
+                        if ( foundPeople.ContainsKey( p.Id ) )
+                        {
+                            foundPeople[p.Id].MobileMatched = true;
+                        }
+                        else
+                        {
+                            foundPeople[p.Id] = new PersonMatchResult( searchParameters, p )
+                            {
+                                MobileMatched = true
+                            };
+                        }
+                    } );
+            }
+
+            // Find people who have a good confidence score
+            var goodMatches = foundPeople.Values
+                .Where( match => match.ConfidenceScore >= MATCH_SCORE_CUTOFF )
+                .OrderByDescending( match => match.ConfidenceScore );
+
+            return GetByIds( goodMatches.Select( a => a.PersonId ).ToList() );
+        }
+
+        #region FindPersonClasses
+
+        /// <summary>
+        /// Contains the properties that can be searched for when performing a GetBestMatch query
+        /// </summary>
+        public class PersonMatchQuery
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="PersonMatchQuery"/> class.
+            /// </summary>
+            /// <param name="firstName">The first name.</param>
+            /// <param name="lastName">The last name.</param>
+            /// <param name="email">The email.</param>
+            /// <param name="mobilePhone">The mobile phone.</param>
+            public PersonMatchQuery( string firstName, string lastName, string email, string mobilePhone )
+            {
+                FirstName = firstName ?? string.Empty;
+                LastName = lastName ?? string.Empty;
+                Email = email ?? string.Empty;
+                MobilePhone = mobilePhone.IsNotNullOrWhiteSpace() ? PhoneNumber.CleanNumber( mobilePhone ) : string.Empty;
+                Gender = null;
+                BirthDate = null;
+                SuffixValueId = null;
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="PersonMatchQuery" /> class. Use this constructor when the person may not have a birth year.
+            /// </summary>
+            /// <param name="firstName">The first name.</param>
+            /// <param name="lastName">The last name.</param>
+            /// <param name="email">The email.</param>
+            /// <param name="mobilePhone">The mobile phone.</param>
+            /// <param name="gender">The gender.</param>
+            /// <param name="birthMonth">The birth month.</param>
+            /// <param name="birthDay">The birth day.</param>
+            /// <param name="birthYear">The birth year.</param>
+            /// <param name="suffixValueId">The suffix value identifier.</param>
+            public PersonMatchQuery( string firstName, string lastName, string email, string mobilePhone, Gender? gender = null, int? birthMonth = null, int? birthDay = null, int? birthYear = null, int? suffixValueId = null )
+            {
+                FirstName = firstName ?? string.Empty;
+                LastName = lastName ?? string.Empty;
+                Email = email ?? string.Empty;
+                MobilePhone = mobilePhone.IsNotNullOrWhiteSpace() ? PhoneNumber.CleanNumber( mobilePhone ) : string.Empty;
+                Gender = gender;
+                BirthDate = birthDay.HasValue && birthMonth.HasValue ? new DateTime( birthYear ?? DateTime.MinValue.Year, birthMonth.Value, birthDay.Value ) : ( DateTime? ) null;
+                SuffixValueId = suffixValueId;
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="PersonMatchQuery"/> class.
+            /// </summary>
+            /// <param name="firstName">The first name.</param>
+            /// <param name="lastName">The last name.</param>
+            /// <param name="email">The email.</param>
+            /// <param name="mobilePhone">The mobile phone.</param>
+            /// <param name="gender">The gender.</param>
+            /// <param name="birthDate">The birth date.</param>
+            /// <param name="suffixValueId">The suffix value identifier.</param>
+            public PersonMatchQuery( string firstName, string lastName, string email, string mobilePhone, Gender? gender = null, DateTime? birthDate = null, int? suffixValueId = null )
+            {
+                FirstName = firstName ?? string.Empty;
+                LastName = lastName ?? string.Empty;
+                Email = email ?? string.Empty;
+                MobilePhone = mobilePhone.IsNotNullOrWhiteSpace() ? PhoneNumber.CleanNumber( mobilePhone ) : string.Empty;
+                Gender = gender;
+                BirthDate = birthDate;
+                SuffixValueId = suffixValueId;
+            }
+
+            /// <summary>
+            /// Gets or sets the first name.
+            /// </summary>
+            /// <value>
+            /// The first name.
+            /// </value>
+            public string FirstName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the last name.
+            /// </summary>
+            /// <value>
+            /// The last name.
+            /// </value>
+            public string LastName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the email.
+            /// </summary>
+            /// <value>
+            /// The email.
+            /// </value>
+            public string Email { get; set; }
+
+            /// <summary>
+            /// Gets or sets the mobile phone.
+            /// </summary>
+            /// <value>
+            /// The mobile phone.
+            /// </value>
+            public string MobilePhone { get; set; }
+
+            /// <summary>
+            /// Gets or sets the gender.
+            /// </summary>
+            /// <value>
+            /// The gender.
+            /// </value>
+            public Gender? Gender { get; set; }
+
+            /// <summary>
+            /// Gets or sets the birth date.
+            /// </summary>
+            /// <value>
+            /// The birth date.
+            /// </value>
+            public DateTime? BirthDate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the suffix value identifier.
+            /// </summary>
+            /// <value>
+            /// The suffix value identifier.
+            /// </value>
+            public int? SuffixValueId { get; set;  }
+        }
+
+        /// <summary>
+        /// A class to summarise the components of a Person which matched a PersonMatchQuery and produce a score representing the likelihood this match is the correct match.
+        /// </summary>
+        private class PersonMatchResult
+        {
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="PersonMatchResult"/> class.
+            /// </summary>
+            /// <param name="query">The person match query.</param>
+            /// <param name="person">The person summary.</param>
+            public PersonMatchResult( PersonMatchQuery query, PersonSummary person )
+            {
+                PersonId = person.Id;
+                FirstNameMatched = ( person.FirstName != null && person.FirstName != String.Empty && person.FirstName.Equals(query.FirstName, StringComparison.CurrentCultureIgnoreCase) ) || ( person.NickName != null && person.NickName != String.Empty && person.NickName.Equals(query.FirstName, StringComparison.CurrentCultureIgnoreCase) );
+                SuffixMatched = query.SuffixValueId.HasValue && person.SuffixValueId != null && query.SuffixValueId == person.SuffixValueId;
+                GenderMatched = query.Gender.HasValue & query.Gender == person.Gender;
+
+                if ( query.BirthDate.HasValue && person.BirthDate.HasValue )
+                {
+                    BirthDate = query.BirthDate.Value.Month == person.BirthDate.Value.Month && query.BirthDate.Value.Day == person.BirthDate.Value.Day;
+                    BirthDateYearMatched = BirthDate && person.BirthDate.Value.Year == query.BirthDate.Value.Year;
+                }
+            }
+
+            public int PersonId { get; set; }
+
+            public bool FirstNameMatched { get; set; }
+
+            public bool LastNameMatched { get; set; }
+
+            public bool EmailMatched { get; set; }
+
+            public bool MobileMatched { get; set; }
+
+            public bool PreviousNameMatched { get; set; }
+
+            public bool SuffixMatched { get; set; }
+
+            public bool GenderMatched { get; set; }
+
+            public bool BirthDate { get; set; }
+
+            public bool BirthDateYearMatched { get; set; }
+
+
+            /// <summary>
+            /// Calculates a score representing the likelihood this match is the correct match. Higher is better.
+            /// </summary>
+            /// <returns></returns>
+            public int ConfidenceScore { get
+                {
+                    int total = 0;
+
+                    if ( FirstNameMatched )
+                    {
+                        total += 15;
+                    }
+
+                    if ( LastNameMatched )
+                    {
+                        total += 15;
+                    }
+
+                    if ( MobileMatched || EmailMatched )
+                    {
+                        total += 15;
+                    }
+
+                    if ( BirthDate )
+                    {
+                        total += 10;
+                    }
+
+                    if ( BirthDateYearMatched )
+                    {
+                        total += 5;
+                    }
+
+                    if ( GenderMatched )
+                    {
+                        total += 3;
+                    }
+
+                    if ( SuffixMatched )
+                    {
+                        total += 10;
+                    }
+
+                    return total;
+                } }
+        }
+
+        /// <summary>
+        /// Used to avoid bringing a whole Person into memory
+        /// </summary>
+        private class PersonSummary
+        {
+            public int Id { get; set; }
+            public string FirstName { get; set; }
+
+            public string NickName { get; set; }
+
+            public Gender Gender { get; set; }
+
+            public DateTime? BirthDate { get; set; }
+
+            public int? SuffixValueId { get; set; }
+        }
+
+        #endregion
+
+
+        /// <summary>
+        /// Looks for a single exact match based on the critieria provided. If more than one person is found it will return null (consider using FindPersons).
+        /// </summary>
+        /// <param name="firstName">The first name.</param>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="email">The email.</param>
+        /// <param name="updatePrimaryEmail">if set to <c>true</c> the person's primary email will be updated to the search value if it was found as a person search key (alternate lookup address).</param>
+        /// <param name="includeDeceased">if set to <c>true</c> include deceased individuals.</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> include businesses records.</param>
+        /// <returns></returns>
+        public Person FindPerson( string firstName, string lastName, string email, bool updatePrimaryEmail, bool includeDeceased = false, bool includeBusinesses = false )
+        {
+            return FindPerson( new PersonMatchQuery( firstName, lastName, email, string.Empty ), updatePrimaryEmail, includeDeceased, includeBusinesses );
+        }
+
+        /// <summary>
+        /// Finds the person.
+        /// </summary>
+        /// <param name="personMatchQuery">The person match query.</param>
+        /// <param name="updatePrimaryEmail">if set to <c>true</c> [update primary email].</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
+        /// <returns></returns>
+        public Person FindPerson( PersonMatchQuery personMatchQuery, bool updatePrimaryEmail, bool includeDeceased = false, bool includeBusinesses = false )
+        {
+            var matches = this.FindPersons( personMatchQuery, includeDeceased, includeBusinesses ).ToList();
+            
+            var match = matches.FirstOrDefault();
+
+            // Check if we care about updating the person's primary email
+            if (updatePrimaryEmail && match != null)
+            {
+                return UpdatePrimaryEmail( personMatchQuery.Email, match );
+            }
+
+            return match;
+        }
+
+        /// <summary>
+        /// Updates the primary email address of a person if they were found using an alternate email address
+        /// </summary>
+        /// <param name="email">The email.</param>
+        /// <param name="match">The person to update.</param>
+        /// <returns></returns>
+        private Person UpdatePrimaryEmail( string email, Person match )
+        {
+            // Emails are already the same
+            if ( string.Equals( match.Email, email, StringComparison.CurrentCultureIgnoreCase ) )
+            {
+                return match;
+            }
+
+            // The emails don't match and we've been instructed to update them
+            using ( var privateContext = new RockContext() )
+            {
+                var privatePersonService = new PersonService( privateContext );
+                var updatePerson = privatePersonService.Get( match.Id );
+                updatePerson.Email = email;
+                privateContext.SaveChanges();
+            }
+
+            // Return a freshly queried person
+            return this.Get( match.Id );
         }
 
         /// <summary>
@@ -171,12 +658,39 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use FindBusinesses instead.", false )]
         public IEnumerable<Person> GetBusinessByMatch( string businessName, string email )
         {
             businessName = businessName ?? string.Empty;
             email = email ?? string.Empty;
             var query = Queryable( false, true );
-            var definedValueBusinessType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
+            var definedValueBusinessType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
+            if ( definedValueBusinessType != null )
+            {
+                int recordTypeBusiness = definedValueBusinessType.Id;
+                query = query.Where( p => p.RecordTypeValueId == recordTypeBusiness );
+            }
+
+            return query
+            .Where( p =>
+                email != "" && p.Email == email &&
+                businessName != "" && p.LastName == businessName )
+            .ToList();
+        }
+
+        /// <summary>
+        /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities that have a matching email address, firstname and lastname and a record type of business.
+        /// </summary>
+        /// <param name="businessName">Name of the business.</param>
+        /// <param name="email">The email.</param>
+        /// <returns></returns>
+        public IEnumerable<Person> FindBusinesses( string businessName, string email )
+        {
+            businessName = businessName ?? string.Empty;
+            email = email ?? string.Empty;
+            var query = Queryable( false, true );
+            var definedValueBusinessType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
             if ( definedValueBusinessType != null )
             {
                 int recordTypeBusiness = definedValueBusinessType.Id;
@@ -436,6 +950,14 @@ namespace Rock.Model
                         qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ) );
                     }
 
+                    //
+                    // If searching for businesses, search by the full name as well to handle "," in the name
+                    //
+                    if ( includeBusinesses )
+                    {
+                        qry = qry.Union( GetByLastName( fullName, includeDeceased, includeBusinesses ) );
+                    }
+
                     return qry;
                 }
                 else
@@ -463,7 +985,7 @@ namespace Rock.Model
             var qry = Queryable( includeDeceased, includeBusinesses );
             if ( includeBusinesses )
             {
-                int recordTypeBusinessId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                int recordTypeBusinessId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
                 // if a we are including businesses, compare fullname against the Business Name (Person.LastName)
                 qry = qry.Where( p =>
@@ -672,7 +1194,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<Group> GetFamilies( int personId )
         {
-            var familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
             return new GroupMemberService( ( RockContext ) this.Context ).Queryable( true )
                 .Where( m => m.PersonId == personId && m.Group.GroupTypeId == familyGroupTypeId )
@@ -689,7 +1211,7 @@ namespace Rock.Model
             int familyGroupTypeId = 0;
             int adultRoleId = 0;
 
-            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
             if ( familyGroupType != null )
             {
                 familyGroupTypeId = familyGroupType.Id;
@@ -754,7 +1276,7 @@ namespace Rock.Model
         public IQueryable<PersonFamilyGivingXref> GetAllPersonFamilyGivingXref()
         {
             int familyGroupTypeId = 0;
-            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
             if ( familyGroupType != null )
             {
                 familyGroupTypeId = familyGroupType.Id;
@@ -782,7 +1304,7 @@ namespace Rock.Model
             int familyGroupTypeId = 0;
             int childRoleId = 0;
 
-            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
             if ( familyGroupType != null )
             {
                 familyGroupTypeId = familyGroupType.Id;
@@ -808,7 +1330,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<Person> GetAllHeadOfHouseholds()
         {
-            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            int groupTypeFamilyId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
             var groupMemberService = new GroupMemberService( ( RockContext ) this.Context );
             return groupMemberService
                 .Queryable()
@@ -845,7 +1367,7 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<GroupMember> GetFamilyMembers( int personId, bool includeSelf = false )
         {
-            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            int groupTypeFamilyId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
             return GetGroupMembers( groupTypeFamilyId, personId, includeSelf );
         }
 
@@ -870,7 +1392,7 @@ namespace Rock.Model
                     SortedMembers = m.Group.Members.Select( x => new
                     {
                         GroupMember = x,
-                        PersonGroupOrder = m.GroupOrder 
+                        PersonGroupOrder = m.GroupOrder
                     } )
                 } )
                 .SelectMany( x => x.SortedMembers )
@@ -931,7 +1453,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<ChildWithParents> GetChildWithParents( bool includeChildrenWithoutParents )
         {
-            var groupTypeFamily = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            var groupTypeFamily = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
             int adultRoleId = groupTypeFamily.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
             int childRoleId = groupTypeFamily.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
             int groupTypeFamilyId = groupTypeFamily.Id;
@@ -1042,7 +1564,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<ParentWithChildren> GetParentWithChildren( bool includeParentsWithoutChildren )
         {
-            var groupTypeFamily = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            var groupTypeFamily = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
             int childRoleId = groupTypeFamily.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
             int parentRoleId = groupTypeFamily.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
             int groupTypeFamilyId = groupTypeFamily.Id;
@@ -1167,6 +1689,17 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets any search keys for this person
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public IQueryable<PersonSearchKey> GetPersonSearchKeys( int personId )
+        {
+            return new PersonSearchKeyService( ( RockContext ) this.Context ).Queryable()
+                .Where( m => m.PersonAlias.PersonId == personId );
+        }
+
+        /// <summary>
         /// Splits a full name into a separate first and last name. If only one name is found it defaults to first name.
         /// </summary>
         /// <param name="fullName">The full name</param>
@@ -1208,7 +1741,7 @@ namespace Rock.Model
         /// <returns></returns>
         public GroupLocation GetFirstLocation( int personId, int locationTypeValueId )
         {
-            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            int groupTypeFamilyId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
             return new GroupMemberService( ( RockContext ) this.Context ).Queryable( "GroupLocations.Location", true )
                 .Where( m =>
@@ -1226,7 +1759,7 @@ namespace Rock.Model
         /// <param name="person">The person.</param>
         /// <param name="phoneType">Type of the phone.</param>
         /// <returns></returns>
-        public PhoneNumber GetPhoneNumber( Person person, Rock.Web.Cache.DefinedValueCache phoneType )
+        public PhoneNumber GetPhoneNumber( Person person, DefinedValueCache phoneType )
         {
             if ( person != null )
             {
@@ -1319,6 +1852,31 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the Person by impersonation token but does not validate against token properties (e.g. expiration)
+        /// Use this method if needing to get the person from a token that may be expired.
+        /// </summary>
+        /// <param name="encryptedKey">The encrypted key.</param>
+        /// <returns></returns>
+        public Person GetByImpersonationToken( string encryptedKey )
+        {
+            // first, see if it exists as a PersonToken
+            using ( var personTokenRockContext = new RockContext() )
+            {
+                var personToken = new PersonTokenService( personTokenRockContext ).GetByImpersonationToken( encryptedKey );
+                if ( personToken != null )
+                {
+                    if ( personToken.PersonAlias != null )
+                    {
+                        // refetch using PersonService using rockContext instead of personTokenRockContext which was used to save the changes to personKey
+                        return this.Get( personToken.PersonAlias.PersonId );
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Special override of Entity.GetByEncryptedKey for Person. Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
         /// </summary>
         /// <param name="encryptedKey">The encrypted key.</param>
@@ -1336,8 +1894,9 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.Person" /> associated with the provided Key, otherwise null.
         /// </returns>
-        [Obsolete( "Use GetByEncryptedKey( string encryptedKey, bool followMerges, int? pageId ) instead" )]
-        public Person GetByEncryptedKey( string encryptedKey, bool followMerges)
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use GetByEncryptedKey( string encryptedKey, bool followMerges, int? pageId ) instead", true )]
+        public Person GetByEncryptedKey( string encryptedKey, bool followMerges )
         {
             return GetByEncryptedKey( encryptedKey, true, true, null );
         }
@@ -1401,13 +1960,24 @@ namespace Rock.Model
                 }
             }
 
-            bool tokenUseLegacyFallback = GlobalAttributesCache.Read().GetValue( "core.PersonTokenUseLegacyFallback" ).AsBoolean();
+            bool tokenUseLegacyFallback = GlobalAttributesCache.Get().GetValue( "core.PersonTokenUseLegacyFallback" ).AsBoolean();
             if ( tokenUseLegacyFallback )
             {
                 return GetByLegacyEncryptedKey( encryptedKey, followMerges );
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the person from the user login identifier.
+        /// </summary>
+        /// <param name="userLoginId">The user login identifier.</param>
+        /// <returns></returns>
+        public Person GetByUserLoginId( int userLoginId )
+        {
+            UserLogin userLogin = new UserLoginService( new RockContext() ).Get( userLoginId );
+            return Get( userLogin.PersonId.Value );
         }
 
         /// <summary>
@@ -1453,14 +2023,43 @@ namespace Rock.Model
         /// <returns></returns>
         public GroupTypeRole GetFamilyRole( Person person, RockContext rockContext = null )
         {
-            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            var familyGroupRoles = GroupTypeCache.GetFamilyGroupType().Roles;
+            int? groupTypeRoleId = null;
+            if ( person.AgeClassification == AgeClassification.Adult )
+            {
+                groupTypeRoleId = familyGroupRoles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).FirstOrDefault()?.Id;
+            }
+            else if ( person.AgeClassification == AgeClassification.Child )
+            {
+                groupTypeRoleId = familyGroupRoles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).FirstOrDefault()?.Id;
+            }
 
-            return new GroupMemberService( rockContext == null ? new RockContext() : rockContext ).Queryable()
-                                    .Where( gm => gm.PersonId == person.Id && gm.Group.GroupTypeId == groupTypeFamilyId )
-                                    .OrderBy( gm => gm.GroupOrder ?? int.MaxValue )
-                                    .ThenBy( gm => gm.GroupRole.Order )
-                                    .Select( gm => gm.GroupRole )
-                                    .FirstOrDefault();
+            rockContext = rockContext ?? new RockContext();
+
+            if ( groupTypeRoleId.HasValue )
+            {
+                return new GroupTypeRoleService( rockContext ).Get( groupTypeRoleId.Value );
+            }
+            else
+            {
+                // just in case the AgeClassification method didn't work...
+                var primaryFamilyId = person.GetFamily( rockContext )?.Id;
+                if ( primaryFamilyId.HasValue )
+                {
+                    rockContext = rockContext ?? new RockContext();
+
+                    return new GroupMemberService( rockContext ).Queryable()
+                                            .Where( gm => gm.PersonId == person.Id && gm.GroupId == primaryFamilyId )
+                                            .OrderBy( gm => gm.GroupOrder ?? int.MaxValue )
+                                            .ThenBy( gm => gm.GroupRole.Order )
+                                            .Select( gm => gm.GroupRole )
+                                            .FirstOrDefault();
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
 
         /// <summary>
@@ -1488,15 +2087,15 @@ namespace Rock.Model
             //// 1) Both Persons are adults in the same family (GroupType = Family, GroupRole = Adult, and in same Group)
             //// 2) Opposite Gender as Person, if Gender of both Persons is known
             //// 3) Both Persons are Married
-            int marriedDefinedValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
-            
+            int marriedDefinedValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
+
             if ( person.MaritalStatusValueId != marriedDefinedValueId )
             {
                 return default( TResult );
             }
 
             Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
-            int adultRoleId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Roles.First( a => a.Guid == adultGuid ).Id;
+            int adultRoleId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Roles.First( a => a.Guid == adultGuid ).Id;
 
             // Businesses don't have a family role, so check for null before trying to get the Id.
             var familyRole = GetFamilyRole( person );
@@ -1512,8 +2111,8 @@ namespace Rock.Model
                 // In the future, we may need to implement and check a GLOBAL Attribute "BibleStrict" with this logic: 
                 .Where( m => m.Person.Gender != person.Gender || m.Person.Gender == Gender.Unknown || person.Gender == Gender.Unknown )
                 .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId )
-                .OrderBy( m => groupOrderQuery.FirstOrDefault(x => x.GroupId == m.GroupId && x.PersonId == person.Id).GroupOrder ?? int.MaxValue )
-                .ThenBy( m => DbFunctions.DiffDays(m.Person.BirthDate ?? new DateTime(1, 1, 1), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) )
+                .OrderBy( m => groupOrderQuery.FirstOrDefault( x => x.GroupId == m.GroupId && x.PersonId == person.Id ).GroupOrder ?? int.MaxValue )
+                .ThenBy( m => DbFunctions.DiffDays( m.Person.BirthDate ?? new DateTime( 1, 1, 1 ), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) )
                 .ThenBy( m => m.PersonId )
                 .Select( selector )
                 .FirstOrDefault();
@@ -1526,7 +2125,7 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.Person"/> entity containing the provided Person's head of household. If the provided Person's family head of household is not found, this value will be null.</returns>
         public Person GetHeadOfHousehold( Person person )
         {
-            var family = GetFamilies( person.Id ).FirstOrDefault();
+            var family = person.GetFamily( this.Context as RockContext );
             if ( family == null )
             {
                 return null;
@@ -1538,6 +2137,168 @@ namespace Rock.Model
                 .FirstOrDefault();
         }
 
+        /// <summary>
+        /// Gets the <see cref="Rock.Model.Person"/> entity of the provided Person's head of household.
+        /// </summary>
+        /// <param name="person">The <see cref="Rock.Model.Person"/> entity of the Person to retrieve the head of household of.</param>
+        /// <param name="family">The <see cref="Rock.Model.Group"/> entity of the Group to retrieve the head of household of.</param>
+        /// <returns>The <see cref="Rock.Model.Person"/> entity containing the provided Person's head of household. If the provided Person's family head of household is not found, this value will be null.</returns>
+        public Person GetHeadOfHousehold( Person person, Group family )
+        {
+            if ( family == null )
+            {
+                family = person.GetFamily( this.Context as RockContext );
+            }
+
+            if ( family == null )
+            {
+                return null;
+            }
+            return GetFamilyMembers( family, person.Id, true )
+                .OrderBy( m => m.GroupRole.Order )
+                .ThenBy( m => m.Person.Gender )
+                .Select( a => a.Person )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the related people.
+        /// </summary>
+        /// <param name="personIds">The person ids.</param>
+        /// <param name="roleIds">The role ids.</param>
+        /// <returns></returns>
+        public IEnumerable<GroupMember> GetRelatedPeople( List<int> personIds, List<int> roleIds )
+        {
+            var rockContext = ( RockContext ) this.Context;
+            var groupMemberService = new GroupMemberService( rockContext );
+
+            Guid groupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid();
+            Guid ownerRoleGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
+
+            var knownRelationshipGroups = groupMemberService
+                .Queryable().AsNoTracking()
+                .Where( m =>
+                    m.Group.GroupType.Guid == groupTypeGuid &&
+                    m.GroupRole.Guid == ownerRoleGuid &&
+                    personIds.Contains( m.PersonId ) )
+                .Select( m => m.GroupId );
+
+            var related = groupMemberService
+                .Queryable().AsNoTracking()
+                .Where( g =>
+                    knownRelationshipGroups.Contains( g.GroupId ) &&
+                    roleIds.Contains( g.GroupRoleId ) &&
+                    !personIds.Contains( g.PersonId ) )
+                .ToList();
+
+            return related;
+        }
+
+        #endregion
+
+        #region Update Person
+
+        /// <summary>
+        /// Inactivates a person.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="reason">The reason.</param>
+        /// <param name="reasonNote">The reason note.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.8" )]
+        [Obsolete]
+        public List<string> InactivatePerson( Person person, Web.Cache.DefinedValueCache reason, string reasonNote )
+        {
+            History.HistoryChangeList historyChangeList;
+
+            // since this is an obsolete method now, convert the definedValueCache to a DefinedValueCache
+            DefinedValueCache cacheReason = null;
+            if ( reason != null )
+            {
+                cacheReason = DefinedValueCache.Get( reason.Id );
+            }
+
+            InactivatePerson( person, cacheReason, reasonNote, out historyChangeList );
+
+            return historyChangeList.Select( a => a.Summary ).ToList();
+        }
+
+        /// <summary>
+        /// Inactivates a person.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="reason">The reason.</param>
+        /// <param name="reasonNote">The reason note.</param>
+        /// <param name="historyChangeList">The history change list.</param>
+        public void InactivatePerson( Person person, DefinedValueCache reason, string reasonNote, out History.HistoryChangeList historyChangeList )
+        {
+            historyChangeList = new History.HistoryChangeList();
+
+            var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+            if ( inactiveStatus != null && reason != null )
+            {
+                History.EvaluateChange( historyChangeList, "Record Status", person.RecordStatusValue?.Value, inactiveStatus.Value );
+                History.EvaluateChange( historyChangeList, "Record Status Reason", person.RecordStatusReasonValue?.Value, reason.Value );
+                History.EvaluateChange( historyChangeList, "Inactive Reason Note", person.InactiveReasonNote, reasonNote );
+
+                person.RecordStatusValueId = inactiveStatus.Id;
+                person.RecordStatusReasonValueId = reason.Id;
+                person.InactiveReasonNote = reasonNote;
+            }
+        }
+
+        #endregion
+
+        #region Person Group Methods
+
+        /// <summary>
+        /// Gets the peer network group.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public Group GetPeerNetworkGroup( int personId )
+        {
+            var peerNetworkGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK.AsGuid() );
+            var impliedOwnerRole = peerNetworkGroupType.Roles.Where( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid() ).FirstOrDefault();
+
+            var rockContext = this.Context as RockContext;
+
+            var peerNetworkGroup = new GroupMemberService( rockContext ).Queryable()
+                                    .Where(
+                                        m => m.PersonId == personId
+                                        && m.GroupRoleId == impliedOwnerRole.Id
+                                        && m.Group.GroupTypeId == peerNetworkGroupType.Id
+                                    )
+                                    .Select( m => m.Group )
+                                    .FirstOrDefault();
+
+            // It's possible that a implied group does not exist for this person due to poor migration from a different system or a manual insert of the data
+            if ( peerNetworkGroup == null )
+            {
+                // Create the new peer network group using a new context so as not to save changes in the current one
+                using ( var rockContextClean = new RockContext() )
+                {
+                    var groupServiceClean = new GroupService( rockContextClean );
+
+                    var groupMember = new GroupMember();
+                    groupMember.PersonId = personId;
+                    groupMember.GroupRoleId = impliedOwnerRole.Id;
+
+                    var peerNetworkGroupClean = new Group();
+                    peerNetworkGroupClean.Name = peerNetworkGroupType.Name;
+                    peerNetworkGroupClean.GroupTypeId = peerNetworkGroupType.Id;
+                    peerNetworkGroupClean.Members.Add( groupMember );
+
+                    groupServiceClean.Add( peerNetworkGroupClean );
+                    rockContextClean.SaveChanges();
+
+                    // Get the new peer network group using the original context
+                    peerNetworkGroup = new GroupService( rockContext ).Get( peerNetworkGroupClean.Id );
+                }
+            }
+
+            return peerNetworkGroup;
+        }
 
         #endregion
 
@@ -1552,7 +2313,7 @@ namespace Rock.Model
             var rockContext = ( RockContext ) this.Context;
             var groupMemberService = new GroupMemberService( rockContext );
 
-            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            int groupTypeFamilyId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
             // get the geopoints for the family locations for the selected person
             return groupMemberService
@@ -1567,6 +2328,8 @@ namespace Rock.Model
                     l.Location.GeoPoint != null )
                 .Select( l => l.Location.GeoPoint );
         }
+
+        #region Static Methods 
 
         /// <summary>
         /// Adds a person alias, known relationship group, implied relationship group, and optionally a family group for
@@ -1585,7 +2348,7 @@ namespace Rock.Model
             person.LastName = person.LastName.FixCase();
 
             // Create/Save Known Relationship Group
-            var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
+            var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
             if ( knownRelationshipGroupType != null )
             {
                 var ownerRole = knownRelationshipGroupType.Roles
@@ -1608,12 +2371,12 @@ namespace Rock.Model
             }
 
             // Create/Save Implied Relationship Group
-            var impliedRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_IMPLIED_RELATIONSHIPS );
+            var impliedRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK );
             if ( impliedRelationshipGroupType != null )
             {
                 var ownerRole = impliedRelationshipGroupType.Roles
                     .FirstOrDefault( r =>
-                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER.AsGuid() ) );
+                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid() ) );
                 if ( ownerRole != null )
                 {
                     var groupMember = new GroupMember();
@@ -1631,7 +2394,7 @@ namespace Rock.Model
             }
 
             // Create/Save family
-            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
             if ( familyGroupType != null )
             {
                 var adultRole = familyGroupType.Roles
@@ -1693,8 +2456,8 @@ namespace Rock.Model
         {
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
 
-            var demographicChanges = new List<string>();
-            var memberChanges = new List<string>();
+            var demographicChanges = new History.HistoryChangeList();
+            var memberChanges = new History.HistoryChangeList();
             var groupService = new GroupService( rockContext );
 
             var group = groupService.Get( groupId );
@@ -1727,7 +2490,7 @@ namespace Rock.Model
                 person.LastName = person.LastName.FixCase();
 
                 // new person that hasn't be saved to database yet
-                demographicChanges.Add( "Created" );
+                demographicChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, person.FullName );
                 History.EvaluateChange( demographicChanges, "Title", string.Empty, DefinedValueCache.GetName( person.TitleValueId ) );
                 History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName );
                 History.EvaluateChange( demographicChanges, "Last Name", string.Empty, person.LastName );
@@ -1761,7 +2524,7 @@ namespace Rock.Model
 
             groupMember.GroupId = groupId;
             groupMember.GroupRoleId = groupRoleId;
-            var groupType = GroupTypeCache.Read( group.GroupTypeId );
+            var groupType = GroupTypeCache.Get( group.GroupTypeId );
             var role = groupType.Roles.FirstOrDefault( a => a.Id == groupRoleId );
 
             if ( role != null )
@@ -1787,7 +2550,10 @@ namespace Rock.Model
                 typeof( Person ),
                 Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                 groupMember.Person.Id,
-                demographicChanges );
+                demographicChanges,
+                false,
+                null,
+                rockContext.SourceOfChange);
 
             if ( isFamilyGroup )
             {
@@ -1799,7 +2565,10 @@ namespace Rock.Model
                     memberChanges,
                     group.Name,
                     typeof( Group ),
-                    groupId );
+                    groupId,
+                    false,
+                    null,
+                    rockContext.SourceOfChange);
             }
         }
 
@@ -1845,14 +2614,17 @@ namespace Rock.Model
                 {
                     var person = fm.Person;
 
-                    var demographicChanges = new List<string>();
+                    var demographicChanges = new History.HistoryChangeList();
                     History.EvaluateChange( demographicChanges, "Giving Group", person.GivingGroup.Name, group.Name );
                     HistoryService.SaveChanges(
                         rockContext,
                         typeof( Person ),
                         Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                         person.Id,
-                        demographicChanges );
+                        demographicChanges,
+                        false,
+                        null,
+                        rockContext.SourceOfChange);
 
                     person.GivingGroupId = groupId;
                     rockContext.SaveChanges();
@@ -1860,7 +2632,7 @@ namespace Rock.Model
 
                 if ( group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ) )
                 {
-                    var oldMemberChanges = new List<string>();
+                    var oldMemberChanges = new History.HistoryChangeList();
                     History.EvaluateChange( oldMemberChanges, "Role", fm.GroupRole.Name, string.Empty );
                     History.EvaluateChange( oldMemberChanges, "Family", fm.Group.Name, string.Empty );
                     HistoryService.SaveChanges(
@@ -1903,8 +2675,9 @@ namespace Rock.Model
             RemovePersonFromOtherGroupsOfType( familyId, personId, rockContext );
         }
 
-        #region User Preferences
+        #endregion
 
+        #region User Preferences
         /// <summary>
         /// Saves a <see cref="Rock.Model.Person">Person's</see> user preference setting by key and SavesChanges()
         /// </summary>
@@ -1913,7 +2686,7 @@ namespace Rock.Model
         /// <param name="value">The value.</param>
         public static void SaveUserPreference( Person person, string key, string value )
         {
-            int? personEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
+            int? personEntityTypeId = EntityTypeCache.Get( Person.USER_VALUE_ENTITY ).Id;
 
             using ( var rockContext = new RockContext() )
             {
@@ -1923,7 +2696,7 @@ namespace Rock.Model
                 if ( attribute == null )
                 {
                     var fieldTypeService = new Model.FieldTypeService( rockContext );
-                    var fieldType = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() );
+                    var fieldType = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() );
 
                     attribute = new Model.Attribute();
                     attribute.IsSystem = false;
@@ -1981,13 +2754,13 @@ namespace Rock.Model
         {
             if ( preferences != null )
             {
-                int? personEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
+                int? personEntityTypeId = EntityTypeCache.Get( Person.USER_VALUE_ENTITY ).Id;
 
                 using ( var rockContext = new RockContext() )
                 {
                     var attributeService = new Model.AttributeService( rockContext );
                     var attributes = attributeService
-                        .Get( personEntityTypeId, string.Empty, string.Empty )
+                        .GetByEntityTypeQualifier( personEntityTypeId, string.Empty, string.Empty, true )
                         .Where( a => preferences.Keys.Contains( a.Key ) )
                         .ToList();
 
@@ -1999,7 +2772,7 @@ namespace Rock.Model
                         if ( attribute == null )
                         {
                             var fieldTypeService = new Model.FieldTypeService( rockContext );
-                            var fieldType = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() );
+                            var fieldType = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() );
 
                             attribute = new Model.Attribute();
                             attribute.IsSystem = false;
@@ -2029,7 +2802,7 @@ namespace Rock.Model
 
                         // Requery attributes ( so they all have ids )
                         attributes = attributeService
-                            .Get( personEntityTypeId, string.Empty, string.Empty )
+                            .GetByEntityTypeQualifier( personEntityTypeId, string.Empty, string.Empty, true )
                             .Where( a => preferences.Keys.Contains( a.Key ) )
                             .ToList();
                     }
@@ -2103,7 +2876,7 @@ namespace Rock.Model
         /// <returns>A list of <see cref="System.String"/> containing the values associated with the user's preference setting.</returns>
         public static string GetUserPreference( Person person, string key )
         {
-            int? personEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
+            int? personEntityTypeId = EntityTypeCache.Get( Person.USER_VALUE_ENTITY ).Id;
 
             using ( var rockContext = new Rock.Data.RockContext() )
             {
@@ -2131,7 +2904,7 @@ namespace Rock.Model
         /// <param name="key">A <see cref="System.String"/> representing the key (name) of the preference setting.</param>
         public static void DeleteUserPreference( Person person, string key )
         {
-            int? personEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
+            int? personEntityTypeId = EntityTypeCache.Get( Person.USER_VALUE_ENTITY ).Id;
 
             using ( var rockContext = new RockContext() )
             {
@@ -2160,7 +2933,7 @@ namespace Rock.Model
         /// <returns>A dictionary containing all of the <see cref="Rock.Model.Person">Person's</see> user preference settings.</returns>
         public static Dictionary<string, string> GetUserPreferences( Person person )
         {
-            int? personEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
+            int? personEntityTypeId = EntityTypeCache.Get( Person.USER_VALUE_ENTITY ).Id;
 
             var values = new Dictionary<string, string>();
 
@@ -2178,6 +2951,177 @@ namespace Rock.Model
             }
 
             return values;
+        }
+
+        /// <summary>
+        /// Ensures the person age classification is correct for the specified person
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// If the person age classification was changed
+        /// </returns>
+        public static bool UpdatePersonAgeClassification( int personId, RockContext rockContext )
+        {
+            var recordsUpdated = UpdatePersonAgeClassifications( personId, rockContext );
+            return recordsUpdated != 0;
+        }
+
+        /// <summary>
+        /// Ensures the person age classifications are correct for all records in the database
+        /// In most cases this will take care of people that have become adults due to an 18th birthday, but will also
+        /// fix person records that somehow got marked as Adult but should be marked as Child (maybe incorrect Birthdate was fixed)
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// The number of records updated
+        /// </returns>
+        public static int UpdatePersonAgeClassificationAll( RockContext rockContext )
+        {
+            return UpdatePersonAgeClassifications( null, rockContext );
+        }
+
+        /// <summary>
+        /// Updates the person age classifications
+        /// In most cases this will take care of people that have become adults due to an 18th birthday, but will also
+        /// fix person records that somehow got marked as Adult but should be marked as Child (maybe incorrect Birthdate was fixed)
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// The number of records updated
+        /// </returns>
+        private static int UpdatePersonAgeClassifications( int? personId, RockContext rockContext )
+        {
+            var personService = new PersonService( rockContext );
+            IQueryable<Person> personQuery;
+
+            if ( personId.HasValue )
+            {
+                personQuery = personService.AsNoFilter().Where( a => a.Id == personId );
+            }
+            else
+            {
+                personQuery = personService.Queryable( includeDeceased: true, includeBusinesses: false );
+            }
+
+            // get the min birthdate of people 18 and younger;
+            var birthDateEighteen = RockDateTime.Now.AddYears( -18 );
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+            int familyGroupTypeId = familyGroupType.Id;
+            int groupRoleAdultId = familyGroupType.Roles.FirstOrDefault( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+            int groupRoleChildId = familyGroupType.Roles.FirstOrDefault( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
+
+            var familyPersonRoleQuery = new GroupMemberService( rockContext ).Queryable()
+                .Where( a => a.Group.GroupTypeId == familyGroupTypeId );
+
+            // Adult if Age >= 18 OR has a role of Adult in one or more (ANY) families
+            var adultBasedOnBirthdateOrFamilyRole = personQuery
+                .Where( p => ( p.BirthDate.HasValue && p.BirthDate.Value <= birthDateEighteen )
+                    || familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).Any( f => f.GroupRoleId == groupRoleAdultId ) );
+
+            // Child if (not adultBasedOnBirthdateOrFamilyRole) AND (Age < 18 OR child in ALL families)
+            var childBasedOnBirthdateOrFamilyRole = personQuery
+                .Where( p => !adultBasedOnBirthdateOrFamilyRole.Any( a => a.Id == p.Id )
+                    &&
+                    ( ( p.BirthDate.HasValue && p.BirthDate.Value > birthDateEighteen )
+                        ||
+                        familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).All( f => f.GroupRoleId == groupRoleChildId )
+                    ) );
+            
+            // update records that aren't marked as Adult but now should be
+            int updatedAdultCount = rockContext.BulkUpdate(
+                adultBasedOnBirthdateOrFamilyRole.Where( a => a.AgeClassification != AgeClassification.Adult && !a.IsLockedAsChild ),
+                p => new Person { AgeClassification = AgeClassification.Adult } );
+
+            // update records that aren marked as Adult but now should be child as IsLockedAsChild is marked as true
+            int updatedLockedChildCount = rockContext.BulkUpdate(
+                adultBasedOnBirthdateOrFamilyRole.Where( a => a.AgeClassification == AgeClassification.Adult && a.IsLockedAsChild ),
+                p => new Person { AgeClassification = AgeClassification.Child } );
+
+            // update records that aren't marked as Child but now should be
+            int updatedChildCount = rockContext.BulkUpdate(
+                childBasedOnBirthdateOrFamilyRole.Where( a => a.AgeClassification != AgeClassification.Child ),
+                p => new Person { AgeClassification = AgeClassification.Child } );
+
+            // NOTE: A person can't become 'AgeClassification.Unknown' if they have already bet set to Adult or Child so we don't have to recalculate for new AgeClassification.Unknown
+
+            return updatedAdultCount + updatedAdultCount + updatedLockedChildCount;
+        }
+
+        /// <summary>
+        /// Ensures the PrimaryFamily is correct for the specified person
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static bool UpdatePrimaryFamily( int personId, RockContext rockContext )
+        {
+            int recordsUpdated = UpdatePersonsPrimaryFamily( personId, rockContext );
+            return recordsUpdated != 0;
+        }
+
+        /// <summary>
+        /// Ensures the PrimaryFamily is correct for all person records in the database
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdatePrimaryFamilyAll( RockContext rockContext )
+        {
+            return UpdatePersonsPrimaryFamily( null, rockContext );
+        }
+
+        /// <summary>
+        /// Updates the person primary family for the specified person, or for all persons in the database if personId is null
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private static int UpdatePersonsPrimaryFamily( int? personId, RockContext rockContext )
+        {
+            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
+
+            // Use raw 'UPDATE SET FROM' update to quickly ensure that the Primary Family on each Person record matches the Calculated Primary Family
+            var sqlUpdateBuilder = new StringBuilder();
+            sqlUpdateBuilder.Append( $@"
+UPDATE x
+SET x.PrimaryFamilyId = x.CalculatedPrimaryFamilyId
+FROM (
+    SELECT p.Id
+        ,p.NickName
+        ,p.LastName
+        ,p.PrimaryFamilyId
+        ,pf.CalculatedPrimaryFamilyId
+    FROM Person p
+    OUTER APPLY (
+        SELECT TOP 1 g.Id [CalculatedPrimaryFamilyId]
+        FROM GroupMember gm
+        JOIN [Group] g ON g.Id = gm.GroupId
+        WHERE g.GroupTypeId = {groupTypeIdFamily}
+            AND gm.PersonId = p.Id
+        ORDER BY gm.GroupOrder
+            ,gm.GroupId
+        ) pf
+    WHERE (
+            p.PrimaryFamilyId IS NULL
+            OR (p.PrimaryFamilyId != pf.CalculatedPrimaryFamilyId)
+            )" );
+
+            if ( personId.HasValue )
+            {
+                sqlUpdateBuilder.Append( $" AND ( p.Id = @personId) " );
+            }
+
+            sqlUpdateBuilder.Append( @"    ) x " );
+
+            if ( personId.HasValue )
+            {
+                return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@personId", personId.Value ) );
+            }
+            else
+            {
+                return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString() );
+            }
         }
 
         #endregion

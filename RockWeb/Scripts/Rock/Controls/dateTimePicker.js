@@ -19,7 +19,7 @@
                 var $dateTimePickerContainer = $dp.closest('.js-datetime-picker-container');
                 var $dateTimePickerInputGroup = $dp.closest('.input-group.date');
 
-                // uses https://github.com/eternicode/bootstrap-datepicker
+                // uses https://github.com/uxsolutions/bootstrap-datepicker
                 $dateTimePickerInputGroup.datepicker({
                     format: dateFormat,
                     autoclose: true,

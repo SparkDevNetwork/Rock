@@ -258,6 +258,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the CSS class for the checkbox's span for the label-text (see Rock.Web.UI.Adapters.CheckboxAdaptor)
+        /// </summary>
+        /// <value>
+        /// The Text CSS class.
+        /// </value>
+        public string TextCssClass
+        {
+            get
+            {
+                return this.ViewState["TextCssClass"] as string ?? string.Empty;
+            }
+
+            set
+            {
+                this.ViewState["TextCssClass"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the CSS class for the checkbox &lt;input&gt;
         /// </summary>
         /// <value>

@@ -1,15 +1,4 @@
-﻿<style>
-    .store-categories h4 {
-        margin-top: 0;
-        font-weight: 700;
-    }
-    
-    .store-categories li {
-        margin-right: 6px;
-    }
-</style>
-
-<div class="panel panel-block store-categories">
+﻿<div class="panel panel-block store-categories">
     <div class="panel-heading">
         <h1 class="panel-title"><i class="fa fa-list"></i> Store Categories</h1>
     </div>

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.Entity;
+using System.Data.Entity.Migrations.Infrastructure;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
@@ -92,11 +93,19 @@ namespace RockWeb
             string allowedDomains = string.Empty;
 
             int? siteId = ( Context.Items["Rock:SiteId"] ?? "" ).ToString().AsIntegerOrNull();
+
+            // We only care about protecting content served up through Rock, not the static
+            // content assets on the file system. Only Rock pages would have a site.
+            if ( !siteId.HasValue )
+            {
+                return;
+            }
+
             try
             {
                 if ( siteId.HasValue )
                 {
-                    var site = SiteCache.Read( siteId.Value );
+                    var site = SiteCache.Get( siteId.Value );
                     if ( site != null && ! String.IsNullOrWhiteSpace( site.AllowedFrameDomains ) )
                     {
                         useFrameDomains = true;
@@ -109,15 +118,14 @@ namespace RockWeb
 
             if ( useFrameDomains )
             {
-                // string concat is 5x faster than String.Format in this senario
+                // string concat is 5x faster than String.Format in this scenario
                 Response.AddHeader( "Content-Security-Policy", "frame-ancestors " + allowedDomains );
             }
             else
             {
                 Response.AddHeader( "X-Frame-Options", "SAMEORIGIN" );
                 Response.AddHeader( "Content-Security-Policy", "frame-ancestors 'self'" );
-            }
-            
+            }            
         }
 
         /// <summary>
@@ -137,48 +145,64 @@ namespace RockWeb
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
                 }
 
-                // Clear all cache
-                RockMemoryCache.Clear();
-
-                // If not migrating, set up view cache to speed up startup (Not supported when running migrations).
-                var fileInfo = new FileInfo( Server.MapPath( "~/App_Data/Run.Migration" ) );
-                if ( !fileInfo.Exists )
+                // Indicate to always log to file during initialization.
+                ExceptionLogService.AlwaysLogToFile = true;
+                
+                if ( !File.Exists( Server.MapPath( "~/App_Data/Run.Migration" ) ) )
                 {
-                    RockInteractiveViews.SetViewFactory( Server.MapPath( "~/App_Data/RockModelViews.xml" ) );
+                    // Clear all cache
+                    RockCache.ClearAllCachedItems( false );
                 }
 
                 // Get a db context
                 using ( var rockContext = new RockContext() )
                 {
-                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment && !fileInfo.Exists )
+                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                     {
                         try
                         {
-                            new AttributeService( rockContext ).Get( 0 );
-                            System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase {2}/{1} - {0} ms", stopwatch.Elapsed.TotalMilliseconds, rockContext.Database.Connection.Database, rockContext.Database.Connection.DataSource ) );
+                            System.Diagnostics.Debug.WriteLine( string.Format( "Database: {0}/{1}", rockContext.Database.Connection.DataSource, rockContext.Database.Connection.Database ) );
                         }
                         catch
                         {
                             // Intentionally Blank
                         }
                     }
-                    
+
                     //// Run any needed Rock and/or plugin migrations
                     //// NOTE: MigrateDatabase must be the first thing that touches the database to help prevent EF from creating empty tables for a new database
-                    MigrateDatabase( rockContext );
-
+                    bool anyMigrations = MigrateDatabase( rockContext );
+                    
                     // Run any plugin migrations
                     stopwatch.Restart();
-                    MigratePlugins( rockContext );
+                    bool anyPluginMigrations = MigratePlugins( rockContext );
                     if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                     {
                         System.Diagnostics.Debug.WriteLine( string.Format( "MigratePlugins - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
                     }
+                    
+                    if ( anyMigrations || anyPluginMigrations )
+                    {
+                        // If any migrations ran (version was likely updated)
+                        try
+                        {
+                            Rock.Utility.SparkLinkHelper.SendToSpark( rockContext );
+                        }
+                        catch ( Exception ex )
+                        {
+                            // Just catch any exceptions, log it, and keep moving... 
+                            try
+                            {
+                                ExceptionLogService.LogException( ex, null );
+                            }
+                            catch { }
+                        }
+                    }
 
                     // Preload the commonly used objects
                     stopwatch.Restart();
-                    LoadComponenetData( rockContext );
                     LoadCacheObjects( rockContext );
+                    LoadComponenetData( rockContext );
                     if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                     {
                         System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
@@ -243,6 +267,19 @@ namespace RockWeb
                                 job.LastStatusMessage = message;
                                 job.LastStatus = errorLoadingStatus;
                                 rockContext.SaveChanges();
+
+                                var jobHistoryService = new ServiceJobHistoryService( rockContext );
+                                var jobHistory = new ServiceJobHistory()
+                                {
+                                    ServiceJobId = job.Id,
+                                    StartDateTime = RockDateTime.Now,
+                                    StopDateTime = RockDateTime.Now,
+                                    Status = job.LastStatus,
+                                    StatusMessage = job.LastStatusMessage
+                                };
+                                jobHistoryService.Add( jobHistory );
+                                rockContext.SaveChanges();
+
                             }
                         }
 
@@ -278,7 +315,8 @@ namespace RockWeb
                     // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                     AddCallBack();
                     
-                    Rock.Security.Authorization.Load();
+                    // Force authorizations to be cached
+                    Rock.Security.Authorization.Get();
                 }
 
                 EntityTypeService.RegisterEntityTypes( Server.MapPath( "~" ) );
@@ -296,6 +334,8 @@ namespace RockWeb
                 {
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Started_Successfully: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
                 }
+
+                ExceptionLogService.AlwaysLogToFile = false;
             }
             catch (Exception ex)
             {
@@ -410,7 +450,7 @@ namespace RockWeb
                         if ( httpEx != null )
                         {
                             int statusCode = httpEx.GetHttpCode();
-                            if ( ( statusCode == 404 ) && !GlobalAttributesCache.Read().GetValue( "Log404AsException" ).AsBoolean())
+                            if ( ( statusCode == 404 ) && !GlobalAttributesCache.Get().GetValue( "Log404AsException" ).AsBoolean())
                             {
                                 context.ClearError();
                                 context.Response.StatusCode = 404;
@@ -479,23 +519,15 @@ namespace RockWeb
         {
             try
             {
-                // log the reason that the application end was fired
-                HttpRuntime runtime = (HttpRuntime)typeof( System.Web.HttpRuntime ).InvokeMember( "_theRuntime", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.GetField, null, null, null );
-                if ( runtime != null )
-                {
-                    string shutDownMessage = (string)runtime.GetType().InvokeMember( "_shutDownMessage", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField, null, runtime, null );
+                // Log the reason that the application end was fired
+                var shutdownReason = System.Web.Hosting.HostingEnvironment.ShutdownReason;
+                
+                // Send debug info to debug window
+                System.Diagnostics.Debug.WriteLine( String.Format( "shutdownReason:{0}", shutdownReason ) );
 
-                    // send debug info to debug window
-                    System.Diagnostics.Debug.WriteLine( String.Format( "shutDownMessage:{0}", shutDownMessage ) );
+                LogMessage( APP_LOG_FILENAME, "Application Ended: " + shutdownReason );
 
-                    LogMessage( APP_LOG_FILENAME, "Application Ended: " + shutDownMessage );
-                }
-                else
-                {
-                    LogMessage( APP_LOG_FILENAME, "Application Ended" );
-                }
-
-                // close out jobs infrastructure if running under IIS
+                // Close out jobs infrastructure if running under IIS
                 bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
                 if ( runJobsInContext )
                 {
@@ -505,16 +537,23 @@ namespace RockWeb
                     }
                 }
 
-                // process the transaction queue
+                // Process the transaction queue
                 DrainTransactionQueue();
 
-                // mark any user login stored as 'IsOnline' in the database as offline
+                // Mark any user login stored as 'IsOnline' in the database as offline
                 MarkOnlineUsersOffline();
-            
+
+                // Auto-restart appdomain restarts (triggered by web.config changes, new dlls in the bin folder, etc.)
+                // These types of restarts don't cause the worker process to restart, but they do cause ASP.NET to unload 
+                // the current AppDomain and start up a new one. This will launch a web request which will auto-start Rock 
+                // in these cases.
+                // https://weblog.west-wind.com/posts/2013/oct/02/use-iis-application-initialization-for-keeping-aspnet-apps-alive
+                var client = new WebClient();
+                client.DownloadString( GetKeepAliveUrl() );
             }
             catch
             {
-                // intentionally ignore exception
+                // Intentionally ignore exception
             }
         }
 
@@ -541,9 +580,14 @@ namespace RockWeb
                     LogMessage( APP_LOG_FILENAME, "Migrating Database..." );
                     
                     var lastMigration = pendingMigrations.Last();
-                    
+
+                    // create a logger, but don't enable any of the logs
+                    var migrationLogger = new Rock.Migrations.RockMigrationsLogger() { LogVerbose = false, LogInfo = false, LogWarning = false };
+
+                    var migratorLoggingDecorator = new MigratorLoggingDecorator( migrator, migrationLogger );
+
                     // NOTE: we need to specify the last migration vs null so it won't detect/complain about pending changes
-                    migrator.Update( lastMigration );
+                    migratorLoggingDecorator.Update( lastMigration );
                     result = true;
                 }
 
@@ -739,7 +783,7 @@ namespace RockWeb
                     if ( attribute == null )
                     {
                         attribute = new Rock.Model.Attribute();
-                        attribute.FieldTypeId = FieldTypeCache.Read( new Guid( Rock.SystemGuid.FieldType.TEXT ) ).Id;
+                        attribute.FieldTypeId = FieldTypeCache.Get( new Guid( Rock.SystemGuid.FieldType.TEXT ) ).Id;
                         attribute.EntityTypeQualifierColumn = attributeValueConfig.EntityTypeQualifierColumm;
                         attribute.EntityTypeQualifierValue = attributeValueConfig.EntityTypeQualifierValue;
                         attribute.Key = attributeValueConfig.AttributeKey;
@@ -827,19 +871,22 @@ namespace RockWeb
         /// </summary>
         private void LoadCacheObjects( RockContext rockContext )
         {
+            // Flush the Cache just in case Migrations updated any cached items thru SQL
+            RockCache.ClearAllCachedItems( false );
+
             // Cache all the entity types
             foreach ( var entityType in new Rock.Model.EntityTypeService( rockContext ).Queryable().AsNoTracking() )
             {
-                EntityTypeCache.Read( entityType );
+                EntityTypeCache.Get( entityType );
             }
 
             // Cache all the Field Types
             foreach ( var fieldType in new Rock.Model.FieldTypeService( rockContext ).Queryable().AsNoTracking() )
             {
-                Rock.Web.Cache.FieldTypeCache.Read( fieldType );
+                FieldTypeCache.Get( fieldType );
             }
 
-            var all = Rock.Web.Cache.FieldTypeCache.All();
+            var all = FieldTypeCache.All();
 
             // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
             var qualifiers = new Dictionary<int, Dictionary<string, string>>();
@@ -863,7 +910,7 @@ namespace RockWeb
             // Cache all the attributes, except for user preferences
             
             var attributeQuery = new Rock.Model.AttributeService( rockContext ).Queryable( "Categories" );
-            int? personUserValueEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( Person.USER_VALUE_ENTITY );
+            int? personUserValueEntityTypeId = EntityTypeCache.GetId( Person.USER_VALUE_ENTITY );
             if (personUserValueEntityTypeId.HasValue)
             {
                 attributeQuery = attributeQuery.Where(a => !a.EntityTypeId.HasValue || a.EntityTypeId.Value != personUserValueEntityTypeId);
@@ -872,15 +919,15 @@ namespace RockWeb
             foreach ( var attribute in attributeQuery.AsNoTracking().ToList() )
             {
                 if ( qualifiers.ContainsKey( attribute.Id ) )
-                    Rock.Web.Cache.AttributeCache.Read( attribute, qualifiers[attribute.Id] );
+                    Rock.Web.Cache.AttributeCache.Get( attribute, qualifiers[attribute.Id] );
                 else
-                    Rock.Web.Cache.AttributeCache.Read( attribute, new Dictionary<string, string>() );
+                    Rock.Web.Cache.AttributeCache.Get( attribute, new Dictionary<string, string>() );
             }
 
             // cache all the Country Defined Values since those can be loaded in just a few millisecond here, but take around 1-2 seconds if first loaded when formatting an address
             foreach ( var definedValue in new Rock.Model.DefinedValueService( rockContext ).GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() ).AsNoTracking() )
             {
-                DefinedValueCache.Read( definedValue, rockContext );
+                DefinedValueCache.Get( definedValue );
             }
         }
 
@@ -937,7 +984,7 @@ namespace RockWeb
             {
                 bool sendNotification = true;
 
-                var globalAttributesCache = GlobalAttributesCache.Read();
+                var globalAttributesCache = GlobalAttributesCache.Get();
 
                 string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
                 if ( !string.IsNullOrWhiteSpace( filterSettings ) )
@@ -1018,7 +1065,7 @@ namespace RockWeb
                             string siteName = "Rock";
                             if ( siteId.HasValue )
                             {
-                                var site = SiteCache.Read( siteId.Value );
+                                var site = SiteCache.Get( siteId.Value );
                                 if ( site != null )
                                 {
                                     siteName = site.Name;
@@ -1217,12 +1264,7 @@ namespace RockWeb
                     // add cache item again
                     AddCallBack();
 
-                    var keepAliveUrl = GlobalAttributesCache.Value( "KeepAliveUrl" );
-                    if ( string.IsNullOrWhiteSpace( keepAliveUrl ) )
-                    {
-                        keepAliveUrl = GlobalAttributesCache.Value( "InternalApplicationRoot" ) ?? string.Empty;
-                        keepAliveUrl = keepAliveUrl.EnsureTrailingForwardslash() + "KeepAlive.aspx";
-                    }
+                    var keepAliveUrl = GetKeepAliveUrl();
 
                     // call a page on the site to keep IIS alive 
                     if ( !string.IsNullOrWhiteSpace( keepAliveUrl ) )
@@ -1252,6 +1294,22 @@ namespace RockWeb
             {
                 LogError( ex, null );
             }
+        }
+
+        /// <summary>
+        /// Gets the keep alive URL.
+        /// </summary>
+        /// <returns></returns>
+        private static string GetKeepAliveUrl()
+        {
+            var keepAliveUrl = GlobalAttributesCache.Value( "KeepAliveUrl" );
+            if ( string.IsNullOrWhiteSpace( keepAliveUrl ) )
+            {
+                keepAliveUrl = GlobalAttributesCache.Value( "InternalApplicationRoot" ) ?? string.Empty;
+                keepAliveUrl = keepAliveUrl.EnsureTrailingForwardslash() + "KeepAlive.aspx";
+            }
+
+            return keepAliveUrl;
         }
 
         #endregion

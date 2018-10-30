@@ -9,6 +9,7 @@
             this.restUrl = options.restUrl;
             this.restDetailUrl = options.restDetailUrl;
             this.defaultText = options.defaultText || '';
+            this.iScroll = null;
         };
 
         PersonPicker.prototype.initializeEventHandlers = function () {
@@ -60,11 +61,84 @@
                     noResults: function () { },
                     results: function () { }
                 }
-            });
+            }).data('ui-autocomplete')._renderItem = function ($ul, item) {
+                if (this.options.html) {
+                    // override jQueryUI autocomplete's _renderItem so that we can do Html for the listitems
+                    // derived from http://github.com/scottgonzalez/jquery-ui-extensions
+
+                    var inactiveWarning = "";
+
+                    if (!item.IsActive && item.RecordStatus) {
+                        inactiveWarning = " <small>(" + item.RecordStatus + ")</small>";
+                    }
+
+                    var quickSummaryInfo = "";
+                    if (item.FormattedAge || item.SpouseName) {
+                        quickSummaryInfo = " <small class='rollover-item text-muted'>";
+                        if (item.FormattedAge) {
+                            quickSummaryInfo += "Age: " + item.FormattedAge;
+                        }
+
+                        if (item.SpouseName) {
+                            if (item.FormattedAge) {
+                                quickSummaryInfo += "; ";
+                            }
+
+                            quickSummaryInfo += "Spouse: " + item.SpouseName;
+                        }
+
+                        quickSummaryInfo += "</small>";
+                    }
+
+                    var $div = $('<div/>').attr('class', 'radio'),
+
+                        $label = $('<label/>')
+                            .html('<span class="label-text">' + item.Name + inactiveWarning + quickSummaryInfo + '</span><i class="fa fa-refresh fa-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
+                            .prependTo($div),
+
+                        $radio = $('<input type="radio" name="person-id" />')
+                            .attr('id', item.Id)
+                            .attr('value', item.Id)
+                            .prependTo($label),
+
+                        $li = $('<li/>')
+                            .addClass('picker-select-item')
+                            .attr('data-person-id', item.Id)
+                            .attr('data-person-name', item.Name)
+                            .html($div),
+
+                        $resultSection = $(this.options.appendTo);
+
+                    if (item.PickerItemDetailsHtml) {
+                        $(item.PickerItemDetailsHtml).appendTo($li);
+                    }
+                    else {
+                        var $itemDetailsDiv = $('<div/>')
+                            .addClass('picker-select-item-details clearfix')
+                            .attr('data-has-details', false)
+                            .hide();
+
+                        $itemDetailsDiv.appendTo($li);
+                    }
+
+                    if (!item.IsActive) {
+                        $li.addClass('is-inactive');
+                    }
+
+                    return $resultSection.append($li);
+                }
+                else {
+                    return $('<li></li>')
+                        .data('item.autocomplete', item)
+                        .append($('<a></a>').text(item.label))
+                        .appendTo($ul);
+                }
+            };
 
             $('#' + controlId + ' a.picker-label').click(function (e) {
                 e.preventDefault();
-                $('#' + controlId).find('.picker-menu').first().slideToggle(function () {
+                $(this).toggleClass("active");
+                $('#' + controlId).find('.picker-menu').first().toggle(0, function () {
                     exports.personPickers[controlId].updateScrollbar();
                     $(this).find('.picker-search').focus();
                 });
@@ -204,11 +278,15 @@
         };
 
         PersonPicker.prototype.updateScrollbar = function () {
+            var self = this;
+
             // first, update this control's scrollbar, then the modal's
             var $container = $('#' + this.controlId).find('.scroll-container')
 
             if ($container.is(':visible')) {
-                $container.tinyscrollbar_update('relative');
+                if (self.iScroll) {
+                    self.iScroll.refresh();
+                }
             }
 
             // update the outer modal scrollbar
@@ -216,85 +294,19 @@
         }
 
         PersonPicker.prototype.initialize = function () {
-            $.extend($.ui.autocomplete.prototype, {
-                _renderItem: function ($ul, item) {
-                    if (this.options.html) {
-                        // override jQueryUI autocomplete's _renderItem so that we can do Html for the listitems
-                        // derived from http://github.com/scottgonzalez/jquery-ui-extensions
 
-                        var inactiveWarning = "";
-
-                        if (!item.IsActive && item.RecordStatus) {
-                            inactiveWarning = " <small>(" + item.RecordStatus + ")</small>";
-                        }
-
-                        var quickSummaryInfo = "";
-                        if (item.FormattedAge || item.SpouseName) {
-                            quickSummaryInfo = " <small class='rollover-item text-muted'>";
-                            if (item.FormattedAge) {
-                                quickSummaryInfo += "Age: " + item.FormattedAge;
-                            }
-
-                            if (item.SpouseName) {
-                                if (item.FormattedAge) {
-                                    quickSummaryInfo += "; ";
-                                }
-
-                                quickSummaryInfo += "Spouse: " + item.SpouseName;
-                            }
-
-                            quickSummaryInfo += "</small>";
-                        }
-
-                        var $div = $('<div/>').attr('class', 'radio'),
-
-                            $label = $('<label/>')
-                                .html(item.Name + inactiveWarning + quickSummaryInfo + ' <i class="fa fa-refresh fa-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
-                                .addClass('rollover-container')
-                                .prependTo($div),
-
-                            $radio = $('<input type="radio" name="person-id" />')
-                                .attr('id', item.Id)
-                                .attr('value', item.Id)
-                                .prependTo($label),
-
-                            $li = $('<li/>')
-                                .addClass('picker-select-item')
-                                .attr('data-person-id', item.Id)
-                                .attr('data-person-name', item.Name)
-                                .html($div),
-
-                            $resultSection = $(this.options.appendTo);
-
-                        if (item.PickerItemDetailsHtml) {
-                            $(item.PickerItemDetailsHtml).appendTo($li);
-                        }
-                        else {
-                            var $itemDetailsDiv = $('<div/>')
-                                .addClass('picker-select-item-details clearfix')
-                                .attr('data-has-details', false)
-                                .hide();
-
-                            $itemDetailsDiv.appendTo($li);
-                        }
-
-                        if (!item.IsActive) {
-                            $li.addClass('is-inactive');
-                        }
-
-                        return $resultSection.append($li);
-                    }
-                    else {
-                        return $('<li></li>')
-                            .data('item.autocomplete', item)
-                            .append($('<a></a>').text(item.label))
-                            .appendTo($ul);
-                    }
-                }
+            this.iScroll = new IScroll('#personpicker-scroll-container_' + this.controlId + ' .viewport', {
+                mouseWheel: true,
+                indicators: {
+                    el: '#personpicker-scroll-container_' + this.controlId + ' .track',
+                    interactive: true,
+                    resize: false,
+                    listenY: true,
+                    listenX: false,
+                },
+                click: false,
+                preventDefaultException: { tagName: /.*/ }
             });
-
-            var $control = $('#' + this.controlId);
-            $control.find('.scroll-container').tinyscrollbar({ size: 120, sizethumb: 20 });
 
             this.initializeEventHandlers();
         };

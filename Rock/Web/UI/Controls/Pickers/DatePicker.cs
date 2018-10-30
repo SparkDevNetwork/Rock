@@ -21,7 +21,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class DatePicker : DataTextBox
     {
@@ -138,6 +138,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Controls whether or not the DatePicker enables javascript (default true). If set to false, date picker will be disabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> (default); otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableJavascript
+        {
+            get
+            {
+                return ViewState["EnableJavascript"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["EnableJavascript"] = value;
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -173,7 +192,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            RegisterJavascript();
+            if (EnableJavascript)
+            {
+                RegisterJavascript();
+            }
+
             base.RenderControl( writer );
         }
 
@@ -187,16 +210,36 @@ namespace Rock.Web.UI.Controls
             dateFormat = dateFormat.Replace( "M", "m" ).Replace( "m", "mm" ).Replace( "mmmm", "mm" );
             dateFormat = dateFormat.Replace( "d", "dd" ).Replace( "dddd", "dd" );
 
-            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', startView: {1}, format: '{2}', todayHighlight: {3}, forceParse: {4}, {5} {6} }});", 
+            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', startView: {1}, showOnFocus: {2}, format: '{3}', todayHighlight: {4}, forceParse: {5}, {6} {7} }});",
                 this.ClientID,                                  // {0}
                 this.StartView.ConvertToInt(),                  // {1}
-                dateFormat,                                     // {2}
-                this.HighlightToday.ToString().ToLower(),       // {3}
-                this.ForceParse.ToString().ToLower(),           // {4}
-                ( this.AllowFutureDateSelection ) ? "" : "endDate: '" + RockDateTime.Today.ToString("o") + "',",  // {5}
-                ( this.AllowPastDateSelection ) ? "" : "startDate: '" + RockDateTime.Today.ToString("o") + "',"  // {6}
+                this.ShowOnFocus.ToString().ToLower(),          // {2}
+                dateFormat,                                     // {3}
+                this.HighlightToday.ToString().ToLower(),       // {4}
+                this.ForceParse.ToString().ToLower(),           // {5}
+                ( this.AllowFutureDateSelection ) ? "" : "endDate: '" + RockDateTime.Today.ToString("o") + "',",  // {6}
+                ( this.AllowPastDateSelection ) ? "" : "startDate: '" + RockDateTime.Today.ToString("o") + "',"  // {7}
             );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "date_picker-" + this.ClientID, script, true );
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating if picker selections (popup) should be shown as soon as control gets focus
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show on focus]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowOnFocus
+        {
+            get
+            {
+                return ViewState["ShowOnFocus"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["ShowOnFocus"] = value;
+            }
         }
 
         /// <summary>

@@ -147,7 +147,7 @@ namespace Rock.Web.UI.Controls
                 _ddlActionAttribute.Items.Add( new ListItem() );
                 foreach ( var attributeItem in workflowTypeAttributes )
                 {
-                    var fieldType = FieldTypeCache.Read( attributeItem.Value.FieldTypeId );
+                    var fieldType = FieldTypeCache.Get( attributeItem.Value.FieldTypeId );
                     if ( fieldType != null && fieldType.Field is Rock.Field.Types.TextFieldType )
                     {
                         var li = new ListItem( attributeItem.Value.Name, attributeItem.Key.ToString() );
@@ -239,21 +239,26 @@ namespace Rock.Web.UI.Controls
             _ddlNotificationSystemEmail.ID = this.ID + "_ddlNotificationSystemEmail";
             Controls.Add( _ddlNotificationSystemEmail );
 
-            Guid? systemEmails = Rock.SystemGuid.Category.SYSTEM_EMAIL_WORKFLOW.AsGuid();
-            if ( systemEmails.HasValue )
+            var systemEmailCategory = CategoryCache.Get( Rock.SystemGuid.Category.SYSTEM_EMAIL_WORKFLOW.AsGuid() );
+            if ( systemEmailCategory != null )
             {
-                _ddlNotificationSystemEmail.DataSource = new SystemEmailService( new RockContext() ).Queryable()
-                    .Where( e => e.Category.Guid.Equals( systemEmails.Value ) )
-                    .OrderBy( e => e.Title )
-                    .ToList();
-                _ddlNotificationSystemEmail.DataBind();
+                using ( var rockContext = new RockContext() )
+                {
+                    _ddlNotificationSystemEmail.DataSource = new SystemEmailService( rockContext ).Queryable()
+                        .Where( e => e.CategoryId == systemEmailCategory.Id )
+                        .OrderBy( e => e.Title )
+                        .Select( a => new { a.Id, a.Title } )
+                        .ToList();
+                    _ddlNotificationSystemEmail.DataBind();
+                }
             }
+
             _ddlNotificationSystemEmail.Items.Insert( 0, new ListItem( "None", "0" ) );
 
             _cbIncludeActions = new RockCheckBox();
             _cbIncludeActions.Label = "Include Actions in Email";
             _cbIncludeActions.Text = "Yes";
-            _cbIncludeActions.Help = "Should the email include the option for recipient to select an action directly from within the email? Note: This only applies if none of the the form fields are required.";
+            _cbIncludeActions.Help = "Should the email include the option for recipient to select an action directly from within the email? Note: This only applies if none of the the form fields are required. The workflow will be persisted immediately prior to sending the email.";
             _cbIncludeActions.ID = this.ID + "_cbIncludeActions";
             Controls.Add( _cbIncludeActions );
 

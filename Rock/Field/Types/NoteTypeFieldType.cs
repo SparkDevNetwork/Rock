@@ -166,13 +166,10 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                using ( var rockContext = new RockContext() )
+                var noteType = NoteTypeCache.Get( value.AsGuid() );
+                if ( noteType != null )
                 {
-                    var noteType = NoteTypeCache.Read( value.AsGuid() );
-                    if ( noteType != null )
-                    {
-                        formattedValue = noteType.Name;
-                    }
+                    formattedValue = noteType.Name;
                 }
             }
 
@@ -205,7 +202,7 @@ namespace Rock.Field.Types
                     entityTypeName = configurationValues[ENTITY_TYPE_NAME_KEY].Value;
                     if ( !string.IsNullOrWhiteSpace( entityTypeName ) && entityTypeName != None.IdValue )
                     {
-                        var entityType = EntityTypeCache.Read( entityTypeName );
+                        var entityType = EntityTypeCache.Get( entityTypeName );
                         if ( entityType != null )
                         {
                             entityTypeId = entityType.Id;
@@ -280,10 +277,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            var picker = control as DropDownList;
-            if ( picker != null )
+            var editControl = control as ListControl;
+            if ( editControl != null )
             {
-                picker.SelectedValue = value.ToUpper();
+                editControl.SetValue( value );
             }
         }
 
@@ -300,7 +297,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var noteType = NoteTypeCache.Read( guid );
+            var noteType = NoteTypeCache.Get( guid );
             return noteType != null ? noteType.Id : (int?)null;
         }
 
@@ -312,7 +309,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var noteType = NoteTypeCache.Read( id ?? 0 );
+            var noteType = NoteTypeCache.Get( id ?? 0 );
             string guidValue = noteType != null ? noteType.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

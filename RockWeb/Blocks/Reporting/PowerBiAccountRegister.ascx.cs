@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Reporting
                     else
                     {
                         nbResponse.NotificationBoxType = NotificationBoxType.Danger;
-                        nbResponse.Text = "Authenication Failed.";
+                        nbResponse.Text = "Authentication Failed.";
                     }
                 }
                 else
@@ -77,8 +77,8 @@ namespace RockWeb.Blocks.Reporting
                     pnlEntry.Visible = true;
                     pnlResponse.Visible = false;
 
-                    var globalAttributes = GlobalAttributesCache.Read();
-                    var externalUrl = globalAttributes.GetValue( "PublicApplicationRoot" );
+                    var globalAttributes = GlobalAttributesCache.Get();
+                    var externalUrl = globalAttributes.GetValue( "InternalApplicationRoot" );
 
                     if ( !externalUrl.EndsWith( @"/" ) )
                     {

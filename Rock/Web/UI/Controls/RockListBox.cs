@@ -280,7 +280,7 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override bool LoadPostData( string postDataKey, NameValueCollection postCollection )
         {
-            var selectedValues = this.Page.Request.Form[this.UniqueID].SplitDelimitedValues().ToList();
+            var selectedValues = this.Page.Request.Form[this.UniqueID].SplitDelimitedValues(false).ToList();
             foreach ( ListItem li in this.Items )
             {
                 li.Selected = selectedValues.Contains( li.Value );
@@ -330,7 +330,7 @@ namespace Rock.Web.UI.Controls
         placeholder_text_multiple: '{1}',
         placeholder_text_single: ' '
     }});
-", this.ClientID, this.Placeholder.IsNotNullOrWhitespace() ? this.Placeholder : " " );
+", this.ClientID, this.Placeholder.IsNotNullOrWhiteSpace() ? this.Placeholder : " " );
 
             if ( DisplayDropAsAbsolute )
             {

@@ -1,0 +1,38 @@
+<html>
+<head>
+    <title>Html Merge</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+</head>
+<body>
+    <h1>People</h1>
+
+    {% for row in Rows %}
+
+    <div class="row">
+        <div class="col-md-6">
+            <p>Person.NickName: {{ row.NickName }}</p>
+            <p>Person.LastName: {{ row.LastName }}</p>
+			<p>GroupMember.Group.Name: {{ row.GroupMember.Group.Name }}</p>
+            <p>GroupMember.Status: {{ row.GroupMember.GroupMemberStatus }}</p>
+			<p>GroupMember | ToJSON:  <pre>{{ row.GroupMember | ToJSON }}</pre></p>
+			<p>GroupMember.Group | ToJSON:  <pre>{{ row.GroupMember.Group | ToJSON }}</pre></p>
+			<p>
+            <address>
+                {{ row | Address:'Home' }}
+            </address>
+			</p>
+        </div>
+        <div class="col-md-6">
+            <img src="{{ 'Global' | Attribute:'InternalApplicationRoot' }}{{ row.PhotoUrl }}" width="100" height="100" />
+        </div>
+    </div>
+
+    <br />
+
+    {% endfor %}
+
+
+</body>
+</html>
+
+

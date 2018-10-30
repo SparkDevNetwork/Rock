@@ -255,8 +255,6 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
-            RegisterJavaScript();
-
             var sm = ScriptManager.GetCurrent( this.Page );
             EnsureChildControls();
 
@@ -422,13 +420,14 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// This is where you implement the simple aspects of rendering your control.  The rest
         /// will be handled by calling RenderControlHelper's RenderControl() method.
         /// </summary>
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             _scheduleBuilderPanel.RenderControl( writer );
+            RegisterJavaScript();
         }
 
         /// <summary>
@@ -1138,8 +1137,8 @@ END:VCALENDAR
 
             _vsValidation.ClientIDMode = ClientIDMode.Static;
             _vsValidation.ID = "vsValidation_" + this.ClientID;
-            _vsValidation.HeaderText = "Please Correct the Following";
-            _vsValidation.CssClass = "alert alert-danger";
+            _vsValidation.HeaderText = "Please correct the following:";
+            _vsValidation.CssClass = "alert alert-validation";
             _vsValidation.ValidationGroup = validationGroup;
 
             _dpStartDateTime.ClientIDMode = ClientIDMode.Static;

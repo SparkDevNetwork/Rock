@@ -22,12 +22,12 @@
 		        return null;
 		    }
 
+        // remove surrounding single quotes from id if they exist
+        var idCompare = id.toString().replace(/(^')|('$)/g, '');
+
 		    for (var i = 0; i < array.length; i++) {
 		        currentNode = array[i];
 		        
-		        // remove surrounding single quotes from id if they exist
-		        var idCompare = id.toString().replace(/(^')|('$)/g, '');
-                
 		        if (currentNode.id.toString() === idCompare) {
 		            return currentNode;
 		        } else if (currentNode.hasChildren) {
@@ -71,7 +71,7 @@
 
             $ul.children('li').each(function () {
                 var $li = $(this),
-                    node = {
+                  node = {
                         id: $li.attr('data-id'),
                         name: $li.children('span').first().html(),
                         hasChildren: $li.children('ul').length > 0,
@@ -185,8 +185,8 @@
                             self.renderError(jqXHR.responseJSON ? jqXHR.responseJSON.ExceptionMessage : errorThrown);
                         });
                 };
-
-            if (this.options.restUrl) {
+          
+          if (this.options.restUrl) {
                 if (this.options.expandedIds && typeof this.options.expandedIds.length === 'number') {
                     toExpand = this.options.expandedIds;
 
@@ -203,6 +203,10 @@
                         if (!currentId) {
                             return;
                         }
+
+                        // remove surrounding single quotes from id if they exist
+                        // Quotes should never get to this point. ItemPicker.cs: _hfInitialItemParentIds should be updated to not have quotes. Other places may also add quotes and should be updated
+                        currentId = currentId.toString().replace(/(^')|('$)/g, '');
 
                         currentNode = _findNodeById(currentId, self.nodes);
                         while (currentNode == null && toExpand.length > 0) {
@@ -382,12 +386,12 @@
 				    var $li = $('<li/>'),
 						$childUl,
 						includeAttrs = self.options.mapping.include,
-				        folderCssClass = hasChildren ? ( node.isOpen ? self.options.iconClasses.branchOpen : self.options.iconClasses.branchClosed ) : "",
-				        leafCssClass = node.iconCssClass || self.options.iconClasses.leaf;
-
+                    folderCssClass = hasChildren ? ( node.isOpen ? self.options.iconClasses.branchOpen : self.options.iconClasses.branchClosed ) : "",
+                    leafCssClass = node.iconCssClass || self.options.iconClasses.leaf;
+                  
 				    $li.addClass('rocktree-item')
 						.addClass(hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
-                        .addClass( ( !node.hasOwnProperty('isActive') || node.isActive )? '' : 'is-inactive')
+            .addClass( ( !node.hasOwnProperty('isActive') || node.isActive )? '' : 'is-inactive')
 						.attr('data-id', node.id)
 						.attr('data-parent-id', node.parentId);
 
@@ -415,8 +419,8 @@
 				            break;
 				        }
 				    }
-
-				    if (hasChildren) {
+                  
+            if (hasChildren) {
 				        $li.prepend('<i class="rocktree-icon icon-fw ' + folderCssClass + '"></i>');
 
 				        if (node.iconCssClass) {
@@ -525,7 +529,7 @@
             this.$el.on('click', '.rocktree-folder > .rocktree-icon', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-
+              
                 var $icon = $(this),
 					$ul = $icon.siblings('ul'),
 					id = $icon.parent('li').attr('data-id'),
@@ -561,10 +565,11 @@
             this.$el.on('click', '.rocktree-item > span', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-
+              
                 var $rockTree = $(this).parents('.rocktree'),
                     $item = $(this),
                     id = $item.parent('li').attr('data-id'),
+                    //storageId = $item.parent('li').attr('data-storage-id') || "",
                     node = _findNodeById(id, self.nodes),
                     selectedNodes = [],
                     onSelected = self.options.onSelected,
@@ -597,7 +602,7 @@
                 }
 
                 for (i = 0; i < onSelected.length; i++) {
-                    $(document).trigger(onSelected[i], id);
+                  $(document).trigger(onSelected[i], id);
                 }
             });
 

@@ -14,7 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Data;
@@ -62,18 +65,24 @@ namespace Rock.Field.Types
             var fileUploader = control as Rock.Web.UI.Controls.FileUploader;
             if ( fileUploader != null )
             {
-                var binaryFile = new BinaryFileService( new RockContext() ).Get( fileUploader.BinaryFileId ?? 0 );
-                if ( binaryFile != null )
+                int? binaryFileId = fileUploader.BinaryFileId;
+                Guid? binaryFileGuid = null;
+                if ( binaryFileId.HasValue )
                 {
-                    return binaryFile.Guid.ToString();
+                    using ( var rockContext = new RockContext() )
+                    {
+                        binaryFileGuid = new BinaryFileService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == binaryFileId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                    }
                 }
+
+                return binaryFileGuid?.ToString() ?? string.Empty;
             }
 
             return null;
         }
 
         /// <summary>
-        /// Sets the value.
+        /// Sets the value where value is BinaryFile.Guid as a string (or null)
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="configurationValues"></param>
@@ -83,11 +92,17 @@ namespace Rock.Field.Types
             var fileUploader = control as Rock.Web.UI.Controls.FileUploader;
             if ( fileUploader != null )
             {
-                var binaryFile = new BinaryFileService( new RockContext() ).Get( value.AsGuid() );
-                if (binaryFile != null)
+                int? binaryFileId = null;
+                Guid? binaryFileGuid = value.AsGuidOrNull();
+                if ( binaryFileGuid.HasValue )
                 {
-                    fileUploader.BinaryFileId = binaryFile.Id; 
+                    using ( var rockContext = new RockContext() )
+                    {
+                        binaryFileId = new BinaryFileService( rockContext ).Queryable().Where( a => a.Guid == binaryFileGuid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
+                    }
                 }
+
+                fileUploader.BinaryFileId = binaryFileId;
             }
         }
 

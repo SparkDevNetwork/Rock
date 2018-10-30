@@ -6,9 +6,9 @@
 <head runat="server">
     <meta charset="utf-8">
     <title></title>
-    
+
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
-    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js" )%>"></script>
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" )%>"></script>
 
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -25,9 +25,9 @@
 </head>
 <body runat="server" id="body">
     <form id="form1" runat="server">
-            
+
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
-            
+
     </form>
 
     <script>
@@ -41,6 +41,6 @@
         });
     </script>
 
-    
+
 </body>
 </html>

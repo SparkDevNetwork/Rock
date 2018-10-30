@@ -89,7 +89,7 @@ namespace Rock.Workflow.Action
             var nextSteps = GetAttributeValue( action, "NextSteps", true ).ResolveMergeFields( mergeFields );
 
             // get result type
-            var resultType = DefinedValueCache.Read( GetAttributeValue( action, "ResultType", true ).AsGuid() );
+            var resultType = DefinedValueCache.Get( GetAttributeValue( action, "ResultType", true ).AsGuid() );
             if (resultType == null )
             {
                 var errorMessage = "A valid result type was not provided.";
@@ -124,12 +124,12 @@ namespace Rock.Workflow.Action
                 return false;
             }
             
-            if ( nextSteps.IsNotNullOrWhitespace() )
+            if ( nextSteps.IsNotNullOrWhiteSpace() )
             {
                 request.ProvidedNextSteps = nextSteps;
             }
 
-            if ( resultSummary.IsNotNullOrWhitespace() )
+            if ( resultSummary.IsNotNullOrWhiteSpace() )
             {
                 request.ResultSummary = resultSummary;
             }

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Web.UI;
 
@@ -117,7 +118,7 @@ namespace Rock.Field.Types
             string[] values = ( value ?? string.Empty ).Split( '|' );
             if ( values.Length == 2 )
             {
-                var entityType = EntityTypeCache.Read( values[0].AsGuid() );
+                var entityType = EntityTypeCache.Get( values[0].AsGuid() );
                 if ( entityType != null )
                 {
                     formattedValue = entityType.FriendlyName + "|EntityId:" + values[1].AsIntegerOrNull();
@@ -164,7 +165,7 @@ namespace Rock.Field.Types
             EntityPicker entityPicker = control as EntityPicker;
             if ( entityPicker != null && entityPicker.EntityTypeId.HasValue )
             {
-                var entityType = EntityTypeCache.Read( entityPicker.EntityTypeId.Value );
+                var entityType = EntityTypeCache.Get( entityPicker.EntityTypeId.Value );
                 if ( entityType != null )
                 {
                     return entityType.Guid.ToString() + "|" + entityPicker.EntityId;
@@ -182,23 +183,37 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            string[] values = ( value ?? string.Empty ).Split( '|' );
-            if ( values.Length == 2 )
+            EntityPicker entityPicker = control as EntityPicker;
+            if ( entityPicker != null )
             {
-                EntityPicker entityPicker = control as EntityPicker;
-                if ( entityPicker != null )
+                EntityTypeCache entityType = null;
+                int? entityId = null;
+                string[] values = ( value ?? string.Empty ).Split( '|' );
+                if ( values.Length == 2 )
                 {
-                    var entityType = EntityTypeCache.Read( values[0].AsGuid() );
-                    if ( entityType != null )
+
+                    Guid? entityTypeGuid = values[0].AsGuidOrNull();
+                    entityId = values[1].AsIntegerOrNull();
+                    if ( entityTypeGuid.HasValue )
                     {
-                        entityPicker.EntityTypeId = entityType.Id;
-                        entityPicker.EntityId = values[1].AsIntegerOrNull();
+                        entityType = EntityTypeCache.Get( entityTypeGuid.Value );
                     }
                 }
+
+                if ( entityType != null )
+                {
+                    entityPicker.EntityTypeId = entityType.Id;
+                }
+                else
+                {
+                    entityPicker.EntityTypeId = null;
+
+                }
+
+                entityPicker.EntityId = entityId;
             }
         }
 
         #endregion
-
     }
 }

@@ -1,4 +1,4 @@
-﻿/*
+/*
     Used to manage styles for specific blocks.
 
     1. HTML Content - block to edit HTML on a page
@@ -34,6 +34,28 @@
   }
 }
 
+.slug-row {
+  display: block;
+  margin-bottom: (@padding-base-vertical / 2);
+  border-bottom: 1px solid @input-border;
+  > .rollover-item {
+    margin-top: 7px;
+  }
+}
+
+.slug-full-url {
+  display: block;
+  float: left;
+  padding: 6px 0;
+}
+
+.slug-base-url {
+  opacity: .6;
+}
+
+.slug-literal {
+  font-weight: 700;
+}
 
 // 2. My Account
 // -------------------------
@@ -78,8 +100,8 @@
       background-color: darken(@state-info-bg, 3%);
       border: 0;
 
-      &.collapsed i:before {
-        content: "\f078";
+      &.collapsed i::before {
+        content: @fa-var-chevron-down;
       }
     }
 
@@ -100,7 +122,8 @@
 
     .socialicon {
       padding: 8px 6px;
-      font-family: FontAwesome;
+      font-family: @fa-font-face;
+      font-weight: @fa-theme-weight;
       color: #fff;
       border-radius: 20px;
 

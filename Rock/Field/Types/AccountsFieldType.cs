@@ -16,9 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
-
+using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -31,6 +32,76 @@ namespace Rock.Field.Types
     /// </summary>
     public class AccountsFieldType : FieldType
     {
+        #region Configuration
+
+        private const string DISPLAY_PUBLIC_NAME = "displaypublicname";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( DISPLAY_PUBLIC_NAME );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            // Add checkbox for deciding if the textbox is used for storing a password
+            var cb = new RockCheckBox();
+            controls.Add( cb );
+            cb.AutoPostBack = true;
+            cb.Checked = true;
+            cb.CheckedChanged += OnQualifierUpdated;
+            cb.Label = "Display Public Name";
+            cb.Text = "Yes";
+            cb.Help = "When set, public name will be displayed.";
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            var configurationValues = base.ConfigurationValues( controls );
+            configurationValues.Add( DISPLAY_PUBLIC_NAME, new ConfigurationValue( "Display Public Name", "When set, public name will be displayed.", "True" ) );
+
+            if ( controls != null && controls.Count > 0 && controls[0] != null && controls[0] is CheckBox )
+            {
+                configurationValues[DISPLAY_PUBLIC_NAME].Value = ( ( CheckBox ) controls[0] ).Checked.ToString();
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count > 0 && configurationValues != null )
+            {
+                if ( controls[0] != null && controls[0] is CheckBox && configurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
+                {
+                    ( ( CheckBox ) controls[0] ).Checked = configurationValues[DISPLAY_PUBLIC_NAME].Value.AsBoolean();
+                }
+            }
+        }
+
+        #endregion
 
         #region Formatting
 
@@ -48,11 +119,23 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var guids = value.SplitDelimitedValues();
-                var accounts = new FinancialAccountService( new RockContext() ).Queryable().Where( a => guids.Contains( a.Guid.ToString() ) );
-                if ( accounts.Any() )
+                bool displayPublicName = true;
+
+                if ( configurationValues != null &&
+                     configurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
                 {
-                    formattedValue = string.Join( ", ", ( from account in accounts select account.PublicName ).ToArray() );
+                    displayPublicName = configurationValues[DISPLAY_PUBLIC_NAME].Value.AsBoolean();
+                }
+
+                var guids = value.SplitDelimitedValues();
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var accounts = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) );
+                    if ( accounts.Any() )
+                    {
+                        formattedValue = string.Join( ", ", ( from account in accounts select displayPublicName && account.PublicName != null && account.PublicName != string.Empty ? account.PublicName : account.Name ).ToArray() );
+                    }
                 }
             }
 
@@ -73,7 +156,14 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new AccountPicker { ID = id, AllowMultiSelect = true };
+            bool displayPublicName = true;
+
+            if ( configurationValues != null &&
+                 configurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
+            {
+                displayPublicName = configurationValues[DISPLAY_PUBLIC_NAME].Value.AsBoolean();
+            }
+            return new AccountPicker { ID = id, AllowMultiSelect = true, DisplayPublicName = displayPublicName };
         }
 
         /// <summary>
@@ -85,23 +175,25 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as AccountPicker;
-            string result = null;
 
             if ( picker != null )
             {
                 var guids = new List<Guid>();
                 var ids = picker.SelectedValuesAsInt();
-                var accounts = new FinancialAccountService( new RockContext() ).Queryable().Where( a => ids.Contains( a.Id ) );
-
-                if ( accounts.Any() )
+                using ( var rockContext = new RockContext() )
                 {
-                    guids = accounts.Select( a => a.Guid ).ToList();
+                    var accounts = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => ids.Contains( a.Id ) );
+
+                    if ( accounts.Any() )
+                    {
+                        guids = accounts.Select( a => a.Guid ).ToList();
+                    }
                 }
 
-                result = string.Join( ",", guids );
+                return string.Join( ",", guids );
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>

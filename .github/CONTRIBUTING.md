@@ -55,7 +55,7 @@ If chat is more your speed, you can join the Rock community on Slack:
 
 ### License
 
-By contributing your code, you agree to license your contribution under the [Rock Community License Agreement](https://www.rockrms.com/license).  We also need you to sign and send a scanned copy of the [Spark Contributor Agreement](http://www.rockrms.com/Content/RockExternal/Misc/Contributor%20Agreement.pdf) back to the Spark Secretary (Secretary @ sparkdevnetwork.org ) to keep the lawyer off our backs. 
+By contributing your code, you agree to license your contribution under the [Rock Community License Agreement](https://www.rockrms.com/license).  This obviously means you don't get to claim any rights to that code -- but you still have the satisfaction of knowing you contributed to something very cool!
 
 ### Rock and Plugins
 
@@ -168,9 +168,9 @@ If you want to read about using Rock or developing plugins for Rock, the [Rock D
 ### Pull Requests
 The Rock Community loves Pull Requests! In an effort to 'row in the same direction' and minimize wasted development time
 on your part and review time on ours, we have implemented the following guidelines for PRs:
-1. If you are submitting a PR for a logged Issue / Enchancement request please reference it in your commit (Fixes #1234 or Closes #2445)
-2. If your PR is for an enchancment that has not been discussed and approved by the core team please get that approval BEFORE submitting
-the request. In fact, this approval should be recieved before writing the code to limit rework on your part. This will ensure that all code is working into the same vision and direction of the core project.
+1. If you are submitting a PR for a logged Issue / Enhancement request please reference it in your commit (Fixes #1234 or Closes #2445)
+2. If your PR is for an enhancement that has not been discussed and approved by the core team please get that approval BEFORE submitting
+the request. In fact, this approval should be received before writing the code to limit rework on your part. This will ensure that all code is working into the same vision and direction of the core project.
 
 #### Keep In Mind The Following
 * When making changes keep the changes simple (i.e. don't refactor boldly) otherwise the git diff will obscure your change and make it difficult to quickly see the actual change.

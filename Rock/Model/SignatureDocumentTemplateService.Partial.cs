@@ -21,7 +21,6 @@ using System.Linq;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -137,14 +136,13 @@ namespace Rock.Model
                                 .FirstOrDefault();
                         }
 
-                        string documentKey = string.Empty;
+                        string documentKey = document?.DocumentKey;
                         if ( document == null || string.IsNullOrWhiteSpace( documentKey ) )
                         {
                             documentKey = provider.CreateDocument( signatureDocumentTemplate, appliesToPerson, assignedToPerson, documentName, out sendErrors, true );
                         }
                         else
                         {
-                            documentKey = document.DocumentKey;
                             provider.ResendDocument( document, out sendErrors );
                         }
 

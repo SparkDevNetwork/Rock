@@ -54,15 +54,15 @@ namespace Rock.Rest.Controllers
             }
 
             // unique identifier
-            if ( deviceIdentifier.IsNotNullOrWhitespace() )
+            if ( deviceIdentifier.IsNotNullOrWhiteSpace() )
             {
                 personalDevice.DeviceUniqueIdentifier = deviceIdentifier;
             }
 
             // Platform
-            if ( devicePlatform.IsNotNullOrWhitespace() )
+            if ( devicePlatform.IsNotNullOrWhiteSpace() )
             {
-                var dt = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() );
+                var dt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() );
                 DefinedValueCache dv = null;
                 if ( dt != null )
                 {
@@ -70,13 +70,13 @@ namespace Rock.Rest.Controllers
                 }
                 if ( dv == null )
                 {
-                    dv = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_OTHER.AsGuid() );
+                    dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_OTHER.AsGuid() );
                 }
                 personalDevice.PlatformValueId = dv != null ? dv.Id : (int?)null;
             }
 
             // Version
-            if ( deviceVersion.IsNotNullOrWhitespace() )
+            if ( deviceVersion.IsNotNullOrWhiteSpace() )
             {
                 personalDevice.DeviceVersion = deviceVersion;
             }

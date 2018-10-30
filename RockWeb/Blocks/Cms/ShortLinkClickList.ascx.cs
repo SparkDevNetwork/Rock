@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Cms
     /// </summary>
     [DisplayName("Short Link Click List")]
     [Category("CMS")]
-    [Description("Lists cliks for a particular short link.")]
+    [Description("Lists clicks for a particular short link.")]
     public partial class ShortLinkClickList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Control Methods
@@ -98,7 +98,7 @@ namespace RockWeb.Blocks.Cms
 
             using ( var rockContext = new RockContext() )
             {
-                var dv = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_URLSHORTENER );
+                var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_URLSHORTENER );
                 if ( dv != null )
                 {
                     var qry = new InteractionService( rockContext )

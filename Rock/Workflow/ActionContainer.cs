@@ -134,7 +134,7 @@ namespace Rock.Workflow
         /// </summary>
         public void UpdateAttributes()
         {
-            var entityType = EntityTypeCache.Read<Rock.Model.WorkflowActionType>( false );
+            var entityType = EntityTypeCache.Get<Rock.Model.WorkflowActionType>( false );
             if ( entityType != null )
             {
                 foreach ( var component in this.Components )
@@ -143,7 +143,7 @@ namespace Rock.Workflow
                     {
                         var actionComponent = component.Value.Value;
                         var type = actionComponent.GetType();
-                        Rock.Attribute.Helper.UpdateAttributes( type, entityType.Id, "EntityTypeId", Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ).ToString(), rockContext );
+                        Rock.Attribute.Helper.UpdateAttributes( type, entityType.Id, "EntityTypeId", EntityTypeCache.GetId( type.FullName ).ToString(), rockContext );
                     }
                 }
             }

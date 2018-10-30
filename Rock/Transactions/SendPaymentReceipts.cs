@@ -102,6 +102,7 @@ namespace Rock.Transactions
                         mergeFields.Add( "LastName", person.LastName );
                         mergeFields.Add( "FirstNames", person.NickName );
                         mergeFields.Add( "TransactionCode", transaction.TransactionCode );
+                        mergeFields.Add( "ForeignKey", transaction.ForeignKey );
                         mergeFields.Add( "Transaction", transaction );
                         mergeFields.Add( "Amounts", accountAmounts );
 
@@ -109,7 +110,7 @@ namespace Rock.Transactions
                         var transactionEntityList = new List<IEntity>();
                         foreach ( var transactionDetailEntity in transactionDetailEntityList)
                         {
-                            var transactionEntityType = EntityTypeCache.Read( transactionDetailEntity.EntityTypeId.Value );
+                            var transactionEntityType = EntityTypeCache.Get( transactionDetailEntity.EntityTypeId.Value );
                             if ( transactionEntityType != null )
                             {
                                 var dbContext = Reflection.GetDbContextForEntityType( transactionEntityType.GetEntityType() );
@@ -131,7 +132,9 @@ namespace Rock.Transactions
 
                         var emailMessage = new RockEmailMessage( SystemEmailGuid );
                         emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
-                        emailMessage.Send();
+                        var errors = new List<string>();
+                        // errors will be logged by send
+                        emailMessage.Send(out errors);
                     }
                 }
             }

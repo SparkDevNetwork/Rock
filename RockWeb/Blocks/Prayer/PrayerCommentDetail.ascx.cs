@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Prayer
 
                 if ( !Page.IsPostBack )
                 {
-                    // This will produce a complete list of related context entity notes with the editible one
+                    // This will produce a complete list of related context entity notes with the editable one
                     // inline (in the middle of the note stream).
                     ShowNotes();
                 }
@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         private void GetNoteType()
         {
-            noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() );
+            noteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() );
         }
 
         /// <summary>

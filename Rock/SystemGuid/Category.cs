@@ -33,11 +33,18 @@ namespace Rock.SystemGuid
         #endregion DataView Categories
 
         #region Defined Type Categories
+        
         /// <summary>
-        /// History changes for an event registration
+        /// CMS Category
         /// </summary>
         public const string DEFINEDTYPE_CMS = "6B1B3106-B7F5-BBA2-4F81-8300F21F6661";
-        #endregion    
+
+        /// <summary>
+        /// CMS Settings Category
+        /// </summary>
+        public const string DEFINEDTYPE_CMS_SETTINGS = "262313F6-5D66-41CE-9B6F-D36567D9AB9D";
+
+        #endregion
 
         #region History Categories
 
@@ -95,6 +102,16 @@ namespace Rock.SystemGuid
         /// The history person analytics
         /// </summary>
         public const string HISTORY_PERSON_ANALYTICS = "C1524D2E-3E8F-3D83-45F8-526B749D79F0";
+
+        /// <summary>
+        /// Parent group for Group History
+        /// </summary>
+        public const string HISTORY_GROUP = "180C5767-8769-4C51-865F-FEE29AEF80A0";
+
+        /// <summary>
+        /// History of group changes
+        /// </summary>
+        public const string HISTORY_GROUP_CHANGES = "089EB47D-D0EF-493E-B867-DC51BCDEF319";
 
         #endregion
 

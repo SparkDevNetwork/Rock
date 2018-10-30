@@ -22,14 +22,12 @@
                         <Rock:RockTextBox ID="tbSummary" runat="server" Label="Summary Contains" />
                         <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gHistory" runat="server" AllowSorting="true" RowItemText="Change">
+                    <Rock:Grid ID="gHistory" runat="server" AllowSorting="true" RowItemText="Change" >
                         <Columns>
-                            <Rock:RockBoundField DataField="Category" SortExpression="Category" HeaderText="Category" />
-                            <asp:HyperLinkField DataTextField="PersonName" DataNavigateUrlFields="CreatedByPersonId" SortExpression="PersonName" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="Who" />
-                            <Rock:RockBoundField DataField="Summary" SortExpression="Summary" HeaderText="Did" HtmlEncode="false" />
-                            <Rock:RockTemplateField HeaderText="What">
-                                <ItemTemplate><%# FormatCaption( (int)Eval("CategoryId"), Eval( "Caption" ).ToString(), (int)Eval( "RelatedEntityId" ), (int)Eval("EntityId") ) %></ItemTemplate>
-                            </Rock:RockTemplateField>
+                            <Rock:RockBoundField DataField="Category.Name" SortExpression="Category.Name" HeaderText="Category" />
+                            <asp:HyperLinkField DataTextField="CreatedByPersonName" DataNavigateUrlFields="CreatedByPersonId" SortExpression="CreatedByPersonName" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="Who" />
+                            <Rock:ListDelimitedField DataField="HistoryList" Delimiter="<br />" HeaderText="Did" HtmlEncode="false" SortExpression="Verb,ValueName" />
+                            <Rock:RockBoundField DataField="FormattedCaption" HeaderText="What" SortExpression="Caption" HtmlEncode="false" />
                             <Rock:DateTimeField DataField="CreatedDateTime" SortExpression="CreatedDateTime" HeaderText="When" FormatAsElapsedTime="true" />
                         </Columns>
                     </Rock:Grid>

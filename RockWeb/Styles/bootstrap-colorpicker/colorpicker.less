@@ -13,11 +13,11 @@
   background-image: url("@{imgPath}@{imgFilename}");
 }
 
-.borderRadius(@size) {
-          border-radius: @size;
+.borderRadius(@size) when (@size > 0) {
 
   -webkit-border-radius: @size;
-     -moz-border-radius: @size;
+  -moz-border-radius: @size;
+  border-radius: @size;
 }
 
 .colorpicker-saturation {
@@ -37,14 +37,14 @@
     margin: -4px 0 0 -4px;
     border: 1px solid #000;
 
-    .borderRadius(5px);
+    .borderRadius(@border-radius-base);
     b {
       display: block;
       width: 5px;
       height: 5px;
       border: 1px solid #fff;
 
-      .borderRadius(5px);
+      .borderRadius(@border-radius-base);
     }
   }
 }
@@ -95,34 +95,32 @@
   margin-top: 1px;
 
   *zoom: 1;
-  .borderRadius(4px);
+  .borderRadius(@border-radius-base);
 
-  &:before,
-  &:after {
+  &::before,
+  &::after {
     display: table;
     line-height: 0;
     content: "";
   }
-  &:after {
-    clear: both;
-  }
-  &:before {
+  &::before {
     position: absolute;
     top: -7px;
     left: 6px;
     display: inline-block;
-    content: '';
+    content: "";
     border-right: 7px solid transparent;
     border-bottom: 7px solid #ccc;
     border-bottom-color: rgba(0, 0, 0, .2);
     border-left: 7px solid transparent;
   }
-  &:after {
+  &::after {
     position: absolute;
     top: -6px;
     left: 7px;
     display: inline-block;
-    content: '';
+    clear: both;
+    content: "";
     border-right: 6px solid transparent;
     border-bottom: 6px solid #fff;
     border-left: 6px solid transparent;
@@ -152,13 +150,13 @@
 
 .colorpicker-selectors {
   display: none;
-  height: 10px;
+  height: 16px;
   margin-top: 5px;
   clear: both;
   i {
     float: left;
-    width: 10px;
-    height: 10px;
+    width: 16px;
+    height: 16px;
     cursor: pointer;
   }
   i + i {
@@ -166,13 +164,35 @@
   }
 }
 
-.colorpicker-element .input-group-addon i,
-.colorpicker-element .add-on i {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  vertical-align: text-top;
-  cursor: pointer;
+.colorpicker-element .input-group-addon,
+.colorpicker-element .add-on {
+  position: relative;
+  z-index: 1;
+
+  i {
+    position: relative;
+    z-index: initial;
+    display: inline-block;
+    width: @line-height-computed;
+    height: @line-height-computed;
+    vertical-align: text-top;
+    cursor: pointer;
+    border-radius: @border-radius-base;
+    box-shadow: rgba(0, 0, 0, .15) 0 0 0 1px inset;
+
+    &::before {
+      position: absolute;
+      left: 0;
+      z-index: -1;
+      width: @line-height-computed;
+      height: @line-height-computed;
+      content: "";
+      background-image: linear-gradient(45deg, #f8f9fa 25%, transparent 25%, transparent 75%, #f8f9fa 75%, #f8f9fa), linear-gradient(45deg, #f8f9fa 25%, transparent 25%, transparent 75%, #f8f9fa 75%, #f8f9fa);
+      background-position: 0 0, 30px 30px;
+      background-size: 12px 12px;
+      box-shadow: rgba(0, 0, 0, .15) 0 0 0 1px inset;
+    }
+  }
 }
 
 .colorpicker.colorpicker-inline {
@@ -226,20 +246,23 @@
   display: none;
 }
 
-.colorpicker.colorpicker-visible {
-  display: block;
-}
-
-.colorpicker-inline.colorpicker-visible {
-  display: inline-block;
+.colorpicker,
+.colorpicker-inline,
+.colorpicker-alpha,
+.colorpicker-saturation,
+.colorpicker-hue,
+.colorpicker-selectors {
+  &.colorpicker-visible {
+    display: block;
+  }
 }
 
 .colorpicker-right {
-  &:before {
+  &::before {
     right: 6px;
     left: auto;
   }
-  &:after {
+  &::after {
     right: 7px;
     left: auto;
   }

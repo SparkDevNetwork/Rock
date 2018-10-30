@@ -56,6 +56,9 @@ namespace Rock.Client
         public int? ConnectionStatusValueId { get; set; }
 
         /// <summary />
+        public int Count { get; set; }
+
+        /// <summary />
         public bool CurrentRowIndicator { get; set; }
 
         /// <summary />
@@ -171,6 +174,7 @@ namespace Rock.Client
             this.BirthMonth = source.BirthMonth;
             this.BirthYear = source.BirthYear;
             this.ConnectionStatusValueId = source.ConnectionStatusValueId;
+            this.Count = source.Count;
             this.CurrentRowIndicator = source.CurrentRowIndicator;
             this.EffectiveDate = source.EffectiveDate;
             this.Email = source.Email;

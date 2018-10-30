@@ -17,8 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
-
+using System.Runtime.Serialization;
+using Rock.Web.Cache;
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -26,7 +26,8 @@ namespace Rock.CheckIn
     /// <summary>
     /// Helper class for storing the current attendance for a given kiosk location
     /// </summary>
-    public class KioskLocationAttendance
+    [DataContract]
+    public class KioskLocationAttendance : ItemCache<KioskLocationAttendance>
     {
         /// <summary>
         /// Prevents a default instance of the <see cref="KioskLocationAttendance"/> class from being created.
@@ -41,6 +42,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The location id.
         /// </value>
+        [DataMember]
         public int LocationId { get; set; }
 
         /// <summary>
@@ -49,6 +51,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The name of the location.
         /// </value>
+        [DataMember]
         public string LocationName { get; set; }
 
         /// <summary>
@@ -57,6 +60,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The groups.
         /// </value>
+        [DataMember]
         public List<KioskGroupAttendance> Groups { get; set; }
 
         /// <summary>
@@ -98,13 +102,15 @@ namespace Rock.CheckIn
         #region Static Methods
 
         /// <summary>
-        /// Caches the key.
+        /// Reads the specified id.
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        private static string CacheKey( int id )
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use Get( int id ) instead.")]
+        public static KioskLocationAttendance Read( int id )
         {
-            return string.Format( "Rock:CheckIn:KioskLocationAttendance:{0}", id );
+            return Get( id );
         }
 
         /// <summary>
@@ -112,41 +118,35 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static KioskLocationAttendance Read( int id )
+        public static KioskLocationAttendance Get( int id )
         {
-            string cacheKey = KioskLocationAttendance.CacheKey( id );
+            return GetOrAddExisting( id, () => Create( id ), new TimeSpan( 0, 2, 0 ) );
+        }
 
-            ObjectCache cache = Rock.Web.Cache.RockMemoryCache.Default;
-            KioskLocationAttendance locationAttendance = cache[cacheKey] as KioskLocationAttendance;
-
-            if ( locationAttendance != null )
+        private static KioskLocationAttendance Create( int id )
+        { 
+            using ( var rockContext = new Rock.Data.RockContext() )
             {
-                return locationAttendance;
-            }
-            else
-            {
-                using ( var rockContext = new Rock.Data.RockContext() )
+                var location = new LocationService( rockContext ).Get( id );
+                if ( location != null )
                 {
-                    var location = new LocationService( rockContext ).Get( id );
-                    if ( location != null )
+                    var locationAttendance = new KioskLocationAttendance();
+                    locationAttendance.LocationId = location.Id;
+                    locationAttendance.LocationName = location.Name;
+                    locationAttendance.Groups = new List<KioskGroupAttendance>();
+
+                    var attendanceService = new AttendanceService( rockContext );
+                    foreach ( var attendance in attendanceService
+                        .GetByDateAndLocation( RockDateTime.Today, location.Id )
+                        .Where( a => 
+                            a.DidAttend.HasValue &&
+                            a.DidAttend.Value &&
+                            !a.EndDateTime.HasValue ) )
                     {
-                        locationAttendance = new KioskLocationAttendance();
-                        locationAttendance.LocationId = location.Id;
-                        locationAttendance.LocationName = location.Name;
-                        locationAttendance.Groups = new List<KioskGroupAttendance>();
-
-                        var attendanceService = new AttendanceService( rockContext );
-                        foreach ( var attendance in attendanceService.GetByDateAndLocation( RockDateTime.Today, location.Id ) )
-                        {
-                            AddAttendanceRecord( locationAttendance, attendance );
-                        }
-
-                        var cachePolicy = new CacheItemPolicy();
-                        cachePolicy.AbsoluteExpiration = DateTimeOffset.Now.AddMinutes( 2 );
-                        cache.Set( cacheKey, locationAttendance, cachePolicy );
-
-                        return locationAttendance;
+                        AddAttendanceRecord( locationAttendance, attendance );
                     }
+
+                    return locationAttendance;
                 }
             }
 
@@ -157,10 +157,11 @@ namespace Rock.CheckIn
         /// Flushes the specified id.
         /// </summary>
         /// <param name="id">The id.</param>
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use Remove( int id ) instead.")]
         public static void Flush( int id )
         {
-            ObjectCache cache = Rock.Web.Cache.RockMemoryCache.Default;
-            cache.Remove( KioskLocationAttendance.CacheKey( id ) );
+            Remove( id );
         }
 
         /// <summary>
@@ -169,9 +170,9 @@ namespace Rock.CheckIn
         /// <param name="attendance">The attendance.</param>
         public static void AddAttendance( Attendance attendance )
         {
-            if ( attendance.LocationId.HasValue )
+            if ( attendance.Occurrence?.LocationId != null )
             {
-                var location = KioskLocationAttendance.Read(attendance.LocationId.Value);
+                var location = Get(attendance.Occurrence.LocationId.Value);
                 if (location != null)
                 {
                     AddAttendanceRecord( location, attendance );
@@ -186,25 +187,27 @@ namespace Rock.CheckIn
         /// <param name="attendance">The attendance.</param>
         private static void AddAttendanceRecord( KioskLocationAttendance kioskLocationAttendance, Attendance attendance )
         {
-            if ( attendance.GroupId.HasValue && attendance.ScheduleId.HasValue && attendance.PersonAlias != null )
+            if ( attendance.Occurrence?.GroupId != null && 
+                attendance.Occurrence?.ScheduleId != null  &&
+                attendance.PersonAlias != null )
             {
-                var groupAttendance = kioskLocationAttendance.Groups.Where( g => g.GroupId == attendance.GroupId ).FirstOrDefault();
+                var groupAttendance = kioskLocationAttendance.Groups.Where( g => g.GroupId == attendance.Occurrence.GroupId ).FirstOrDefault();
                 if ( groupAttendance == null )
                 {
                     groupAttendance = new KioskGroupAttendance();
-                    groupAttendance.GroupId = attendance.GroupId.Value;
-                    groupAttendance.GroupName = attendance.Group.Name;
+                    groupAttendance.GroupId = attendance.Occurrence.GroupId.Value;
+                    groupAttendance.GroupName = attendance.Occurrence.Group.Name;
                     groupAttendance.Schedules = new List<KioskScheduleAttendance>();
                     kioskLocationAttendance.Groups.Add( groupAttendance );
                 }
 
-                var scheduleAttendance = groupAttendance.Schedules.Where( s => s.ScheduleId == attendance.ScheduleId ).FirstOrDefault();
+                var scheduleAttendance = groupAttendance.Schedules.Where( s => s.ScheduleId == attendance.Occurrence.ScheduleId ).FirstOrDefault();
                 if ( scheduleAttendance == null )
                 {
                     scheduleAttendance = new KioskScheduleAttendance();
-                    scheduleAttendance.ScheduleId = attendance.ScheduleId.Value;
-                    scheduleAttendance.ScheduleName = attendance.Schedule.Name;
-                    scheduleAttendance.IsActive = attendance.Schedule.IsScheduleOrCheckInActive;
+                    scheduleAttendance.ScheduleId = attendance.Occurrence.ScheduleId.Value;
+                    scheduleAttendance.ScheduleName = attendance.Occurrence.Schedule.Name;
+                    scheduleAttendance.IsActive = attendance.IsCurrentlyCheckedIn;
                     scheduleAttendance.PersonIds = new List<int>();
                     groupAttendance.Schedules.Add( scheduleAttendance );
                 }

@@ -19,7 +19,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Workflow;
 
@@ -31,7 +31,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowActionType" )]
     [DataContract]
-    public partial class WorkflowActionType : Model<WorkflowActionType>, IOrdered
+    public partial class WorkflowActionType : Model<WorkflowActionType>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -211,7 +211,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static ActionComponent GetWorkflowAction( int entityTypeId )
         {
-            var entityType = Web.Cache.EntityTypeCache.Read( entityTypeId );
+            var entityType = EntityTypeCache.Get( entityTypeId );
             if ( entityType != null )
             {
                 foreach ( var serviceEntry in ActionContainer.Instance.Components )
@@ -229,6 +229,36 @@ namespace Rock.Model
 
         #endregion
 
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return WorkflowActionTypeCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            var workflowTypeId = WorkflowActivityTypeCache.Get( this.ActivityTypeId, dbContext as RockContext )?.WorkflowTypeId;
+            if ( workflowTypeId.HasValue )
+            {
+                WorkflowTypeCache.UpdateCachedEntity( workflowTypeId.Value, System.Data.Entity.EntityState.Modified );
+            }
+
+            WorkflowActivityTypeCache.UpdateCachedEntity( this.ActivityTypeId, System.Data.Entity.EntityState.Modified ); 
+            WorkflowActionTypeCache.UpdateCachedEntity( this.Id, entityState );
+        }
+
+        #endregion
     }
 
     #region Entity Configuration

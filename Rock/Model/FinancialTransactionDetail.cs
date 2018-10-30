@@ -58,17 +58,8 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
+        [IncludeAsEntityProperty]
         public int AccountId { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this is a non-cash detail.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if non-cash; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        [Obsolete("Field is not used. Non Cash transactions can be designated by the currency (tender) type.")]
-        public bool IsNonCash { get; set; }
 
         /// <summary>
         /// Gets or sets the amount of the transaction detail.
@@ -78,6 +69,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [BoundFieldTypeAttribute(typeof(Rock.Web.UI.Controls.CurrencyField))]
+        [IncludeAsEntityProperty]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -88,6 +80,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 500 )]
         [DataMember]
+        [IncludeAsEntityProperty]
         public string Summary { get; set; }
 
         /// <summary>
@@ -146,8 +139,18 @@ namespace Rock.Model
         /// <value>
         /// The history changes.
         /// </value>
-        [NotMapped]
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use HistoryChangeList instead" )]
         public virtual List<string> HistoryChanges { get; set; }
+
+        /// <summary>
+        /// Gets or sets the history change list.
+        /// </summary>
+        /// <value>
+        /// The history change list.
+        /// </value>
+        [NotMapped]
+        public virtual History.HistoryChangeList HistoryChangeList { get; set; }
 
         #endregion
 
@@ -172,14 +175,14 @@ namespace Rock.Model
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
             var rockContext = (RockContext)dbContext;
-            HistoryChanges = new List<string>();
+            HistoryChangeList = new History.HistoryChangeList();
 
             switch ( entry.State )
             {
                 case System.Data.Entity.EntityState.Added:
                     {
                         string acct = History.GetValue<FinancialAccount>( this.Account, this.AccountId, rockContext );
-                        HistoryChanges.Add( string.Format( "Added <span class='field-name'>{0}</span> account for <span class='field-value'>{1}</span>.", acct, Amount.FormatAsCurrency() ) );
+                        HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, acct).SetNewValue( Amount.FormatAsCurrency() );
                         break;
                     }
 
@@ -191,17 +194,17 @@ namespace Rock.Model
                         int? origAccountId = entry.OriginalValues["AccountId"].ToStringSafe().AsIntegerOrNull();
                         if ( !accountId.Equals( origAccountId ) )
                         {
-                            History.EvaluateChange( HistoryChanges, "Account", History.GetValue<FinancialAccount>( null, origAccountId, rockContext ), acct );
+                            History.EvaluateChange( HistoryChangeList, "Account", History.GetValue<FinancialAccount>( null, origAccountId, rockContext ), acct );
                         }
 
-                        History.EvaluateChange( HistoryChanges, acct, entry.OriginalValues["Amount"].ToStringSafe().AsDecimal().FormatAsCurrency(), Amount.FormatAsCurrency() );
+                        History.EvaluateChange( HistoryChangeList, acct, entry.OriginalValues["Amount"].ToStringSafe().AsDecimal().FormatAsCurrency(), Amount.FormatAsCurrency() );
 
                         break;
                     }
                 case System.Data.Entity.EntityState.Deleted:
                     {
                         string acct = History.GetValue<FinancialAccount>( this.Account, this.AccountId, rockContext );
-                        HistoryChanges.Add( string.Format( "Removed <span class='field-name'>{0}</span> account for <span class='field-value'>{1}</span>.", acct, Amount.FormatAsCurrency() ) );
+                        HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, acct).SetOldValue( Amount.FormatAsCurrency() );
                         break;
                     }
             }
@@ -215,15 +218,16 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( DbContext dbContext )
         {
-            if ( HistoryChanges.Any() )
+            if ( HistoryChangeList.Any() )
             {
-                HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.TransactionId, HistoryChanges, true, this.ModifiedByPersonAliasId );
+                HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.TransactionId, HistoryChangeList, true, this.ModifiedByPersonAliasId );
 
                 var txn = new FinancialTransactionService( (RockContext)dbContext ).Get( this.TransactionId );
                 if ( txn != null && txn.BatchId != null )
                 {
-                    var batchHistory = new List<string> { string.Format( "Updated <span class='field-name'>Transaction</span> ID: <span class='field-value'>{0}</span>.", txn.Id ) };
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), this.TransactionId, true, this.ModifiedByPersonAliasId );
+                    var batchHistory = new History.HistoryChangeList();
+                    batchHistory.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, $"Transaction ID:{txn.Id}" );
+                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), this.TransactionId, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                 }
             }
 

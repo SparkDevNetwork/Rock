@@ -143,15 +143,78 @@ namespace Rock.Model
         [DataMember]
         public int? PersonalDeviceId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the interaction end date time.
+        /// </summary>
+        /// <value>
+        /// The interaction end date time.
+        /// </value>
+        [DataMember]
+        public DateTime? InteractionEndDateTime { get; set; }
+
+        #endregion
+
+        #region Campaign Meta fields
+
+        /// <summary>
+        /// Gets or sets the campaign source.
+        /// </summary>
+        /// <value>
+        /// The source.
+        /// </value>
+        [DataMember]
+        [MaxLength( 25 )]
+        public string Source { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campaign medium.
+        /// </summary>
+        /// <value>
+        /// The medium.
+        /// </value>
+        [DataMember]
+        [MaxLength( 25 )]
+        public string Medium { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campaign name
+        /// </summary>
+        /// <value>
+        /// The campaign.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string Campaign { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campaign content.
+        /// </summary>
+        /// <value>
+        /// The content.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string Content { get; set; }
+
+        /// <summary>
+        /// Gets or sets the term(s).
+        /// </summary>
+        /// <value>
+        /// The term.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string Term { get; set; }
+
         #endregion
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the interaction componenent.
+        /// Gets or sets the interaction component.
         /// </summary>
         /// <value>
-        /// The interaction componenent.
+        /// The interaction component.
         /// </value>
         [DataMember]
         public virtual InteractionComponent InteractionComponent { get; set; }
@@ -175,10 +238,10 @@ namespace Rock.Model
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the interaction componenent.
+        /// Gets or sets the interaction component.
         /// </summary>
         /// <value>
-        /// The interaction componenent.
+        /// The interaction component.
         /// </value>
         [DataMember]
         public virtual InteractionSession InteractionSession { get; set; }

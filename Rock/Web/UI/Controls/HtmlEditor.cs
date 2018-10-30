@@ -22,8 +22,8 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
-using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Security;
 
 namespace Rock.Web.UI.Controls
 {
@@ -306,7 +306,8 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The custom on change press script.
         /// </value>
-        [Obsolete( "Use CallbackOnKeyupScript or CallbackOnChangeScript instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use CallbackOnKeyupScript or CallbackOnChangeScript instead", true )]
         public string OnChangeScript
         {
             get
@@ -477,19 +478,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the additional configurations.
-        /// </summary>
-        /// <value>
-        /// The additional configurations.
-        /// </value>
-        [Obsolete( "Doesn't do anything anymore" )]
-        public string AdditionalConfigurations
-        {
-            get { return ViewState["AdditionalConfigurations"] as string ?? string.Empty; }
-            set { ViewState["AdditionalConfigurations"] = value; }
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [start in code editor mode].
         /// </summary>
         /// <value>
@@ -499,7 +487,21 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["StartInCodeEditorMode"] as bool? ?? false;
+                bool startInCodeEditorMode = ViewState["StartInCodeEditorMode"] as bool? ?? false;
+
+                if ( !startInCodeEditorMode )
+                {
+                    EnsureChildControls();
+                    if ( _ceEditor.Text.HasLavaCommandFields() )
+                    {
+                        // if there are lava commands {% %} in the text, force code editor mode
+                        startInCodeEditorMode = true;
+                    }
+                }
+
+                ViewState["StartInCodeEditorMode"] = startInCodeEditorMode;
+
+                return startInCodeEditorMode;
             }
 
             set
@@ -536,7 +538,7 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
-                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/summernote/summernote.min.js" ), true );
+                RockPage.AddScriptLink( Page, "~/Scripts/summernote/summernote.min.js", false );
                 RockPage.AddScriptLink( Page, "~/Scripts/Bundles/RockHtmlEditorPlugins", false );
             }
 
@@ -580,6 +582,7 @@ namespace Rock.Web.UI.Controls
 
             set
             {
+                _ceEditor.Text = value;
                 base.Text = value;
             }
         }
@@ -606,7 +609,7 @@ namespace Rock.Web.UI.Controls
 
             _ceEditor = new CodeEditor();
             _ceEditor.ID = this.ID + "_codeEditor";
-            _ceEditor.EditorMode = CodeEditorMode.Html;
+            _ceEditor.EditorMode = CodeEditorMode.Lava;
             if ( !string.IsNullOrEmpty(this.CallbackOnChangeScript) )
             {
                 _ceEditor.OnChangeScript = this.CallbackOnChangeScript;
@@ -625,8 +628,14 @@ namespace Rock.Web.UI.Controls
             {
                 if ( this.StartInCodeEditorMode )
                 {
-                    _ceEditor.Text = this.Text;
-                    this.Text = "";
+                    if ( _ceEditor.Text != this.Text )
+                    {
+                        _ceEditor.Text = this.Text;
+                    }
+
+                    // in the case of when StartInCodeEditorMode = true, we can set base.Text to string.Empty to help prevent bad html and/or javascript from messing up things
+                    // However, if StartInCodeEditorMode = false, we can't do this because the WYSIWIG editor needs to know the base.Text value
+                    base.Text = string.Empty;
                 }
 
                 RockControlHelper.RenderControl( this, writer );
@@ -659,7 +668,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            var globalAttributesCache = GlobalAttributesCache.Read();
+            var globalAttributesCache = GlobalAttributesCache.Get();
 
             string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
             string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );

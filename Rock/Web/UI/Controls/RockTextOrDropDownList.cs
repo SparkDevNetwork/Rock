@@ -111,6 +111,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        public void SetValue( string value)
+        {
+            this.SelectedValue = value;
+        }
+
+        /// <summary>
         /// Gets or sets the label.
         /// </summary>
         /// <value>
@@ -340,7 +349,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// This is where you implement the simple aspects of rendering your control.  The rest
         /// will be handled by calling RenderControlHelper's RenderControl() method.
         /// </summary>
         /// <param name="writer">The writer.</param>

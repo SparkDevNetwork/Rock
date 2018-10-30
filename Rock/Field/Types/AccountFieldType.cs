@@ -21,6 +21,7 @@ using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
+using System.Web.UI.WebControls;
 
 namespace Rock.Field.Types
 {
@@ -29,6 +30,77 @@ namespace Rock.Field.Types
     /// </summary>
     public class AccountFieldType : FieldType, IEntityFieldType
     {
+
+        #region Configuration
+
+        private const string DISPLAY_PUBLIC_NAME = "displaypublicname";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( DISPLAY_PUBLIC_NAME );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            // Add checkbox for deciding if the textbox is used for storing a password
+            var cbPublicName = new RockCheckBox();
+            controls.Add( cbPublicName );
+            cbPublicName.AutoPostBack = true;
+            cbPublicName.CheckedChanged += OnQualifierUpdated;
+            cbPublicName.Checked = true;
+            cbPublicName.Label = "Display Public Name";
+            cbPublicName.Text = "Yes";
+            cbPublicName.Help = "When set, public name will be displayed.";
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            var configurationValues = base.ConfigurationValues( controls );
+            configurationValues.Add( DISPLAY_PUBLIC_NAME, new ConfigurationValue( "Display Public Name", "When set, public name will be displayed.", "True" ) );
+
+            if ( controls != null && controls.Count > 0 && controls[0] != null && controls[0] is CheckBox )
+            {
+                configurationValues[DISPLAY_PUBLIC_NAME].Value = ( ( CheckBox ) controls[0] ).Checked.ToString();
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count > 0 && configurationValues != null )
+            {
+                if ( controls[0] != null && controls[0] is CheckBox && configurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
+                {
+                    ( ( CheckBox ) controls[0] ).Checked = configurationValues[DISPLAY_PUBLIC_NAME].Value.AsBoolean();
+                }
+            }
+        }
+
+        #endregion
 
         #region Formatting
 
@@ -47,12 +119,24 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var service = new FinancialAccountService( new RockContext() );
-                var account = service.Get( guid.Value );
+                bool displayPublicName = true;
 
-                if ( account != null )
+                if ( configurationValues != null &&
+                     configurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
                 {
-                    formattedValue = account.PublicName;
+                    displayPublicName = configurationValues[DISPLAY_PUBLIC_NAME].Value.AsBoolean();
+                }
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var service = new FinancialAccountService( rockContext );
+                    var account = service.GetNoTracking( guid.Value );
+
+                    if ( account != null )
+                    {
+                        formattedValue = displayPublicName ? account.PublicName : account.Name;
+
+                    }
                 }
             }
 
@@ -73,7 +157,15 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new AccountPicker { ID = id };
+            bool displayPublicName = true;
+
+            if ( configurationValues != null &&
+                 configurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
+            {
+                displayPublicName = configurationValues[DISPLAY_PUBLIC_NAME].Value.AsBoolean();
+            }
+
+            return new AccountPicker { ID = id, DisplayPublicName = displayPublicName };
         }
 
         /// <summary>
@@ -92,16 +184,23 @@ namespace Rock.Field.Types
                 int? id = picker.ItemId.AsIntegerOrNull();
                 if ( id.HasValue )
                 {
-                    var account = new FinancialAccountService( new RockContext() ).Get( id.Value );
-
-                    if ( account != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        return account.Guid.ToString();
+                        var account = new FinancialAccountService( rockContext ).GetNoTracking( id.Value );
+
+                        if ( account != null )
+                        {
+                            return account.Guid.ToString();
+                        }
                     }
+                }
+                else
+                {
+                    return string.Empty;
                 }
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>
@@ -139,7 +238,7 @@ namespace Rock.Field.Types
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
             var item = new FinancialAccountService( new RockContext() ).Get( guid );
-            return item != null ? item.Id : (int?)null;
+            return item != null ? item.Id : ( int? ) null;
         }
 
         /// <summary>

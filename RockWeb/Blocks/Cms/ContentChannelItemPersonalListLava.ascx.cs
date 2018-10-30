@@ -33,7 +33,7 @@ using Rock.Security;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// Displays a list of active users of a website.
+    /// Displays a list of content items for the person using a Lava template
     /// </summary>
     [DisplayName( "Content Channel Item Personal List Lava" )]
     [Category( "CMS" )]

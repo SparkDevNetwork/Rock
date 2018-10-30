@@ -2,7 +2,7 @@ IF OBJECT_ID(N'[dbo].[AnalyticsDimFinancialBatch]', 'V') IS NOT NULL
     DROP VIEW AnalyticsDimFinancialBatch
 GO
 
-CREATE VIEW AnalyticsDimFinancialBatch
+CREATE VIEW [dbo].[AnalyticsDimFinancialBatch]
 AS
 SELECT fb.Id [BatchId]
     ,fb.[Name]
@@ -20,5 +20,6 @@ SELECT fb.Id [BatchId]
     ,c.NAME [Campus]
     ,fb.[AccountingSystemCode]
     ,fb.[ControlAmount]
+	,1 [Count]
 FROM FinancialBatch fb
 LEFT JOIN Campus c ON fb.CampusId = c.Id

@@ -63,7 +63,7 @@ namespace Rock.Web.UI.Controls
                                 {
                                     if ( component.Value.Value.IsActive )
                                     {
-                                        var entityType = EntityTypeCache.Read( component.Value.Value.GetType() );
+                                        var entityType = EntityTypeCache.Get( component.Value.Value.GetType() );
                                         if ( entityType != null )
                                         {
                                             this.Items.Add( new ListItem( component.Value.Key.SplitCase(), entityType.Guid.ToString().ToUpper() ) );
@@ -87,13 +87,13 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                Guid? gatewayGuid = this.SelectedValueAsGuid();
-                if ( gatewayGuid.HasValue )
+                Guid? componentEntityTypeGuid = this.SelectedValueAsGuid();
+                if ( componentEntityTypeGuid.HasValue )
                 {
-                    var gatewayEntity = EntityTypeCache.Read( gatewayGuid.Value );
-                    if ( gatewayEntity != null )
+                    var componentEntityType = EntityTypeCache.Get( componentEntityTypeGuid.Value );
+                    if ( componentEntityType != null )
                     {
-                        return gatewayEntity.Id;
+                        return componentEntityType.Id;
                     }
                 }
 

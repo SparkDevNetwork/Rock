@@ -13,6 +13,7 @@
                 SortExpression="GroupType" />
             <Rock:RockBoundField 
                 HeaderText="Member Count"
+                HeaderStyle-HorizontalAlign="Right"
                 ItemStyle-HorizontalAlign="Right"
                 DataField="MemberCount" 
                 SortExpression="MemberCount"

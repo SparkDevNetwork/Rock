@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( nuGetService == null )
                 {
-                    var globalAttributesCache = GlobalAttributesCache.Read();
+                    var globalAttributesCache = GlobalAttributesCache.Get();
                     string packageSource = globalAttributesCache.GetValue( "UpdateServerUrl" );
                     if ( packageSource.ToLowerInvariant().Contains( "rockalpha" ) || packageSource.ToLowerInvariant().Contains( "rockbeta" ) )
                     {
@@ -132,20 +132,23 @@ namespace RockWeb.Blocks.Core
                 {
                     pnlNoUpdates.Visible = false;
                     pnlError.Visible = true;
-                    nbErrors.Text = string.Format( "Your UpdateServerUrl is not valid. It is currently set to: {0}", GlobalAttributesCache.Read().GetValue( "UpdateServerUrl" ) );
+                    nbErrors.Text = string.Format( "Your UpdateServerUrl is not valid. It is currently set to: {0}", GlobalAttributesCache.Get().GetValue( "UpdateServerUrl" ) );
                 }
                 else
                 {
                     try
                     {
                         _isEarlyAccessOrganization = CheckEarlyAccess();
+
+                        btnIssues.NavigateUrl = string.Format( "http://www.rockrms.com/earlyaccessissues?RockInstanceId={0}", Rock.Web.SystemSettings.GetRockInstanceId() );
+
                         if ( _isEarlyAccessOrganization )
                         {
                             hlblEarlyAccess.LabelType = Rock.Web.UI.Controls.LabelType.Success;
                             hlblEarlyAccess.Text = "Early Access: Enabled";
 
-                            lEarlyAccessNotEnabled.Visible = false;
-                            lEarlyAccessEnabled.Visible = true;
+                            pnlEarlyAccessNotEnabled.Visible = false;
+                            pnlEarlyAccessEnabled.Visible = true;
                         }
 
                         VersionCheckResult result = CheckFrameworkVersion();
@@ -174,6 +177,7 @@ namespace RockWeb.Blocks.Core
                         if ( IsUpdateAvailable() )
                         {
                             pnlUpdatesAvailable.Visible = true;
+                            pnlUpdates.Visible = true;
                             pnlNoUpdates.Visible = false;
                             cbIncludeStats.Visible = true;
                             BindGrid();
@@ -213,6 +217,7 @@ namespace RockWeb.Blocks.Core
             try
             {
                 pnlUpdatesAvailable.Visible = false;
+                pnlUpdates.Visible = false;
 
                 if ( !UpdateRockPackage( version ) )
                 {
@@ -333,7 +338,7 @@ namespace RockWeb.Blocks.Core
             List<Release> releases = new List<Release>();
 
             var releaseProgram = ReleaseProgram.PRODUCTION;
-            var updateUrl = GlobalAttributesCache.Read().GetValue( "UpdateServerUrl" );
+            var updateUrl = GlobalAttributesCache.Get().GetValue( "UpdateServerUrl" );
             if ( updateUrl.Contains( ReleaseProgram.ALPHA ) )
             {
                 releaseProgram = ReleaseProgram.ALPHA;
@@ -396,7 +401,7 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Suggested approach to check which version of the .Net framework is intalled when using version 4.5 or later
+        /// Suggested approach to check which version of the .Net framework is installed when using version 4.5 or later
         /// as per https://msdn.microsoft.com/en-us/library/hh925568(v=vs.110).aspx.
         /// </summary>
         /// <returns>a string containing the human readable version of the .Net framework</returns>
@@ -837,7 +842,7 @@ namespace RockWeb.Blocks.Core
 
                     if ( cbIncludeStats.Checked )
                     {
-                        var globalAttributes = GlobalAttributesCache.Read();
+                        var globalAttributes = GlobalAttributesCache.Get();
                         organizationName = globalAttributes.GetValue( "OrganizationName" );
                         publicUrl = globalAttributes.GetValue( "PublicApplicationRoot" );
 
@@ -919,11 +924,11 @@ namespace RockWeb.Blocks.Core
 
             if ( ex.Message.Contains( "404" ) )
             {
-                nbErrors.Text = string.Format( "It appears that someone configured your <code>UpdateServerUrl</code> setting incorrectly: {0}", GlobalAttributesCache.Read().GetValue( "UpdateServerUrl" ) );
+                nbErrors.Text = string.Format( "It appears that someone configured your <code>UpdateServerUrl</code> setting incorrectly: {0}", GlobalAttributesCache.Get().GetValue( "UpdateServerUrl" ) );
             }
             else if ( ex.Message.Contains( "could not be resolved" ) )
             {
-                nbErrors.Text = string.Format( "I think either the update server is down or your <code>UpdateServerUrl</code> setting is incorrect: {0}", GlobalAttributesCache.Read().GetValue( "UpdateServerUrl" ) );
+                nbErrors.Text = string.Format( "I think either the update server is down or your <code>UpdateServerUrl</code> setting is incorrect: {0}", GlobalAttributesCache.Get().GetValue( "UpdateServerUrl" ) );
             }
             else if ( ex.Message.Contains( "Unable to connect" ) )
             {

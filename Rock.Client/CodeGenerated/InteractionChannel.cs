@@ -38,7 +38,13 @@ namespace Rock.Client
         public string ChannelData { get; set; }
 
         /// <summary />
+        public string ChannelDetailTemplate { get; set; }
+
+        /// <summary />
         public int? ChannelEntityId { get; set; }
+
+        /// <summary />
+        public string ChannelListTemplate { get; set; }
 
         /// <summary />
         public int? ChannelTypeMediumValueId { get; set; }
@@ -47,7 +53,13 @@ namespace Rock.Client
         public int? ComponentCacheDuration { get; set; }
 
         /// <summary />
+        public string ComponentDetailTemplate { get; set; }
+
+        /// <summary />
         public int? ComponentEntityTypeId { get; set; }
+
+        /// <summary />
+        public string ComponentListTemplate { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -56,7 +68,16 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public string InteractionDetailTemplate { get; set; }
+
+        /// <summary />
         public int? InteractionEntityTypeId { get; set; }
+
+        /// <summary />
+        public string InteractionListTemplate { get; set; }
+
+        /// <summary />
+        public bool IsActive { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -68,6 +89,15 @@ namespace Rock.Client
 
         /// <summary />
         public int? RetentionDuration { get; set; }
+
+        /// <summary />
+        public string SessionDetailTemplate { get; set; }
+
+        /// <summary />
+        public string SessionListTemplate { get; set; }
+
+        /// <summary />
+        public bool UsesSession { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -103,16 +133,26 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.ChannelData = source.ChannelData;
+            this.ChannelDetailTemplate = source.ChannelDetailTemplate;
             this.ChannelEntityId = source.ChannelEntityId;
+            this.ChannelListTemplate = source.ChannelListTemplate;
             this.ChannelTypeMediumValueId = source.ChannelTypeMediumValueId;
             this.ComponentCacheDuration = source.ComponentCacheDuration;
+            this.ComponentDetailTemplate = source.ComponentDetailTemplate;
             this.ComponentEntityTypeId = source.ComponentEntityTypeId;
+            this.ComponentListTemplate = source.ComponentListTemplate;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.InteractionDetailTemplate = source.InteractionDetailTemplate;
             this.InteractionEntityTypeId = source.InteractionEntityTypeId;
+            this.InteractionListTemplate = source.InteractionListTemplate;
+            this.IsActive = source.IsActive;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.RetentionDuration = source.RetentionDuration;
+            this.SessionDetailTemplate = source.SessionDetailTemplate;
+            this.SessionListTemplate = source.SessionListTemplate;
+            this.UsesSession = source.UsesSession;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

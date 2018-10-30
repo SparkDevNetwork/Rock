@@ -71,9 +71,9 @@ namespace RockWeb.Blocks.Store
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js", false );
         }
 
         /// <summary>
@@ -211,7 +211,14 @@ namespace RockWeb.Blocks.Store
             }
             else
             {
-                if ( installedPackage.VersionId == latestVersion.Id )
+                if ( latestVersion == null )
+                {
+                    // No longer available
+                    lbInstall.Text = "Not available";
+                    lbInstall.Attributes.Add( "disabled", "disabled" );
+                    lbInstall.CssClass = "btn btn-default margin-b-md";
+                }
+                else if ( installedPackage.VersionId == latestVersion.Id )
                 {
                     // have the latest version installed
                     lbInstall.Text = "Installed";
@@ -239,7 +246,6 @@ namespace RockWeb.Blocks.Store
 
             if ( latestVersion != null )
             {
-
                 rptScreenshots.DataSource = latestVersion.Screenshots;
                 rptScreenshots.DataBind();
                 
@@ -265,7 +271,7 @@ namespace RockWeb.Blocks.Store
                 lRequiredRockVersion.Text = string.Format("v{0}.{1}", 
                                                 latestVersion.RequiredRockSemanticVersion.Minor.ToString(),
                                                 latestVersion.RequiredRockSemanticVersion.Patch.ToString());
-                lDocumenationLink.Text = string.Format( "<a href='{0}'>Documentation Link</a>", latestVersion.DocumentationUrl );
+                lDocumenationLink.Text = string.Format( "<a href='{0}' target='_blank'>Documentation Link</a>", latestVersion.DocumentationUrl );
 
                 lSupportLink.Text = string.Format( "<a href='{0}'>Support Link</a>", package.SupportUrl );
 

@@ -58,7 +58,7 @@ namespace Rock.Attribute
                 throw new System.Exception( "groupTypeGuid must be specified" );
             }
 
-            int? groupTypeId = GroupTypeCache.Read( groupTypeGuid.AsGuid() )?.Id;
+            int? groupTypeId = GroupTypeCache.Get( groupTypeGuid.AsGuid() )?.Id;
             if ( groupTypeId == null )
             {
                 throw new System.Exception( "A valid groupTypeGuid must be specified" );

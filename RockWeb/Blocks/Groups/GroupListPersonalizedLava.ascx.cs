@@ -39,13 +39,31 @@ namespace RockWeb.Blocks.Groups
     [Description( "Lists all group that the person is a member of using a Lava template." )]
 
     [LinkedPage( "Detail Page", "", false, "", "", 0 )]
-    [GroupField( "Parent Group", "If a group is chosen, only the groups under this group will be displayed.", false, order: 2 )]
-    [IntegerField( "Cache Duration", "Length of time in seconds to cache which groups are descendants of the parent group.", false, 3600, "", 3 )]
-    [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 4 )]
-    [GroupTypesField( "Exclude Group Types", "The group types to exclude from the list (only valid if including all groups).", false, "", "", 5 )]
-    [CodeEditorField( "Lava Template", "The lava template to use to format the group list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupListSidebar.lava' %}", "", 6 )]
+    [GroupField( "Parent Group", "If a group is chosen, only the groups under this group will be displayed.", false, order: 1 )]
+    [IntegerField( "Cache Duration", "Length of time in seconds to cache which groups are descendants of the parent group.", false, 3600, "", 2 )]
+    [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 3 )]
+    [GroupTypesField( "Exclude Group Types", "The group types to exclude from the list (only valid if including all groups).", false, "", "", 4 )]
+    [CodeEditorField( "Lava Template", "The lava template to use to format the group list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupListSidebar.lava' %}", "", 5 )]
+    [BooleanField( "Display Inactive Groups", "Include inactive groups in the lava results", false, order: 6 )]
+    [CustomDropdownListField( "Initial Active Setting", "Select whether to initially show all or just active groups in the lava", "0^All,1^Active", false, "1", "", 7 )]
+    [TextField( "Inactive Parameter Name", "The page parameter name to toggle inactive groups", false, "showinactivegroups", order: 8 )]
+    [CustomCheckboxListField( "Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", CACHE_TAG_LIST, false, key: "CacheTags", order: 9 )]
+
+
     public partial class GroupListPersonalizedLava : RockBlock
     {
+
+        #region Fields
+
+        private bool _hideInactive = true;
+
+        private const string CACHE_TAG_LIST = @"
+            SELECT CAST([DefinedValue].[Value] AS VARCHAR) AS [Value], [DefinedValue].[Value] AS [Text]
+            FROM[DefinedType]
+            JOIN[DefinedValue] ON[DefinedType].[Id] = [DefinedValue].[DefinedTypeId]
+            WHERE[DefinedType].[Guid] = 'BDF73089-9154-40C1-90E4-74518E9937DC'";
+
+        #endregion
 
         #region Control Methods
 
@@ -58,6 +76,17 @@ namespace RockWeb.Blocks.Groups
             base.OnInit( e );
 
             this.BlockUpdated += Block_BlockUpdated;
+
+            if ( this.GetAttributeValue( "DisplayInactiveGroups" ).AsBoolean() )
+            {
+                var hideInactiveGroups = this.GetUserPreference( "HideInactiveGroups" ).AsBooleanOrNull();
+                if ( !hideInactiveGroups.HasValue )
+                {
+                    hideInactiveGroups = this.GetAttributeValue( "InitialActiveSetting" ) == "1";
+                }
+
+                _hideInactive = hideInactiveGroups ?? true;
+            }
         }
 
         /// <summary>
@@ -68,6 +97,11 @@ namespace RockWeb.Blocks.Groups
         {
             if ( !Page.IsPostBack )
             {
+                var inactiveGroups = PageParameter( GetAttributeValue( "InactiveParameterName" ) ).AsBooleanOrNull();
+                if ( this.GetAttributeValue( "DisplayInactiveGroups" ).AsBoolean() && inactiveGroups.HasValue )
+                {
+                    _hideInactive = !inactiveGroups ?? true;
+                }
                 ListGroups();
             }
 
@@ -96,7 +130,7 @@ namespace RockWeb.Blocks.Groups
                         .Queryable( "Group" );
 
             var parentGroupGuid = GetAttributeValue( "ParentGroup" ).AsGuidOrNull();
-            if ( parentGroupGuid!=null )
+            if ( parentGroupGuid != null )
             {
                 var availableGroupIds = ( List<int> ) GetCacheItem( "GroupListPersonalizedLava:" + parentGroupGuid.ToString() );
 
@@ -112,14 +146,19 @@ namespace RockWeb.Blocks.Groups
                         availableGroupIds = new List<int>();
                     }
                     var cacheLength = GetAttributeValue( "CacheDuration" ).AsInteger();
-                    AddCacheItem( "GroupListPersonalizedLava:" + parentGroupGuid.ToString(), availableGroupIds, cacheLength );
+                    string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                    AddCacheItem( "GroupListPersonalizedLava:" + parentGroupGuid.ToString(), availableGroupIds, cacheLength, cacheTags );
                 }
                 qry = qry.Where( m => availableGroupIds.Contains( m.GroupId ) );
             }
 
             qry = qry.Where( m => m.PersonId == CurrentPersonId
-                        && m.GroupMemberStatus == GroupMemberStatus.Active
-                        && m.Group.IsActive == true );
+                        && m.GroupMemberStatus == GroupMemberStatus.Active );
+
+            if ( _hideInactive )
+            {
+                qry = qry.Where( m => m.Group.IsActive == true );
+            }
 
             List<Guid> includeGroupTypeGuids = GetAttributeValue( "IncludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
             if ( includeGroupTypeGuids.Count > 0 )
@@ -155,6 +194,13 @@ namespace RockWeb.Blocks.Groups
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
             linkedPages.Add( "DetailPage", LinkedPageRoute( "DetailPage" ) );
             mergeFields.Add( "LinkedPages", linkedPages );
+
+            if ( this.GetAttributeValue( "DisplayInactiveGroups" ).AsBoolean() )
+            {
+                mergeFields.Add( "ShowInactive", this.GetAttributeValue( "DisplayInactiveGroups" ) );
+                mergeFields.Add( "InitialActive", this.GetAttributeValue( "InitialActiveSetting" ) );
+                mergeFields.Add( "InactiveParameter", this.GetAttributeValue( "InactiveParameterName" ) );
+            }
 
             string template = GetAttributeValue( "LavaTemplate" );
 

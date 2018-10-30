@@ -105,9 +105,13 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rGridAccount_Add( object sender, EventArgs e )
         {
-            var parms = new Dictionary<string, string>();
-            parms.Add( "accountId", "0" );
-            NavigateToLinkedPage( "DetailPage", parms );
+            Dictionary<string, string> queryParams = new Dictionary<string, string>();
+            queryParams.Add( "AccountId", 0.ToString() );
+            int? parentAccountId = PageParameter( "AccountId" ).AsIntegerOrNull();
+            queryParams.Add( "ParentAccountId", parentAccountId.ToString() );
+            queryParams.Add( "ExpandedIds", PageParameter("ExpandedIds"));
+
+            NavigateToLinkedPage( "DetailPage", queryParams );
         }
 
         /// <summary>
@@ -117,9 +121,9 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void rGridAccount_Edit( object sender, RowEventArgs e )
         {
-            var parms = new Dictionary<string, string>();
-            parms.Add( "accountId", e.RowKeyValue.ToString() );
-            NavigateToLinkedPage( "DetailPage", parms );
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add( "AccountId", e.RowKeyValue.ToString() );
+            NavigateToLinkedPage( "DetailPage", queryParams );
         }
 
         /// <summary>
@@ -163,11 +167,7 @@ namespace RockWeb.Blocks.Finance
                 rockContext.SaveChanges();
             }
 
-            var qryParams = new Dictionary<string, string>();
-            qryParams["AccountId"] = PageParameter( "AccountId" );
-            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
-
-            NavigateToPage( RockPage.Guid, qryParams );
+            NavigateToCurrentPageReference();
         }
 
         /// <summary>
@@ -194,13 +194,22 @@ namespace RockWeb.Blocks.Finance
                     int? campusId = e.Value.AsIntegerOrNull();
                     if ( campusId.HasValue )
                     {
-                        var campus = CampusCache.Read( campusId.Value );
+                        var campus = CampusCache.Get( campusId.Value );
                         if ( campus != null )
                         {
                             e.Value = campus.Name;
                         }
                     }
 
+                    break;
+                case "Account Name":
+                case "Active":
+                case "Public":
+                case "Tax Deductible":
+                    e.Value = e.Value;
+                    break;
+                default:
+                    e.Value = string.Empty;
                     break;
             }
         }
@@ -232,6 +241,7 @@ namespace RockWeb.Blocks.Finance
         private IQueryable<FinancialAccount> GetAccounts( RockContext rockContext )
         {
             int? parentAccountId = PageParameter( "AccountId" ).AsIntegerOrNull();
+            bool topLevelOnly = PageParameter( "TopLevel" ).AsBoolean();
 
             if ( parentAccountId.HasValue )
             {
@@ -249,6 +259,10 @@ namespace RockWeb.Blocks.Finance
             if ( parentAccountId.HasValue )
             {
                 accountQuery = accountQuery.Where( account => account.ParentAccountId == parentAccountId.Value );
+            }
+            else if ( topLevelOnly )
+            {
+                accountQuery = accountQuery.Where( account => account.ParentAccountId == null );
             }
 
             string accountNameFilter = rAccountFilter.GetUserPreference( "Account Name" );
@@ -343,7 +357,7 @@ namespace RockWeb.Blocks.Finance
                     boundField.AttributeId = attribute.Id;
                     boundField.HeaderText = attribute.Name;
 
-                    var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                     if ( attributeCache != null )
                     {
                         boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;

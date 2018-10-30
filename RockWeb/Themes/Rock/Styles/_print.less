@@ -1,11 +1,12 @@
-﻿@media print {
+@media print {
   @page {
     margin: .25in;
 
-    size: 8.5in 11in;  /* width height */
+    size: 8.5in 11in; /* width height */
   }
 
-  html, body {
+  html,
+  body {
     padding: 0;
     margin: 0;
   }
@@ -25,8 +26,8 @@
   }
 
   // don't show URLs after links
-  a[href]:after {
-    content: '' !important;
+  a[href]::after {
+    content: "" !important;
   }
 
   // center the page better after removing the left nav
@@ -44,7 +45,7 @@
     display: none;
   }
 
-  // Remove the footer 
+  // Remove the footer
   footer {
     display: none;
   }

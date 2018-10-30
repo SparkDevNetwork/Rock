@@ -27,10 +27,11 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            Sql( @"
-    UPDATE [CommunicationTemplate]
-    SET [MediumDataJson] = REPLACE([MediumDataJson], 'a:visited {\ncolor: #2ba6cb !important;\n}', 'a:visited {\ncolor: #2ba6cb;\n}')
-" );
+            // Moved to core migration: 201711271827181_V7Rollup
+            //            Sql( @"
+            //    UPDATE [CommunicationTemplate]
+            //    SET [MediumDataJson] = REPLACE([MediumDataJson], 'a:visited {\ncolor: #2ba6cb !important;\n}', 'a:visited {\ncolor: #2ba6cb;\n}')
+            //" );
         }
 
         /// <summary>

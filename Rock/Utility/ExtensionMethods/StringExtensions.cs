@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -30,6 +31,17 @@ namespace Rock
     public static partial class ExtensionMethods
     {
         #region String Extensions
+
+        /// <summary>
+        /// Joins and array of strings using the provided separator.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="separator">The separator.</param>
+        /// <returns>Concatencated string.</returns>
+        public static string JoinStrings( this IEnumerable<string> source, string separator )
+        {
+            return string.Join( separator, source.ToArray() );
+        }
 
         /// <summary>
         /// Removes special characters from the string so that only Alpha, Numeric, '.' and '_' remain;
@@ -50,10 +62,58 @@ namespace Rock
         }
 
         /// <summary>
+        /// Replaces the special characters from the string with the supplied string so that only alpha-numeric, '.', and '_' remain.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="replacementCharacters">The characters to replace special character(s) with. No restrictions or validation.</param>
+        /// <returns></returns>
+        public static string ReplaceSpecialCharacters( this string str, string replacementCharacters )
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach ( char c in str )
+            {
+                if ( ( c >= '0' && c <= '9' ) || ( c >= 'A' && c <= 'Z' ) || ( c >= 'a' && c <= 'z' ) || c == '.' || c == '_' )
+                {
+                    sb.Append( c );
+                }
+                else
+                {
+                    sb.Append( replacementCharacters );
+                }
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Removes all non alpha numeric characters from a string
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string RemoveAllNonAlphaNumericCharacters( this string str )
+        {
+            return string.Concat( str.Where( c => char.IsLetterOrDigit( c ) ) );
+        }
+
+        /// <summary>
         /// Determines whether the string is not null or whitespace.
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()]
+        public static bool IsNotNullOrWhiteSpace( this string str )
+        {
+            return !string.IsNullOrWhiteSpace( str );
+        }
+
+        /// <summary>
+        /// Determines whether [is not null or whitespace].
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns>
+        ///   <c>true</c> if [is not null or whitespace] [the specified string]; otherwise, <c>false</c>.
+        /// </returns>
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use IsNotNullOrWhiteSpace instead. Fixes non-standard casing.", false )]
         public static bool IsNotNullOrWhitespace( this string str )
         {
             return !string.IsNullOrWhiteSpace( str );
@@ -64,9 +124,26 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()]
         public static bool IsNullOrWhiteSpace( this string str )
         {
             return string.IsNullOrWhiteSpace( str );
+        }
+
+        /// <summary>
+        /// Returns the right most part of a string of the given length.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="length">The length.</param>
+        /// <returns></returns>
+        public static string Right( this string str, int length )
+        {
+            if ( str == null )
+            {
+                return string.Empty;
+            }
+
+            return str.Substring( str.Length - length );
         }
 
         /// <summary>
@@ -83,6 +160,65 @@ namespace Rock
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Determines whether the string is valid mac address.
+        /// Works with colons, dashes, or no seperators
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns>
+        ///   <c>true</c> if valid mac address otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsValidMacAddress( this string str )
+        {
+            Regex regex = new Regex( "^([0-9a-fA-F]{2}(?:[:-]?[0-9a-fA-F]{2}){5})$" );
+            return regex.IsMatch( str );
+        }
+
+        /// <summary>
+        /// Determines whether the string is a valid http(s) URL
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns>
+        ///   <c>true</c> if [is valid URL] [the specified string]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsValidUrl( this string str )
+        {
+            Uri uriResult;
+            return Uri.TryCreate( str, UriKind.Absolute, out uriResult )
+                && ( uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps );
+        }
+
+        /// <summary>
+        /// Removes invalid, reserved, and unreccommended characters from strings that will be used in URLs.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string RemoveInvalidReservedUrlChars( this string str )
+        {
+            return str.Replace( " ", "" )
+                .Replace( ";", "" )
+                .Replace( "/", "" )
+                .Replace( "?", "" )
+                .Replace( ":", "" )
+                .Replace( "@", "" )
+                .Replace( "=", "" )
+                .Replace( "&", "" )
+                .Replace( "<", "" )
+                .Replace( ">", "" )
+                .Replace( "#", "" )
+                .Replace( "%", "" )
+                .Replace( "\"", "" )
+                .Replace( "{", "" )
+                .Replace( "}", "" )
+                .Replace( "|", "" )
+                .Replace( "\\", "" )
+                .Replace( "^", "" )
+                .Replace( "[", "" )
+                .Replace( "]", "" )
+                .Replace( "`", "" )
+                .Replace( "'", "" );
         }
 
         /// <summary>
@@ -125,7 +261,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Splits a Camel or Pascal cased identifier into seperate words.
+        /// Splits a Camel or Pascal cased identifier into separate words.
         /// </summary>
         /// <param name="str">The identifier.</param>
         /// <returns></returns>
@@ -229,11 +365,11 @@ namespace Rock
         /// Adds Quotes around the specified string and escapes any quotes that are already in the string.
         /// </summary>
         /// <param name="str">The string.</param>
-        /// <param name="QuoteChar">The quote character.</param>
+        /// <param name="quoteChar">The quote character.</param>
         /// <returns></returns>
-        public static string Quoted( this string str, string QuoteChar = "'" )
+        public static string Quoted( this string str, string quoteChar = "'" )
         {
-            var result = QuoteChar + str.EscapeQuotes() + QuoteChar;
+            var result = quoteChar + str.EscapeQuotes() + quoteChar;
             return result;
         }
 
@@ -256,6 +392,25 @@ namespace Rock
             else
             {
                 return str.Substring( 0, length );
+            }
+        }
+
+        /// <summary>
+        /// Returns a substring of a string. Uses an empty string for any part that doesn't exist and will return a partial substring if the string isn't long enough for the requested length (The built-in method would throw an exception in these cases).
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="startIndex">The 0-based starting position.</param>
+        /// <param name="maxLength">The maximum length.</param>
+        /// <returns></returns>
+        public static string SafeSubstring( this string str, int startIndex, int maxLength )
+        {
+            if ( str == null || maxLength < 0 || startIndex < 0 || startIndex > str.Length )
+            {
+                return string.Empty;
+            }
+            else
+            {
+                return str.Substring( startIndex, Math.Min( maxLength, str.Length - startIndex ) );
             }
         }
 
@@ -283,6 +438,26 @@ namespace Rock
         }
 
         /// <summary>
+        /// Trims a string using an entities MaxLength attribute value
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <returns></returns>
+        public static string TrimForMaxLength( this string str, Data.IEntity entity, string propertyName )
+        {
+            if ( str.IsNotNullOrWhiteSpace() )
+            {
+                var maxLengthAttr = entity.GetAttributeFrom<System.ComponentModel.DataAnnotations.MaxLengthAttribute>( propertyName );
+                if ( maxLengthAttr != null )
+                {
+                    return str.Left( maxLengthAttr.Length );
+                }
+            }
+            return str;
+        }
+
+        /// <summary>
         /// Removes any non-numeric characters.
         /// </summary>
         /// <param name="str"></param>
@@ -301,13 +476,8 @@ namespace Rock
         /// <returns></returns>
         public static string ReplaceLastOccurrence( this string source, string find, string replace )
         {
-            int place = source.LastIndexOf( find );
-            if ( place >= 0 )
-            {
-                return source.Remove( place, find.Length ).Insert( place, replace );
-            }
-
-            return source;
+            int Place = source.LastIndexOf( find );
+            return Place > 0 ? source.Remove( Place, find.Length ).Insert( Place, replace ) : source;
         }
 
         /// <summary>
@@ -534,6 +704,8 @@ namespace Rock
 
         /// <summary>
         /// Attempts to convert string to DateTime.  Returns null if unsuccessful.
+        /// NOTE: If this is a '#[#]/#[#]' string it will be interpreted as a "MM/dd", "M/dd", "M/d" or "MM/d" string and will resolve to a datetime with the year as the current year.
+        /// However, in those cases, it would be better to use MonthDayStringAsDateTime.
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
@@ -541,7 +713,14 @@ namespace Rock
         public static DateTime? AsDateTime( this string str )
         {
             DateTime value;
-            if ( DateTime.TryParse( str, out value ) )
+            DateTime? valueFromMMDD = str.MonthDayStringAsDateTime();
+
+            // first check if this is a "MM/dd", "M/dd", "M/d" or "MM/d" string ( We want Rock to treat "MM/dd", "M/dd", "M/d" or "MM/d" strings consistently regardless of culture )
+            if ( valueFromMMDD.HasValue )
+            {
+                return valueFromMMDD;
+            }
+            else if ( DateTime.TryParse( str, out value ) )
             {
                 return value;
             }
@@ -549,6 +728,37 @@ namespace Rock
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Attempts to convert a "MM/dd", "M/dd", "M/d" or "MM/d" string to a datetime, with the year as the current year. Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="monthDayString">The month day string.</param>
+        /// <returns></returns>
+        public static DateTime? MonthDayStringAsDateTime( this string monthDayString )
+        {
+            if ( !string.IsNullOrEmpty( monthDayString ) )
+            {
+                if ( monthDayString.Length <= 5 )
+                {
+                    if ( monthDayString.Contains( '/' ) )
+                    {
+                        DateTime value;
+                        var monthDayYearString = $"{monthDayString}/{RockDateTime.Today.Year}";
+                        if ( DateTime.TryParseExact(
+                                monthDayYearString, 
+                                new[] { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy", "MM/d/yyyy" }, 
+                                CultureInfo.InvariantCulture,
+                                DateTimeStyles.AllowWhiteSpaces, 
+                                out value ) )
+                        {
+                            return value;
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -732,6 +942,47 @@ namespace Rock
         {
             for ( int i = 0; i < str.Length; i += maxChunkSize )
                 yield return str.Substring( i, Math.Min( maxChunkSize, str.Length - i ) );
+        }
+
+
+        /// <summary>
+        /// Removes any carriage return and/or line feed characters.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string RemoveCrLf( this string str )
+        {
+            return str.Replace( Environment.NewLine, " " ).Replace( "\x0A", " " );
+        }
+
+        /// <summary>
+        /// Writes a string to a new memorystream
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static System.IO.MemoryStream ToMemoryStream( this string str )
+        {
+            var stream = new System.IO.MemoryStream();
+            var writer = new System.IO.StreamWriter( stream );
+            writer.Write( str );
+            writer.Flush();
+            stream.Position = 0;
+            return stream;
+        }
+
+        /// <summary>
+        /// Creates a StreamReader with the string data
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static System.IO.StreamReader ToStreamReader( this string str )
+        {
+            var stream = new System.IO.MemoryStream();
+            var writer = new System.IO.StreamWriter( stream );
+            writer.Write( str );
+            writer.Flush();
+            stream.Position = 0;
+            return new System.IO.StreamReader( stream );
         }
 
         #endregion String Extensions

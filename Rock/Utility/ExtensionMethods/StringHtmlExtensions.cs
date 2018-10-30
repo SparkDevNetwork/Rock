@@ -37,19 +37,7 @@ namespace Rock
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
                 // Remove any HTML
-                string encodedStr = HttpUtility.HtmlEncode( str );
-
-                // split first word from rest of string
-                int endOfFirstWord = encodedStr.IndexOf( " " );
-
-                if ( endOfFirstWord != -1 )
-                {
-                    return "<span class='first-word'>" + encodedStr.Substring( 0, endOfFirstWord ) + " </span> " + encodedStr.Substring( endOfFirstWord, encodedStr.Length - endOfFirstWord );
-                }
-                else
-                {
-                    return "<span class='first-word'>" + encodedStr + " </span>";
-                }
+                return HttpUtility.HtmlEncode( str );
             }
 
             return string.Empty;
@@ -107,12 +95,19 @@ namespace Rock
 
         /// <summary>
         /// Sanitizes the HTML by removing tags.  If strict is true, all html tags will be removed, if false, only a blacklist of specific XSS dangerous tags and attribute values are removed.
+        /// NOTE: This method will do things like strip the less-than symbol from strings like <![CDATA['in math 6 < 7.']]>
         /// </summary>
         /// <param name="html">The HTML.</param>
         /// <param name="strict">if set to <c>true</c> [strict].</param>
         /// <returns></returns>
         public static string SanitizeHtml( this string html, bool strict = true )
         {
+            // Don't choke on nulls
+            if ( string.IsNullOrWhiteSpace( html ) )
+            {
+                return string.Empty;
+            }
+
             if ( strict )
             {
                 // from http://stackoverflow.com/a/18154152/
@@ -146,6 +141,28 @@ namespace Rock
 
             // Now we pass it to sanitizer and then convert those section-symbols to <br/>
             return str.SanitizeHtml().Replace( "\u00A7", "<br/>" );
+        }
+
+        /// <summary>
+        /// Scrubs the HTML but retains "&lt;br/&gt;",changes "&lt;/p/&gt;" to "&lt;br//&gt;&lt;br/&gt;", and "\r\n" to "&lt;br/&gt;".
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string ScrubHtmlForGridDisplay( this string str )
+        {
+            if ( string.IsNullOrWhiteSpace(str) )
+            {
+                return string.Empty;
+            }
+
+            // Note: \u00A7 is the section symbol, \u00A6 is the broken bar symbol
+            // First convert HTML breaks to a character that can pass through the Sanitizer.
+            str = str.Replace( "<br/>", "\u00A7" ).Replace( "<br />", "\u00A7" );
+            str = str.Replace( "</p>", "\u00A6" );
+
+            // Now sanitize and convert the symbols to breaks
+            str = str.SanitizeHtml().Replace( "\u00A7", "<br/>" ).Replace( "\u00A6", "<br/><br/>" ).Replace( "\r\n", "<br/>" );
+            return str;
         }
 
         /// <summary>
@@ -191,6 +208,24 @@ namespace Rock
             settings.RenderSoftLineBreaksAsLineBreaks = renderSoftLineBreaksAsLineBreaks;
 
             return CommonMark.CommonMarkConverter.Convert( markdown, settings );
+        }
+
+        /// <summary>
+        /// Moves the CSS inline using PreMailer.Net, which moves any stylesheets to inline style attributes, for maximum compatibility with email clients
+        /// </summary>
+        /// <param name="html">The HTML.</param>
+        /// <returns></returns>
+        public static string ConvertHtmlStylesToInlineAttributes( this string html )
+        {
+            try
+            {
+                var result = PreMailer.Net.PreMailer.MoveCssInline( html, false, ".ignore" );
+                return result.Html;
+            }
+            catch
+            {
+                return html;
+            }
         }
     }
 }

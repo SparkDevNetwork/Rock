@@ -1,7 +1,7 @@
 ﻿// **
 // * DoubleMetaphone.cs
 // * 
-// * An implemenatation of Lawrence Phillips' Double Metaphone phonetic matching
+// * An implementation of Lawrence Phillips' Double Metaphone phonetic matching
 // * algorithm, published in C/C++ Users Journal, June, 2000.
 // * 
 // * This implementation was written by Adam J. Nelson (anelson@nullpointer.net).
@@ -19,7 +19,7 @@
 // * Revision History:
 // * 	1.0.0 - ajn - First release
 // * 
-// * This implemenatation, and optimizations, Copyright (C) 2003, Adam J. Nelson
+// * This implementation, and optimizations, Copyright (C) 2003, Adam J. Nelson
 // * The Double Metaphone algorithm was written by Lawrence Phillips, and is 
 // * Copyright (c) 1998, 1999 by Lawrence Philips.
 // **

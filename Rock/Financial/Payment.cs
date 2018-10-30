@@ -39,6 +39,11 @@ namespace Rock.Financial
         public string TransactionCode { get; set; }
 
         /// <summary>
+        /// Gets or sets the foreign key (some gateways may use this as another identifier)
+        /// </summary>
+        public string ForeignKey { get; set; }
+
+        /// <summary>
         /// Gets or sets the transaction date time.
         /// </summary>
         public DateTime TransactionDateTime { get; set; }

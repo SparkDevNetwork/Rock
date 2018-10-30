@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Rock.Web.Cache;
 
 namespace Rock.Attribute
 {
@@ -62,7 +63,7 @@ namespace Rock.Attribute
         public DefinedValueFieldAttribute( string definedTypeGuid, string name, string description, bool required, bool allowMultiple, bool enhanced, string defaultValue, string category, int order, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.DefinedValueFieldType ).FullName )
         {
-            var definedType = Rock.Web.Cache.DefinedTypeCache.Read( new Guid( definedTypeGuid ) );
+            var definedType = DefinedTypeCache.Get( new Guid( definedTypeGuid ) );
             if ( definedType != null )
             {
                 var definedTypeConfigValue = new Field.ConfigurationValue( definedType.Id.ToString() );

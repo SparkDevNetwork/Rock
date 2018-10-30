@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -135,9 +136,12 @@ namespace Rock.Reporting.DataSelect.Person
             //// 2) Opposite Gender as Person
             //// 3) Both Persons are Married
 
+            var selectionParts = selection.Split( '|' );
+            bool includeLastname = selectionParts.Length > 0 && selectionParts[0].AsBoolean();
+
             Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
             Guid marriedGuid = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
-            int marriedDefinedValueId = DefinedValueCache.Read( marriedGuid ).Id;
+            int marriedDefinedValueId = DefinedValueCache.Get( marriedGuid ).Id;
             Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
 
             var familyGroupMembers = new GroupMemberService( context ).Queryable()
@@ -153,7 +157,7 @@ namespace Rock.Reporting.DataSelect.Person
                         m.Person.MaritalStatusValueId == marriedDefinedValueId &&
                         !m.Person.IsDeceased )
                     .OrderBy( m => m.Group.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder ?? int.MaxValue )
-                    .Select( m => m.Person.NickName ).FirstOrDefault() );
+                    .Select( m => includeLastname ? m.Person.NickName + " " + m.Person.LastName : m.Person.NickName ).FirstOrDefault() );
 
             var selectSpouseExpression = SelectExpressionExtractor.Extract( personSpouseQuery, entityIdProperty, "p" );
 
@@ -167,7 +171,12 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
-            return new System.Web.UI.Control[] { };
+            RockCheckBox cbIncludeLastname = new RockCheckBox();
+            cbIncludeLastname.ID = parentControl.ID + "_cbIncludeLastname";
+            cbIncludeLastname.Text = "Include Lastname";
+            parentControl.Controls.Add( cbIncludeLastname );
+
+            return new System.Web.UI.Control[] { cbIncludeLastname };
         }
 
         /// <summary>
@@ -188,7 +197,15 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
         {
-            return null;
+            if ( controls.Count() == 1 )
+            {
+                RockCheckBox cbIncludeLastname = controls[0] as RockCheckBox;
+                if ( cbIncludeLastname != null )
+                {
+                    return cbIncludeLastname.Checked.ToTrueFalse();
+                }
+            }
+            return string.Empty;
         }
 
         /// <summary>
@@ -198,7 +215,19 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
-            // nothing to do
+            if ( controls.Count() == 1 )
+            {
+                string[] selectionValues = selection.Split( '|' );
+                if ( selectionValues.Length >= 1 )
+                {
+                    RockCheckBox cbIncludeLastname = controls[0] as RockCheckBox;
+                    
+                    if ( cbIncludeLastname != null )
+                    {
+                        cbIncludeLastname.Checked = selectionValues[0].AsBoolean();
+                    }
+                }
+            }
         }
 
         #endregion
@@ -230,7 +259,7 @@ namespace Rock.Reporting.DataSelect.Person
             {
                 Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
                 Guid marriedGuid = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
-                int marriedDefinedValueId = DefinedValueCache.Read( marriedGuid ).Id;
+                int marriedDefinedValueId = DefinedValueCache.Get( marriedGuid ).Id;
                 Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
 
                 var familyGroupMembers = new GroupMemberService( rockContext ).Queryable()

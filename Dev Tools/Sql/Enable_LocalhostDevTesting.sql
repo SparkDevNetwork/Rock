@@ -1,3 +1,8 @@
+/* Run this script to set all the Organization, Public, and Internal website globalattributes to localhost */
+/* This will also update the SMTP Transport to use localhost as the SMTP Server.  You can then use a email tool such as https://github.com/ChangemakerStudios/Papercut/releases to test emails */
+/* If this script returns 'O rows affected', then you are already set for localhost testing */
+
+/*  Update Organization Website Global Attribute to the localhost url that RockWeb uses when developing locally */
 DECLARE @OrganizationWebSiteId int = (SELECT Id from [Attribute] WHERE [Key] = 'OrganizationWebSite')
 IF EXISTS ( SELECT [Id] FROM [AttributeValue]  WHERE [AttributeId] = @OrganizationWebSiteId )
 BEGIN
@@ -5,6 +10,7 @@ BEGIN
 	SET
 		[Value] = 'http://localhost:6229/'
 	WHERE [AttributeId] = @OrganizationWebSiteId
+	AND [Value] != 'http://localhost:6229/'
 END
 ELSE
 BEGIN
@@ -30,6 +36,7 @@ BEGIN
            ,1)
 END
 
+/*  Update PublicApplicationRoot Global Attribute to the localhost url that RockWeb uses when developing locally. */
 DECLARE @PublicApplicationRootId int = (select Id from [Attribute] WHERE [Key] = 'PublicApplicationRoot')
 
 IF EXISTS ( SELECT [Id] FROM [AttributeValue]  WHERE [AttributeId] = @PublicApplicationRootId )
@@ -38,6 +45,7 @@ BEGIN
 	SET
 		[Value] = 'http://localhost:6229/'
 	WHERE [AttributeId] = @PublicApplicationRootId
+	AND [Value] != 'http://localhost:6229/'
 END
 ELSE
 BEGIN
@@ -63,6 +71,7 @@ BEGIN
            ,null)
 END
 
+/*  Update InternalApplicationRoot Global Attribute to the localhost url that RockWeb uses when developing locally. */
 DECLARE @InternalApplicationRootId int = (select Id from [Attribute] WHERE [Key] = 'InternalApplicationRoot')
 
 IF EXISTS ( SELECT [Id] FROM [AttributeValue]  WHERE [AttributeId] = @InternalApplicationRootId )
@@ -71,6 +80,7 @@ BEGIN
 	SET
 		[Value] = 'http://localhost:6229/'
 	WHERE [AttributeId] = @InternalApplicationRootId
+	AND [Value] != 'http://localhost:6229/'
 END
 ELSE
 BEGIN
@@ -96,6 +106,7 @@ BEGIN
            ,null)
 END
 
+/* Update SMTP Transport to use localhost as the SMTP Server.  Use https://github.com/ChangemakerStudios/Papercut/releases or similar email server tool to test email system */
 DECLARE @CommChannelServerId int = (SELECT Id from [Attribute] WHERE [Guid] = '6CFFDF99-E93A-49B8-B440-0EF93878A51F')
 IF EXISTS ( SELECT [Id] FROM [AttributeValue]  WHERE [AttributeId] = @CommChannelServerId )
 BEGIN
@@ -103,6 +114,7 @@ BEGIN
 	SET
 		[Value] = 'localhost'
 	WHERE [AttributeId] = @CommChannelServerId
+	AND [Value] != 'localhost'
 END
 ELSE
 BEGIN
@@ -127,3 +139,14 @@ BEGIN
            ,null
            ,null)
 END
+
+/*
+
+--
+-- If you're really paranoid, you can also run this to .test`ify everyone's emails.
+--
+UPDATE [Person] 
+SET [Email] = CONCAT([Email], '.test' )
+WHERE [Email] != '' AND IsSystem != 1
+
+*/

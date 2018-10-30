@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -38,12 +39,13 @@ namespace RockWeb.Blocks.Core
     [Description( "Lists all the defined types and allows for managing them and their values." )]
 
     [LinkedPage( "Detail Page", order: 0 )]
-    [CategoryField( "Categories", "If block should only display Defined Types from specific categories, select the categories here.", true, "Rock.Model.DefinedType", order: 1 )]
+    [CategoryField( "Categories", "If block should only display Defined Types from specific categories, select the categories here.", true, "Rock.Model.DefinedType", order: 1, required: false )]
     public partial class DefinedTypeList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 
         private List<Guid> _categoryGuids = null;
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -103,7 +105,7 @@ namespace RockWeb.Blocks.Core
         protected void tFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             int? categoryId = cpCategory.SelectedValueAsInt();
-            tFilter.SaveUserPreference( "Category", categoryId.HasValue ? categoryId.Value.ToString() : "" );
+            tFilter.SaveUserPreference( "Category", categoryId.HasValue ? categoryId.Value.ToString() : string.Empty );
 
             gDefinedType_Bind();
         }
@@ -120,7 +122,7 @@ namespace RockWeb.Blocks.Core
                 int? categoryId = e.Value.AsIntegerOrNull();
                 if ( categoryId.HasValue )
                 {
-                    var category = Rock.Web.Cache.CategoryCache.Read( categoryId.Value );
+                    var category = CategoryCache.Get( categoryId.Value );
                     if ( category != null )
                     {
                         e.Value = category.Name;
@@ -263,16 +265,30 @@ namespace RockWeb.Blocks.Core
 
             gDefinedType.DataSource = queryable
                 .Select( a =>
-                new
-                {
-                    a.Id,
-                    Category = a.Category.Name,
-                    a.Name,
-                    a.Description,
-                    a.IsSystem,
-                    FieldTypeName = a.FieldType.Name
-                } )
+                    new
+                    {
+                        a.Id,
+                        Category = a.Category.Name,
+                        a.Name,
+                        a.Description,
+                        a.IsSystem,
+                        FieldTypeName = a.FieldType.Name
+                    } )
                 .ToList();
+
+            // SanitizeHtml can't be compiled into a SQL query so we have to ToList() the data and then sanitize the field in the List<T>
+            //gDefinedType.DataSource = dataSource
+            //    .Select( a =>
+            //        new
+            //        {
+            //            a.Id,
+            //            a.Category,
+            //            a.Name,
+            //            Description = a.Description.ScrubHtmlForGridDisplay(),
+            //            a.IsSystem,
+            //            a.FieldTypeName
+            //        } )
+            //    .ToList();
             gDefinedType.DataBind();
         }
 

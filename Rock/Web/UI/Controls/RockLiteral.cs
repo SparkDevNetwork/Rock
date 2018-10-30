@@ -87,7 +87,7 @@ namespace Rock.Web.UI.Controls
 
                 writer.AddAttribute("class", "form-control-static");
                 writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
-                writer.RenderBeginTag( HtmlTextWriterTag.P );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div ); // changed this from a <p> to a <div> as controls that have a <div> can not be rendered into a <p>.
                 base.RenderControl( writer );
                 writer.RenderEndTag();
 

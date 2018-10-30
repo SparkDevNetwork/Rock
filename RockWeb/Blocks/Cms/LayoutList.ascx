@@ -35,7 +35,7 @@
             </div>
 
             <Rock:NotificationBox runat="server" NotificationBoxType="Info" Title="Note" 
-                        Text="Rock will ensure that at least one layout entry exists for each layout file in the site's theme folder.  If all the the layouts for a layout file are deleted, Rock will automatically and immediately recreate a new layout entry." />
+                        Text="Rock will ensure that at least one layout entry exists for each layout file in the site's theme folder.  If all the layouts for a layout file are deleted, Rock will automatically and immediately recreate a new layout entry." />
 
         </asp:Panel>
     </ContentTemplate>

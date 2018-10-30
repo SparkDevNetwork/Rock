@@ -1,4 +1,4 @@
-﻿/*
+/*
     Used to manage styles related to Rock's internal scrollbar
 
 */
@@ -32,15 +32,15 @@
     overflow: hidden;
     cursor: pointer;
     -webkit-user-select: none;
-       -moz-user-select: none;
-        -ms-user-select: none;
-            user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -khtml-user-select: none;
     background-color: @scroll-thumb-color;
     border-radius: 120px;
     // keeps the thumb from being selectable like text
 
     -webkit-touch-callout: none;
-     -khtml-user-select: none;
   }
 
   .disable {
@@ -65,6 +65,7 @@
     position: relative;
     float: right;
     width: 15px;
+    height: 120px;
   }
 
   .track {
@@ -93,13 +94,12 @@
 
   .scrollbar {
     position: relative;
+    width: 120px;
     height: 15px;
-    margin: 0 auto;
-    clear: both;
   }
 
   .track {
-    width: 13px;
+    width: 100%;
     height: 1px;
     padding: 0 1px;
   }
@@ -107,29 +107,18 @@
   .thumb {
     width: 20px;
     height: 13px;
-    margin-top: -8px;
+    margin-top: -6px;
     border-radius: 10px;
   }
 }
 
 // styles for scrollers in panels
-/* needed JME 7/22/2015 
-.panel-widget .scroll-container,
-.panel-default .scroll-container {
-    .track {
-        background-color: @axxxxccent-color;
-    }
-
-    .thumb {
-        background-color: darken(@axxxxxccent-color, 10%);
-    }
-}*/
 
 .noSelect {
   -webkit-user-select: none;
-     -moz-user-select: none;
-       -o-user-select: none;
-          user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
 
-   -khtml-user-select: none;
+  -khtml-user-select: none;
+  user-select: none;
 }

@@ -12,7 +12,7 @@
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
                 <fieldset>
@@ -49,10 +49,10 @@
                     <Rock:PanelWidget ID="pwAdvanced" runat="server" Title="Advanced" Expanded="false">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:NumberBox ID="tbMinimumRows" runat="server" Label="Minimum Rows" />
+                                <Rock:NumberBox ID="tbMinimumRows" runat="server" MinimumValue="0" Label="Minimum Rows" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:NumberBox ID="tbMaximumRows" runat="server" Label="Maximum Rows" />
+                                <Rock:NumberBox ID="tbMaximumRows" runat="server" MinimumValue="0" Label="Maximum Rows" />
                             </div>
                         </div>
 

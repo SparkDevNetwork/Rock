@@ -27,6 +27,11 @@ namespace Rock.SystemGuid
     public static class SystemEmail
     {
         /// <summary>
+        /// Gets the template guid for the Attendance email
+        /// </summary>
+        public const string ATTENDANCE_NOTIFICATION = "CA794BD8-25C5-46D9-B7C2-AD8190AC27E6";
+
+        /// <summary>
         /// Gets the template guid for the Exception Notification email
         /// </summary>
         public const string CONFIG_EXCEPTION_NOTIFICATION = "75CB0A4A-B1C5-4958-ADEB-8621BD231520";
@@ -77,9 +82,23 @@ namespace Rock.SystemGuid
         public const string WORKFLOW_FORM_NOTIFICATION = "88C7D1CC-3478-4562-A301-AE7D4D7FFF6D";
 
         /// <summary>
-        /// Gets the template guid for workflow form notifications
+        /// Gets the template guid for digital signature invite
         /// </summary>
         public const string DIGITAL_SIGNATURE_INVITE  = "791F2DE4-5A59-60AE-4F2F-FDC3EBC4FFA9";
 
+        /// <summary>
+        /// Gets the template guid for a notewatch notification
+        /// </summary>
+        public const string NOTEWATCH_NOTIFICATION = "21B92DE2-6825-45F3-BD27-43B47FE490D8";
+
+        /// <summary>
+        /// Gets the template guid for a note approval notification
+        /// </summary>
+        public const string NOTE_APPROVAL_NOTIFICATION = "B2E3D75F-681E-430F-82C9-D0D681040FAF";
+
+        /// <summary>
+        /// Gets the template guid for a Spark Data notification
+        /// </summary>
+        public const string SPARK_DATA_NOTIFICATION = "CBCBE0F0-67FB-6393-4D9C-592C839A2E54";
     }
 }

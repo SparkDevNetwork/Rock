@@ -187,7 +187,7 @@ function() {
             {
                 var locationPicker = controls[0] as LocationPicker;
                 var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[0].AsGuid() );
-                locationPicker.CurrentPickerMode = locationPicker.GetBestPickerModeForLocation( selectedLocation );
+                locationPicker.SetBestPickerModeForLocation( selectedLocation );
                 locationPicker.Location = selectedLocation;
                 var numberBox = controls[1] as NumberBox;
                 numberBox.Text = selectionValues[1];
@@ -215,12 +215,7 @@ function() {
                 {
                     return null;
                 }
-
-                var selectedLocationGeoPoint = location.GeoPoint;
-                double miles = selectionValues[1].AsDoubleOrNull() ?? 0;
-
-                double meters = miles * Location.MetersPerMile;
-
+                
                 GroupMemberService groupMemberService = new GroupMemberService( rockContext );
                 var groupTypeFamilyId = GroupTypeCache.GetFamilyGroupType().Id;
 
@@ -228,16 +223,34 @@ function() {
                 var groupMemberServiceQry = groupMemberService.Queryable()
                     .Where( xx => xx.Group.GroupTypeId == groupTypeFamilyId );
 
-                int groupLocationTypeHomeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id;
+                int groupLocationTypeHomeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id;
 
-                // limit to distance LessThan specified distance (dbGeography uses meters for distance units)
-                groupMemberServiceQry = groupMemberServiceQry
-                    .Where( xx =>
-                        xx.Group.GroupLocations.Any( l => 
-                            l.GroupLocationTypeValue.Id == groupLocationTypeHomeId 
-                            && l.IsMappedLocation 
-                            && selectedLocationGeoPoint.Buffer(meters).Intersects( l.Location.GeoPoint ) 
-                            ));
+                // if a specific point was selected (whether a marker, or an address), we'll do a radial search
+                if( location.GeoPoint != null )
+                {
+                    // limit to distance LessThan specified distance (dbGeography uses meters for distance units)
+                    double miles = selectionValues[1].AsDoubleOrNull() ?? 0;
+                    double meters = miles * Location.MetersPerMile;
+
+                    groupMemberServiceQry = groupMemberServiceQry
+                        .Where( xx =>
+                            xx.Group.GroupLocations.Any( l =>
+                                l.GroupLocationTypeValue.Id == groupLocationTypeHomeId
+                                && l.IsMappedLocation
+                                && location.GeoPoint.Buffer( meters ).Intersects( l.Location.GeoPoint )
+                                ) );
+                }
+                // otherwise if a geo fence was drawn, see what points intersect within it
+                else if ( location.GeoFence != null )
+                {
+                    groupMemberServiceQry = groupMemberServiceQry
+                        .Where( xx =>
+                            xx.Group.GroupLocations.Any( l =>
+                                l.GroupLocationTypeValue.Id == groupLocationTypeHomeId
+                                && l.IsMappedLocation
+                                && l.Location.GeoPoint.Intersects( location.GeoFence )
+                                ) );
+                }
 
                 var qry = new PersonService( rockContext ).Queryable()
                     .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );

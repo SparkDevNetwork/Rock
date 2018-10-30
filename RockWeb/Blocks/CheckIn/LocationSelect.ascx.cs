@@ -138,7 +138,6 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnLoad( e );
 
-            RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
             var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
@@ -347,7 +346,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( CurrentCheckInType != null && CurrentCheckInType.DisplayLocationCount )
             { 
-                return string.Format( " <span class='checkin-sub-title'> Count: {0}</span>", KioskLocationAttendance.Read( locationId ).CurrentCount );
+                return string.Format( " <span class='checkin-sub-title'> Count: {0}</span>", KioskLocationAttendance.Get( locationId ).CurrentCount );
             }
 
             return string.Empty;

@@ -222,8 +222,6 @@ namespace RockWeb.Blocks.Core
 
             rockContext.SaveChanges();
 
-            EntityTypeCache.Flush( entityType.Id );
-
             hfEntityTypeId.Value = string.Empty;
 
             HideDialog();
@@ -243,7 +241,7 @@ namespace RockWeb.Blocks.Core
             EntityTypeService entityTypeService = new EntityTypeService( new RockContext() );
             SortProperty sortProperty = gEntityTypes.SortProperty;
 
-            var qry = entityTypeService.Queryable().Where( e => e.IsSecured || e.IsEntity );
+            var qry = entityTypeService.Queryable().Where( e => e.IsEntity );
 
             string search = gfSettings.GetUserPreference( "Search" );
             if ( !string.IsNullOrWhiteSpace( search ) )

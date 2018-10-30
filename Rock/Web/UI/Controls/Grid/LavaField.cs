@@ -38,8 +38,8 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
         {
-            LavaFieldTemplate LavaFieldTemplate = new LavaFieldTemplate();
-            this.ItemTemplate = LavaFieldTemplate;
+            LavaFieldTemplate lavaFieldTemplate = new LavaFieldTemplate();
+            this.ItemTemplate = lavaFieldTemplate;
             this.ParentGrid = control as Grid;
             return base.Initialize( sortingEnabled, control );
         }
@@ -89,6 +89,27 @@ namespace Rock.Web.UI.Controls
                 this.ViewState["LavaKey"] = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [convert to item dictionary] instead of "Row"
+        /// Set this to false to have the entire "Row" as a the merge field instead of individual column values
+        /// Leave this as true to have the individual properties as the merge field (based on the Column Headers of the other stuff in the grid)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [convert to item dictionary]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ConvertToItemDictionary
+        {
+            get
+            {
+                return this.ViewState["ConvertToItemDictionary"] as bool? ?? true;
+            }
+
+            set
+            {
+                this.ViewState["ConvertToItemDictionary"] = value;
+            }
+        }
     }
 
     /// <summary>
@@ -132,12 +153,18 @@ namespace Rock.Web.UI.Controls
             if ( gridViewRow.DataItem != null )
             {
                 Dictionary<string, object> mergeValues = new Dictionary<string, object>();
-                mergeValues.Add( "Row", gridViewRow.DataItem );
-
-                // in the case of a Report, the MergeKeys are determined by the ColumnHeader, so also add those
-                foreach ( var keyValue in this.ToGridItemsDictionary( gridViewRow, gridViewRow.DataItem ))
+                
+                if ( LavaField.ConvertToItemDictionary )
                 {
-                    mergeValues.AddOrIgnore( keyValue.Key, keyValue.Value );
+                    // in the case of a Report, the MergeKeys are determined by the ColumnHeader, so add those as merge fields instead the Row object
+                    foreach ( var keyValue in this.ToGridItemsDictionary( gridViewRow, gridViewRow.DataItem ) )
+                    {
+                        mergeValues.AddOrIgnore( keyValue.Key, keyValue.Value );
+                    }
+                } 
+                else
+                {
+                    mergeValues.Add( "Row", gridViewRow.DataItem );
                 }
 
                 lOutputText.Text = this.LavaField.LavaTemplate.ResolveMergeFields( mergeValues );
@@ -239,7 +266,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            // add additional MergeFields for Properties of the dataitem that aren't already already a MergeField created from the ColumnHeaderText
+            // add additional MergeFields for Properties of the dataitem that aren't already a MergeField created from the ColumnHeaderText
             foreach ( var itemPropInfo in dataItemProperties )
             {
                 var mergeFieldName = itemPropInfo.Name;

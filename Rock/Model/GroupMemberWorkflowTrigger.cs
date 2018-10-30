@@ -144,7 +144,7 @@ namespace Rock.Model
         /// The group.
         /// </value>
         /// <remarks>
-        /// NOTE: [DataMember] attribute is intentionally ommited to prevent having to serialize all group members (times out on large groups)
+        /// NOTE: [DataMember] attribute is intentionally omitted to prevent having to serialize all group members (times out on large groups)
         /// </remarks>
         [LavaInclude]
         public virtual Group Group { get; set; }

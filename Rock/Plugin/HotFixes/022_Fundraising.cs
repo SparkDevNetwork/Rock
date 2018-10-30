@@ -32,59 +32,59 @@ namespace Rock.Plugin.HotFixes
         {
             // Added to normal migration: 201704031947125_Fundraising
 
-            // 1.6.3 Migration Rollups
-            // JE: Fix Payment Details Block Setting
-            RockMigrationHelper.UpdateBlockTypeAttribute( "91354899-304E-44C7-BD0D-55F42E6505D3", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Default Payment Reminder Email", "DefaultPaymentReminderEmail", "", "The default Payment Reminder Email Template value to use for a new template", 3, @"{{ 'Global' | Attribute:'EmailHeader' }}
-{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
-{% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
+//            // 1.6.3 Migration Rollups
+//            // JE: Fix Payment Details Block Setting
+//            RockMigrationHelper.UpdateBlockTypeAttribute( "91354899-304E-44C7-BD0D-55F42E6505D3", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Default Payment Reminder Email", "DefaultPaymentReminderEmail", "", "The default Payment Reminder Email Template value to use for a new template", 3, @"{{ 'Global' | Attribute:'EmailHeader' }}
+//{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
+//{% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
 
-<h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Payment Reminder</h1>
+//<h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Payment Reminder</h1>
 
-<p>
-    This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} for {{ RegistrationInstance.Name }} has a remaining balance 
-    of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}. The 
-    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | Downcase | Pluralize  }} for this 
-    {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} are below.
-</p>
+//<p>
+//    This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} for {{ RegistrationInstance.Name }} has a remaining balance 
+//    of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}. The 
+//    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | Downcase | Pluralize  }} for this 
+//    {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} are below.
+//</p>
 
-{% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
-{% assign registrantCount = registrants | Size %}
-{% if registrantCount > 0 %}
-	<ul>
-	{% for registrant in registrants %}
-		<li>{{ registrant.PersonAlias.Person.FullName }}</li>
-	{% endfor %}
-	</ul>
-{% endif %}
+//{% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
+//{% assign registrantCount = registrants | Size %}
+//{% if registrantCount > 0 %}
+//	<ul>
+//	{% for registrant in registrants %}
+//		<li>{{ registrant.PersonAlias.Person.FullName }}</li>
+//	{% endfor %}
+//	</ul>
+//{% endif %}
 
-{% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
-{% assign waitListCount = waitlist | Size %}
-{% if waitListCount > 0 %}
-    <p>
-        The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
-		{% if waitListCount > 1 %}are{% else %}is{% endif %} still on the wait list:
-   </p>
+//{% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
+//{% assign waitListCount = waitlist | Size %}
+//{% if waitListCount > 0 %}
+//    <p>
+//        The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+//		{% if waitListCount > 1 %}are{% else %}is{% endif %} still on the wait list:
+//   </p>
     
-    <ul>
-    {% for registrant in waitlist %}
-        <li>
-            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
-        </li>
-    {% endfor %}
-    </ul>
-{% endif %}
+//    <ul>
+//    {% for registrant in waitlist %}
+//        <li>
+//            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+//        </li>
+//    {% endfor %}
+//    </ul>
+//{% endif %}
 
-<p>
-    You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
-    using our <a href='{{ externalSite }}Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person.UrlEncodedKey }}'>
-    online registration page</a>.
-</p>
+//<p>
+//    You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
+//    using our <a href='{{ externalSite }}Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person.UrlEncodedKey }}'>
+//    online registration page</a>.
+//</p>
 
-<p>
-    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
-</p>
+//<p>
+//    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+//</p>
 
-{{ 'Global' | Attribute:'EmailFooter' }}", "C8AB59C0-3074-418E-8493-2BCED16D5034" );
+//{{ 'Global' | Attribute:'EmailFooter' }}", "C8AB59C0-3074-418E-8493-2BCED16D5034" );
         }
 
         /// <summary>
@@ -92,6 +92,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Down()
         {
+            /*
             RockMigrationHelper.DeleteByGuid( "9BB1A7B6-0E51-4E0E-BFC0-1E42F4F2DA95", "NoteType" );
 
             RockMigrationHelper.DeleteAttribute( "F3338652-D1A2-4778-82A7-D56B9F4CFD7F" );    // GroupType - Group Attribute, Fundraising Opportunity: Opportunity Title
@@ -221,6 +222,7 @@ namespace Rock.Plugin.HotFixes
             RockMigrationHelper.DeletePage( "9DADC93F-C9E7-4567-B73E-AD264A93E37D" ); //  Page: Fundraising Leader Toolbox, Layout: FullWidth, Site: External Website
             RockMigrationHelper.DeletePage( "BA673ABE-A45A-4835-A3A0-94A60341B96F" ); //  Page: Fundraising Opportunity View, Layout: FullWidth, Site: External Website
             RockMigrationHelper.DeletePage( "A3EF32AC-B0FE-4140-A6F4-134FDD247CBD" ); //  Page: Fundraising Transaction Matching, Layout: Full Width, Site: Rock RMS
+            */
         }
     }
 }

@@ -276,8 +276,8 @@ namespace Rock.Web.UI.Controls
             this.Attributes.Add( "data-max", "5" );
             this.Attributes.Add( "data-clearable", " " );
             this.Attributes.Add( "data-icon-lib", "fa" );
-            this.Attributes.Add( "data-active-icon", "fa-star" );
-            this.Attributes.Add( "data-inactive-icon", "fa-star-o" );
+            this.Attributes.Add( "data-active-icon", "fa-rating-selected" );
+            this.Attributes.Add( "data-inactive-icon", "fa-rating-unselected" );
             this.Attributes.Add( "data-clearable-icon", "fa-remove" );
         }
 
@@ -294,7 +294,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// This is where you implement the simple aspects of rendering your control.  The rest
         /// will be handled by calling RenderControlHelper's RenderControl() method.
         /// </summary>
         /// <param name="writer">The writer.</param>

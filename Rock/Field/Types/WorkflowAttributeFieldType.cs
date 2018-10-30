@@ -133,7 +133,7 @@ namespace Rock.Field.Types
 
                 if ( string.IsNullOrWhiteSpace( formattedValue ) )
                 {
-                    var attributeCache = AttributeCache.Read( guid );
+                    var attributeCache = AttributeCache.Get( guid );
                     if ( attributeCache != null )
                     {
                         formattedValue = attributeCache.Name;
@@ -177,7 +177,7 @@ namespace Rock.Field.Types
             {
                 foreach ( var attribute in attributes )
                 {
-                    var fieldType = FieldTypeCache.Read( attribute.Value.FieldTypeId );
+                    var fieldType = FieldTypeCache.Get( attribute.Value.FieldTypeId );
                     if ( !filteredFieldTypes.Any() || filteredFieldTypes.Contains( fieldType.Class, StringComparer.OrdinalIgnoreCase ) )
                     {
                         editControl.Items.Add( new ListItem( attribute.Value.Name, attribute.Key.ToString() ) );
@@ -196,12 +196,13 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is RockDropDownList )
+            var picker = control as RockDropDownList;
+            if ( picker != null )
             {
-                return ( (RockDropDownList)control ).SelectedValue;
+                return picker.SelectedValue;
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>
@@ -212,12 +213,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as RockDropDownList;
+            if ( picker != null )
             {
-                if ( control != null && control is RockDropDownList )
-                {
-                    ( (RockDropDownList)control ).SetValue( value );
-                }
+                picker.SetValue( value );
             }
         }
 

@@ -33,8 +33,7 @@ namespace Rock.Workflow.Action
     [Description( "Redirects the user to a different page." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Redirect to Page" )]
-
-    [UrlLinkField( "Url", "The Url to redirect to.", true, "", "", 0 )]
+    
     [WorkflowTextOrAttribute( "Url", "Url Attribute", "The full Url to redirect to, for example: http://www.rockrms.com  <span class='tip tip-lava'></span>", true, "", "", 0, "Url", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.UrlLinkFieldType", "Rock.Field.Types.AudioUrlFieldType", "Rock.Field.Types.VideoUrlFieldType" } )]
     [CustomDropdownListField( "Processing Options", "How should workflow continue processing?", "0^Always continue,1^Only continue on redirect,2^Never continue", true, "0", "", 1 )]
     public class Redirect : ActionComponent

@@ -33,7 +33,7 @@ namespace Rock.Model
     /// 
     /// </summary>
     [RockDomain( "CMS" )]
-    [Table( "ContentChannelItem")]
+    [Table( "ContentChannelItem" )]
     [DataContract]
     public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered, IRockIndexable
     {
@@ -99,7 +99,7 @@ namespace Rock.Model
         public ContentChannelItemStatus Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId of the <see cref="Rock.Model.Person"/> who either approved or declined the ContentItem. If no approval action has been performed on this Ad, this value will be null.
+        /// Gets or sets the PersonAliasId of the <see cref="Rock.Model.Person"/> who either approved or declined the ContentItem. If no approval action has been performed on this item, this value will be null.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the PersonAliasId of hte <see cref="Rock.Model.Person"/> who either approved or declined the ContentItem. This value will be null if no approval action has been
@@ -124,7 +124,7 @@ namespace Rock.Model
         /// The start date time.
         /// </value>
         [DataMember]
-        public DateTime StartDateTime { get; set; }
+        public DateTime StartDateTime { get; set; } = RockDateTime.Now;
 
         /// <summary>
         /// Gets or sets the expire date time.
@@ -186,6 +186,31 @@ namespace Rock.Model
         public virtual PersonAlias ApprovedByPersonAlias { get; set; }
 
         /// <summary>
+        /// Gets the primary slug.
+        /// </summary>
+        /// <value>
+        /// The primary alias.
+        /// </value>
+        [NotMapped]
+        [LavaInclude]
+        public virtual string PrimarySlug
+        {
+            get
+            {
+                return ContentChannelItemSlugs.Select( a => a.Slug ).FirstOrDefault( );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the content channel item slugs.
+        /// </summary>
+        /// <value>
+        /// The content channel item slugs.
+        /// </value>
+        [LavaInclude]
+        public virtual ICollection<ContentChannelItemSlug> ContentChannelItemSlugs { get; set; }
+
+        /// <summary>
         /// Gets or sets the child items.
         /// </summary>
         /// <value>
@@ -238,7 +263,7 @@ namespace Rock.Model
             get
             {
                 var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to intertact with the channel item." );
+                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to interact with the channel item." );
                 return supportedActions;
             }
         }
@@ -290,7 +315,7 @@ namespace Rock.Model
             var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable()
                                             .Where( i =>
                                                 i.ContentChannel.IsIndexEnabled
-                                                && (i.ContentChannel.RequiresApproval == false || i.ContentChannel.ContentChannelType.DisableStatus || i.Status == ContentChannelItemStatus.Approved) );
+                                                && ( i.ContentChannel.RequiresApproval == false || i.ContentChannel.ContentChannelType.DisableStatus || i.Status == ContentChannelItemStatus.Approved ) );
 
             int recordCounter = 0;
 
@@ -324,7 +349,7 @@ namespace Rock.Model
             if ( itemEntity.ContentChannel != null && itemEntity.ContentChannel.IsIndexEnabled )
             {
                 // ensure it's meant to be indexed
-                if ( itemEntity.ContentChannel.IsIndexEnabled && (itemEntity.ContentChannel.RequiresApproval == false || itemEntity.ContentChannel.ContentChannelType.DisableStatus || itemEntity.Status == ContentChannelItemStatus.Approved) )
+                if ( itemEntity.ContentChannel.IsIndexEnabled && ( itemEntity.ContentChannel.RequiresApproval == false || itemEntity.ContentChannel.ContentChannelType.DisableStatus || itemEntity.Status == ContentChannelItemStatus.Approved ) )
                 {
                     var indexItem = ContentChannelItemIndex.LoadByModel( itemEntity );
                     IndexContainer.IndexDocument( indexItem );
@@ -402,6 +427,24 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Posts the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            base.PostSaveChanges( dbContext );
+
+            var rockContext = ( RockContext ) dbContext;
+            var contentChannelItemSerivce = new ContentChannelItemService( rockContext );
+            var contentChannelSlugSerivce = new ContentChannelItemSlugService( rockContext );
+
+            if ( !contentChannelSlugSerivce.Queryable().Any( a => a.ContentChannelItemId == this.Id ) && contentChannelItemSerivce.Queryable().Any(a=>a.Id == Id) )
+            {
+                contentChannelSlugSerivce.SaveSlug( Id, Title, null );
+            }
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -437,7 +480,7 @@ namespace Rock.Model
     #region Enumerations
 
     /// <summary>
-    /// Represents the status of a Marketing Campaign Card
+    /// Represents the approval status of a content channel item
     /// </summary>
     public enum ContentChannelItemStatus
     {

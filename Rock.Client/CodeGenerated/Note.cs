@@ -35,7 +35,25 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public bool ApprovalsSent { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.NoteApprovalStatus ApprovalStatus { get; set; }
+
+        /// <summary />
+        public int? ApprovedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public DateTime? ApprovedDateTime { get; set; }
+
+        /// <summary />
         public string Caption { get; set; }
+
+        /// <summary />
+        public int? EditedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public DateTime? EditedDateTime { get; set; }
 
         /// <summary />
         public int? EntityId { get; set; }
@@ -62,6 +80,15 @@ namespace Rock.Client
 
         /// <summary />
         public int NoteTypeId { get; set; }
+
+        /// <summary />
+        public string NoteUrl { get; set; }
+
+        /// <summary />
+        public bool NotificationsSent { get; set; }
+
+        /// <summary />
+        public int? ParentNoteId { get; set; }
 
         /// <summary />
         public string Text { get; set; }
@@ -99,7 +126,13 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Note source )
         {
             this.Id = source.Id;
+            this.ApprovalsSent = source.ApprovalsSent;
+            this.ApprovalStatus = source.ApprovalStatus;
+            this.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
+            this.ApprovedDateTime = source.ApprovedDateTime;
             this.Caption = source.Caption;
+            this.EditedByPersonAliasId = source.EditedByPersonAliasId;
+            this.EditedDateTime = source.EditedDateTime;
             this.EntityId = source.EntityId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
@@ -108,6 +141,9 @@ namespace Rock.Client
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NoteTypeId = source.NoteTypeId;
+            this.NoteUrl = source.NoteUrl;
+            this.NotificationsSent = source.NotificationsSent;
+            this.ParentNoteId = source.ParentNoteId;
             this.Text = source.Text;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -125,7 +161,19 @@ namespace Rock.Client
     public partial class Note : NoteEntity
     {
         /// <summary />
+        public ICollection<NoteAttachment> Attachments { get; set; }
+
+        /// <summary />
+        public ICollection<Note> ChildNotes { get; set; }
+
+        /// <summary />
+        public PersonAlias EditedByPersonAlias { get; set; }
+
+        /// <summary />
         public NoteType NoteType { get; set; }
+
+        /// <summary />
+        public Note ParentNote { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

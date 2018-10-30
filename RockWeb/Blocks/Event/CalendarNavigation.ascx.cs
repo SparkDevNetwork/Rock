@@ -83,7 +83,7 @@ namespace RockWeb.Blocks.Event
                 EventItemId = PageParameter( "EventItemId" ).AsIntegerOrNull();
                 EventCalendarId = PageParameter( "EventCalendarId" ).AsIntegerOrNull();
 
-                // Load objects neccessary to display names
+                // Load objects necessary to display names
                 using ( var rockContext = new RockContext() )
                 {
                     ContentChannelItem contentItem = null;
@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Event
         {
             if ( PageNumber.Value > targetPage )
             {
-                var pageCache = PageCache.Read( RockPage.PageId );
+                var pageCache = PageCache.Get( RockPage.PageId );
                 if ( pageCache != null )
                 {
                     if ( 
@@ -253,7 +253,7 @@ namespace RockWeb.Blocks.Event
                         ( targetPage == 4 && !EventItemOccurrenceId.HasValue )
                     )
                     {
-                        // We don't have the parameter neccessary to navigate, so just return
+                        // We don't have the parameter necessary to navigate, so just return
                         return;
                     }
 

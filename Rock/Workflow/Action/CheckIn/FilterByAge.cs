@@ -84,14 +84,24 @@ namespace Rock.Workflow.Action.CheckIn
                             {
                                 if ( age.HasValue )
                                 {
-                                    if ( minAge.HasValue && age.Value < minAge.Value )
+                                    if ( minAge.HasValue )
                                     {
-                                        ageMatch = false;
+                                        int groupMinAgePrecision = minAge.Value.GetDecimalPrecision();
+                                        decimal? personAgePrecise = age.Floor( groupMinAgePrecision );
+                                        if ( personAgePrecise < minAge )
+                                        {
+                                            ageMatch = false;
+                                        }
                                     }
 
-                                    if ( maxAge.HasValue && age.Value > maxAge.Value )
+                                    if ( maxAge.HasValue )
                                     {
-                                        ageMatch = false;
+                                        int groupMaxAgePrecision = maxAge.Value.GetDecimalPrecision();
+                                        decimal? personAgePrecise = age.Floor( groupMaxAgePrecision );
+                                        if ( personAgePrecise > maxAge )
+                                        {
+                                            ageMatch = false;
+                                        }
                                     }
 
                                     if ( !ageMatch.HasValue )

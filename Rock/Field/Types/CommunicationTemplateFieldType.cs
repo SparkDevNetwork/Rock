@@ -34,6 +34,38 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
+        #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string formattedValue = value;
+
+            System.Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var communicationTemplateName = new CommunicationTemplateService( rockContext ).GetSelect( guid.Value, a => a.Name );
+                    if ( communicationTemplateName != null )
+                    {
+                        formattedValue = communicationTemplateName;
+                    }
+                }
+            }
+
+            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+        }
+
+        #endregion
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -69,8 +101,11 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is ListControl )
-                return ( (ListControl)control ).SelectedValue;
+            var editControl = control as ListControl;
+            if ( editControl != null )
+            {
+                return editControl.SelectedValue;
+            }
 
             return null;
         }
@@ -83,10 +118,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var editControl = control as ListControl;
+            if ( editControl != null )
             {
-                if ( control != null && control is ListControl )
-                    ( (ListControl)control ).SelectedValue = value;
+                editControl.SetValue( value );
             }
         }
 

@@ -47,7 +47,7 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            var entityType = EntityTypeCache.Read( EntityTypeId );
+            var entityType = EntityTypeCache.Get( EntityTypeId );
 
             if ( entityType != null )
             {

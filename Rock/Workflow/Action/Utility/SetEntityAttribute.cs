@@ -57,7 +57,7 @@ namespace Rock.Workflow.Action
             var entityTypeGuid = GetAttributeValue( action, "EntityType" ).AsGuidOrNull();
             if ( entityTypeGuid.HasValue )
             {
-                entityType = EntityTypeCache.Read( entityTypeGuid.Value );
+                entityType = EntityTypeCache.Get( entityTypeGuid.Value );
             }
             if ( entityType == null )
             {
@@ -92,7 +92,7 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            var entityWithAttributes = entityObject as IHasAttributes;
+            var entityWithAttributes = entityObject as Attribute.IHasAttributes;
             if ( entityWithAttributes == null )
             {
                 errorMessages.Add( string.Format( "Entity does not support attributes ('{0}')!", entityIdGuidString ) );

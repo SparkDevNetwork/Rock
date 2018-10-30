@@ -39,7 +39,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = NumberRangeEditor.FormatDelimitedValues( value ) ?? value;
+            string formattedValue = NumberRangeEditor.FormatDelimitedValues( value, "G" ) ?? value;
             return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
         }
 
@@ -71,7 +71,7 @@ namespace Rock.Field.Types
         public override string GetEditValue( System.Web.UI.Control control, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues )
         {
             NumberRangeEditor editor = control as NumberRangeEditor;
-            if ( editor != null )
+            if ( editor != null && ( editor.LowerValue.HasValue || editor.UpperValue.HasValue ) )
             {
                 return editor.DelimitedValues;
             }

@@ -77,6 +77,7 @@ namespace RockWeb.Blocks.Utility
         {
             base.OnLoad( e );
 
+            
             if ( !Page.IsPostBack )
             {
                 // added for your convenience

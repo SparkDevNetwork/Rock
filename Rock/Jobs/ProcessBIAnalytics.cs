@@ -40,11 +40,12 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     [BooleanField( "Process Person BI Analytics", "Do the BI Analytics tasks related to the Person Analytics tables", true, "", 1 )]
     [BooleanField( "Process Family BI Analytics", "Do the BI Analytics tasks related to the Family Analytics tables", true, "", 2 )]
-    [BooleanField( "Process Financial Transaction BI Analytics", "Do the BI Analytics tasks related to the Financial Transaction Analytics tables", true, "", 3 )]
-    [BooleanField( "Process Attendance BI Analytics", "Do the BI Analytics tasks related to the Attendance Analytics tables", true, "", 4 )]
-    [BooleanField( "Refresh Power BI Account Tokens", "Refresh any Power BI Account Tokens to prevent them from expiring.", true, "", 5 )]
-    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each SQL command to complete. Leave blank to use the default for this job (3600 seconds). Note that some of the tasks might take a while on larger databases, so you might need to set it higher.", false, 60 * 60, "General", 6, "CommandTimeout" )]
-    [BooleanField( "Save SQL for Debug", "Save the SQL that is used in the Person and Family related parts of the this job to App_Data\\Logs", false, "Advanced", 7, "SaveSQLForDebug" )]
+    [BooleanField( "Process Campus BI Analytics", "Do the BI Analytics tasks related to the Campus table", true, "", 3 )]
+    [BooleanField( "Process Financial Transaction BI Analytics", "Do the BI Analytics tasks related to the Financial Transaction Analytics tables", true, "", 4 )]
+    [BooleanField( "Process Attendance BI Analytics", "Do the BI Analytics tasks related to the Attendance Analytics tables", true, "", 5 )]
+    [BooleanField( "Refresh Power BI Account Tokens", "Refresh any Power BI Account Tokens to prevent them from expiring.", true, "", 6 )]
+    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each SQL command to complete. Leave blank to use the default for this job (3600 seconds). Note that some of the tasks might take a while on larger databases, so you might need to set it higher.", false, 60 * 60, "General", 7, "CommandTimeout" )]
+    [BooleanField( "Save SQL for Debug", "Save the SQL that is used in the Person and Family related parts of the this job to App_Data\\Logs", false, "Advanced", 8, "SaveSQLForDebug" )]
     public class ProcessBIAnalytics : IJob
     {
         #region Constructor
@@ -74,8 +75,12 @@ namespace Rock.Jobs
         /// </summary>
         private JobStats _familyJobStats = new JobStats();
 
+        /// <summary>
+        /// The campus job stats
+        /// </summary>
+        private JobStats _campusJobStats = new JobStats();
+
         private int? _commandTimeout = null;
-        private List<string> _sqlLogs = new List<string>();
 
         #endregion Private Fields
 
@@ -92,8 +97,6 @@ namespace Rock.Jobs
             // get the configured timeout, or default to 20 minutes if it is blank
             _commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 1200;
 
-            int? commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull();
-
             StringBuilder results = new StringBuilder();
 
             // Do the stuff for Person related BI Tables
@@ -102,13 +105,7 @@ namespace Rock.Jobs
                 ProcessPersonBIAnalytics( context, dataMap );
 
                 results.AppendLine( "Person BI Results:" );
-
-                if ( _personJobStats.ColumnsAdded != 0 || _personJobStats.ColumnsModified != 0 || _personJobStats.ColumnsRemoved != 0 )
-                {
-                    results.AppendLine( $"-- Added {_personJobStats.ColumnsAdded}, modified {_personJobStats.ColumnsModified}, and removed {_personJobStats.ColumnsRemoved} Person attribute columns." );
-                }
-
-                results.AppendLine( $"-- Marked {_personJobStats.RowsMarkedAsHistory} records as History, updated {_personJobStats.RowsUpdated} records, updated {_personJobStats.AttributeFieldsUpdated} attribute formatted values, and inserted {_personJobStats.RowsInserted} records." );
+                results.AppendLine( _personJobStats.SummaryMessage );
 
                 context.UpdateLastStatusMessage( results.ToString() );
             }
@@ -119,14 +116,18 @@ namespace Rock.Jobs
                 ProcessFamilyBIAnalytics( context, dataMap );
 
                 results.AppendLine( "Family BI Results:" );
+                results.AppendLine( _familyJobStats.SummaryMessage );
 
-                if ( _familyJobStats.ColumnsAdded != 0 || _familyJobStats.ColumnsModified != 0 || _familyJobStats.ColumnsRemoved != 0 )
-                {
-                    results.AppendLine( $"-- Added {_familyJobStats.ColumnsAdded}, modified {_familyJobStats.ColumnsModified}, and removed {_familyJobStats.ColumnsRemoved} attribute columns." );
-                }
+                context.UpdateLastStatusMessage( results.ToString() );
+            }
 
-                results.AppendLine( $"-- Marked {_familyJobStats.RowsMarkedAsHistory} records as History, updated {_familyJobStats.RowsUpdated} records, and updated {_familyJobStats.AttributeFieldsUpdated} attribute values, and inserted {_familyJobStats.RowsInserted} records." );
+            // Do the stuff for Campus related BI Tables
+            if ( dataMap.GetString( "ProcessCampusBIAnalytics" ).AsBoolean() )
+            {
+                ProcessCampusBIAnalytics( context, dataMap );
 
+                results.AppendLine( "Campus BI Results:" );
+                results.AppendLine( _campusJobStats.SummaryMessage );
                 context.UpdateLastStatusMessage( results.ToString() );
             }
 
@@ -135,7 +136,7 @@ namespace Rock.Jobs
             {
                 try
                 {
-                    int rows = DbService.ExecuteCommand( "EXEC [dbo].[spAnalytics_ETL_FinancialTransaction]", System.Data.CommandType.Text, null, commandTimeout );
+                    int rows = DbService.ExecuteCommand( "EXEC [dbo].[spAnalytics_ETL_FinancialTransaction]", System.Data.CommandType.Text, null, _commandTimeout );
                     results.AppendLine( "FinancialTransaction ETL completed." );
 
                     context.UpdateLastStatusMessage( results.ToString() );
@@ -153,7 +154,7 @@ namespace Rock.Jobs
             {
                 try
                 {
-                    int rows = DbService.ExecuteCommand( "EXEC [dbo].[spAnalytics_ETL_Attendance]", System.Data.CommandType.Text, null, commandTimeout );
+                    int rows = DbService.ExecuteCommand( "EXEC [dbo].[spAnalytics_ETL_Attendance]", System.Data.CommandType.Text, null, _commandTimeout );
                     results.AppendLine( "Attendance ETL completed." );
 
                     context.UpdateLastStatusMessage( results.ToString() );
@@ -169,7 +170,7 @@ namespace Rock.Jobs
             // "Refresh Power BI Account Tokens"
             if ( dataMap.GetString( "RefreshPowerBIAccountTokens" ).AsBoolean() )
             {
-                var powerBiAccountsDefinedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() );
+                var powerBiAccountsDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() );
                 if ( powerBiAccountsDefinedType?.DefinedValues?.Any() == true )
                 {
                     foreach ( var powerBiAccount in powerBiAccountsDefinedType.DefinedValues )
@@ -252,6 +253,178 @@ namespace Rock.Jobs
             }
         }
 
+        /// <summary>
+        /// Updates the analytics schema for the model (Family/Group, Person, Campus)
+        /// </summary>
+        /// <param name="analyticsSourceFields">The analytics source fields.</param>
+        /// <param name="modelAnalyticAttributes">The model analytic attributes.</param>
+        /// <param name="analyticsTableName">Name of the analytics table.</param>
+        /// <param name="modelJobStats">The model job stats.</param>
+        private void UpdateAnalyticsSchemaForModel( List<EntityField> analyticsSourceFields, List<AttributeCache> modelAnalyticAttributes, string analyticsTableName, JobStats modelJobStats )
+        {
+            var dataSet = DbService.GetDataSetSchema( $"SELECT * FROM [{analyticsTableName}] where 1=0", System.Data.CommandType.Text, null );
+            var dataTable = dataSet.Tables[0];
+
+            var analyticsFieldNames = analyticsSourceFields.Select( a => a.Name ).ToList();
+            analyticsFieldNames.Add( "ForeignId" );
+            analyticsFieldNames.Add( "ForeignGuid" );
+            analyticsFieldNames.Add( "ForeignKey" );
+            analyticsFieldNames.Add( "Guid" );
+
+            var currentDatabaseAttributeFields = dataTable.Columns.OfType<DataColumn>().Where( a =>
+                !analyticsFieldNames.Contains( a.ColumnName ) ).ToList();
+
+            const string BooleanSqlFieldType = "bit";
+            const string DateTimeSqlFieldType = "datetime";
+            const string NumericSqlFieldType = "[decimal](29,4)";
+            const string DefaultSqlFieldType = "nvarchar(250)";
+
+            using ( var rockContext = new RockContext() )
+            {
+                // add any AttributeFields that aren't already fields on Analytics table
+                foreach ( var modelAttribute in modelAnalyticAttributes )
+                {
+                    var columnName = modelAttribute.Key.RemoveSpecialCharacters();
+                    var databaseColumn = currentDatabaseAttributeFields.Where( a => a.ColumnName == columnName ).FirstOrDefault();
+                    var modelAttributeValueFieldName = modelAttribute.FieldType.Field.AttributeValueFieldName;
+                    string sqlFieldType;
+                    if ( modelAttributeValueFieldName == "ValueAsDateTime" )
+                    {
+                        sqlFieldType = DateTimeSqlFieldType;
+                    }
+                    else if ( modelAttributeValueFieldName == "ValueAsNumeric" )
+                    {
+                        sqlFieldType = NumericSqlFieldType;
+                    }
+                    else if ( modelAttributeValueFieldName == "ValueAsBoolean" )
+                    {
+                        sqlFieldType = BooleanSqlFieldType;
+                    }
+                    else
+                    {
+                        sqlFieldType = DefaultSqlFieldType;
+                    }
+
+                    string addColumnSQL = $"ALTER TABLE [{analyticsTableName}] ADD [{columnName}] {sqlFieldType} null";
+
+                    string dropColumnSql = $"ALTER TABLE [{analyticsTableName}] DROP COLUMN [{columnName}]";
+
+                    if ( databaseColumn == null )
+                    {
+                        // doesn't exist as a field on the Analytics table, so create it
+                        modelJobStats.ColumnsAdded++;
+                        rockContext.Database.ExecuteSqlCommand( addColumnSQL );
+                    }
+                    else
+                    {
+                        // it does exist as a field on the Analytics table, but make sure the datatype is correct
+                        bool dropCreate = false;
+
+                        if ( databaseColumn.DataType == typeof( decimal ) )
+                        {
+                            dropCreate = sqlFieldType != NumericSqlFieldType;
+                        }
+                        else if ( databaseColumn.DataType == typeof( DateTime ) )
+                        {
+                            dropCreate = sqlFieldType != DateTimeSqlFieldType;
+                        }
+                        else if ( databaseColumn.DataType == typeof( bool ) )
+                        {
+                            dropCreate = sqlFieldType != BooleanSqlFieldType;
+                        }
+                        else
+                        {
+                            dropCreate = sqlFieldType != DefaultSqlFieldType;
+                        }
+
+                        if ( dropCreate )
+                        {
+                            // the attribute fieldtype must have changed. Drop and recreate the column
+                            modelJobStats.ColumnsModified++;
+                            rockContext.Database.ExecuteSqlCommand( dropColumnSql );
+                            rockContext.Database.ExecuteSqlCommand( addColumnSQL );
+                        }
+                    }
+                }
+
+                // remove any attribute fields that aren't attributes on model
+                var modelAttributeColumnNames = modelAnalyticAttributes.Select( a => a.Key.RemoveSpecialCharacters() ).ToList();
+                foreach ( var databaseAttributeField in currentDatabaseAttributeFields )
+                {
+                    if ( !modelAttributeColumnNames.Contains( databaseAttributeField.ColumnName ) )
+                    {
+                        var dropColumnSql = $"ALTER TABLE [{analyticsTableName}] DROP COLUMN [{databaseAttributeField.ColumnName}]";
+
+                        modelJobStats.ColumnsRemoved++;
+                        rockContext.Database.ExecuteSqlCommand( dropColumnSql );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates the model attribute values (Just for Campus and Family; Person doesn't do it this way)
+        /// </summary>
+        /// <param name="modelAnalyticAttributes">The model analytic attributes.</param>
+        /// <param name="analyticsTableName">Name of the analytics table.</param>
+        /// <param name="analyticsTableModelIdColumnName">Name of the analytics table model identifier column.</param>
+        /// <param name="modelJobStats">The model job stats.</param>
+        /// <param name="hasCurrentRowIndicator">if set to <c>true</c> [has current row indicator].</param>
+        private void UpdateModelAttributeValues( List<AttributeCache> modelAnalyticAttributes, string analyticsTableName, string analyticsTableModelIdColumnName, JobStats modelJobStats, bool hasCurrentRowIndicator )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var attributeValueService = new AttributeValueService( rockContext );
+
+                foreach ( var attribute in modelAnalyticAttributes )
+                {
+                    var columnName = attribute.Key.RemoveSpecialCharacters();
+                    {
+                        var attributeValuesQry = attributeValueService.Queryable()
+                                .Where( a => a.AttributeId == attribute.Id )
+                                .Select( a => a.Value );
+
+                        // get all the unique possible values that are currently being used
+                        var modelAttributeValues = attributeValuesQry.Distinct().ToList();
+                        foreach ( var modelAttributeValue in modelAttributeValues )
+                        {
+                            object attributeValue;
+                            if ( UseFormatValueForUpdate( attribute ) )
+                            {
+                                attributeValue = attribute.FieldType.Field.FormatValue( null, modelAttributeValue, attribute.QualifierValues, false );
+                            }
+                            else
+                            {
+                                attributeValue = attribute.FieldType.Field.ValueAsFieldType( null, modelAttributeValue, attribute.QualifierValues );
+                            }
+
+                            // mass update the value for the Attribute in the Analytics table records 
+                            // Note: Only update the *Current Records, even if it was just a Text change.  For example, if they changed DefinedValue "Member" to "Owner", 
+                            // have the historical records say "Member" even though it is the same definedvalue id
+                            var updateSql = $@"
+UPDATE [{analyticsTableName}] 
+    SET [{columnName}] = @attributeValue 
+    WHERE [{analyticsTableModelIdColumnName}] IN (SELECT [EntityId] FROM [AttributeValue] WHERE [AttributeId] = {attribute.Id} AND [Value] = @modelAttributeValue) 
+    AND isnull([{columnName}],'') != @attributeValue
+    ";
+
+                            if ( hasCurrentRowIndicator )
+                            {
+                                updateSql += "AND [CurrentRowIndicator] = 1";
+                            }
+
+                            var parameters = new Dictionary<string, object>();
+                            parameters.Add( "@modelAttributeValue", modelAttributeValue );
+                            parameters.Add( "@attributeValue", attributeValue );
+
+                            modelJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
+                            modelJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters, _commandTimeout );
+                        }
+                    }
+                }
+            }
+        }
+
         #endregion Shared Methods
 
         #region Person Analytics
@@ -267,7 +440,7 @@ namespace Rock.Jobs
 
             List<AttributeCache> personAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Person ) )
                 .Where( a => a.FieldKind == FieldKind.Attribute && a.AttributeGuid.HasValue )
-                .Select( a => AttributeCache.Read( a.AttributeGuid.Value ) )
+                .Select( a => AttributeCache.Get( a.AttributeGuid.Value ) )
                 .Where( a => a != null )
                 .Where( a => a.IsAnalytic )
                 .ToList();
@@ -275,7 +448,16 @@ namespace Rock.Jobs
             try
             {
                 // Ensure that the Schema of AnalyticsSourcePersonHistorical matches the current fields for Attributes that are marked as IsAnalytic
-                UpdateAnalyticsSourcePersonHistoricalSchema( analyticsSourcePersonHistoricalFields, personAnalyticAttributes );
+                UpdateAnalyticsSchemaForModel( analyticsSourcePersonHistoricalFields, personAnalyticAttributes, "AnalyticsSourcePersonHistorical", _personJobStats );
+
+                // refresh the view definitions just in case the schema changed
+                // NOTE: Order is important!
+                using ( var rockContext = new RockContext() )
+                {
+                    rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimPersonHistorical]" );
+                    rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimPersonCurrent]" );
+                    rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimFamilyHeadOfHousehold]" );
+                }
 
                 // start the update process by marking records as History if any of the "IsAnalyticHistory" values 
                 // have changed for attributes that have to use FormatValue to get the value instead of directly in the DB
@@ -292,7 +474,7 @@ namespace Rock.Jobs
             {
                 if ( dataMap.GetString( "SaveSQLForDebug" ).AsBoolean() )
                 {
-                    LogSQL( "ProcessAnalyticsDimPerson.sql", _sqlLogs.AsDelimited( "\n" ).ToString() );
+                    LogSQL( "ProcessAnalyticsDimPerson.sql", _personJobStats.SqlLogs.AsDelimited( "\n" ).ToString() );
                 }
             }
         }
@@ -345,9 +527,10 @@ UPDATE [AnalyticsSourcePersonHistorical]
                             var parameters = new Dictionary<string, object>();
                             parameters.Add( "@personAttributeValue", personAttributeValue );
                             parameters.Add( "@formattedValue", formattedValue );
-                            this._personJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters );
 
-                            _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
+                            this._personJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
+
+                            this._personJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters, _commandTimeout );
                         }
                     }
                 }
@@ -395,9 +578,10 @@ UPDATE [AnalyticsSourcePersonHistorical]
                             var parameters = new Dictionary<string, object>();
                             parameters.Add( "@personAttributeValue", personAttributeValue );
                             parameters.Add( "@formattedValue", formattedValue );
-                            _personJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters );
 
-                            _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
+                            _personJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
+
+                            _personJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters, _commandTimeout );
                         }
                     }
                 }
@@ -425,7 +609,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
             List<ColumnInfo> populatePersonValueSELECTColumns = new List<ColumnInfo>();
             List<string> populateAttributeValueFROMClauses = new List<string>();
 
-            var analyticSpecificColumns = new string[] { "Id", "PersonId", "CurrentRowIndicator", "EffectiveDate", "ExpireDate", "PrimaryFamilyId", "BirthDateKey", "Age", "Guid" };
+            var analyticSpecificColumns = new string[] { "Id", "PersonId", "CurrentRowIndicator", "EffectiveDate", "ExpireDate", "PrimaryFamilyId", "BirthDateKey", "Age", "Guid", "Count" };
 
             foreach ( var item in analyticsSourcePersonHistoricalFields
                 .Where( a => !analyticSpecificColumns.Contains( a.Name ) ).OrderBy( a => a.Name ).ToList() )
@@ -505,9 +689,9 @@ DECLARE
     , @MaxExpireDate DATE = DateFromParts( 9999, 1, 1 )";
 
                 // throw script into logs in case 'Save SQL for Debug' is enabled
-                _sqlLogs.Add( "/* MarkAsHistoryScript */\n" + scriptDeclares + markAsHistoryScript );
-                _sqlLogs.Add( "/* UpdateETLScript */\n" + scriptDeclares + updateETLScript );
-                _sqlLogs.Add( "/* ProcessINSERTScript */\n" + scriptDeclares + processINSERTScript );
+                _personJobStats.SqlLogs.Add( "/* MarkAsHistoryScript */\n" + scriptDeclares + markAsHistoryScript );
+                _personJobStats.SqlLogs.Add( "/* UpdateETLScript */\n" + scriptDeclares + updateETLScript );
+                _personJobStats.SqlLogs.Add( "/* ProcessINSERTScript */\n" + scriptDeclares + processINSERTScript );
 
                 // Move Records To History that have changes in any of fields that trigger history
                 _personJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( scriptDeclares + markAsHistoryScript, CommandType.Text, null, _commandTimeout );
@@ -538,6 +722,7 @@ INSERT INTO [dbo].[AnalyticsSourcePersonHistorical] (
         [PrimaryFamilyId],
         [BirthDateKey],
         [Age],
+        [Count],
 " + populatePersonValueSELECTClauses.Select( a => $"        [{a}]" ).ToList().AsDelimited( ",\n" ) + @",
         [Guid]";
 
@@ -588,6 +773,7 @@ WHERE p.Id NOT IN (
         family.GroupId [PrimaryFamilyId],
         convert(INT, (convert(CHAR(8), DateFromParts(BirthYear, BirthMonth, BirthDay), 112))) [BirthDateKey],
         dbo.ufnCrm_GetAge(p.BirthDate) [Age], 
+        1 [Count],
 " + populatePersonValueFROMClauses.Select( a => $"        [{a}]" ).ToList().AsDelimited( ",\n" ) + @",
         NEWID() [Guid]";
 
@@ -688,119 +874,6 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
             return updateETLScript;
         }
 
-        /// <summary>
-        /// Updates the analytics source person historical schema.
-        /// </summary>
-        /// <param name="analyticsSourcePersonHistoricalFields">The analytics source person historical fields.</param>
-        /// <param name="personAnalyticAttributes">The person analytic attributes.</param>
-        private void UpdateAnalyticsSourcePersonHistoricalSchema( List<EntityField> analyticsSourcePersonHistoricalFields, List<AttributeCache> personAnalyticAttributes )
-        {
-            var dataSet = DbService.GetDataSetSchema( "SELECT * FROM [AnalyticsSourcePersonHistorical] where 1=0", System.Data.CommandType.Text, null );
-            var dataTable = dataSet.Tables[0];
-
-            var analyticsSourcePersonHistoricalFieldNames = analyticsSourcePersonHistoricalFields.Select( a => a.Name ).ToList();
-            analyticsSourcePersonHistoricalFieldNames.Add( "ForeignId" );
-            analyticsSourcePersonHistoricalFieldNames.Add( "ForeignGuid" );
-            analyticsSourcePersonHistoricalFieldNames.Add( "ForeignKey" );
-            analyticsSourcePersonHistoricalFieldNames.Add( "Guid" );
-
-            var currentDatabaseAttributeFields = dataTable.Columns.OfType<DataColumn>().Where( a =>
-                !analyticsSourcePersonHistoricalFieldNames.Contains( a.ColumnName ) ).ToList();
-
-            const string BooleanSqlFieldType = "bit";
-            const string DateTimeSqlFieldType = "datetime";
-            const string NumericSqlFieldType = "[decimal](29,4)";
-            const string DefaultSqlFieldType = "nvarchar(250)";
-
-            using ( var rockContext = new RockContext() )
-            {
-                // add any AttributeFields that aren't already fields on AnalyticsSourcePersonHistorical
-                foreach ( var personAttribute in personAnalyticAttributes )
-                {
-                    var columnName = personAttribute.Key.RemoveSpecialCharacters();
-                    var databaseColumn = currentDatabaseAttributeFields.Where( a => a.ColumnName == columnName ).FirstOrDefault();
-                    var personAttributeValueFieldName = personAttribute.FieldType.Field.AttributeValueFieldName;
-                    string sqlFieldType;
-                    if ( personAttributeValueFieldName == "ValueAsDateTime" )
-                    {
-                        sqlFieldType = DateTimeSqlFieldType;
-                    }
-                    else if ( personAttributeValueFieldName == "ValueAsNumeric" )
-                    {
-                        sqlFieldType = NumericSqlFieldType;
-                    }
-                    else if ( personAttributeValueFieldName == "ValueAsBoolean" )
-                    {
-                        sqlFieldType = BooleanSqlFieldType;
-                    }
-                    else
-                    {
-                        sqlFieldType = DefaultSqlFieldType;
-                    }
-
-                    string addColumnSQL = $"ALTER TABLE [AnalyticsSourcePersonHistorical] ADD [{columnName}] {sqlFieldType} null";
-
-                    string dropColumnSql = $"ALTER TABLE [AnalyticsSourcePersonHistorical] DROP COLUMN [{columnName}]";
-
-                    if ( databaseColumn == null )
-                    {
-                        // doesn't exist as a field on the AnalyticsSourcePersonHistorical table, so create it
-                        _personJobStats.ColumnsAdded++;
-                        rockContext.Database.ExecuteSqlCommand( addColumnSQL );
-                    }
-                    else
-                    {
-                        // it does exist as a field on the AnalyticsSourcePersonHistorical table, but make sure the datatype is correct
-                        bool dropCreate = false;
-
-                        if ( databaseColumn.DataType == typeof( decimal ) )
-                        {
-                            dropCreate = sqlFieldType != NumericSqlFieldType;
-                        }
-                        else if ( databaseColumn.DataType == typeof( DateTime ) )
-                        {
-                            dropCreate = sqlFieldType != DateTimeSqlFieldType;
-                        }
-                        else if ( databaseColumn.DataType == typeof( bool ) )
-                        {
-                            dropCreate = sqlFieldType != BooleanSqlFieldType;
-                        }
-                        else
-                        {
-                            dropCreate = sqlFieldType != DefaultSqlFieldType;
-                        }
-
-                        if ( dropCreate )
-                        {
-                            // the attribute fieldtype must have changed. Drop and recreate the column
-                            _personJobStats.ColumnsModified++;
-                            rockContext.Database.ExecuteSqlCommand( dropColumnSql );
-                            rockContext.Database.ExecuteSqlCommand( addColumnSQL );
-                        }
-                    }
-                }
-
-                // remove any AnalyticsSourcePersonHistorical attribute fields that aren't attributes on Person
-                var personAttributeColumnNames = personAnalyticAttributes.Select( a => a.Key.RemoveSpecialCharacters() ).ToList();
-                foreach ( var databaseAttributeField in currentDatabaseAttributeFields )
-                {
-                    if ( !personAttributeColumnNames.Contains( databaseAttributeField.ColumnName ) )
-                    {
-                        var dropColumnSql = $"ALTER TABLE [AnalyticsSourcePersonHistorical] DROP COLUMN [{databaseAttributeField.ColumnName}]";
-
-                        _personJobStats.ColumnsRemoved++;
-                        rockContext.Database.ExecuteSqlCommand( dropColumnSql );
-                    }
-                }
-
-                // refresh the view definitions just in case the schema changed
-                // NOTE: Order is important!
-                rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimPersonHistorical]" );
-                rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimPersonCurrent]" );
-                rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimFamilyHeadOfHousehold]" );
-            }
-        }
-
         #endregion
 
         #region Family Analytics
@@ -818,7 +891,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
 
             List<AttributeCache> familyAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Group ), false, false )
                 .Where( a => a.FieldKind == FieldKind.Attribute && a.AttributeGuid.HasValue )
-                .Select( a => AttributeCache.Read( a.AttributeGuid.Value ) )
+                .Select( a => AttributeCache.Get( a.AttributeGuid.Value ) )
                 .Where( a => a != null )
                 .Where( a => a.EntityTypeQualifierColumn == "GroupTypeId" && a.EntityTypeQualifierValue == groupTypeIdFamilyQualifier )
                 .Where( a => a.IsAnalytic )
@@ -827,14 +900,22 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
             try
             {
                 // Ensure that the Schema of AnalyticsSourceFamilyHistorical matches the current fields for Attributes that are marked as IsAnalytic
-                UpdateAnalyticsSourceFamilyHistoricalSchema( analyticsSourceFamilyHistoricalFields, familyAnalyticAttributes );
+                UpdateAnalyticsSchemaForModel( analyticsSourceFamilyHistoricalFields, familyAnalyticAttributes, "AnalyticsSourceFamilyHistorical", _familyJobStats );
+
+                using ( var rockContext = new RockContext() )
+                {
+                    // refresh the view definitions just in case the schema changed
+                    // NOTE: Order is important!
+                    rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimFamilyHistorical]" );
+                    rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimFamilyCurrent]" );
+                }
 
                 // start the update process by marking records as History if any of the "IsAnalyticHistory" values 
                 // have changed for attributes 
                 MarkFamilyAsHistoryUsingAttributeValues( familyAnalyticAttributes );
 
                 // run the main spAnalytics_ETL_Family stored proc to take care of all the non-attribute related data
-                var etlResult = DbService.GetDataTable( "EXEC [dbo].[spAnalytics_ETL_Family]", CommandType.Text, null );
+                var etlResult = DbService.GetDataTable( "EXEC [dbo].[spAnalytics_ETL_Family]", CommandType.Text, null, _commandTimeout );
                 if ( etlResult.Rows.Count == 1 )
                 {
                     _familyJobStats.RowsInserted = etlResult.Rows[0]["RowsInserted"] as int? ?? 0;
@@ -842,13 +923,13 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
                 }
 
                 // finish up by updating Attribute Values in the Analytic tables for attributes 
-                UpdateFamilyAttributeValues( familyAnalyticAttributes );
+                UpdateModelAttributeValues( familyAnalyticAttributes, "AnalyticsSourceFamilyHistorical", "FamilyId", _familyJobStats, true );
             }
             finally
             {
                 if ( dataMap.GetString( "SaveSQLForDebug" ).AsBoolean() )
                 {
-                    LogSQL( "ProcessAnalyticsDimFamily.sql", _sqlLogs.AsDelimited( "\n" ).ToString() );
+                    LogSQL( "ProcessAnalyticsDimFamily.sql", _familyJobStats.SqlLogs.AsDelimited( "\n" ).ToString() );
                 }
             }
         }
@@ -903,182 +984,60 @@ UPDATE [AnalyticsSourceFamilyHistorical]
                         var parameters = new Dictionary<string, object>();
                         parameters.Add( "@familyAttributeValue", familyAttributeValue );
                         parameters.Add( "@attributeValue", attributeValue );
-                        this._familyJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters );
+                        this._familyJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
 
-                        _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
+                        this._familyJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters, _commandTimeout );
                     }
                 }
-            }
-        }
-
-        /// <summary>
-        /// Updates Attribute Values for Family Analytics
-        /// </summary>
-        /// <param name="familyAnalyticAttributes">The family analytic attributes.</param>
-        /// <returns></returns>
-        private void UpdateFamilyAttributeValues( List<AttributeCache> familyAnalyticAttributes )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var attributeValueService = new AttributeValueService( rockContext );
-
-                foreach ( var attribute in familyAnalyticAttributes )
-                {
-                    var columnName = attribute.Key.RemoveSpecialCharacters();
-                    {
-                        var attributeValuesQry = attributeValueService.Queryable()
-                                .Where( a => a.AttributeId == attribute.Id )
-                                .Select( a => a.Value );
-
-                        // get all the unique possible values that are currently being used
-                        var familyAttributeValues = attributeValuesQry.Distinct().ToList();
-                        foreach ( var familyAttributeValue in familyAttributeValues )
-                        {
-                            object attributeValue;
-                            if ( UseFormatValueForUpdate( attribute ) )
-                            {
-                                attributeValue = attribute.FieldType.Field.FormatValue( null, familyAttributeValue, attribute.QualifierValues, false );
-                            }
-                            else
-                            {
-                                attributeValue = attribute.FieldType.Field.ValueAsFieldType( null, familyAttributeValue, attribute.QualifierValues );
-                            }
-
-                            // mass update the value for the Attribute in the AnalyticsSourceFamilyHistorical records 
-                            // Don't update the Historical Records, even if it was just a Text change.  For example, if they changed DefinedValue "Member" to "Owner", 
-                            // have the historical records say "Member" even though it is the same definedvalue id
-                            var updateSql = $@"
-UPDATE [AnalyticsSourceFamilyHistorical] 
-    SET [{columnName}] = @attributeValue 
-    WHERE [FamilyId] IN (SELECT [EntityId] FROM [AttributeValue] WHERE [AttributeId] = {attribute.Id} AND [Value] = @familyAttributeValue) 
-    AND isnull([{columnName}],'') != @attributeValue
-    AND [CurrentRowIndicator] = 1";
-
-                            var parameters = new Dictionary<string, object>();
-                            parameters.Add( "@familyAttributeValue", familyAttributeValue );
-                            parameters.Add( "@attributeValue", attributeValue );
-                            _familyJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters );
-
-                            _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Updates the analytics source family historical schema.
-        /// </summary>
-        /// <param name="analyticsSourceFamilyHistoricalFields">The analytics source family historical fields.</param>
-        /// <param name="familyAnalyticAttributes">The family analytic attributes.</param>
-        private void UpdateAnalyticsSourceFamilyHistoricalSchema( List<EntityField> analyticsSourceFamilyHistoricalFields, List<AttributeCache> familyAnalyticAttributes )
-        {
-            var dataSet = DbService.GetDataSetSchema( "SELECT * FROM [AnalyticsSourceFamilyHistorical] where 1=0", System.Data.CommandType.Text, null );
-            var dataTable = dataSet.Tables[0];
-
-            var analyticsSourceFamilyHistoricalFieldNames = analyticsSourceFamilyHistoricalFields.Select( a => a.Name ).ToList();
-            analyticsSourceFamilyHistoricalFieldNames.Add( "ForeignId" );
-            analyticsSourceFamilyHistoricalFieldNames.Add( "ForeignGuid" );
-            analyticsSourceFamilyHistoricalFieldNames.Add( "ForeignKey" );
-            analyticsSourceFamilyHistoricalFieldNames.Add( "Guid" );
-
-            var currentDatabaseAttributeFields = dataTable.Columns.OfType<DataColumn>().Where( a =>
-                !analyticsSourceFamilyHistoricalFieldNames.Contains( a.ColumnName ) ).ToList();
-
-            const string BooleanSqlFieldType = "bit";
-            const string DateTimeSqlFieldType = "datetime";
-            const string NumericSqlFieldType = "[decimal](29,4)";
-            const string DefaultSqlFieldType = "nvarchar(250)";
-
-            using ( var rockContext = new RockContext() )
-            {
-                // add any AttributeFields that aren't already fields on AnalyticsSourceFamilyHistorical
-                foreach ( var familyAttribute in familyAnalyticAttributes )
-                {
-                    var columnName = familyAttribute.Key.RemoveSpecialCharacters();
-                    var databaseColumn = currentDatabaseAttributeFields.Where( a => a.ColumnName == columnName ).FirstOrDefault();
-                    var familyAttributeValueFieldName = familyAttribute.FieldType.Field.AttributeValueFieldName;
-                    string sqlFieldType;
-                    if ( familyAttributeValueFieldName == "ValueAsDateTime" )
-                    {
-                        sqlFieldType = DateTimeSqlFieldType;
-                    }
-                    else if ( familyAttributeValueFieldName == "ValueAsNumeric" )
-                    {
-                        sqlFieldType = NumericSqlFieldType;
-                    }
-                    else if ( familyAttributeValueFieldName == "ValueAsBoolean" )
-                    {
-                        sqlFieldType = BooleanSqlFieldType;
-                    }
-                    else
-                    {
-                        sqlFieldType = DefaultSqlFieldType;
-                    }
-
-                    string addColumnSQL = $"ALTER TABLE [AnalyticsSourceFamilyHistorical] ADD [{columnName}] {sqlFieldType} null";
-
-                    string dropColumnSql = $"ALTER TABLE [AnalyticsSourceFamilyHistorical] DROP COLUMN [{columnName}]";
-
-                    if ( databaseColumn == null )
-                    {
-                        // doesn't exist as a field on the AnalyticsSourceFamilyHistorical table, so create it
-                        _familyJobStats.ColumnsAdded++;
-                        rockContext.Database.ExecuteSqlCommand( addColumnSQL );
-                    }
-                    else
-                    {
-                        // it does exist as a field on the AnalyticsSourceFamilyHistorical table, but make sure the datatype is correct
-                        bool dropCreate = false;
-
-                        if ( databaseColumn.DataType == typeof( decimal ) )
-                        {
-                            dropCreate = sqlFieldType != NumericSqlFieldType;
-                        }
-                        else if ( databaseColumn.DataType == typeof( DateTime ) )
-                        {
-                            dropCreate = sqlFieldType != DateTimeSqlFieldType;
-                        }
-                        else if ( databaseColumn.DataType == typeof( bool ) )
-                        {
-                            dropCreate = sqlFieldType != BooleanSqlFieldType;
-                        }
-                        else
-                        {
-                            dropCreate = sqlFieldType != DefaultSqlFieldType;
-                        }
-
-                        if ( dropCreate )
-                        {
-                            // the attribute fieldtype must have changed. Drop and recreate the column
-                            _familyJobStats.ColumnsModified++;
-                            rockContext.Database.ExecuteSqlCommand( dropColumnSql );
-                            rockContext.Database.ExecuteSqlCommand( addColumnSQL );
-                        }
-                    }
-                }
-
-                // remove any AnalyticsSourceFamilyHistorical attribute fields that aren't attributes on Family
-                var familyAttributeColumnNames = familyAnalyticAttributes.Select( a => a.Key.RemoveSpecialCharacters() ).ToList();
-                foreach ( var databaseAttributeField in currentDatabaseAttributeFields )
-                {
-                    if ( !familyAttributeColumnNames.Contains( databaseAttributeField.ColumnName ) )
-                    {
-                        var dropColumnSql = $"ALTER TABLE [AnalyticsSourceFamilyHistorical] DROP COLUMN [{databaseAttributeField.ColumnName}]";
-
-                        _familyJobStats.ColumnsRemoved++;
-                        rockContext.Database.ExecuteSqlCommand( dropColumnSql );
-                    }
-                }
-
-                // refresh the view definitions just in case the schema changed
-                // NOTE: Order is important!
-                rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimFamilyHistorical]" );
-                rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimFamilyCurrent]" );
             }
         }
 
         #endregion Family Analytics
+
+        #region Campus Analytics
+
+        /// <summary>
+        /// Processes the campus bi analytics.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="dataMap">The data map.</param>
+        private void ProcessCampusBIAnalytics( IJobExecutionContext context, JobDataMap dataMap )
+        {
+            List<EntityField> analyticsSourceCampusFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourceCampus ), false, false );
+
+            List<AttributeCache> campusAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Campus ), false, false )
+                .Where( a => a.FieldKind == FieldKind.Attribute && a.AttributeGuid.HasValue )
+                .Select( a => AttributeCache.Get( a.AttributeGuid.Value ) )
+                .Where( a => a != null )
+                .Where( a => a.IsAnalytic )
+                .ToList();
+
+            try
+            {
+                // Ensure that the Schema of AnalyticsSourceCampus matches the current fields for Attributes that are marked as IsAnalytic
+                UpdateAnalyticsSchemaForModel( analyticsSourceCampusFields, campusAnalyticAttributes, "AnalyticsSourceCampus", _campusJobStats );
+
+                // run the main spAnalytics_ETL_Campus stored proc to take care of all the non-attribute related data
+                var etlResult = DbService.GetDataTable( "EXEC [dbo].[spAnalytics_ETL_Campus]", CommandType.Text, null, _commandTimeout );
+                if ( etlResult.Rows.Count == 1 )
+                {
+                    _campusJobStats.RowsInserted = etlResult.Rows[0]["RowsInserted"] as int? ?? 0;
+                    _campusJobStats.RowsUpdated = etlResult.Rows[0]["RowsUpdated"] as int? ?? 0;
+                }
+
+                // finish up by updating Attribute Values in the Analytic tables for attributes 
+                UpdateModelAttributeValues( campusAnalyticAttributes, "AnalyticsSourceCampus", "CampusId", _campusJobStats, false );
+            }
+            finally
+            {
+                if ( dataMap.GetString( "SaveSQLForDebug" ).AsBoolean() )
+                {
+                    LogSQL( "ProcessAnalyticsDimCampus.sql", _campusJobStats.SqlLogs.AsDelimited( "\n" ).ToString() );
+                }
+            }
+        }
+
+        #endregion Campus Analytics
 
         #region Private Classes
 
@@ -1144,7 +1103,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
         /// <summary>
         /// 
         /// </summary>
-        private struct JobStats
+        private class JobStats
         {
             /// <summary>
             /// Gets or sets the columns added.
@@ -1171,6 +1130,21 @@ UPDATE [AnalyticsSourceFamilyHistorical]
             public int ColumnsRemoved { get; set; }
 
             /// <summary>
+            /// Gets a value indicating whether [schema was modified].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [schema was modified]; otherwise, <c>false</c>.
+            /// </value>
+            public bool SchemaWasModified
+            {
+                get
+                {
+                    return ColumnsAdded > 0 || ColumnsModified > 0 || ColumnsRemoved > 0;
+                }
+            }
+
+
+            /// <summary>
             /// Gets or sets the rows marked as history.
             /// </summary>
             /// <value>
@@ -1195,12 +1169,84 @@ UPDATE [AnalyticsSourceFamilyHistorical]
             public int RowsInserted { get; set; }
 
             /// <summary>
+            /// Gets a value indicating whether [row data was modified].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [row data was modified]; otherwise, <c>false</c>.
+            /// </value>
+            public bool RowDataWasModified
+            {
+                get
+                {
+                    return RowsMarkedAsHistory > 0 || RowsUpdated > 0 || RowsInserted > 0 || AttributeFieldsUpdated > 0;
+                }
+            }
+
+            /// <summary>
             /// Gets or sets the attribute fields updated.
             /// </summary>
             /// <value>
             /// The attribute fields updated.
             /// </value>
             public int AttributeFieldsUpdated { get; set; }
+
+            /// <summary>
+            /// The SQL logs
+            /// </summary>
+            public List<string> SqlLogs = new List<string>();
+
+            /// <summary>
+            /// Gets the summary message.
+            /// </summary>
+            /// <value>
+            /// The summary message.
+            /// </value>
+            public string SummaryMessage
+            {
+                get
+                {
+                    StringBuilder summaryMessage = new StringBuilder();
+                    if ( SchemaWasModified )
+                    {
+                        summaryMessage.AppendLine( $"-- Added {this.ColumnsAdded}, modified {this.ColumnsModified}, and removed {this.ColumnsRemoved} attribute columns." );
+                    }
+
+                    if ( RowDataWasModified )
+                    {
+                        summaryMessage.Append( $"--" );
+                        if ( this.RowsMarkedAsHistory > 0)
+                        {
+                            summaryMessage.Append( $" Marked {this.RowsMarkedAsHistory} records as History;" ); 
+                        }
+
+                        if ( this.RowsUpdated > 0 )
+                        {
+                            summaryMessage.Append( $" Updated {this.RowsUpdated} records;" );
+                        }
+
+                        if ( this.AttributeFieldsUpdated > 0 )
+                        {
+                            summaryMessage.Append( $" Updated {this.AttributeFieldsUpdated} attribute values;" );
+                        }
+
+                        if ( this.RowsInserted > 0 )
+                        {
+                            summaryMessage.Append( $" Inserted {this.RowsInserted} records;" );
+                        }
+
+                        summaryMessage.AppendLine();
+                    }
+
+                    if ( summaryMessage.Length == 0 )
+                    {
+                        return "-- No Changes";
+                    }
+                    else
+                    {
+                        return summaryMessage.ToString();
+                    }
+                }
+            }
         }
 
         #endregion

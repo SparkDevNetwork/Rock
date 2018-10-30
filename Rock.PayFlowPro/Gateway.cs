@@ -59,17 +59,17 @@ namespace Rock.PayFlowPro
             get
             {
                 var values = new List<DefinedValueCache>();
-                values.Add( DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
-                values.Add( DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY ) );
-                values.Add( DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY ) );
-                values.Add( DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY ) );
-                values.Add( DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY ) );
                 return values;
             }
         }
 
         /// <summary>
-        /// Returnes a boolean value indicating if 'Saved Account' functionality is supported for the given currency type.
+        /// Returns a boolean value indicating if 'Saved Account' functionality is supported for the given currency type.
         /// </summary>
         /// <param name="currencyType">Type of the currency.</param>
         /// <returns></returns>
@@ -92,6 +92,11 @@ namespace Rock.PayFlowPro
             Response ppResponse = null;
 
             var invoice = GetInvoice( paymentInfo );
+
+            BrowserInfo browser = new BrowserInfo();
+            browser.ButtonSource = "SparkDevelopmentNetwork_SP";
+            invoice.BrowserInfo = browser;
+
             var tender = GetTender( paymentInfo );
 
             if ( tender != null )
@@ -155,6 +160,12 @@ namespace Rock.PayFlowPro
             Response ppResponse = null;
 
             var invoice = GetInvoice( paymentInfo );
+
+            // add in spark reference code
+            BrowserInfo browser = new BrowserInfo();
+            browser.ButtonSource = "SparkDevelopmentNetwork_SP";
+            invoice.BrowserInfo = browser;
+            
             var tender = GetTender( paymentInfo );
 
             if ( tender != null )
@@ -196,7 +207,10 @@ namespace Rock.PayFlowPro
                             var rockContext = new RockContext();
                             var savedAccount = new FinancialPersonSavedAccountService( rockContext )
                                 .Queryable()
-                                .Where( s => s.TransactionCode == reference.TransactionCode )
+                                .Where( s => 
+                                    s.TransactionCode == reference.TransactionCode &&
+                                    s.FinancialGatewayId.HasValue &&
+                                    s.FinancialGatewayId.Value == financialGateway.Id )
                                 .FirstOrDefault();
                             if ( savedAccount != null )
                             {
@@ -652,7 +666,7 @@ namespace Rock.PayFlowPro
                 var transactionIdParams = new Dictionary<string, string>();
                 transactionIdParams.Add( "transaction_id", string.Empty );
 
-                var creditCardTypes = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid() ).DefinedValues;
+                var creditCardTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid() ).DefinedValues;
 
                 foreach ( DataRow recurringBillingRow in recurringBillingTable.Rows )
                 {
@@ -899,7 +913,7 @@ namespace Rock.PayFlowPro
             ppRecurringInfo.Start = schedule.StartDate.ToString( "MMddyyyy" );
             if ( schedule.TransactionFrequencyValueId > 0 )
             {
-                SetPayPeriod( ppRecurringInfo, DefinedValueCache.Read( schedule.TransactionFrequencyValueId ) );
+                SetPayPeriod( ppRecurringInfo, DefinedValueCache.Get( schedule.TransactionFrequencyValueId ) );
             }
 
             return ppRecurringInfo;

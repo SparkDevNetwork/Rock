@@ -4,7 +4,7 @@
     {% assign daysTillEndDate = 'Now' | DateDiff:RegistrationInstance.EndDateTime,'m' %}
     {% assign showRegistration = true %}
     {% assign registrationMessage = '' %}
-    
+
     {% if RegistrationInstance.RegistrationTemplate.WaitListEnabled %}
       {% assign waitListEnabled = true %}
     {% else %}
@@ -20,7 +20,7 @@
     {% assign showRegistration = false %}
     {% capture registrationMessage %}<p>Registration closed on {{ RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
     {% endif %}
-    
+
     {% if RegistrationSpotsAvailable %}
       {% if RegistrationSpotsAvailable <= 0 %}
         {% assign registrationFull = true %}
@@ -66,12 +66,12 @@
     {% endif %}
 
     {% assign registrationNotes = Group | Attribute:'RegistrationNotes' %}
-    
+
     {% if registrationNotes != '' %}
     <strong>Registration Notes</strong><br />
     {{ registrationNotes }}
     {% endif %}
-    
+
     {% if registrationFull and waitListEnabled %}
       {% assign registrationButtonText = 'Join Wait List' %}
     {% else %}
@@ -111,6 +111,6 @@
             {% endif %}
         {% endif %}
     </small>
-    
+
 </div>
 {% endif %}

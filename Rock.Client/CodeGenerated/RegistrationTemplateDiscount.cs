@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public bool AutoApplyDiscount { get; set; }
+
+        /// <summary />
         public string Code { get; set; }
 
         /// <summary />
@@ -108,6 +111,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( RegistrationTemplateDiscount source )
         {
             this.Id = source.Id;
+            this.AutoApplyDiscount = source.AutoApplyDiscount;
             this.Code = source.Code;
             this.DiscountAmount = source.DiscountAmount;
             this.DiscountPercentage = source.DiscountPercentage;

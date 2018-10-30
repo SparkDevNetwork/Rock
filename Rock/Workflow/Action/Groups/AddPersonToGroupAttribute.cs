@@ -63,7 +63,7 @@ namespace Rock.Workflow.Action
 
             if ( guidGroupAttribute.HasValue )
             {
-                var attributeGroup = AttributeCache.Read( guidGroupAttribute.Value, rockContext );
+                var attributeGroup = AttributeCache.Get( guidGroupAttribute.Value, rockContext );
                 if ( attributeGroup != null )
                 {
                     var groupGuid = action.GetWorklowAttributeValue( guidGroupAttribute.Value ).AsGuidOrNull();
@@ -71,10 +71,11 @@ namespace Rock.Workflow.Action
                     if ( groupGuid.HasValue )
                     {
                         group = new GroupService( rockContext ).Get( groupGuid.Value );
+
                         if ( group != null )
                         {
                             // use the group's grouptype's default group role if a group role wasn't specified
-                            groupRoleId = group.GroupType.DefaultGroupRoleId;
+                            groupRoleId = GroupTypeCache.Get( group.GroupTypeId ).DefaultGroupRoleId;
                         }
                     }
                 }
@@ -98,7 +99,7 @@ namespace Rock.Workflow.Action
 
             if ( guidPersonAttribute.HasValue )
             {
-                var attributePerson = AttributeCache.Read( guidPersonAttribute.Value, rockContext );
+                var attributePerson = AttributeCache.Get( guidPersonAttribute.Value, rockContext );
                 if ( attributePerson != null )
                 {
                     string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute.Value );
@@ -132,14 +133,24 @@ namespace Rock.Workflow.Action
             if ( !errorMessages.Any() )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
-                var groupMember = new GroupMember();
-                groupMember.PersonId = person.Id;
-                groupMember.GroupId = group.Id;
+                var groupMember = groupMemberService.GetByGroupIdAndPersonIdAndPreferredGroupRoleId( group.Id, person.Id, groupRoleId.Value );
+                if ( groupMember == null )
+                {
+                    groupMember = new GroupMember();
+                    groupMember.PersonId = person.Id;
+                    groupMember.GroupId = group.Id;
+                    groupMemberService.Add( groupMember );
+                }
+                else
+                {
+                    action.AddLogEntry( $"{person.FullName} was already a member of the selected group.", true );
+                }
+
                 groupMember.GroupRoleId = groupRoleId.Value;
                 groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+
                 if ( groupMember.IsValidGroupMember( rockContext ) )
                 {
-                    groupMemberService.Add( groupMember );
                     rockContext.SaveChanges();
                 }
                 else

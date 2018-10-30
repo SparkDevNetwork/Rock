@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Prayer
     // Category Selection
     [CategoryField( "Category Selection", "A top level category. This controls which categories the person can choose from when entering their prayer request.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Category Selection", 1, "GroupCategoryId" )]
     [CategoryField( "Default Category", "If categories are not being shown, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "Category Selection", 2, "DefaultCategory" )]
-    
+
     // Features
     [BooleanField( "Enable Auto Approve", "If enabled, prayer requests are automatically approved; otherwise they must be approved by an admin before they can be seen by the prayer team.", true, "Features", 3 )]
     [IntegerField( "Expires After (Days)", "Number of days until the request will expire (only applies when auto-approved is enabled).", false, 14, "Features", 4, "ExpireDays" )]
@@ -55,6 +55,7 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Require Last Name", "Require that a last name be entered", true, "Features", 11 )]
     [BooleanField( "Show Campus", "Show a campus picker", true, "Features", 12 )]
     [BooleanField( "Require Campus", "Require that a campus be selected", false, "Features", 13 )]
+    [BooleanField( "Enable Person Matching", "If enabled, requester detail will be matched with all existing person to see if it's already exists.", false, "Features", 14 )]
 
     // On Save Behavior
     [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 14 )]
@@ -68,7 +69,7 @@ namespace RockWeb.Blocks.Prayer
     {
         #region Properties
         public int? PrayerRequestEntityTypeId { get; private set; }
-        
+
         // note: the ascx uses these for rendering logic
         public bool EnableUrgentFlag { get; private set; }
         public bool EnableCommentsFlag { get; private set; }
@@ -101,6 +102,7 @@ namespace RockWeb.Blocks.Prayer
             tbLastName.Required = GetAttributeValue( "RequireLastName" ).AsBooleanOrNull() ?? true;
             cpCampus.Visible = GetAttributeValue( "ShowCampus" ).AsBoolean();
             cpCampus.Required = GetAttributeValue( "RequireCampus" ).AsBoolean();
+            pnbPhone.Visible = GetAttributeValue( "EnablePersonMatching" ).AsBoolean();
 
             if ( cpCampus.Visible )
             {
@@ -115,9 +117,9 @@ namespace RockWeb.Blocks.Prayer
                 // set the default category
                 if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultCategory" ) ) )
                 {
-                    
+
                     Guid defaultCategoryGuid = GetAttributeValue( "DefaultCategory" ).AsGuid();
-                    var defaultCategoryId = CategoryCache.Read( defaultCategoryGuid, rockContext ).Id;
+                    var defaultCategoryId = CategoryCache.Get( defaultCategoryGuid, rockContext ).Id;
 
                     bddlCategory.SetValue( defaultCategoryId );
                 }
@@ -128,7 +130,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             Type type = new PrayerRequest().GetType();
-            this.PrayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );
+            this.PrayerRequestEntityTypeId = EntityTypeCache.GetId( type.FullName );
 
             int charLimit = GetAttributeValue( "CharacterLimit" ).AsInteger();
             if ( charLimit > 0 )
@@ -182,15 +184,17 @@ namespace RockWeb.Blocks.Prayer
                     tbEmail.Text = CurrentPerson.Email;
                     cpCampus.SetValue( CurrentPerson.GetCampus() );
                 }
-                
+
                 dtbRequest.Text = PageParameter( "Request" );
                 cbAllowPublicDisplay.Checked = this.DefaultToPublic;
             }
-            
+
             var prayerRequest = new PrayerRequest { Id = 0 };
             prayerRequest.LoadAttributes();
             phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( prayerRequest, phAttributes, false, BlockValidationGroup );
+            // Filter to only include attribute / attribute values that the person is authorized to edit.
+            var excludeForEdit = prayerRequest.Attributes.Where( a => !a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+            Rock.Attribute.Helper.AddEditControls( prayerRequest, phAttributes, false, BlockValidationGroup, excludeForEdit );
         }
 
         #endregion
@@ -215,12 +219,11 @@ namespace RockWeb.Blocks.Prayer
 
             bool isAutoApproved = GetAttributeValue( "EnableAutoApprove" ).AsBoolean();
             bool defaultAllowComments = GetAttributeValue( "DefaultAllowCommentsSetting" ).AsBoolean();
+            bool isPersonMatchingEnabled = GetAttributeValue( "EnablePersonMatching" ).AsBoolean();
 
             PrayerRequest prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = isAutoApproved, AllowComments = defaultAllowComments };
 
             var rockContext = new RockContext();
-            PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
-            prayerRequestService.Add( prayerRequest );
             prayerRequest.EnteredDateTime = RockDateTime.Now;
 
             if ( isAutoApproved )
@@ -252,10 +255,57 @@ namespace RockWeb.Blocks.Prayer
             var personContext = this.ContextEntity<Person>();
             if ( personContext == null )
             {
-                prayerRequest.RequestedByPersonAliasId = CurrentPersonAliasId;
+                Person person = null;
+                if ( isPersonMatchingEnabled )
+                {
+                    var personService = new PersonService( new RockContext() );
+                    person = personService.FindPerson( new PersonService.PersonMatchQuery( tbFirstName.Text, tbLastName.Text, tbEmail.Text, pnbPhone.Number ), false, true, false );
+
+                    if ( person == null && ( !string.IsNullOrWhiteSpace( tbEmail.Text ) || !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) ) )
+                    {
+                        var personRecordTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                        var personStatusPending = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+
+                        person = new Person();
+                        person.IsSystem = false;
+                        person.RecordTypeValueId = personRecordTypeId;
+                        person.RecordStatusValueId = personStatusPending;
+                        person.FirstName = tbFirstName.Text;
+                        person.LastName = tbLastName.Text;
+                        person.Gender = Gender.Unknown;
+
+                        if ( !string.IsNullOrWhiteSpace( tbEmail.Text ) )
+                        {
+                            person.Email = tbEmail.Text;
+                            person.IsEmailActive = true;
+                            person.EmailPreference = EmailPreference.EmailAllowed;
+                        }
+
+                        PersonService.SaveNewPerson( person, rockContext, cpCampus.SelectedCampusId );
+
+                        if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) )
+                        {
+                            var mobilePhoneType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
+
+                            var phoneNumber = new PhoneNumber { NumberTypeValueId = mobilePhoneType.Id };
+                            phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
+                            phoneNumber.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
+                            person.PhoneNumbers.Add( phoneNumber );
+                        }
+                    }
+                }
+
                 prayerRequest.FirstName = tbFirstName.Text;
                 prayerRequest.LastName = tbLastName.Text;
                 prayerRequest.Email = tbEmail.Text;
+                if ( person != null )
+                {
+                    prayerRequest.RequestedByPersonAliasId = person.PrimaryAliasId;
+                }
+                else
+                {
+                    prayerRequest.RequestedByPersonAliasId = CurrentPersonAliasId;
+                }
             }
             else
             {
@@ -268,7 +318,7 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.CampusId = cpCampus.SelectedCampusId;
 
             prayerRequest.Text = dtbRequest.Text;
-            
+
             if ( this.EnableUrgentFlag )
             {
                 prayerRequest.IsUrgent = cbIsUrgent.Checked;
@@ -297,6 +347,8 @@ namespace RockWeb.Blocks.Prayer
                 return;
             }
 
+            PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
+            prayerRequestService.Add( prayerRequest );
             prayerRequest.LoadAttributes( rockContext );
             Rock.Attribute.Helper.GetEditValues( phAttributes, prayerRequest );
 
@@ -306,8 +358,12 @@ namespace RockWeb.Blocks.Prayer
                 return;
             }
 
-            rockContext.SaveChanges();
-            prayerRequest.SaveAttributeValues( rockContext );
+            rockContext.WrapTransaction( () =>
+            {
+                rockContext.SaveChanges();
+                prayerRequest.SaveAttributeValues( rockContext );
+            } );
+
 
             StartWorkflow( prayerRequest, rockContext );
 
@@ -409,7 +465,7 @@ namespace RockWeb.Blocks.Prayer
             Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
             if ( workflowTypeGuid.HasValue )
             {
-                var workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
+                var workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
                     try

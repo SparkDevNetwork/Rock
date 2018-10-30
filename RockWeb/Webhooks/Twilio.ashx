@@ -79,7 +79,20 @@ class TwilioResponseAsync : IAsyncResult
 
     public void StartAsyncWork()
     {
-        ThreadPool.QueueUserWorkItem(new WaitCallback(StartAsyncTask), null);
+        ThreadPool.QueueUserWorkItem( ( workItemState ) =>
+        {
+            try
+            {
+                StartAsyncTask( workItemState );
+            }
+            catch ( Exception ex )
+            {
+                Rock.Model.ExceptionLogService.LogException( ex );
+                _context.Response.StatusCode = 500;
+                _completed = true;
+                _callback( this );
+            }
+        }, null );
     }
 
     private void StartAsyncTask(Object workItemState)
@@ -107,7 +120,7 @@ class TwilioResponseAsync : IAsyncResult
                 switch (request.Form["SmsStatus"])
                 {
                     case "received":
-                        MessageRecieved();
+                        MessageReceived();
                         break;
                     case "undelivered":
                         MessageUndelivered();
@@ -154,7 +167,7 @@ class TwilioResponseAsync : IAsyncResult
         }
     }
 
-    private void MessageRecieved()
+    private void MessageReceived()
     {
 
         var request = _context.Request;
@@ -224,7 +237,7 @@ class TwilioResponseAsync : IAsyncResult
             {
                 if ( retry < maxRetry - 1 )
                 {
-                    System.Threading.Thread.Sleep( 2000 );
+                    System.Threading.Tasks.Task.Delay( 2000 ).Wait();
                 }
             }
         }

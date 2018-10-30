@@ -36,6 +36,7 @@ namespace Rock.Workflow.Action
 
     [CodeEditorField( "Lava", "The <span class='tip tip-lava'></span> to run.", Web.UI.Controls.CodeEditorMode.Lava, Web.UI.Controls.CodeEditorTheme.Rock, 300, true, "", "", 0, "Value" )]
     [WorkflowAttribute( "Attribute", "The attribute to store the result in.", false, "", "", 1 )]
+    [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this action.", false, order: 2 )]
     public class RunLava : ActionComponent
     {
         /// <summary>
@@ -50,10 +51,10 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            var attribute = AttributeCache.Read( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
+            var attribute = AttributeCache.Get( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
             if ( attribute != null )
             {
-                string value = GetAttributeValue( action, "Value" ).ResolveMergeFields( GetMergeFields( action ) );
+                string value = GetAttributeValue( action, "Value" ).ResolveMergeFields( GetMergeFields( action ), GetAttributeValue( action, "EnabledLavaCommands" ) ).Trim();
                 SetWorkflowAttributeValue( action, attribute.Guid, value );
                 action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
             }

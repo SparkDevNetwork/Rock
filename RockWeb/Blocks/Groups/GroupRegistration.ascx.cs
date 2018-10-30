@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -56,9 +56,14 @@ namespace RockWeb.Blocks.Groups
     [CustomRadioListField( "Auto Fill Form", "If set to FALSE then the form will not load the context of the logged in user (default: 'True'.)", "true^True,false^False", true, "true", "", 10 )]
     [TextField( "Register Button Alt Text", "Alternate text to use for the Register button (default is 'Register').", false, "", "", 11 )]
     [BooleanField( "Prevent Overcapacity Registrations", "When set to true, user cannot register for groups that are at capacity or whose default GroupTypeRole are at capacity. If only one spot is available, no spouses can be registered.", true, "", 12 )]
+    [BooleanField("Require Email", "Should email be required for registration?", true, key: REQUIRE_EMAIL_KEY )]
+    [BooleanField( "Require Mobile Phone", "Should mobile phone numbers be required for registration?", false, key: REQUIRE_MOBILE_KEY )]
+
     public partial class GroupRegistration : RockBlock
     {
         #region Fields
+        private const string REQUIRE_EMAIL_KEY = "IsRequireEmail";
+        private const string REQUIRE_MOBILE_KEY = "IsRequiredMobile";
 
         RockContext _rockContext = null;
         string _mode = "Simple";
@@ -88,20 +93,6 @@ namespace RockWeb.Blocks.Groups
             get
             {
                 return _mode == "Simple";
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is full.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is full; otherwise, <c>false</c>.
-        /// </value>
-        protected bool IsFull
-        {
-            get
-            {
-                return _mode == "Full";
             }
         }
 
@@ -195,28 +186,25 @@ namespace RockWeb.Blocks.Groups
                 GroupLocation homeLocation = null;
                 bool isMatch = false;
 
-                var changes = new List<string>();
-                var spouseChanges = new List<string>();
-                var familyChanges = new List<string>();
-
                 // Only use current person if the name entered matches the current person's name and autofill mode is true
                 if ( _autoFill )
                 {
-                    if ( CurrentPerson != null &&
-                        tbFirstName.Text.Trim().Equals( CurrentPerson.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) &&
+                    if ( CurrentPerson != null && CurrentPerson.NickName.IsNotNullOrWhiteSpace() && CurrentPerson.LastName.IsNotNullOrWhiteSpace() &&
+                        tbFirstName.Text.Trim().Equals( CurrentPerson.NickName.Trim(), StringComparison.OrdinalIgnoreCase ) &&
                         tbLastName.Text.Trim().Equals( CurrentPerson.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
                     {
                         person = personService.Get( CurrentPerson.Id );
+                        isMatch = true;
                     }
                 }
 
                 // Try to find person by name/email 
                 if ( person == null )
                 {
-                    var matches = personService.GetByMatch( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim() );
-                    if ( matches.Count() == 1 )
+                    var personQuery = new PersonService.PersonMatchQuery( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim(), pnCell.Text.Trim() );
+                    person = personService.FindPerson( personQuery, true );
+                    if ( person != null )
                     {
-                        person = matches.First();
                         isMatch = true;
                     }
                 }
@@ -231,7 +219,7 @@ namespace RockWeb.Blocks.Groups
                     person.Email = tbEmail.Text.Trim();
                     person.IsEmailActive = true;
                     person.EmailPreference = EmailPreference.EmailAllowed;
-                    person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                    person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                     person.ConnectionStatusValueId = _dvcConnectionStatus.Id;
                     person.RecordStatusValueId = _dvcRecordStatus.Id;
                     person.Gender = Gender.Unknown;
@@ -241,7 +229,6 @@ namespace RockWeb.Blocks.Groups
                 else
                 {
                     // updating current existing person
-                    History.EvaluateChange( changes, "Email", person.Email, tbEmail.Text );
                     person.Email = tbEmail.Text;
 
                     // Get the current person's families
@@ -277,11 +264,11 @@ namespace RockWeb.Blocks.Groups
                 {
                     if ( !isMatch || !string.IsNullOrWhiteSpace( pnHome.Number ) )
                     {
-                        SetPhoneNumber( rockContext, person, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), changes );
+                        SetPhoneNumber( rockContext, person, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
                     }
-                    if ( !isMatch || !string.IsNullOrWhiteSpace( pnHome.Number ) )
+                    if ( !isMatch || !string.IsNullOrWhiteSpace( pnCell.Number ) )
                     {
-                        SetPhoneNumber( rockContext, person, pnCell, cbSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), changes );
+                        SetPhoneNumber( rockContext, person, pnCell, cbSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
                     }
 
                     if ( !isMatch || !string.IsNullOrWhiteSpace( acAddress.Street1 ) )
@@ -315,25 +302,23 @@ namespace RockWeb.Blocks.Groups
                                 new GroupLocationService( rockContext ).Delete( homeLocation );
                             }
                         }
-
-                        History.EvaluateChange( familyChanges, "Home Location", oldLocation, newLocation );
                     }
 
                     // Check for the spouse
-                    if ( IsFullWithSpouse && !string.IsNullOrWhiteSpace(tbSpouseFirstName.Text) && !string.IsNullOrWhiteSpace(tbSpouseLastName.Text) )
+                    if ( IsFullWithSpouse && tbSpouseFirstName.Text.IsNotNullOrWhiteSpace() && tbSpouseLastName.Text.IsNotNullOrWhiteSpace() )
                     {
-                        spouse = person.GetSpouse();
+                        spouse = person.GetSpouse( rockContext );
+                        bool isSpouseMatch = true;
+
                         if ( spouse == null ||
                             !tbSpouseFirstName.Text.Trim().Equals( spouse.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) ||
                             !tbSpouseLastName.Text.Trim().Equals( spouse.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
                         {
                             spouse = new Person();
+                            isSpouseMatch = false;
 
                             spouse.FirstName = tbSpouseFirstName.Text.FixCase();
-                            History.EvaluateChange( spouseChanges, "First Name", string.Empty, spouse.FirstName );
-
                             spouse.LastName = tbSpouseLastName.Text.FixCase();
-                            History.EvaluateChange( spouseChanges, "Last Name", string.Empty, spouse.LastName );
 
                             spouse.ConnectionStatusValueId = _dvcConnectionStatus.Id;
                             spouse.RecordStatusValueId = _dvcRecordStatus.Id;
@@ -352,35 +337,29 @@ namespace RockWeb.Blocks.Groups
                             person.MaritalStatusValueId = _married.Id;
                         }
 
-                        History.EvaluateChange( changes, "Email", person.Email, tbEmail.Text );
                         spouse.Email = tbSpouseEmail.Text;
 
-                        SetPhoneNumber( rockContext, spouse, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), spouseChanges );
-                        SetPhoneNumber( rockContext, spouse, pnSpouseCell, cbSpouseSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), spouseChanges );
+                        if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( pnHome.Number ) )
+                        {
+                            SetPhoneNumber( rockContext, spouse, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
+                        }
+
+                        if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( pnSpouseCell.Number ) )
+                        {
+                            SetPhoneNumber( rockContext, spouse, pnSpouseCell, cbSpouseSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+                        }
                     }
                 }
 
                 // Save the person/spouse and change history 
                 rockContext.SaveChanges();
-                HistoryService.SaveChanges( rockContext, typeof( Person ),
-                    Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, changes );
-                HistoryService.SaveChanges( rockContext, typeof( Person ),
-                    Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), person.Id, familyChanges );
-                if ( spouse != null )
-                {
-
-                    HistoryService.SaveChanges( rockContext, typeof( Person ),
-                        Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), spouse.Id, spouseChanges );
-                    HistoryService.SaveChanges( rockContext, typeof( Person ),
-                        Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), spouse.Id, familyChanges );
-                }
 
                 // Check to see if a workflow should be launched for each person
                 WorkflowTypeCache workflowType = null;
                 Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
                 if ( workflowTypeGuid.HasValue )
                 {
-                    workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
+                    workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
                 }
 
                 // Save the registrations ( and launch workflows )
@@ -436,9 +415,17 @@ namespace RockWeb.Blocks.Groups
                 }
                 pnlCol2.Visible = IsFullWithSpouse;
 
+                tbEmail.Required = GetAttributeValue( REQUIRE_EMAIL_KEY ).AsBoolean();
+                pnCell.Required = GetAttributeValue( REQUIRE_MOBILE_KEY ).AsBoolean();
+
                 pnlHomePhone.Visible = !IsSimple;
                 pnlCellPhone.Visible = !IsSimple;
                 acAddress.Visible = !IsSimple;
+
+                string phoneLabel = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Value;
+                phoneLabel = phoneLabel.Trim().EndsWith( "Phone" ) ? phoneLabel : phoneLabel + " Phone";
+                pnCell.Label = phoneLabel;
+                pnSpouseCell.Label = "Spouse " + phoneLabel;
 
                 if ( CurrentPersonId.HasValue && _autoFill )
                 {
@@ -505,9 +492,7 @@ namespace RockWeb.Blocks.Groups
                     // If the group has a GroupCapacity, check how far we are from hitting that.
                     if ( _group.GroupCapacity.HasValue )
                     {
-                        openGroupSpots = _group.GroupCapacity.Value - _group.Members
-                            .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
-                            .Count();
+                        openGroupSpots = _group.GroupCapacity.Value - _group.ActiveMembers().Count();
                     }
 
                     // When someone registers for a group on the front-end website, they automatically get added with the group's default
@@ -619,8 +604,6 @@ namespace RockWeb.Blocks.Groups
 
             _autoFill = GetAttributeValue( "AutoFillForm" ).AsBoolean();
 
-            tbEmail.Required = _autoFill;
-
             string registerButtonText = GetAttributeValue( "RegisterButtonAltText" );
             if ( string.IsNullOrWhiteSpace( registerButtonText ) )
             {
@@ -679,7 +662,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            _dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+            _dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
             if ( _dvcConnectionStatus == null )
             {
                 nbNotice.Heading = "Invalid Connection Status";
@@ -687,7 +670,7 @@ namespace RockWeb.Blocks.Groups
                 return false;
             }
 
-            _dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+            _dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
             if ( _dvcRecordStatus == null )
             {
                 nbNotice.Heading = "Invalid Record Status";
@@ -695,9 +678,9 @@ namespace RockWeb.Blocks.Groups
                 return false;
             }
 
-            _married = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
-            _homeAddressType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
-            _familyType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            _married = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
+            _homeAddressType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+            _familyType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             _adultRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
 
             if ( _married == null || _homeAddressType == null || _familyType == null || _adultRole == null )
@@ -718,10 +701,9 @@ namespace RockWeb.Blocks.Groups
         /// <param name="pnbNumber">The PNB number.</param>
         /// <param name="cbSms">The cb SMS.</param>
         /// <param name="phoneTypeGuid">The phone type unique identifier.</param>
-        /// <param name="changes">The changes.</param>
-        private void SetPhoneNumber( RockContext rockContext, Person person, PhoneNumberBox pnbNumber, RockCheckBox cbSms, Guid phoneTypeGuid, List<string> changes )
+        private void SetPhoneNumber( RockContext rockContext, Person person, PhoneNumberBox pnbNumber, RockCheckBox cbSms, Guid phoneTypeGuid )
         {
-            var phoneType = DefinedValueCache.Read( phoneTypeGuid );
+            var phoneType = DefinedValueCache.Get( phoneTypeGuid );
             if ( phoneType != null )
             {
                 var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneType.Id );
@@ -761,10 +743,6 @@ namespace RockWeb.Blocks.Groups
                             .ForEach( n => n.IsMessagingEnabled = false );
                     }
                 }
-
-                History.EvaluateChange( changes,
-                    string.Format( "{0} Phone", phoneType.Value ),
-                    oldPhoneNumber, phoneNumber.NumberFormattedWithCountryCode );
             }
         }
 

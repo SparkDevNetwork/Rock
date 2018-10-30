@@ -37,7 +37,7 @@ namespace Rock
         #region GenericCollection Extensions
 
         /// <summary>
-        /// Concatonate the items into a Delimited string
+        /// Concatenate the items into a Delimited string
         /// </summary>
         /// <example>
         /// FirstNamesList.AsDelimited(",") would be "Ted,Suzy,Noah"
@@ -54,7 +54,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Concatonate the items into a Delimited string an optionally htmlencode the strings
+        /// Concatenate the items into a Delimited string an optionally htmlencode the strings
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="items">The items.</param>
@@ -138,7 +138,7 @@ namespace Rock
         /// Joins a dictionary of items.
         /// </summary>
         /// <param name="items">The items.</param>
-        /// <param name="delimter">The delimter.</param>
+        /// <param name="delimter">The delimiter.</param>
         /// <returns></returns>
         public static string Join( this Dictionary<string, string> items, string delimter )
         {
@@ -362,7 +362,7 @@ namespace Rock
             if ( sortProperty.Property.StartsWith( "attribute:" ) )
             {
                 var itemType = typeof( T );
-                var attributeCache = AttributeCache.Read( sortProperty.Property.Substring( 10 ).AsInteger() );
+                var attributeCache = AttributeCache.Get( sortProperty.Property.Substring( 10 ).AsInteger() );
                 if ( attributeCache != null && typeof( IModel ).IsAssignableFrom( typeof( T ) ) )
                 {
                     var entityIds = new List<int>();
@@ -448,7 +448,7 @@ namespace Rock
         ///   </example>
         public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, RockContext rockContext, string attributeKey, string attributeValue ) where T : Rock.Data.Model<T>, new()
         {
-            int entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( typeof( T ) ) ?? 0;
+            int entityTypeId = EntityTypeCache.GetId( typeof( T ) ) ?? 0;
 
             var avs = new AttributeValueService( rockContext ).Queryable()
                 .Where( a => a.Attribute.Key == attributeKey )
@@ -477,7 +477,7 @@ namespace Rock
                 .WhereAttributeValue( rockContext, a => a.Attribute.Key == "IsAwesome" && a.ValueAsBoolean == true );
             */
 
-            int entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( typeof( T ) ) ?? 0;
+            int entityTypeId = EntityTypeCache.GetId( typeof( T ) ) ?? 0;
 
             var avs = new AttributeValueService( rockContext ).Queryable()
                 .Where( a => a.Attribute.EntityTypeId == entityTypeId )
@@ -510,6 +510,19 @@ namespace Rock
 
         /// <summary>
         /// Adds or replaces an item in a Dictionary.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public static void AddOrReplace<TKey, TValue>( this Dictionary<TKey, TValue> dictionary, TKey key, TValue value )
+        {
+            AddOrReplace( (IDictionary<TKey, TValue>)dictionary, key, value );
+        }
+
+        /// <summary>
+        /// Adds the or replace.
         /// </summary>
         /// <typeparam name="TKey">The type of the key.</typeparam>
         /// <typeparam name="TValue">The type of the value.</typeparam>
@@ -553,7 +566,7 @@ namespace Rock
         /// <param name="replace">if set to <c>true</c> [replace].</param>
         public static void AddIfNotBlank( this IDictionary<string, string> dictionary, string key, string value, bool replace = true ) 
         {
-            if ( value.IsNotNullOrWhitespace() )
+            if ( value.IsNotNullOrWhiteSpace() )
             {
                 if ( !dictionary.ContainsKey( key ) )
                 {

@@ -37,39 +37,66 @@
                 <Label Content="Who Needs a Statement"
                        Style="{StaticResource labelStyleBannerText}" />
             </StackPanel>
-            <StackPanel Margin="12"
-                        Width="Auto"
+            <StackPanel HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Style="{StaticResource indentStyle}"
+                        Grid.Column="1"
                         Grid.Row="1">
                 <Label Style="{StaticResource labelStyleLegend}"
                        Content="Generate for"
                        HorizontalAlignment="Left" />
                 <RadioButton Name="radAllPersons"
-                             Content="All individuals with transactions"
+                             Content="All Individuals with transactions and/or pledges (if configured for statements)"
                              IsChecked="True"
                              Checked="radPersons_Checked"
+                             Style="{StaticResource radioButtonStyle}"
                              GroupName="radSelect" />
-                <CheckBox Name="ckIncludeIndividualsWithNoAddress"
-                          Content="Include individuals that don't have a mailing address"
-                          Margin="16,4,8,8"
-                          IsChecked="False" />
+
+                <StackPanel Name="pnlAllIndividualsOptions" Style="{StaticResource indentStyle}">
+                    <CheckBox Name="ckIncludeIndividualsWithNoAddress"
+                                  Content="Include individuals that don't have a mailing address"
+                                  Style="{StaticResource checkboxStyle}"
+                                  IsChecked="False" />
+                    <CheckBox Name="ckExcludeInActiveIndividuals"
+                                  Content="Exclude inactive individuals"
+                                  Style="{StaticResource checkboxStyle}"
+                                  IsChecked="False" />
+                    <CheckBox Name="ckExcludeOptedOutIndividuals"
+                                  Content="Do not generate a statement for those opted out"
+                                  Style="{StaticResource checkboxStyle}"
+                                  IsChecked="True" />
+                    <CheckBox Name="ckIncludeBusinesses"
+                                  Content="Include Businesses"
+                                  Style="{StaticResource checkboxStyle}"
+                                  IsChecked="False" />
+
+                </StackPanel>
+
                 <RadioButton Name="radDataView"
-                             Content="Dataview"
-                             Checked="radPersons_Checked"
-                             GroupName="radSelect" />
-                <ComboBox Name="ddlDataView" Style="{StaticResource comboBoxStyleXL}" Margin="16,4,8,8"/>
+                                 Content="Dataview"
+                                 Checked="radPersons_Checked"
+                                 Style="{StaticResource radioButtonStyle}"
+                                 GroupName="radSelect" />
+                <StackPanel Name="pnlDataViewOptions" Style="{StaticResource indentStyle}" Visibility="Collapsed">
+                    <ComboBox Name="ddlDataView" Style="{StaticResource comboBoxStyleXL}" Margin="0,0,0,8" />
+                </StackPanel>
+                
                 <RadioButton Name="radSingle"
                              Content="Single individual"
                              Checked="radPersons_Checked"
+                             Style="{StaticResource radioButtonStyle}"
                              GroupName="radSelect" />
-                <TextBox Style="{StaticResource textboxStyle}"
+                <StackPanel Name="pnlSingleIndividualOptions" Style="{StaticResource indentStyle}" Visibility="Collapsed">
+                    <TextBox Style="{StaticResource textboxStyle}"
                          Name="txtPersonSearch"
                          TextChanged="txtPersonSearch_TextChanged" />
-                <Label Name="lblWarning"
-                       Style="{StaticResource labelStyleAlert}"
-                       Content="Please select a person when 'Single individual' is checked."
-                       Visibility="Collapsed">
-                </Label>
-                <DataGrid x:Name="grdPersons"
+                
+                    <Label Name="lblWarning"
+                           Style="{StaticResource labelStyleAlert}"
+                           Content="Please select a person when 'Single individual' is checked."
+                           Visibility="Visible">
+                    </Label>
+                    <DataGrid x:Name="grdPersons"
                           AutoGenerateColumns="False"
                           ItemsSource="{Binding}"
                           GridLinesVisibility="Horizontal"
@@ -148,8 +175,7 @@
                         </DataGridTextColumn>
                     </DataGrid.Columns>
                 </DataGrid>
-
-                
+                </StackPanel>
 
             </StackPanel>
 

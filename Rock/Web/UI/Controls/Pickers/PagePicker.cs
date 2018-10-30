@@ -116,6 +116,37 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show select current page].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show select current page]; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "true" ),
+        Description( "Should the option to select the current page be displayed?" )
+        ]
+        public bool ShowSelectCurrentPage
+        {
+            get
+            {
+                if ( ViewState["ShowSelectCurrentPage"] != null )
+                {
+                    return ( bool ) ViewState["ShowSelectCurrentPage"];
+                }
+
+                // default to true
+                return true;
+            }
+
+            set
+            {
+                ViewState["ShowSelectCurrentPage"] = value;
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -126,10 +157,24 @@ namespace Rock.Web.UI.Controls
 
             this.IconCssClass = "fa fa-file";
 
+            var sm = ScriptManager.GetCurrent( this.Page );
+            EnsureChildControls();
+
+            if ( sm != null )
+            {
+                sm.RegisterAsyncPostBackControl( _btnSelectPageRoute );
+            }
+        }
+
+        /// <summary>
+        /// Registers the java script for the PageRoutePicker
+        /// </summary>
+        private void RegisterPageRoutePickerJavaScript()
+        {
             string scriptFormat = @"
 
                 $('#{0}').click(function () {{
-                    $('#page-route-picker_{3}').find('.js-page-route-picker-menu').toggle(function () {{
+                    $('#page-route-picker_{3}').find('.js-page-route-picker-menu').toggle(0, function () {{
                         Rock.dialogs.updateModalScrollBar('page-route-picker_{3}');
                     }});
                 }});
@@ -145,14 +190,6 @@ namespace Rock.Web.UI.Controls
             string script = string.Format( scriptFormat, _btnShowPageRoutePicker.ClientID, _btnSelectPageRoute.ClientID, _btnCancelPageRoute.ClientID, this.ClientID );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "page-route-picker-script_" + this.ClientID, script, true );
-
-            var sm = ScriptManager.GetCurrent( this.Page );
-            EnsureChildControls();
-
-            if ( sm != null )
-            {
-                sm.RegisterAsyncPostBackControl( _btnSelectPageRoute );
-            }
         }
 
         /// <summary>
@@ -414,14 +451,17 @@ namespace Rock.Web.UI.Controls
             _btnCancelPageRoute.ID = string.Format( "btnCancelPageRoute_{0}", this.ID );
             _btnCancelPageRoute.Text = "Cancel";
 
-            _btnSelectCurrentPage = new LinkButton();
-            _btnSelectCurrentPage.ID = this.ID + "_btnSelectCurrentPage";
-            _btnSelectCurrentPage.CssClass = "btn btn-xs btn-link pull-right";
-            _btnSelectCurrentPage.Text = "<i class='fa fa-file-o'></i>";
-            _btnSelectCurrentPage.ToolTip = "Select Current Page";
-            _btnSelectCurrentPage.CausesValidation = false;
-            _btnSelectCurrentPage.Click += _btnSelectCurrentPage_Click;
-            Controls.Add( _btnSelectCurrentPage );
+            if ( ShowSelectCurrentPage )
+            {
+                _btnSelectCurrentPage = new LinkButton();
+                _btnSelectCurrentPage.ID = this.ID + "_btnSelectCurrentPage";
+                _btnSelectCurrentPage.CssClass = "btn btn-xs btn-link pull-right";
+                _btnSelectCurrentPage.Text = "<i class='fa fa-file-o'></i>";
+                _btnSelectCurrentPage.ToolTip = "Select Current Page";
+                _btnSelectCurrentPage.CausesValidation = false;
+                _btnSelectCurrentPage.Click += _btnSelectCurrentPage_Click;
+                Controls.Add( _btnSelectCurrentPage );
+            }
 
             Controls.Add( _hfPageRouteId );
             Controls.Add( _rblSelectPageRoute );
@@ -471,7 +511,10 @@ namespace Rock.Web.UI.Controls
         {
             base.RenderCustomPickerActions( writer );
 
-            _btnSelectCurrentPage.RenderControl( writer );
+            if ( ShowSelectCurrentPage )
+            {
+                _btnSelectCurrentPage.RenderControl( writer );
+            }
         }
 
         /// <summary>
@@ -490,7 +533,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// This is where you implement the simple aspects of rendering your control.  The rest
         /// will be handled by calling RenderControlHelper's RenderControl() method.
         /// </summary>
         /// <param name="writer">The writer.</param>
@@ -521,6 +564,8 @@ namespace Rock.Web.UI.Controls
                     writer.Write( "</div>" );
                     writer.Write( @"</div>" );
                     writer.Write( @"</div>" );
+
+                    RegisterPageRoutePickerJavaScript();
                 }
             }
         }

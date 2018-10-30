@@ -167,6 +167,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             gWorkflowTrigger.DataSource = triggers
+                .ToList()
                 .OrderBy( w => w.EntityType.Name )
                 .ThenBy( w => w.EntityTypeQualifierColumn )
                 .ThenBy( w => w.EntityTypeQualifierValue ).Select( a =>
@@ -177,12 +178,66 @@ namespace RockWeb.Blocks.WorkFlow
                             a.WorkflowTriggerType,
                             a.EntityTypeQualifierColumn,
                             a.EntityTypeQualifierValue,
+                            a.EntityTypeQualifierValuePrevious,
+                            EntityTypeQualifierValueFormatted = GetFormattedQualifierValue( a ),
                             WorkflowTypeName = a.WorkflowType.Name,
                             a.IsSystem,
                             a.IsActive
                         } ).ToList();
             
             gWorkflowTrigger.DataBind();
+        }
+
+        /// <summary>
+        /// Get a formatted string that represents the qualifier value of the workflow trigger.
+        /// </summary>
+        /// <param name="workflowTrigger">The workflow trigger object.</param>
+        /// <returns>A formatted string that represents the qualifier value of the workflow trigger.</returns>
+        private string GetFormattedQualifierValue( WorkflowTrigger workflowTrigger )
+        {
+            bool usePreviousValue = false;
+            string value;
+
+            if ( workflowTrigger.WorkflowTriggerType == WorkflowTriggerType.PreSave ||
+                workflowTrigger.WorkflowTriggerType == WorkflowTriggerType.PostSave ||
+                workflowTrigger.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave )
+            {
+                usePreviousValue = true;
+            }
+
+            if ( usePreviousValue
+                && (!string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValue ) || !string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValuePrevious ) ) )
+            {
+                if ( !string.IsNullOrWhiteSpace( workflowTrigger.EntityTypeQualifierValuePrevious ) )
+                {
+                    value = workflowTrigger.EntityTypeQualifierValuePrevious.EncodeHtml();
+                }
+                else
+                {
+                    value = "<i>Any value</i>";
+                }
+
+                if ( workflowTrigger.WorkflowTriggerValueChangeType == WorkflowTriggerValueChangeType.ChangeFromTo )
+                {
+
+                    value += " <i class='fa fa-angle-double-right'></i> ";
+
+                    if ( !string.IsNullOrWhiteSpace( workflowTrigger.EntityTypeQualifierValue ) )
+                    {
+                        value += workflowTrigger.EntityTypeQualifierValue.EncodeHtml();
+                    }
+                    else
+                    {
+                        value += "<i>Any value</i>";
+                    }
+                }
+            }
+            else
+            {
+                value = workflowTrigger.EntityTypeQualifierValue.EncodeHtml();
+            }
+
+            return value;
         }
 
         #endregion

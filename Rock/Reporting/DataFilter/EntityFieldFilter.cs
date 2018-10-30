@@ -83,18 +83,12 @@ namespace Rock.Reporting.DataFilter
 
             if ( entityFieldPickerIsHidden && ddlEntityField.SelectedItem != null )
             {
+                var filterLabel = filterControl.Label ?? ddlEntityField.SelectedItem.Text;
                 if ( filterControl.ShowCheckbox )
                 {
                     // special case when a filter is a entity field filter: render the checkbox here instead of in FilterField.cs
-                    filterControl.cbIncludeFilter.Text = ddlEntityField.SelectedItem.Text;
+                    filterControl.cbIncludeFilter.Text = filterLabel;
                     filterControl.cbIncludeFilter.RenderControl( writer );
-                }
-                else
-                {
-                    writer.AddAttribute( "class", "filterfield-label" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                    writer.Write( ddlEntityField.SelectedItem.Text );
-                    writer.RenderEndTag();
                 }
             }
 
@@ -177,7 +171,7 @@ namespace Rock.Reporting.DataFilter
             {
                 var fieldSelection = values[0];
                 var entityField = entityFields.FindFromFilterSelection( fieldSelection );
-                
+
                 if ( entityField != null )
                 {
                     string selectedProperty = entityField.UniqueName;
@@ -209,12 +203,12 @@ namespace Rock.Reporting.DataFilter
         /// </summary>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public string GetSelectedFieldName( string selection )
+        public virtual string GetSelectedFieldName( string selection )
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
-                var values = JsonConvert.DeserializeObject<List<string>>( selection );
-                if ( values.Count > 0 )
+                List<string> values = selection.FromJsonOrNull<List<string>>();
+                if ( values?.Count > 0 )
                 {
                     return values[0];
                 }
@@ -229,13 +223,13 @@ namespace Rock.Reporting.DataFilter
         /// <param name="selection">The selection.</param>
         /// <param name="rockBlock">The rock block.</param>
         /// <returns></returns>
-        public string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock )
+        public virtual string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock )
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
                 var values = JsonConvert.DeserializeObject<List<string>>( selection );
 
-                // selection list  is either "FieldName, Comparision, Value(s)" or "FieldName, Value(s)"
+                // selection list  is either "FieldName, Comparison, Value(s)" or "FieldName, Value(s)"
                 if ( values.Count == 3 )
                 {
                     var pageParamValue = rockBlock.PageParameter( values[0] );
@@ -301,7 +295,7 @@ namespace Rock.Reporting.DataFilter
                         }
                     }
 
-                    // selection list  is either "FieldName, Comparision, Value(s)" or "FieldName, Value(s)", so only update the selection if it is one of those
+                    // selection list  is either "FieldName, Comparison, Value(s)" or "FieldName, Value(s)", so only update the selection if it is one of those
                     if ( selectionValues.Count == 3 && userPreferenceValues.Count == 3 )
                     {
                         selectionValues[1] = userPreferenceValues[1];
@@ -330,87 +324,7 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public Expression GetAttributeExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField entityField, List<string> values )
         {
-            var service = new AttributeValueService( (RockContext)serviceInstance.Context );
-            
-            var attributeValues = service.Queryable().Where( v =>
-                v.EntityId.HasValue &&
-                v.Value != string.Empty );
-
-            if ( entityField.AttributeGuid.HasValue )
-            {
-                var attributeCache = AttributeCache.Read( entityField.AttributeGuid.Value );
-                var attributeId = attributeCache != null ? attributeCache.Id : 0;
-
-                attributeValues = attributeValues.Where( v => v.AttributeId == attributeId );
-            }
-            else
-            {
-                attributeValues = attributeValues.Where( v => v.Attribute.Key == entityField.Name && v.Attribute.FieldTypeId == entityField.FieldType.Id );
-            }
-
-            ParameterExpression attributeValueParameterExpression = Expression.Parameter( typeof( AttributeValue ), "v" );
-
-            // Determine the appropriate comparison type to use for this Expression.
-            // Attribute Value records only exist for Entities that have a value specified for the Attribute.
-            // Therefore, if the specified comparison works by excluding certain values we must invert our filter logic:
-            // first we find the Attribute Values that match those values and then we exclude the associated Entities from the result set.
-            var comparisonType = ComparisonType.EqualTo;
-            ComparisonType evaluatedComparisonType = comparisonType;
-
-            if ( values.Count >= 2 )
-            {
-                string comparisonValue = values[0];
-                if ( comparisonValue != "0" )
-                {
-                    comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                }
-
-                switch ( comparisonType )
-                {
-                    case ComparisonType.DoesNotContain:
-                        evaluatedComparisonType = ComparisonType.Contains;
-                        break;
-                    case ComparisonType.IsBlank:
-                        evaluatedComparisonType = ComparisonType.IsNotBlank;
-                        break;
-                    case ComparisonType.LessThan:
-                        evaluatedComparisonType = ComparisonType.GreaterThanOrEqualTo;
-                        break;
-                    case ComparisonType.LessThanOrEqualTo:
-                        evaluatedComparisonType = ComparisonType.GreaterThan;
-                        break;
-                    case ComparisonType.NotEqualTo:
-                        evaluatedComparisonType = ComparisonType.EqualTo;
-                        break;
-                    default:
-                        evaluatedComparisonType = comparisonType;
-                        break;
-                }
-
-                values[0] = evaluatedComparisonType.ToString();
-            }
-
-            var filterExpression = entityField.FieldType.Field.AttributeFilterExpression( entityField.FieldConfig, values, attributeValueParameterExpression );
-            if ( filterExpression != null )
-            {
-                attributeValues = attributeValues.Where( attributeValueParameterExpression, filterExpression, null );
-            }
-
-            IQueryable<int> ids = attributeValues.Select( v => v.EntityId.Value );
-
-            MemberExpression propertyExpression = Expression.Property( parameterExpression, "Id" );
-            ConstantExpression idsExpression = Expression.Constant( ids.AsQueryable(), typeof( IQueryable<int> ) );
-            Expression expression = Expression.Call( typeof( Queryable ), "Contains", new Type[] { typeof( int ) }, idsExpression, propertyExpression );
-
-            // If we have used an inverted comparison type for the evaluation, invert the Expression so that it excludes the matching Entities.
-            if ( comparisonType != evaluatedComparisonType )
-            {
-                return Expression.Not( expression );
-            }
-            else
-            {
-                return expression;
-            }
+            return Rock.Utility.ExpressionHelper.GetAttributeExpression( serviceInstance, parameterExpression, entityField, values );
         }
 
         /// <summary>

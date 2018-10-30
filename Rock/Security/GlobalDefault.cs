@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Security
 {
@@ -39,7 +40,7 @@ namespace Rock.Security
             get
             {
                 // Read should never return null since it will create entity type if it doesn't exist
-                return Rock.Web.Cache.EntityTypeCache.Read( this.GetType() ).Id;
+                return EntityTypeCache.Get( this.GetType() ).Id;
             }
         }
         /// <summary>

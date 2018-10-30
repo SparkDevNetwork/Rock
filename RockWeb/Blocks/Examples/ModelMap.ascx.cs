@@ -49,8 +49,6 @@ namespace RockWeb.Blocks.Examples
         #region Properties
 
         protected List<MCategory> EntityCategories { get; set; }
-        protected Guid? SelectedCategoryGuid { get; set; }
-        protected int? selectedEntityId { get; set; }
 
         #endregion
 
@@ -65,8 +63,6 @@ namespace RockWeb.Blocks.Examples
             base.LoadViewState( savedState );
 
             EntityCategories = ViewState["EntityCategories"] as List<MCategory>;
-            SelectedCategoryGuid = ViewState["SelectedCategoryGuid"] as Guid?;
-            selectedEntityId = ViewState["selectedEntityId"] as int?;
         }
 
         /// <summary>
@@ -78,9 +74,7 @@ namespace RockWeb.Blocks.Examples
             base.OnInit( e );
 
             rptCategory.ItemCommand += rptCategory_ItemCommand;
-            //rptCategory.ItemCreated += rptCategory_ItemCreated;
             rptModel.ItemCommand += rptModel_ItemCommand;
-            //rptModel.ItemCreated += rptModel_ItemCreated;
         }
 
         /// <summary>
@@ -93,8 +87,39 @@ namespace RockWeb.Blocks.Examples
 
             if ( !Page.IsPostBack )
             {
+                Guid? categoryGuid = null;
+                int? entityTypeId = null;
+                string categoryName = PageParameter( "Category" );
+
                 LoadCategories();
-                ShowData( null, null );
+                BindFilter( true );
+
+                if ( !string.IsNullOrWhiteSpace( categoryName ) )
+                {
+                    var category = EntityCategories.Where( c => c.Name.Equals( categoryName, StringComparison.CurrentCultureIgnoreCase ) ).FirstOrDefault();
+                    if ( category != null )
+                    {
+                        categoryGuid = category.Guid;
+                    }
+                }
+
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "EntityType" ) ) )
+                {
+                    entityTypeId = PageParameter( "EntityType" ).AsIntegerOrNull();
+
+                    if ( entityTypeId == null )
+                    {
+                        var entityType = EntityTypeCache.Get( PageParameter( "EntityType" ).AsGuid() );
+
+                        if ( entityType != null )
+                        {
+                            entityTypeId = entityType.Id;
+                            categoryGuid = EntityCategories.Where( c => c.RockEntityIds.Contains( entityType.Id ) ).Select( c => c.Guid ).FirstOrDefault();
+                        }
+                    }
+                }
+
+                ShowData( categoryGuid, entityTypeId );
             }
         }
 
@@ -107,8 +132,6 @@ namespace RockWeb.Blocks.Examples
         protected override object SaveViewState()
         {
             ViewState["EntityCategories"] = EntityCategories;
-            ViewState["SelectedCategoryGuid"] = SelectedCategoryGuid;
-            ViewState["selectedEntityId"] = selectedEntityId;
 
             return base.SaveViewState();
         }
@@ -134,12 +157,67 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rptModel_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
-            ShowData( SelectedCategoryGuid, e.CommandArgument.ToString().AsInteger() );
+            ShowData( hfSelectedCategoryGuid.Value.AsGuid(), e.CommandArgument.ToString().AsInteger() );
+        }
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the gfSettings control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
+        {
+            gfSettings.SaveUserPreference( "IsRequired", ddlIsRequired.SelectedValue );
+            gfSettings.SaveUserPreference( "IsDatabase", ddlIsDatabase.SelectedValue );
+            gfSettings.SaveUserPreference( "IsLava", ddlIsLava.SelectedValue );
+
+            ShowData( hfSelectedCategoryGuid.Value.AsGuidOrNull(), hfSelectedEntityId.Value.AsIntegerOrNull() );
+        }
+
+        /// <summary>
+        /// Handles the ClearFilterClick event of the gfSettings control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfSettings_ClearFilterClick( object sender, EventArgs e )
+        {
+            gfSettings.DeleteUserPreferences();
+            BindFilter();
+
+            ShowData( hfSelectedCategoryGuid.Value.AsGuidOrNull(), hfSelectedEntityId.Value.AsIntegerOrNull() );
         }
 
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
+        private void BindFilter( bool useQueryString = false )
+        {
+            if ( useQueryString )
+            {
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "IsRequired" ) ) )
+                {
+                    gfSettings.SaveUserPreference( "IsRequired", PageParameter( "IsRequired" ) );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "IsDatabase" ) ) )
+                {
+                    gfSettings.SaveUserPreference( "IsDatabase", PageParameter( "IsDatabase" ) );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "IsLava" ) ) )
+                {
+                    gfSettings.SaveUserPreference( "IsLava", PageParameter( "IsLava" ) );
+                }
+            }
+
+            ddlIsRequired.SelectedValue = gfSettings.GetUserPreference( "IsRequired" );
+            ddlIsDatabase.SelectedValue = gfSettings.GetUserPreference( "IsDatabase" );
+            ddlIsLava.SelectedValue = gfSettings.GetUserPreference( "IsLava" );
+        }
 
         private void LoadCategories()
         {
@@ -165,21 +243,21 @@ namespace RockWeb.Blocks.Examples
                 {
                     string category = "Other";
                     var domainAttr = type.GetCustomAttribute<RockDomainAttribute>( false );
-                    if ( domainAttr != null && domainAttr.Name.IsNotNullOrWhitespace() )
+                    if ( domainAttr != null && domainAttr.Name.IsNotNullOrWhiteSpace() )
                     {
                         category = domainAttr.Name;
                     }
 
                     var entityCategory = entityCategories
-                        .Where( c => c.Name == category  )
+                        .Where( c => c.Name == category )
                         .FirstOrDefault();
                     if ( entityCategory == null )
                     {
-                        entityCategory = new MCategory { Guid = Guid.NewGuid(), Name = category, RockEntities = new List<MEntity>() };
+                        entityCategory = new MCategory { Guid = Guid.NewGuid(), Name = category, RockEntityIds = new List<int>() };
                         entityCategory.IconCssClass = categoryIcons.ContainsKey( category ) ? categoryIcons[category] : string.Empty;
                         entityCategories.Add( entityCategory );
                     }
-                    entityCategory.RockEntities.Add( new MEntity { Id = entity.Id, AssemblyName = entity.AssemblyName, FriendlyName = entity.FriendlyName } );
+                    entityCategory.RockEntityIds.Add( entity.Id );
                 }
             }
 
@@ -194,8 +272,8 @@ namespace RockWeb.Blocks.Examples
                 LoadCategories();
             }
 
-            SelectedCategoryGuid = categoryGuid;
-            selectedEntityId = null;
+            hfSelectedCategoryGuid.Value = categoryGuid.ToString();
+            hfSelectedEntityId.Value = null;
 
             // Bind Categories
             rptCategory.DataSource = EntityCategories;
@@ -204,9 +282,9 @@ namespace RockWeb.Blocks.Examples
             pnlModels.Visible = false;
             pnlKey.Visible = false;
             lCategoryName.Text = string.Empty;
-            
-            MEntity entityType = null;
-            var entities = new List<MEntity>();
+
+            EntityTypeCache entityType = null;
+            var entityTypeList = new List<EntityTypeCache>();
             if ( categoryGuid.HasValue )
             {
                 var category = EntityCategories.Where( c => c.Guid.Equals( categoryGuid ) ).FirstOrDefault();
@@ -215,123 +293,158 @@ namespace RockWeb.Blocks.Examples
                     lCategoryName.Text = category.Name + " Models";
                     pnlModels.Visible = true;
 
-                    entities = category.RockEntities.OrderBy( e => e.FriendlyName ).ToList();
+                    entityTypeList = category.RockEntityIds.Select( a => EntityTypeCache.Get( a ) ).Where( a => a != null ).ToList();
                     if ( entityTypeId.HasValue )
                     {
-                        entityType = entities.Where( t => t.Id == entityTypeId.Value ).FirstOrDefault();
-                        selectedEntityId = entityType != null ? entityType.Id : (int?)null;
+                        entityType = entityTypeList.Where( t => t.Id == entityTypeId.Value ).FirstOrDefault();
+                        hfSelectedEntityId.Value = entityType != null ? entityType.Id.ToString() : null;
                     }
                     else
                     {
-                        entityType = entities.FirstOrDefault();
-                        selectedEntityId = entities.Any() ? entities.First().Id : (int?)null;
+                        entityType = entityTypeList.FirstOrDefault();
+                        hfSelectedEntityId.Value = entityTypeList.Any() ? entityTypeList.First().Id.ToString() : null;
                     }
                 }
             }
 
             // Bind Models
-            rptModel.DataSource = entities;
+            rptModel.DataSource = entityTypeList;
             rptModel.DataBind();
 
             string details = string.Empty;
+            nbClassesWarning.Visible = false;
+            pnlClassDetail.Visible = false;
             if ( entityType != null )
             {
-                details = "<div class='alert alert-warning'>Error getting class details!</div>";
-
-                var type = entityType.GetEntityType();
-                if ( type != null )
+                try
                 {
-                    pnlKey.Visible = true;
-
-                    var xmlComments = GetXmlComments();
-
-                    var mClass = new MClass();
-                    mClass.Name = type.Name;
-                    mClass.Comment = GetComments( type, xmlComments );
-
-                    PropertyInfo[] properties = type.GetProperties( BindingFlags.Public | ( BindingFlags.Instance ) )
-                        .Where( m => ( m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property ) )
-                        .ToArray();
-                    foreach ( PropertyInfo p in properties.OrderBy( i => i.Name ).ToArray() )
+                    var type = entityType.GetEntityType();
+                    if ( type != null )
                     {
-                        mClass.Properties.Add( new MProperty
-                        {
-                            Name = p.Name,
-                            IsInherited = p.DeclaringType != type,
-                            IsVirtual = p.GetGetMethod() != null && p.GetGetMethod().IsVirtual && !p.GetGetMethod().IsFinal,
-                            IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ) || p.IsDefined( typeof( DataMemberAttribute ) ),
-                            NotMapped = p.IsDefined( typeof( NotMappedAttribute ) ),
-                            Required = p.IsDefined( typeof( RequiredAttribute ) ),
-                            Id = p.MetadataToken,
-                            Comment = GetComments( p, xmlComments )
-                        } );
-                    }
+                        pnlKey.Visible = true;
 
-                    MethodInfo[] methods = type.GetMethods( BindingFlags.Public | ( BindingFlags.Instance ) )
-                        .Where( m => !m.IsSpecialName && ( m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property ) )
-                        .ToArray();
-                    foreach ( MethodInfo m in methods.OrderBy( i => i.Name ).ToArray() )
+                        var xmlComments = GetXmlComments();
+
+                        var mClass = new MClass();
+                        mClass.Name = type.Name;
+                        mClass.Comment = GetComments( type, xmlComments );
+
+                        PropertyInfo[] properties = type.GetProperties( BindingFlags.Public | ( BindingFlags.Instance ) )
+                            .Where( m => ( m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property ) )
+                            .ToArray();
+                        foreach ( PropertyInfo p in properties.OrderBy( i => i.Name ).ToArray() )
+                        {
+                            mClass.Properties.Add( new MProperty
+                            {
+                                Name = p.Name,
+                                IsInherited = p.DeclaringType != type,
+                                IsVirtual = p.GetGetMethod() != null && p.GetGetMethod().IsVirtual && !p.GetGetMethod().IsFinal,
+                                IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ) || p.IsDefined( typeof( DataMemberAttribute ) ),
+                                IsObsolete = p.IsDefined( typeof( ObsoleteAttribute ) ),
+                                ObsoleteMessage = GetObsoleteMessage( p ),
+                                NotMapped = p.IsDefined( typeof( NotMappedAttribute ) ),
+                                Required = p.IsDefined( typeof( RequiredAttribute ) ),
+                                Id = p.MetadataToken,
+                                Comment = GetComments( p, xmlComments )
+                            } );
+                        }
+
+                        MethodInfo[] methods = type.GetMethods( BindingFlags.Public | ( BindingFlags.Instance ) )
+                            .Where( m => !m.IsSpecialName && ( m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property ) )
+                            .ToArray();
+                        foreach ( MethodInfo m in methods.OrderBy( i => i.Name ).ToArray() )
+                        {
+                            // crazy, right?
+                            var param = string.Join( ", ", m.GetParameters().Select( pi => { var x = pi.ParameterType + " " + pi.Name; return x; } ) );
+
+                            mClass.Methods.Add( new MMethod
+                            {
+                                Name = m.Name,
+                                IsInherited = m.DeclaringType != type,
+                                Id = m.MetadataToken,
+                                Signature = string.Format( "{0}({1})", m.Name, param ),
+                                Comment = GetComments( m, xmlComments ),
+                                IsObsolete = m.IsDefined( typeof( ObsoleteAttribute ) ),
+                                ObsoleteMessage = GetObsoleteMessage( m )
+                            } );
+                        }
+
+                        var pageReference = new Rock.Web.PageReference( CurrentPageReference );
+                        pageReference.QueryString = new System.Collections.Specialized.NameValueCollection();
+                        pageReference.QueryString["EntityType"] = entityType.Guid.ToString();
+
+                        lClassName.Text = mClass.Name;
+                        hlAnchor.NavigateUrl = pageReference.BuildUrl();
+                        lClassDescription.Text = mClass.Comment != null ? mClass.Comment.Summary : string.Empty;
+                        lClasses.Text = ClassNode( mClass );
+
+                        pnlClassDetail.Visible = true;
+                    }
+                    else
                     {
-                        // crazy, right?
-                        var param = string.Join( ", ", m.GetParameters().Select( pi => { var x = pi.ParameterType + " " + pi.Name; return x; } ) );
-
-                        mClass.Methods.Add( new MMethod
-                        {
-                            Name = m.Name,
-                            IsInherited = m.DeclaringType != type,
-                            Id = m.MetadataToken,
-                            Signature = string.Format( "{0}({1})", m.Name, param ),
-                            Comment = GetComments( m, xmlComments )
-                        } );
+                        nbClassesWarning.Text = "Unable to get class details for " + entityType.FriendlyName;
+                        nbClassesWarning.Details = entityType.AssemblyName;
+                        nbClassesWarning.Dismissable = true;
+                        nbClassesWarning.Visible = true;
                     }
-
-                    details = ClassNode( mClass );
+                }
+                catch ( Exception ex )
+                {
+                    nbClassesWarning.Text = string.Format( "Error getting class details for <code>{0}</code>", entityType );
+                    nbClassesWarning.Details = ex.Message;
+                    nbClassesWarning.Dismissable = true;
+                    nbClassesWarning.Visible = true;
                 }
             }
-
-            lClasses.Text = details;
         }
 
         /// <summary>
         /// Build a "node" of the class/model with its properties and methods inside.
         /// </summary>
         /// <param name="aClass"></param>
-        /// <param name="expandedClassNameGuidList"></param>
         /// <returns></returns>
         private string ClassNode( MClass aClass )
         {
             var sb = new StringBuilder();
 
-            var name = HttpUtility.HtmlEncode( aClass.Name );
-            sb.AppendFormat(
-                "<div class='panel panel-block' data-id='{0}'><div class='panel-heading'><h1 class='panel-title rollover-container'>{1}</h1><p class='description'>{2}</p></div>",
-                aClass.Guid,
-                name,
-                aClass.Comment != null ? aClass.Comment.Summary : ""
-                );
-
             if ( aClass.Properties.Any() || aClass.Methods.Any() )
             {
-                sb.AppendFormat( "<div class='panel-body'>" );
-
                 if ( aClass.Properties.Any() )
                 {
-                    sb.AppendLine( "<small class='pull-right js-model-inherited'>Show: <i class='js-model-check fa fa-fw fa-square-o'></i> inherited</small><h4>Properties</h4><ul class='list-unstyled'>" );
+                    sb.AppendLine( "<h4>Properties</h4><ul class='list-unstyled'>" );
                     foreach ( var property in aClass.Properties.OrderBy( p => p.Name ) )
                     {
-                        //  data-expanded='false' data-model='Block' data-id='b{0}'
-                        sb.AppendFormat( "<li data-id='p{0}' class='{6}'><strong>{9}<tt>{1}</tt></strong>{3}{4}{5}{2}{7}</li>{8}",
+                        bool? isRequired = gfSettings.GetUserPreference( "IsRequired" ).AsBooleanOrNull();
+                        bool? isDatabase = gfSettings.GetUserPreference( "IsDatabase" ).AsBooleanOrNull();
+                        bool? isLava = gfSettings.GetUserPreference( "IsLava" ).AsBooleanOrNull();
+
+                        if ( isRequired.HasValue && isRequired.Value != property.Required )
+                        {
+                            continue;
+                        }
+
+                        if ( isDatabase.HasValue && isDatabase.Value != ( !property.NotMapped && !property.IsVirtual ) )
+                        {
+                            continue;
+                        }
+
+                        if ( isLava.HasValue && isLava.Value != property.IsLavaInclude )
+                        {
+                            continue;
+                        }
+
+                        sb.AppendFormat( "<li data-id='p{0}' class='{6}'><strong>{9}<tt>{1}</tt></strong>{3}{4}{5}{10}{2}{7}</li>{8}",
                             property.Id, // 0
                             HttpUtility.HtmlEncode( property.Name ), // 1
-                            ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " - " + property.Comment.Summary : "", // 2
+                            ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " - " + property.Comment.Summary : string.Empty, // 2
                             property.Required ? " <strong class='text-danger'>*</strong> " : string.Empty, // 3
                             property.IsLavaInclude ? " <i class='fa fa-bolt fa-fw text-warning'></i> " : string.Empty, // 4
-                            "", // 5
+                            string.Empty, // 5
                             property.IsInherited ? " js-model hidden " : " ", // 6
-                            property.IsInherited ? " (inherited)" : "", // 7
+                            property.IsInherited ? " (inherited)" : string.Empty, // 7
                             Environment.NewLine, // 8
-                            property.NotMapped || property.IsVirtual ? "<i class='fa fa-square-o fa-fw'></i> " : "<i class='fa fa-database fa-fw'></i> " // 9
-
+                            property.NotMapped || property.IsVirtual ? "<i class='fa fa-square-o fa-fw'></i> " : "<i class='fa fa-database fa-fw'></i> ", // 9
+                            property.IsObsolete ? "<i class='fa fa-ban fa-fw text-danger' title='no longer supported'></i> <i>" + property.ObsoleteMessage + " </i> " : string.Empty // 10
                             );
                     }
                     sb.AppendLine( "</ul>" );
@@ -348,23 +461,20 @@ namespace RockWeb.Blocks.Examples
 
                     foreach ( var method in aClass.Methods.OrderBy( m => m.Name ) )
                     {
-                        //<li data-expanded='false' data-model='Block' data-id='b{0}'><span>{1}{2}:{3}</span></li>{4}
-                        sb.AppendFormat( "<li data-id='m{0}' class='{3}'><strong><tt>{1}</tt></strong> {2}{4}</li>{5}",
+                        sb.AppendFormat( "<li data-id='m{0}' class='{3}'><strong><tt>{1}</tt></strong> {2}{4} {6}</li>{5}",
                             method.Id,
                             HttpUtility.HtmlEncode( method.Signature ),
                             ( method.Comment != null && !string.IsNullOrWhiteSpace( method.Comment.Summary ) ) ? " - " + method.Comment.Summary : "",
                             method.IsInherited ? " js-model hidden " : " ",
                             method.IsInherited ? " (inherited)" : "",
-                            Environment.NewLine );
+                            Environment.NewLine, // 5
+                            method.IsObsolete ? "<i class='fa fa-ban fa-fw text-danger' title='no longer supported'></i> <i>" + method.ObsoleteMessage + " </i> " : string.Empty // 6
+                            );
                     }
 
                     sb.AppendLine( "</ul>" );
                 }
-
-                sb.AppendLine( "</div>" );
             }
-
-            sb.AppendLine( "</div>" );
 
             return sb.ToString();
         }
@@ -394,7 +504,7 @@ namespace RockWeb.Blocks.Examples
 
             return null;
         }
-        
+
         /// <summary>
         /// Gets the comments from the data in the assembly's XML file for the 
         /// given member object.
@@ -445,6 +555,35 @@ namespace RockWeb.Blocks.Examples
 
         }
 
+
+        /// <summary>
+        /// Gets the comments from the data in the assembly's XML file for the 
+        /// given member object.
+        /// </summary>
+        /// <param name="p">The MemberInfo instance.</param>
+        /// <returns>an XmlComment object</returns>
+        private string GetObsoleteMessage( MemberInfo p )
+        {
+            if ( ! p.IsDefined( typeof( ObsoleteAttribute ) ) )
+            {
+                return null;
+            }
+
+            string message = string.Empty;
+
+            try
+            {
+                var msg = p.CustomAttributes.Where( a => a.AttributeType == typeof( ObsoleteAttribute ) ).Select( r => r.ConstructorArguments.FirstOrDefault() ).FirstOrDefault();
+                if ( msg != null )
+                {
+                    message = msg.Value.ToStringSafe();
+                }
+
+            }
+            catch { }
+            return message;
+
+        }
         /// <summary>
         /// Makes the summary HTML; converting any type/class cref (ex. <see cref="T:Rock.Model.Campus" />) 
         /// references to HTML links (ex <a href="#Campus">Campus</a>)
@@ -462,8 +601,9 @@ namespace RockWeb.Blocks.Examples
         {
             if ( obj is Guid )
             {
-                Guid categoryGuid = (Guid)obj;
-                return SelectedCategoryGuid.HasValue && SelectedCategoryGuid.Value == categoryGuid ? "active" : string.Empty;
+                Guid? selectedCategoryGuid = hfSelectedCategoryGuid.Value.AsGuidOrNull();
+                Guid categoryGuid = ( Guid ) obj;
+                return selectedCategoryGuid.HasValue && selectedCategoryGuid.Value == categoryGuid ? "active" : string.Empty;
             }
             return string.Empty;
         }
@@ -472,14 +612,15 @@ namespace RockWeb.Blocks.Examples
         {
             if ( obj is int )
             {
-                int entityId = (int)obj;
+                int? selectedEntityId = hfSelectedEntityId.Value.AsIntegerOrNull();
+                int entityId = ( int ) obj;
                 return selectedEntityId.HasValue && selectedEntityId.Value == entityId ? "active" : string.Empty;
             }
             return string.Empty;
         }
-    }
 
-    #endregion
+        #endregion
+    }
 
     #region Helper Classes
 
@@ -489,24 +630,7 @@ namespace RockWeb.Blocks.Examples
         public Guid Guid { get; set; }
         public string Name { get; set; }
         public string IconCssClass { get; set; }
-        public List<MEntity> RockEntities { get; set; }
-    }
-
-    [Serializable]
-    public class MEntity
-    {
-        public int Id { get; set; }
-        public string AssemblyName { get; set; }
-        public string FriendlyName { get; set; }
-        public Type GetEntityType()
-        {
-            if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
-            {
-                return Type.GetType( this.AssemblyName );
-            }
-
-            return null;
-        }
+        public List<int> RockEntityIds { get; set; }
     }
 
     class MClass
@@ -532,6 +656,8 @@ namespace RockWeb.Blocks.Examples
         public bool IsInherited { get; set; }
         public bool IsVirtual { get; set; }
         public bool IsLavaInclude { get; set; }
+        public bool IsObsolete { get; set; }
+        public string ObsoleteMessage { get; set; }
         public bool NotMapped { get; set; }
         public bool Required { get; set; }
         public XmlComment Comment { get; set; }
@@ -542,6 +668,8 @@ namespace RockWeb.Blocks.Examples
         public string Name { get; set; }
         public int Id { get; set; }
         public bool IsInherited { get; set; }
+        public bool IsObsolete { get; set; }
+        public string ObsoleteMessage { get; set; }
         public string Signature { get; set; }
         public XmlComment Comment { get; set; }
     }
@@ -555,7 +683,7 @@ namespace RockWeb.Blocks.Examples
         public string Returns { get; set; }
     }
 
-    # endregion
+    #endregion
 
     #region Extension Methods
 

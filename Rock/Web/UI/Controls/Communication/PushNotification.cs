@@ -49,7 +49,7 @@ namespace Rock.Web.UI.Controls.Communication
             EnsureChildControls();
             tbTitle.Text = communication.PushTitle;
             tbMessage.Text = communication.PushMessage;
-            cbSound.Checked = communication.PushSound.IsNotNullOrWhitespace();
+            cbSound.Checked = communication.PushSound.IsNotNullOrWhiteSpace();
         }
 
         /// <summary>
@@ -81,6 +81,7 @@ namespace Rock.Web.UI.Controls.Communication
             tbTitle.TextMode = TextBoxMode.SingleLine;
             tbTitle.Required = false;
             tbTitle.Label = "Title";
+            tbTitle.MaxLength = 100;
             Controls.Add(tbTitle);
 
 

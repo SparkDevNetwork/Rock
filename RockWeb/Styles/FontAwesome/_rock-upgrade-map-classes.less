@@ -1,0 +1,1000 @@
+// These classes are used to map v4 FontAwesome classes to v5
+// and make v5 a bit more flexible allowing .fa to be dynamically
+// mapped.
+
+/*
+  Summary of customizations for Rock:
+  1. Make sure the _update-map.less file is in place
+  2. Make 'virtual links' mixins.less -> _mixins.less and variables.less -> _variables.less to support older Rock themes
+  3. Add the prefixes below
+*/
+
+@import "_rock-upgrade-map-variables.less";
+
+.fa {
+  font-family: @fa-font-face;
+  font-weight: @fa-theme-weight;
+}
+
+/* prefix start */
+.fas {
+  font-family: @fa-font-face;
+  font-weight: 900;
+}
+
+.far {
+  font-family: @fa-font-face;
+  font-weight: 400;
+}
+
+.fal {
+  font-family: @fa-font-face;
+  font-weight: 300;
+}
+
+.fab {
+  font-family: "@{fa-font-face} Brands";
+  font-weight: normal;
+}
+
+/* prefix end */
+
+// overrides for key icons
+.fa.fa-rating-selected:before,
+.fa.fa-rating-on:before {
+  content: @fa-var-star;
+}
+
+
+.fa.fa-rating-unselected:before,
+.fa.fa-rating-off:before {
+  font-weight: @fa-theme-weight-outline;
+  content: @fa-var-star;
+}
+
+// map all the missing v4 icons to fontawesome
+.fa.fa-glass,
+.fa.fa-remove,
+.fa.fa-close,
+.fa.fa-gear,
+.fa.fa-repeat,
+.fa.fa-rotate-right,
+.fa.fa-refresh,
+.fa.fa-dedent,
+.fa.fa-video-camera,
+.fa.fa-pencil,
+.fa.fa-map-marker,
+.fa.fa-arrows,
+.fa.fa-mail-forward,
+.fa.fa-warning,
+.fa.fa-calendar,
+.fa.fa-arrows-v,
+.fa.fa-arrows-h,
+.fa.fa-gears,
+.fa.fa-sign-out,
+.fa.fa-thumb-tack,
+.fa.fa-external-link,
+.fa.fa-sign-in,
+.fa.fa-feed,
+.fa.fa-arrows-alt,
+.fa.fa-group,
+.fa.fa-chain,
+.fa.fa-scissors,
+.fa.fa-navicon,
+.fa.fa-reorder,
+.fa.fa-unsorted,
+.fa.fa-sort-desc,
+.fa.fa-sort-asc,
+.fa.fa-rotate-left,
+.fa.fa-legal,
+.fa.fa-tachometer,
+.fa.fa-dashboard,
+.fa.fa-flash,
+.fa.fa-exchange,
+.fa.fa-cloud-download,
+.fa.fa-cloud-upload,
+.fa.fa-cutlery,
+.fa.fa-tablet,
+.fa.fa-mobile,
+.fa.fa-mobile-phone,
+.fa.fa-mail-reply,
+.fa.fa-mail-reply-all,
+.fa.fa-code-fork,
+.fa.fa-chain-broken,
+.fa.fa-shield,
+.fa.fa-ticket,
+.fa.fa-level-up,
+.fa.fa-level-down,
+.fa.fa-pencil-square,
+.fa.fa-external-link-square,
+.fa.fa-eur,
+.fa.fa-euro,
+.fa.fa-gbp,
+.fa.fa-usd,
+.fa.fa-dollar,
+.fa.fa-inr,
+.fa.fa-rupee,
+.fa.fa-jpy,
+.fa.fa-cny,
+.fa.fa-rmb,
+.fa.fa-yen,
+.fa.fa-rub,
+.fa.fa-ruble,
+.fa.fa-rouble,
+.fa.fa-krw,
+.fa.fa-won,
+.fa.fa-file-text,
+.fa.fa-sort-alpha-asc,
+.fa.fa-sort-alpha-desc,
+.fa.fa-sort-amount-asc,
+.fa.fa-sort-amount-desc,
+.fa.fa-sort-numeric-asc,
+.fa.fa-sort-numeric-desc,
+.fa.fa-long-arrow-down,
+.fa.fa-long-arrow-up,
+.fa.fa-long-arrow-left,
+.fa.fa-long-arrow-right,
+.fa.fa-try,
+.fa.fa-turkish-lira,
+.fa.fa-institution,
+.fa.fa-bank,
+.fa.fa-mortar-board,
+.fa.fa-spoon,
+.fa.fa-automobile,
+.fa.fa-cab,
+.fa.fa-circle-o-notch,
+.fa.fa-send,
+.fa.fa-header,
+.fa.fa-sliders,
+.fa.fa-trash,
+.fa.fa-eyedropper,
+.fa.fa-area-chart,
+.fa.fa-pie-chart,
+.fa.fa-line-chart,
+.fa.fa-ils,
+.fa.fa-shekel,
+.fa.fa-sheqel,
+.fa.fa-intersex,
+.fa.fa-hotel,
+.fa.fa-battery-4,
+.fa.fa-battery,
+.fa.fa-battery-3,
+.fa.fa-battery-2,
+.fa.fa-battery-1,
+.fa.fa-battery-0,
+.fa.fa-hourglass-1,
+.fa.fa-hourglass-2,
+.fa.fa-hourglass-3,
+.fa.fa-television,
+.fa.fa-commenting,
+.fa.fa-credit-card-alt,
+.fa.fa-volume-control-phone,
+.fa.fa-asl-interpreting,
+.fa.fa-deafness,
+.fa.fa-hard-of-hearing,
+.fa.fa-signing,
+.fa.fa-vcard,
+.fa.fa-drivers-license,
+.fa.fa-thermometer-4,
+.fa.fa-thermometer,
+.fa.fa-thermometer-3,
+.fa.fa-thermometer-2,
+.fa.fa-thermometer-1,
+.fa.fa-thermometer-0,
+.fa.fa-bathtub,
+.fa.fa-s15,
+.fa.fa-times-rectangle {
+  font-family: @fa-font-face;
+  font-weight: @fa-theme-weight;
+}
+
+.fa-fw {
+  width: 1.25em;
+  text-align: center;
+}
+
+.fa-layers {
+  position: relative;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  text-align: center;
+  vertical-align: -.125em;
+
+  i {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+  }
+}
+
+.fa-layers-counter {
+  top: 0;
+  right: 0;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  min-width: 1.5em;
+  max-width: 5em;
+  height: 1.5em;
+  padding: .25em;
+  overflow: hidden;
+  line-height: 1;
+  color: #fff;
+  text-overflow: ellipsis;
+  background-color: @brand-danger;
+  border-radius: 1em;
+  -webkit-transform: scale(.25);
+  transform: scale(.25);
+  -webkit-transform-origin: top right;
+  transform-origin: top right;
+}
+
+.fa-layers-counter, .fa-layers-text {
+  position: absolute;
+  display: inline-block;
+  text-align: center;
+}
+
+// mapping for brand icons
+.fa.fa-500px,
+.fa.fa-accessible-icon,
+.fa.fa-accusoft,
+.fa.fa-adn,
+.fa.fa-adversal,
+.fa.fa-affiliatetheme,
+.fa.fa-algolia,
+.fa.fa-amazon,
+.fa.fa-amilia,
+.fa.fa-android,
+.fa.fa-angellist,
+.fa.fa-angrycreative,
+.fa.fa-angular,
+.fa.fa-app-store,
+.fa.fa-app-store-ios,
+.fa.fa-apper,
+.fa.fa-apple,
+.fa.fa-apple-pay,
+.fa.fa-asymmetrik,
+.fa.fa-audible,
+.fa.fa-autoprefixer,
+.fa.fa-avianex,
+.fa.fa-aviato,
+.fa.fa-aws,
+.fa.fa-bandcamp,
+.fa.fa-behance,
+.fa.fa-behance-square,
+.fa.fa-bimobject,
+.fa.fa-bitbucket,
+.fa.fa-bitcoin,
+.fa.fa-bity,
+.fa.fa-black-tie,
+.fa.fa-blackberry,
+.fa.fa-blogger,
+.fa.fa-blogger-b,
+.fa.fa-bluetooth,
+.fa.fa-bluetooth-b,
+.fa.fa-btc,
+.fa.fa-buromobelexperte,
+.fa.fa-buysellads,
+.fa.fa-cc-amex,
+.fa.fa-cc-apple-pay,
+.fa.fa-cc-diners-club,
+.fa.fa-cc-discover,
+.fa.fa-cc-jcb,
+.fa.fa-cc-mastercard,
+.fa.fa-cc-paypal,
+.fa.fa-cc-stripe,
+.fa.fa-cc-visa,
+.fa.fa-centercode,
+.fa.fa-chrome,
+.fa.fa-cloudscale,
+.fa.fa-cloudsmith,
+.fa.fa-cloudversify,
+.fa.fa-codepen,
+.fa.fa-codiepie,
+.fa.fa-connectdevelop,
+.fa.fa-contao,
+.fa.fa-cpanel,
+.fa.fa-creative-commons,
+.fa.fa-css3,
+.fa.fa-css3-alt,
+.fa.fa-cuttlefish,
+.fa.fa-d-and-d,
+.fa.fa-dashcube,
+.fa.fa-delicious,
+.fa.fa-deploydog,
+.fa.fa-deskpro,
+.fa.fa-deviantart,
+.fa.fa-digg,
+.fa.fa-digital-ocean,
+.fa.fa-discord,
+.fa.fa-discourse,
+.fa.fa-dochub,
+.fa.fa-docker,
+.fa.fa-draft2digital,
+.fa.fa-dribbble,
+.fa.fa-dribbble-square,
+.fa.fa-dropbox,
+.fa.fa-drupal,
+.fa.fa-dyalog,
+.fa.fa-earlybirds,
+.fa.fa-edge,
+.fa.fa-ember,
+.fa.fa-empire,
+.fa.fa-envira,
+.fa.fa-erlang,
+.fa.fa-etsy,
+.fa.fa-expeditedssl,
+.fa.fa-facebook,
+.fa.fa-facebook-f,
+.fa.fa-facebook-messenger,
+.fa.fa-facebook-square,
+.fa.fa-firefox,
+.fa.fa-first-order,
+.fa.fa-firstdraft,
+.fa.fa-flickr,
+.fa.fa-fly,
+.fa.fa-font-awesome,
+.fa.fa-font-awesome-alt,
+.fa.fa-font-awesome-flag,
+.fa.fa-fonticons,
+.fa.fa-fonticons-fi,
+.fa.fa-fort-awesome,
+.fa.fa-fort-awesome-alt,
+.fa.fa-forumbee,
+.fa.fa-foursquare,
+.fa.fa-free-code-camp,
+.fa.fa-freebsd,
+.fa.fa-get-pocket,
+.fa.fa-gg,
+.fa.fa-gg-circle,
+.fa.fa-git,
+.fa.fa-git-square,
+.fa.fa-github,
+.fa.fa-github-alt,
+.fa.fa-github-square,
+.fa.fa-gitkraken,
+.fa.fa-gitlab,
+.fa.fa-gitter,
+.fa.fa-glide,
+.fa.fa-glide-g,
+.fa.fa-gofore,
+.fa.fa-goodreads,
+.fa.fa-goodreads-g,
+.fa.fa-google,
+.fa.fa-google-drive,
+.fa.fa-google-play,
+.fa.fa-google-plus,
+.fa.fa-google-plus-g,
+.fa.fa-google-plus-square,
+.fa.fa-google-wallet,
+.fa.fa-gratipay,
+.fa.fa-grav,
+.fa.fa-gripfire,
+.fa.fa-grunt,
+.fa.fa-gulp,
+.fa.fa-hacker-news,
+.fa.fa-hacker-news-square,
+.fa.fa-hire-a-helper,
+.fa.fa-hooli,
+.fa.fa-hotjar,
+.fa.fa-houzz,
+.fa.fa-html5,
+.fa.fa-hubspot,
+.fa.fa-imdb,
+.fa.fa-instagram,
+.fa.fa-internet-explorer,
+.fa.fa-ioxhost,
+.fa.fa-itunes,
+.fa.fa-itunes-note,
+.fa.fa-jenkins,
+.fa.fa-joget,
+.fa.fa-joomla,
+.fa.fa-js,
+.fa.fa-js-square,
+.fa.fa-jsfiddle,
+.fa.fa-keycdn,
+.fa.fa-kickstarter,
+.fa.fa-kickstarter-k,
+.fa.fa-laravel,
+.fa.fa-lastfm,
+.fa.fa-lastfm-square,
+.fa.fa-leanpub,
+.fa.fa-less,
+.fa.fa-line,
+.fa.fa-linkedin,
+.fa.fa-linkedin-in,
+.fa.fa-linode,
+.fa.fa-linux,
+.fa.fa-lyft,
+.fa.fa-magento,
+.fa.fa-maxcdn,
+.fa.fa-medapps,
+.fa.fa-medium,
+.fa.fa-medium-m,
+.fa.fa-medrt,
+.fa.fa-meetup,
+.fa.fa-microsoft,
+.fa.fa-mix,
+.fa.fa-mixcloud,
+.fa.fa-mizuni,
+.fa.fa-modx,
+.fa.fa-monero,
+.fa.fa-napster,
+.fa.fa-nintendo-switch,
+.fa.fa-node,
+.fa.fa-node-js,
+.fa.fa-npm,
+.fa.fa-ns8,
+.fa.fa-nutritionix,
+.fa.fa-odnoklassniki,
+.fa.fa-odnoklassniki-square,
+.fa.fa-opencart,
+.fa.fa-openid,
+.fa.fa-opera,
+.fa.fa-optin-monster,
+.fa.fa-osi,
+.fa.fa-page4,
+.fa.fa-pagelines,
+.fa.fa-palfed,
+.fa.fa-patreon,
+.fa.fa-paypal,
+.fa.fa-periscope,
+.fa.fa-phabricator,
+.fa.fa-phoenix-framework,
+.fa.fa-pied-piper,
+.fa.fa-pied-piper-alt,
+.fa.fa-pied-piper-pp,
+.fa.fa-pinterest,
+.fa.fa-pinterest-p,
+.fa.fa-pinterest-square,
+.fa.fa-playstation,
+.fa.fa-product-hunt,
+.fa.fa-pushed,
+.fa.fa-python,
+.fa.fa-qq,
+.fa.fa-quora,
+.fa.fa-ravelry,
+.fa.fa-react,
+.fa.fa-rebel,
+.fa.fa-red-river,
+.fa.fa-reddit,
+.fa.fa-reddit-alien,
+.fa.fa-reddit-square,
+.fa.fa-rendact,
+.fa.fa-renren,
+.fa.fa-replyd,
+.fa.fa-resolving,
+.fa.fa-rocketchat,
+.fa.fa-rockrms,
+.fa.fa-safari,
+.fa.fa-sass,
+.fa.fa-schlix,
+.fa.fa-scribd,
+.fa.fa-searchengin,
+.fa.fa-sellcast,
+.fa.fa-sellsy,
+.fa.fa-servicestack,
+.fa.fa-shirtsinbulk,
+.fa.fa-simplybuilt,
+.fa.fa-sistrix,
+.fa.fa-skyatlas,
+.fa.fa-skype,
+.fa.fa-slack,
+.fa.fa-slack-hash,
+.fa.fa-slideshare,
+.fa.fa-snapchat,
+.fa.fa-snapchat-ghost,
+.fa.fa-snapchat-square,
+.fa.fa-soundcloud,
+.fa.fa-speakap,
+.fa.fa-spotify,
+.fa.fa-stack-exchange,
+.fa.fa-stack-overflow,
+.fa.fa-staylinked,
+.fa.fa-steam,
+.fa.fa-steam-square,
+.fa.fa-steam-symbol,
+.fa.fa-sticker-mule,
+.fa.fa-strava,
+.fa.fa-stripe,
+.fa.fa-stripe-s,
+.fa.fa-studiovinari,
+.fa.fa-stumbleupon,
+.fa.fa-stumbleupon-circle,
+.fa.fa-superpowers,
+.fa.fa-supple,
+.fa.fa-telegram,
+.fa.fa-telegram-plane,
+.fa.fa-tencent-weibo,
+.fa.fa-themeisle,
+.fa.fa-trello,
+.fa.fa-tripadvisor,
+.fa.fa-tumblr,
+.fa.fa-tumblr-square,
+.fa.fa-twitch,
+.fa.fa-twitter,
+.fa.fa-twitter-square,
+.fa.fa-typo3,
+.fa.fa-uber,
+.fa.fa-uikit,
+.fa.fa-uniregistry,
+.fa.fa-untappd,
+.fa.fa-usb,
+.fa.fa-ussunnah,
+.fa.fa-vaadin,
+.fa.fa-viacoin,
+.fa.fa-viadeo,
+.fa.fa-viadeo-square,
+.fa.fa-viber,
+.fa.fa-vimeo,
+.fa.fa-vimeo-square,
+.fa.fa-vimeo-v,
+.fa.fa-vine,
+.fa.fa-vk,
+.fa.fa-vnv,
+.fa.fa-vuejs,
+.fa.fa-weibo,
+.fa.fa-weixin,
+.fa.fa-whatsapp,
+.fa.fa-whatsapp-square,
+.fa.fa-whmcs,
+.fa.fa-wikipedia-w,
+.fa.fa-windows,
+.fa.fa-wordpress,
+.fa.fa-wordpress-simple,
+.fa.fa-wpbeginner,
+.fa.fa-wpexplorer,
+.fa.fa-wpforms,
+.fa.fa-xbox,
+.fa.fa-xing,
+.fa.fa-xing-square,
+.fa.fa-y-combinator,
+.fa.fa-yahoo,
+.fa.fa-yandex,
+.fa.fa-yandex-international,
+.fa.fa-yelp,
+.fa.fa-yoast,
+.fa.fa-youtube,
+
+.fa.fa-linkedin-square, // brands here and below are former v4 class names not in v5 (the content is wired up for them below)
+.fa.fa-youtube-square,
+.fa.fa-youtube-play,
+.fa.fa-bitbucket-square,
+.fa.fa-gittip,
+.fa.fa-ra,
+.fa.fa-resistance,
+.fa.fa-ge,
+.fa.fa-y-combinator-square,
+.fa.fa-yc-square,
+.fa.fa-wechat,
+.fa.fa-meanpath,
+.fa.fa-facebook-official,
+.fa.fa-yc,
+.fa.fa-wheelchair-alt,
+.fa.fa-google-plus-official,
+.fa.fa-google-plus-circle,
+.fa.fa-fa,
+.fa.fa-eercast
+{
+  font-family: "@{fa-font-face} Brands";
+  font-weight: normal !important;
+}
+
+.fa.fa-star-o,
+.fa.fa-trash-o,
+.fa.fa-file-o,
+.fa.fa-clock-o,
+.fa.fa-arrow-circle-o-down,
+.fa.fa-arrow-circle-o-up,
+.fa.fa-play-circle-o,
+.fa.fa-list-alt,
+.fa.fa-picture-o,
+.fa.fa-photo,
+.fa.fa-image,
+.fa.fa-pencil-square-o,
+.fa.fa-share-square-o,
+.fa.fa-check-square-o,
+.fa.fa-times-circle-o,
+.fa.fa-check-circle-o,
+.fa.fa-eye-slash,
+.fa.fa-bar-chart,
+.fa.fa-bar-chart-o,
+.fa.fa-thumbs-o-up,
+.fa.fa-thumbs-o-down,
+.fa.fa-heart-o,
+.fa.fa-lemon-o,
+.fa.fa-square-o,
+.fa.fa-bookmark-o,
+.fa.fa-credit-card,
+.fa.fa-hdd-o,
+.fa.fa-hand-o-right,
+.fa.fa-hand-o-left,
+.fa.fa-hand-o-up,
+.fa.fa-hand-o-down,
+.fa.fa-files-o,
+.fa.fa-floppy-o,
+.fa.fa-money,
+.fa.fa-comment-o,
+.fa.fa-comments-o,
+.fa.fa-clipboard,
+.fa.fa-paste,
+.fa.fa-lightbulb-o,
+.fa.fa-bell-o,
+.fa.fa-file-text-o,
+.fa.fa-building-o,
+.fa.fa-hospital-o,
+.fa.fa-circle-o,
+.fa.fa-folder-o,
+.fa.fa-folder-open-o,
+.fa.fa-smile-o,
+.fa.fa-frown-o,
+.fa.fa-meh-o,
+.fa.fa-keyboard-o,
+.fa.fa-flag-o,
+.fa.fa-star-half-o,
+.fa.fa-star-half-empty,
+.fa.fa-star-half-full,
+.fa.fa-calendar-o,
+.fa.fa-minus-square-o,
+.fa.fa-compass,
+.fa.fa-caret-square-o-down,
+.fa.fa-toggle-down,
+.fa.fa-caret-square-o-up,
+.fa.fa-toggle-up,
+.fa.fa-caret-square-o-right,
+.fa.fa-toggle-right,
+.fa.fa-sun-o,
+.fa.fa-moon-o,
+.fa.fa-arrow-circle-o-right,
+.fa.fa-arrow-circle-o-left,
+.fa.fa-caret-square-o-left,
+.fa.fa-toggle-left,
+.fa.fa-dot-circle-o,
+.fa.fa-plus-square-o,
+.fa.fa-envelope-o,
+.fa.fa-file-pdf-o,
+.fa.fa-file-word-o,
+.fa.fa-file-excel-o,
+.fa.fa-file-powerpoint-o,
+.fa.fa-file-image-o,
+.fa.fa-file-photo-o,
+.fa.fa-file-picture-o,
+.fa.fa-file-archive-o,
+.fa.fa-file-zip-o,
+.fa.fa-file-audio-o,
+.fa.fa-file-sound-o,
+.fa.fa-file-video-o,
+.fa.fa-file-movie-o,
+.fa.fa-file-code-o,
+.fa.fa-life-ring,
+.fa.fa-life-bouy,
+.fa.fa-life-buoy,
+.fa.fa-life-saver,
+.fa.fa-support,
+.fa.fa-paper-plane-o,
+.fa.fa-send-o,
+.fa.fa-circle-thin,
+.fa.fa-futbol-o,
+.fa.fa-soccer-ball-o,
+.fa.fa-newspaper-o,
+.fa.fa-bell-slash-o,
+.fa.fa-copyright,
+.fa.fa-cc,
+.fa.fa-diamond,
+.fa.fa-object-group,
+.fa.fa-object-ungroup,
+.fa.fa-sticky-note-o,
+.fa.fa-clone,
+.fa.fa-hourglass-o,
+.fa.fa-hand-rock-o,
+.fa.fa-hand-grab-o,
+.fa.fa-hand-paper-o,
+.fa.fa-hand-stop-o,
+.fa.fa-hand-scissors-o,
+.fa.fa-hand-lizard-o,
+.fa.fa-hand-spock-o,
+.fa.fa-hand-pointer-o,
+.fa.fa-hand-peace-o,
+.fa.fa-registered,
+.fa.fa-calendar-plus-o,
+.fa.fa-calendar-minus-o,
+.fa.fa-calendar-times-o,
+.fa.fa-calendar-check-o,
+.fa.fa-map-o,
+.fa.fa-commenting-o,
+.fa.fa-pause-circle-o,
+.fa.fa-stop-circle-o,
+.fa.fa-question-circle-o,
+.fa.fa-handshake-o,
+.fa.fa-envelope-open-o,
+.fa.fa-address-book-o,
+.fa.fa-address-card-o,
+.fa.fa-vcard-o,
+.fa.fa-user-circle-o,
+.fa.fa-user-o,
+.fa.fa-id-badge,
+.fa.fa-id-card-o,
+.fa.fa-drivers-license-o,
+.fa.fa-window-maximize,
+.fa.fa-window-restore,
+.fa.fa-window-close-o,
+.fa.fa-times-rectangle-o,
+.fa.fa-snowflake-o {
+  font-family: @fa-font-face;
+  font-weight: @fa-theme-weight-outline;
+}
+
+// set content for v4 missing icons
+.fa-address-book-o:before { content: @fa-var-address-book; }
+.fa-address-card-o:before { content: @fa-var-address-card; }
+.fa-area-chart:before { content: @fa-var-chart-area; }
+.fa-arrow-circle-o-down:before { content: @fa-var-arrow-alt-circle-down; }
+.fa-arrow-circle-o-left:before { content: @fa-var-arrow-alt-circle-left; }
+.fa-arrow-circle-o-right:before { content: @fa-var-arrow-alt-circle-right; }
+.fa-arrow-circle-o-up:before { content: @fa-var-arrow-alt-circle-up; }
+.fa-arrows:before { content: @fa-var-arrows-alt; }
+.fa-arrows-alt:before { content: @fa-var-expand-arrows-alt; }
+.fa-arrows-h:before { content: @fa-var-arrows-alt-h; }
+.fa-arrows-v:before { content: @fa-var-arrows-alt-v; }
+.fa-asl-interpreting:before { content: @fa-var-american-sign-language-interpreting; }
+.fa-automobile:before { content: @fa-var-car; }
+.fa-bank:before { content: @fa-var-university; }
+.fa-bar-chart-o:before { content: @fa-var-chart-bar; }
+.fa-bar-chart:before { content: @fa-var-chart-bar; }
+.fa-bathtub:before { content: @fa-var-bath; }
+.fa-battery:before { content: @fa-var-battery-full; }
+.fa-battery-0:before { content: @fa-var-battery-empty; }
+.fa-battery-1:before { content: @fa-var-battery-quarter; }
+.fa-battery-2:before { content: @fa-var-battery-half; }
+.fa-battery-3:before { content: @fa-var-battery-three-quarters; }
+.fa-battery-4:before { content: @fa-var-battery-full; }
+.fa-bell-o:before { content: @fa-var-bell; }
+.fa-bell-slash-o:before { content: @fa-var-bell-slash; }
+.fa-bitbucket-square:before { content: @fa-var-bitbucket; }
+.fa-bitcoin:before { content: @fa-var-btc; }
+.fa-bookmark-o:before { content: @fa-var-bookmark; }
+.fa-building-o:before { content: @fa-var-building; }
+.fa-cab:before { content: @fa-var-taxi; }
+.fa-calendar:before { content: @fa-var-calendar-alt; }
+.fa-calendar-alt:before { content: @fa-var-calendar; }
+.fa-calendar-check-o:before { content: @fa-var-calendar-check; }
+.fa-calendar-minus-o:before { content: @fa-var-calendar-minus; }
+.fa-calendar-o:before { content: @fa-var-calendar; }
+.fa-calendar-plus-o:before { content: @fa-var-calendar-plus; }
+.fa-calendar-times-o:before { content: @fa-var-calendar-times; }
+.fa-caret-square-o-down:before { content: @fa-var-caret-square-down; }
+.fa-caret-square-o-left:before { content: @fa-var-caret-square-left; }
+.fa-caret-square-o-right:before { content: @fa-var-caret-square-right; }
+.fa-caret-square-o-up:before { content: @fa-var-caret-square-up; }
+.fa-cc:before { content: @fa-var-closed-captioning; }
+.fa-chain:before { content: @fa-var-link; }
+.fa-chain-broken:before { content: @fa-var-unlink; }
+.fa-check-circle-o:before { content: @fa-var-check-circle; }
+.fa-check-square-o:before { content: @fa-var-check-square; }
+.fa-circle-o-notch:before { content: @fa-var-circle-notch; }
+.fa-circle-o:before { content: @fa-var-circle; }
+.fa-circle-thin:before { content: @fa-var-circle; }
+.fa-clock-o:before { content: @fa-var-clock; }
+.fa-close:before { content: @fa-var-times; }
+.fa-cloud-download:before { content: @fa-var-cloud-download-alt; }
+.fa-cloud-upload:before { content: @fa-var-cloud-upload-alt; }
+.fa-cny:before, .fa-jpy:before, .fa-rmb:before, .fa-yen:before { content: @fa-var-yen-sign; }
+.fa-code-fork:before { content: @fa-var-code-branch; }
+.fa-comment-o:before { content: @fa-var-comment; }
+.fa-commenting-o:before { content: @fa-var-comment-alt; }
+.fa-commenting:before { content: @fa-var-comment-alt; }
+.fa-comments-o:before { content: @fa-var-comments; }
+.fa-credit-card-alt:before { content: @fa-var-credit-card; }
+.fa-cutlery:before { content: @fa-var-utensils; }
+.fa-dashboard:before { content: @fa-var-tachometer-alt; }
+.fa-deafness:before { content: @fa-var-deaf; }
+.fa-dedent:before { content: @fa-var-outdent; }
+.fa-diamond:before { content: @fa-var-gem; }
+.fa-dollar:before, .fa-usd:before { content: @fa-var-dollar-sign; }
+.fa-dot-circle-o:before { content: @fa-var-dot-circle; }
+.fa-drivers-license-o:before { content: @fa-var-id-card; }
+.fa-drivers-license:before { content: @fa-var-id-card; }
+.fa-eercast:before { content: @fa-var-sellcast; }
+.fa-envelope-o:before { content: @fa-var-envelope; }
+.fa-envelope-open-o:before { content: @fa-var-envelope-open; }
+.fa-eur:before, .fa-euro:before { content: @fa-var-euro-sign; }
+.fa-exchange:before { content: @fa-var-exchange-alt; }
+.fa-external-link-square:before { content: @fa-var-external-link-square-alt; }
+.fa-external-link:before { content: @fa-var-external-link-alt; }
+.fa-eyedropper:before { content: @fa-var-eye-dropper; }
+.fa-fa:before { content: @fa-var-font-awesome; }
+.fa-facebook-f:before { content: @fa-var-facebook-f; }
+.fa-facebook-official:before { content: @fa-var-facebook; }
+.fa-facebook:before { content: @fa-var-facebook-f; }
+.fa-feed:before { content: @fa-var-rss; }
+.fa-file-archive-o:before { content: @fa-var-file-archive; }
+.fa-file-audio-o:before { content: @fa-var-file-audio; }
+.fa-file-code-o:before { content: @fa-var-file-code; }
+.fa-file-excel-o:before { content: @fa-var-file-excel; }
+.fa-file-image-o:before { content: @fa-var-file-image; }
+.fa-file-movie-o:before { content: @fa-var-file-video; }
+.fa-file-o:before { content: @fa-var-file; }
+.fa-file-pdf-o:before { content: @fa-var-file-pdf; }
+.fa-file-photo-o:before { content: @fa-var-file-image; }
+.fa-file-picture-o:before { content: @fa-var-file-image; }
+.fa-file-powerpoint-o:before { content: @fa-var-file-powerpoint; }
+.fa-file-sound-o:before { content: @fa-var-file-audio; }
+.fa-file-text-o:before { content: @fa-var-file-alt; }
+.fa-file-text:before { content: @fa-var-file-alt; }
+.fa-file-video-o:before { content: @fa-var-file-video; }
+.fa-file-word-o:before { content: @fa-var-file-word; }
+.fa-file-zip-o:before { content: @fa-var-file-archive; }
+.fa-files-o:before { content: @fa-var-copy; }
+.fa-flag-o:before { content: @fa-var-flag; }
+.fa-flash:before { content: @fa-var-bolt; }
+.fa-floppy-o:before { content: @fa-var-save; }
+.fa-folder-o:before { content: @fa-var-folder; }
+.fa-folder-open-o:before { content: @fa-var-folder-open; }
+.fa-frown-o:before { content: @fa-var-frown; }
+.fa-futbol-o:before { content: @fa-var-futbol; }
+.fa-gbp:before { content: @fa-var-pound-sign; }
+.fa-ge:before { content: @fa-var-empire; }
+.fa-gear:before { content: @fa-var-cog; }
+.fa-gears:before { content: @fa-var-cogs; }
+.fa-gittip:before { content: @fa-var-gratipay; }
+.fa-glass:before { content: @fa-var-glass-martini; }
+.fa-google-plus-circle:before, .fa-google-plus-official:before { content: @fa-var-google-plus; }
+.fa-google-plus:before { content: @fa-var-google-plus-g; }
+.fa-group:before { content: @fa-var-users; }
+.fa-hand-grab-o:before { content: @fa-var-hand-rock; }
+.fa-hand-lizard-o:before { content: @fa-var-hand-lizard; }
+.fa-hand-o-down:before { content: @fa-var-hand-point-down; }
+.fa-hand-o-left:before { content: @fa-var-hand-point-left; }
+.fa-hand-o-right:before { content: @fa-var-hand-point-right; }
+.fa-hand-o-up:before { content: @fa-var-hand-point-up; }
+.fa-hand-paper-o:before { content: @fa-var-hand-paper; }
+.fa-hand-peace-o:before { content: @fa-var-hand-peace; }
+.fa-hand-pointer-o:before { content: @fa-var-hand-pointer; }
+.fa-hand-rock-o:before { content: @fa-var-hand-rock; }
+.fa-hand-scissors-o:before { content: @fa-var-hand-scissors; }
+.fa-hand-spock-o:before { content: @fa-var-hand-spock; }
+.fa-hand-stop-o:before { content: @fa-var-hand-paper; }
+.fa-handshake-o:before { content: @fa-var-handshake; }
+.fa-hard-of-hearing:before { content: @fa-var-deaf; }
+.fa-hdd-o:before { content: @fa-var-hdd; }
+.fa-header:before { content: @fa-var-heading; }
+.fa-heart-o:before { content: @fa-var-heart; }
+.fa-hospital-o:before { content: @fa-var-hospital; }
+.fa-hotel:before { content: @fa-var-bed; }
+.fa-hourglass-1:before { content: @fa-var-hourglass-start; }
+.fa-hourglass-2:before { content: @fa-var-hourglass-half; }
+.fa-hourglass-3:before { content: @fa-var-hourglass-end; }
+.fa-hourglass-o:before { content: @fa-var-hourglass; }
+.fa-id-card-o:before { content: @fa-var-id-card; }
+.fa-ils:before { content: @fa-var-shekel-sign; }
+.fa-image:before { content: @fa-var-image; }
+.fa-inr:before { content: @fa-var-rupee-sign; }
+.fa-institution:before { content: @fa-var-university; }
+.fa-intersex:before { content: @fa-var-transgender; }
+.fa-keyboard-o:before { content: @fa-var-keyboard; }
+.fa-krw:before, .fa-won:before { content: @fa-var-won-sign; }
+.fa-legal:before { content: @fa-var-gavel; }
+.fa-lemon-o:before { content: @fa-var-lemon; }
+.fa-level-down:before { content: @fa-var-level-down-alt; }
+.fa-level-up:before { content: @fa-var-level-up-alt; }
+.fa-life-bouy:before, .fa-life-saver:before { content: @fa-var-life-ring; }
+.fa-lightbulb-o:before { content: @fa-var-lightbulb; }
+.fa-line-chart:before { content: @fa-var-chart-line; }
+.fa-linkedin:before { content: @fa-var-linkedin-in; }
+.fa-linkedin-square:before { content: @fa-var-linkedin; }
+.fa-long-arrow-down:before { content: @fa-var-long-arrow-alt-down; }
+.fa-long-arrow-left:before { content: @fa-var-long-arrow-alt-left; }
+.fa-long-arrow-right:before { content: @fa-var-long-arrow-alt-right; }
+.fa-long-arrow-up:before { content: @fa-var-long-arrow-alt-up; }
+.fa-mail-forward:before { content: @fa-var-share; }
+.fa-mail-reply-all:before { content: @fa-var-reply-all; }
+.fa-mail-reply:before { content: @fa-var-reply; }
+.fa-map-marker:before { content: @fa-var-map-marker-alt; }
+.fa-map-o:before { content: @fa-var-map; }
+.fa-meanpath:before { content: @fa-var-font-awesome; }
+.fa-meh-o:before { content: @fa-var-meh; }
+.fa-minus-square-o:before { content: @fa-var-minus-square; }
+.fa-mobile-phone:before { content: @fa-var-mobile-alt; }
+.fa-mobile:before { content: @fa-var-mobile-alt; }
+.fa-money:before { content: @fa-var-money-bill-alt; }
+.fa-moon-o:before { content: @fa-var-moon; }
+.fa-mortar-board:before { content: @fa-var-graduation-cap; }
+.fa-navicon:before { content: @fa-var-bars; }
+.fa-newspaper-o:before { content: @fa-var-newspaper; }
+.fa-paper-plane-o:before { content: @fa-var-paper-plane; }
+.fa-paste:before { content: @fa-var-clipboard; }
+.fa-pause-circle-o:before { content: @fa-var-pause-circle; }
+.fa-pencil-square-o:before { content: @fa-var-edit; }
+.fa-pencil-square:before { content: @fa-var-pen-square; }
+.fa-pencil:before { content: @fa-var-pencil-alt; }
+.fa-photo:before { content: @fa-var-image; }
+.fa-picture-o:before { content: @fa-var-image; }
+.fa-pie-chart:before { content: @fa-var-chart-pie; }
+.fa-play-circle-o:before { content: @fa-var-play-circle; }
+.fa-plus-square-o:before { content: @fa-var-plus-square; }
+.fa-question-circle-o:before { content: @fa-var-question-circle; }
+.fa-ra:before { content: @fa-var-rebel; }
+.fa-refresh:before { content: @fa-var-sync; }
+.fa-remove:before { content: @fa-var-times; }
+.fa-reorder:before { content: @fa-var-bars; }
+.fa-repeat:before { content: @fa-var-redo; }
+.fa-resistance:before { content: @fa-var-rebel; }
+.fa-rotate-left:before { content: @fa-var-undo; }
+.fa-rotate-right:before { content: @fa-var-redo; }
+.fa-rouble:before { content: @fa-var-ruble-sign; }
+.fa-rub:before, .fa-ruble:before { content: @fa-var-ruble-sign; }
+.fa-rupee:before { content: @fa-var-rupee-sign; }
+.fa-s15:before { content: @fa-var-bath; }
+.fa-scissors:before { content: @fa-var-cut; }
+.fa-send-o:before { content: @fa-var-paper-plane; }
+.fa-send:before { content: @fa-var-paper-plane; }
+.fa-share-square-o:before { content: @fa-var-share-square; }
+.fa-shekel:before, .fa-sheqel:before { content: @fa-var-shekel-sign; }
+.fa-shield:before { content: @fa-var-shield-alt; }
+.fa-sign-in:before { content: @fa-var-sign-in-alt; }
+.fa-sign-out:before { content: @fa-var-sign-out-alt; }
+.fa-signing:before { content: @fa-var-sign-language; }
+.fa-sliders:before { content: @fa-var-sliders-h; }
+.fa-smile-o:before { content: @fa-var-smile; }
+.fa-snowflake-o:before { content: @fa-var-snowflake; }
+.fa-soccer-ball-o:before { content: @fa-var-futbol; }
+.fa-sort-alpha-asc:before { content: @fa-var-sort-alpha-down; }
+.fa-sort-alpha-desc:before { content: @fa-var-sort-alpha-up; }
+.fa-sort-amount-asc:before { content: @fa-var-sort-amount-down; }
+.fa-sort-amount-desc:before { content: @fa-var-sort-amount-up; }
+.fa-sort-asc:before { content: @fa-var-sort-up; }
+.fa-sort-desc:before { content: @fa-var-sort-down; }
+.fa-sort-numeric-asc:before { content: @fa-var-sort-numeric-down; }
+.fa-sort-numeric-desc:before { content: @fa-var-sort-numeric-up; }
+.fa-spoon:before { content: @fa-var-utensil-spoon; }
+.fa-square-o:before { content: @fa-var-square; }
+.fa-star-half-empty:before { content: @fa-var-star-half; }
+.fa-star-half-full:before { content: @fa-var-star-half; }
+.fa-star-half-o:before { content: @fa-var-star-half; }
+.fa-star-o:before { content: @fa-var-star; }
+.fa-sticky-note-o:before { content: @fa-var-sticky-note; }
+.fa-stop-circle-o:before { content: @fa-var-stop-circle; }
+.fa-sun-o:before { content: @fa-var-sun; }
+.fa-support:before { content: @fa-var-life-ring; }
+.fa-tablet:before { content: @fa-var-tablet-alt; }
+.fa-tachometer:before { content: @fa-var-tachometer-alt; }
+.fa-television:before { content: @fa-var-tv; }
+.fa-thermometer-0:before { content: @fa-var-thermometer-empty; }
+.fa-thermometer-1:before { content: @fa-var-thermometer-quarter; }
+.fa-thermometer-2:before { content: @fa-var-thermometer-half; }
+.fa-thermometer-3:before { content: @fa-var-thermometer-three-quarters; }
+.fa-thermometer-4:before { content: @fa-var-thermometer-full; }
+.fa-thermometer:before { content: @fa-var-thermometer-full; }
+.fa-thumb-tack:before { content: @fa-var-thumbtack; }
+.fa-thumbs-o-down:before { content: @fa-var-thumbs-down; }
+.fa-thumbs-o-up:before { content: @fa-var-thumbs-up; }
+.fa-ticket:before { content: @fa-var-ticket-alt; }
+.fa-times-circle-o:before { content: @fa-var-times-circle; }
+.fa-times-rectangle-o:before { content: @fa-var-window-close; }
+.fa-times-rectangle:before { content: @fa-var-window-close; }
+.fa-toggle-down:before { content: @fa-var-caret-square-down; }
+.fa-toggle-left:before { content: @fa-var-caret-square-left; }
+.fa-toggle-right:before { content: @fa-var-caret-square-right; }
+.fa-toggle-up:before { content: @fa-var-caret-square-up; }
+.fa-trash-o:before { content: @fa-var-trash-alt; }
+.fa-trash:before { content: @fa-var-trash-alt; }
+.fa-try:before, .fa-turkish-lira:before { content: @fa-var-lira-sign; }
+.fa-unsorted:before { content: @fa-var-sort; }
+.fa-user-circle-o:before { content: @fa-var-user-circle; }
+.fa-user-o:before { content: @fa-var-user; }
+.fa-vcard:before, .fa-vcard-o:before { content: @fa-var-address-card; }
+.fa-video-camera:before { content: @fa-var-video; }
+.fa-vimeo:before { content: @fa-var-vimeo-v; }
+.fa-volume-control-phone:before { content: @fa-var-phone-volume; }
+.fa-warning:before { content: @fa-var-exclamation-triangle; }
+.fa-wechat:before { content: @fa-var-weixin; }
+.fa-wheelchair-alt:before { content: @fa-var-accessible-icon; }
+.fa-window-close-o:before { content: @fa-var-window-close; }
+.fa-y-combinator-square:before { content: @fa-var-hacker-news; }
+.fa-yc-square:before { content: @fa-var-hacker-news; }
+.fa-yc:before { content: @fa-var-y-combinator; }
+.fa-youtube-play:before { content: @fa-var-youtube; }

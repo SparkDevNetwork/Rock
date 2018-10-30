@@ -84,7 +84,8 @@ namespace Rock.Transactions
         /// <value>
         /// The text message.
         /// </value>
-        [Obsolete("Text Message property is no longer supported for emails")]
+        [RockObsolete( "1.7" )]
+        [Obsolete("Text Message property is no longer supported for emails", true )]
         public string TextMessage { get; set; }
 
         /// <summary>
@@ -104,11 +105,28 @@ namespace Rock.Transactions
         public CommunicationRecipientStatus RecipientStatus { get; set; }
 
         /// <summary>
+        /// On optional guid to use if one and only one recipient will be created. Used for tracking opens/clicks.
+        /// </summary>
+        /// <value>
+        /// The recipient unique identifier.
+        /// </value>
+        public Guid? RecipientGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the datetime that communication was sent.
+        /// </summary>
+        /// <value>
+        /// The send date time.
+        /// </value>
+        public DateTime? SendDateTime { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SaveCommunicationTransaction"/> class.
         /// </summary>
         public SaveCommunicationTransaction()
         {
             RecipientStatus = CommunicationRecipientStatus.Delivered;
+            SendDateTime = RockDateTime.Now;
             BulkCommunication = false;
         }
 
@@ -164,15 +182,25 @@ namespace Rock.Transactions
         {
             using ( var rockContext = new RockContext() )
             {
-                var sender = new PersonService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( p => p.Email == FromAddress )
-                    .FirstOrDefault();
-                int? senderPersonAliasId = sender != null ? sender.PrimaryAliasId : (int?)null;
+                int? senderPersonAliasId = null;
+                if ( FromAddress.IsNotNullOrWhiteSpace() )
+                {
+                    var sender = new PersonService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( p => p.Email == FromAddress )
+                        .FirstOrDefault();
+                    senderPersonAliasId = sender != null ? sender.PrimaryAliasId : (int?)null;
+                }
 
-                new CommunicationService( rockContext ).CreateEmailCommunication(
-                    RecipientEmails, FromName, FromAddress, ReplyTo, Subject, HtmlMessage, BulkCommunication,
+                var communication = new CommunicationService( rockContext ).CreateEmailCommunication(
+                    RecipientEmails, FromName, FromAddress, ReplyTo, Subject, HtmlMessage, BulkCommunication, SendDateTime,
                     RecipientStatus, senderPersonAliasId );
+
+                if ( communication != null && communication.Recipients.Count() == 1 && RecipientGuid.HasValue )
+                {
+                    communication.Recipients.First().Guid = RecipientGuid.Value;
+                }
+
                 rockContext.SaveChanges();
             }
         }

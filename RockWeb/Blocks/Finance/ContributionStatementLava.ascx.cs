@@ -233,9 +233,9 @@ namespace RockWeb.Blocks.Finance
 
             var statementYear = RockDateTime.Now.Year;
 
-            if ( Request["StatementYear"] != null )
+            if ( PageParameter( "StatementYear" ).IsNotNullOrWhiteSpace() )
             {
-                Int32.TryParse( Request["StatementYear"].ToString(), out statementYear );
+                Int32.TryParse( PageParameter( "StatementYear" ), out statementYear );
             }
 
             FinancialTransactionDetailService financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
@@ -244,13 +244,13 @@ namespace RockWeb.Blocks.Finance
 
             // get excluded currency types setting
             List<Guid> excludedCurrencyTypes = new List<Guid>();
-            if ( GetAttributeValue( "ExcludedCurrencyTypes" ).IsNotNullOrWhitespace() )
+            if ( GetAttributeValue( "ExcludedCurrencyTypes" ).IsNotNullOrWhiteSpace() )
             {
                 excludedCurrencyTypes = GetAttributeValue( "ExcludedCurrencyTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
             }
 
-            var personGuid = Request["PersonGuid"].AsGuidOrNull();
-            
+            var personGuid = PageParameter( "PersonGuid" ).AsGuidOrNull();
+
             if ( personGuid.HasValue )
             {
                 // if "AllowPersonQueryString is False", only use the PersonGuid if it is a Guid of one of the current person's businesses
@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.Finance
                 mergeFields.Add( "StatementEndDate", "12/31/" + statementYear.ToString() );
             }
 
-            var familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
             var groupMemberQry = new GroupMemberService( rockContext ).Queryable().Where( m => m.Group.GroupTypeId == familyGroupTypeId );
 
             // get giving group members in order by family role (adult -> child) and then gender (male -> female)
@@ -390,17 +390,22 @@ namespace RockWeb.Blocks.Finance
             // add detailed pledge information
             foreach ( var pledge in pledges )
             {
-                var adjustedPedgeEndDate = pledge.PledgeEndDate.Value.Date.AddDays( 1 );
+                var adjustedPledgeEndDate = pledge.PledgeEndDate.Value.Date;
                 var statementYearEnd = new DateTime( statementYear + 1, 1, 1 );
-
-                if ( adjustedPedgeEndDate > statementYearEnd )
+                
+                if ( adjustedPledgeEndDate != DateTime.MaxValue.Date )
                 {
-                    adjustedPedgeEndDate = statementYearEnd;
+                    adjustedPledgeEndDate = adjustedPledgeEndDate.AddDays( 1 );
                 }
 
-                if ( adjustedPedgeEndDate > RockDateTime.Now )
+                if ( adjustedPledgeEndDate > statementYearEnd )
                 {
-                    adjustedPedgeEndDate = RockDateTime.Now;
+                    adjustedPledgeEndDate = statementYearEnd;
+                }
+
+                if ( adjustedPledgeEndDate > RockDateTime.Now )
+                {
+                    adjustedPledgeEndDate = RockDateTime.Now;
                 }
 
                 pledge.AmountGiven = new FinancialTransactionDetailService( rockContext ).Queryable()
@@ -408,7 +413,7 @@ namespace RockWeb.Blocks.Finance
                                                  t.AccountId == pledge.AccountId
                                                  && t.Transaction.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.Transaction.AuthorizedPersonAliasId.Value )
                                                  && t.Transaction.TransactionDateTime >= pledge.PledgeStartDate
-                                                 && t.Transaction.TransactionDateTime < adjustedPedgeEndDate )
+                                                 && t.Transaction.TransactionDateTime < adjustedPledgeEndDate )
                                             .Sum( t => ( decimal? ) t.Amount ) ?? 0;
 
                 pledge.AmountRemaining = ( pledge.AmountGiven > pledge.AmountPledged ) ? 0 : ( pledge.AmountPledged - pledge.AmountGiven );

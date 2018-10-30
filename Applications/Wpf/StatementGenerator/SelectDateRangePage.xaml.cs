@@ -53,18 +53,38 @@ namespace Rock.Apps.StatementGenerator
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnNext_Click( object sender, RoutedEventArgs e )
         {
+            if ( SaveChanges( true ) )
+            {
+                var nextPage = new SelectAccountsPage();
+                this.NavigationService.Navigate( nextPage );
+            }
+        }
+
+        /// <summary>
+        /// Saves the changes.
+        /// </summary>
+        /// <param name="showWarnings">if set to <c>true</c> [show warnings].</param>
+        /// <returns></returns>
+        private bool SaveChanges( bool showWarnings )
+        {
             if ( dpEndDate.SelectedDate < dpStartDate.SelectedDate )
             {
-                lblWarning.Content = "Start date must be earlier than end date";
-                lblWarning.Visibility = Visibility.Visible;
-                return;
+                if ( showWarnings )
+                {
+                    lblWarning.Content = "Start date must be earlier than end date";
+                    lblWarning.Visibility = Visibility.Visible;
+                    return false;
+                }
             }
 
             if ( !dpStartDate.SelectedDate.HasValue )
             {
-                lblWarning.Content = "Please select a start date";
-                lblWarning.Visibility = Visibility.Visible;
-                return;
+                if ( showWarnings )
+                {
+                    lblWarning.Content = "Please select a start date";
+                    lblWarning.Visibility = Visibility.Visible;
+                    return false;
+                }
             }
 
             ReportOptions.Current.StartDate = dpStartDate.SelectedDate.Value;
@@ -79,8 +99,7 @@ namespace Rock.Apps.StatementGenerator
                 ReportOptions.Current.EndDate = null;
             }
 
-            SelectLayoutPage nextPage = new SelectLayoutPage();
-            this.NavigationService.Navigate( nextPage );
+            return true;
         }
 
         /// <summary>
@@ -90,6 +109,7 @@ namespace Rock.Apps.StatementGenerator
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnPrev_Click( object sender, RoutedEventArgs e )
         {
+            SaveChanges( false );
             this.NavigationService.GoBack();
         }
     }

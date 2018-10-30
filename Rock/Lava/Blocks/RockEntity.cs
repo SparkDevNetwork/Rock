@@ -39,12 +39,11 @@ using Rock.Security;
 namespace Rock.Lava.Blocks
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="DotLiquid.Block" />
     public class RockEntity : RockLavaBlockBase
     {
-        RockContext _rockContext;
         string _entityName = string.Empty;
         string _markup = string.Empty;
 
@@ -56,7 +55,6 @@ namespace Rock.Lava.Blocks
         /// <param name="tokens">The tokens.</param>
         public override void Initialize( string tagName, string markup, List<string> tokens )
         {
-            _rockContext = new RockContext();
             _entityName = tagName;
             _markup = markup;
             base.Initialize( tagName, markup, tokens );
@@ -123,24 +121,10 @@ namespace Rock.Lava.Blocks
                 if ( entityType != null )
                 {
                     // Get the database context
-                    Type contextType = null;
-                    Rock.Data.DbContext dbContext = null;
-                    var contexts = Rock.Reflection.SearchAssembly( entityType.Assembly, typeof( Rock.Data.DbContext ) );
-                    if ( contexts.Any() )
-                    {
-                        contextType = contexts.First().Value;
-                        dbContext = Activator.CreateInstance( contextType ) as Rock.Data.DbContext;
-                    }
-                    if ( dbContext == null )
-                    {
-                        dbContext = _rockContext;
-                    }
+                    var dbContext = Reflection.GetDbContextForEntityType( entityType );
 
                     // create an instance of the entity's service
-                    Type[] modelType = { entityType };
-                    Type genericServiceType = typeof( Rock.Data.Service<> );
-                    Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-                    Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { dbContext } ) as IService;
+                    Rock.Data.IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
 
                     ParameterExpression paramExpression = Expression.Parameter( entityType, "x" );
                     Expression queryExpression = null; // the base expression we'll use to build our query from
@@ -153,7 +137,7 @@ namespace Rock.Lava.Blocks
                         string propertyName = "Id";
 
                         List<string> selectionParms = new List<string>();
-                        selectionParms.Add( PropertyComparisonConverstion( "==" ).ToString() );
+                        selectionParms.Add( PropertyComparisonConversion( "==" ).ToString() );
                         selectionParms.Add( parms["id"].ToString() );
                         selectionParms.Add( propertyName );
 
@@ -300,23 +284,31 @@ namespace Rock.Lava.Blocks
                                     int? attributeId = null;
                                     foreach ( var id in AttributeCache.GetByEntity( entityTypeCache.Id ).SelectMany( a => a.AttributeIds ) )
                                     {
-                                        var attribute = AttributeCache.Read( id );
+                                        var attribute = AttributeCache.Get( id );
                                         if ( attribute.Key == propertyName )
                                         {
                                             attributeId = id;
+                                            break;
                                         }
                                     }
 
                                     if ( attributeId.HasValue )
                                     {
                                         // get AttributeValue queryable and parameter
-                                        var attributeValues = _rockContext.Set<AttributeValue>();
-                                        ParameterExpression attributeValueParameter = Expression.Parameter( typeof( AttributeValue ), "v" );
-                                        MemberExpression idExpression = Expression.Property( paramExpression, "Id" );
-                                        var attributeExpression = Attribute.Helper.GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, attributeId.Value );
+                                        if ( dbContext is RockContext)
+                                        {
+                                            var attributeValues = new AttributeValueService( dbContext as RockContext ).Queryable();
+                                            ParameterExpression attributeValueParameter = Expression.Parameter( typeof( AttributeValue ), "v" );
+                                            MemberExpression idExpression = Expression.Property( paramExpression, "Id" );
+                                            var attributeExpression = Attribute.Helper.GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, attributeId.Value );
 
-                                        LambdaExpression sortSelector = Expression.Lambda( attributeExpression, paramExpression );
-                                        queryResultExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { queryResult.ElementType, sortSelector.ReturnType }, queryResultExpression, sortSelector );
+                                            LambdaExpression sortSelector = Expression.Lambda( attributeExpression, paramExpression );
+                                            queryResultExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { queryResult.ElementType, sortSelector.ReturnType }, queryResultExpression, sortSelector );
+                                        }
+                                        else
+                                        {
+                                            throw new Exception( string.Format( "The database context for type {0} does not support RockContext attribute value queries.", entityTypeCache.FriendlyName ) );
+                                        }
                                     }
                                 }
 
@@ -406,7 +398,7 @@ namespace Rock.Lava.Blocks
         private IQueryable<IEntity> PersonFilters(IQueryable<Person> query, Dictionary<string,string> parms)
         {
             // limit to record type of person
-            var personRecordTypeId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ).Id;
+            var personRecordTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ).Id;
 
             query = query.Where( p => p.RecordTypeValueId == personRecordTypeId );
 
@@ -435,7 +427,7 @@ namespace Rock.Lava.Blocks
         private IQueryable<IEntity> BusinessFilters( IQueryable<Person> query, Dictionary<string, string> parms )
         {
             // limit to record type of business
-            var businessRecordTypeId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS ).Id;
+            var businessRecordTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS ).Id;
 
             query = query.Where( p => p.RecordTypeValueId == businessRecordTypeId );
             return query;
@@ -542,7 +534,6 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
         private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup
@@ -570,7 +561,7 @@ namespace Rock.Lava.Blocks
             var parms = new Dictionary<string, string>();
             parms.Add( "iterator", string.Format( "{0}Items", _entityName ) );
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();
@@ -647,18 +638,25 @@ namespace Rock.Lava.Blocks
         /// <exception cref="System.Exception"></exception>
         private Expression GetDataViewExpression( int dataViewId, IService service, ParameterExpression parmExpression, EntityTypeCache entityTypeCache )
         {
-            var dataViewSource = new DataViewService( _rockContext ).Get( dataViewId );
-            bool isCorrectDataType = dataViewSource.EntityTypeId == entityTypeCache.Id;
-
-            if ( isCorrectDataType )
+            if ( service.Context is RockContext )
             {
-                List<string> errorMessages = new List<string>();
-                var whereExpression = dataViewSource.GetExpression( service, parmExpression, out errorMessages );
-                return whereExpression;
+                var dataViewSource = new DataViewService( service.Context as RockContext ).Get( dataViewId );
+                bool isCorrectDataType = dataViewSource.EntityTypeId == entityTypeCache.Id;
+
+                if ( isCorrectDataType )
+                {
+                    List<string> errorMessages = new List<string>();
+                    var whereExpression = dataViewSource.GetExpression( service, parmExpression, out errorMessages );
+                    return whereExpression;
+                }
+                else
+                {
+                    throw new Exception( string.Format( "The DataView provided is not of type {0}.", entityTypeCache.FriendlyName ) );
+                }
             }
             else
             {
-                throw new Exception( string.Format( "The DataView provided is not of type {0}.", entityTypeCache.FriendlyName ) );
+                throw new Exception( string.Format( "The database context for type {0} does not support RockContext dataviews.", entityTypeCache.FriendlyName ) );
             }
         }
 
@@ -709,7 +707,7 @@ namespace Rock.Lava.Blocks
                     var value = expressionParts[2].Replace( "\"", "" );
 
                     List<string> selectionParms = new List<string>();
-                    selectionParms.Add( PropertyComparisonConverstion( operatorType ).ToString() );
+                    selectionParms.Add( PropertyComparisonConversion( operatorType ).ToString() );
                     selectionParms.Add( value );
                     selectionParms.Add( property );
 
@@ -725,10 +723,11 @@ namespace Rock.Lava.Blocks
                         AttributeCache filterAttribute = null;
                         foreach ( var id in AttributeCache.GetByEntity( entityTypeCache.Id ).SelectMany( a => a.AttributeIds ) )
                         {
-                            var attribute = AttributeCache.Read( id );
+                            var attribute = AttributeCache.Get( id );
                             if ( attribute.Key == property )
                             {
                                 filterAttribute = attribute;
+                                break;
                             }
                         }
 
@@ -779,8 +778,7 @@ namespace Rock.Lava.Blocks
         {
             if ( !string.IsNullOrWhiteSpace( dynamicFilter ) && !string.IsNullOrWhiteSpace( dynamicFilterValue ) )
             {
-                var entityFields = EntityHelper.GetEntityFields( type );
-                var entityField = entityFields.FindFromFilterSelection( dynamicFilter );
+                var entityField = EntityHelper.FindFromFilterSelection( type, dynamicFilter );
                 if ( entityField != null )
                 {
                     var values = new List<string>();
@@ -806,11 +804,11 @@ namespace Rock.Lava.Blocks
         }
 
         /// <summary>
-        /// Properties the comparison converstion.
+        /// Properties the comparison conversion.
         /// </summary>
         /// <param name="comparisonOperator">The comparison operator.</param>
         /// <returns></returns>
-        private int PropertyComparisonConverstion( string comparisonOperator )
+        private int PropertyComparisonConversion( string comparisonOperator )
         {
             switch ( comparisonOperator )
             {

@@ -71,7 +71,7 @@ namespace Rock.Workflow.Action
                 note.IsPrivateNote = false;
                 note.Text = GetAttributeValue(action, "Text").ResolveMergeFields(mergeFields); ;
 
-                var noteType = NoteTypeCache.Read( GetAttributeValue( action, "NoteType" ).AsGuid() );
+                var noteType = NoteTypeCache.Get( GetAttributeValue( action, "NoteType" ).AsGuid() );
                 if ( noteType != null )
                 {
                     note.NoteTypeId = noteType.Id;
@@ -105,7 +105,7 @@ namespace Rock.Workflow.Action
             Guid guidPersonAttribute = value.AsGuid();
             if (!guidPersonAttribute.IsEmpty())
             {
-                var attributePerson = AttributeCache.Read( guidPersonAttribute, rockContext );
+                var attributePerson = AttributeCache.Get( guidPersonAttribute, rockContext );
                 if (attributePerson != null)
                 {
                     string attributePersonValue = action.GetWorklowAttributeValue(guidPersonAttribute);

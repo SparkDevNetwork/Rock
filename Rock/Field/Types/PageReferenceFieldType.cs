@@ -20,6 +20,7 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -52,7 +53,7 @@ namespace Rock.Field.Types
                     Guid? pageGuid = valuePair[0].AsGuidOrNull();
                     if ( pageGuid.HasValue )
                     {
-                        var page = Rock.Web.Cache.PageCache.Read( pageGuid.Value );
+                        var page = PageCache.Get( pageGuid.Value );
                         if ( page != null )
                         {
                             if ( valuePair.Length > 1 )
@@ -103,33 +104,39 @@ namespace Rock.Field.Types
         public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             PagePicker ppPage = control as PagePicker;
-            string result = null;
+            string result = string.Empty;
 
             if ( ppPage != null )
             {
                 //// Value is in format "Page.Guid,PageRoute.Guid"
                 //// If only a Page is specified, this is just a reference to a page without a special route
 
-                if ( ppPage.IsPageRoute )
+                using ( var rockContext = new RockContext() )
                 {
-                    int? pageRouteId = ppPage.PageRouteId;
-                    var pageRoute = new PageRouteService( new RockContext() ).Get( pageRouteId ?? 0 );
-                    if ( pageRoute != null )
+
+                    if ( ppPage.IsPageRoute )
                     {
-                        result = string.Format( "{0},{1}", pageRoute.Page.Guid, pageRoute.Guid );
+                        int? pageRouteId = ppPage.PageRouteId;
+                        var pageRoute = new PageRouteService( rockContext ).GetNoTracking( pageRouteId ?? 0 );
+                        if ( pageRoute != null )
+                        {
+                            result = string.Format( "{0},{1}", pageRoute.Page.Guid, pageRoute.Guid );
+                        }
+                    }
+                    else
+                    {
+                        var page = new PageService( rockContext ).GetNoTracking( ppPage.PageId ?? 0 );
+                        if ( page != null )
+                        {
+                            result = page.Guid.ToString();
+                        }
                     }
                 }
-                else
-                {
-                    var page = new PageService( new RockContext() ).Get( ppPage.PageId ?? 0 );
-                    if ( page != null )
-                    {
-                        result = page.Guid.ToString();
-                    }
-                }
+
+                return result;
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>
@@ -140,46 +147,43 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            PagePicker ppPage = control as PagePicker;
+            if ( ppPage != null )
             {
-	            PagePicker ppPage = control as PagePicker;
-    	        if ( ppPage != null )
-        	    {
-                    string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                string[] valuePair = ( value ?? string.Empty ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
-                    Page page = null;
-                    PageRoute pageRoute = null;
+                Page page = null;
+                PageRoute pageRoute = null;
 
-                    //// Value is in format "Page.Guid,PageRoute.Guid"
-                    //// If only the Page.Guid is specified this is just a reference to a page without a special route
-                    //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
+                //// Value is in format "Page.Guid,PageRoute.Guid"
+                //// If only the Page.Guid is specified this is just a reference to a page without a special route
+                //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
 
-                    var rockContext = new RockContext();
+                var rockContext = new RockContext();
 
-                    if ( valuePair.Length == 2 )
+                if ( valuePair.Length == 2 )
+                {
+                    Guid pageRouteGuid;
+                    Guid.TryParse( valuePair[1], out pageRouteGuid );
+                    pageRoute = new PageRouteService( rockContext ).Get( pageRouteGuid );
+                }
+
+                if ( pageRoute != null )
+                {
+                    ppPage.SetValue( pageRoute );
+                }
+                else
+                {
+                    if ( valuePair.Length > 0 )
                     {
-                        Guid pageRouteGuid;
-                        Guid.TryParse( valuePair[1], out pageRouteGuid );
-                        pageRoute = new PageRouteService( rockContext ).Get( pageRouteGuid );
+                        Guid pageGuid;
+                        Guid.TryParse( valuePair[0], out pageGuid );
+                        page = new PageService( rockContext ).Get( pageGuid );
                     }
 
-                    if ( pageRoute != null )
-                    {
-                        ppPage.SetValue( pageRoute );
-                    }
-                    else
-                    {
-                        if ( valuePair.Length > 0 )
-                        {
-                            Guid pageGuid;
-                            Guid.TryParse( valuePair[0], out pageGuid );
-                            page = new PageService( rockContext ).Get( pageGuid );
-                        }
-
-                        ppPage.SetValue( page );
-                    }
-        	    }
-        	}
+                    ppPage.SetValue( page );
+                }
+            }
         }
 
         #endregion

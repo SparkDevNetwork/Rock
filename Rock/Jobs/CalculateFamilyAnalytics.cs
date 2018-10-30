@@ -35,15 +35,19 @@ using Rock.Web.UI.Controls;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Job to run quick SQL queries on a schedule
+    /// 
     /// </summary>
     [WorkflowTypeField( "eRA Entry Workflow", "The workflow type to launch when a family becomes an eRA.", key: "EraEntryWorkflow", order: 0)]
     [WorkflowTypeField( "eRA Exit Workflow", "The workflow type to launch when a family exits from being an eRA.", key: "EraExitWorkflow", order: 1 )]
-    [GroupTypesField("Enable History for Groups of Type", "This enables the tracking of when a person is in a group of a specific type.", false, key:"GroupTypes", order:2)]
+
     [BooleanField("Set Visit Dates", "If enabled will update the first and second visit person attributes.", true, order: 3)]
+
+    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the sql operations to complete. Leave blank to use the default for this job (3600). Note, some operations could take several minutes, so you might want to set it at 3600 (60 minutes) or higher", false, 60 * 60, "General", 1, "CommandTimeout" )]
     [DisallowConcurrentExecution]
     public class CalculateFamilyAnalytics : IJob
     {
+        private const string SOURCE_OF_CHANGE = "Calculate Family Analytics Job";
+
         /// <summary> 
         /// Empty constructor for job initialization
         /// <para>
@@ -69,7 +73,8 @@ namespace Rock.Jobs
             Guid? entryWorkflowType = dataMap.GetString( "EraEntryWorkflow" ).AsGuidOrNull();
             Guid? exitWorkflowType = dataMap.GetString( "EraExitWorkflow" ).AsGuidOrNull();
             bool updateVisitDates = dataMap.GetBooleanValue( "SetVisitDates" );
-            var groupTypeList = dataMap.GetString( "GroupTypes" );
+
+            int commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;
 
             // configuration
             //
@@ -85,23 +90,36 @@ namespace Rock.Jobs
             var resultContext = new RockContext();
 
             
-            var eraAttribute = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() );
-            var eraStartAttribute = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_START_DATE.AsGuid() );
-            var eraEndAttribute = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_END_DATE.AsGuid() );
+            var eraAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() );
+            var eraStartAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_START_DATE.AsGuid() );
+            var eraEndAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_END_DATE.AsGuid() );
 
-            resultContext.Database.CommandTimeout = 3600;
+            if (eraAttribute == null || eraStartAttribute == null || eraEndAttribute == null)
+            {
+                throw new Exception( "Family analytic attributes could not be found" );
+            }
+
+            resultContext.Database.CommandTimeout = commandTimeout;
+
+            context.UpdateLastStatusMessage( "Getting Family Analytics Era Dataset..." );
 
             var results = resultContext.Database.SqlQuery<EraResult>( "spCrm_FamilyAnalyticsEraDataset" ).ToList();
 
-            int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-            int attributeEntityTypeId = EntityTypeCache.Read( "Rock.Model.Attribute" ).Id;
-            int eraAttributeId = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() ).Id;
-            int personAnalyticsCategoryId = CategoryCache.Read( SystemGuid.Category.HISTORY_PERSON_ANALYTICS.AsGuid() ).Id;
+            int personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
+            int attributeEntityTypeId = EntityTypeCache.Get( "Rock.Model.Attribute" ).Id;
+            int eraAttributeId = eraAttribute.Id;
+            int personAnalyticsCategoryId = CategoryCache.Get( SystemGuid.Category.HISTORY_PERSON_ANALYTICS.AsGuid() ).Id;
+
+            int progressPosition = 0;
+            int progressTotal = results.Count;
 
             foreach (var result in results )
             {
+                progressPosition++;
                 // create new rock context for each family (https://weblog.west-wind.com/posts/2014/Dec/21/Gotcha-Entity-Framework-gets-slow-in-long-Iteration-Loops)
                 RockContext updateContext = new RockContext();
+                updateContext.SourceOfChange = SOURCE_OF_CHANGE;
+                updateContext.Database.CommandTimeout = commandTimeout;
                 var attributeValueService = new AttributeValueService( updateContext );
                 var historyService = new HistoryService( updateContext );
 
@@ -144,11 +162,16 @@ namespace Rock.Jobs
                                     historyRecord.CreatedDateTime = RockDateTime.Now;
                                     historyRecord.CreatedByPersonAliasId = person.PrimaryAliasId;
                                     historyRecord.Caption = "eRA";
-                                    historyRecord.Summary = "Exited eRA Status";
+
                                     historyRecord.Verb = "EXITED";
+                                    historyRecord.ChangeType = History.HistoryChangeType.Attribute.ConvertToString();
+                                    historyRecord.ValueName = "eRA";
+                                    historyRecord.NewValue = "Exited";
+                                    
                                     historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
                                     historyRecord.RelatedEntityId = eraAttributeId;
                                     historyRecord.CategoryId = personAnalyticsCategoryId;
+                                    historyRecord.SourceOfChange = SOURCE_OF_CHANGE;
                                 }
 
                                 updateContext.SaveChanges();
@@ -210,11 +233,12 @@ namespace Rock.Jobs
                                 historyRecord.CreatedDateTime = RockDateTime.Now;
                                 historyRecord.CreatedByPersonAliasId = person.PrimaryAliasId;
                                 historyRecord.Caption = "eRA";
-                                historyRecord.Summary = "Entered eRA Status";
                                 historyRecord.Verb = "ENTERED";
+                                historyRecord.ChangeType = History.HistoryChangeType.Attribute.ConvertToString();
                                 historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
                                 historyRecord.RelatedEntityId = eraAttributeId;
                                 historyRecord.CategoryId = personAnalyticsCategoryId;
+                                historyRecord.SourceOfChange = SOURCE_OF_CHANGE;
                             }
 
                             updateContext.SaveChanges();
@@ -229,117 +253,25 @@ namespace Rock.Jobs
                 }
 
                 // update stats
+                context.UpdateLastStatusMessage( $"Updating eRA {progressPosition} of {progressTotal}" );
             }
 
             // load giving attributes
+            context.UpdateLastStatusMessage( "Updating Giving..." );
             resultContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsGiving" );
 
             // load attendance attributes
+            context.UpdateLastStatusMessage( "Updating Attendance..." );
             resultContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsAttendance" );
-
-            // process history for group types
-            if (!string.IsNullOrWhiteSpace( groupTypeList ) )
-            {
-                string[] groupTypeGuids = groupTypeList.Split( ',' );
-
-                var inactiveRecordValue = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
-
-                var groupTypeEntityTypeId = EntityTypeCache.Read( "Rock.Model.GroupType" ).Id;
-
-                foreach ( var groupTypeGuid in groupTypeGuids )
-                {
-                    var groupType = GroupTypeCache.Read( groupTypeGuid.AsGuid() );
-
-                    if ( groupType != null )
-                    {
-                        // if the person is in a group of that type and the last history record for that group type isn't START write a start
-                        RockContext rockContext = new RockContext();
-
-                        // get history for this group type
-                        var historyRecords = new HistoryService( rockContext ).Queryable()
-                                            .Where( h =>
-                                                 h.EntityTypeId == personEntityTypeId
-                                                 && h.RelatedEntityTypeId == groupTypeEntityTypeId
-                                                 && h.RelatedEntityId == groupType.Id
-                                             )
-                                             .GroupBy( h => h.EntityId )
-                                             .Select( g => g.OrderByDescending( h => h.CreatedDateTime ).Select( h => new { h.EntityId, h.Verb } ).FirstOrDefault() )
-                                             .ToList();
-
-                        // get group member information
-                        var groupMemberInfo = new GroupMemberService( rockContext ).Queryable()
-                                            .Where( m =>
-                                                 m.Group.GroupTypeId == groupType.Id
-                                                 && m.GroupMemberStatus == GroupMemberStatus.Active
-                                                 && m.Group.IsActive
-                                                 //&& m.Person.RecordStatusValueId != inactiveRecordValue.Id
-                                             )
-                                             .GroupBy( m => m.PersonId )
-                                             .Select( g => g.OrderBy( m => m.CreatedDateTime ).Select( m => new { m.PersonId, m.CreatedDateTime, PersonAliasId = m.Person.Aliases.Select( p => p.Id ).FirstOrDefault() } ).FirstOrDefault() )
-                                             .ToList();
-
-                        var needsStartDate = groupMemberInfo.Where( m => !historyRecords.Any( h => h.EntityId == m.PersonId && h.Verb == "STARTED" ) );
-
-                        foreach ( var startItem in needsStartDate )
-                        {
-                            using ( RockContext updateContext = new RockContext() )
-                            {
-                                var historyService = new HistoryService( updateContext );
-                                History history = new History();
-                                historyService.Add( history );
-                                history.EntityTypeId = personEntityTypeId;
-                                history.EntityId = startItem.PersonId;
-                                history.RelatedEntityTypeId = groupTypeEntityTypeId;
-                                history.RelatedEntityId = groupType.Id;
-                                history.Caption = groupType.Name;
-                                history.Summary = "Started Membership in Group Of Type";
-                                history.Verb = "STARTED";
-                                history.CreatedDateTime = startItem.CreatedDateTime;
-                                history.CreatedByPersonAliasId = startItem.PersonAliasId;
-                                history.CategoryId = personAnalyticsCategoryId;
-
-                                updateContext.SaveChanges();
-                            }
-                        }
-
-                        var needsStoppedDate = historyRecords.Where( h => h.Verb == "STARTED" && !groupMemberInfo.Any( m => m.PersonId == h.EntityId ) );
-
-                        foreach ( var stopItem in needsStoppedDate )
-                        {
-                            using ( RockContext updateContext = new RockContext() )
-                            {
-                                var person = new PersonService( updateContext ).Get( stopItem.EntityId );
-
-                                if ( person != null )
-                                {
-                                    var historyService = new HistoryService( updateContext );
-                                    History history = new History();
-                                    historyService.Add( history );
-                                    history.EntityTypeId = personEntityTypeId;
-                                    history.EntityId = person.Id;
-                                    history.RelatedEntityTypeId = groupTypeEntityTypeId;
-                                    history.RelatedEntityId = groupType.Id;
-                                    history.Caption = groupType.Name;
-                                    history.Summary = "Stopped Membership in Group Of Type";
-                                    history.Verb = "STOPPED";
-                                    history.CreatedDateTime = RockDateTime.Now;
-                                    history.CreatedByPersonAliasId = person.PrimaryAliasId;
-                                    history.CategoryId = personAnalyticsCategoryId;
-
-                                    updateContext.SaveChanges();
-                                }
-                            }
-                        }
-                    }
-                }
-                
-            }
 
             // process visit dates
             if ( updateVisitDates )
             {
+                context.UpdateLastStatusMessage( "Updating Visit Dates..." );
                 resultContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsUpdateVisitDates" );
             }
+
+            context.UpdateLastStatusMessage( "" );
         }
 
         /// <summary>
@@ -349,7 +281,7 @@ namespace Rock.Jobs
         /// <param name="family">The family.</param>
         private void LaunchWorkflow( Guid workflowTypeGuid, Group family )
         {
-            int adultRoleId = GroupTypeCache.Read( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Roles.Where(r => r.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()).FirstOrDefault().Id;
+            int adultRoleId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Roles.Where(r => r.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()).FirstOrDefault().Id;
 
             var headOfHouse = family.Members.Where( m => m.GroupRoleId == adultRoleId ).OrderBy( m => m.Person.Gender ).FirstOrDefault();
 
@@ -359,7 +291,7 @@ namespace Rock.Jobs
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var workflowType = WorkflowTypeCache.Read( workflowTypeGuid );
+                    var workflowType = WorkflowTypeCache.Get( workflowTypeGuid );
                     if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         var workflowService = new WorkflowService( rockContext );

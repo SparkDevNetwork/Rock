@@ -15,11 +15,9 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
+
 using Rock.Data;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -28,6 +26,113 @@ namespace Rock.Model
     /// </summary>
     public partial class InteractionService
     {
+        /// <summary>
+        /// Adds the interaction.
+        /// </summary>
+        /// <param name="interactionComponentId">The interaction component identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="operation">The operation.</param>
+        /// <param name="interactionSummary">The interaction summary.</param>
+        /// <param name="interactionData">The interaction data.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="deviceApplication">The device application.</param>
+        /// <param name="deviceOs">The device os.</param>
+        /// <param name="deviceClientType">Type of the device client.</param>
+        /// <param name="deviceTypeData">The device type data.</param>
+        /// <param name="ipAddress">The ip address.</param>
+        /// <param name="browserSessionId">The browser session identifier.</param>
+        /// <returns></returns>
+        public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionSummary, string interactionData, int? personAliasId, DateTime dateTime,
+            string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress, Guid? browserSessionId )
+        {
+            Interaction interaction = CreateInteraction( interactionComponentId, entityId, operation, interactionSummary, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, browserSessionId );
+            this.Add( interaction );
+            return interaction;
+        }
+
+        /// <summary>
+        /// Creates a new interaction.
+        /// </summary>
+        /// <param name="interactionComponentId">The interaction component identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="operation">The operation.</param>
+        /// <param name="interactionSummary">The interaction summary.</param>
+        /// <param name="interactionData">The interaction data.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="deviceApplication">The device application.</param>
+        /// <param name="deviceOs">The device os.</param>
+        /// <param name="deviceClientType">Type of the device client.</param>
+        /// <param name="deviceTypeData">The device type data.</param>
+        /// <param name="ipAddress">The ip address.</param>
+        /// <param name="browserSessionId">The browser session identifier.</param>
+        /// <returns></returns>
+        public Interaction CreateInteraction( int interactionComponentId, int? entityId, string operation, string interactionSummary, string interactionData, int? personAliasId, DateTime dateTime, string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress, Guid? browserSessionId )
+        {
+            Interaction interaction = new Interaction();
+            interaction.InteractionComponentId = interactionComponentId;
+            interaction.EntityId = entityId;
+            interaction.Operation = operation;
+            interaction.InteractionData = interactionData.IsNotNullOrWhiteSpace() ? PersonToken.ObfuscateRockMagicToken( interactionData ) : string.Empty;
+            interaction.InteractionDateTime = dateTime;
+            interaction.PersonAliasId = personAliasId;
+            interaction.InteractionSummary = interactionSummary;
+
+            int? deviceTypeId = null;
+            if ( deviceApplication.IsNotNullOrWhiteSpace() && deviceOs.IsNotNullOrWhiteSpace() && deviceClientType.IsNotNullOrWhiteSpace() )
+            {
+                var deviceType = this.GetInteractionDeviceType( deviceApplication, deviceOs, deviceClientType, deviceTypeData );
+                deviceTypeId = deviceType != null ? deviceType.Id : ( int? ) null;
+            }
+
+            // If we don't have an BrowserSessionId, IPAddress or a devicetype, there is nothing useful about the session
+            // but at least one of these has a value, then we should lookup or create a session
+            if ( browserSessionId.HasValue || ipAddress.IsNotNullOrWhiteSpace() || deviceTypeId.HasValue )
+            {
+                var session = this.GetInteractionSession( browserSessionId, ipAddress, deviceTypeId );
+                interaction.InteractionSessionId = session.Id;
+            }
+
+            return interaction;
+        }
+
+        /// <summary>
+        /// The ua parser
+        /// </summary>
+        private static UAParser.Parser uaParser = UAParser.Parser.GetDefault();
+
+        /// <summary>
+        /// Creates the interaction.
+        /// </summary>
+        /// <param name="interactionComponentId">The interaction component identifier.</param>
+        /// <param name="userAgent">The user agent.</param>
+        /// <param name="url">The URL.</param>
+        /// <param name="ipAddress">The ip address.</param>
+        /// <param name="browserSessionId">The browser session identifier.</param>
+        /// <returns></returns>
+        public Interaction CreateInteraction( int interactionComponentId, string userAgent, string url, string ipAddress, Guid? browserSessionId )
+        {
+            userAgent = userAgent ?? string.Empty;
+            var deviceOs = uaParser.ParseOS( userAgent ).ToString();
+            var deviceApplication = uaParser.ParseUserAgent( userAgent ).ToString();
+            var deviceClientType = InteractionDeviceType.GetClientType( userAgent );
+
+            var interaction = CreateInteraction( interactionComponentId, null, null, string.Empty, null, null, RockDateTime.Now, 
+                deviceApplication, deviceOs, deviceClientType, userAgent, ipAddress, browserSessionId );
+
+            if ( url.IsNotNullOrWhiteSpace() && url.IndexOf( "utm_", StringComparison.OrdinalIgnoreCase ) >= 0 )
+            {
+                var urlParams = System.Web.HttpUtility.ParseQueryString( url );
+                interaction.Source = urlParams.Get( "utm_source" ).Truncate( 25 );
+                interaction.Medium = urlParams.Get( "utm_medium" ).Truncate( 25 );
+                interaction.Campaign = urlParams.Get( "utm_campaign" ).Truncate( 50 );
+                interaction.Content = urlParams.Get( "utm_content" ).Truncate( 50 );
+                interaction.Term = urlParams.Get( "utm_term" ).Truncate( 50 );
+            }
+
+            return interaction;
+        }
 
         /// <summary>
         /// Adds the interaction.
@@ -48,32 +153,7 @@ namespace Rock.Model
         public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionData, int? personAliasId, DateTime dateTime,
             string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress, Guid? browserSessionId )
         {
-            Interaction interaction = new Interaction();
-            interaction.InteractionComponentId = interactionComponentId;
-            interaction.EntityId = entityId;
-            interaction.Operation = operation;
-            interaction.InteractionData = interactionData.IsNotNullOrWhitespace() ? PersonToken.ObfuscateRockMagicToken( interactionData ) : string.Empty;
-            interaction.InteractionDateTime = dateTime;
-            interaction.PersonAliasId = personAliasId;
-
-            int? deviceTypeId = null;
-            if ( deviceApplication.IsNotNullOrWhitespace() && deviceOs.IsNotNullOrWhitespace() && deviceClientType.IsNotNullOrWhitespace() )
-            {
-                var deviceType = this.GetInteractionDeviceType( deviceApplication, deviceOs, deviceClientType, deviceTypeData );
-                deviceTypeId = deviceType != null ? deviceType.Id : ( int? ) null;
-            }
-
-            // If we don't have an BrowserSessionId, IPAddress or a devicetype, there is nothing useful about the session
-            // but at least one of these has a value, then we should lookup or create a session
-            if ( browserSessionId.HasValue || ipAddress.IsNotNullOrWhitespace() || deviceTypeId.HasValue )
-            { 
-                var session = this.GetInteractionSession( browserSessionId, ipAddress, deviceTypeId );
-                interaction.InteractionSessionId = session.Id;
-            }
-
-            this.Add( interaction );
-
-            return interaction;
+            return AddInteraction( interactionComponentId, entityId, operation, string.Empty, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, browserSessionId );
         }
 
         /// <summary>
@@ -94,7 +174,7 @@ namespace Rock.Model
         public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionData, int? personAliasId, DateTime dateTime,
             string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress )
         {
-            return AddInteraction( interactionComponentId, entityId, operation, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, null );
+            return AddInteraction( interactionComponentId, entityId, operation, string.Empty, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, null );
         }
 
         /// <summary>
@@ -161,6 +241,31 @@ namespace Rock.Model
 
                 return interactionSession;
             }
+        }
+
+        /// <summary>
+        /// Bulk updates null Interaction.PersonAliasId for the provided PersonalDeviceId
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="personalDeviceId">The personal device identifier.</param>
+        /// <returns></returns>
+        public int UpdateInteractionsWithPersonAliasIdForDeviceId( int personAliasId, int personalDeviceId )
+        {
+            var interactionsCount = Queryable()
+                .Where( i => i.PersonalDeviceId == personalDeviceId )
+                .Where( i => i.PersonAliasId == null ).Count();
+
+            if ( interactionsCount > 0 )
+            {
+                var interactions = Queryable()
+                    .Where( i => i.PersonalDeviceId == personalDeviceId )
+                    .Where( i => i.PersonAliasId == null );
+                
+                // Use BulkUpdate to set the PersonAliasId
+                new RockContext().BulkUpdate( interactions, i => new Interaction { PersonAliasId = personAliasId } );
+            }
+
+            return interactionsCount;
         }
     }
 }

@@ -19,7 +19,7 @@
 
             <div class="panel-body">
 
-                <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Info" />
 
                 <div class="row">
@@ -57,7 +57,7 @@
     
         <Rock:ModalDialog ID="dlgAddCalendarItemPage1" runat="server" Title="New Calendar Item" SaveButtonText="Next" OnSaveClick="dlgAddCalendarItemPage1_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="DlgPage1">
             <Content>
-                <asp:ValidationSummary ID="vsLinkageAdd" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="DlgPage1" />
+                <asp:ValidationSummary ID="vsLinkageAdd" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="DlgPage1" />
                 <Rock:NotificationBox ID="nbNoCalendar" runat="server" NotificationBoxType="Warning" Visible="false" Text="There are not any calendars available for you to add."/>
                 <Rock:RockDropDownList ID="ddlCalendar" runat="server" Label="Select Calendar" Required="true" ValidationGroup="DlgPage1" />
             </Content>
@@ -75,10 +75,10 @@
                 <div id="divNewCalendarItemPage3" runat="server" class="row">
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlCalendarItem" runat="server" Label="Calendar Item" Required="true" ValidationGroup="DlgPage3"
-                            DataTextField="Name" DataValueField="Id" AutoPostBack="true" OnSelectedIndexChanged="ddlCalendarItem_SelectedIndexChanged"/>
+                            DataTextField="Name" DataValueField="Id" AutoPostBack="true" OnSelectedIndexChanged="ddlCalendarItem_SelectedIndexChanged" EnhanceForLongLists="true" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlCalendarItemOccurrence" runat="server" Label="Campus" Required="true" ValidationGroup="DlgPage3"
+                        <Rock:RockDropDownList ID="ddlCalendarItemOccurrence" runat="server" Label="Occurrence" Required="true" ValidationGroup="DlgPage3"
                             DataTextField="Name" DataValueField="Id"  />
                     </div>
                 </div>

@@ -22,17 +22,21 @@
     border-radius: @border-radius-base 0 0 @border-radius-base;
     opacity: 0;
     -webkit-transition: opacity .25s ease-in-out;
-       -moz-transition: opacity .25s ease-in-out;
-            transition: opacity .25s ease-in-out;
+    -moz-transition: opacity .25s ease-in-out;
+    transition: opacity .25s ease-in-out;
 
     a {
-      margin-left: 12px;
+      margin-right: 12px;
       color: #fff;
       text-decoration: none;
       cursor: pointer;
 
       &:hover {
         opacity: .5;
+      }
+
+      &:last-child {
+        margin-right: 0;
       }
     }
   }
@@ -63,8 +67,4 @@
 
 .image-editor-photo:hover .options {
   opacity: 1;
-}
-
-.image-editor-photo .options a:first-child {
-  margin-left: 0;
 }

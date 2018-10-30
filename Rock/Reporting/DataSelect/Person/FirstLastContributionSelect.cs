@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 using Rock;
+using Rock.Web.Cache;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -186,6 +187,18 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
+            string[] selections = selection.Split( '|' );
+            string accountIds = selections[0] ?? string.Empty;
+
+            // Default this to true if it is not available so the behavior of existing dataviews (< v9.0) are not changed without user input.
+            bool useSundayDate = true;
+            if ( selections.Count() > 1 )
+            {
+                useSundayDate = selections[1].AsBooleanOrNull() ?? true;
+            }
+
+            string transactionDateProperty = useSundayDate ? "SundayDate" : "TransactionDateTime";
+
             // transactions
             var transactionDetails = context.Set<FinancialTransactionDetail>();
 
@@ -207,16 +220,16 @@ namespace Rock.Reporting.DataSelect.Person
             // t.Transaction.TransactionTypeValueId
             MemberExpression transactionTypeValueIdProperty = Expression.Property( transactionProperty, "TransactionTypeValueId" );
 
-            int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+            int transactionTypeContributionId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
             // t.Transaction.TransactionTypeValueId == transactionTypeContributionId
             whereClause = Expression.And( whereClause, Expression.Equal( transactionTypeValueIdProperty, Expression.Constant( transactionTypeContributionId ) ) );
 
             // get the selected AccountId(s).  If there are any, limit to transactions that for that Account
-            if ( !string.IsNullOrWhiteSpace( selection ) )
+            if ( !string.IsNullOrWhiteSpace( accountIds ) )
             {
                 // accountIds
-                var selectedAccountGuidList = selection.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+                var selectedAccountGuidList = accountIds.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
                 var selectedAccountIdList = new FinancialAccountService( context ).GetByGuids( selectedAccountGuidList ).Select( a => a.Id ).ToList();
 
                 if ( selectedAccountIdList.Count() > 0 )
@@ -243,7 +256,7 @@ namespace Rock.Reporting.DataSelect.Person
             Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( FinancialTransactionDetail ) }, compare );
 
             // t.Transaction.TransactionDateTime
-            MemberExpression transactionDateTime = Expression.Property( transactionProperty, "SundayDate" );
+            MemberExpression transactionDateTime = Expression.Property( transactionProperty, transactionDateProperty );
 
             // t => t.Transaction.transactionDateTime
             var transactionDate = Expression.Lambda<Func<FinancialTransactionDetail, DateTime?>>( transactionDateTime, new ParameterExpression[] { transactionDetailParameter } );
@@ -271,7 +284,13 @@ namespace Rock.Reporting.DataSelect.Person
                 FirstOrLast.ConvertToString().ToLower() );
             parentControl.Controls.Add( accountPicker );
 
-            return new System.Web.UI.Control[] { accountPicker };
+            RockCheckBox cbUseSundayDate = new RockCheckBox();
+            cbUseSundayDate.ID = parentControl.ID + "_cbUseSundayDate";
+            cbUseSundayDate.Label = "Use Sunday Date";
+            cbUseSundayDate.Help = "Use the Sunday Date instead of the actual transaction date.";
+            parentControl.Controls.Add( cbUseSundayDate );
+
+            return new System.Web.UI.Control[] { accountPicker, cbUseSundayDate };
         }
 
         /// <summary>
@@ -292,14 +311,31 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
         {
-            if ( controls.Count() == 1 )
+            string delimitedAccountGuids = string.Empty;
+            string useSundayDate = string.Empty;
+
+            if ( controls.Count() > 0 )
             {
                 AccountPicker accountPicker = controls[0] as AccountPicker;
                 if ( accountPicker != null )
                 {
                     var accountIds = accountPicker.SelectedValues.AsIntegerList(); 
                     var accountGuids = new FinancialAccountService( new RockContext() ).GetByIds( accountIds ).Select( a => a.Guid );
-                    return accountGuids.Select( a => a.ToString() ).ToList().AsDelimited( "," );
+                    delimitedAccountGuids = accountGuids.Select( a => a.ToString() ).ToList().AsDelimited( "," );
+                }
+
+                if ( controls.Count() > 1 )
+                {
+                    RockCheckBox cbUseSundayDate = controls[1] as RockCheckBox;
+                    if ( cbUseSundayDate != null )
+                    {
+                        useSundayDate = cbUseSundayDate.Checked.ToString();
+                    }
+                }
+
+                if ( delimitedAccountGuids != string.Empty || useSundayDate != string.Empty )
+                {
+                    return $"{delimitedAccountGuids}|{useSundayDate}";
                 }
             }
 
@@ -313,12 +349,14 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
-            if ( controls.Count() == 1 )
+            string[] selections = selection.Split( '|' );
+
+            if ( controls.Count() > 0 )
             {
                 AccountPicker accountPicker = controls[0] as AccountPicker;
                 if ( accountPicker != null )
                 {
-                    string[] selectionAccountGuidValues = selection.Split( ',' );
+                    string[] selectionAccountGuidValues = selections[0].Split( ',' );
                     var accountList = new List<FinancialAccount>();
                     foreach ( string accountGuid in selectionAccountGuidValues )
                     {
@@ -330,6 +368,15 @@ namespace Rock.Reporting.DataSelect.Person
                     }
 
                     accountPicker.SetValues( accountList );
+                }
+            }
+
+            if ( controls.Count() > 1 )
+            {
+                RockCheckBox cbUseSundayDate = controls[1] as RockCheckBox;
+                if ( cbUseSundayDate != null && selections.Count() > 1 )
+                {
+                    cbUseSundayDate.Checked = selections[1].AsBooleanOrNull() ?? false;
                 }
             }
         }

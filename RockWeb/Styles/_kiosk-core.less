@@ -1,20 +1,20 @@
-﻿/*
+/*
     Used to manage styles for specific blocks.
 
     1. HTML Overrides
     2. Kiosk Components
     3. Scroller
-    
+
 
 */
 
 // 1. HTML Overrides
 // -------------------------
 
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
+  -webkit-appearance: none;
 }
 
 
@@ -88,30 +88,30 @@ input[type=number]::-webkit-outer-spin-button {
   width: 100%;
   padding-right: 24px;
   -webkit-text-size-adjust: none;
-      -ms-text-size-adjust: none;
+  -ms-text-size-adjust: none;
   -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
   -webkit-transform: translateZ(0);
-     -moz-transform: translateZ(0);
-      -ms-transform: translateZ(0);
-       -o-transform: translateZ(0);
-          transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  transform: translateZ(0);
 
   -webkit-tap-highlight-color: rgba(0,0,0,0);
   -webkit-touch-callout: none;
-     -moz-text-size-adjust: none;
-       -o-text-size-adjust: none;
-          text-size-adjust: none;
+  -moz-text-size-adjust: none;
+  -o-text-size-adjust: none;
+  text-size-adjust: none;
 }
 
 .iScrollIndicator {
   position: absolute;
+  box-sizing: border-box;
   display: block;
   width: 100%;
   height: 8px;
-  box-sizing: border-box;
   background-color: @scrollbar-bg;
   border: 1px solid @scrollbar-border;
   border-top-left-radius: 3px;
@@ -120,8 +120,8 @@ input[type=number]::-webkit-outer-spin-button {
   border-bottom-left-radius: 3px;
   opacity: .3;
   -webkit-transition: 0ms cubic-bezier(.1, .57, .1, 1);
-          transition: 0ms cubic-bezier(.1, .57, .1, 1);
-  transform: translate(0px, 0px) translateZ(0px);
+  transition: 0ms cubic-bezier(.1, .57, .1, 1);
+  transform: translate(0, 0) translateZ(0);
 }
 
 .iScrollVerticalScrollbar,

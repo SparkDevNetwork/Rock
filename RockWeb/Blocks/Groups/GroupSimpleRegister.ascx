@@ -7,9 +7,9 @@
 
 
                 <fieldset>
-                    <Rock:RockTextBox ID="txtFirstName" runat="server" Placeholder="First Name" ></Rock:RockTextBox>
-                    <Rock:RockTextBox ID="txtLastName" runat="server" Placeholder="Last Name" ></Rock:RockTextBox>
-                    <Rock:RockTextBox ID="txtEmail" runat="server" Placeholder="Email" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="txtFirstName" runat="server" Placeholder="First Name" />
+                    <Rock:RockTextBox ID="txtLastName" runat="server" Placeholder="Last Name" />
+                    <Rock:EmailBox ID="txtEmail" runat="server" Placeholder="Email" />
                 </fieldset>
 
                 <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger"></Rock:NotificationBox>
@@ -22,7 +22,7 @@
 
         <asp:Panel ID="pnlSuccess" runat="server"  Visible="false">
 
-                <Rock:NotificationBox ID="nbSuccess" runat="server" Title="Thank-you" NotificationBoxType="Success"></Rock:NotificationBox>
+                <Rock:NotificationBox ID="nbSuccess" runat="server" Title="Thank You" NotificationBoxType="Success"></Rock:NotificationBox>
 
         </asp:Panel>
 

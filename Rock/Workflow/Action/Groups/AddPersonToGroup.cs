@@ -39,8 +39,9 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Person", "Workflow attribute that contains the person to add to the group.", true, "", "", 0, null, 
         new string[] { "Rock.Field.Types.PersonFieldType" })]
 
-    [Rock.Attribute.GroupAndRoleFieldAttribute( "Group and Role", "Group/Role to add the person to. Leave role blank to use the default role for that group.", "Group", true, key: "GroupAndRole" )]
-    [EnumField( "Group Member Status", "The  status to set the user to in the group.", typeof( GroupMemberStatus ), true )]
+    [GroupAndRoleFieldAttribute( "Group and Role", "Group/Role to add the person to. Leave role blank to use the default role for that group.", "Group", true, "", "", 1, "GroupAndRole" )]
+    [EnumField( "Group Member Status", "The  status to set the user to in the group.", typeof( GroupMemberStatus ), true, "1", "", 2 )]
+    [BooleanField("Update Existing", "If the selected person already belongs to the selected group, should their current role and status be updated to reflect the configured values above.", true, "", 3)]
     public class AddPersonToGroup : ActionComponent
     {
         /// <summary>
@@ -106,7 +107,7 @@ namespace Rock.Workflow.Action
 
             if ( guidPersonAttribute.HasValue )
             {
-                var attributePerson = AttributeCache.Read( guidPersonAttribute.Value, rockContext );
+                var attributePerson = AttributeCache.Get( guidPersonAttribute.Value, rockContext );
                 if ( attributePerson != null )
                 {
                     string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute.Value );
@@ -139,21 +140,32 @@ namespace Rock.Workflow.Action
             // Add Person to Group
             if ( !errorMessages.Any() )
             {
+                var status = this.GetAttributeValue( action, "GroupMemberStatus" ).ConvertToEnum<GroupMemberStatus>( GroupMemberStatus.Active );
+
                 var groupMemberService = new GroupMemberService( rockContext );
-                var groupMember = new GroupMember();
-                groupMember.PersonId = person.Id;
-                groupMember.GroupId = group.Id;
-                groupMember.GroupRoleId = groupRoleId.Value;
-                groupMember.GroupMemberStatus = this.GetAttributeValue( action, "GroupMemberStatus" ).ConvertToEnum<GroupMemberStatus>( GroupMemberStatus.Active );
+                var groupMember = groupMemberService.GetByGroupIdAndPersonIdAndPreferredGroupRoleId( group.Id, person.Id, groupRoleId.Value );
+                if ( groupMember == null )
+                {
+                    groupMember = new GroupMember();
+                    groupMember.PersonId = person.Id;
+                    groupMember.GroupId = group.Id;
+                    groupMember.GroupRoleId = groupRoleId.Value;
+                    groupMember.GroupMemberStatus = status;
+                    groupMemberService.Add( groupMember );
+                }
+                else
+                {
+                    if ( GetAttributeValue( action, "UpdateExisting" ).AsBoolean() )
+                    {
+                        groupMember.GroupRoleId = groupRoleId.Value;
+                        groupMember.GroupMemberStatus = status;
+                    }
+                    action.AddLogEntry( $"{person.FullName} was already a member of the selected group.", true );
+                }
+
                 if ( groupMember.IsValidGroupMember( rockContext ) )
                 {
-                    groupMemberService.Add( groupMember );
                     rockContext.SaveChanges();
-
-                    if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-                    {
-                        Rock.Security.Role.Flush( group.Id );
-                    }
                 }
                 else
                 {

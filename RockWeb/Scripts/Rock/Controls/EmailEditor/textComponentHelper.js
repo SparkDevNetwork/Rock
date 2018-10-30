@@ -47,17 +47,26 @@
       {
         Rock.controls.emailEditor.$currentTextComponent = $textComponent.hasClass('component-text') ? $currentComponent : $(false);
 
-        // create a special inner div (if there isn't one already) that we can put border, padding, etc on
+        // replace the component div with a table that has special inner td that we can put border, padding, etc on
         var $innerWrapper = Rock.controls.emailEditor.$currentTextComponent.find('.js-component-text-wrapper');
         if (!$innerWrapper.length) {
-          Rock.controls.emailEditor.$currentTextComponent.wrapInner("<div class='js-component-text-wrapper'></div>")
+          var componentCss = $textComponent.attr('class');
+          var componentDataState = $textComponent.attr('data-state');
+          Rock.controls.emailEditor.$currentTextComponent.wrapInner("<table><tr><td class='js-component-text-wrapper'></td></tr></table>");
           $innerWrapper = Rock.controls.emailEditor.$currentTextComponent.find('.js-component-text-wrapper');
+          var $tableWrapper = $innerWrapper.closest("table");
+          $tableWrapper.attr('class', componentCss);
+          $tableWrapper.attr('data-state', componentDataState);
+          $tableWrapper.attr('style', 'border-collapse: collapse; border-spacing: 0; display: table; padding: 0; position: relative; text-align: left; vertical-align: top; width: 100%;');
+          Rock.controls.emailEditor.$currentTextComponent.contents().unwrap();
+
+          Rock.controls.emailEditor.$currentTextComponent = $tableWrapper;
         }
 
         $('.js-component-text-htmlEditor').summernote('code', $innerWrapper.html());
         var textEl = $innerWrapper[0];
 
-        $('#component-text-backgroundcolor').colorpicker('setValue', $textComponent.css('backgroundColor'));
+        $('#component-text-backgroundcolor').colorpicker('setValue', Rock.controls.emailEditor.$currentTextComponent.css('backgroundColor'));
         
         $('#component-text-border-color').colorpicker('setValue', $innerWrapper[0].style['border-color']);
         $('#component-text-border-width').val(parseFloat($innerWrapper[0].style['border-width']) || '');

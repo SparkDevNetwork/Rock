@@ -2,11 +2,11 @@ IF OBJECT_ID(N'[dbo].[AnalyticsDimPersonBirthDate]', 'V') IS NOT NULL
     DROP VIEW AnalyticsDimPersonBirthDate
 GO
 
-CREATE VIEW [dbo].AnalyticsDimPersonBirthDate
+CREATE VIEW [dbo].[AnalyticsDimPersonBirthDate]
 AS
 SELECT d.DateKey AS [BirthDateKey]
     ,*
-FROM AnalyticsDimDate d
+FROM AnalyticsSourceDate d
 WHERE d.DateKey >= (
         SELECT MIN(ph.BirthDateKey)
         FROM AnalyticsDimPersonHistorical ph

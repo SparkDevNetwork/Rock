@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -39,7 +40,6 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Registration Template Detail" )]
     [Category( "Event" )]
     [Description( "Displays the details of the given registration template." )]
-
     [CodeEditorField( "Default Confirmation Email", "The default Confirmation Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 
@@ -56,13 +56,13 @@ namespace RockWeb.Blocks.Event
 	<ul>
 	{% for registrant in registrants %}
 		<li>
-		
+
 			<strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
-			
+
 			{% if registrant.Cost > 0 %}
 				- {{ currencySymbol }}{{ registrant.Cost | Format:'#,##0.00' }}
 			{% endif %}
-			
+
 			{% assign feeCount = registrant.Fees | Size %}
 			{% if feeCount > 0 %}
 				<br/>{{ RegistrationInstance.RegistrationTemplate.FeeTerm | PluralizeForQuantity:registrantCount }}:
@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Event
         The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
 		{% if waitListCount > 1 %}have{% else %}has{% endif %} been added to the wait list for {{ RegistrationInstance.Name }}:
    </p>
-    
+
     <ul>
     {% for registrant in waitlist %}
         <li>
@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Event
     {% endfor %}
     </ul>
 {% endif %}
-	
+
 {% if Registration.TotalCost > 0 %}
 <p>
     Total Cost: {{ currencySymbol }}{{ Registration.TotalCost | Format:'#,##0.00' }}<br/>
@@ -105,16 +105,16 @@ namespace RockWeb.Blocks.Event
         Discounted Cost: {{ currencySymbol }}{{ Registration.DiscountedCost | Format:'#,##0.00' }}<br/>
     {% endif %}
     {% for payment in Registration.Payments %}
-        Paid {{ currencySymbol }}{{ payment.Amount | Format:'#,##0.00' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }} 
+        Paid {{ currencySymbol }}{{ payment.Amount | Format:'#,##0.00' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }}
         <small>(Acct #: {{ payment.Transaction.FinancialPaymentDetail.AccountNumberMasked }}, Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
     {% endfor %}
-    
+
     {% assign paymentCount = Registration.Payments | Size %}
-    
+
     {% if paymentCount > 1 %}
         Total Paid: {{ currencySymbol }}{{ Registration.TotalPaid | Format:'#,##0.00' }}<br/>
     {% endif %}
-    
+
     Balance Due: {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}
 </p>
 {% endif %}
@@ -128,7 +128,6 @@ namespace RockWeb.Blocks.Event
 </p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 0 )]
-
     [CodeEditorField( "Default Reminder Email", "The default Reminder Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
@@ -162,7 +161,7 @@ namespace RockWeb.Blocks.Event
         The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
 		{% if waitListCount > 1 %}are{% else %}is{% endif %} still on the waiting list:
    </p>
-    
+
     <ul>
     {% for registrant in waitlist %}
         <li>
@@ -174,7 +173,7 @@ namespace RockWeb.Blocks.Event
 
 {% if Registration.BalanceDue > 0 %}
 <p>
-    This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} has a remaining balance 
+    This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} has a remaining balance
     of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}.
     You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
     using our <a href='{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person | PersonTokenCreate }}'>
@@ -187,28 +186,27 @@ namespace RockWeb.Blocks.Event
 </p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 1 )]
-
     [CodeEditorField( "Default Success Text", "The success text default to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 
 {% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
 {% assign registrantCount = registrants | Size %}
 {% if registrantCount > 0 %}
     <p>
-        You have successfully registered the following 
+        You have successfully registered the following
         {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
         for {{ RegistrationInstance.Name }}:
     </p>
-    
+
     <ul>
     {% for registrant in registrants %}
         <li>
-        
+
             <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
-            
+
             {% if registrant.Cost > 0 %}
                 - {{ currencySymbol }}{{ registrant.Cost | Format:'#,##0.00' }}
             {% endif %}
-            
+
             {% assign feeCount = registrant.Fees | Size %}
             {% if feeCount > 0 %}
                 <br/>{{ RegistrationInstance.RegistrationTemplate.FeeTerm | PluralizeForQuantity:registrantCount }}:
@@ -221,7 +219,7 @@ namespace RockWeb.Blocks.Event
                 {% endfor %}
                 </ul>
             {% endif %}
-            
+
         </li>
     {% endfor %}
     </ul>
@@ -231,11 +229,11 @@ namespace RockWeb.Blocks.Event
 {% assign waitListCount = waitlist | Size %}
 {% if waitListCount > 0 %}
     <p>
-        You have successfully added the following 
+        You have successfully added the following
         {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
         to the waiting list for {{ RegistrationInstance.Name }}:
     </p>
-    
+
     <ul>
     {% for registrant in waitlist %}
         <li>
@@ -252,7 +250,7 @@ namespace RockWeb.Blocks.Event
         Discounted Cost: {{ currencySymbol }}{{ Registration.DiscountedCost | Format:'#,##0.00' }}<br/>
     {% endif %}
     {% for payment in Registration.Payments %}
-        Paid {{ currencySymbol }}{{ payment.Amount | Format:'#,##0.00' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }} 
+        Paid {{ currencySymbol }}{{ payment.Amount | Format:'#,##0.00' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }}
         <small>(Acct #: {{ payment.Transaction.FinancialPaymentDetail.AccountNumberMasked }}, Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
     {% endfor %}
     {% assign paymentCount = Registration.Payments | Size %}
@@ -264,10 +262,9 @@ namespace RockWeb.Blocks.Event
 {% endif %}
 
 <p>
-    A confirmation email has been sent to {{ Registration.ConfirmationEmail }}. If you have any questions 
+    A confirmation email has been sent to {{ Registration.ConfirmationEmail }}. If you have any questions
     please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>", "", 2 )]
-
     [CodeEditorField( "Default Payment Reminder Email", "The default Payment Reminder Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
@@ -275,9 +272,9 @@ namespace RockWeb.Blocks.Event
 <h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Payment Reminder</h1>
 
 <p>
-    This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} for {{ RegistrationInstance.Name }} has a remaining balance 
-    of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}. The 
-    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | Downcase | Pluralize  }} for this 
+    This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} for {{ RegistrationInstance.Name }} has a remaining balance
+    of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}. The
+    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | Downcase | Pluralize  }} for this
     {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} are below.
 </p>
 
@@ -298,7 +295,7 @@ namespace RockWeb.Blocks.Event
         The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
 		{% if waitListCount > 1 %}are{% else %}is{% endif %} still on the wait list:
    </p>
-    
+
     <ul>
     {% for registrant in waitlist %}
         <li>
@@ -319,7 +316,6 @@ namespace RockWeb.Blocks.Event
 </p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 3 )]
-
     [CodeEditorField( "Default Wait List Transition Email", "The default Wait List Transition Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
@@ -327,8 +323,8 @@ namespace RockWeb.Blocks.Event
 <h1>{{ RegistrationInstance.Name }} Wait List Update</h1>
 
 <p>
-    {{ Registration.FirstName }}, the following individuals have been moved from the {{ RegistrationInstance.Name }} wait list to a full 
-    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | Downcase }}. 
+    {{ Registration.FirstName }}, the following individuals have been moved from the {{ RegistrationInstance.Name }} wait list to a full
+    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | Downcase }}.
 </p>
 
 <ul>
@@ -339,16 +335,15 @@ namespace RockWeb.Blocks.Event
 
 {% if AdditionalFieldsNeeded %}
     <p>
-        <strong>Addition information is needed in order to process this registration. Please visit the 
+        <strong>Addition information is needed in order to process this registration. Please visit the
         <a href='{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person | PersonTokenCreate }}&StartAtBeginning=True'>
         online registration page</a> to complete the registration.</strong>
     </p>
 {% endif %}
 
-
 {% if Registration.BalanceDue > 0 %}
     <p>
-        A balance of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }} remains on this regsitration. You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
+        A balance of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }} remains on this registration. You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
         using our <a href='{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person | PersonTokenCreate }}'>
         online registration page</a>.
     </p>
@@ -358,18 +353,21 @@ namespace RockWeb.Blocks.Event
     If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
-
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 3 )]
     public partial class RegistrationTemplateDetail : RockBlock
     {
-
         #region Properties
 
         private List<RegistrationTemplateForm> FormState { get; set; }
+
         private Dictionary<Guid, List<RegistrationTemplateFormField>> FormFieldsState { get; set; }
+
         private List<Guid> ExpandedForms { get; set; }
+
         private List<RegistrationTemplateDiscount> DiscountState { get; set; }
+
         private List<RegistrationTemplateFee> FeeState { get; set; }
+
         private int? GridFieldsDeleteIndex { get; set; }
 
         #endregion
@@ -444,7 +442,7 @@ namespace RockWeb.Blocks.Event
             // attribute field grid actions
             gFields.DataKeyNames = new string[] { "Guid" };
             gFields.Actions.ShowAdd = true;
-            gFields.Actions.AddClick += gFields_AddClick; ;
+            gFields.Actions.AddClick += gFields_AddClick;
             gFields.GridRebind += gFields_GridRebind;
             gFields.RowDataBound += gFields_RowDataBound;
             gFields.GridReorder += gFields_GridReorder;
@@ -453,7 +451,7 @@ namespace RockWeb.Blocks.Event
             // assign discounts grid actions
             gDiscounts.DataKeyNames = new string[] { "Guid" };
             gDiscounts.Actions.ShowAdd = true;
-            gDiscounts.Actions.AddClick += gDiscounts_AddClick; ;
+            gDiscounts.Actions.AddClick += gDiscounts_AddClick;
             gDiscounts.GridRebind += gDiscounts_GridRebind;
             gDiscounts.GridReorder += gDiscounts_GridReorder;
 
@@ -463,8 +461,20 @@ namespace RockWeb.Blocks.Event
             gFees.Actions.AddClick += gFees_AddClick;
             gFees.GridRebind += gFees_GridRebind;
             gFees.GridReorder += gFees_GridReorder;
-            
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RegistrationTemplate ) ).Id;
+
+            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.RegistrationTemplate ) ).Id;
+
+            ddlRegistrarOption.Help = @"How should the registrar's information be collected?
+
+<strong>Prompt For Registrar</strong>
+Registrar information will be collected at the end.
+
+<strong>Pre-fill First Registrant</strong>
+The first registrant's information will be used to complete the registrar information form but can be changed if needed.
+
+<strong>Use First Registrant</strong>
+The first registrant's information will be used to complete the registrar information form and the form will not be displayed.  (If the first registrant's name and email is not provided the registrar information form will still display.)
+";
 
             string deleteScript = @"
     $('a.js-delete-template').click(function( e ){
@@ -521,7 +531,7 @@ namespace RockWeb.Blocks.Event
                             {
                                 case "re-order-form":
                                     {
-                                        SortForms( guid, newIndex+1 );
+                                        SortForms( guid, newIndex + 1 );
                                         break;
                                     }
                             }
@@ -554,7 +564,7 @@ namespace RockWeb.Blocks.Event
             breadCrumbs.Add( new BreadCrumb( this.PageCache.PageTitle, pageReference ) );
             return breadCrumbs;
         }
-        
+
         /// <summary>
         /// Saves any user control view-state changes that have occurred since the last page postback.
         /// </summary>
@@ -563,8 +573,8 @@ namespace RockWeb.Blocks.Event
         /// </returns>
         protected override object SaveViewState()
         {
-            var jsonSetting = new JsonSerializerSettings 
-            { 
+            var jsonSetting = new JsonSerializerSettings
+            {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                 ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
             };
@@ -583,7 +593,7 @@ namespace RockWeb.Blocks.Event
             if ( pnlEditDetails.Visible )
             {
                 var sameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
-                divCurrentFamilyMembers.Attributes["style"] = sameFamily == RegistrantsSameFamily.Yes ? "display:block" : "display:none";
+                divCurrentFamilyMembers.Attributes["style"] = sameFamily == RegistrantsSameFamily.No ? "display:none" : "display:block";
             }
 
             base.OnPreRender( e );
@@ -654,15 +664,15 @@ namespace RockWeb.Blocks.Event
         protected void btnCopy_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var RegistrationTemplate = new RegistrationTemplateService( rockContext ).Get( hfRegistrationTemplateId.Value.AsInteger() );
+            var registrationTemplate = new RegistrationTemplateService( rockContext ).Get( hfRegistrationTemplateId.Value.AsInteger() );
 
-            if ( RegistrationTemplate != null )
+            if ( registrationTemplate != null )
             {
                 // Load the state objects for the source registration template
-                LoadStateDetails( RegistrationTemplate, rockContext );
+                LoadStateDetails( registrationTemplate, rockContext );
 
                 // clone the registration template
-                var newRegistrationTemplate = RegistrationTemplate.Clone( false );
+                var newRegistrationTemplate = registrationTemplate.Clone( false );
                 newRegistrationTemplate.CreatedByPersonAlias = null;
                 newRegistrationTemplate.CreatedByPersonAliasId = null;
                 newRegistrationTemplate.CreatedDateTime = RockDateTime.Now;
@@ -671,7 +681,7 @@ namespace RockWeb.Blocks.Event
                 newRegistrationTemplate.ModifiedDateTime = RockDateTime.Now;
                 newRegistrationTemplate.Id = 0;
                 newRegistrationTemplate.Guid = Guid.NewGuid();
-                newRegistrationTemplate.Name = RegistrationTemplate.Name + " - Copy";
+                newRegistrationTemplate.Name = registrationTemplate.Name + " - Copy";
 
                 // Create temporary state objects for the new registration template
                 var newFormState = new List<RegistrationTemplateForm>();
@@ -766,23 +776,23 @@ namespace RockWeb.Blocks.Event
             var rockContext = new RockContext();
             var service = new RegistrationTemplateService( rockContext );
 
-            RegistrationTemplate RegistrationTemplate = null;
+            RegistrationTemplate registrationTemplate = null;
 
-            int? RegistrationTemplateId = hfRegistrationTemplateId.Value.AsIntegerOrNull();
-            if ( RegistrationTemplateId.HasValue )
+            int? registrationTemplateId = hfRegistrationTemplateId.Value.AsIntegerOrNull();
+            if ( registrationTemplateId.HasValue )
             {
-                RegistrationTemplate = service.Get( RegistrationTemplateId.Value );
+                registrationTemplate = service.Get( registrationTemplateId.Value );
             }
 
             bool newTemplate = false;
-            if ( RegistrationTemplate == null )
+            if ( registrationTemplate == null )
             {
                 newTemplate = true;
-                RegistrationTemplate = new RegistrationTemplate();
+                registrationTemplate = new RegistrationTemplate();
             }
 
             RegistrationNotify notify = RegistrationNotify.None;
-            foreach( ListItem li in cblNotify.Items )
+            foreach ( ListItem li in cblNotify.Items )
             {
                 if ( li.Selected )
                 {
@@ -790,61 +800,62 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            RegistrationTemplate.IsActive = cbIsActive.Checked;
-            RegistrationTemplate.Name = tbName.Text;
-            RegistrationTemplate.CategoryId = cpCategory.SelectedValueAsInt();
-            RegistrationTemplate.GroupTypeId = gtpGroupType.SelectedGroupTypeId;
-            RegistrationTemplate.GroupMemberRoleId = rpGroupTypeRole.GroupRoleId;
-            RegistrationTemplate.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
-            RegistrationTemplate.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
-            RegistrationTemplate.SignatureDocumentAction = cbDisplayInLine.Checked ? SignatureDocumentAction.Embed : SignatureDocumentAction.Email;
-            RegistrationTemplate.WaitListEnabled = cbWaitListEnabled.Checked;
+            registrationTemplate.IsActive = cbIsActive.Checked;
+            registrationTemplate.Name = tbName.Text;
+            registrationTemplate.CategoryId = cpCategory.SelectedValueAsInt();
+            registrationTemplate.GroupTypeId = gtpGroupType.SelectedGroupTypeId;
+            registrationTemplate.GroupMemberRoleId = rpGroupTypeRole.GroupRoleId;
+            registrationTemplate.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
+            registrationTemplate.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
+            registrationTemplate.SignatureDocumentAction = cbDisplayInLine.Checked ? SignatureDocumentAction.Embed : SignatureDocumentAction.Email;
+            registrationTemplate.WaitListEnabled = cbWaitListEnabled.Checked;
+            registrationTemplate.RegistrarOption = ddlRegistrarOption.SelectedValueAsEnum<RegistrarOption>();
 
-            RegistrationTemplate.RegistrationWorkflowTypeId = wtpRegistrationWorkflow.SelectedValueAsInt();
-            RegistrationTemplate.Notify = notify;
-            RegistrationTemplate.AddPersonNote = cbAddPersonNote.Checked;
-            RegistrationTemplate.LoginRequired = cbLoginRequired.Checked;
-            RegistrationTemplate.AllowExternalRegistrationUpdates = cbAllowExternalUpdates.Checked;
-            RegistrationTemplate.AllowGroupPlacement = cbAllowGroupPlacement.Checked;
-            RegistrationTemplate.AllowMultipleRegistrants = cbMultipleRegistrants.Checked;
-            RegistrationTemplate.MaxRegistrants = nbMaxRegistrants.Text.AsInteger();
-            RegistrationTemplate.RegistrantsSameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
-            RegistrationTemplate.ShowCurrentFamilyMembers = cbShowCurrentFamilyMembers.Checked;
-            RegistrationTemplate.SetCostOnInstance = !tglSetCostOnTemplate.Checked;
-            RegistrationTemplate.Cost = cbCost.Text.AsDecimal();
-            RegistrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimalOrNull();
-            RegistrationTemplate.FinancialGatewayId = fgpFinancialGateway.SelectedValueAsInt();
-            RegistrationTemplate.BatchNamePrefix = txtBatchNamePrefix.Text;
+            registrationTemplate.RegistrationWorkflowTypeId = wtpRegistrationWorkflow.SelectedValueAsInt();
+            registrationTemplate.Notify = notify;
+            registrationTemplate.AddPersonNote = cbAddPersonNote.Checked;
+            registrationTemplate.LoginRequired = cbLoginRequired.Checked;
+            registrationTemplate.AllowExternalRegistrationUpdates = cbAllowExternalUpdates.Checked;
+            registrationTemplate.AllowGroupPlacement = cbAllowGroupPlacement.Checked;
+            registrationTemplate.AllowMultipleRegistrants = cbMultipleRegistrants.Checked;
+            registrationTemplate.MaxRegistrants = nbMaxRegistrants.Text.AsInteger();
+            registrationTemplate.RegistrantsSameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
+            registrationTemplate.ShowCurrentFamilyMembers = cbShowCurrentFamilyMembers.Checked;
+            registrationTemplate.SetCostOnInstance = !tglSetCostOnTemplate.Checked;
+            registrationTemplate.Cost = cbCost.Text.AsDecimal();
+            registrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimalOrNull();
+            registrationTemplate.FinancialGatewayId = fgpFinancialGateway.SelectedValueAsInt();
+            registrationTemplate.BatchNamePrefix = txtBatchNamePrefix.Text;
 
-            RegistrationTemplate.ConfirmationFromName = tbConfirmationFromName.Text;
-            RegistrationTemplate.ConfirmationFromEmail = tbConfirmationFromEmail.Text;
-            RegistrationTemplate.ConfirmationSubject = tbConfirmationSubject.Text;
-            RegistrationTemplate.ConfirmationEmailTemplate = ceConfirmationEmailTemplate.Text;
+            registrationTemplate.ConfirmationFromName = tbConfirmationFromName.Text;
+            registrationTemplate.ConfirmationFromEmail = tbConfirmationFromEmail.Text;
+            registrationTemplate.ConfirmationSubject = tbConfirmationSubject.Text;
+            registrationTemplate.ConfirmationEmailTemplate = ceConfirmationEmailTemplate.Text;
 
-            RegistrationTemplate.ReminderFromName = tbReminderFromName.Text;
-            RegistrationTemplate.ReminderFromEmail = tbReminderFromEmail.Text;
-            RegistrationTemplate.ReminderSubject = tbReminderSubject.Text;
-            RegistrationTemplate.ReminderEmailTemplate = ceReminderEmailTemplate.Text;
+            registrationTemplate.ReminderFromName = tbReminderFromName.Text;
+            registrationTemplate.ReminderFromEmail = tbReminderFromEmail.Text;
+            registrationTemplate.ReminderSubject = tbReminderSubject.Text;
+            registrationTemplate.ReminderEmailTemplate = ceReminderEmailTemplate.Text;
 
-            RegistrationTemplate.PaymentReminderFromName = tbPaymentReminderFromName.Text;
-            RegistrationTemplate.PaymentReminderFromEmail = tbPaymentReminderFromEmail.Text;
-            RegistrationTemplate.PaymentReminderSubject = tbPaymentReminderSubject.Text;
-            RegistrationTemplate.PaymentReminderEmailTemplate = cePaymentReminderEmailTemplate.Text;
-            RegistrationTemplate.PaymentReminderTimeSpan = nbPaymentReminderTimeSpan.Text.AsInteger();
+            registrationTemplate.PaymentReminderFromName = tbPaymentReminderFromName.Text;
+            registrationTemplate.PaymentReminderFromEmail = tbPaymentReminderFromEmail.Text;
+            registrationTemplate.PaymentReminderSubject = tbPaymentReminderSubject.Text;
+            registrationTemplate.PaymentReminderEmailTemplate = cePaymentReminderEmailTemplate.Text;
+            registrationTemplate.PaymentReminderTimeSpan = nbPaymentReminderTimeSpan.Text.AsInteger();
 
-            RegistrationTemplate.WaitListTransitionFromName = tbWaitListTransitionFromName.Text;
-            RegistrationTemplate.WaitListTransitionFromEmail = tbWaitListTransitionFromEmail.Text;
-            RegistrationTemplate.WaitListTransitionSubject = tbWaitListTransitionSubject.Text;
-            RegistrationTemplate.WaitListTransitionEmailTemplate = ceWaitListTransitionEmailTemplate.Text;
+            registrationTemplate.WaitListTransitionFromName = tbWaitListTransitionFromName.Text;
+            registrationTemplate.WaitListTransitionFromEmail = tbWaitListTransitionFromEmail.Text;
+            registrationTemplate.WaitListTransitionSubject = tbWaitListTransitionSubject.Text;
+            registrationTemplate.WaitListTransitionEmailTemplate = ceWaitListTransitionEmailTemplate.Text;
 
-            RegistrationTemplate.RegistrationTerm = string.IsNullOrWhiteSpace( tbRegistrationTerm.Text ) ? "Registration" : tbRegistrationTerm.Text;
-            RegistrationTemplate.RegistrantTerm = string.IsNullOrWhiteSpace( tbRegistrantTerm.Text ) ? "Registrant" : tbRegistrantTerm.Text;
-            RegistrationTemplate.FeeTerm = string.IsNullOrWhiteSpace( tbFeeTerm.Text ) ? "Additional Options" : tbFeeTerm.Text;
-            RegistrationTemplate.DiscountCodeTerm = string.IsNullOrWhiteSpace( tbDiscountCodeTerm.Text ) ? "Discount Code" : tbDiscountCodeTerm.Text;
-            RegistrationTemplate.SuccessTitle = tbSuccessTitle.Text;
-            RegistrationTemplate.SuccessText = ceSuccessText.Text;
-
-            if ( !Page.IsValid || !RegistrationTemplate.IsValid )
+            registrationTemplate.RegistrationTerm = string.IsNullOrWhiteSpace( tbRegistrationTerm.Text ) ? "Registration" : tbRegistrationTerm.Text;
+            registrationTemplate.RegistrantTerm = string.IsNullOrWhiteSpace( tbRegistrantTerm.Text ) ? "Person" : tbRegistrantTerm.Text;
+            registrationTemplate.FeeTerm = string.IsNullOrWhiteSpace( tbFeeTerm.Text ) ? "Additional Options" : tbFeeTerm.Text;
+            registrationTemplate.DiscountCodeTerm = string.IsNullOrWhiteSpace( tbDiscountCodeTerm.Text ) ? "Discount Code" : tbDiscountCodeTerm.Text;
+            registrationTemplate.SuccessTitle = tbSuccessTitle.Text;
+            registrationTemplate.SuccessText = ceSuccessText.Text;
+            registrationTemplate.RegistrationInstructions = heInstructions.Text;
+            if ( !Page.IsValid || !registrationTemplate.IsValid )
             {
                 return;
             }
@@ -858,7 +869,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( FormFieldsState.ContainsKey( form.Guid ) )
                 {
-                    foreach( var formField in FormFieldsState[ form.Guid ])
+                    foreach ( var formField in FormFieldsState[form.Guid] )
                     {
                         if ( !formField.IsValid )
                         {
@@ -877,10 +888,10 @@ namespace RockWeb.Blocks.Event
             var validGroupMemberAttributeIds = groupMember.Attributes.Select( a => a.Value.Id ).ToList();
 
             // Remove any group member attributes that are not valid based on selected group type
-            foreach( var fieldList in FormFieldsState.Select( s => s.Value ) )
+            foreach ( var fieldList in FormFieldsState.Select( s => s.Value ) )
             {
-                foreach( var formField in fieldList
-                    .Where( a => 
+                foreach ( var formField in fieldList
+                    .Where( a =>
                         a.FieldSource == RegistrationFieldSource.GroupMemberAttribute &&
                         a.AttributeId.HasValue &&
                         !validGroupMemberAttributeIds.Contains( a.AttributeId.Value ) )
@@ -892,12 +903,12 @@ namespace RockWeb.Blocks.Event
 
             // Perform Validation
             var validationErrors = new List<string>();
-            if ( ( ( RegistrationTemplate.SetCostOnInstance ?? false ) || RegistrationTemplate.Cost > 0 || FeeState.Any() ) && !RegistrationTemplate.FinancialGatewayId.HasValue )
+            if ( ( ( registrationTemplate.SetCostOnInstance ?? false ) || registrationTemplate.Cost > 0 || FeeState.Any() ) && !registrationTemplate.FinancialGatewayId.HasValue )
             {
                 validationErrors.Add( "A Financial Gateway is required when the registration has a cost or additional fees or is configured to allow instances to set a cost." );
             }
 
-            if ( RegistrationTemplate.WaitListEnabled && RegistrationTemplate.MaxRegistrants == 0 )
+            if ( registrationTemplate.WaitListEnabled && registrationTemplate.MaxRegistrants == 0 )
             {
                 validationErrors.Add( "To enable a wait list you must provide a maximum number of registrants." );
             }
@@ -910,10 +921,11 @@ namespace RockWeb.Blocks.Event
             else
             {
                 // Save the entity field changes to registration template
-                if ( RegistrationTemplate.Id.Equals( 0 ) )
+                if ( registrationTemplate.Id.Equals( 0 ) )
                 {
-                    service.Add( RegistrationTemplate );
+                    service.Add( registrationTemplate );
                 }
+
                 rockContext.SaveChanges();
 
                 var attributeService = new AttributeService( rockContext );
@@ -930,14 +942,15 @@ namespace RockWeb.Blocks.Event
                 foreach ( var form in registrationTemplateFormService
                     .Queryable()
                     .Where( f =>
-                        f.RegistrationTemplateId == RegistrationTemplate.Id &&
+                        f.RegistrationTemplateId == registrationTemplate.Id &&
                         !formUiGuids.Contains( f.Guid ) ) )
                 {
-                    foreach( var formField in form.Fields.ToList() )
+                    foreach ( var formField in form.Fields.ToList() )
                     {
                         form.Fields.Remove( formField );
                         registrationTemplateFormFieldService.Delete( formField );
                     }
+
                     registrationTemplateFormService.Delete( form );
                 }
 
@@ -957,7 +970,7 @@ namespace RockWeb.Blocks.Event
                 foreach ( var discount in registrationTemplateDiscountService
                     .Queryable()
                     .Where( d =>
-                        d.RegistrationTemplateId == RegistrationTemplate.Id &&
+                        d.RegistrationTemplateId == registrationTemplate.Id &&
                         !discountUiGuids.Contains( d.Guid ) ) )
                 {
                     registrationTemplateDiscountService.Delete( discount );
@@ -968,7 +981,7 @@ namespace RockWeb.Blocks.Event
                 var deletedfees = registrationTemplateFeeService
                     .Queryable()
                     .Where( d =>
-                        d.RegistrationTemplateId == RegistrationTemplate.Id &&
+                        d.RegistrationTemplateId == registrationTemplate.Id &&
                         !feeUiGuids.Contains( d.Guid ) )
                     .ToList();
 
@@ -986,9 +999,9 @@ namespace RockWeb.Blocks.Event
                     registrationTemplateFeeService.Delete( fee );
                 }
 
-                int? entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
+                int? entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
                 var qualifierColumn = "RegistrationTemplateId";
-                var qualifierValue = RegistrationTemplate.Id.ToString();
+                var qualifierValue = registrationTemplate.Id.ToString();
 
                 // Get the registration attributes still in the UI
                 var attributesUI = FormFieldsState
@@ -1001,14 +1014,14 @@ namespace RockWeb.Blocks.Event
                 var selectedAttributeGuids = attributesUI.Select( a => a.Guid );
 
                 // Delete the registration attributes that were removed from the UI
-                var attributesDB = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+                var attributesDB = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
                 foreach ( var attr in attributesDB.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ).ToList() )
                 {
                     var canDeleteAttribute = true;
-                    foreach ( var form in RegistrationTemplate.Forms )
+                    foreach ( var form in registrationTemplate.Forms )
                     {
                         // make sure other RegistrationTemplates aren't using this AttributeId (which could happen due to an old bug)
-                        var formFieldsFromOtherRegistrationTemplatesUsingAttribute = registrationTemplateFormFieldService.Queryable().Where( a => a.AttributeId.Value == attr.Id && a.RegistrationTemplateForm.RegistrationTemplateId != RegistrationTemplate.Id ).Any();
+                        var formFieldsFromOtherRegistrationTemplatesUsingAttribute = registrationTemplateFormFieldService.Queryable().Where( a => a.AttributeId.Value == attr.Id && a.RegistrationTemplateForm.RegistrationTemplateId != registrationTemplate.Id ).Any();
                         if ( formFieldsFromOtherRegistrationTemplatesUsingAttribute )
                         {
                             canDeleteAttribute = false;
@@ -1018,7 +1031,6 @@ namespace RockWeb.Blocks.Event
                     if ( canDeleteAttribute )
                     {
                         attributeService.Delete( attr );
-                        Rock.Web.Cache.AttributeCache.Flush( attr.Id );
                     }
                 }
 
@@ -1033,13 +1045,14 @@ namespace RockWeb.Blocks.Event
                 // add/updated forms/fields
                 foreach ( var formUI in FormState )
                 {
-                    var form = RegistrationTemplate.Forms.FirstOrDefault( f => f.Guid.Equals( formUI.Guid ) );
+                    var form = registrationTemplate.Forms.FirstOrDefault( f => f.Guid.Equals( formUI.Guid ) );
                     if ( form == null )
                     {
                         form = new RegistrationTemplateForm();
                         form.Guid = formUI.Guid;
-                        RegistrationTemplate.Forms.Add( form );
+                        registrationTemplate.Forms.Add( form );
                     }
+
                     form.Name = formUI.Name;
                     form.Order = formUI.Order;
 
@@ -1060,7 +1073,7 @@ namespace RockWeb.Blocks.Event
                                 formFieldUI.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
                                 formFieldUI.Attribute != null )
                             {
-                                var attr = AttributeCache.Read( formFieldUI.Attribute.Guid, rockContext );
+                                var attr = AttributeCache.Get( formFieldUI.Attribute.Guid, rockContext );
                                 if ( attr != null )
                                 {
                                     formField.AttributeId = attr.Id;
@@ -1085,13 +1098,14 @@ namespace RockWeb.Blocks.Event
                 // add/updated discounts
                 foreach ( var discountUI in DiscountState )
                 {
-                    var discount = RegistrationTemplate.Discounts.FirstOrDefault( a => a.Guid.Equals( discountUI.Guid ) );
+                    var discount = registrationTemplate.Discounts.FirstOrDefault( a => a.Guid.Equals( discountUI.Guid ) );
                     if ( discount == null )
                     {
                         discount = new RegistrationTemplateDiscount();
                         discount.Guid = discountUI.Guid;
-                        RegistrationTemplate.Discounts.Add( discount );
+                        registrationTemplate.Discounts.Add( discount );
                     }
+
                     discount.Code = discountUI.Code;
                     discount.DiscountPercentage = discountUI.DiscountPercentage;
                     discount.DiscountAmount = discountUI.DiscountAmount;
@@ -1101,48 +1115,50 @@ namespace RockWeb.Blocks.Event
                     discount.MinRegistrants = discountUI.MinRegistrants;
                     discount.StartDate = discountUI.StartDate;
                     discount.EndDate = discountUI.EndDate;
+                    discount.AutoApplyDiscount = discountUI.AutoApplyDiscount;
                 }
 
                 // add/updated fees
                 foreach ( var feeUI in FeeState )
                 {
-                    var fee = RegistrationTemplate.Fees.FirstOrDefault( a => a.Guid.Equals( feeUI.Guid ) );
+                    var fee = registrationTemplate.Fees.FirstOrDefault( a => a.Guid.Equals( feeUI.Guid ) );
                     if ( fee == null )
                     {
                         fee = new RegistrationTemplateFee();
                         fee.Guid = feeUI.Guid;
-                        RegistrationTemplate.Fees.Add( fee );
+                        registrationTemplate.Fees.Add( fee );
                     }
+
                     fee.Name = feeUI.Name;
                     fee.FeeType = feeUI.FeeType;
                     fee.CostValue = feeUI.CostValue;
                     fee.DiscountApplies = feeUI.DiscountApplies;
                     fee.AllowMultiple = feeUI.AllowMultiple;
                     fee.Order = feeUI.Order;
+                    fee.IsActive = feeUI.IsActive;
+                    fee.IsRequired = feeUI.IsRequired;
                 }
 
                 rockContext.SaveChanges();
 
-                AttributeCache.FlushEntityAttributes();
-
-                // If this is a new template, give the current user and the Registration Administrators role administrative 
+                // If this is a new template, give the current user and the Registration Administrators role administrative
                 // rights to this template, and staff, and staff like roles edit rights
                 if ( newTemplate )
                 {
-                    RegistrationTemplate.AllowPerson( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
+                    registrationTemplate.AllowPerson( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
 
                     var registrationAdmins = groupService.Get( Rock.SystemGuid.Group.GROUP_EVENT_REGISTRATION_ADMINISTRATORS.AsGuid() );
-                    RegistrationTemplate.AllowSecurityRole( Authorization.ADMINISTRATE, registrationAdmins, rockContext );
+                    registrationTemplate.AllowSecurityRole( Authorization.ADMINISTRATE, registrationAdmins, rockContext );
 
                     var staffLikeUsers = groupService.Get( Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS.AsGuid() );
-                    RegistrationTemplate.AllowSecurityRole( Authorization.EDIT, staffLikeUsers, rockContext );
+                    registrationTemplate.AllowSecurityRole( Authorization.EDIT, staffLikeUsers, rockContext );
 
                     var staffUsers = groupService.Get( Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS.AsGuid() );
-                    RegistrationTemplate.AllowSecurityRole( Authorization.EDIT, staffUsers, rockContext );
+                    registrationTemplate.AllowSecurityRole( Authorization.EDIT, staffUsers, rockContext );
                 }
 
                 var qryParams = new Dictionary<string, string>();
-                qryParams["RegistrationTemplateId"] = RegistrationTemplate.Id.ToString();
+                qryParams["RegistrationTemplateId"] = registrationTemplate.Id.ToString();
                 NavigateToPage( RockPage.Guid, qryParams );
             }
         }
@@ -1193,7 +1209,7 @@ namespace RockWeb.Blocks.Event
             ParseControls();
 
             nbMaxRegistrants.Visible = cbMultipleRegistrants.Checked;
-            
+
             BuildControls();
         }
 
@@ -1342,7 +1358,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void tfeForm_DeleteFormClick( object sender, EventArgs e )
+        protected void tfeForm_DeleteFormClick( object sender, EventArgs e )
         {
             ParseControls();
 
@@ -1374,7 +1390,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        void tfeForm_AddFieldClick( object sender, TemplateFormFieldEventArg e )
+        protected void tfeForm_AddFieldClick( object sender, TemplateFormFieldEventArg e )
         {
             ParseControls();
 
@@ -1388,7 +1404,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        void tfeForm_EditFieldClick( object sender, TemplateFormFieldEventArg e )
+        protected void tfeForm_EditFieldClick( object sender, TemplateFormFieldEventArg e )
         {
             ParseControls();
 
@@ -1402,7 +1418,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        void tfeForm_ReorderFieldClick( object sender, TemplateFormFieldEventArg e )
+        protected void tfeForm_ReorderFieldClick( object sender, TemplateFormFieldEventArg e )
         {
             ParseControls();
 
@@ -1420,7 +1436,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        void tfeForm_DeleteFieldClick( object sender, TemplateFormFieldEventArg e )
+        protected void tfeForm_DeleteFieldClick( object sender, TemplateFormFieldEventArg e )
         {
             ParseControls();
 
@@ -1437,7 +1453,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        void tfeForm_RebindFieldClick( object sender, TemplateFormFieldEventArg e )
+        protected void tfeForm_RebindFieldClick( object sender, TemplateFormFieldEventArg e )
         {
             ParseControls();
 
@@ -1475,30 +1491,21 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgField_SaveClick( object sender, EventArgs e )
         {
-            var formGuid = hfFormGuid.Value.AsGuid();
-            var attributeGuid = hfAttributeGuid.Value.AsGuid();
+            FieldSave();
+            HideDialog();
+            BuildControls( true );
+        }
 
+        /// <summary>
+        /// Saves the form field
+        /// </summary>
+        private void FieldSave()
+        {
+            var formGuid = hfFormGuid.Value.AsGuid();
+            
             if ( FormFieldsState.ContainsKey( formGuid ) )
             {
-                var attributeForm = FormFieldsState[formGuid].FirstOrDefault( a => a.Guid.Equals( attributeGuid ) );
-                if ( attributeForm == null )
-                {
-                    attributeForm = new RegistrationTemplateFormField();
-                    attributeForm.Order = FormFieldsState[formGuid].Any() ? FormFieldsState[formGuid].Max( a => a.Order ) + 1 : 0;
-                    attributeForm.Guid = attributeGuid;
-                    FormFieldsState[formGuid].Add( attributeForm );
-                }
-
-                attributeForm.PreText = ceAttributePreText.Text;
-                attributeForm.PostText = ceAttributePostText.Text;
-                attributeForm.FieldSource = ddlFieldSource.SelectedValueAsEnum<RegistrationFieldSource>();
-                if ( ddlPersonField.Visible )
-                {
-                    attributeForm.PersonFieldType = ddlPersonField.SelectedValueAsEnum<RegistrationPersonFieldType>();
-                }
-
-                attributeForm.IsInternal = cbInternalField.Checked;
-                attributeForm.IsSharedValue = cbCommonValue.Checked;
+                var attributeForm = CreateFormField( formGuid );
 
                 int? attributeId = null;
 
@@ -1511,6 +1518,7 @@ namespace RockWeb.Blocks.Event
                             attributeForm.IsRequired = cbRequireInInitialEntry.Checked;
                             break;
                         }
+
                     case RegistrationFieldSource.PersonAttribute:
                         {
                             attributeId = ddlPersonAttributes.SelectedValueAsInt();
@@ -1519,6 +1527,7 @@ namespace RockWeb.Blocks.Event
                             attributeForm.IsRequired = cbRequireInInitialEntry.Checked;
                             break;
                         }
+
                     case RegistrationFieldSource.GroupMemberAttribute:
                         {
                             attributeId = ddlGroupTypeAttributes.SelectedValueAsInt();
@@ -1527,6 +1536,7 @@ namespace RockWeb.Blocks.Event
                             attributeForm.IsRequired = cbRequireInInitialEntry.Checked;
                             break;
                         }
+
                     case RegistrationFieldSource.RegistrationAttribute:
                         {
                             Rock.Model.Attribute attribute = new Rock.Model.Attribute();
@@ -1556,10 +1566,38 @@ namespace RockWeb.Blocks.Event
                     }
                 }
             }
+        }
 
-            HideDialog();
+        /// <summary>
+        /// Creates the form field.
+        /// </summary>
+        /// <param name="formGuid">The form unique identifier.</param>
+        /// <returns></returns>
+        private RegistrationTemplateFormField CreateFormField( Guid formGuid )
+        {
+            var attributeGuid = hfAttributeGuid.Value.AsGuid();
 
-            BuildControls( true );
+            var attributeForm = FormFieldsState[formGuid].FirstOrDefault( a => a.Guid.Equals( attributeGuid ) );
+            if ( attributeForm == null )
+            {
+                attributeForm = new RegistrationTemplateFormField();
+                attributeForm.Order = FormFieldsState[formGuid].Any() ? FormFieldsState[formGuid].Max( a => a.Order ) + 1 : 0;
+                attributeForm.Guid = attributeGuid;
+                FormFieldsState[formGuid].Add( attributeForm );
+            }
+
+            attributeForm.PreText = ceAttributePreText.Text;
+            attributeForm.PostText = ceAttributePostText.Text;
+            attributeForm.FieldSource = ddlFieldSource.SelectedValueAsEnum<RegistrationFieldSource>();
+            if ( ddlPersonField.Visible )
+            {
+                attributeForm.PersonFieldType = ddlPersonField.SelectedValueAsEnum<RegistrationPersonFieldType>();
+            }
+
+            attributeForm.IsInternal = cbInternalField.Checked;
+            attributeForm.IsSharedValue = cbCommonValue.Checked;
+
+            return attributeForm;
         }
 
         #endregion
@@ -1703,6 +1741,7 @@ namespace RockWeb.Blocks.Event
             discount.MinRegistrants = nbDiscountMinRegistrants.Text.AsIntegerOrNull();
             discount.StartDate = drpDiscountDateRange.LowerValue;
             discount.EndDate = drpDiscountDateRange.UpperValue;
+            discount.AutoApplyDiscount = cbcAutoApplyDiscount.Checked;
 
             HideDialog();
 
@@ -1854,21 +1893,22 @@ namespace RockWeb.Blocks.Event
 
             fee.Name = tbFeeName.Text;
             fee.FeeType = rblFeeType.SelectedValueAsEnum<RegistrationFeeType>();
+            fee.AllowMultiple = cbAllowMultiple.Checked;
+            fee.DiscountApplies = cbDiscountApplies.Checked;
+            fee.IsActive = cbFeeIsActive.Checked;
+            fee.IsRequired = cbFeeIsRequired.Checked;
+
             if ( fee.FeeType == RegistrationFeeType.Single )
             {
-                fee.CostValue = cCost.Text;
+                fee.CostValue = cCost.Text.Replace("$", "");
             }
             else
             {
-                fee.CostValue = kvlMultipleFees.Value;
+                fee.CostValue = kvlMultipleFees.Value.Replace("$", "");
             }
-            fee.AllowMultiple = cbAllowMultiple.Checked;
-            fee.DiscountApplies = cbDiscountApplies.Checked;
-
-            HideDialog();
 
             hfFeeGuid.Value = string.Empty;
-
+            HideDialog();
             BuildControls();
         }
 
@@ -2018,27 +2058,27 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Loads the state details.
         /// </summary>
-        /// <param name="RegistrationTemplate">The registration template.</param>
+        /// <param name="registrationTemplate">The registration template.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void LoadStateDetails( RegistrationTemplate RegistrationTemplate, RockContext rockContext )
+        private void LoadStateDetails( RegistrationTemplate registrationTemplate, RockContext rockContext )
         {
-            if ( RegistrationTemplate != null )
+            if ( registrationTemplate != null )
             {
                 // If no forms, add at one
-                if ( !RegistrationTemplate.Forms.Any() )
+                if ( !registrationTemplate.Forms.Any() )
                 {
                     var form = new RegistrationTemplateForm();
                     form.Guid = Guid.NewGuid();
                     form.Order = 0;
                     form.Name = "Default Form";
-                    RegistrationTemplate.Forms.Add( form );
+                    registrationTemplate.Forms.Add( form );
                 }
 
-                var defaultForm = RegistrationTemplate.Forms.First();
+                var defaultForm = registrationTemplate.Forms.First();
 
                 // Add first name field if it doesn't exist
                 if ( !defaultForm.Fields
-                    .Any( f => 
+                    .Any( f =>
                         f.FieldSource == RegistrationFieldSource.PersonField &&
                         f.PersonFieldType == RegistrationPersonFieldType.FirstName ))
                 {
@@ -2048,9 +2088,7 @@ namespace RockWeb.Blocks.Event
                     formField.IsGridField = true;
                     formField.IsRequired = true;
                     formField.ShowOnWaitlist = true;
-                    formField.PreText = @"<div class='row'>
-    <div class='col-md-6'>
-";
+                    formField.PreText = @"<div class='row'><div class='col-md-6'>";
                     formField.PostText = "    </div>";
                     formField.Order = defaultForm.Fields.Any() ? defaultForm.Fields.Max( f => f.Order ) + 1 : 0;
                     defaultForm.Fields.Add( formField );
@@ -2069,22 +2107,21 @@ namespace RockWeb.Blocks.Event
                     formField.IsRequired = true;
                     formField.ShowOnWaitlist = true;
                     formField.PreText = "    <div class='col-md-6'>";
-                    formField.PostText = @"    </div>
-</div>";
+                    formField.PostText = @"    </div></div>";
                     formField.Order = defaultForm.Fields.Any() ? defaultForm.Fields.Max( f => f.Order ) + 1 : 0;
                     defaultForm.Fields.Add( formField );
                 }
 
                 FormState = new List<RegistrationTemplateForm>();
                 FormFieldsState = new Dictionary<Guid, List<RegistrationTemplateFormField>>();
-                foreach ( var form in RegistrationTemplate.Forms.OrderBy( f => f.Order ) )
+                foreach ( var form in registrationTemplate.Forms.OrderBy( f => f.Order ) )
                 {
                     FormState.Add( form.Clone( false ) );
                     FormFieldsState.Add( form.Guid, form.Fields.ToList() );
                 }
-                DiscountState = RegistrationTemplate.Discounts.OrderBy( a => a.Order ).ToList();
-                FeeState = RegistrationTemplate.Fees.OrderBy( a => a.Order ).ToList();
 
+                DiscountState = registrationTemplate.Discounts.OrderBy( a => a.Order ).ToList();
+                FeeState = registrationTemplate.Fees.OrderBy( a => a.Order ).ToList();
             }
             else
             {
@@ -2113,11 +2150,11 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Shows the edit details.
         /// </summary>
-        /// <param name="RegistrationTemplate">The registration template.</param>
+        /// <param name="registrationTemplate">The registration template.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void ShowEditDetails( RegistrationTemplate RegistrationTemplate, RockContext rockContext )
+        private void ShowEditDetails( RegistrationTemplate registrationTemplate, RockContext rockContext )
         {
-            if ( RegistrationTemplate.Id == 0 )
+            if ( registrationTemplate.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( RegistrationTemplate.FriendlyTypeName ).FormatAsHtmlTitle();
                 hlInactive.Visible = false;
@@ -2128,74 +2165,76 @@ namespace RockWeb.Blocks.Event
                 pwDetails.Expanded = false;
             }
 
+            pdAuditDetails.Visible = false;
             SetEditMode( true );
 
             LoadDropDowns( rockContext );
 
-            cbIsActive.Checked = RegistrationTemplate.IsActive;
-            tbName.Text = RegistrationTemplate.Name;
-            cpCategory.SetValue( RegistrationTemplate.CategoryId );
+            cbIsActive.Checked = registrationTemplate.IsActive;
+            tbName.Text = registrationTemplate.Name;
+            cpCategory.SetValue( registrationTemplate.CategoryId );
 
-            gtpGroupType.SelectedGroupTypeId = RegistrationTemplate.GroupTypeId;
-            rpGroupTypeRole.GroupTypeId = RegistrationTemplate.GroupTypeId ?? 0;
-            rpGroupTypeRole.GroupRoleId = RegistrationTemplate.GroupMemberRoleId;
-            ddlGroupMemberStatus.SetValue( RegistrationTemplate.GroupMemberStatus.ConvertToInt() );
-            ddlSignatureDocumentTemplate.SetValue( RegistrationTemplate.RequiredSignatureDocumentTemplateId );
-            cbDisplayInLine.Checked = RegistrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
-            wtpRegistrationWorkflow.SetValue( RegistrationTemplate.RegistrationWorkflowTypeId );
+            gtpGroupType.SelectedGroupTypeId = registrationTemplate.GroupTypeId;
+            rpGroupTypeRole.GroupTypeId = registrationTemplate.GroupTypeId ?? 0;
+            rpGroupTypeRole.GroupRoleId = registrationTemplate.GroupMemberRoleId;
+            ddlGroupMemberStatus.SetValue( registrationTemplate.GroupMemberStatus.ConvertToInt() );
+            ddlSignatureDocumentTemplate.SetValue( registrationTemplate.RequiredSignatureDocumentTemplateId );
+            cbDisplayInLine.Checked = registrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
+            wtpRegistrationWorkflow.SetValue( registrationTemplate.RegistrationWorkflowTypeId );
+            ddlRegistrarOption.SetValue( registrationTemplate.RegistrarOption.ConvertToInt() );
 
-            foreach( ListItem li in cblNotify.Items )
+            foreach ( ListItem li in cblNotify.Items )
             {
                 RegistrationNotify notify = (RegistrationNotify)li.Value.AsInteger();
-                li.Selected = ( RegistrationTemplate.Notify & notify ) == notify;
+                li.Selected = ( registrationTemplate.Notify & notify ) == notify;
             }
 
-            cbWaitListEnabled.Checked = RegistrationTemplate.WaitListEnabled;
-            cbAddPersonNote.Checked = RegistrationTemplate.AddPersonNote;
-            cbLoginRequired.Checked = RegistrationTemplate.LoginRequired;
-            cbAllowExternalUpdates.Checked = RegistrationTemplate.AllowExternalRegistrationUpdates;
-            cbAllowGroupPlacement.Checked = RegistrationTemplate.AllowGroupPlacement;
-            cbMultipleRegistrants.Checked = RegistrationTemplate.AllowMultipleRegistrants;
-            nbMaxRegistrants.Visible = RegistrationTemplate.AllowMultipleRegistrants;
-            nbMaxRegistrants.Text = RegistrationTemplate.MaxRegistrants.ToString();
-            rblRegistrantsInSameFamily.SetValue( RegistrationTemplate.RegistrantsSameFamily.ConvertToInt() );
-            cbShowCurrentFamilyMembers.Checked = RegistrationTemplate.ShowCurrentFamilyMembers;
-            tglSetCostOnTemplate.Checked = !RegistrationTemplate.SetCostOnInstance.HasValue || !RegistrationTemplate.SetCostOnInstance.Value;
-            cbCost.Text = RegistrationTemplate.Cost.ToString();
-            cbMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.ToString( "N2" ) : "";
-            fgpFinancialGateway.SetValue( RegistrationTemplate.FinancialGatewayId );
-            txtBatchNamePrefix.Text = RegistrationTemplate.BatchNamePrefix;
+            cbWaitListEnabled.Checked = registrationTemplate.WaitListEnabled;
+            cbAddPersonNote.Checked = registrationTemplate.AddPersonNote;
+            cbLoginRequired.Checked = registrationTemplate.LoginRequired;
+            cbAllowExternalUpdates.Checked = registrationTemplate.AllowExternalRegistrationUpdates;
+            cbAllowGroupPlacement.Checked = registrationTemplate.AllowGroupPlacement;
+            cbMultipleRegistrants.Checked = registrationTemplate.AllowMultipleRegistrants;
+            nbMaxRegistrants.Visible = registrationTemplate.AllowMultipleRegistrants;
+            nbMaxRegistrants.Text = registrationTemplate.MaxRegistrants == 0 ? string.Empty : registrationTemplate.MaxRegistrants.ToString();
+            rblRegistrantsInSameFamily.SetValue( registrationTemplate.RegistrantsSameFamily.ConvertToInt() );
+            cbShowCurrentFamilyMembers.Checked = registrationTemplate.ShowCurrentFamilyMembers;
+            tglSetCostOnTemplate.Checked = !registrationTemplate.SetCostOnInstance.HasValue || !registrationTemplate.SetCostOnInstance.Value;
+            cbCost.Text = registrationTemplate.Cost.ToString();
+            cbMinimumInitialPayment.Text = registrationTemplate.MinimumInitialPayment.HasValue ? registrationTemplate.MinimumInitialPayment.Value.ToString( "N2" ) : string.Empty;
+            fgpFinancialGateway.SetValue( registrationTemplate.FinancialGatewayId );
+            txtBatchNamePrefix.Text = registrationTemplate.BatchNamePrefix;
             SetCostVisibility();
 
-            tbConfirmationFromName.Text = RegistrationTemplate.ConfirmationFromName;
-            tbConfirmationFromEmail.Text = RegistrationTemplate.ConfirmationFromEmail;
-            tbConfirmationSubject.Text = RegistrationTemplate.ConfirmationSubject;
-            ceConfirmationEmailTemplate.Text = RegistrationTemplate.ConfirmationEmailTemplate;
+            tbConfirmationFromName.Text = registrationTemplate.ConfirmationFromName;
+            tbConfirmationFromEmail.Text = registrationTemplate.ConfirmationFromEmail;
+            tbConfirmationSubject.Text = registrationTemplate.ConfirmationSubject;
+            ceConfirmationEmailTemplate.Text = registrationTemplate.ConfirmationEmailTemplate;
 
-            tbReminderFromName.Text = RegistrationTemplate.ReminderFromName;
-            tbReminderFromEmail.Text = RegistrationTemplate.ReminderFromEmail;
-            tbReminderSubject.Text = RegistrationTemplate.ReminderSubject;
-            ceReminderEmailTemplate.Text = RegistrationTemplate.ReminderEmailTemplate;
+            tbReminderFromName.Text = registrationTemplate.ReminderFromName;
+            tbReminderFromEmail.Text = registrationTemplate.ReminderFromEmail;
+            tbReminderSubject.Text = registrationTemplate.ReminderSubject;
+            ceReminderEmailTemplate.Text = registrationTemplate.ReminderEmailTemplate;
 
-            tbPaymentReminderFromName.Text = RegistrationTemplate.PaymentReminderFromName;
-            tbPaymentReminderFromEmail.Text = RegistrationTemplate.PaymentReminderFromEmail;
-            tbPaymentReminderSubject.Text = RegistrationTemplate.PaymentReminderSubject;
-            cePaymentReminderEmailTemplate.Text = RegistrationTemplate.PaymentReminderEmailTemplate;
-            nbPaymentReminderTimeSpan.Text = RegistrationTemplate.PaymentReminderTimeSpan.ToString();
+            tbPaymentReminderFromName.Text = registrationTemplate.PaymentReminderFromName;
+            tbPaymentReminderFromEmail.Text = registrationTemplate.PaymentReminderFromEmail;
+            tbPaymentReminderSubject.Text = registrationTemplate.PaymentReminderSubject;
+            cePaymentReminderEmailTemplate.Text = registrationTemplate.PaymentReminderEmailTemplate;
+            nbPaymentReminderTimeSpan.Text = registrationTemplate.PaymentReminderTimeSpan.ToString();
 
-            tbWaitListTransitionFromName.Text = RegistrationTemplate.WaitListTransitionFromName;
-            tbWaitListTransitionFromEmail.Text = RegistrationTemplate.WaitListTransitionFromEmail;
-            tbWaitListTransitionSubject.Text = RegistrationTemplate.WaitListTransitionSubject;
-            ceWaitListTransitionEmailTemplate.Text = RegistrationTemplate.WaitListTransitionEmailTemplate;
-            
-            tbRegistrationTerm.Text = RegistrationTemplate.RegistrationTerm;
-            tbRegistrantTerm.Text = RegistrationTemplate.RegistrantTerm;
-            tbFeeTerm.Text = RegistrationTemplate.FeeTerm;
-            tbDiscountCodeTerm.Text = RegistrationTemplate.DiscountCodeTerm;
+            tbWaitListTransitionFromName.Text = registrationTemplate.WaitListTransitionFromName;
+            tbWaitListTransitionFromEmail.Text = registrationTemplate.WaitListTransitionFromEmail;
+            tbWaitListTransitionSubject.Text = registrationTemplate.WaitListTransitionSubject;
+            ceWaitListTransitionEmailTemplate.Text = registrationTemplate.WaitListTransitionEmailTemplate;
 
-            tbSuccessTitle.Text = RegistrationTemplate.SuccessTitle;
-            ceSuccessText.Text = RegistrationTemplate.SuccessText;
+            tbRegistrationTerm.Text = registrationTemplate.RegistrationTerm;
+            tbRegistrantTerm.Text = registrationTemplate.RegistrantTerm;
+            tbFeeTerm.Text = registrationTemplate.FeeTerm;
+            tbDiscountCodeTerm.Text = registrationTemplate.DiscountCodeTerm;
 
+            tbSuccessTitle.Text = registrationTemplate.SuccessTitle;
+            ceSuccessText.Text = registrationTemplate.SuccessText;
+            heInstructions.Text = registrationTemplate.RegistrationInstructions;
             BuildControls( true );
         }
 
@@ -2212,57 +2251,52 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Shows the readonly details.
         /// </summary>
-        /// <param name="RegistrationTemplate">The registration template.</param>
-        private void ShowReadonlyDetails( RegistrationTemplate RegistrationTemplate )
+        /// <param name="registrationTemplate">The registration template.</param>
+        private void ShowReadonlyDetails( RegistrationTemplate registrationTemplate )
         {
             SetEditMode( false );
 
-            hfRegistrationTemplateId.SetValue( RegistrationTemplate.Id );
+            hfRegistrationTemplateId.SetValue( registrationTemplate.Id );
             FormState = null;
             ExpandedForms = null;
             DiscountState = null;
             FeeState = null;
 
-            lReadOnlyTitle.Text = RegistrationTemplate.Name.FormatAsHtmlTitle();
-            hlInactive.Visible = RegistrationTemplate.IsActive == false;
-            hlType.Visible = RegistrationTemplate.Category != null;
-            hlType.Text = RegistrationTemplate.Category != null ?
-                RegistrationTemplate.Category.Name : string.Empty;
-            lGroupType.Text = RegistrationTemplate.GroupType != null ?
-                RegistrationTemplate.GroupType.Name : string.Empty;
-            lRequiredSignedDocument.Text = RegistrationTemplate.RequiredSignatureDocumentTemplate != null ?
-                RegistrationTemplate.RequiredSignatureDocumentTemplate.Name : string.Empty;
+            pdAuditDetails.SetEntity( registrationTemplate, ResolveRockUrl( "~" ) );
+
+            lReadOnlyTitle.Text = registrationTemplate.Name.FormatAsHtmlTitle();
+            hlInactive.Visible = registrationTemplate.IsActive == false;
+            hlType.Visible = registrationTemplate.Category != null;
+            hlType.Text = registrationTemplate.Category != null ? registrationTemplate.Category.Name : string.Empty;
+            lGroupType.Text = registrationTemplate.GroupType != null ? registrationTemplate.GroupType.Name : string.Empty;
+            lRequiredSignedDocument.Text = registrationTemplate.RequiredSignatureDocumentTemplate != null ? registrationTemplate.RequiredSignatureDocumentTemplate.Name : string.Empty;
             lRequiredSignedDocument.Visible = !string.IsNullOrWhiteSpace( lRequiredSignedDocument.Text );
-            lWorkflowType.Text = RegistrationTemplate.RegistrationWorkflowType != null ?
-                RegistrationTemplate.RegistrationWorkflowType.Name : string.Empty;
+            lWorkflowType.Text = registrationTemplate.RegistrationWorkflowType != null ? registrationTemplate.RegistrationWorkflowType.Name : string.Empty;
             lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );
+            rcwForms.Label = string.Format( "<strong>Forms</strong> ({0}) <i class='fa fa-caret-down'></i>", registrationTemplate.Forms.Count() );
+            lFormsReadonly.Text = string.Empty;
 
-            rcwForms.Label = string.Format( "<strong>Forms</strong> ({0}) <i class='fa fa-caret-down'></i>", RegistrationTemplate.Forms.Count() );
-            if ( RegistrationTemplate.Forms.Any() )
+            if ( registrationTemplate.Forms.Any() )
             {
-                foreach ( var form in RegistrationTemplate.Forms.OrderBy( a => a.Order ) )
+                foreach ( var form in registrationTemplate.Forms.OrderBy( a => a.Order ) )
                 {
-                    string formTextFormat = @"
-            <br/><strong>{0}</strong>
-            {1}
-";
-
+                    string formTextFormat = @"<br/><strong>{0}</strong>{1}";
                     string attributeText = string.Empty;
 
                     foreach ( var formField in form.Fields.OrderBy( a => a.Order ) )
                     {
-                        string formFieldName = ( formField.Attribute != null ) ?
-                            formField.Attribute.Name : formField.PersonFieldType.ConvertToString();
-                        string fieldTypeName = ( formField.Attribute != null ) ?
-                            FieldTypeCache.GetName( formField.Attribute.FieldTypeId ) : "";
-                        attributeText += string.Format( @"
-            <div class='row'>
-                <div class='col-sm-1'></div>
-                <div class='col-sm-4'>{0}</div>
-                <div class='col-sm-3'>{1}</div>
-                <div class='col-sm-4'>{2}</div>
-            </div>
-", formFieldName, fieldTypeName, formField.FieldSource.ConvertToString() );
+                        string formFieldName = ( formField.Attribute != null ) ? formField.Attribute.Name : formField.PersonFieldType.ConvertToString();
+                        string fieldTypeName = ( formField.Attribute != null ) ? FieldTypeCache.GetName( formField.Attribute.FieldTypeId ) : string.Empty;
+                        attributeText += string.Format(
+                            @"<div class='row'>
+                                <div class='col-sm-1'></div>
+                                <div class='col-sm-4'>{0}</div>
+                                <div class='col-sm-3'>{1}</div>
+                                <div class='col-sm-4'>{2}</div>
+                            </div>",
+                            formFieldName,
+                            fieldTypeName,
+                            formField.FieldSource.ConvertToString() );
                     }
 
                     lFormsReadonly.Text += string.Format( formTextFormat, form.Name, attributeText );
@@ -2273,20 +2307,46 @@ namespace RockWeb.Blocks.Event
                 lFormsReadonly.Text = "<div>" + None.TextHtml + "</div>";
             }
 
-            if ( RegistrationTemplate.SetCostOnInstance ?? false )
+            if ( registrationTemplate.SetCostOnInstance ?? false )
             {
                 lCost.Text = "Set on Instance";
                 lMinimumInitialPayment.Text = "Set on Instance";
             }
             else
             {
-                lCost.Text = RegistrationTemplate.Cost.FormatAsCurrency();
-                lMinimumInitialPayment.Visible = RegistrationTemplate.MinimumInitialPayment.HasValue;
-                lMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.FormatAsCurrency() : "";
+                lCost.Text = registrationTemplate.Cost.FormatAsCurrency();
+                lMinimumInitialPayment.Visible = registrationTemplate.MinimumInitialPayment.HasValue;
+                lMinimumInitialPayment.Text = registrationTemplate.MinimumInitialPayment.HasValue ?
+                    registrationTemplate.MinimumInitialPayment.Value.FormatAsCurrency() : string.Empty;
             }
 
-            rFees.DataSource = RegistrationTemplate.Fees.OrderBy( f => f.Order ).ToList();
+            rFees.DataSource = registrationTemplate.Fees.OrderBy( f => f.Order ).ToList();
             rFees.DataBind();
+        }
+
+        /// <summary>
+        /// Adds the "is-inactive" css class if the item is not active.
+        /// </summary>
+        /// <param name="isActive">The is active.</param>
+        /// <returns></returns>
+        protected string FormatInactiveRow(string isActive)
+        {
+            try
+            {
+                if ( bool.Parse( isActive ) == false )
+                {
+                    return "class=\"row\"";
+                }
+                else
+                {
+                    return "class=\"row is-inactive\"";
+                }
+            }
+            catch ( Exception )
+            {
+                // If there is a problem with this then just show the row as active.
+                return "class=\"row\"";
+            }
         }
 
         /// <summary>
@@ -2317,15 +2377,15 @@ namespace RockWeb.Blocks.Event
 
             ddlFieldSource.BindToEnum<RegistrationFieldSource>();
 
-            ddlPersonField.BindToEnum<RegistrationPersonFieldType>();
-            ddlPersonField.Items.RemoveAt( 0 );
-            ddlPersonField.Items.RemoveAt( 0 );
+            ddlPersonField.BindToEnum<RegistrationPersonFieldType>( sortAlpha: true );
+            ddlPersonField.Items.Remove( ddlPersonField.Items.FindByValue( "0" ) );
+            ddlPersonField.Items.Remove( ddlPersonField.Items.FindByValue( "1" ) );
 
             rblFeeType.BindToEnum<RegistrationFeeType>();
 
             ddlSignatureDocumentTemplate.Items.Clear();
             ddlSignatureDocumentTemplate.Items.Add( new ListItem() );
-            foreach( var documentType in new SignatureDocumentTemplateService( rockContext )
+            foreach ( var documentType in new SignatureDocumentTemplateService( rockContext )
                 .Queryable().AsNoTracking()
                 .OrderBy( t => t.Name ) )
             {
@@ -2390,8 +2450,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="form">The form.</param>
         /// <param name="activeFormGuid">The active form unique identifier.</param>
         /// <param name="showInvalid">if set to <c>true</c> [show invalid].</param>
-        private void BuildFormControl( Control parentControl, bool setValues, RegistrationTemplateForm form,
-            Guid? activeFormGuid = null, bool showInvalid = false )
+        private void BuildFormControl( Control parentControl, bool setValues, RegistrationTemplateForm form, Guid? activeFormGuid = null, bool showInvalid = false )
         {
             var control = new RegistrationTemplateFormEditor();
             control.ID = form.Guid.ToString( "N" );
@@ -2443,7 +2502,7 @@ namespace RockWeb.Blocks.Event
                         Name = ( a.FieldSource != RegistrationFieldSource.PersonField && a.Attribute != null ) ?
                             a.Attribute.Name : a.PersonFieldType.ConvertToString(),
                         FieldSource = a.FieldSource.ConvertToString(),
-                        FieldType = ( a.FieldSource != RegistrationFieldSource.PersonField && a.Attribute != null ) ? 
+                        FieldType = ( a.FieldSource != RegistrationFieldSource.PersonField && a.Attribute != null ) ?
                             a.Attribute.FieldTypeId : 0,
                         a.IsInternal,
                         a.IsSharedValue,
@@ -2524,7 +2583,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 var attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
 
                 if ( formField.FieldSource == RegistrationFieldSource.PersonAttribute )
                 {
@@ -2553,7 +2612,7 @@ namespace RockWeb.Blocks.Event
 
                 hfFormGuid.Value = formGuid.ToString();
                 hfAttributeGuid.Value = formFieldGuid.ToString();
-                
+
                 lPersonField.Visible = formField.FieldSource == RegistrationFieldSource.PersonField && (
                     formField.PersonFieldType == RegistrationPersonFieldType.FirstName ||
                     formField.PersonFieldType == RegistrationPersonFieldType.LastName );
@@ -2590,7 +2649,7 @@ namespace RockWeb.Blocks.Event
 
             cbInternalField.Visible = true;
             cbCommonValue.Visible = true;
-            cbUsePersonCurrentValue.Visible = 
+            cbUsePersonCurrentValue.Visible =
                 fieldSource == RegistrationFieldSource.PersonAttribute ||
                 fieldSource == RegistrationFieldSource.PersonField;
 
@@ -2681,7 +2740,7 @@ namespace RockWeb.Blocks.Event
             int order = 0;
             fieldList.ForEach( a => a.Order = order++ );
         }
-        
+
         #endregion
 
         #region Discount Methods
@@ -2743,6 +2802,7 @@ namespace RockWeb.Blocks.Event
             nbDiscountMinRegistrants.Text = discount.MinRegistrants.HasValue ? discount.MinRegistrants.ToString() : string.Empty;
             drpDiscountDateRange.LowerValue = discount.StartDate;
             drpDiscountDateRange.UpperValue = discount.EndDate;
+            cbcAutoApplyDiscount.Checked = discount.AutoApplyDiscount;
 
             ShowDialog( "Discounts" );
         }
@@ -2767,7 +2827,9 @@ namespace RockWeb.Blocks.Event
                         f.FeeType,
                         Cost = FormatFeeCost( f.CostValue ),
                         f.AllowMultiple,
-                        f.DiscountApplies
+                        f.DiscountApplies,
+                        f.IsActive,
+                        f.IsRequired
                     } )
                     .ToList();
                 gFees.DataBind();
@@ -2799,6 +2861,8 @@ namespace RockWeb.Blocks.Event
 
             cbAllowMultiple.Checked = fee.AllowMultiple;
             cbDiscountApplies.Checked = fee.DiscountApplies;
+            cbFeeIsActive.Checked = fee.IsActive;
+            cbFeeIsRequired.Checked = fee.IsRequired;
 
             ShowDialog( "Fees" );
         }
@@ -2888,6 +2952,5 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #endregion
-
 }
 }

@@ -5,6 +5,16 @@
         $('a.btn-checkin-select').click(function () {
             $(this).siblings().attr('onclick', 'return false;');
         });
+
+        if ($('#<%=hfShowEditFamilyPrompt.ClientID%>').val() == "1") {
+
+                Rock.dialogs.confirm('<%=this.ConditionMessage + " Do you want to edit this family?" %>', function (result) {
+                    if (result) {
+                        window.location = "javascript:__doPostBack('<%=upContent.ClientID %>', 'EditFamily')";
+                    }
+                });
+
+            }
     });
 </script>
 
@@ -12,22 +22,27 @@
 <ContentTemplate>
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
+    <asp:HiddenField ID="hfShowEditFamilyPrompt" runat="server" Value="0" />
 
     <div class="checkin-header">
         <h1><asp:Literal ID="lTitle" runat="server" /></h1>
     </div>
-                
+
     <div class="checkin-body">
-        
+
         <div class="checkin-scroll-panel">
             <div class="scroller">
 
                 <div class="control-group checkin-body-container">
                     <label class="control-label"><asp:Literal ID="lCaption" runat="server" /></label>
+                    <asp:LinkButton CssClass="btn btn-link pull-right" ID="lbAddFamily" runat="server" OnClick="lbAddFamily_Click" Text="<i class='fa fa-plus'></i> Add Family"/>
                     <div class="controls">
-                        <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand">
+                        <asp:Repeater ID="rSelection" runat="server" OnItemDataBound="rSelection_ItemDataBound">
                             <ItemTemplate>
-                                <Rock:BootstrapButton ID="lbSelect" runat="server" CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select"  DataLoadingText="Loading..." ><%# Eval("Caption") %><span class="checkin-sub-title"><%# Eval("SubCaption") %></span></Rock:BootstrapButton>
+                                <%-- pnlSelectFamilyPostback will take care of firing the postback, and lSelectFamilyButtonHtml will be the button HTML from Lava  --%>
+                                <asp:Panel ID="pnlSelectFamilyPostback" runat="server">
+                                    <asp:Literal ID="lSelectFamilyButtonHtml" runat="server" />
+                                </asp:Panel>
                             </ItemTemplate>
                         </asp:Repeater>
                     </div>
@@ -39,10 +54,10 @@
     </div>
 
 
-     <div class="checkin-footer">   
+     <div class="checkin-footer">
         <div class="checkin-actions">
-            <asp:LinkButton CssClass="btn btn-default" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
-            <asp:LinkButton CssClass="btn btn-default" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
+            <asp:LinkButton CssClass="btn btn-default btn-back" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
+            <asp:LinkButton CssClass="btn btn-default btn-cancel" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
         </div>
     </div>
 

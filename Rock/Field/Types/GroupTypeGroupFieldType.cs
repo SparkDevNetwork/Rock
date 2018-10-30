@@ -61,6 +61,7 @@ namespace Rock.Field.Types
             controls.Add( textBoxGroupPickerLabel );
             textBoxGroupPickerLabel.Label = "Group Picker Label";
             textBoxGroupPickerLabel.Help = "The label for the group picker";
+            textBoxGroupPickerLabel.Text = "Group";
 
             return controls;
         }
@@ -73,7 +74,7 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( CONFIG_GROUP_PICKER_LABEL, new ConfigurationValue( "Group Picker Label", "The label for the group picker.", string.Empty ) );
+            configurationValues.Add( CONFIG_GROUP_PICKER_LABEL, new ConfigurationValue( "Group Picker Label", "The label for the group picker.", "Group" ) );
 
             if ( controls != null && controls.Count == 1 )
             {
@@ -97,7 +98,7 @@ namespace Rock.Field.Types
             if ( controls != null && controls.Count == 1 && configurationValues != null )
             {
                 var textBoxGroupPickerLabel = controls[0] as RockTextBox;
-                if ( textBoxGroupPickerLabel != null )
+                if ( textBoxGroupPickerLabel != null && configurationValues?.ContainsKey(CONFIG_GROUP_PICKER_LABEL) == true )
                 {
                     textBoxGroupPickerLabel.Text = configurationValues[CONFIG_GROUP_PICKER_LABEL].Value;
                 }
@@ -133,21 +134,23 @@ namespace Rock.Field.Types
                 }
             }
 
-            var rockContext = new RockContext();
-            if ( groupGuid.HasValue )
+            using ( var rockContext = new RockContext() )
             {
-                var group = new GroupService( rockContext ).Get( groupGuid.Value );
-                if ( group != null )
+                if ( groupGuid.HasValue )
                 {
-                    formattedValue = "Group: " + group.Name;
+                    var group = new GroupService( rockContext ).GetNoTracking( groupGuid.Value );
+                    if ( group != null )
+                    {
+                        formattedValue = "Group: " + group.Name;
+                    }
                 }
-            }
-            else if ( groupTypeGuid.HasValue )
-            {
-                var groupType = new GroupTypeService( rockContext ).Get( groupTypeGuid.Value );
-                if ( groupType != null )
+                else if ( groupTypeGuid.HasValue )
                 {
-                    formattedValue = "Group type: " + groupType.Name;
+                    var groupType = new GroupTypeService( rockContext ).GetNoTracking( groupTypeGuid.Value );
+                    if ( groupType != null )
+                    {
+                        formattedValue = "Group type: " + groupType.Name;
+                    }
                 }
             }
 
@@ -169,7 +172,7 @@ namespace Rock.Field.Types
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             GroupTypeGroupPicker editControl = new GroupTypeGroupPicker { ID = id };
-            if ( configurationValues != null )
+            if ( configurationValues != null && configurationValues.ContainsKey( CONFIG_GROUP_PICKER_LABEL ) )
             {
                 editControl.GroupControlLabel = configurationValues[CONFIG_GROUP_PICKER_LABEL].Value;
             }
@@ -194,7 +197,7 @@ namespace Rock.Field.Types
                 Guid? groupGuid = null;
                 if ( groupTypeGroupPicker.GroupTypeId.HasValue )
                 {
-                    var groupType = new GroupTypeService( rockContext ).Get( groupTypeGroupPicker.GroupTypeId.Value );
+                    var groupType = new GroupTypeService( rockContext ).GetNoTracking( groupTypeGroupPicker.GroupTypeId.Value );
                     if ( groupType != null )
                     {
                         groupTypeGuid = groupType.Guid;
@@ -203,14 +206,17 @@ namespace Rock.Field.Types
 
                 if ( groupTypeGroupPicker.GroupId.HasValue )
                 {
-                    var group = new GroupService( rockContext ).Get( groupTypeGroupPicker.GroupId.Value );
+                    var group = new GroupService( rockContext ).GetNoTracking( groupTypeGroupPicker.GroupId.Value );
                     if ( group != null )
                     {
                         groupGuid = group.Guid;
                     }
                 }
 
-                return string.Format( "{0}|{1}", groupTypeGuid, groupGuid );
+                if ( groupTypeGuid.HasValue || groupGuid.HasValue )
+                {
+                    return string.Format( "{0}|{1}", groupTypeGuid, groupGuid );
+                }
             }
 
             return null;

@@ -38,7 +38,7 @@ namespace Rock.Workflow.Action
     [WorkflowTypeField( "Workflow Type", "The workflow type to activate.  To set the Workflow Type from an Attribute, leave this blank and set Workflow Type from Attribute.", false, false, order: 2 )]
     [WorkflowAttribute( "Workflow Type from Attribute", "The workflow type to activate. Either this or Workflow Type must be set.", false, fieldTypeClassNames: new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.WorkflowTypeFieldType" }, order: 3 )]
     [KeyValueListField( "Workflow Attribute Key", "Used to match the current workflow's attribute keys to the keys of the new workflow. The new workflow will inherit the attribute values of the keys provided.", false, keyPrompt: "Source Attribute", valuePrompt: "Target Attribute", order: 4 )]
-
+    [WorkflowAttribute( "Workflow Attribute", "The attribute to hold the new activated workflow. ", false, "", "", 5, null, new string[] { "Rock.Field.Types.WorkflowFieldType" } )]
     public class ActivateWorkflow : ActionComponent
     {
         /// <summary>
@@ -60,11 +60,11 @@ namespace Rock.Workflow.Action
 
             if ( workflowTypeGuid.HasValue )
             {
-                workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
+                workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
             }
             else if ( workflowTypeFromAttributeGuid.HasValue )
             {
-                workflowType = WorkflowTypeCache.Read( workflowTypeFromAttributeGuid.Value );
+                workflowType = WorkflowTypeCache.Get( workflowTypeFromAttributeGuid.Value );
             }
 
             if ( workflowType == null )
@@ -97,6 +97,7 @@ namespace Rock.Workflow.Action
 
             var workflow = Rock.Model.Workflow.Activate( workflowType, workflowName );
             workflow.LoadAttributes( rockContext );
+            var newWorkFlowAttr = SetWorkflowAttributeValue( action, "WorkflowAttribute", workflow.Guid );
 
             foreach ( var keyPair in sourceKeyMap )
             {

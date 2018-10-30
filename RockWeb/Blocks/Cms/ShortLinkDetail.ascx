@@ -13,7 +13,7 @@
         <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
         <div class="panel-body">
 
-            <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
             <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
 
             <div id="pnlEditDetails" runat="server">

@@ -388,14 +388,16 @@ namespace Rock.Web.UI.Controls
                 var workflowTypes = workflowTypeService.Queryable().AsNoTracking()
                     .Where( t => 
                         t.Category != null &&
-                        t.IsActive.HasValue && 
-                        t.IsActive.Value )
+                        t.IsActive.HasValue &&
+                        t.IsActive.Value)
                     .OrderBy( t => t.Category.Name)
                     .ThenBy( t => t.Name )
+                    .Select(a => new { a.Id, CategoryName = a.Category.Name, a.Name} )
+                    .AsNoTracking()
                     .ToList();
                 foreach ( var t in workflowTypes )
                 {
-                    _ddlWorkflowType.Items.Add( new ListItem( string.Format( "{0}:{1}", t.Category.Name, t.Name), t.Id.ToString().ToUpper() ) );
+                    _ddlWorkflowType.Items.Add( new ListItem( string.Format( "{0}: {1}", t.CategoryName, t.Name), t.Id.ToString().ToUpper() ) );
                 }
             }
         }
@@ -423,6 +425,11 @@ namespace Rock.Web.UI.Controls
                         w.ActivatedDateTime.HasValue && 
                         !w.CompletedDateTime.HasValue )
                     .OrderBy( w => w.Name )
+                    .Select(a => new
+                    {
+                        a.Id,
+                        a.Name
+                    } )
                     .ToList();
 
                 foreach ( var w in workflows )

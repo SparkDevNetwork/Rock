@@ -8,7 +8,7 @@ IF EXISTS (
 GO
 
 -- EXECUTE [dbo].[spAnalytics_ETL_Family] 
-CREATE PROCEDURE [dbo].spAnalytics_ETL_Family
+CREATE PROCEDURE [dbo].[spAnalytics_ETL_Family]
 AS
 BEGIN
     DECLARE @EtlDate DATE = convert(DATE, SysDateTime())
@@ -205,6 +205,7 @@ AND fh.FamilyId NOT IN ( -- Ensure that there isn't already a History Record for
         ,[IsEra]
         ,[MailingAddressLocationId]
         ,[MappedAddressLocationId]
+		,[Count]
         ,[Guid]
         )
     SELECT [FamilyId]
@@ -222,6 +223,7 @@ AND fh.FamilyId NOT IN ( -- Ensure that there isn't already a History Record for
         ,[IsEra]
         ,[MailingAddressLocationId]
         ,[MappedAddressLocationId]
+		,1
         ,NEWID()
     FROM #AnalyticsSourceFamily s
     WHERE s.FamilyId NOT IN (

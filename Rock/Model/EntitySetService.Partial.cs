@@ -42,7 +42,7 @@ namespace Rock.Model
                 return null;
             }
 
-            EntityTypeCache itemEntityType = EntityTypeCache.Read( entitySet.EntityTypeId.Value );
+            EntityTypeCache itemEntityType = EntityTypeCache.Get( entitySet.EntityTypeId.Value );
 
             var rockContext = this.Context as RockContext;
             var entitySetItemsService = new EntitySetItemService( rockContext );
@@ -75,6 +75,26 @@ namespace Rock.Model
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the entity query based for Items that are in the EntitySet
+        /// Note that this does not include duplicates and isn't sorted by EntitySetItem.Order
+        /// For example: If the EntitySet.EntityType is Person, this will return a Person Query of the items in this set
+        /// </summary>
+        /// <param name="entitySetId">The entity set identifier.</param>
+        /// <returns></returns>
+        public IQueryable<T> GetEntityQuery<T>( int entitySetId ) where T : Rock.Data.Entity<T>, new()
+        {
+            var rockContext = this.Context as RockContext;
+            var entitySetItemsService = new EntitySetItemService( rockContext );
+            var entityItemEntityIdQry = entitySetItemsService.Queryable().Where( a => a.EntitySetId == entitySetId ).Select( a => a.EntityId );
+
+            var entityQry = new Service<T>( rockContext ).Queryable();
+
+            entityQry = entityQry.Where( a => entityItemEntityIdQry.Contains( a.Id ) );
+
+            return entityQry;
         }
 
         /// <summary>

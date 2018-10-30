@@ -35,6 +35,12 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string Campaign { get; set; }
+
+        /// <summary />
+        public string Content { get; set; }
+
+        /// <summary />
         public int? EntityId { get; set; }
 
         /// <summary />
@@ -53,10 +59,16 @@ namespace Rock.Client
         public DateTime InteractionDateTime { get; set; }
 
         /// <summary />
+        public DateTime? InteractionEndDateTime { get; set; }
+
+        /// <summary />
         public int? InteractionSessionId { get; set; }
 
         /// <summary />
         public string InteractionSummary { get; set; }
+
+        /// <summary />
+        public string Medium { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -77,6 +89,12 @@ namespace Rock.Client
 
         /// <summary />
         public int? RelatedEntityTypeId { get; set; }
+
+        /// <summary />
+        public string Source { get; set; }
+
+        /// <summary />
+        public string Term { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -111,20 +129,26 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Interaction source )
         {
             this.Id = source.Id;
+            this.Campaign = source.Campaign;
+            this.Content = source.Content;
             this.EntityId = source.EntityId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.InteractionComponentId = source.InteractionComponentId;
             this.InteractionData = source.InteractionData;
             this.InteractionDateTime = source.InteractionDateTime;
+            this.InteractionEndDateTime = source.InteractionEndDateTime;
             this.InteractionSessionId = source.InteractionSessionId;
             this.InteractionSummary = source.InteractionSummary;
+            this.Medium = source.Medium;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Operation = source.Operation;
             this.PersonalDeviceId = source.PersonalDeviceId;
             this.PersonAliasId = source.PersonAliasId;
             this.RelatedEntityId = source.RelatedEntityId;
             this.RelatedEntityTypeId = source.RelatedEntityTypeId;
+            this.Source = source.Source;
+            this.Term = source.Term;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

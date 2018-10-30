@@ -42,7 +42,7 @@
 
                     <Rock:NotificationBox ID="nbInvalidGroupTypes" runat="server" NotificationBoxType="Danger" Visible="false" Heading="Groups" />
 
-                    <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                     <div id="pnlEditDetails" runat="server">
 
@@ -169,7 +169,7 @@
 
                 <asp:HiddenField ID="hfWorkflowGuid" runat="server" />
 
-                <asp:ValidationSummary ID="valWorkflowDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="WorkflowDetails" />
+                <asp:ValidationSummary ID="valWorkflowDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="WorkflowDetails" />
 
                 <div class="row">
                     <div class="col-md-6">
@@ -187,8 +187,7 @@
                         </Rock:RockDropDownList>
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlWorkflowType" runat="server" Label="Workflow Type" DataTextField="Name" DataValueField="Id" 
-                            Required="true" ValidationGroup="WorkflowDetails" EnhanceForLongLists="true" />
+                        <Rock:WorkflowTypePicker ID="wpWorkflowType" runat="server" Label="Workflow Type" Required="true" ValidationGroup="WorkflowDetails"/>
                     </div>
                 </div>
 
@@ -206,7 +205,7 @@
 
         <Rock:ModalDialog ID="dlgGroupDetails" runat="server" ValidationGroup="GroupDetails" SaveButtonText="Add" OnSaveClick="dlgGroupDetails_SaveClick" Title="Select Group">
             <Content>
-                <asp:ValidationSummary ID="valGroupDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="GroupDetails" />
+                <asp:ValidationSummary ID="valGroupDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="GroupDetails" />
                 <Rock:NotificationBox ID="nbInvalidGroupType" runat="server" NotificationBoxType="Danger" Visible="false" Heading="Group Type" />
                 <Rock:GroupPicker ID="gpOpportunityGroup" runat="server" Label="Select Group" AllowMultiSelect="true" ValidationGroup="GroupDetails" />
             </Content>
@@ -214,11 +213,11 @@
 
         <Rock:ModalDialog ID="dlgGroupConfigDetails" runat="server" ValidationGroup="GroupConfig" SaveButtonText="Add" OnSaveClick="dlgGroupConfigDetails_SaveClick" Title="Placement Group Configuration">
             <Content>
-                <asp:ValidationSummary ID="valGroupConfig" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="GroupConfig" />
+                <asp:ValidationSummary ID="valGroupConfig" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="GroupConfig" />
                 <asp:HiddenField ID="hfGroupConfigGuid" runat="server" />
                 <div class="row">
                     <div class="col-md-4">
-                        <Rock:RockDropDownList ID="ddlGroupType" runat="server" Label="Group Type" OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged" AutoPostBack="true" Help="The group type that the user will be placed in" Required="true" ValidationGroup="GroupConfig" />
+                        <Rock:RockDropDownList ID="ddlGroupType" runat="server" Label="Group Type" OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged" AutoPostBack="true" Help="The group type that the user will be placed in" Required="true" ValidationGroup="GroupConfig" EnhanceForLongLists="true" />
                     </div>
                     <div class="col-md-4">
                         <Rock:RockDropDownList ID="ddlGroupRole" runat="server" Label="Group Member Role" Help="The role that the person will hold after being connected" Required="true" ValidationGroup="GroupConfig" />
@@ -242,7 +241,7 @@
 
         <Rock:ModalDialog ID="dlgConnectorGroupDetails" runat="server" ValidationGroup="ConnectorGroup" SaveButtonText="Add" OnSaveClick="dlgConnectorGroupDetails_SaveClick" Title="Select Group">
             <Content>
-                <asp:ValidationSummary ID="valConnectorGroup" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="ConnectorGroup" />
+                <asp:ValidationSummary ID="valConnectorGroup" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="ConnectorGroup" />
                 <asp:HiddenField ID="hfConnectorGroupGuid" runat="server" />
                 <div class="row">
                     <div class="col-md-6">

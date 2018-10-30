@@ -36,8 +36,9 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName( "Schedule Builder" )]
     [Category( "Check-in" )]
     [Description( "Helps to build schedules to be used for checkin." )]
-    public partial class CheckinScheduleBuilder : RockBlock
+    public partial class CheckinScheduleBuilder : RockBlock, ICustomGridOptions
     {
+        private int? _groupTypeId = null;
 
         #region Control Methods
 
@@ -49,59 +50,13 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnInit( e );
 
-            pCategory.EntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.Schedule ) ) ?? 0;
-
-            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
-            rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
-            BindFilter();
+            _groupTypeId = this.PageParameter( "groupTypeId" ).AsIntegerOrNull();
+            btnCancel.Visible = _groupTypeId.HasValue;
 
             gGroupLocationSchedule.DataKeyNames = new string[] { "GroupLocationId" };
             gGroupLocationSchedule.Actions.ShowAdd = false;
             gGroupLocationSchedule.IsDeleteEnabled = false;
             gGroupLocationSchedule.GridRebind += gGroupLocationSchedule_GridRebind;
-
-            //
-            // First section of the script sets the default state of the header checkbox based
-            // on if all item row checkboxes are checked. Second section handles toggling all
-            // check boxes when the user clicks the header checkbox.
-            //
-            string script = string.Format( @"
-    Sys.Application.add_load(function () {{
-        var $table = $('#{0}');
-        function updateHeaderCheckboxes()
-        {{
-            $table.find('thead > tr > th').each(function (columnIndex) {{
-                if ($(this).find('a.fa').length > 0) {{
-                    columnIndex += 1;
-                    var $cbs = $table.find('tbody > tr > td:nth-child(' + columnIndex + ') input');
-                    if ($cbs.length == $cbs.filter(':checked').length) {{
-                        $(this).find('a.fa').addClass('fa-check-square-o').removeClass('fa-square-o');
-                    }}
-                    else {{
-                        $(this).find('a.fa').addClass('fa-square-o').removeClass('fa-check-square-o');
-                    }}
-                }}
-            }});
-        }}
-        updateHeaderCheckboxes();
-        $table.find('tbody > tr > td input[type=""checkbox""]').click(function () {{ updateHeaderCheckboxes(); }});
-        $('.js-sched-select-all').click(function (e) {{
-            e.preventDefault();
-            var $th = $(this).closest('th');
-            var $table = $(this).closest('table');
-            var columnIndex = $th.parent().children().index($th) + 1;
-            var $cbs = $table.find('tbody > tr > td:nth-child(' + columnIndex + ') input');
-            if ($(this).hasClass('fa-square-o')) {{
-                $(this).addClass('fa-check-square-o').removeClass('fa-square-o');
-                $cbs.prop('checked', true);
-            }} else {{
-                $(this).addClass('fa-square-o').removeClass('fa-check-square-o');
-                $cbs.prop('checked', false);
-            }}
-        }});
-    }});
-", gGroupLocationSchedule.ClientID );
-            ScriptManager.RegisterStartupScript( gGroupLocationSchedule, gGroupLocationSchedule.GetType(), "grid-sched-select-all", script, true );
         }
 
         /// <summary>
@@ -112,190 +67,48 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( !Page.IsPostBack )
             {
+                BindFilter();
                 BindGrid();
             }
 
             base.OnLoad( e );
         }
 
-        /// <summary>
-        /// Adds the schedule columns.
-        /// </summary>
-        private void AddScheduleColumns()
-        {
-            ScheduleService scheduleService = new ScheduleService( new RockContext() );
-
-            // limit Schedules to ones that are Active and have a CheckInStartOffsetMinutes
-            var scheduleQry = scheduleService.Queryable().Where( a => a.IsActive && a.CheckInStartOffsetMinutes != null );
-
-            // limit Schedules to the Category from the Filter
-            int scheduleCategoryId = pCategory.SelectedValueAsInt() ?? Rock.Constants.All.Id;
-            if ( scheduleCategoryId != Rock.Constants.All.Id )
-            {
-                scheduleQry = scheduleQry.Where( a => a.CategoryId == scheduleCategoryId );
-            }
-            else
-            {
-                // NULL (or 0) means Shared, so specifically filter so to show only Schedules with CategoryId NULL
-                scheduleQry = scheduleQry.Where( a => a.CategoryId == null );
-            }
-
-            // clear out any existing schedule columns and add the ones that match the current filter setting
-            var scheduleList = scheduleQry.ToList().OrderBy( a => a.ToString() ).ToList();
-
-            var checkBoxEditableFields = gGroupLocationSchedule.Columns.OfType<CheckBoxEditableField>().ToList();
-            foreach ( var field in checkBoxEditableFields )
-            {
-                gGroupLocationSchedule.Columns.Remove( field );
-            }
-
-            foreach ( var item in scheduleList )
-            {
-                string dataFieldName = string.Format( "scheduleField_{0}", item.Id );
-
-                CheckBoxEditableField field = new CheckBoxEditableField { HeaderText = item.Name + "<br /><a href='#' style='display: inline' class='fa fa-square-o js-sched-select-all'></a>", DataField = dataFieldName };
-                field.HeaderStyle.HorizontalAlign = HorizontalAlign.Center;
-                gGroupLocationSchedule.Columns.Add( field );
-            }
-
-            if ( !scheduleList.Any() )
-            {
-                nbNotification.Text = nbNotification.Text = String.Format( "<p><strong>Warning</strong></p>No schedules found. Consider <a class='alert-link' href='{0}'>adding a schedule</a> or a different schedule category.", ResolveUrl( "~/Schedules" ) );
-                nbNotification.Visible = true;
-            }
-            else
-            {
-                nbNotification.Visible = false;
-            }
-        }
-
         #endregion
 
-        #region Grid Filter
+        #region Events
 
         /// <summary>
-        /// Binds any needed data to the Grid Filter also using the user's stored
-        /// preferences.
-        /// </summary>
-        private void BindFilter()
-        {
-            ddlGroupType.Items.Clear();
-            ddlGroupType.Items.Add( Rock.Constants.All.ListItem );
-
-            // populate the GroupType DropDownList only with GroupTypes with GroupTypePurpose of Checkin Template
-            int groupTypePurposeCheckInTemplateId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
-
-            var rockContext = new RockContext();
-
-            GroupTypeService groupTypeService = new GroupTypeService( rockContext );
-            var groupTypeList = groupTypeService.Queryable()
-                .Where( a => a.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId )
-                .ToList();
-            foreach ( var groupType in groupTypeList )
-            {
-                ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
-            }
-
-            ddlGroupType.SetValue( rFilter.GetUserPreference( "Group Type" ) );
-
-            // hide the GroupType filter if this page has a groupTypeId parameter
-            int? groupTypeIdPageParam = this.PageParameter( "groupTypeId" ).AsIntegerOrNull();
-            if ( groupTypeIdPageParam.HasValue )
-            {
-                ddlGroupType.Visible = false;
-            }
-
-            int? categoryId = rFilter.GetUserPreference( "Category" ).AsIntegerOrNull();
-            if ( !categoryId.HasValue )
-            {
-                var categoryCache = CategoryCache.Read( Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid() );
-                categoryId = categoryCache != null ? categoryCache.Id : (int?)null;
-            }
-
-            if ( categoryId.HasValue )
-            {
-                pCategory.SetValue( new CategoryService( rockContext ).Get( categoryId.Value ) );
-            }
-            else
-            {
-                pCategory.SetValue( null );
-            }
-
-            pkrParentLocation.SetValue( rFilter.GetUserPreference( "Parent Location" ).AsIntegerOrNull() );
-        }
-
-        #endregion
-
-        #region Grid/Filter Events
-
-        /// <summary>
-        /// Handles the ApplyFilterClick event of the rFilter control.
+        /// Handles the SelectedIndexChanged event of the ddlGroupType control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        protected void ddlGroupType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Group Type", ddlGroupType.SelectedValueAsId().ToString() );
-
-            rFilter.SaveUserPreference( "Parent Location", pkrParentLocation.SelectedValueAsId().ToString() );
-
+            SetBlockUserPreference( "Group Type", ddlGroupType.SelectedValueAsId().ToString() );
             BindGrid();
         }
 
         /// <summary>
-        /// Rs the filter_ display filter value.
+        /// Handles the SelectItem event of the pkrParentLocation control.
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        private void rFilter_DisplayFilterValue( object sender, Rock.Web.UI.Controls.GridFilter.DisplayFilterValueArgs e )
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void pkrParentLocation_SelectItem( object sender, EventArgs e )
         {
-            int itemId = e.Value.AsInteger();
-            switch ( e.Key )
-            {
-                case "Group Type":
+            SetBlockUserPreference( "Parent Location", pkrParentLocation.SelectedValueAsId().ToString() );
+            BindGrid();
+        }
 
-                    int? groupTypeIdPageParam = this.PageParameter( "groupTypeId" ).AsIntegerOrNull();
-
-                    //// we only use the GroupType from the filter in cases where there isn't a PageParam of groupTypeId
-                    // but just in case the filter wants to display the GroupName, override the itemId with the groupTypeId PageParam
-                    if ( groupTypeIdPageParam.HasValue )
-                    {
-                        itemId = groupTypeIdPageParam.Value;
-                    }
-
-                    var groupType = GroupTypeCache.Read( itemId );
-                    if ( groupType != null )
-                    {
-                        e.Value = groupType.Name;
-                    }
-                    else
-                    {
-                        e.Value = Rock.Constants.All.Text;
-                    }
-
-                    break;
-
-                case "Category":
-
-                    // even though it is technically a filter, don't show it as a filter since we don't show category in the filter UI
-                    e.Value = null;
-
-                    break;
-
-                case "Parent Location":
-
-                    var location = new LocationService( new RockContext() ).Get( itemId );
-                    if ( location != null )
-                    {
-                        e.Value = location.Name;
-                    }
-                    else
-                    {
-                        e.Value = Rock.Constants.All.Text;
-                    }
-
-                    break;
-            }
+        /// <summary>
+        /// Handles the SelectItem event of the pCategory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void pCategory_SelectItem( object sender, EventArgs e )
+        {
+            SetBlockUserPreference( "Category", pCategory.SelectedValueAsId().ToString() );
+            BindGrid();
         }
 
         /// <summary>
@@ -306,6 +119,173 @@ namespace RockWeb.Blocks.CheckIn
         private void gGroupLocationSchedule_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gGroupLocationSchedule control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gGroupLocationSchedule_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            // add tooltip to header columns
+            if ( e.Row.RowType == DataControlRowType.Header )
+            {
+                var scheduleService = new ScheduleService( new RockContext() );
+
+                foreach ( var cell in e.Row.Cells.OfType<DataControlFieldCell>() )
+                {
+                    if ( cell.ContainingField is CheckBoxEditableField )
+                    {
+                        CheckBoxEditableField checkBoxEditableField = cell.ContainingField as CheckBoxEditableField;
+                        int scheduleId = int.Parse( checkBoxEditableField.DataField.Replace( "scheduleField_", string.Empty ) );
+
+                        var schedule = scheduleService.Get( scheduleId );
+                        if ( schedule != null )
+                        {
+                            cell.Attributes["title"] = schedule.ToString();
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if ( e.Row.DataItem != null )
+                {
+                    var dataRow = e.Row.DataItem as System.Data.DataRowView;
+                    Literal lGroupName = e.Row.FindControl( "lGroupName" ) as Literal;
+                    if ( lGroupName != null )
+                    {
+                        lGroupName.Text = string.Format( "{0}<br /><small>{1}</small>", dataRow["GroupName"] as string, dataRow["GroupPath"] as string );
+                    }
+
+                    Literal lLocationName = e.Row.FindControl( "lLocationName" ) as Literal;
+                    if ( lLocationName != null )
+                    {
+                        lLocationName.Text = string.Format( "{0}<br /><small>{1}</small>", dataRow["LocationName"] as string, dataRow["LocationPath"] as string );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnSave_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+
+            GroupLocationService groupLocationService = new GroupLocationService( rockContext );
+            ScheduleService scheduleService = new ScheduleService( rockContext );
+
+            var gridViewRows = gGroupLocationSchedule.Rows;
+            foreach ( GridViewRow row in gridViewRows.OfType<GridViewRow>() )
+            {
+                int groupLocationId = int.Parse( gGroupLocationSchedule.DataKeys[row.RowIndex].Value as string );
+                GroupLocation groupLocation = groupLocationService.Get( groupLocationId );
+                if ( groupLocation != null )
+                {
+                    foreach ( var fieldCell in row.Cells.OfType<DataControlFieldCell>() )
+                    {
+                        CheckBoxEditableField checkBoxTemplateField = fieldCell.ContainingField as CheckBoxEditableField;
+                        if ( checkBoxTemplateField != null )
+                        {
+                            CheckBox checkBox = fieldCell.Controls[0] as CheckBox;
+                            string dataField = ( fieldCell.ContainingField as CheckBoxEditableField ).DataField;
+                            int scheduleId = int.Parse( dataField.Replace( "scheduleField_", string.Empty ) );
+
+                            // update GroupLocationSchedule depending on if the Schedule is Checked or not
+                            if ( checkBox.Checked )
+                            {
+                                // This schedule is selected, so if GroupLocationSchedule doesn't already have this schedule, add it
+                                if ( !groupLocation.Schedules.Any( a => a.Id == scheduleId ) )
+                                {
+                                    var schedule = scheduleService.Get( scheduleId );
+                                    groupLocation.Schedules.Add( schedule );
+                                }
+                            }
+                            else
+                            {
+                                // This schedule is not selected, so if GroupLocationSchedule has this schedule, delete it
+                                if ( groupLocation.Schedules.Any( a => a.Id == scheduleId ) )
+                                {
+                                    groupLocation.Schedules.Remove( groupLocation.Schedules.FirstOrDefault( a => a.Id == scheduleId ) );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            rockContext.SaveChanges();
+
+            Rock.CheckIn.KioskDevice.Clear();
+
+            if ( _groupTypeId.HasValue )
+            {
+                NavigateToParentPage( new Dictionary<string, string> { { "CheckinTypeId", _groupTypeId.ToString() } } );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            if ( _groupTypeId.HasValue ) { 
+                NavigateToParentPage( new Dictionary<string, string> { { "CheckinTypeId", _groupTypeId.ToString() } } );
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Binds any needed data to the Grid Filter also using the user's stored
+        /// preferences.
+        /// </summary>
+        private void BindFilter()
+        {
+            ddlGroupType.Items.Clear();
+            ddlGroupType.Items.Add( Rock.Constants.All.ListItem );
+
+            var rockContext = new RockContext();
+
+            foreach( var groupType in GetTopGroupTypes( rockContext ) )
+            {
+                ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
+            }
+            ddlGroupType.SetValue( GetBlockUserPreference( "Group Type" ) );
+
+            // hide the GroupType filter if this page has a groupTypeId parameter
+            if ( _groupTypeId.HasValue )
+            {
+                pnlGroupType.Visible = false;
+            }
+
+            int? categoryId = GetBlockUserPreference( "Category" ).AsIntegerOrNull();
+            if ( !categoryId.HasValue )
+            {
+                var categoryCache = CategoryCache.Get( Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid() );
+                categoryId = categoryCache != null ? categoryCache.Id : (int?)null;
+            }
+
+            pCategory.EntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.Schedule ) ) ?? 0;
+            if ( categoryId.HasValue )
+            {
+                pCategory.SetValue( new CategoryService( rockContext ).Get( categoryId.Value ) );
+            }
+            else
+            {
+                pCategory.SetValue( null );
+            }
+
+            pkrParentLocation.SetValue( GetBlockUserPreference( "Parent Location" ).AsIntegerOrNull() );
         }
 
         /// <summary>
@@ -326,10 +306,9 @@ namespace RockWeb.Blocks.CheckIn
             int groupTypeId;
 
             // if this page has a PageParam for groupTypeId use that to limit which groupTypeId to see. Otherwise, use the groupTypeId specified in the filter
-            int? groupTypeIdPageParam = this.PageParameter( "groupTypeId" ).AsIntegerOrNull();
-            if ( groupTypeIdPageParam.HasValue )
+            if ( _groupTypeId.HasValue )
             {
-                groupTypeId = groupTypeIdPageParam ?? Rock.Constants.All.Id;
+                groupTypeId = _groupTypeId.Value;
             }
             else
             {
@@ -347,13 +326,13 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
-                // if no specific GroupType is specified, show all GroupTypes with GroupTypePurpose of Checkin Template and their descendents (since this blocktype is specifically for Checkin)
-                int groupTypePurposeCheckInTemplateId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
                 List<int> descendantGroupTypeIds = new List<int>();
-                foreach ( var templateGroupType in groupTypeService.Queryable().Where( a => a.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId ) )
-                {
-                    groupPaths.AddRange( groupTypeService.GetAllAssociatedDescendentsPath( templateGroupType.Id ).ToList() );
-                    foreach ( var childGroupType in groupTypeService.GetChildGroupTypes( templateGroupType.Id ) )
+                foreach ( GroupType groupType in GetTopGroupTypes( rockContext  ))
+                { 
+                    descendantGroupTypeIds.Add( groupType.Id );
+
+                    groupPaths.AddRange( groupTypeService.GetAllAssociatedDescendentsPath( groupType.Id ).ToList() );
+                    foreach ( var childGroupType in groupTypeService.GetChildGroupTypes( groupType.Id ) )
                     {
                         descendantGroupTypeIds.Add( childGroupType.Id );
                         descendantGroupTypeIds.AddRange( groupTypeService.GetAllAssociatedDescendents( childGroupType.Id ).Select( a => a.Id ).ToList() );
@@ -455,142 +434,114 @@ namespace RockWeb.Blocks.CheckIn
                 dataTable.Rows.Add( dataRow );
             }
 
-            gGroupLocationSchedule.EntityTypeId = EntityTypeCache.Read<GroupLocation>().Id;
+            gGroupLocationSchedule.EntityTypeId = EntityTypeCache.Get<GroupLocation>().Id;
             gGroupLocationSchedule.DataSource = dataTable;
             gGroupLocationSchedule.DataBind();
         }
 
-        #endregion
-
-        #region Edit Events
-
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
+        /// Adds the schedule columns.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
+        private void AddScheduleColumns()
         {
-            NavigateToParentPage( new Dictionary<string, string> { { "CheckinTypeId", this.PageParameter( "groupTypeId" ) } } );
-        }
+            ScheduleService scheduleService = new ScheduleService( new RockContext() );
 
-        /// <summary>
-        /// Handles the Click event of the btnSave control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSave_Click( object sender, EventArgs e )
-        {
-            var rockContext = new RockContext();
+            // limit Schedules to ones that are Active and have a CheckInStartOffsetMinutes
+            var scheduleQry = scheduleService.Queryable().Where( a => a.IsActive && a.CheckInStartOffsetMinutes != null );
 
-            GroupLocationService groupLocationService = new GroupLocationService( rockContext );
-            ScheduleService scheduleService = new ScheduleService( rockContext );
-
-            var gridViewRows = gGroupLocationSchedule.Rows;
-            foreach ( GridViewRow row in gridViewRows.OfType<GridViewRow>() )
+            // limit Schedules to the Category from the Filter
+            int scheduleCategoryId = pCategory.SelectedValueAsInt() ?? Rock.Constants.All.Id;
+            if ( scheduleCategoryId != Rock.Constants.All.Id )
             {
-                int groupLocationId = int.Parse( gGroupLocationSchedule.DataKeys[row.RowIndex].Value as string );
-                GroupLocation groupLocation = groupLocationService.Get( groupLocationId );
-                if ( groupLocation != null )
-                {
-                    foreach ( var fieldCell in row.Cells.OfType<DataControlFieldCell>() )
-                    {
-                        CheckBoxEditableField checkBoxTemplateField = fieldCell.ContainingField as CheckBoxEditableField;
-                        if ( checkBoxTemplateField != null )
-                        {
-                            CheckBox checkBox = fieldCell.Controls[0] as CheckBox;
-                            string dataField = ( fieldCell.ContainingField as CheckBoxEditableField ).DataField;
-                            int scheduleId = int.Parse( dataField.Replace( "scheduleField_", string.Empty ) );
-
-                            // update GroupLocationSchedule depending on if the Schedule is Checked or not
-                            if ( checkBox.Checked )
-                            {
-                                // This schedule is selected, so if GroupLocationSchedule doesn't already have this schedule, add it
-                                if ( !groupLocation.Schedules.Any( a => a.Id == scheduleId ) )
-                                {
-                                    var schedule = scheduleService.Get( scheduleId );
-                                    groupLocation.Schedules.Add( schedule );
-                                }
-                            }
-                            else
-                            {
-                                // This schedule is not selected, so if GroupLocationSchedule has this schedule, delete it
-                                if ( groupLocation.Schedules.Any( a => a.Id == scheduleId ) )
-                                {
-                                    groupLocation.Schedules.Remove( groupLocation.Schedules.FirstOrDefault( a => a.Id == scheduleId ) );
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            rockContext.SaveChanges();
-
-            Rock.CheckIn.KioskDevice.FlushAll();
-
-            NavigateToParentPage( new Dictionary<string, string> { { "CheckinTypeId", this.PageParameter( "groupTypeId" ) } } );
-
-        }
-
-        #endregion
-
-        /// <summary>
-        /// Handles the SelectItem event of the pCategory control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void pCategory_SelectItem( object sender, EventArgs e )
-        {
-            rFilter.SaveUserPreference( "Category", pCategory.SelectedValueAsId().ToString() );
-            BindGrid();
-        }
-
-        /// <summary>
-        /// Handles the RowDataBound event of the gGroupLocationSchedule control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        protected void gGroupLocationSchedule_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-            // add tooltip to header columns
-            if ( e.Row.RowType == DataControlRowType.Header )
-            {
-                var scheduleService = new ScheduleService( new RockContext() );
-
-                foreach ( var cell in e.Row.Cells.OfType<DataControlFieldCell>() )
-                {
-                    if ( cell.ContainingField is CheckBoxEditableField )
-                    {
-                        CheckBoxEditableField checkBoxEditableField = cell.ContainingField as CheckBoxEditableField;
-                        int scheduleId = int.Parse( checkBoxEditableField.DataField.Replace( "scheduleField_", string.Empty ) );
-
-                        var schedule = scheduleService.Get( scheduleId );
-                        if ( schedule != null )
-                        {
-                            cell.Attributes["title"] = schedule.ToString();
-                        }
-                    }
-                }
+                scheduleQry = scheduleQry.Where( a => a.CategoryId == scheduleCategoryId );
             }
             else
             {
-                if (e.Row.DataItem != null)
-                {
-                    var dataRow = e.Row.DataItem as System.Data.DataRowView;
-                    Literal lGroupName = e.Row.FindControl( "lGroupName" ) as Literal;
-                    if ( lGroupName != null )
-                    {
-                        lGroupName.Text = string.Format( "{0}<br /><small>{1}</small>", dataRow["GroupName"] as string, dataRow["GroupPath"] as string );
-                    }
+                // NULL (or 0) means Shared, so specifically filter so to show only Schedules with CategoryId NULL
+                scheduleQry = scheduleQry.Where( a => a.CategoryId == null );
+            }
 
-                    Literal lLocationName = e.Row.FindControl( "lLocationName" ) as Literal;
-                    if ( lLocationName != null )
-                    {
-                        lLocationName.Text = string.Format( "{0}<br /><small>{1}</small>", dataRow["LocationName"] as string, dataRow["LocationPath"] as string );
-                    }
-                }
+            // clear out any existing schedule columns and add the ones that match the current filter setting
+            var scheduleList = scheduleQry.ToList().OrderBy( a => a.Name ).ToList();
+
+            var checkBoxEditableFields = gGroupLocationSchedule.Columns.OfType<CheckBoxEditableField>().ToList();
+            foreach ( var field in checkBoxEditableFields )
+            {
+                gGroupLocationSchedule.Columns.Remove( field );
+            }
+
+            foreach ( var item in scheduleList )
+            {
+                string dataFieldName = string.Format( "scheduleField_{0}", item.Id );
+
+                CheckBoxEditableField field = new CheckBoxEditableField { HeaderText = item.Name + "<br /><a href='#' style='display: inline' class='fa fa-square-o js-sched-select-all'></a>", DataField = dataFieldName };
+                field.HeaderStyle.HorizontalAlign = HorizontalAlign.Center;
+                gGroupLocationSchedule.Columns.Add( field );
+            }
+
+            if ( !scheduleList.Any() )
+            {
+                nbNotification.Text = nbNotification.Text = String.Format( "<p><strong>Warning</strong></p>No schedules found. Consider <a class='alert-link' href='{0}'>adding a schedule</a> or a different schedule category.", ResolveUrl( "~/Schedules" ) );
+                nbNotification.Visible = true;
+            }
+            else
+            {
+                nbNotification.Visible = false;
             }
         }
+
+        private List<GroupType> GetTopGroupTypes( RockContext rockContext )
+        {
+            var groupTypes = new List<GroupType>();
+
+            // populate the GroupType DropDownList only with GroupTypes with GroupTypePurpose of Checkin Template
+            // or with group types that allow multiple locations/schedules and support named locations
+            int groupTypePurposeCheckInTemplateId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
+            GroupTypeService groupTypeService = new GroupTypeService( rockContext );
+
+            // First find all the group types that have a purpose of 'Check-in Template'
+            var checkInGroupTypeIds = groupTypeService.Queryable()
+                .Where( t =>
+                    t.GroupTypePurposeValueId.HasValue &&
+                    t.GroupTypePurposeValueId.Value == groupTypePurposeCheckInTemplateId )
+                .Select( t => t.Id )
+                .ToList();
+
+            // Now find all their descendents (so we can exclude them in a sec)
+            var descendentGroupTypeIds = new List<int>();
+            foreach ( int id in checkInGroupTypeIds )
+            {
+                descendentGroupTypeIds.AddRange( groupTypeService.GetAllAssociatedDescendents( id ).Select( a => a.Id ).ToList() );
+            }
+
+            // Now query again for all the types that have a purpose of 'Check-in Template' or support check-in outside of being a descendent of the template
+            var groupTypeList = groupTypeService.Queryable()
+                .Where( a =>
+                    checkInGroupTypeIds.Contains( a.Id ) ||
+                    (
+                        !descendentGroupTypeIds.Contains( a.Id ) &&
+                        a.AllowMultipleLocations &&
+                        a.EnableLocationSchedules.HasValue &&
+                        a.EnableLocationSchedules.Value &&
+                        a.LocationTypes.Any()
+                    ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
+            foreach ( var groupType in groupTypeList )
+            {
+                // Make sure the group type supports named locations (we can't query on this in the above qry)
+                if ( groupType.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId ||
+                    ( groupType.LocationSelectionMode & GroupLocationPickerMode.Named ) == GroupLocationPickerMode.Named )
+                {
+                    groupTypes.Add( groupType );
+                }
+            }
+
+            return groupTypes;
+        }
+
+        #endregion
+
     }
 }

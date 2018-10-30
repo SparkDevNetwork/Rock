@@ -47,7 +47,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( component.IsActive && component.RequiresRemoteAuthentication )
                 {
-                    var entityType = EntityTypeCache.Read( component.GetType() );
+                    var entityType = EntityTypeCache.Get( component.GetType() );
                     if ( entityType != null )
                     {
                         this.Items.Add( new ListItem( entityType.FriendlyName, entityType.Guid.ToString() ) );

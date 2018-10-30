@@ -123,8 +123,8 @@ namespace RockWeb.Blocks.Core
                 gDefinedTypeAttributes.Columns[3].Visible = false;
                 gDefinedTypeAttributes.Actions.ShowAdd = false;
 
-                itemId = DefinedTypeCache.Read( definedTypeGuid.Value ).Id;
-                var definedType = DefinedTypeCache.Read( definedTypeGuid.Value );
+                itemId = DefinedTypeCache.Get( definedTypeGuid.Value ).Id;
+                var definedType = DefinedTypeCache.Get( definedTypeGuid.Value );
                 if ( definedType != null )
                 {
                     itemId = definedType.Id;
@@ -189,11 +189,10 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                DefinedTypeCache.Flush( definedTypeId );
                 definedType = typeService.Get( definedTypeId );
             }
 
-            definedType.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+            definedType.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
             definedType.Name = tbTypeName.Text;
             definedType.CategoryId = cpCategory.SelectedValueAsInt();
             definedType.Description = tbTypeDescription.Text;
@@ -461,7 +460,7 @@ namespace RockWeb.Blocks.Core
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtDefinedTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for defined type " + tbTypeName.Text );
             }
             else
@@ -472,7 +471,7 @@ namespace RockWeb.Blocks.Core
             }
 
             edtDefinedTypeAttributes.ReservedKeyNames = new AttributeService( new RockContext() )
-                .GetByEntityTypeId( new DefinedValue().TypeId ).AsQueryable()
+                .GetByEntityTypeId( new DefinedValue().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( hfDefinedTypeId.Value ) &&
@@ -500,7 +499,7 @@ namespace RockWeb.Blocks.Core
 
             int order = 0;
             var attributes = attributeService
-                .GetByEntityTypeId( new DefinedValue().TypeId ).AsQueryable()
+                .GetByEntityTypeId( new DefinedValue().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -511,7 +510,6 @@ namespace RockWeb.Blocks.Core
             foreach ( var attribute in attributes )
             {
                 attribute.Order = order++;
-                AttributeCache.Flush( attribute.Id );
             }
             
             var movedItem = attributes.Where( a => a.Order == e.OldIndex ).FirstOrDefault();
@@ -562,12 +560,9 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
-                AttributeCache.Flush( attribute.Id );
                 attributeService.Delete( attribute );
                 rockContext.SaveChanges();
             }
-
-            AttributeCache.FlushEntityAttributes();
 
             BindDefinedTypeAttributesGrid();            
         }
@@ -590,7 +585,7 @@ namespace RockWeb.Blocks.Core
         protected void btnSaveDefinedTypeAttribute_Click( object sender, EventArgs e )
         {
             var attribute = Rock.Attribute.Helper.SaveAttributeEdits( 
-                edtDefinedTypeAttributes, EntityTypeCache.Read( typeof( DefinedValue ) ).Id, "DefinedTypeId", hfDefinedTypeId.Value );
+                edtDefinedTypeAttributes, EntityTypeCache.Get( typeof( DefinedValue ) ).Id, "DefinedTypeId", hfDefinedTypeId.Value );
 
             // Attribute will be null if it was not valid
             if (attribute == null)
@@ -600,8 +595,6 @@ namespace RockWeb.Blocks.Core
 
             pnlDetails.Visible = true;
             pnlDefinedTypeAttributes.Visible = false;
-
-            AttributeCache.FlushEntityAttributes();
 
             BindDefinedTypeAttributesGrid();
 
@@ -628,7 +621,7 @@ namespace RockWeb.Blocks.Core
         {
             string qualifierValue = hfDefinedTypeId.Value;
             var attributes = new AttributeService( new RockContext() )
-                .GetByEntityTypeId( new DefinedValue().TypeId ).AsQueryable()
+                .GetByEntityTypeId( new DefinedValue().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )

@@ -32,7 +32,7 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Security
 {
     /// <summary>
-    /// The main Person Profile block the main information about a peron 
+    /// The main Person Profile block the main information about a person 
     /// </summary>
     [DisplayName( "Account Detail" )]
     [Category( "Security" )]
@@ -54,9 +54,9 @@ namespace RockWeb.Blocks.Security
         {
             base.OnInit( e );
 
-            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js", false );
 
             if ( CurrentPerson != null )
             {
@@ -100,13 +100,13 @@ namespace RockWeb.Blocks.Security
                 Guid? locationTypeGuid = GetAttributeValue( "LocationType" ).AsGuidOrNull();
                 if ( locationTypeGuid.HasValue )
                 {
-                    var addressTypeDv = DefinedValueCache.Read( locationTypeGuid.Value );
+                    var addressTypeDv = DefinedValueCache.Get( locationTypeGuid.Value );
 
                     var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuidOrNull();
 
                     if ( familyGroupTypeGuid.HasValue )
                     {
-                        var familyGroupType = GroupTypeCache.Read( familyGroupTypeGuid.Value );
+                        var familyGroupType = GroupTypeCache.Get( familyGroupTypeGuid.Value );
 
                         RockContext rockContext = new RockContext();
                         var address = new GroupLocationService( rockContext ).Queryable()

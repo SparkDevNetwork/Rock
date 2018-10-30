@@ -21,7 +21,7 @@
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" CssClass="margin-t-md" />
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div id="pnlEditDetails" runat="server">
 
@@ -77,12 +77,12 @@
                                         <div class="alert alert-info js-sourcelava-help" id="nbLavaHelp" runat="server" style="display: none;"></div>
                                         <Rock:CodeEditor ID="ceSourceLava" runat="server" EditorMode="Lava" />
                                     </asp:Panel>
-                            
+
                                     <asp:Panel ID="pnlDataviewSourceType" runat="server">
-                                        <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Source DataView" EnhanceForLongLists="true" />
+                                        <Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Source Data View" />
                                         <Rock:NotificationBox ID="nbDataViewHelp" runat="server" Visible="false" />
                                     </asp:Panel>
-                            
+
                                     <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule" Help="Select the schedule of when the metric values should be calculated.">
                                         <Rock:RockRadioButtonList ID="rblScheduleSelect" runat="server" CssClass="margin-b-sm" OnSelectedIndexChanged="rblScheduleSelect_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" />
 
@@ -106,7 +106,7 @@
                                 <Rock:RockBoundField DataField="Label" HeaderText="Label" SortExpression="Label" />
                                 <Rock:RockBoundField DataField="EntityTypeName" HeaderText="Type" SortExpression="EntityTypeName" />
                                 <Rock:RockBoundField DataField="EntityTypeQualifier" HeaderText="" SortExpression="EntityTypeQualifier" />
-                                <Rock:BoolField DataField="IsRequired" HeaderText="Is Required" SortExpression="IsRequired" />
+                                <Rock:BoolField DataField="IsRequired" HeaderText="Is Required" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" SortExpression="IsRequired" />
                                 <Rock:DeleteField OnClick="gMetricPartitions_Delete" />
                             </Columns>
                         </Rock:Grid>
@@ -144,7 +144,7 @@
             <Rock:ModalDialog ID="mdMetricPartitionDetail" runat="server" Title="Series Partition" ValidationGroup="vg-series-partition" OnSaveClick="mdMetricPartitionDetail_SaveClick">
                 <Content>
                     <asp:HiddenField ID="hfMetricPartitionGuid" runat="server" />
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="tbMetricPartitionLabel" runat="server" Label="Label" Required="true" ValidationGroup="vg-series-partition" />

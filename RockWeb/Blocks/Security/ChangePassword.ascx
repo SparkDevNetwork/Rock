@@ -10,7 +10,7 @@
             <div class="panel-body">
 
                 <Rock:NotificationBox id="nbMessage" runat="server" Visible="false" />
-                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <asp:Panel ID="pnlChangePassword" runat="server" Visible="true">
 

@@ -20,12 +20,8 @@
                     <Columns>
                         <Rock:ReorderField />
                         <Rock:RockBoundField DataField="Name" HeaderText="Name" />
-                        <Rock:RockTemplateField HeaderText="Type" >
-                            <ItemTemplate>
-                                <%# Eval("BlockTypeName") %><br />
-                                <small><%# Eval("BlockTypePath") %></small>
-                            </ItemTemplate>
-                        </Rock:RockTemplateField>
+                        <Rock:RockBoundField DataField="BlockTypeName" HeaderText="Type" ColumnPriority="Tablet" />
+                        <Rock:RockBoundField DataField="BlockTypeCategory" HeaderText="Category" ColumnPriority="Tablet" />
                         <Rock:DeleteField OnClick="gPageBlocks_Delete" />
                     </Columns>
                 </Rock:Grid>
@@ -36,16 +32,12 @@
         <div id="divLayout" runat="server" class="tab-pane" >
             
             <div class="grid">
-                <Rock:Grid ID="gLayoutBlocks" runat="server" AllowPaging="false" EmptyDataText="No Layout Blocks Found" OnRowSelected="gLayoutBlocks_Edit">
+                <Rock:Grid ID="gLayoutBlocks" runat="server" AllowPaging="false" EmptyDataText="No Layout Blocks Found" OnRowSelected="gLayoutBlocks_Edit" ShowActionsInHeader="false">
                     <Columns>
                         <Rock:ReorderField />
                         <Rock:RockBoundField DataField="Name" HeaderText="Name" />
-                        <Rock:RockTemplateField HeaderText="Type" >
-                            <ItemTemplate>
-                                <%# Eval("BlockTypeName") %><br />
-                                <small><%# Eval("BlockTypePath") %></small>
-                            </ItemTemplate>
-                        </Rock:RockTemplateField>
+                        <Rock:RockBoundField DataField="BlockTypeName" HeaderText="Type" ColumnPriority="Tablet" />
+                        <Rock:RockBoundField DataField="BlockTypeCategory" HeaderText="Category" ColumnPriority="Tablet" />
                         <Rock:DeleteField OnClick="gLayoutBlocks_Delete" />
                     </Columns>
                 </Rock:Grid>
@@ -60,12 +52,8 @@
                     <Columns>
                         <Rock:ReorderField />
                         <Rock:RockBoundField DataField="Name" HeaderText="Name" />
-                        <Rock:RockTemplateField HeaderText="Type" >
-                            <ItemTemplate>
-                                <%# Eval("BlockTypeName") %><br />
-                                <small><%# Eval("BlockTypePath") %></small>
-                            </ItemTemplate>
-                        </Rock:RockTemplateField>
+                        <Rock:RockBoundField DataField="BlockTypeName" HeaderText="Type" ColumnPriority="Tablet" />
+                        <Rock:RockBoundField DataField="BlockTypeCategory" HeaderText="Category" ColumnPriority="Tablet" />
                         <Rock:DeleteField OnClick="gSiteBlocks_Delete" />
                     </Columns>
                 </Rock:Grid>
@@ -80,22 +68,25 @@
         <asp:HiddenField ID="hfBlockLocation" runat="server" />
         <asp:HiddenField ID="hfBlockId" runat="server" />
 
-        <asp:ValidationSummary ID="vsZoneBlocks" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="ZoneBlockValidationGroup"/>
+        <asp:ValidationSummary ID="vsZoneBlocks" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="ZoneBlockValidationGroup"/>
         <fieldset>
             <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Block</legend>
             <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="Name" Required="true" 
                 ValidationGroup="ZoneBlockValidationGroup" CssClass="input-large"/>
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-sm-6">
                     <Rock:RockDropDownList ID="ddlBlockType" runat="server" Label="Type" AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" EnhanceForLongLists="true" />
                 </div>
-                <div class="col-md-6 padding-t-md">
-                    <label>Common Block Types</label><br />
-                    <asp:Repeater ID="rptCommonBlockTypes" runat="server" OnItemDataBound="rptCommonBlockTypes_ItemDataBound">
-                        <ItemTemplate>
-                            <asp:LinkButton ID="btnNewBlockQuickSetting" runat="server" Text="Todo" CssClass="btn btn-default btn-xs" OnClick="btnNewBlockQuickSetting_Click" />
-                        </ItemTemplate>
-                    </asp:Repeater>
+                <div class="col-sm-6">
+                    <Rock:RockControlWrapper ID="rcwCommonBlockTypes" runat="server" Label="Common Block Types">
+                        <asp:Panel ID="pnlCommonBlockTypes" runat="server">
+                            <asp:Repeater ID="rptCommonBlockTypes" runat="server" OnItemDataBound="rptCommonBlockTypes_ItemDataBound">
+                                <ItemTemplate>
+                                    <asp:LinkButton ID="btnNewBlockQuickSetting" runat="server" Text="Todo" CssClass="btn btn-default btn-xs" OnClick="btnNewBlockQuickSetting_Click" />
+                                </ItemTemplate>
+                            </asp:Repeater>
+                        </asp:Panel>
+                    </Rock:RockControlWrapper>
                 </div>
             </div>
         </fieldset>

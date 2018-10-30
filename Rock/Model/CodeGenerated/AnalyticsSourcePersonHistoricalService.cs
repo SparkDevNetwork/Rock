@@ -95,6 +95,7 @@ namespace Rock.Model
             target.BirthMonth = source.BirthMonth;
             target.BirthYear = source.BirthYear;
             target.ConnectionStatusValueId = source.ConnectionStatusValueId;
+            target.Count = source.Count;
             target.CurrentRowIndicator = source.CurrentRowIndicator;
             target.EffectiveDate = source.EffectiveDate;
             target.Email = source.Email;

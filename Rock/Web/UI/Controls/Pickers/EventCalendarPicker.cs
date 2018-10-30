@@ -33,6 +33,7 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             Label = "EventCalendar";
+            EventCalendars = EventCalendarCache.All();
         }
 
         /// <summary>

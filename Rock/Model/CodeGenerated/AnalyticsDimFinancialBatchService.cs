@@ -94,6 +94,7 @@ namespace Rock.Model
             target.BatchStartDateTime = source.BatchStartDateTime;
             target.Campus = source.Campus;
             target.ControlAmount = source.ControlAmount;
+            target.Count = source.Count;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.Name = source.Name;

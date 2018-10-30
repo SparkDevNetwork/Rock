@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Core
                     {
                         if ( e.Value != "" )
                         {
-                            var entityType = Rock.Web.Cache.EntityTypeCache.Read( int.Parse( e.Value ) );
+                            var entityType = EntityTypeCache.Get( int.Parse( e.Value ) );
                             if ( entityType != null )
                             {
                                 e.Value = entityType.FriendlyName;
@@ -239,7 +239,7 @@ namespace RockWeb.Blocks.Core
                 queryable = queryable.OrderByDescending( q => q.Id );
             }
 
-            gAuditInformationList.EntityTypeId = EntityTypeCache.Read<Rock.Model.Audit>().Id;
+            gAuditInformationList.EntityTypeId = EntityTypeCache.Get<Rock.Model.Audit>().Id;
             gAuditInformationList.DataSource = queryable.ToList();
             gAuditInformationList.DataBind();
         }

@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Follow
         /// </summary>
         private int GetCount()
         {
-            var personAliasEntityType = EntityTypeCache.Read( "Rock.Model.PersonAlias" );
+            var personAliasEntityType = EntityTypeCache.Get( "Rock.Model.PersonAlias" );
             if ( personAliasEntityType != null && CurrentPersonAlias != null )
             {
                 using ( var rockContext = new RockContext() )

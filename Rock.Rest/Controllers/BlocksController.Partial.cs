@@ -51,26 +51,6 @@ namespace Rock.Rest.Controllers
             }
 
             base.Delete( id );
-
-            // flush all the cache stuff that involves the block
-            Rock.Web.Cache.BlockCache.Flush( id );
-
-            if ( siteId.HasValue )
-            {
-                Rock.Web.Cache.PageCache.FlushSiteBlocks( siteId.Value );
-            }
-
-            if ( layoutId.HasValue )
-            {
-                Rock.Web.Cache.PageCache.FlushLayoutBlocks( layoutId.Value );
-            }
-
-            if ( pageId.HasValue )
-            {
-                Rock.Web.Cache.PageCache.Flush( pageId.Value );
-                var page = Rock.Web.Cache.PageCache.Read( pageId.Value );
-                page.FlushBlocks();
-            }
         }
 
         /// <summary>
@@ -97,31 +77,6 @@ namespace Rock.Rest.Controllers
             }
 
             CheckCanEdit( model, person );
-
-            Rock.Web.Cache.BlockCache.Flush( id );
-
-            if ( model.SiteId.HasValue && model.SiteId != block.SiteId )
-            {
-                Rock.Web.Cache.PageCache.FlushSiteBlocks( model.SiteId.Value );
-            }
-            else if ( model.LayoutId.HasValue && model.LayoutId != block.LayoutId )
-            {
-                Rock.Web.Cache.PageCache.FlushLayoutBlocks( model.LayoutId.Value );
-            }
-
-            if ( block.SiteId.HasValue )
-            {
-                Rock.Web.Cache.PageCache.FlushSiteBlocks( block.SiteId.Value );
-            }
-            else if ( block.LayoutId.HasValue )
-            {
-                Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.LayoutId.Value );
-            }
-            else
-            {
-                var page = Rock.Web.Cache.PageCache.Read( block.PageId.Value );
-                page.FlushBlocks();
-            }
 
             model.Zone = block.Zone;
             model.PageId = block.PageId;

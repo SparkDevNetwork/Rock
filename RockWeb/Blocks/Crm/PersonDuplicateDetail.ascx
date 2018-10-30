@@ -16,7 +16,7 @@
                     <Rock:Grid ID="gList" runat="server" AllowSorting="True" OnRowDataBound="gList_RowDataBound" PersonIdField="PersonId">
                         <Columns>
                             <Rock:SelectField ShowHeader="false" />
-                            <Rock:RockTemplateField HeaderText="Confidence" ItemStyle-HorizontalAlign="Right" SortExpression="ConfidenceScore">
+                            <Rock:RockTemplateField HeaderText="Confidence" ItemStyle-HorizontalAlign="Right" SortExpression="ConfidenceScore" HeaderStyle-HorizontalAlign="Right">
                                 <ItemTemplate>
                                     <%# GetConfidenceScoreColumnHtml((double?)Eval("ConfidenceScore")) %>
                                 </ItemTemplate>
@@ -78,7 +78,7 @@
                                     </ul>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
-                            <Rock:RockTemplateField ItemStyle-HorizontalAlign="Right">
+                            <Rock:RockTemplateField ItemStyle-HorizontalAlign="Right"  HeaderStyle-HorizontalAlign="Right">
                                 <ItemTemplate>
                                     <p>
                                         <a class="btn btn-default js-view-person" onclick="<%# GetPersonViewOnClick((int)Eval("PersonId")) %>" data-toggle="tooltip" title="View Person"><i class="fa fa-user fa-fw"></i></a>

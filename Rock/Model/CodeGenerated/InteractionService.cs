@@ -88,19 +88,25 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Interaction target, Interaction source )
         {
             target.Id = source.Id;
+            target.Campaign = source.Campaign;
+            target.Content = source.Content;
             target.EntityId = source.EntityId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.InteractionComponentId = source.InteractionComponentId;
             target.InteractionData = source.InteractionData;
             target.InteractionDateTime = source.InteractionDateTime;
+            target.InteractionEndDateTime = source.InteractionEndDateTime;
             target.InteractionSessionId = source.InteractionSessionId;
             target.InteractionSummary = source.InteractionSummary;
+            target.Medium = source.Medium;
             target.Operation = source.Operation;
             target.PersonalDeviceId = source.PersonalDeviceId;
             target.PersonAliasId = source.PersonAliasId;
             target.RelatedEntityId = source.RelatedEntityId;
             target.RelatedEntityTypeId = source.RelatedEntityTypeId;
+            target.Source = source.Source;
+            target.Term = source.Term;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

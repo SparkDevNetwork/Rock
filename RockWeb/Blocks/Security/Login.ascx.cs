@@ -43,21 +43,26 @@ namespace RockWeb.Blocks.Security
     [LinkedPage( "New Account Page", "Page to navigate to when user selects 'Create New Account' (if blank will use 'NewAccountPage' page route)", false, "", "", 0 )]
     [LinkedPage( "Help Page", "Page to navigate to when user selects 'Help' option (if blank will use 'ForgotUserName' page route)", false, "", "", 1 )]
     [CodeEditorField( "Confirm Caption", "The text (HTML) to display when a user's account needs to be confirmed.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"
-Thank you for logging in, however, we need to confirm the email associated with this account belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.
+Thank you for logging in, however, we need to confirm the email associated with this account belongs to you. We’ve sent you an email that contains a link for confirming.  Please click the link in your email to continue.
 ", "", 2 )]
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", false, "", "", 3 )]
     [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
     [CodeEditorField( "Locked Out Caption", "The text (HTML) to display when a user's account has been locked.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"
-Sorry, your account has been locked.  Please contact our office at {{ 'Global' | Attribute:'OrganizationPhone' }} or email {{ 'Global' | Attribute:'OrganizationEmail' }} to resolve this.  Thank you. 
+{%- assign phone = Global' | Attribute:'OrganizationPhone' | Trim -%} Sorry, your account has been locked.  Please {% if phone != '' %}contact our office at {{ 'Global' | Attribute:'OrganizationPhone' }} or email{% else %}email us at{% endif %} <a href='mailto:{{ 'Global' | Attribute:'OrganizationEmail' }}'>{{ 'Global' | Attribute:'OrganizationEmail' }}</a> for help. Thank you.
 ", "", 5 )]
-    [BooleanField( "Hide New Account Option", "Should 'New Account' option be hidden?  For site's that require user to be in a role (Internal Rock Site for example), users shouldn't be able to create their own account.", false, "", 6, "HideNewAccount" )]
+    [BooleanField( "Hide New Account Option", "Should 'New Account' option be hidden?  For sites that require user to be in a role (Internal Rock Site for example), users shouldn't be able to create their own account.", false, "", 6, "HideNewAccount" )]
     [TextField( "New Account Text", "The text to show on the New Account button.", false, "Register", "", 7, "NewAccountButtonText" )]
-    [CodeEditorField( "No Account Text", "The text to show when no account exists. <span class='tip tip-lava'></span>.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"Sorry, we couldn't find an account matching that username/password. Can we help you <a href='{{HelpPage}}'>recover your account information</a>?", "", 8, "NoAccountText" )]
-    [RemoteAuthsField( "Remote Authorization Types", "Which of the active remote authorization types should be displayed as an option for user to use for authentication.", false, "", "", 9 )]
-    [CodeEditorField( "Prompt Message", "Optional text (HTML) to display above username and password fields.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"", "", 10 )]
-    [LinkedPage( "Redirect Page", "Page to redirect user to upon successful login. The 'returnurl' query string will always override this setting for database authenticated logins. Redirect Page Setting will override third-party authentication 'returnurl'.", false, "", "", 11 )]
+    [CodeEditorField( "No Account Text", "The text to show when no account exists. <span class='tip tip-lava'></span>.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"We couldn’t find an account with that username. Can we help you recover your <a href='{{HelpPage}}'>account information</a>?", "", 8, "NoAccountText" )]
 
-    [CodeEditorField( "Invalid PersonToken Text", "The text to show when a person is logged out due to an invalid persontoken. <span class='tip tip-lava'></span>.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"<div class='alert alert-warning'>The login token you provided is no longer valid. Please login below.</div>", "", 12 )]
+    [CodeEditorField( "Remote Authorization Prompt Message", "Optional text (HTML) to display above remote authorization options.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, defaultValue: "Login with social account", order: 9 )]
+    [RemoteAuthsField( "Remote Authorization Types", "Which of the active remote authorization types should be displayed as an option for user to use for authentication.", false, "", "", 10 )]
+    [BooleanField( "Show Internal Login", "Show the default (non-remote) login", defaultValue: true, order: 11 )]
+    [BooleanField( "Redirect to Single External Auth Provider", "Redirect straight to the external authentication provider if only one is configured and the internal login is disabled.", defaultValue: false, order: 12 )]
+
+    [CodeEditorField( "Prompt Message", "Optional text (HTML) to display above username and password fields.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"", "", 13 )]
+    [LinkedPage( "Redirect Page", "Page to redirect user to upon successful login. The 'returnurl' query string will always override this setting for database authenticated logins. Redirect Page Setting will override third-party authentication 'returnurl'.", false, "", "", 14 )]
+
+    [CodeEditorField( "Invalid PersonToken Text", "The text to show when a person is logged out due to an invalid persontoken. <span class='tip tip-lava'></span>.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"<div class='alert alert-warning'>The login token you provided is no longer valid. Please login below.</div>", "", 15 )]
     public partial class Login : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -70,17 +75,30 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
         {
             base.OnInit( e );
 
+            this.BlockUpdated += Login_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
+
+            ApplyBlockSettings();
+        }
+
+        /// <summary>
+        /// Applies the block settings.
+        /// </summary>
+        private void ApplyBlockSettings()
+        {
             btnNewAccount.Visible = !GetAttributeValue( "HideNewAccount" ).AsBoolean();
             btnNewAccount.Text = this.GetAttributeValue( "NewAccountButtonText" ) ?? "Register";
 
             phExternalLogins.Controls.Clear();
 
-            int activeAuthProviders = 0;
+            List<AuthenticationComponent> activeAuthProviders = new List<AuthenticationComponent>();
 
             var selectedGuids = new List<Guid>();
             GetAttributeValue( "RemoteAuthorizationTypes" ).SplitDelimitedValues()
                 .ToList()
                 .ForEach( v => selectedGuids.Add( v.AsGuid() ) );
+
+            lRemoteAuthLoginsHeadingText.Text = this.GetAttributeValue( "RemoteAuthorizationPromptMessage" );
 
             // Look for active external authentication providers
             foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
@@ -114,11 +132,11 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
                         }
                     }
 
-                    activeAuthProviders++;
+                    activeAuthProviders.Add( component );
 
                     LinkButton lbLogin = new LinkButton();
                     phExternalLogins.Controls.Add( lbLogin );
-                    lbLogin.AddCssClass( "btn btn-authentication " + loginTypeName.ToLower() );
+                    lbLogin.AddCssClass( "btn btn-authentication " + component.LoginButtonCssClass );
                     lbLogin.ID = "lb" + loginTypeName + "Login";
                     lbLogin.Click += lbLogin_Click;
                     lbLogin.CausesValidation = false;
@@ -130,20 +148,63 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
                         img.Attributes.Add( "style", "border:none" );
                         img.Src = Page.ResolveUrl( component.ImageUrl() );
                     }
-                    else
+
+                    lbLogin.Text = component.LoginButtonText;
+                }
+            }
+
+            // adjust the page layout based on the RemoteAuth and InternalLogin options
+            pnlRemoteAuthLogins.Visible = activeAuthProviders.Any();
+            bool showInternalLogin = this.GetAttributeValue( "ShowInternalLogin" ).AsBooleanOrNull() ?? true;
+            pnlInternalAuthLogin.Visible = showInternalLogin;
+
+            if ( activeAuthProviders.Count() == 1 && !showInternalLogin )
+            {
+                var singleAuthProvider = activeAuthProviders[0];
+                bool redirecttoSingleExternalAuthProvider = this.GetAttributeValue( "RedirecttoSingleExternalAuthProvider" ).AsBoolean();
+
+                if ( redirecttoSingleExternalAuthProvider )
+                {
+                    Uri remoteAuthLoginUri = singleAuthProvider.GenerateLoginUrl( this.Request );
+                    if ( remoteAuthLoginUri != null )
                     {
-                        lbLogin.Text = loginTypeName;
+                        if ( IsUserAuthorized( Rock.Security.Authorization.ADMINISTRATE ) )
+                        {
+                            nbAdminRedirectPrompt.Text = string.Format( "If you did not have Administrate permissions on this block, you would have been redirected to the <a href='{0}'>{1}</a> url.", remoteAuthLoginUri.AbsoluteUri, singleAuthProvider.LoginButtonText );
+                            nbAdminRedirectPrompt.Visible = true;
+                        }
+                        else
+                        {
+                            Response.Redirect( remoteAuthLoginUri.AbsoluteUri, false );
+                            Context.ApplicationInstance.CompleteRequest();
+                            return;
+                        }
                     }
                 }
             }
 
-            // adjust the page if there are no social auth providers
-            if ( activeAuthProviders == 0 )
+            if ( pnlInternalAuthLogin.Visible && pnlRemoteAuthLogins.Visible )
             {
-                divSocialLogin.Visible = false;
-                divOrgLogin.RemoveCssClass( "col-sm-6" );
-                divOrgLogin.AddCssClass( "col-sm-12" );
+                // if they are both visible, show in 2 equal columns
+                pnlRemoteAuthLogins.CssClass = "col-sm-6 margin-b-lg";
+                pnlInternalAuthLogin.CssClass = "col-sm-6";
             }
+            else
+            {
+                // if only one (or none) is visible, show in one column
+                pnlRemoteAuthLogins.CssClass = "col-sm-12 margin-b-lg";
+                pnlInternalAuthLogin.CssClass = "col-sm-12";
+            }
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the Login control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void Login_BlockUpdated( object sender, EventArgs e )
+        {
+            ApplyBlockSettings();
         }
 
         /// <summary>
@@ -417,7 +478,7 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
             }
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
-            mergeFields.Add( "ConfirmAccountUrl", RootPath + url.TrimStart('/') );
+            mergeFields.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( '/' ) );
             mergeFields.Add( "Person", userLogin.Person );
             mergeFields.Add( "User", userLogin );
 

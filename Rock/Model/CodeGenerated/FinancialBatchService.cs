@@ -97,6 +97,7 @@ namespace Rock.Model
             target.ControlAmount = source.ControlAmount;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IsAutomated = source.IsAutomated;
             target.Name = source.Name;
             target.Note = source.Note;
             target.Status = source.Status;

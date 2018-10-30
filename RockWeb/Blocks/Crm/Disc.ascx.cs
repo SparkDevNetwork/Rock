@@ -15,21 +15,16 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.IO;
 using System.Linq;
-using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using System.Web.UI.HtmlControls;
 
 namespace Rockweb.Blocks.Crm
 {
@@ -37,8 +32,8 @@ namespace Rockweb.Blocks.Crm
     /// Calculates a person's DISC score based on a series of question answers.
     /// This is used with permission from Greg Wiens: http://www.gregwiens.com/scid/
     /// </summary>
-    [DisplayName( "Disc" )]
-    [Category( "CRM > DiscAssessment" )]
+    [DisplayName( "DISC" )]
+    [Category( "CRM" )]
     [Description( "Allows you to take a DISC test and saves your DISC score." )]
     [IntegerField( "Min Days To Retake", "The number of days that must pass before the test can be taken again.", false, 30 )]
     [CodeEditorField( "Instructions", "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
@@ -426,7 +421,7 @@ namespace Rockweb.Blocks.Crm
         /// <param name="personalityType">The one or two letter personality type.</param>
         private void ShowExplaination( string personalityType )
         {
-            var personalityValue = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid() ).DefinedValues.Where( v => v.Value == personalityType ).FirstOrDefault();
+            var personalityValue = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid() ).DefinedValues.Where( v => v.Value == personalityType ).FirstOrDefault();
             if ( personalityValue != null )
             {
                 lDescription.Text = personalityValue.Description;

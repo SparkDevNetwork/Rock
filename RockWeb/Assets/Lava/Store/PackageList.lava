@@ -1,34 +1,30 @@
 <div class="row">
 {% for package in Packages %}
-	
+
 	<div class="col-sm-3 col-xs-6">
 		<div class="packagesummary">
             <a href="{{ LinkedPages.DetailPage }}?PackageId={{ package.Id }}">
-                <div class="packagesummary-image" style="
-                    background: url('{{ package.PackageIconBinaryFile.ImageUrl }}') no-repeat center;
-                    background-size: cover;">
-                    <div class="packagesummary-image-hover">
-                    </div>
+                <div class="packagesummary-image">
+                    <img class="img-responsive" src="{{ package.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&mode=crop" srcset="{{ package.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&mode=crop 1x, {{ package.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&zoom=2&mode=crop 2x">
                 </div>
                 <div class="packagesummary-body">
                     <h2>{{ package.Name }}</h2>
-                    <p class="vendor">
-                        {{ package.Vendor.Name }}
-                    </p>
-
-					<div class="packagesummary-footer">
-						<div class="rating pull-left rating-{{ package.Rating | Replace:'.','' }}">
-						</div>
-						<div class="cost pull-right">
-							{% if package.Price == 0 %}
-								Free
-							{% else %}
-								${{ package.Price }}
-							{% endif %}
-						</div>
-					</div>
+                    <p class="vendor">{{ package.Vendor.Name }}</p>
                 </div>
-				
+
+                <div class="packagesummary-footer clearfix">
+                    <div class="rating pull-left">
+                        {{ package.Rating | RatingMarkup }}
+                    </div>
+                    <div class="cost pull-right">
+                        {% if package.Price == 0 %}
+                            Free
+                        {% else %}
+                            ${{ package.Price }}
+                        {% endif %}
+                    </div>
+                </div>
+
             </a>
         </div>
 	</div>

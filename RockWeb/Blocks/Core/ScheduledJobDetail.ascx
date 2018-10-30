@@ -12,7 +12,7 @@
 
                 <asp:HiddenField ID="hfId" runat="server" />
                 
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 
                 <div class="row">
@@ -41,7 +41,7 @@
                     </div>
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbCronExpression" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="CronExpression" 
-                            Help="Add a valid cron expression. Need help? Try <a href='http://www.cronmaker.com' target='_blank'>CronMaker</a>." AutoPostBack="true" OnTextChanged="tbCronExpression_TextChanged"  />
+                            Help="Add a valid cron expression. Need help? Try <a href='http://www.cronmaker.com' target='_blank'>CronMaker</a>.<br>Examples:<br>Daily at 2:15am: <em>0 15 2 1/1 * ? *</em><br>Every Monday and Friday at 4:30pm: <em>0 30 16 ? * MON,FRI *</em>" AutoPostBack="true" OnTextChanged="tbCronExpression_TextChanged"  />
                         <Rock:RockLiteral ID="lCronExpressionDesc" Label="Cron Description" runat="server" />
                         <Rock:RockLiteral ID="lLastStatusMessage" Label="Last Status Message" runat="server" />
                     </div>

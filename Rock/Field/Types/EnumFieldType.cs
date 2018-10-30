@@ -131,8 +131,11 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is ListControl )
-                return ( (ListControl)control ).SelectedValue;
+            var editControl = control as ListControl;
+            if ( editControl != null )
+            {
+                return editControl.SelectedValue;
+            }
 
             return null;
         }
@@ -145,10 +148,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var editControl = control as ListControl;
+            if ( editControl != null )
             {
-                if ( control != null && control is ListControl )
-                    ( (ListControl)control ).SelectedValue = value;
+                editControl.SetValue( value );
             }
         }
 
@@ -297,11 +300,11 @@ namespace Rock.Field.Types
         public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList().AsIntegerList();
-            return EnumValues
+            return AddQuotes( EnumValues
                 .Where( v => selectedValues.Contains( v.Key ) )
-                .Select( v => "'" + v.Value + "'" )
+                .Select( v => v.Value )
                 .ToList()
-                .AsDelimited( " or " );
+                .AsDelimited( "' OR '" ) );
         }
 
         /// <summary>

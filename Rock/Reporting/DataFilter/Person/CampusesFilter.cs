@@ -111,19 +111,18 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
-            return string.Format( @"
+            return $@"
 function() {{
     var result = 'Campuses';
-    var campusesPicker = $('.{0}', $content);
-    var checkedCampuses = $('.{0}', $content).find(':checked').closest('label');
+    var campusesPicker = $('.{this.ControlClassName}', $content);
+    var checkedCampuses = $('.{this.ControlClassName}', $content).find(':checked').closest('label');
     if (checkedCampuses.length) {{
-        var campusCommaList = checkedCampuses.map(function() { return $(this).text() }).get().join(',');
+        var campusCommaList = checkedCampuses.map(function() {{ return $(this).text() }}).get().join(',');
         result = 'Campuses: ' + campusCommaList;
     }}
 
     return result;
-}}
-", ControlClassName );
+}}";
         }
 
         /// <summary>
@@ -143,7 +142,7 @@ function() {{
                 List<string> campusNames = new List<string>();
                 foreach ( var campusGuid in campusGuidList )
                 {
-                    var campus = CampusCache.Read( campusGuid );
+                    var campus = CampusCache.Get( campusGuid );
                     if ( campus != null )
                     {
                         campusNames.Add( campus.Name );
@@ -202,7 +201,7 @@ function() {{
                 List<Guid> campusGuids = new List<Guid>();
                 foreach ( var campusId in campusIds )
                 {
-                    var campus = CampusCache.Read( campusId );
+                    var campus = CampusCache.Get( campusId );
                     if ( campus != null )
                     {
                         campusGuids.Add( campus.Guid );
@@ -230,7 +229,7 @@ function() {{
                 List<int> campusIds = new List<int>();
                 foreach ( var campusGuid in campusGuidList )
                 {
-                    var campus = CampusCache.Read( campusGuid );
+                    var campus = CampusCache.Get( campusGuid );
                     if ( campus != null )
                     {
                         campusIds.Add( campus.Id );
@@ -261,7 +260,7 @@ function() {{
                 List<int> campusIds = new List<int>();
                 foreach ( var campusGuid in campusGuidList )
                 {
-                    var campus = CampusCache.Read( campusGuid );
+                    var campus = CampusCache.Get( campusGuid );
                     if ( campus != null )
                     {
                         campusIds.Add( campus.Id );
@@ -310,7 +309,7 @@ function() {{
                 if ( campusIds.Any() )
                 {
 
-                    var selectedCampusGuids = campusIds.Select( a => CampusCache.Read( a ) ).Where( a => a != null ).Select( a => a.Guid ).ToList();
+                    var selectedCampusGuids = campusIds.Select( a => CampusCache.Get( a ) ).Where( a => a != null ).Select( a => a.Guid ).ToList();
 
                     selectionValues[0] = selectedCampusGuids.AsDelimited( "," );
                     return selectionValues.ToList().AsDelimited( "|" );

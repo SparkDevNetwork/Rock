@@ -60,8 +60,8 @@ namespace Rock.Model
         {
             // Use the credit card type's batch name suffix, or if that doesn't exist, use the currency type value
             string ccSuffix = string.Empty;
-            
-            if (creditCardType != null )
+
+            if ( creditCardType != null )
             {
                 ccSuffix = creditCardType.GetAttributeValue( "BatchNameSuffix" );
                 if ( string.IsNullOrWhiteSpace( ccSuffix ) )

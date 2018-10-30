@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-
 using Rock.Extension;
 
 namespace Rock.Security
@@ -62,6 +61,24 @@ namespace Rock.Security
         public static string GetComponentName( string entityType )
         {
             return Instance.GetComponentNameByEntity( entityType );
+        }
+
+        /// <summary>
+        /// Gets the active component.
+        /// </summary>
+        /// <returns></returns>
+        public static BackgroundCheckComponent GetActiveComponent()
+        {
+            foreach ( var indexType in BackgroundCheckContainer.Instance.Components )
+            {
+                var component = indexType.Value.Value;
+                if ( component.IsActive )
+                {
+                    return component;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

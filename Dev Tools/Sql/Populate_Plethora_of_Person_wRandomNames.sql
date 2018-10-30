@@ -42,7 +42,8 @@ DECLARE @maxPerson INT = 999
     ,@email NVARCHAR(75)
     ,@phoneNumber NVARCHAR(20)
     ,@phoneNumberFormatted NVARCHAR(50)
-    ,@year INT
+    ,@adultBirthYear INT
+	,@childBirthYear INT
     ,@month INT
     ,@day INT
     ,@personCounter INT = 0
@@ -12018,12 +12019,15 @@ BEGIN
 
         -- add first member of family
         SET @email = @firstName + '.' + @lastName + '@nowhere.com';
-        SET @year = CONVERT(NVARCHAR(100), ROUND(rand() * 80, 0) + 1932);
+        SET @adultBirthYear = datepart(year, sysdatetime()) - 19 - ROUND(rand(CHECKSUM(newid())) * 70, 0);
         SET @month = CONVERT(NVARCHAR(100), ROUND(rand() * 11, 0) + 1);
         SET @day = CONVERT(NVARCHAR(100), ROUND(rand() * 26, 0) + 1);
         SET @phoneNumber = cast(convert(BIGINT, ROUND(rand() * 0095551212, 0) + 6230000000) AS NVARCHAR(20));
         SET @phoneNumberFormatted = '(' + substring(@phoneNumber, 1, 3) + ') ' + substring(@phoneNumber, 4, 3) + '-' + substring(@phoneNumber, 7, 4);
         SET @personGuid = NEWID();
+
+		SET @connectionStatusValueId = (select top 1 id from DefinedValue where DefinedTypeId = @connectionStatusDefinedTypeId order by NEWID())
+        SET @recordStatusValueId = (select top 1 id from DefinedValue where DefinedTypeId = @recordStatusDefinedTypeId order by NEWID())
 
         INSERT INTO [Person] (
             [IsSystem]
@@ -12041,6 +12045,7 @@ BEGIN
             ,[Guid]
             ,[RecordTypeValueId]
             ,[RecordStatusValueId]
+			,[ConnectionStatusValueId]
 			,[IsDeceased]
             ,[CreatedDateTime]
             )
@@ -12051,7 +12056,7 @@ BEGIN
             ,@lastName
             ,@day
             ,@month
-            ,@year
+            ,@adultBirthYear
 			,@maritalStatusMarried
             ,@genderInt
             ,@email
@@ -12060,6 +12065,7 @@ BEGIN
             ,@personGuid
             ,@personRecordType
             ,@recordStatusValueId
+			,@connectionStatusValueId
 			,0
             ,SYSDATETIME()
             )
@@ -12149,7 +12155,7 @@ BEGIN
             ,@lastName
             ,@day
             ,@month
-            ,@year
+            ,@adultBirthYear
             ,@genderInt
             ,@maritalStatusMarried
             ,@email
@@ -12228,6 +12234,7 @@ BEGIN
             ,GroupRoleId
             ,[Guid]
             ,GroupMemberStatus
+			,DateTimeAdded
             )
         VALUES (
             0
@@ -12236,6 +12243,7 @@ BEGIN
             ,@adultRole
             ,newid()
             ,0
+			,SYSDATETIME()
             )
 
         INSERT INTO [GroupMember] (
@@ -12245,6 +12253,7 @@ BEGIN
             ,GroupRoleId
             ,[Guid]
             ,GroupMemberStatus
+			,DateTimeAdded
             )
         VALUES (
             0
@@ -12253,6 +12262,7 @@ BEGIN
             ,@adultRole
             ,newid()
             ,0
+			,SYSDATETIME()
             )
 
 		-- Kids loop
@@ -12264,7 +12274,7 @@ BEGIN
 			SET @kidPersonGuid = NEWID();
 			SET @month = CONVERT(NVARCHAR(100), ROUND(rand() * 11, 0) + 1);
 			SET @day = CONVERT(NVARCHAR(100), ROUND(rand() * 26, 0) + 1);
-			SET @year = datepart(year, sysdatetime()) - ROUND(rand() * 16, 0);
+			SET @childBirthYear = datepart(year, sysdatetime()) - ROUND(rand() * 16, 0);
 
 			SELECT @genderInt = floor(rand() * 2) + 1
 
@@ -12296,7 +12306,7 @@ BEGIN
 				,@lastName
 				,@day
 				,@month
-				,@year
+				,@childBirthYear
 				,@genderInt
 				,@maritalStatusSingle
 				,null
@@ -12333,6 +12343,7 @@ BEGIN
 				,GroupRoleId
 				,[Guid]
 				,GroupMemberStatus
+				,DateTimeAdded
 				)
 			VALUES (
 				0
@@ -12341,6 +12352,7 @@ BEGIN
 				,@childRole
 				,newid()
 				,0
+				,SYSDATETIME()
 				)
 
 			set @kidCounter += 1
@@ -12366,6 +12378,7 @@ BEGIN
             ,PostalCode
             ,IsActive
 			,GeoPoint
+			,Country
             ,[Guid]
             )
         VALUES (
@@ -12376,6 +12389,7 @@ BEGIN
             ,@zipCode
             ,1
 			,@geoPoint
+			,'US'
             ,NEWID()
             )
 
@@ -12395,9 +12409,13 @@ BEGIN
             ,@locationTypeValueHome
             ,NEWID()
             ,1
-            ,0
+            ,1
             )
         
+		if (@personCounter % 500 = 0)
+		begin
+  		  print concat(@personCounter, '/', @maxPerson);
+        end
 
         SET @personCounter += 2;
     END

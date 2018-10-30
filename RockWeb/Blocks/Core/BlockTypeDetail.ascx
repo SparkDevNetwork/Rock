@@ -14,7 +14,7 @@
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
                 <asp:Panel ID="pnlReadOnly" runat="server">
@@ -68,7 +68,10 @@
         <asp:Panel ID="pnlBlockTypeAttributesEdit" CssClass="panel panel-block" runat="server" Visible="false">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-list-ul"></i>Attribute Editor</h1>
+                <h1 class="panel-title">
+                    <i class="fa fa-list-ul"></i>
+                    Attribute Editor
+                </h1>
             </div>
             <div class="panel-body">
                 <Rock:AttributeEditor ID="edtBlockTypeAttributes" runat="server" OnSaveClick="edtBlockTypeAttributes_SaveClick" OnCancelClick="edtBlockTypeAttributes_CancelClick" ValidationGroup="Attribute" />

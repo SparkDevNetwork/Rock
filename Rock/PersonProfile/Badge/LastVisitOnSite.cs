@@ -51,7 +51,7 @@ namespace Rock.PersonProfile.Badge
             int? siteId = GetAttributeValue( badge, "Site" ).AsIntegerOrNull();
             if ( siteId.HasValue )
             {
-                var site = Rock.Web.Cache.SiteCache.Read( siteId.Value );
+                var site = SiteCache.Get( siteId.Value );
                 if ( site != null )
                 {
                     string siteName = site.Name;
@@ -61,7 +61,7 @@ namespace Rock.PersonProfile.Badge
 
                     if ( !String.IsNullOrEmpty( GetAttributeValue( badge, "PageViewDetails" ) ) )
                     {
-                        int pageId = Rock.Web.Cache.PageCache.Read( Guid.Parse( GetAttributeValue( badge, "PageViewDetails" ) ) ).Id;
+                        int pageId = PageCache.Get( Guid.Parse( GetAttributeValue( badge, "PageViewDetails" ) ) ).Id;
 
                         // NOTE: Since this block shows a history of sites a person visited in Rock, use Person.Guid instead of Person.Id to reduce the risk of somebody manually editing the URL to see somebody else pageview history
                         detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?PersonGuid={Person.Guid}&SiteId={siteId}" );

@@ -13,12 +13,17 @@
 
 // 1. Imports
 //--------------------------------
+@import "_rock-mixins.less";
 @import "./FontAwesome/mixins.less";
 @import "./FontAwesome/variables.less";
+@import "./FontAwesome/_rock-upgrade-map-variables.less";
+@import "./FontAwesome/_rock-fa-mixins.less";
 @import "./JCrop/jcrop.less";
 @import "./chosen/bootstrap-chosen-variables.less";
 @import "./chosen/bootstrap-chosen.less";
 
+.fa-font-face( @fa-theme-weight-name, @fa-edition );
+.fa-font-face( 'brands' );
 
 // import as less files so they are concatenated properly
 @import (less) "./summernote/summernote.css";
@@ -47,7 +52,6 @@
 @import "_page-specific.less";
 
 @import "_scroll.less";
-@import "_global-variables.less";
 @import "_helpers.less";
 
 @import "_devices.less";
@@ -55,18 +59,25 @@
 @import "./Bootstrap/mixins.less";
 
 
-
-
-
 // 2. HTML Overrides
 //--------------------------------
 
 iframe {
-  border: 1px solid @input-border;
+  border: 0 solid @input-border;
 }
 
 // 3. Utility Classes
 //--------------------------------
+
+.form-row {
+  .make-row(10px);
+  .clearfix();
+  & > .col,
+  & > [class*=col-] {
+    padding-right: 5px;
+    padding-left: 5px;
+  }
+}
 
 .clickable {
   cursor: pointer;
@@ -81,21 +92,16 @@ iframe {
 
   &.tip-liquid,
   &.tip-lava {
-    &:after {
-      content: '{{ Lava }}';
+    &::after {
+      content: "{{ Lava }}";
     }
   }
 
   &.tip-html {
-    &:after {
-      content: '< HTML />';
+    &::after {
+      content: "< HTML />";
     }
   }
-}
-
-// get dropdowns to display above the admin bar
-.dropdown-menu {
-  z-index: 1050;
 }
 
 .navigation-tip {
@@ -150,9 +156,66 @@ a.warning {
 // 4. Bootstrap Overrides
 //--------------------------------
 
+.dropdown-menu {
+  .box-shadow(@shadow-overlay);
+
+  .dropdown-item-danger {
+    color: @brand-danger;
+    &:hover {
+      color: #fff;
+      background-color: @brand-danger;
+    }
+  }
+
+  .dropdown-item.btn-link {
+    width: 100%;
+    padding: 3px 20px;
+    color: @dropdown-link-color;
+    text-align: left;
+
+    &:hover,
+    &:focus {
+      color: @dropdown-link-hover-color;
+      text-decoration: none;
+      background-color: @dropdown-link-hover-bg;
+    }
+  }
+}
+
+// make icons inside of a button fixed with
+.btn i.fa {
+  width: 1.25em;
+  text-align: center;
+}
+
+.btn i.btn-icon {
+  position: relative;
+  top: -1px;
+  width: 1em;
+  height: 1em;
+  margin-left: .5em;
+  vertical-align: middle;
+}
+
 // add new alert style
 .alert-default {
   .alert-variant(@alert-default-bg; @alert-default-border; @alert-default-text);
+}
+
+.alert-validation {
+  .alert-variant(@alert-validation-bg; @alert-validation-border; @alert-validation-heading);
+  font-weight: 700;
+
+  ul,
+  span {
+    font-weight: 400;
+    color: #484848;
+  }
+
+  ul {
+    padding: 5px 25px 0;
+    line-height: 1.5;
+  }
 }
 
 // fix btn colors that are inside of panels
@@ -180,7 +243,7 @@ a.warning {
   }
 }
 
-// grid controls in asp.net center content using align=center but bootstrap overrides this 
+// grid controls in asp.net center content using align=center but bootstrap overrides this
 th[align=center] {
   text-align: center;
 }
@@ -215,30 +278,31 @@ th[align=center] {
 // add badge colors back to BS3
 .badge-danger {
   color: #fff !important;
-  background-color: @label-danger-bg !important;
+  background-color: @badge-danger-bg !important;
 }
 
 .badge-warning {
   color: #fff !important;
-  background-color: @label-warning-bg !important;
+  background-color: @badge-warning-bg !important;
 }
 
 .badge-success {
   color: #fff !important;
-  background-color: @label-success-bg !important;
+  background-color: @badge-success-bg !important;
 }
 
 .badge-info {
   color: #fff !important;
-  background-color: @label-info-bg !important;
+  background-color: @badge-info-bg !important;
 }
 
 .badge-critical {
   color: #fff !important;
-  background-color: @label-critical-bg !important;
+  background-color: @badge-critical-bg !important;
 }
 
 .badge-legend .badge {
+  height: @line-height-computed;
   margin-right: 4px;
   cursor: pointer;
 }
@@ -335,7 +399,8 @@ th[align=center] {
     }
 
     .checkbox {
-      margin: 0;
+      // Important to override fancy checkbox important
+      margin: 0 !important;
     }
 
     .panel-labels {
@@ -368,7 +433,7 @@ th[align=center] {
   }
 
   .panel-settings {
-    padding: (@panel-body-padding);
+    padding: @panel-body-padding;
     margin: -(@panel-body-padding);
     border-bottom: 1px solid lighten(@panel-heading-border, 3%);
   }
@@ -412,8 +477,8 @@ th[align=center] {
     .checkbox {
       display: inline;
       float: left;
-      margin-top: 0;
-      margin-bottom: 0;
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
     }
 
     .actions {
@@ -429,8 +494,6 @@ th[align=center] {
 }
 
 .panel-persondetails {
-  border-top-color: @panel-top-border-color;
-  // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
   .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
   .panel-heading {
@@ -470,7 +533,7 @@ th[align=center] {
     }
 
     .form-group.static-control.matrix-attribute .form-control-static {
-      display: none;
+      width: 100%;
     }
 
     i.fa.fa-bars {
@@ -503,7 +566,7 @@ th[align=center] {
 
   .panel-body {
     .grid.grid-panel {
-      margin: -15px;
+      margin: -16px;
 
       .grid-filter {
         border-radius: 0;
@@ -579,12 +642,7 @@ th[align=center] {
   }
 }
 
-.drawer-pull:hover {
-  background-color: darken(@drawer-bg, 3%);
-}
-
-
-// paneleditor is used to provide a small edit surface in a panel header. 
+// paneleditor is used to provide a small edit surface in a panel header.
 // example: threshold editor on checkin manager for locations
 
 
@@ -619,6 +677,7 @@ th[align=center] {
 
 .btn-authentication {
   width: 100%;
+  margin-bottom: 8px;
 
   .button-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
 
@@ -626,43 +685,48 @@ th[align=center] {
     background-color: darken(@btn-default-bg, 10%);
   }
 
-  &.facebook:before {
-    margin-right: 12px;
-    font-family: 'FontAwesome';
-    content: @fa-var-facebook;
+  &.facebook {
+    color: #fff;
+    background-color: #3d5a96;
+
+    &.facebook::before {
+      margin-right: 12px;
+      font-family: "@{fa-font-face} Brands";
+      font-weight: 400;
+      content: @fa-var-facebook;
+    }
   }
 
-  &.google:before {
-    margin-right: 12px;
-    font-family: 'FontAwesome';
-    content: @fa-var-google;
+  &.google {
+    color: #fff;
+    background-color: #ed4e23;
+
+    &.google::before {
+      margin-right: 12px;
+      font-family: "@{fa-font-face} Brands";
+      font-weight: 400;
+      content: @fa-var-google;
+    }
   }
 
-  &.twitter:before {
-    margin-right: 12px;
-    font-family: 'FontAwesome';
-    content: @fa-var-twitter;
+  &.twitter {
+    color: #fff;
+    background-color: #2aa3ef;
+
+    &.twitter::before {
+      margin-right: 12px;
+      font-family: "@{fa-font-face} Brands";
+      font-weight: 400;
+      content: @fa-var-twitter;
+    }
   }
 }
-
 
 
 .btn-minimal {
   padding: 0;
   color: lighten(@text-color, 30%);
   text-decoration: none;
-}
-
-// alert extentions
-.alert {
-  // styling for exceptions
-
-  pre {
-    padding: 0;
-    color: inherit;
-    background-color: transparent;
-    border: 0;
-  }
 }
 
 // make links in alerts the same color as the text with a nice dotted underline
@@ -708,25 +772,9 @@ th[align=center] {
   }
 }
 
-.alert {
-  // hide the styling of pre's inside of alerts
-  pre {
-    padding: 0;
-    color: inherit;
-    background-color: transparent;
-    border: 0;
-  }
-}
-
 // system errors
 
 .system-error {
-  pre {
-    color: inherit;
-    background-color: transparent;
-    border: 0;
-  }
-
   .close {
     color: inherit;
   }
@@ -816,4 +864,32 @@ div.aspNetDisabled {
 .icon-fw {
   width: (18em / 14); // font-awesome
   text-align: center;
+}
+
+
+.btn-outline-default {
+  .button-outline-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
+}
+.btn-outline-primary {
+  .button-outline-variant(@btn-primary-color; @btn-primary-bg; @btn-primary-border);
+}
+// Success appears as green
+.btn-outline-success {
+  .button-outline-variant(@btn-success-color; @btn-success-bg; @btn-success-border);
+}
+// Info appears as blue-green
+.btn-outline-info {
+  .button-outline-variant(@btn-info-color; @btn-info-bg; @btn-info-border);
+}
+// Warning appears as orange
+.btn-outline-warning {
+  .button-outline-variant(@btn-warning-color; @btn-warning-bg; @btn-warning-border);
+}
+// Danger and error appear as red
+.btn-danger {
+  .button-outline-variant(@btn-danger-color; @btn-danger-bg; @btn-danger-border);
+}
+// Danger and error appear as red
+.btn-danger-solid {
+  .button-variant(@btn-danger-color; @btn-danger-bg; @btn-danger-border);
 }

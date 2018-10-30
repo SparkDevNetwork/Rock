@@ -717,11 +717,11 @@ namespace Quartz
 
             int arItr = minute/minuteBase;
 
-            int nextMinuteOccurance = minuteBase*(arItr + 1);
+            int nextMinuteOccurrence = minuteBase*(arItr + 1);
 
-            if (nextMinuteOccurance < 60)
+            if (nextMinuteOccurrence < 60)
             {
-                return new DateTimeOffset(c.Year, c.Month, c.Day, c.Hour, nextMinuteOccurance, 0, 0, TimeSpan.Zero);
+                return new DateTimeOffset(c.Year, c.Month, c.Day, c.Hour, nextMinuteOccurrence, 0, 0, TimeSpan.Zero);
             }
             else
             {
@@ -763,11 +763,11 @@ namespace Quartz
 
             int arItr = second/secondBase;
 
-            int nextSecondOccurance = secondBase*(arItr + 1);
+            int nextSecondOccurrence = secondBase*(arItr + 1);
 
-            if (nextSecondOccurance < 60)
+            if (nextSecondOccurrence < 60)
             {
-                return new DateTimeOffset(c.Year, c.Month, c.Day, c.Hour, c.Minute, nextSecondOccurance, 0, TimeSpan.Zero);
+                return new DateTimeOffset(c.Year, c.Month, c.Day, c.Hour, c.Minute, nextSecondOccurrence, 0, TimeSpan.Zero);
             }
             else
             {

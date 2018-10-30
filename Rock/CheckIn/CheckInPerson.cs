@@ -18,8 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -216,15 +216,18 @@ namespace Rock.CheckIn
 
             foreach ( var possibleSchedule in PossibleSchedules )
             {
-                foreach ( var groupType in GroupTypes.Where( t => t.PreSelected || !onlyPreSelected ) )
+                var scheduleId = possibleSchedule.Schedule.Id;
+
+                foreach ( var groupType in GroupTypes.Where( t => t.AvailableForSchedule.Contains( scheduleId ) && ( t.PreSelected || !onlyPreSelected ) ) )
                 {
-                    foreach ( var group in groupType.Groups.Where( t => t.PreSelected || !onlyPreSelected ) )
+                    foreach ( var group in groupType.Groups.Where( t => t.AvailableForSchedule.Contains( scheduleId ) && ( t.PreSelected || !onlyPreSelected ) ) )
                     {
-                        foreach ( var location in group.Locations.Where( t => t.PreSelected || !onlyPreSelected ) )
+                        foreach ( var location in group.Locations.Where( t => t.AvailableForSchedule.Contains( scheduleId ) && ( t.PreSelected || !onlyPreSelected ) ) )
                         {
-                            foreach ( var schedule in location.Schedules.Where( s => s.Schedule.Id == possibleSchedule.Schedule.Id && ( s.PreSelected || !onlyPreSelected ) ) )
+                            foreach ( var schedule in location.Schedules.Where( s => s.Schedule.Id == scheduleId && ( s.PreSelected || !onlyPreSelected ) ) )
                             {
-                                if ( !onlyOneOptionPerSchedule || !options.Any( o => o.Schedule.Schedule.Id == schedule.Schedule.Id ) )
+                                if ( location.AvailableForSchedule.Contains( schedule.Schedule.Id ) && 
+                                    ( !onlyOneOptionPerSchedule || !options.Any( o => o.Schedule.Schedule.Id == schedule.Schedule.Id ) ) )
                                 {
                                     options.Add( new CheckInPersonSummary( schedule, groupType, group, location ) );
                                 }
@@ -326,7 +329,7 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Gets the available keys (for debuging info).
+        /// Gets the available keys (for debugging info).
         /// </summary>
         /// <value>
         /// The available keys.
@@ -504,14 +507,13 @@ namespace Rock.CheckIn
             {
                 if ( groupType.GroupType.Attributes == null )
                 {
-                    groupType.GroupType.LoadAttributes();
+                    // shouldn't happen since GroupType is a ModelCache<,> type
+                    return;
                 }
 
                 foreach ( var attribute in groupType.GroupType.Attributes.OrderBy( a => a.Value.Order ) )
                 {
-                    if ( attribute.Value.FieldType.Guid == SystemGuid.FieldType.BINARY_FILE.AsGuid() &&
-                        attribute.Value.QualifierValues.ContainsKey( "binaryFileType" ) &&
-                        attribute.Value.QualifierValues["binaryFileType"].Value.Equals( SystemGuid.BinaryFiletype.CHECKIN_LABEL, StringComparison.OrdinalIgnoreCase ) )
+                    if ( attribute.Value.FieldType.Guid == SystemGuid.FieldType.LABEL.AsGuid() )
                     {
                         Guid? binaryFileGuid = groupType.GroupType.GetAttributeValue( attribute.Key ).AsGuidOrNull();
                         if ( binaryFileGuid.HasValue && binaryFileGuid.Value == label.Guid )

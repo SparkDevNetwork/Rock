@@ -65,63 +65,76 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the device by IP address.
+        /// Gets the device by IP address. If skipReverseLookup is disabled and no kiosk was found by a
+        /// simple match (given IP to the IpAddress field), a reverse lookup (IP to DNS host name)
+        /// is performed to get the DNS host name.  This is then used to find a match in either the
+        /// device's IpAddress field or the Name field. In all cases if no match is found a null
+        /// Device is returned.
         /// </summary>
         /// <param name="ipAddress">A <see cref="System.String" /> representing the ip address.</param>
         /// <param name="deviceTypeValueId">A <see cref="System.Int32"/> representing the DeviceType <see cref="Rock.Model.DefinedValue"/> of the device that you are searching for.</param>
-        /// <param name="skipReverseLookup">A <see cref="System.Boolean"/> indicating if a reverse lookup will be skipped. If <c>true</c> a DNS reverse lookup for the name of the system
-        /// that belongs to the provided IP address will not be performed, otherwise <c>false</c> and a DNS reverse lookup will be performed.</param>
+        /// <param name="skipReverseLookup">A <see cref="System.Boolean"/> indicating if a reverse lookup will be skipped. If <c>true</c> a DNS reverse 
+        /// lookup for the name of the system that belongs to the provided IP address will not be performed, otherwise <c>false</c> and a DNS reverse
+        /// lookup will be performed.</param>
         /// <returns>
-        /// A <see cref="Rock.Model.Device"/> that is associated with the provided IP address.
+        /// A <see cref="Rock.Model.Device"/> that is associated with the provided IP address or null if no match.
         /// </returns>
         public Device GetByIPAddress( string ipAddress, int deviceTypeValueId, bool skipReverseLookup = true )
         {
-            string hostValue = ipAddress;
-
-            if ( !skipReverseLookup )
+            // Check if we have a device entry that matches the IP address.
+            var device = Queryable()
+                .Where( d =>
+                    d.DeviceTypeValueId == deviceTypeValueId &&
+                    d.IPAddress == ipAddress )
+                .FirstOrDefault();
+            if ( device != null || skipReverseLookup )
             {
-                // Lookup the system's "name" (as seen in the DNS) using the given IP
-                // address because when using DHCP the kiosk may have a different IP from time to time
-                // -- however the fully qualified name should always be the same.
-                try
+                return device;
+            }
+
+            // Lookup the system's "name" (as seen in the DNS) using the given IP
+            // address because when using DHCP the kiosk may have a different IP from time to time
+            // -- however the fully qualified name should always be the same.
+            try
+            {
+                string hostValue = System.Net.Dns.GetHostEntry( ipAddress ).HostName;
+                if ( hostValue.IsNotNullOrWhiteSpace() )
                 {
-                    hostValue = System.Net.Dns.GetHostEntry( ipAddress ).HostName;
+                    // Find by name in the IP address field (why are people putting the name in the IP Address field?)
+                    device =  Queryable()
+                        .Where( d =>
+                            d.DeviceTypeValueId == deviceTypeValueId &&
+                            d.IPAddress == hostValue )
+                        .FirstOrDefault();
+
+                    if ( device == null )
+                    {
+                        // Find by name by looking at the device name (original behavior)
+                        // (Note: Don't combine this query into the above. They are not 
+                        // functionally equivalent.)
+                        device = Queryable()
+                            .Where( d =>
+                                d.DeviceTypeValueId == deviceTypeValueId &&
+                                d.Name == hostValue )
+                            .FirstOrDefault();
+                    }
+
+                    return device;
                 }
-                catch ( SocketException )
+                else
                 {
-                    // TODO: consider whether we want to log the IP address that caused this error.
-                    // As per http://msdn.microsoft.com/en-us/library/ms143998.aspx it *may* mean 
-                    // a stale DNS record for an IPv4 address that actually belongs to a
-                    // different host was going to be returned (there is a DNS PTR record for
-                    // the IPv4 address, but no DNS A record for the IPv4 address).
-                    hostValue = ipAddress;
+                    return null;
                 }
             }
-
-            Device device = null;
-
-            // If we still have an IPv4 address then try to find it based on IP
-            if ( Regex.IsMatch( hostValue, @"\d+\.\d+\.\d+\.\d+" ) )
+            catch ( SocketException )
             {
-                // find by IP
-                device = Queryable()
-                    .Where( d =>
-                        d.DeviceTypeValueId == deviceTypeValueId &&
-                        d.IPAddress == hostValue)
-                    .FirstOrDefault();
+                // TODO: consider whether we want to log the IP address that caused this error.
+                // As per http://msdn.microsoft.com/en-us/library/ms143998.aspx it *may* mean 
+                // a stale DNS record for an IPv4 address that actually belongs to a
+                // different host was going to be returned (there is a DNS PTR record for
+                // the IPv4 address, but no DNS A record for the IPv4 address).
+                return null;
             }
-            else
-            {
-                // find by name
-                device = Queryable()
-                    .Where( d =>
-                        d.DeviceTypeValueId == deviceTypeValueId &&
-                        d.Name == hostValue )
-                    .FirstOrDefault();
-            }
-
-            return device;
         }
-
     }
 }

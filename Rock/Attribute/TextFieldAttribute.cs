@@ -20,7 +20,7 @@ using System.Linq;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// A class Attribute that can be used by any oject that inherits from <see cref="Rock.Attribute.IHasAttributes"/> to specify what attributes it needs.  The 
+    /// A class Attribute that can be used by any object that inherits from <see cref="Rock.Attribute.IHasAttributes"/> to specify what attributes it needs.  The 
     /// Framework provides methods in the <see cref="Rock.Attribute.Helper"/> class to create, read, and update the attributes
     /// </summary>
     /// <remarks>

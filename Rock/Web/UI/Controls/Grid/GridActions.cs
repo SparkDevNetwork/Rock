@@ -53,6 +53,7 @@ namespace Rock.Web.UI.Controls
         #region Controls
 
         private List<Control> _customActions;
+        private Panel _pnlCustomActions;
         private LinkButton _lbPersonMerge;
         private LinkButton _lbBulkUpdate;
         private LinkButton _lbCommunicate;
@@ -77,7 +78,7 @@ namespace Rock.Web.UI.Controls
             get 
             {
                 // if the Grid has the PersonIdField set, default ShowCommunicate to True
-                bool hasPersonIdField = _parentGrid.CommunicationRecipientPersonIdFields.Any() || _parentGrid.PersonIdField.IsNotNullOrWhitespace();
+                bool hasPersonIdField = _parentGrid.CommunicationRecipientPersonIdFields.Any() || _parentGrid.PersonIdField.IsNotNullOrWhiteSpace();
 
                 return ViewState["ShowCommunicate"] as bool? ?? hasPersonIdField; 
             }
@@ -99,7 +100,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 // if the Grid has the PersonIdField set, default ShowMergePerson to True
-                bool hasPersonIdField = _parentGrid.PersonIdField.IsNotNullOrWhitespace();
+                bool hasPersonIdField = _parentGrid.PersonIdField.IsNotNullOrWhiteSpace();
 
                 return ViewState["ShowMergePerson"] as bool? ?? hasPersonIdField;
             }
@@ -121,7 +122,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 // if the Grid has the PersonIdField set, default ShowBulkUpdate to True
-                bool hasPersonIdField = _parentGrid.PersonIdField.IsNotNullOrWhitespace();
+                bool hasPersonIdField = _parentGrid.PersonIdField.IsNotNullOrWhiteSpace();
 
                 return ViewState["ShowBulkUpdate"] as bool? ?? hasPersonIdField;
             }
@@ -263,13 +264,93 @@ namespace Rock.Web.UI.Controls
         {
             Controls.Clear();
 
+            _pnlCustomActions = new Panel();
+
+            Controls.Add( _pnlCustomActions );
+
             if ( _customActions != null )
             {
                 foreach ( Control control in _customActions )
                 {
-                    Controls.Add( control );
+                    _pnlCustomActions.Controls.Add( control );
                 }
             }
+
+            // control for communicate
+            _lbCommunicate = new LinkButton();
+            Controls.Add( _lbCommunicate );
+            _lbCommunicate.ID = "lbCommunicate";
+            _lbCommunicate.CssClass = "btn-communicate btn btn-default btn-sm";
+            _lbCommunicate.ToolTip = "Communicate";
+            _lbCommunicate.Click += lbCommunicate_Click;
+            _lbCommunicate.CausesValidation = false;
+            _lbCommunicate.PreRender += lb_PreRender;
+            Controls.Add( _lbCommunicate );
+            HtmlGenericControl iCommunicate = new HtmlGenericControl( "i" );
+            iCommunicate.Attributes.Add( "class", "fa fa-comment fa-fw" );
+            _lbCommunicate.Controls.Add( iCommunicate );
+
+            // control for person merge
+            _lbPersonMerge = new LinkButton();
+            Controls.Add( _lbPersonMerge );
+            _lbPersonMerge.ID = "lbPersonMerge";
+            _lbPersonMerge.CssClass = "btn-merge btn btn-default btn-sm";
+            _lbPersonMerge.ToolTip = "Merge Person Records";
+            _lbPersonMerge.Click += lbPersonMerge_Click;
+            _lbPersonMerge.CausesValidation = false;
+            _lbPersonMerge.PreRender += lb_PreRender;
+            Controls.Add( _lbPersonMerge );
+            HtmlGenericControl iPersonMerge = new HtmlGenericControl( "i" );
+            iPersonMerge.Attributes.Add( "class", "fa fa-users fa-fw" );
+            _lbPersonMerge.Controls.Add( iPersonMerge );
+
+            // control for bulk update
+            _lbBulkUpdate = new LinkButton();
+            Controls.Add( _lbBulkUpdate );
+            _lbBulkUpdate.ID = "lbBulkUpdate";
+            _lbBulkUpdate.CssClass = "btn-bulk-update btn btn-default btn-sm";
+            _lbBulkUpdate.ToolTip = "Bulk Update";
+            _lbBulkUpdate.Click += lbBulkUpdate_Click;
+            _lbBulkUpdate.CausesValidation = false;
+            _lbBulkUpdate.PreRender += lb_PreRender;
+            Controls.Add( _lbBulkUpdate );
+            HtmlGenericControl iBulkUpdate = new HtmlGenericControl( "i" );
+            iBulkUpdate.Attributes.Add( "class", "fa fa-truck fa-fw" );
+            _lbBulkUpdate.Controls.Add( iBulkUpdate );
+            
+            // controls for excel export
+            _aExcelExport = new HtmlGenericControl( "a" );
+            Controls.Add( _aExcelExport );
+            _aExcelExport.ID = "aExcelExport";
+            _aExcelExport.Attributes.Add( "href", "#" );
+            _aExcelExport.Attributes.Add( "class", "btn-excelexport" );
+            _aExcelExport.InnerText = "Export To Excel";
+
+            _lbExcelExport = new LinkButton();
+            Controls.Add( _lbExcelExport );
+            _lbExcelExport.ID = "lbExcelExport";
+            _lbExcelExport.CssClass = "btn-excelexport btn btn-default btn-sm";
+            _lbExcelExport.ToolTip = "Export to Excel";
+            _lbExcelExport.Click += lbExcelExport_Click;
+            _lbExcelExport.CausesValidation = false;
+            Controls.Add( _lbExcelExport );
+            HtmlGenericControl iExcelExport = new HtmlGenericControl( "i" );
+            iExcelExport.Attributes.Add( "class", "fa fa-table fa-fw" );
+            _lbExcelExport.Controls.Add( iExcelExport );
+
+            // control for merge template
+            _lbMergeTemplate = new LinkButton();
+            Controls.Add( _lbMergeTemplate );
+            _lbMergeTemplate.ID = "lbMergeTemplate";
+            _lbMergeTemplate.CssClass = "btn-merge-template btn btn-default btn-sm";
+            _lbMergeTemplate.ToolTip = "Merge Records into Merge Template";
+            _lbMergeTemplate.Click += _lbMergeTemplate_Click;
+            _lbMergeTemplate.CausesValidation = false;
+            _lbMergeTemplate.PreRender += lb_PreRender;
+            Controls.Add( _lbMergeTemplate );
+            HtmlGenericControl iMergeTemplate = new HtmlGenericControl( "i" );
+            iMergeTemplate.Attributes.Add( "class", "fa fa-files-o fa-fw" );
+            _lbMergeTemplate.Controls.Add( iMergeTemplate );
 
             // controls for add
             _aAdd = new HtmlGenericControl( "a" );
@@ -290,84 +371,8 @@ namespace Rock.Web.UI.Controls
             _lbAdd.AccessKey = "n";
             Controls.Add( _lbAdd );
             HtmlGenericControl iAdd = new HtmlGenericControl( "i" );
-            iAdd.Attributes.Add( "class", "fa fa-plus-circle" );
+            iAdd.Attributes.Add( "class", "fa fa-plus-circle fa-fw" );
             _lbAdd.Controls.Add( iAdd );
-
-            // control for communicate
-            _lbCommunicate = new LinkButton();
-            Controls.Add( _lbCommunicate );
-            _lbCommunicate.ID = "lbCommunicate";
-            _lbCommunicate.CssClass = "btn-communicate btn btn-default btn-sm";
-            _lbCommunicate.ToolTip = "Communicate";
-            _lbCommunicate.Click += lbCommunicate_Click;
-            _lbCommunicate.CausesValidation = false;
-            _lbCommunicate.PreRender += lb_PreRender;
-            Controls.Add( _lbCommunicate );
-            HtmlGenericControl iCommunicate = new HtmlGenericControl( "i" );
-            iCommunicate.Attributes.Add( "class", "fa fa-comment" );
-            _lbCommunicate.Controls.Add( iCommunicate );
-
-            // control for person merge
-            _lbPersonMerge = new LinkButton();
-            Controls.Add( _lbPersonMerge );
-            _lbPersonMerge.ID = "lbPersonMerge";
-            _lbPersonMerge.CssClass = "btn-merge btn btn-default btn-sm";
-            _lbPersonMerge.ToolTip = "Merge Person Records";
-            _lbPersonMerge.Click += lbPersonMerge_Click;
-            _lbPersonMerge.CausesValidation = false;
-            _lbPersonMerge.PreRender += lb_PreRender;
-            Controls.Add( _lbPersonMerge );
-            HtmlGenericControl iPersonMerge = new HtmlGenericControl( "i" );
-            iPersonMerge.Attributes.Add( "class", "fa fa-users" );
-            _lbPersonMerge.Controls.Add( iPersonMerge );
-
-            // control for bulk update
-            _lbBulkUpdate = new LinkButton();
-            Controls.Add( _lbBulkUpdate );
-            _lbBulkUpdate.ID = "lbBulkUpdate";
-            _lbBulkUpdate.CssClass = "btn-bulk-update btn btn-default btn-sm";
-            _lbBulkUpdate.ToolTip = "Bulk Update";
-            _lbBulkUpdate.Click += lbBulkUpdate_Click;
-            _lbBulkUpdate.CausesValidation = false;
-            _lbBulkUpdate.PreRender += lb_PreRender;
-            Controls.Add( _lbBulkUpdate );
-            HtmlGenericControl iBulkUpdate = new HtmlGenericControl( "i" );
-            iBulkUpdate.Attributes.Add( "class", "fa fa-truck" );
-            _lbBulkUpdate.Controls.Add( iBulkUpdate );
-            
-            // controls for excel export
-            _aExcelExport = new HtmlGenericControl( "a" );
-            Controls.Add( _aExcelExport );
-            _aExcelExport.ID = "aExcelExport";
-            _aExcelExport.Attributes.Add( "href", "#" );
-            _aExcelExport.Attributes.Add( "class", "btn-excelexport" );
-            _aExcelExport.InnerText = "Export To Excel";
-
-            _lbExcelExport = new LinkButton();
-            Controls.Add( _lbExcelExport );
-            _lbExcelExport.ID = "lbExcelExport";
-            _lbExcelExport.CssClass = "btn-excelexport btn btn-default btn-sm";
-            _lbExcelExport.ToolTip = "Export to Excel";
-            _lbExcelExport.Click += lbExcelExport_Click;
-            _lbExcelExport.CausesValidation = false;
-            Controls.Add( _lbExcelExport );
-            HtmlGenericControl iExcelExport = new HtmlGenericControl( "i" );
-            iExcelExport.Attributes.Add( "class", "fa fa-table" );
-            _lbExcelExport.Controls.Add( iExcelExport );
-
-            // control for merge template
-            _lbMergeTemplate = new LinkButton();
-            Controls.Add( _lbMergeTemplate );
-            _lbMergeTemplate.ID = "lbMergeTemplate";
-            _lbMergeTemplate.CssClass = "btn-merge-template btn btn-default btn-sm";
-            _lbMergeTemplate.ToolTip = "Merge Records into Merge Template";
-            _lbMergeTemplate.Click += _lbMergeTemplate_Click;
-            _lbMergeTemplate.CausesValidation = false;
-            _lbMergeTemplate.PreRender += lb_PreRender;
-            Controls.Add( _lbMergeTemplate );
-            HtmlGenericControl iMergeTemplate = new HtmlGenericControl( "i" );
-            iMergeTemplate.Attributes.Add( "class", "fa fa-files-o" );
-            _lbMergeTemplate.Controls.Add( iMergeTemplate );
         }
 
         /// <summary>
@@ -393,6 +398,26 @@ namespace Rock.Web.UI.Controls
             if (this.TagKey != HtmlTextWriterTag.Unknown)
             {
                 base.RenderEndTag(writer);
+            }
+        }
+
+        /// <summary>
+        /// Renders the control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        /// <param name="renderAsMirrored">if set to <c>true</c> [render as mirrored].</param>
+        public void RenderControl( HtmlTextWriter writer, bool renderAsMirrored )
+        {
+            if ( renderAsMirrored )
+            {
+                // Custom Actions usually don't work when mirrored, especially if they are Inputs such as DropDownLists, etc, so don't render them in the mirrored copy
+                _pnlCustomActions.Visible = false;
+                RenderControl( writer );
+                _pnlCustomActions.Visible = true;
+            }
+            else
+            {
+                RenderControl( writer );
             }
         }
 

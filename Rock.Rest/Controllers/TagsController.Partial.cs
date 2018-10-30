@@ -86,7 +86,7 @@ namespace Rock.Rest.Controllers
 
             if ( categoryGuid.HasValue )
             {
-                var category = CategoryCache.Read( categoryGuid.Value );
+                var category = CategoryCache.Get( categoryGuid.Value );
                 if ( category != null )
                 {
                     tags = tags

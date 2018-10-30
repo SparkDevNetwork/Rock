@@ -30,6 +30,7 @@ using Rock.Security;
 using Rock.Data;
 using System.Web;
 using Rock.Web.UI.Controls;
+using System.Text;
 
 namespace RockWeb.Blocks.Core
 {
@@ -55,6 +56,22 @@ namespace RockWeb.Blocks.Core
                 ViewState["CustomGridColumnsConfig"] = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the blocktype implements ICustomGridColumns
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is custom grid columns block; otherwise, <c>false</c>.
+        /// </value>
+        private bool ShowCustomGridColumns { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this blocktype implements ICustomGridOptions
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is custom columns columns block; otherwise, <c>false</c>.
+        /// </value>
+        private bool ShowCustomGridOptions { get; set; }
 
         /// <summary>
         /// Gets or sets the current tab.
@@ -94,10 +111,12 @@ namespace RockWeb.Blocks.Core
             {
                 int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
                 Block _block = new BlockService( new RockContext() ).Get( blockId );
+                dialogPage.Title = _block.BlockType.Name;
+                dialogPage.SubTitle = string.Format("{0} / Id: {1}", _block.BlockType.Category, blockId);
 
                 if ( _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
-                    var blockType = BlockTypeCache.Read( _block.BlockTypeId );
+                    var blockType = BlockTypeCache.Get( _block.BlockTypeId );
                     if ( blockType != null && !blockType.IsInstancePropertiesVerified )
                     {
                         System.Web.UI.Control control = Page.LoadControl( blockType.Path );
@@ -106,11 +125,11 @@ namespace RockWeb.Blocks.Core
                             using ( var rockContext = new RockContext() )
                             {
                                 var rockBlock = control as RockBlock;
-                                int? blockEntityTypeId = EntityTypeCache.Read( typeof( Block ) ).Id;
+                                int? blockEntityTypeId = EntityTypeCache.Get( typeof( Block ) ).Id;
                                 Rock.Attribute.Helper.UpdateAttributes( rockBlock.GetType(), blockEntityTypeId, "BlockTypeId", blockType.Id.ToString(), rockContext );
                             }
 
-                            blockType.IsInstancePropertiesVerified = true;
+                            blockType.MarkInstancePropertiesVerified( true );
                         }
                     }
 
@@ -161,14 +180,11 @@ namespace RockWeb.Blocks.Core
         /// <returns></returns>
         private List<string> GetTabs( BlockTypeCache blockType )
         {
-            var blockControlType = System.Web.Compilation.BuildManager.GetCompiledType( blockType.Path );
-            bool customColumnsBlock = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( blockControlType );
-
             var result = new List<string> { "Basic Settings", "Advanced Settings" };
 
-            if ( customColumnsBlock )
+            if ( this.ShowCustomGridOptions || this.ShowCustomGridColumns )
             {
-                result.Add( "Custom Grid Columns" );
+                result.Add( "Custom Grid Options" );
             }
 
             return result;
@@ -181,11 +197,15 @@ namespace RockWeb.Blocks.Core
         protected override void OnLoad( EventArgs e )
         {
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-            BlockCache _block = BlockCache.Read( blockId );
+            BlockCache _block = BlockCache.Get( blockId );
+
+            var blockControlType = System.Web.Compilation.BuildManager.GetCompiledType( _block.BlockType.Path );
+            this.ShowCustomGridColumns = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( blockControlType );
+            this.ShowCustomGridOptions = typeof( Rock.Web.UI.ICustomGridOptions ).IsAssignableFrom( blockControlType );
 
             if ( !Page.IsPostBack && _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
-                rptProperties.DataSource = GetTabs(_block.BlockType);
+                rptProperties.DataSource = GetTabs(_block.BlockType );
                 rptProperties.DataBind();
 
                 tbBlockName.Text = _block.Name;
@@ -197,9 +217,23 @@ namespace RockWeb.Blocks.Core
                 tbCacheDuration.Visible = false;
                 //tbCacheDuration.Text = _block.OutputCacheDuration.ToString();
 
-                CustomGridColumnsConfigState = _block.GetAttributeValue( CustomGridColumnsConfig.AttributeKey ).FromJsonOrNull<CustomGridColumnsConfig>() ?? new CustomGridColumnsConfig();
+                rcwCustomGridColumns.Visible = this.ShowCustomGridColumns;
+                tglEnableStickyHeader.Visible = this.ShowCustomGridOptions;
 
-                BindCustomColumnsConfig();
+                if ( this.ShowCustomGridColumns )
+                {
+                    CustomGridColumnsConfigState = _block.GetAttributeValue( CustomGridColumnsConfig.AttributeKey ).FromJsonOrNull<CustomGridColumnsConfig>() ?? new CustomGridColumnsConfig();
+                    BindCustomColumnsConfig();
+                }
+                else
+                {
+                    CustomGridColumnsConfigState = null;
+                }
+
+                if ( this.ShowCustomGridOptions )
+                {
+                    tglEnableStickyHeader.Checked = _block.GetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ).AsBoolean();
+                }
             }
 
             base.OnLoad( e );
@@ -218,7 +252,7 @@ namespace RockWeb.Blocks.Core
                 CurrentTab = lb.Text;
 
                 int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-                BlockCache _block = BlockCache.Read( blockId );
+                BlockCache _block = BlockCache.Get( blockId );
                 rptProperties.DataSource = GetTabs( _block.BlockType );
                 rptProperties.DataBind();
             }
@@ -233,6 +267,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void masterPage_OnSave( object sender, EventArgs e )
         {
+            bool reloadPage = false;
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
             if ( Page.IsValid )
             {
@@ -263,22 +298,59 @@ namespace RockWeb.Blocks.Core
                         block.Attributes.Add( CustomGridColumnsConfig.AttributeKey, null );
                     }
 
-                    block.SetAttributeValue( CustomGridColumnsConfig.AttributeKey, this.CustomGridColumnsConfigState.ToJson() );
+                    var customGridColumnsJSON = this.CustomGridColumnsConfigState.ToJson();
+                    if ( block.GetAttributeValue( CustomGridColumnsConfig.AttributeKey ) != customGridColumnsJSON )
+                    {
+                        block.SetAttributeValue( CustomGridColumnsConfig.AttributeKey, customGridColumnsJSON );
+
+                        // if the CustomColumns changed, reload the whole page so that we can avoid issues with columns changing between postbacks
+                        reloadPage = true;
+                    }
                 }
                 else
                 {
                     if ( block.Attributes.Any( a => a.Key == CustomGridColumnsConfig.AttributeKey ) )
                     {
+                        if ( block.GetAttributeValue( CustomGridColumnsConfig.AttributeKey ) != null )
+                        {
+                            // if the CustomColumns were removed, reload the whole page so that we can avoid issues with columns changing between postbacks
+                            reloadPage = true;
+                        }
+
                         block.SetAttributeValue( CustomGridColumnsConfig.AttributeKey, null );
                     }
                 }
 
+                if ( tglEnableStickyHeader.Checked )
+                {
+                    if ( !block.Attributes.Any( a => a.Key == CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ) )
+                    {
+                        block.Attributes.Add( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, null );
+                    }
+                }
+
+                if ( block.GetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ).AsBoolean() != tglEnableStickyHeader.Checked )
+                {
+                    block.SetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, tglEnableStickyHeader.Checked.ToTrueFalse() );
+
+                    // if EnableStickyHeaders changed, reload the page
+                    reloadPage = true;
+                }
+
                 block.SaveAttributeValues( rockContext );
 
-                Rock.Web.Cache.BlockCache.Flush( block.Id );
+                StringBuilder scriptBuilder = new StringBuilder();
 
-                string script = string.Format( "window.parent.Rock.controls.modal.close('BLOCK_UPDATED:{0}');", blockId );
-                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
+                if ( reloadPage )
+                {
+                    scriptBuilder.AppendLine( "window.parent.location.reload();" );
+                }
+                else
+                {
+                    scriptBuilder.AppendLine( string.Format( "window.parent.Rock.controls.modal.close('BLOCK_UPDATED:{0}');", blockId ) );
+                }
+
+                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", scriptBuilder.ToString(), true );
             }
         }
 
@@ -319,7 +391,7 @@ namespace RockWeb.Blocks.Core
         {
             pnlAdvancedSettings.Visible = CurrentTab.Equals( "Advanced Settings" );
             pnlBasicProperty.Visible = CurrentTab.Equals( "Basic Settings" );
-            pnlCustomGridColumns.Visible = CurrentTab.Equals( "Custom Grid Columns" );
+            pnlCustomGridTab.Visible = CurrentTab.Equals( "Custom Grid Options" );
         }
 
         #endregion
@@ -332,7 +404,7 @@ namespace RockWeb.Blocks.Core
         private void BindCustomColumnsConfig()
         {
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-            BlockCache _block = BlockCache.Read( blockId );
+            BlockCache _block = BlockCache.Get( blockId );
 
             rptCustomGridColumns.DataSource = CustomGridColumnsConfigState.ColumnsConfig;
             rptCustomGridColumns.DataBind();

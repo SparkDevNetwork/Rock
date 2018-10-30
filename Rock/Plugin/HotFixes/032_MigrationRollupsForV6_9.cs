@@ -30,14 +30,17 @@ namespace Rock.Plugin.HotFixes
         public override void Up()
         {
             // DT: Update American Express Value for Pushpay
-            Sql( @"
-    UPDATE [DefinedValue] SET [Value] = 'Amex' WHERE [Guid] = '696A54E3-352C-49FB-88A1-BCDBD81AA9EC'
-" );
+            // Moved to core migration: 201711271827181_V7Rollup            
+//            Sql( @"
+//    UPDATE [DefinedValue] SET [Value] = 'Amex' WHERE [Guid] = '696A54E3-352C-49FB-88A1-BCDBD81AA9EC'
+//" );
             // MP: CurrencyType Unknown
-            RockMigrationHelper.UpdateDefinedValue( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, "Unknown", "The currency type is unknown. For example, it might have been imported from a system that doesn't indicate currency type.", "56C9AE9C-B5EB-46D5-9650-2EF86B14F856", false );
+            // moved to 201711141624083_CommunicationTemplateCssInliningEnabled.cs
+            //RockMigrationHelper.UpdateDefinedValue( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, "Unknown", "The currency type is unknown. For example, it might have been imported from a system that doesn't indicate currency type.", "56C9AE9C-B5EB-46D5-9650-2EF86B14F856", false );
 
             // MP: Add Marital Statuses
-            RockMigrationHelper.UpdateDefinedValue( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Divorced", "Used when the individual is divorced.", "3B689240-24C2-434B-A7B9-A4A6CBA7928C" );
+            // moved to 201704031947125_Fundraising
+            //RockMigrationHelper.UpdateDefinedValue( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Divorced", "Used when the individual is divorced.", "3B689240-24C2-434B-A7B9-A4A6CBA7928C" );
 
             // JE - Typo Fix
             // Added to core: 201707241828445_PersonAliasNullableId

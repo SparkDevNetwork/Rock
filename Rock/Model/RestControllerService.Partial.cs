@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -34,8 +35,6 @@ namespace Rock.Model
         {
             var rockContext = new RockContext();
             var restControllerService = new RestControllerService( rockContext );
-
-            var existingControllers = restControllerService.Queryable( "Actions" ).ToList();
             var discoveredControllers = new List<RestController>();
 
             var config = GlobalConfiguration.Configuration;
@@ -115,7 +114,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override Guid? GetGuid( int id )
         {
-            var cacheItem = Rock.Web.Cache.RestControllerCache.Read( id );
+            var cacheItem = RestControllerCache.Get( id );
             if ( cacheItem != null )
             {
                 return cacheItem.Guid;

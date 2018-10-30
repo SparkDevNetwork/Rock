@@ -20,53 +20,7 @@
                 <Label Style="{StaticResource labelStyle}">Rock URL</Label>
                 <TextBox Name="txtRockUrl"
                          Style="{StaticResource textboxStyleUrl}" />
-
-                <Label Style="{StaticResource labelStyle}">Logo</Label>
-                <StackPanel Orientation="Horizontal">
-
-                    <Label Name="lblImageError"
-                           Width="300"
-                           Height="100"
-                           Background="Gray"
-                           HorizontalContentAlignment="Center"
-                           VerticalContentAlignment="Center"
-                           FontSize="30"
-                           Margin="6"
-                           Style="{StaticResource labelStyleIcon}"
-                           Content="&#xf059;"
-                           ToolTip="Error">
-                    </Label>
-                    <Image Width="300"
-                           Height="100"
-                           Name="imgLogo"
-                           HorizontalAlignment="Left"
-                           Source="logo.jpg"
-                           Margin="6">
-                    </Image>
-                    <Label Name="lblLogoHelp"
-                           Width="320"
-                           Style="{StaticResource labelStyleAlertInfo}"
-                           Content="Select a logo image to use instead of the default logo.jpg in the layout. An image size of 600 x 200px works best. ">
-                    </Label>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <TextBox Name="txtLogoFile"
-                             Style="{StaticResource textboxStyleUrl}"
-                             Margin="6,0,6,0"
-                             IsReadOnly="True" />
-                    <Button Style="{StaticResource buttonStyle}"
-                            Margin="0,3,0,0"
-                            Name="btnSelectLogoFile"
-                            Content="Browse ..."
-                            HorizontalAlignment="Left"
-                            Click="btnSelectLogoFile_Click" />
-                    <Button Style="{StaticResource buttonStyle}"
-                            Margin="4,3,0,0"
-                            Name="btnSelectDefaultLogo"
-                            Content="Use Default"
-                            HorizontalAlignment="Left"
-                            Click="btnSelectDefaultLogo_Click" />
-                </StackPanel>
+                
                 <Label Name="lblAlert"
                        Style="{StaticResource labelStyleAlert}"
                        Content="ERROR: ">

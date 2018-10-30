@@ -17,10 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
+using System.Data.Entity;
 
 namespace Rock.Field.Types
 {
@@ -50,7 +52,7 @@ namespace Rock.Field.Types
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var financialGateway = new FinancialGatewayService( rockContext ).Get( financialGatewayGuid.Value );
+                    var financialGateway = new FinancialGatewayService( rockContext ).GetNoTracking( financialGatewayGuid.Value );
                     if ( financialGateway != null )
                     {
                         formattedValue = financialGateway.Name;
@@ -80,53 +82,54 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Reads new values entered by the user for the field
+        /// Gets the value of the selected FinancialGateway as the FinancialGateway.Guid as a string
         /// </summary>
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues"></param>
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is FinancialGatewayPicker )
+            var picker = control as FinancialGatewayPicker;
+            if ( picker != null )
             {
-                int id = int.MinValue;
-                if ( Int32.TryParse( ( (FinancialGatewayPicker)control ).SelectedValue, out id ) )
+                int? itemId = picker.SelectedValue.AsIntegerOrNull();
+                Guid? itemGuid = null;
+                if ( itemId.HasValue)
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        var financialGateway = new FinancialGatewayService( rockContext ).Get( id );
-                        if ( financialGateway != null )
-                        {
-                            return financialGateway.Guid.ToString();
-                        }
+                        itemGuid = new FinancialGatewayService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
+
+                return itemGuid?.ToString() ?? string.Empty;
             }
+
             return null;
         }
 
         /// <summary>
-        /// Sets the value.
+        /// Sets the value where the value is a FinancialGateway.Guid (or null)
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="configurationValues"></param>
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            Guid financialGatewayGuid = Guid.Empty;
-            if (Guid.TryParse( value, out financialGatewayGuid ))
+            var picker = control as FinancialGatewayPicker;
+            if ( picker != null )
             {
-                if ( control != null && control is FinancialGatewayPicker )
+                int? itemId = null;
+                Guid? itemGuid = value.AsGuidOrNull();
+                if ( itemGuid.HasValue )
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        var financialGateway = new FinancialGatewayService( rockContext ).Get( financialGatewayGuid );
-                        if ( financialGateway != null )
-                        {
-                            ( (FinancialGatewayPicker)control ).SetValue( financialGateway.Id.ToString() );
-                        }
+                        itemId = new FinancialGatewayService( rockContext ).Queryable().Where( a => a.Guid == itemGuid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
                     }
                 }
+
+                picker.SetValue( itemId );
             }
         }
 

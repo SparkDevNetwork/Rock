@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 
 <script runat="server">
-    
+
     // keep code below to call base class init method
 
     /// <summary>
@@ -13,8 +13,8 @@
     protected override void OnInit( EventArgs e )
     {
         base.OnInit( e );
-    }    
-    
+    }
+
 </script>
 
 <html class="no-js">
@@ -22,8 +22,8 @@
 
     <meta charset="utf-8">
     <title></title>
-    
-    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js" ) %>"></script>
+
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
 
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -46,7 +46,7 @@
 
         <!-- Page Header -->
         <header>
-        
+
             <!-- Brand Bar -->
             <nav class="navbar navbar-inverse navbar-static-top">
                 <div class="container">
@@ -55,26 +55,26 @@
                             <i class="fa fa-bars"></i>
                         </button>
                         <Rock:Zone Name="Header" runat="server" />
-			        </div>	
-                    <div class="navbar-collapse collapse">   
+			        </div>
+                    <div class="navbar-collapse collapse">
                         <!-- Main Navigation -->
                         <div class="pull-right">
                             <Rock:Zone Name="Login" runat="server" />
                         </div>
                         <Rock:Zone Name="Navigation" runat="server" />
-			        </div>	
+			        </div>
                 </div>
             </nav>
 
         </header>
-		
+
         <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
 
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
 
 	    <footer>
             <div class="container">
-		    
+
                 <hr />
 
                 <div class="row">
@@ -85,18 +85,14 @@
 
             </div>
 	    </footer>
-        
+
         <%-- controls for scriptmanager and update panel --%>
         <asp:ScriptManager ID="sManager" runat="server"/>
         <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
 		        <ProgressTemplate>
 		            <div class="updateprogress-status">
                         <div class="spinner">
-                          <div class="rect1"></div>
-                          <div class="rect2"></div>
-                          <div class="rect3"></div>
-                          <div class="rect4"></div>
-                          <div class="rect5"></div>
+                          <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
                         </div>
                     </div>
                     <div class="updateprogress-bg modal-backdrop"></div>

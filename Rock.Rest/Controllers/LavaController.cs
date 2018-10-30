@@ -62,7 +62,7 @@ namespace Rock.Rest.Controllers
 
                 foreach ( var additionalMergeObject in additionalMergeObjectList )
                 {
-                    var entityTypeType = EntityTypeCache.Read( additionalMergeObject.EntityTypeId )?.GetEntityType();
+                    var entityTypeType = EntityTypeCache.Get( additionalMergeObject.EntityTypeId )?.GetEntityType();
                     if ( entityTypeType != null )
                     {
                         var dbContext = Rock.Reflection.GetDbContextForEntityType( entityTypeType );

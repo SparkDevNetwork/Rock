@@ -20,10 +20,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Security;
-
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -72,7 +71,7 @@ namespace Rock.Model
         /// <param name="password">A <see cref="System.String"/> representing the new password.</param>
         public void SetPassword( UserLogin user, string password )
         {
-            var entityType = EntityTypeCache.Read( user.EntityTypeId ?? 0);
+            var entityType = EntityTypeCache.Get( user.EntityTypeId ?? 0);
 
             var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
             if ( authenticationComponent == null || !authenticationComponent.IsActive )
@@ -94,7 +93,7 @@ namespace Rock.Model
             int passwordAttemptWindow = 0;
             int maxInvalidPasswordAttempts = int.MaxValue;
 
-            var globalAttributes = GlobalAttributesCache.Read();
+            var globalAttributes = GlobalAttributesCache.Get();
             if ( !Int32.TryParse( globalAttributes.GetValue( "PasswordAttemptWindow" ), out passwordAttemptWindow ) )
                 passwordAttemptWindow = 0;
             if ( !Int32.TryParse( globalAttributes.GetValue( "MaxInvalidPasswordAttempts" ), out maxInvalidPasswordAttempts ) )
@@ -249,7 +248,7 @@ namespace Rock.Model
         /// <returns>A <see cref="System.Boolean"/> value that indicates if the password is valid. <c>true</c> if valid; otherwise <c>false</c>.</returns>
         public static bool IsPasswordValid( string password )
         {
-            var globalAttributes = GlobalAttributesCache.Read();
+            var globalAttributes = GlobalAttributesCache.Get();
             string passwordRegex = globalAttributes.GetValue( "PasswordRegularExpression" );
             if ( string.IsNullOrEmpty( passwordRegex ) )
             {
@@ -268,7 +267,7 @@ namespace Rock.Model
         /// <returns>A user friendly description of the password rules.</returns>
         public static string FriendlyPasswordRules()
         {
-            var globalAttributes = GlobalAttributesCache.Read();
+            var globalAttributes = GlobalAttributesCache.Get();
             string passwordRegex = globalAttributes.GetValue( "PasswordRegexFriendlyDescription" );
             if ( string.IsNullOrEmpty( passwordRegex ) )
             {
@@ -313,7 +312,7 @@ namespace Rock.Model
             {
                 var userLoginService = new UserLoginService( rockContext );
 
-                var entityType = EntityTypeCache.Read( entityTypeId );
+                var entityType = EntityTypeCache.Get( entityTypeId );
                 if ( entityType != null )
                 {
                     UserLogin user = userLoginService.GetByUserName( username );
@@ -343,10 +342,10 @@ namespace Rock.Model
                     userLoginService.Add( user );
                     rockContext.SaveChanges();
 
-                    var historyCategory = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), rockContext );
+                    var historyCategory = CategoryCache.Get( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), rockContext );
                     if ( historyCategory != null )
                     {
-                        var changes = new List<string>();
+                        var changes = new History.HistoryChangeList();
                         History.EvaluateChange( changes, "User Login", string.Empty, username );
                         HistoryService.SaveChanges( rockContext, typeof( Person ), historyCategory.Guid, person.Id, changes );
                     }
@@ -418,20 +417,21 @@ namespace Rock.Model
 
                     if ( personId.HasValue )
                     {
-                        var summary = new System.Text.StringBuilder();
+                        var relatedDataBuilder = new System.Text.StringBuilder();
+                        int? relatedEntityTypeId = null;
+                        int? relatedEntityId = null;
+
                         if ( impersonated )
                         {
-                            summary.Append( "Impersonated user logged in" );
-
                             var impersonatedByUser = HttpContext.Current?.Session["ImpersonatedByUser"] as UserLogin;
+
+                            relatedEntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
+                            relatedEntityId = impersonatedByUser?.PersonId;
+                            
                             if ( impersonatedByUser != null )
                             {
-                                summary.Append( $" ( impersonated by { impersonatedByUser.Person.FullName } ) " );
+                                relatedDataBuilder.Append( $" impersonated by { impersonatedByUser.Person.FullName }" );
                             }
-                        }
-                        else
-                        {
-                            summary.AppendFormat( "User logged in with <span class='field-name'>{0}</span> username", userName );
                         }
                         
                         if ( HttpContext.Current != null && HttpContext.Current.Request != null )
@@ -442,27 +442,20 @@ namespace Rock.Model
                             Regex returnurlRegEx = new Regex( @"returnurl=([^&]*)" );
                             cleanUrl = returnurlRegEx.Replace( cleanUrl, "returnurl=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
 
-                            summary.AppendFormat( ", to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
+                            relatedDataBuilder.AppendFormat( " to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
                                 cleanUrl, HttpContext.Current.Request.UserHostAddress );
                         }
 
-                        summary.Append( "." );
+                        var historyChangeList = new History.HistoryChangeList();
+                        var historyChange = historyChangeList.AddChange( History.HistoryVerb.Login, History.HistoryChangeType.Record, userName );
 
-                        var historyService = new HistoryService( rockContext );
-                        var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-                        var activityCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), rockContext ).Id;
-
-                        historyService.Add( new History
+                        if ( relatedDataBuilder.Length > 0 )
                         {
-                            EntityTypeId = personEntityTypeId,
-                            CategoryId = activityCategoryId,
-                            EntityId = personId.Value,
-                            Summary = summary.ToString(),
-                            Verb = "LOGIN"
-                        } );
-                    }
+                            historyChange.SetRelatedData( relatedDataBuilder.ToString(), null, null );
+                        }
 
-                    rockContext.SaveChanges();
+                        HistoryService.SaveChanges( rockContext, typeof( Rock.Model.Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), personId.Value, historyChangeList, true );
+                    }
                 }
             }
         }

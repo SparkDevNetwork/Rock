@@ -69,9 +69,10 @@ BEGIN
 			SELECT 
 				A.[PersonAliasId],
 				A.[CampusId],
-				A.[ScheduleId]
+				O.[ScheduleId]
  			FROM [Attendance] A
-			INNER JOIN @GroupTbl G ON G.[Id] = A.[GroupId]
+			INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
+			INNER JOIN @GroupTbl G ON G.[Id] = O.[GroupId]
 			WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
 			AND [DidAttend] = 1
 		) A
@@ -94,12 +95,13 @@ BEGIN
 		    P.[Id],
 		    P.[NickName],
 		    P.[LastName],
+			P.[Gender],
 		    P.[Email],
             P.[GivingId],
-		    P.[BirthDate],
+		 P.[BirthDate],
             P.[ConnectionStatusValueId]
 		FROM @PersonIdTbl M
-	 INNER JOIN [Person] P ON P.[Id] = M.[Id]
+	    INNER JOIN [Person] P ON P.[Id] = M.[Id]
 
     END
     ELSE
@@ -116,6 +118,7 @@ BEGIN
 		        C.[Id],
 		        C.[NickName],
 		        C.[LastName],
+				C.[Gender],
 		        C.[Email],
                 C.[GivingId],
 		        C.[BirthDate],
@@ -148,6 +151,7 @@ BEGIN
 		        A.[Id],
 		        A.[NickName],
 		        A.[LastName],
+				A.[Gender],
 		        A.[Email],
                 A.[GivingId] as [GivingId],
 		        A.[BirthDate],
@@ -225,12 +229,13 @@ BEGIN
 				SELECT 
 					A.[PersonAliasId],
 					A.[CampusId],
-					A.[GroupId],
-					A.[ScheduleId],
-					A.[LocationId],
+					O.[GroupId],
+					O.[ScheduleId],
+					O.[LocationId],
 					A.[StartDateTime]
  				FROM [Attendance] A
-				INNER JOIN @GroupTbl G ON G.[Id] = A.[GroupId]
+				INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
+				INNER JOIN @GroupTbl G ON G.[Id] = O.[GroupId]
 				WHERE [StartDateTime] < @StartDate
 				AND [DidAttend] = 1
 			) A

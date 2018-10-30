@@ -46,18 +46,6 @@ namespace RockWeb.Blocks.Store
     [LinkedPage( "Detail Page", "Page reference to use for the detail page.", false, "", "", 4 )]
     public partial class PromoListLava : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
-
         #region Base Control Methods
 
         //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)

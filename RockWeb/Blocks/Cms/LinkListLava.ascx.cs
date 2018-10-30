@@ -33,7 +33,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// Displays a lit of links.
+    /// Displays a list of links.
     /// </summary>
     [DisplayName( "Link List Lava" )]
     [Category( "CMS" )]
@@ -110,10 +110,10 @@ namespace RockWeb.Blocks.Cms
 
             foreach ( var securityField in gLinks.Columns.OfType<SecurityField>() )
             {
-                securityField.EntityTypeId = EntityTypeCache.Read( typeof( DefinedValue ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( DefinedValue ) ).Id;
             }
 
-            _definedType = DefinedTypeCache.Read( GetAttributeValue( "DefinedType" ).AsGuid() );
+            _definedType = DefinedTypeCache.Get( GetAttributeValue( "DefinedType" ).AsGuid() );
         }
 
         /// <summary>
@@ -219,9 +219,6 @@ namespace RockWeb.Blocks.Cms
 
                     service.Delete( definedValue );
                     rockContext.SaveChanges();
-
-                    DefinedTypeCache.Flush( definedValue.DefinedTypeId );
-                    DefinedValueCache.Flush( definedValue.Id );
                 }
             }
 
@@ -241,14 +238,7 @@ namespace RockWeb.Blocks.Cms
                 var definedValues = service.Queryable().Where( a => a.DefinedTypeId == _definedType.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Value );
                 var changedIds = service.Reorder( definedValues.ToList(), e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
-
-                foreach ( int id in changedIds )
-                {
-                    Rock.Web.Cache.DefinedValueCache.Flush( id );
-                }
             }
-
-            DefinedTypeCache.Flush( _definedType.Id );
 
             BindGrid();
         }
@@ -351,9 +341,6 @@ namespace RockWeb.Blocks.Cms
                     definedValue.SaveAttributeValues( rockContext );
 
                 } );
-
-                Rock.Web.Cache.DefinedTypeCache.Flush( definedValue.DefinedTypeId );
-                Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
             }
 
             HideDialog();
@@ -454,19 +441,19 @@ namespace RockWeb.Blocks.Cms
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var entityType = EntityTypeCache.Read( "Rock.Model.DefinedValue");
+                    var entityType = EntityTypeCache.Get( "Rock.Model.DefinedValue");
                     var definedType = new DefinedTypeService( rockContext ).Get( _definedType.Id );
                     if ( definedType != null && entityType != null )
                     {
                         var attributeService = new AttributeService( rockContext );
                         var attributes = new AttributeService( rockContext )
-                            .Get( entityType.Id, "DefinedTypeId", definedType.Id.ToString() )
+                            .GetByEntityTypeQualifier( entityType.Id, "DefinedTypeId", definedType.Id.ToString(), false )
                             .ToList();
 
-                        // Verify (and create if neccessary) the "Is Link" attribute
+                        // Verify (and create if necessary) the "Is Link" attribute
                         if ( !attributes.Any( a => a.Key == "IsLink" ) )
                         {
-                            var fieldType = FieldTypeCache.Read( Rock.SystemGuid.FieldType.BOOLEAN );
+                            var fieldType = FieldTypeCache.Get( Rock.SystemGuid.FieldType.BOOLEAN );
                             if ( entityType != null && fieldType != null )
                             {
                                 var attribute = new Rock.Model.Attribute();
@@ -492,12 +479,6 @@ namespace RockWeb.Blocks.Cms
                                 attribute.AttributeQualifiers.Add( qualifier2 );
 
                                 rockContext.SaveChanges();
-
-                                DefinedTypeCache.Flush( definedType.Id );
-                                foreach( var dv in definedType.DefinedValues )
-                                {
-                                    DefinedValueCache.Flush( dv.Id );
-                                }
                             }
                         }
 

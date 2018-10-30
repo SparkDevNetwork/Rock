@@ -94,7 +94,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( pnlDetails.Visible )
                 {
-                    var storageEntityType = EntityTypeCache.Read( cpStorageType.SelectedValue.AsGuid() );
+                    var storageEntityType = EntityTypeCache.Get( cpStorageType.SelectedValue.AsGuid() );
                     if ( storageEntityType != null )
                     {
                         var binaryFileType = new BinaryFileType { StorageEntityTypeId = storageEntityType.Id };
@@ -187,7 +187,7 @@ namespace RockWeb.Blocks.Core
             AttributeService attributeService = new AttributeService( rockContext );
 
             string qualifierValue = binaryFileType.Id.ToString();
-            var qryBinaryFileAttributes = attributeService.GetByEntityTypeId( new BinaryFile().TypeId ).AsQueryable()
+            var qryBinaryFileAttributes = attributeService.GetByEntityTypeId( new BinaryFile().TypeId, true ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "BinaryFileTypeId", StringComparison.OrdinalIgnoreCase )
                 && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
@@ -333,16 +333,16 @@ namespace RockWeb.Blocks.Core
                 binaryFileType = binaryFileTypeService.Get( binaryFileType.Guid );
 
                 /* Take care of Binary File Attributes */
-                var entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( BinaryFile ) ).Id;
+                var entityTypeId = EntityTypeCache.Get( typeof( BinaryFile ) ).Id;
 
                 // delete BinaryFileAttributes that are no longer configured in the UI
-                var attributes = attributeService.Get( entityTypeId, "BinaryFileTypeId", binaryFileType.Id.ToString() );
+                var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, "BinaryFileTypeId", binaryFileType.Id.ToString(), true );
                 var selectedAttributeGuids = BinaryFileAttributesState.Select( a => a.Guid );
                 foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
                 {
-                    Rock.Web.Cache.AttributeCache.Flush( attr.Id );
                     attributeService.Delete( attr );
                 }
+
                 rockContext.SaveChanges();
 
                 // add/update the BinaryFileAttributes that are assigned in the UI
@@ -355,8 +355,6 @@ namespace RockWeb.Blocks.Core
                 binaryFileType.SaveAttributeValues( rockContext );
 
             } );
-
-            AttributeCache.FlushEntityAttributes();
 
             NavigateToParentPage();
         }
@@ -399,7 +397,7 @@ namespace RockWeb.Blocks.Core
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtBinaryFileAttributes.ActionTitle = ActionTitle.Add( "attribute for binary files of type " + tbName.Text );
             }
             else

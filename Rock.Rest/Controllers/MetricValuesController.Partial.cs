@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
+using System.Web.Http;
 using System.Web.Http.OData;
 using Rock.Data;
 using Rock.Model;
@@ -158,28 +159,16 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the name of the series.
+        /// Gets the name of the series partition using POST
         /// </summary>
         /// <param name="metricId">The metric identifier.</param>
-        /// <param name="seriesId">The series identifier.</param>
+        /// <param name="metricValuePartitionEntityIdList">The metric value partition entity identifier list.</param>
         /// <returns></returns>
-        [System.Web.Http.Route( "api/MetricValues/GetSeriesName/{metricId}/{seriesId}" )]
-        [Obsolete( "Use api/MetricValues/GetSeriesPartitionName/{metricId}/{metricValuePartitionEntityIds}" )]
-        public string GetSeriesName( int metricId, int seriesId )
+        [System.Web.Http.Route( "api/MetricValues/GetSeriesPartitionName/{metricId}" )]
+        [HttpPost]
+        public string GetSeriesPartitionName( int metricId, [FromBody] List<string> metricValuePartitionEntityIdList )
         {
-            return string.Format( "Series{0}", seriesId );
-        }
-
-        /// <summary>
-        /// Gets the name of the series partition.
-        /// </summary>
-        /// <param name="metricId">The metric identifier.</param>
-        /// <param name="metricValuePartitionEntityIds">The metric value partition as a comma-delimited list of EntityTypeId|EntityId.</param>
-        /// <returns></returns>
-        [System.Web.Http.Route( "api/MetricValues/GetSeriesPartitionName/{metricId}/{metricValuePartitionEntityIds}" )]
-        public string GetSeriesPartitionName( int metricId, string metricValuePartitionEntityIds )
-        {
-            var entityTypeEntityIdList = metricValuePartitionEntityIds.Split( ',' ).Select( a => a.Split( '|' ) ).Select( a =>
+            var entityTypeEntityIdList = metricValuePartitionEntityIdList.Select( a => a.Split( '|' ) ).Select( a =>
                 new
                 {
                     EntityTypeId = a[0].AsIntegerOrNull(),
@@ -194,12 +183,12 @@ namespace Rock.Rest.Controllers
             {
                 if ( entityTypeEntity.EntityTypeId.HasValue && entityTypeEntity.EntityId.HasValue )
                 {
-                    var entityTypeCache = EntityTypeCache.Read( entityTypeEntity.EntityTypeId.Value );
+                    var entityTypeCache = EntityTypeCache.Get( entityTypeEntity.EntityTypeId.Value );
                     if ( entityTypeCache != null )
                     {
                         if ( entityTypeCache.Id == EntityTypeCache.GetId<Campus>() )
                         {
-                            var campus = CampusCache.Read( entityTypeEntity.EntityId.Value );
+                            var campus = CampusCache.Get( entityTypeEntity.EntityId.Value );
                             if ( campus != null )
                             {
                                 seriesPartitionValues.Add( campus.Name );
@@ -207,7 +196,7 @@ namespace Rock.Rest.Controllers
                         }
                         else if ( entityTypeCache.Id == EntityTypeCache.GetId<DefinedValue>() )
                         {
-                            var definedValue = DefinedValueCache.Read( entityTypeEntity.EntityId.Value );
+                            var definedValue = DefinedValueCache.Get( entityTypeEntity.EntityId.Value );
                             if ( definedValue != null )
                             {
                                 seriesPartitionValues.Add( definedValue.ToString() );

@@ -27,8 +27,9 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Security;
+using System.Web;
 
 namespace Rock.Jobs
 {
@@ -70,6 +71,11 @@ namespace Rock.Jobs
                 systemEmail = emailService.Get( systemEmailGuid.Value );
             }
 
+            if (systemEmail == null)
+            {
+                throw new Exception( "Expiring credit card email is missing." );
+            }
+
             // Fetch the configured Workflow once if one was set, we'll use it later.
             Guid? workflowGuid = dataMap.GetString( "Workflow" ).AsGuidOrNull();
             WorkflowTypeCache workflowType = null;
@@ -77,7 +83,7 @@ namespace Rock.Jobs
 
             if ( workflowGuid != null )
             {
-                workflowType = WorkflowTypeCache.Read( workflowGuid.Value );
+                workflowType = WorkflowTypeCache.Get( workflowGuid.Value );
             }
 
             var qry = new FinancialScheduledTransactionService( rockContext )
@@ -91,60 +97,88 @@ namespace Rock.Jobs
             int month = now.Month;
             int year = now.Year;
             int counter = 0;
+            var errors = new List<string>();
+
             foreach ( var transaction in qry )
             {
-                int expirationMonthDecrypted = Int32.Parse( Encryption.DecryptString( transaction.FinancialPaymentDetail.ExpirationMonthEncrypted ) );
-                int expirationYearDecrypted = Int32.Parse( Encryption.DecryptString( transaction.FinancialPaymentDetail.ExpirationYearEncrypted ) );
-                string acctNum = string.Empty;
+                int? expirationMonthDecrypted = Encryption.DecryptString( transaction.FinancialPaymentDetail.ExpirationMonthEncrypted ).AsIntegerOrNull();
+                int? expirationYearDecrypted = Encryption.DecryptString( transaction.FinancialPaymentDetail.ExpirationYearEncrypted ).AsIntegerOrNull();
+                if ( expirationMonthDecrypted.HasValue && expirationMonthDecrypted.HasValue )
+                { 
+                    string acctNum = string.Empty;
 
-                if ( !string.IsNullOrEmpty( transaction.FinancialPaymentDetail.AccountNumberMasked ) && transaction.FinancialPaymentDetail.AccountNumberMasked.Length >= 4 )
-                {
-                    acctNum = transaction.FinancialPaymentDetail.AccountNumberMasked.Substring( transaction.FinancialPaymentDetail.AccountNumberMasked.Length - 4 );
-                }
-
-                int warningYear = expirationYearDecrypted;
-                int warningMonth = expirationMonthDecrypted - 1;
-                if ( warningMonth == 0 )
-                {
-                    warningYear -= 1;
-                    warningMonth = 12;
-                }
-
-                string warningDate = warningMonth.ToString() + warningYear.ToString();
-                string currentMonthString = month.ToString() + year.ToString();
-
-                if ( warningDate == currentMonthString )
-                {
-                    // as per ISO7813 https://en.wikipedia.org/wiki/ISO/IEC_7813
-                    var expirationDate = string.Format( "{0:D2}/{1:D2}", expirationMonthDecrypted, expirationYearDecrypted );
-
-                    var recipients = new List<RecipientData>();
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                    var person = transaction.AuthorizedPersonAlias.Person;
-                    mergeFields.Add( "Person", person );
-                    mergeFields.Add( "Card", acctNum );
-                    mergeFields.Add( "Expiring", expirationDate );
-                    recipients.Add( new RecipientData( person.Email, mergeFields ) );
-
-                    var emailMessage = new RockEmailMessage( systemEmail.Guid );
-                    emailMessage.SetRecipients( recipients );
-                    emailMessage.Send();
-
-                    // Start workflow for this person
-                    if ( workflowType != null )
+                    if ( !string.IsNullOrEmpty( transaction.FinancialPaymentDetail.AccountNumberMasked ) && transaction.FinancialPaymentDetail.AccountNumberMasked.Length >= 4 )
                     {
-                        Dictionary<string, string> attributes = new Dictionary<string, string>();
-                        attributes.Add( "Person", transaction.AuthorizedPersonAlias.Guid.ToString() );
-                        attributes.Add( "Card", acctNum );
-                        attributes.Add( "Expiring", expirationDate );
-                        StartWorkflow( workflowService, workflowType, attributes, string.Format( "{0} (scheduled transaction Id: {1})", person.FullName, transaction.Id ) );
+                        acctNum = transaction.FinancialPaymentDetail.AccountNumberMasked.Substring( transaction.FinancialPaymentDetail.AccountNumberMasked.Length - 4 );
                     }
 
-                    counter++;
+                    int warningYear = expirationYearDecrypted.Value;
+                    int warningMonth = expirationMonthDecrypted.Value - 1;
+                    if ( warningMonth == 0 )
+                    {
+                        warningYear -= 1;
+                        warningMonth = 12;
+                    }
+
+                    string warningDate = warningMonth.ToString() + warningYear.ToString();
+                    string currentMonthString = month.ToString() + year.ToString();
+
+                    if ( warningDate == currentMonthString )
+                    {
+                        // as per ISO7813 https://en.wikipedia.org/wiki/ISO/IEC_7813
+                        var expirationDate = string.Format( "{0:D2}/{1:D2}", expirationMonthDecrypted, expirationYearDecrypted );
+
+                        var recipients = new List<RecipientData>();
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                        var person = transaction.AuthorizedPersonAlias.Person;
+
+                        if ( !person.IsEmailActive || person.Email.IsNullOrWhiteSpace() || person.EmailPreference == EmailPreference.DoNotEmail )
+                        {
+                            continue;
+                        }
+
+                        mergeFields.Add( "Person", person );
+                        mergeFields.Add( "Card", acctNum );
+                        mergeFields.Add( "Expiring", expirationDate );
+                        recipients.Add( new RecipientData( person.Email, mergeFields ) );
+
+                        var emailMessage = new RockEmailMessage( systemEmail.Guid );
+                        emailMessage.SetRecipients( recipients );
+
+                        var emailErrors = new List<string>();
+                        emailMessage.Send(out emailErrors);
+                        errors.AddRange( emailErrors );
+
+                        // Start workflow for this person
+                        if ( workflowType != null )
+                        {
+                            Dictionary<string, string> attributes = new Dictionary<string, string>();
+                            attributes.Add( "Person", transaction.AuthorizedPersonAlias.Guid.ToString() );
+                            attributes.Add( "Card", acctNum );
+                            attributes.Add( "Expiring", expirationDate );
+                            StartWorkflow( workflowService, workflowType, attributes, string.Format( "{0} (scheduled transaction Id: {1})", person.FullName, transaction.Id ) );
+                        }
+
+                        counter++;
+                    }
                 }
             }
 
             context.Result = string.Format( "{0} scheduled credit card transactions were examined with {1} notice(s) sent.", qry.Count(), counter );
+
+            if ( errors.Any() )
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine();
+                sb.Append( string.Format( "{0} Errors: ", errors.Count() ) );
+                errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
+                string errorMessage = sb.ToString();
+                context.Result += errorMessage;
+                var exception = new Exception( errorMessage );
+                HttpContext context2 = HttpContext.Current;
+                ExceptionLogService.LogException( exception, context2 );
+                throw exception;
+            }
         }
 
         /// <summary>
@@ -167,7 +201,7 @@ namespace Rock.Jobs
                     workflow.SetAttributeValue( attribute.Key, attribute.Value );
                 }
 
-                // lauch workflow
+                // launch workflow
                 List<string> workflowErrors;
                 workflowService.Process( workflow, out workflowErrors );
             }

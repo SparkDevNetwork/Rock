@@ -177,6 +177,8 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this schedule is currently active; otherwise, <c>false</c>.
         /// </value>
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use WasScheduleActive( DateTime time ) method instead.", false )]
         public virtual bool IsScheduleActive
         {
             get
@@ -191,6 +193,8 @@ namespace Rock.Model
         /// <value>
         ///  A <see cref="System.Boolean"/> that is  <c>true</c> if Check-in is currently active for this Schedule ; otherwise, <c>false</c>.
         /// </value>
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use WasCheckInActive( DateTime time ) method instead.", false )]
         public virtual bool IsCheckInActive
         {
             get
@@ -205,6 +209,8 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is schedule or checkin active; otherwise, <c>false</c>.
         /// </value>
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use WasScheduleOrCheckInActive( DateTime time ) method instead.", false )]
         public virtual bool IsScheduleOrCheckInActive
         {
             get
@@ -243,21 +249,43 @@ namespace Rock.Model
         /// <returns></returns>
         [NotMapped]
         [LavaInclude]
-        public virtual DateTime? NextStartDateTime 
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use GetNextStartDateTime( DateTime currentDateTime ) instead." )]
+        public virtual DateTime? NextStartDateTime
         {
             get
             {
-                if ( this.IsActive )
-                {
-                    var occurrences = GetScheduledStartTimes( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
-                    return occurrences.Min( o => ( DateTime? ) o );
-                }
-                else
-                {
-                    return null;
-                }
+                return GetNextStartDateTime( RockDateTime.Now );
             }
         }
+
+        /// <summary>
+        /// Gets the next start date time.
+        /// </summary>
+        /// <param name="currentDateTime">The current date time.</param>
+        /// <returns></returns>
+        public DateTime? GetNextStartDateTime( DateTime currentDateTime )
+        {
+            if ( this.IsActive )
+            {
+                var occurrences = GetScheduledStartTimes( currentDateTime, currentDateTime.AddYears( 1 ) );
+                return occurrences.Min( o => (DateTime?)o );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the first start date time.
+        /// </summary>
+        /// <value>
+        /// The first start date time.
+        /// </value>
+        [NotMapped]
+        [LavaInclude]
+        public virtual DateTime? FirstStartDateTime => GetFirstStartDateTime();
 
         /// <summary>
         /// Gets the first start date time this week.
@@ -369,7 +397,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
-        public DDay.iCal.Event GetCalenderEvent() 
+        public virtual DDay.iCal.Event GetCalenderEvent()  
         {
             return ScheduleICalHelper.GetCalenderEvent( iCalendarContent );
         }
@@ -390,7 +418,7 @@ namespace Rock.Model
                 var exclusionDates = new List<DateRange>();
                 if ( this.CategoryId.HasValue && this.CategoryId.Value > 0 )
                 {
-                    var category = CategoryCache.Read( this.CategoryId.Value );
+                    var category = CategoryCache.Get( this.CategoryId.Value );
                     if ( category != null )
                     {
                         exclusionDates = category.ScheduleExclusions
@@ -858,7 +886,7 @@ namespace Rock.Model
         #region consts
 
         /// <summary>
-        /// The "nth" names for DayName of Month (First, Secord, Third, Forth, Last)
+        /// The "nth" names for DayName of Month (First, Second, Third, Forth, Last)
         /// </summary>
         public static readonly Dictionary<int, string> NthNames = new Dictionary<int, string> { 
             {1, "First"}, 

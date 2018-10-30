@@ -21,12 +21,13 @@ using System.Linq;
 
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Data;
 using System.Collections.Generic;
 using System.Data;
 using System;
-using Rock.Web.Cache;
+using Rock.Security;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
 {
@@ -119,7 +120,7 @@ namespace Rock.Rest.Controllers
                 result.LastName = person.LastName;
             }
 
-            var purposeValue = DefinedValueCache.Read( definedValueGuid );
+            var purposeValue = DefinedValueCache.Get( definedValueGuid );
             result.Purpose = purposeValue.Value;
 
             // determine if person is in a group with this purpose
@@ -216,7 +217,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/PersonBadges/LastVisitOnSite/{personId}/{siteId}" )]
         public int GetLastVisitOnSite( int personId, int siteId )
         {
-            int channelMediumValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+            int channelMediumValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
 
             InteractionChannelService interactionChannelService = new InteractionChannelService( ( Rock.Data.RockContext ) Service.Context );
             var interactionChannel = interactionChannelService.Queryable()
@@ -239,6 +240,25 @@ namespace Rock.Rest.Controllers
             }
 
             return -1;
+        }
+
+        /// <summary>
+        /// Gets the Total number of personal devices
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/PersonBadges/PersonalDevicesNumber/{personId}" )]
+        public int GetPersonalDevicesNumber( int personId )
+        {
+            int channelMediumValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+
+            PersonalDeviceService personalDeviceService = new PersonalDeviceService( ( Rock.Data.RockContext ) Service.Context );
+            return personalDeviceService.Queryable()
+                                                .Where( a => a.PersonAlias.PersonId == personId )
+                                                .Count();
+
         }
 
         /// <summary>
@@ -275,6 +295,38 @@ namespace Rock.Rest.Controllers
             }
 
             return attendanceSummary.AsQueryable();
+        }
+
+        /// <summary>
+        /// Gets the the number of interactions in a given date range
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        /// <param name="interactionChannelId">The interaction channel identifier.</param>
+        /// <param name="delimitedDateRange">The delimited date range value.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/PersonBadges/InteractionsInRange/{personId}/{interactionChannelId}/{delimitedDateRange}" )]
+        public int InteractionsInRange( int personId, int interactionChannelId, string delimitedDateRange )
+        {
+            var interactionQry = new InteractionService( ( Rock.Data.RockContext ) Service.Context ).Queryable()
+                                                .Where( a => a.PersonAlias.PersonId == personId && a.InteractionComponent.ChannelId == interactionChannelId );
+
+            if ( !string.IsNullOrEmpty( delimitedDateRange ) )
+            {
+                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( delimitedDateRange );
+                if ( dateRange.Start.HasValue )
+                {
+                    interactionQry = interactionQry.Where( a => a.InteractionDateTime >= dateRange.Start.Value );
+                }
+
+                if ( dateRange.End.HasValue )
+                {
+                    interactionQry = interactionQry.Where( a => a.InteractionDateTime <= dateRange.End.Value );
+                }
+            }
+
+            return interactionQry.Count();
         }
 
         /// <summary>

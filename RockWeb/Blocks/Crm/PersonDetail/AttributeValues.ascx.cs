@@ -219,14 +219,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 if ( ViewMode == VIEW_MODE_EDIT )
                 {
-                    int personEntityTypeId = EntityTypeCache.Read( typeof( Person ) ).Id;
+                    int personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
 
                     var rockContext = new RockContext();
 
-                    var changes = new List<string>();
                     foreach ( int attributeId in AttributeList )
                     {
-                        var attribute = AttributeCache.Read( attributeId );
+                        var attribute = AttributeCache.Get( attributeId );
 
                         if ( Person != null &&
                             attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
@@ -237,38 +236,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 string originalValue = Person.GetAttributeValue( attribute.Key );
                                 string newValue = attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues );
                                 Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, newValue, rockContext );
-
-                                // Check for changes to write to history
-                                if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
-                                {
-                                    string formattedOriginalValue = string.Empty;
-                                    if ( !string.IsNullOrWhiteSpace( originalValue ) )
-                                    {
-                                        formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
-                                    }
-
-                                    string formattedNewValue = string.Empty;
-                                    if ( !string.IsNullOrWhiteSpace( newValue ) )
-                                    {
-                                        formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
-                                    }
-
-                                    
-                                    History.EvaluateChange( changes, attribute.Name, formattedOriginalValue, formattedNewValue, attribute.FieldType.Field.IsSensitive());
-                                }
                             }
                         }
-                    }
-
-                    if ( changes.Any() )
-                    {
-                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                            Person.Id, changes );
                     }
                 }
                 else if ( ViewMode == VIEW_MODE_ORDER && _canAdministrate )
                 {
-                    // Split and deliminate again to remove trailing delimiter
+                    // Split and delineate again to remove trailing delimiter
                     var attributeOrder = hfAttributeOrder.Value.SplitDelimitedValues().ToList().AsDelimited( "|" );
 
                     SetAttributeValue( "AttributeOrder", attributeOrder );
@@ -299,11 +273,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             AttributeList = new List<int>();
 
-            string categoryGuid = GetAttributeValue( "Category" );
-            Guid guid = Guid.Empty;
-            if ( Guid.TryParse( categoryGuid, out guid ) )
+            Guid? categoryGuid = GetAttributeValue( "Category" ).AsGuidOrNull();
+            if ( categoryGuid.HasValue )
             {
-                var category = CategoryCache.Read( guid );
+                var category = CategoryCache.Get( categoryGuid.Value );
                 if ( category != null )
                 {
                     if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
@@ -318,8 +291,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var orderOverride = new List<int>();
                     GetAttributeValue( "AttributeOrder" ).SplitDelimitedValues().ToList().ForEach( a => orderOverride.Add( a.AsInteger() ) );
 
-                    var orderedAttributeList = new AttributeService( new RockContext() ).GetByCategoryId( category.Id )
-                        .OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+                    var orderedAttributeList = new AttributeService( new RockContext() ).GetByCategoryId( category.Id, false )
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.Name )
+                        .ToCacheAttributeList();
 
                     foreach ( int attributeId in orderOverride )
                     {
@@ -357,7 +332,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 foreach ( int attributeId in AttributeList )
                 {
-                    var attribute = AttributeCache.Read( attributeId );
+                    var attribute = AttributeCache.Get( attributeId );
                     string attributeValue = Person.GetAttributeValue( attribute.Key );
                     string formattedValue = string.Empty;
 

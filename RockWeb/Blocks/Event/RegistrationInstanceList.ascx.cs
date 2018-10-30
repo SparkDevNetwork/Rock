@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Event
                     gInstances.ExportFilename = _template.Name;
                     gInstances.ShowConfirmDeleteDialog = false;
 
-                    // make sure they have Auth to edit the block OR edit to the Group
+                    // make sure they have Auth to edit the block OR edit to the template
                     bool canEditBlock = UserCanEdit || _template.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
                     gInstances.Actions.ShowAdd = canEditBlock;
                     gInstances.IsDeleteEnabled = canEditBlock;
@@ -332,7 +332,6 @@ namespace RockWeb.Blocks.Event
                     i.StartDateTime,
                     i.EndDateTime,
                     i.IsActive,
-                    Details = string.Empty,
                     Registrants = i.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Where( r => !r.OnWaitList ).Count(),
                     WaitList = i.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Where( r => r.OnWaitList ).Count()
                 } );

@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Checkin
             {
                 if ( _allowCampusFilter )
                 {
-                    var campus = CampusCache.Read( GetBlockUserPreference( "Campus" ).AsInteger() );
+                    var campus = CampusCache.Get( GetBlockUserPreference( "Campus" ).AsInteger() );
                     if ( campus != null )
                     {
                         bddlCampus.Title = campus.Name;
@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Checkin
         protected void bddlCampus_SelectionChanged( object sender, EventArgs e )
         {
             SetBlockUserPreference( "Campus", bddlCampus.SelectedValue );
-            var campus = CampusCache.Read( bddlCampus.SelectedValueAsInt() ?? 0 );
+            var campus = CampusCache.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
             bddlCampus.Title = campus != null ? campus.Name : "All Campuses";
 
             ShowContent();

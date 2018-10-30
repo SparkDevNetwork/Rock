@@ -328,7 +328,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the selected date.
+        /// Gets the selected date (the Year portion should be ignored since this only picks the Month and Day portion)
         /// </summary>
         /// <value>
         /// The selected date.

@@ -13,7 +13,7 @@
             
             <asp:Literal ID="lGroupEditPreHtml" runat="server" />
 
-            <asp:ValidationSummary ID="vsGroupEdit" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="vsGroupEdit" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
             
             <div class="row">
                 <div class="col-md-6">
@@ -85,7 +85,7 @@
             
             <asp:Literal ID="lGroupMemberEditPreHtml" runat="server" />
             
-            <asp:ValidationSummary ID="vsEditGroupMember" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="vsEditGroupMember" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
             <asp:CustomValidator ID="cvEditGroupMember" runat="server" Display="None" />
             <Rock:NotificationBox ID="nbGroupMemberErrorMessage" runat="server" NotificationBoxType="Danger" />
 
@@ -115,6 +115,12 @@
             <asp:Literal ID="lGroupMemberEditPostHtml" runat="server" />
 
         </asp:Panel>
+
+        <Rock:ModalDialog ID="mdConfirmDelete" runat="server" Title="Please Confirm" SaveButtonText="Yes" OnSaveClick="mdConfirmDelete_Click">
+            <Content>
+                <asp:Literal ID="lConfirmDeleteMsg" runat="server" />
+            </Content>
+        </Rock:ModalDialog>
 
     </ContentTemplate>
 </asp:UpdatePanel>

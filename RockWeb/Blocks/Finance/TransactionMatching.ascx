@@ -2,6 +2,11 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        <script>
+            $(function () {
+                $(".transaction-image a").fluidbox();
+            });
+        </script>
         <asp:HiddenField ID="hfBackNextHistory" runat="server" />
         <asp:HiddenField ID="hfHistoryPosition" runat="server" />
         <asp:HiddenField ID="hfTransactionId" runat="server" />
@@ -15,28 +20,28 @@
                     <asp:Literal ID="lPanelTitle" runat="server" /></h1>
 
                 <asp:Literal ID="lProgressBar" runat="server"></asp:Literal>
-                
+
                 <asp:LinkButton ID="btnFilter" runat="server" CssClass="btn btn-xs btn-default pull-right margin-l-sm" OnClick="btnFilter_Click"><i class="fa fa-gear" title="Filter Accounts"></i></asp:LinkButton>
-                
-                <Rock:RockControlWrapper ID="rcwAddNewBusiness" runat="server"  Visible="false">
+
+                <Rock:RockControlWrapper ID="rcwAddNewBusiness" runat="server" Visible="false">
                     <a id="hlAddNewBusiness" class="btn btn-default btn-xs margin-r-sm pull-right" runat="server" href="#">Add Business</a>
                 </Rock:RockControlWrapper>
-                
-                <Rock:RockControlWrapper ID="rcwAddNewFamily" runat="server"  Visible="false">
+
+                <Rock:RockControlWrapper ID="rcwAddNewFamily" runat="server" Visible="false">
                     <a id="hlAddNewFamily" class="btn btn-default btn-xs margin-r-sm pull-right" runat="server" href="#">Add Family</a>
                 </Rock:RockControlWrapper>
             </div>
 
             <div class="panel-body">
-                <Rock:NotificationBox ID="nbNoUnmatchedTransactionsRemaining" runat="server" NotificationBoxType="Success" Text="<i class='fa fa-2x fa-check-circle'></i> There are no more unmatched transactions in this batch. Click 'Done' to indicate that the batch is no longer pending and return to batch details." />
+                <Rock:NotificationBox ID="nbNoUnmatchedTransactionsRemaining" runat="server" NotificationBoxType="Success" Text="<i class='fa fa-check-circle'></i> There are no more unmatched transactions in this batch. Click 'Done' to indicate that the batch is no longer pending and return to batch details." />
                 <asp:LinkButton ID="lbFinish" runat="server" CssClass="btn btn-default" OnClick="lbFinish_Click">Done</asp:LinkButton>
                 <asp:Panel ID="pnlEdit" runat="server">
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:NotificationBox ID="nbNoTransactionImageWarning" runat="server" NotificationBoxType="Warning" Text="Warning. No Images found for this transaction." />
                             <Rock:NotificationBox ID="nbIsInProcess" runat="server" NotificationBoxType="Warning" Text="Warning. This transaction is getting processed by ...." />
-                            <div>
-                                <asp:Image ID="imgPrimary" runat="server" CssClass="transaction-image" />
+                            <div class="photo transaction-image">
+                                <asp:Literal ID="lImage" runat="server" />
                             </div>
                             <div>
                                 <asp:Repeater ID="rptrImages" runat="server">
@@ -50,12 +55,12 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:RockDropDownList ID="ddlIndividual" runat="server" Label="Individual" Help="Select a person that has previously been matched to the bank account. If the person isn't in this list, use the 'Assign to New' to select the matching person." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
-                                    <span ID="badgeIndividualCount" runat="server" class="pull-right badge badge-danger" 
+                                    <span id="badgeIndividualCount" runat="server" class="pull-right badge badge-danger"
                                         style="position: relative; top: -58px; left: 10px"></span>
 
                                     <div>
                                         <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" FormGroupCssClass="pull-left" Help="Select a new person to match to the bank account." IncludeBusinesses="true" OnSelectPerson="ppSelectNew_SelectPerson" />
-                                        <Rock:RockControlWrapper ID="rcwEnvelope" runat="server" Label="Envelope #" Help="Select a person based on their assigned envelope number" >
+                                        <Rock:RockControlWrapper ID="rcwEnvelope" runat="server" Label="Envelope #" Help="Select a person based on their assigned envelope number">
                                             <Rock:RockTextBox ID="tbEnvelopeNumber" runat="server" CssClass="input-width-sm pull-left" />
                                             <asp:LinkButton ID="btnFindByEnvelopeNumber" runat="server" CssClass="btn btn-default margin-l-sm" Text="Find" OnClick="btnFindByEnvelopeNumber_Click" />
                                         </Rock:RockControlWrapper>
@@ -97,14 +102,14 @@
 
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:DynamicPlaceHolder ID="phPaymentAttributeEdits" runat="server" />
+                                    <Rock:DynamicPlaceholder ID="phPaymentAttributeEdits" runat="server" />
                                 </div>
                             </div>
-                            
+
                             <Rock:NotificationBox ID="nbSaveError" runat="server" NotificationBoxType="Danger" Dismissable="true" Text="Warning. Unable to save..." />
                             <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server" Label="Account Split" Help="Enter the amount that should be allocated to each account. The total must match the amount shown on the transaction image">
                                 <div class="form-horizontal label-xl js-accounts">
-                                    <asp:Repeater ID="rptAccounts" runat="server"  >
+                                    <asp:Repeater ID="rptAccounts" runat="server">
                                         <ItemTemplate>
                                             <Rock:CurrencyBox ID="cbAccountAmount" runat="server" Label='<%#Eval( "Name" )%>' data-account-id='<%#Eval("Id")%>' CssClass="js-account-amount input-width-md" onkeydown="javascript:return handleAmountBoxKeyPress(this, event.keyCode);" onkeyup="javascript:handleAmountBoxKeyUp(event.keyCode)" />
                                         </ItemTemplate>
@@ -114,13 +119,15 @@
                                     <div class="col-md-8">
                                         <Rock:RockDropDownList ID="ddlAddAccount" runat="server" CssClass="js-add-account" EnhanceForLongLists="true" />
                                     </div>
-                                    <div class="col-md-4" style="margin-left:-10px">
+                                    <div class="col-md-4" style="margin-left: -10px">
                                         <Rock:CurrencyBox ID="cbOptionalAccountAmount" runat="server" CssClass="input-width-md" />
                                     </div>
                                 </asp:Panel>
                             </Rock:RockControlWrapper>
-                             
+
                             <%-- note: using disabled instead of readonly so that we can set the postback value in javascript --%>
+                            <Rock:RockTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code" />
+
                             <Rock:CurrencyBox ID="cbUnallocatedAmount" runat="server" Label="Unallocated Amount" FormGroupCssClass="js-unallocated-amount has-error" Help="The unallocated amount based on the original total amount." disabled="disabled" />
                             <Rock:CurrencyBox ID="cbTotalAmount" runat="server" Label="Total Amount" CssClass="js-total-amount" Help="Allocates amounts to the above account(s) until the total amount matches what is shown on the transaction image." disabled="disabled" Text="0.00"></Rock:CurrencyBox>
                             <Rock:HiddenFieldWithClass ID="hfOriginalTotalAmount" runat="server" CssClass="js-original-total-amount" />
@@ -133,7 +140,11 @@
                     <div class="row">
                         <div class="col-md-12">
                             <asp:LinkButton ID="btnPrevious" runat="server" CssClass="btn" OnClick="btnPrevious_Click">Previous</asp:LinkButton>
-                            <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" ToolTip="Alt+n" CssClass="btn btn-primary pull-right" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                            <div class="pull-right">
+                                <asp:LinkButton ID="btnCancel" runat="server" CssClass="btn btn-default" Visible="false" OnClick="btnCancel_Click">Cancel</asp:LinkButton>
+                                <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" ToolTip="Alt+n" CssClass="btn btn-primary" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                            </div>
+                            <div class="clearfix"></div>
                         </div>
                     </div>
 
@@ -174,23 +185,20 @@
                 var transactionTotalAmountDollars = transactionTotalAmountCents != null ? (transactionTotalAmountCents / 100).toFixed(2) : null;
 
                 $('#<%=pnlView.ClientID%>').find('.js-total-amount :input').val(transactionTotalAmountDollars);
-                
+
                 $unallocatedAmountEl = $('#<%=pnlView.ClientID%>').find('.js-unallocated-amount');
 
                 var originalTotalAmountCents = Number($('#<%=pnlView.ClientID%>').find('.js-original-total-amount').val());
                 var unallocatedAmountCents = 0;
-                if (originalTotalAmountCents && originalTotalAmountCents > 0)
-                {
+                if (originalTotalAmountCents && originalTotalAmountCents > 0) {
                     unallocatedAmountCents = originalTotalAmountCents - (transactionTotalAmountCents || 0);
                 }
 
                 $unallocatedAmountEl.find(':input').val((unallocatedAmountCents / 100).toFixed(2));
-                if (Math.round(unallocatedAmountCents) == 0)
-                {
+                if (Math.round(unallocatedAmountCents) == 0) {
                     $unallocatedAmountEl.hide();
                 }
-                else
-                {
+                else {
                     $unallocatedAmountEl.show();
                 }
 
@@ -206,26 +214,23 @@
                 updateRemainingAccountAllocation();
 
                 // sort the amount boxes in the order that they were added
-                $('.js-accounts .currency-box').detach().sort(function (a, b)
-                {
+                $('.js-accounts .currency-box').detach().sort(function (a, b) {
                     var sortA = $(a).find("input").data("sort-order");
                     var sortB = $(b).find("input").data("sort-order");
-                    if (sortA < sortB) 
+                    if (sortA < sortB)
                         return -1
                     if (sortA > sortB)
                         return 1
                     return 0;
-                        
+
                 }).appendTo('.js-accounts');
 
             })
 
             // handle onkeypress for the account amount input boxes
-            function handleAmountBoxKeyPress(element, keyCode)
-            {
+            function handleAmountBoxKeyPress(element, keyCode) {
                 // if Enter was pressed when in one of the Amount boxes, click the Next button.
-                if (keyCode == 13)
-                {
+                if (keyCode == 13) {
                     $('#<%=btnNext.ClientID%>')[0].click();
                     return false;
                 }
@@ -233,13 +238,11 @@
                     // pressing the down arrow goes to the next input or to the Next button
                     var clientId = element.getAttribute('id');
                     // find the "next" textbox
-                    var textbox = $('#'+clientId).parent().parent().next().find('input');
-                    if (textbox.length != 0)
-                    {
+                    var textbox = $('#' + clientId).parent().parent().next().find('input');
+                    if (textbox.length != 0) {
                         textbox.focus();
                     }
-                    else
-                    {
+                    else {
                         $('#<%=btnNext.ClientID%>').focus();
                     }
                 }
@@ -255,36 +258,29 @@
             }
 
             // handle onkeyup for the account amount input boxes
-            function handleAmountBoxKeyUp(keyCode)
-            {
+            function handleAmountBoxKeyUp(keyCode) {
                 updateRemainingAccountAllocation();
             }
 
             // handle btnNext so that it warns if the total amount was changed from the original (if there was an amount to start with)
-            function verifyUnallocated(e)
-            {
+            function verifyUnallocated(e) {
                 $unallocatedAmountEl = $('#<%=pnlView.ClientID%>').find('.js-unallocated-amount');
-                if ($unallocatedAmountEl.is(':visible'))
-                {
-                    if (Number($unallocatedAmountEl.find('input').val()) != 0)
-                    {
+                if ($unallocatedAmountEl.is(':visible')) {
+                    if (Number($unallocatedAmountEl.find('input').val()) != 0) {
                         e.preventDefault();
 
                         var originalTotalAmountCents = Number($('#<%=pnlView.ClientID%>').find('.js-original-total-amount').val());
                         var totalAmountCents = Number($('#<%=pnlView.ClientID%>').find('.js-total-amount :input').val()) * 100;
                         var currencySymbol = $('#<%=pnlView.ClientID%>').find('.js-currencysymbol').val()
                         var warningMsg = 'Note: The original transaction amount was ' + currencySymbol + (originalTotalAmountCents / 100).toFixed(2) + '. This has been changed to ' + currencySymbol + (totalAmountCents / 100).toFixed(2) + '. Are you sure you want to proceed with this change?';
-                        Rock.dialogs.confirm(warningMsg, function (result)
-                        {
-                            if (result)
-                            {
+                        Rock.dialogs.confirm(warningMsg, function (result) {
+                            if (result) {
                                 window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                             }
                         });
                     }
                 }
-                else
-                {
+                else {
                     return true;
                 }
             }

@@ -29,12 +29,12 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.UpdateBlockType( "My Connection Opportunities Lava", "Block to display connection opportunities that are assigned to the current user. The display format is controlled by a lava template.", "~/Blocks/Connection/MyConnectionOpportunitiesLava.ascx", "Connection", "1B8E50A0-7AC4-475F-857C-50D0809A3F04" );
-            RockMigrationHelper.AddBlock( "AE1818D8-581C-4599-97B9-509EA450376A", "", "1B8E50A0-7AC4-475F-857C-50D0809A3F04", "My Connection Opportunities Lava", "Main", "", "", 2, "35B7FF3C-969E-44BE-BACA-EDB490450DFF" );
+            // Moved to core migration: 201711271827181_V7Rollup            
 
+            //RockMigrationHelper.UpdateBlockType( "My Connection Opportunities Lava", "Block to display connection opportunities that are assigned to the current user. The display format is controlled by a lava template.", "~/Blocks/Connection/MyConnectionOpportunitiesLava.ascx", "Connection", "1B8E50A0-7AC4-475F-857C-50D0809A3F04" );
+            //RockMigrationHelper.AddBlock( "AE1818D8-581C-4599-97B9-509EA450376A", "", "1B8E50A0-7AC4-475F-857C-50D0809A3F04", "My Connection Opportunities Lava", "Main", "", "", 2, "35B7FF3C-969E-44BE-BACA-EDB490450DFF" );
 
-            RockMigrationHelper.AddBlockAttributeValue( "35B7FF3C-969E-44BE-BACA-EDB490450DFF", "9E6887CA-6D20-47EE-8158-3EC9F06F063D", @"50f04e77-8d3b-4268-80ab-bc15dd6cb262" ); // Detail Page
-
+            //RockMigrationHelper.AddBlockAttributeValue( "35B7FF3C-969E-44BE-BACA-EDB490450DFF", "9E6887CA-6D20-47EE-8158-3EC9F06F063D", @"50f04e77-8d3b-4268-80ab-bc15dd6cb262" ); // Detail Page
         }
 
         /// <summary>

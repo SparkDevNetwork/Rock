@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -496,7 +497,9 @@ namespace RockWeb.Blocks.Groups
             groupType.ShowInNavigation = cbShowInNavigation.Checked;
             groupType.ShowConnectionStatus = cbShowConnectionStatus.Checked;
             groupType.ShowMaritalStatus = cbShowMaritalStatus.Checked;
+            groupType.GroupViewLavaTemplate = ceGroupLavaTemplate.Text;
             groupType.IconCssClass = tbIconCssClass.Text;
+            groupType.GroupTypeColor = cpGroupTypeColor.Text;
             groupType.TakesAttendance = cbTakesAttendance.Checked;
             groupType.GroupsRequireCampus = cbGroupsRequireCampus.Checked;
             groupType.GroupAttendanceRequiresLocation = cbGroupAttendanceRequiresLocation.Checked;
@@ -508,13 +511,26 @@ namespace RockWeb.Blocks.Groups
             groupType.AttendancePrintTo = ddlPrintTo.SelectedValueAsEnum<PrintTo>();
             groupType.AllowedScheduleTypes = allowedScheduleTypes;
             groupType.LocationSelectionMode = locationSelectionMode;
-            groupType.GroupTypePurposeValueId = ddlGroupTypePurpose.SelectedValueAsInt();
+            groupType.GroupTypePurposeValueId = dvpGroupTypePurpose.SelectedValueAsInt();
             groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
             groupType.InheritedGroupTypeId = gtpInheritedGroupType.SelectedGroupTypeId;
             groupType.IgnorePersonInactivated = cbDontInactivateMembers.Checked;
             groupType.IsIndexEnabled = cbEnableIndexing.Checked;
             groupType.EnableLocationSchedules = cbEnableLocationSchedules.Checked;
+            groupType.AllowSpecificGroupMemberAttributes = cbAllowSpecificGroupMemberAttributes.Checked;
+            groupType.AllowGroupSync = cbAllowGroupSync.Checked;
+            groupType.EnableSpecificGroupRequirements = cbEnableSpecificGroupReq.Checked;
+            groupType.AllowSpecificGroupMemberWorkflows = cbAllowSpecificGrpMemWorkFlows.Checked;
+            groupType.GroupStatusDefinedTypeId = ddlGroupStatusDefinedType.SelectedValueAsInt();
 
+            // if GroupHistory is turned off, we'll delete group and group member history for this group type
+            bool deleteGroupHistory = false;
+            if ( groupType.EnableGroupHistory && cbEnableGroupHistory.Checked == false )
+            {
+                deleteGroupHistory = true;
+            }
+
+            groupType.EnableGroupHistory = cbEnableGroupHistory.Checked;
             groupType.ChildGroupTypes = new List<GroupType>();
             groupType.ChildGroupTypes.Clear();
             foreach ( var item in ChildGroupTypesList )
@@ -612,12 +628,15 @@ namespace RockWeb.Blocks.Groups
                 }
             } );
 
-            GroupTypeCache.Flush( groupType.Id );
-            AttributeCache.FlushEntityAttributes();
-
             if ( triggersUpdated )
             {
-                GroupMemberWorkflowTriggerService.FlushCachedTriggers();
+                GroupMemberWorkflowTriggerService.RemoveCachedTriggers();
+            }
+
+            if ( deleteGroupHistory )
+            {
+                groupTypeService.BulkDeleteGroupHistory( groupType.Id );
+                
             }
 
             NavigateToParentPage();
@@ -662,11 +681,9 @@ namespace RockWeb.Blocks.Groups
         /// <param name="groupTypeId">The group type identifier.</param>
         public void ShowDetail( int groupTypeId )
         {
-            pnlDetails.Visible = false;
-
             // determine if indexing is enabled
-            var groupEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.GROUP.AsGuid() );
-            cbEnableIndexing.Visible = (IndexContainer.IndexingEnabled && groupEntityType.IsIndexingEnabled);
+            var groupEntityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.GROUP.AsGuid() );
+            cbEnableIndexing.Visible = IndexContainer.IndexingEnabled && groupEntityType.IsIndexingEnabled;
 
             GroupType groupType = null;
 
@@ -689,6 +706,7 @@ namespace RockWeb.Blocks.Groups
 
                 groupType.AllowedScheduleTypes = ScheduleType.None;
                 groupType.LocationSelectionMode = GroupLocationPickerMode.None;
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -697,7 +715,6 @@ namespace RockWeb.Blocks.Groups
 
             DefaultRoleGuid = groupType.DefaultGroupRole != null ? groupType.DefaultGroupRole.Guid : Guid.Empty;
 
-            pnlDetails.Visible = true;
             hfGroupTypeId.Value = groupType.Id.ToString();
 
             bool readOnly = false;
@@ -767,8 +784,11 @@ namespace RockWeb.Blocks.Groups
             tbGroupMemberTerm.ReadOnly = groupType.IsSystem;
             tbGroupMemberTerm.Text = groupType.GroupMemberTerm;
 
-            ddlGroupTypePurpose.Enabled = !groupType.IsSystem;
-            ddlGroupTypePurpose.SetValue( groupType.GroupTypePurposeValueId );
+            dvpGroupTypePurpose.Enabled = !groupType.IsSystem;
+            dvpGroupTypePurpose.SetValue( groupType.GroupTypePurposeValueId );
+
+            ddlGroupStatusDefinedType.Enabled = !groupType.IsSystem;
+            ddlGroupStatusDefinedType.SetValue( groupType.GroupStatusDefinedTypeId );
 
             ddlGroupCapacityRule.SetValue( (int)groupType.GroupCapacityRule );
 
@@ -783,7 +803,17 @@ namespace RockWeb.Blocks.Groups
             cbShowInNavigation.Checked = groupType.ShowInNavigation;
             cbShowConnectionStatus.Checked = groupType.ShowConnectionStatus;
             cbShowMaritalStatus.Checked = groupType.ShowMaritalStatus;
+            if ( !string.IsNullOrEmpty( groupType.GroupViewLavaTemplate ) )
+            {
+                ceGroupLavaTemplate.Text = groupType.GroupViewLavaTemplate;
+            }
+            else
+            {
+                ceGroupLavaTemplate.Text = SystemSettings.GetValue( "core_templates_GroupViewTemplate" );
+            }
+
             tbIconCssClass.Text = groupType.IconCssClass;
+            cpGroupTypeColor.Text = groupType.GroupTypeColor;
 
             // Locations
             cbAllowMultipleLocations.Enabled = !groupType.IsSystem;
@@ -831,6 +861,12 @@ namespace RockWeb.Blocks.Groups
             cbDontInactivateMembers.Checked = groupType.IgnorePersonInactivated;
             cbEnableIndexing.Checked = groupType.IsIndexEnabled;
 
+            cbAllowSpecificGroupMemberAttributes.Checked = groupType.AllowSpecificGroupMemberAttributes;
+            cbAllowGroupSync.Checked = groupType.AllowGroupSync;
+            cbEnableSpecificGroupReq.Checked = groupType.EnableSpecificGroupRequirements;
+            cbAllowSpecificGrpMemWorkFlows.Checked = groupType.AllowSpecificGroupMemberWorkflows;
+            cbEnableGroupHistory.Checked = groupType.EnableGroupHistory;
+
             GroupTypeRolesState = new List<GroupTypeRole>();
             foreach ( var role in groupType.Roles )
             {
@@ -842,7 +878,7 @@ namespace RockWeb.Blocks.Groups
 
             string qualifierValue = groupType.Id.ToString();
 
-            GroupTypeAttributesState = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
+            GroupTypeAttributesState = attributeService.GetByEntityTypeId( new GroupType().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -851,7 +887,7 @@ namespace RockWeb.Blocks.Groups
                 .ToList();
             BindGroupTypeAttributesGrid();
 
-            GroupAttributesState = attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
+            GroupAttributesState = attributeService.GetByEntityTypeId( new Group().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -863,7 +899,7 @@ namespace RockWeb.Blocks.Groups
             GroupTypeGroupRequirementsState = new GroupRequirementService(rockContext).Queryable().Where(a => a.GroupTypeId.HasValue && a.GroupTypeId == groupType.Id ).ToList();
             BindGroupTypeGroupRequirementsGrid();
 
-            GroupMemberAttributesState = attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
+            GroupMemberAttributesState = attributeService.GetByEntityTypeId( new GroupMember().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -948,13 +984,14 @@ namespace RockWeb.Blocks.Groups
                 .Where( g => g.Id != groupTypeId )
                 .ToList();
 
-            var groupTypePurposeList = new DefinedValueService( rockContext ).GetByDefinedTypeGuid( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ).OrderBy( a => a.Value ).ToList();
+            var groupTypePurposeDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid() ).Id;
+            dvpGroupTypePurpose.DefinedTypeId = groupTypePurposeDefinedTypeId;
 
-            ddlGroupTypePurpose.Items.Clear();
-            ddlGroupTypePurpose.Items.Add( Rock.Constants.None.ListItem );
-            foreach ( var item in groupTypePurposeList )
+            ddlGroupStatusDefinedType.Items.Clear();
+            ddlGroupStatusDefinedType.Items.Add( new ListItem() );
+            foreach ( var definedType in DefinedTypeCache.All().OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
-                ddlGroupTypePurpose.Items.Add( new ListItem( item.Value, item.Id.ToString() ) );
+                ddlGroupStatusDefinedType.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
             }
         }
 
@@ -1014,6 +1051,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         edtGroupAttributes.IsIndexingEnabledVisible = false;
                     }
+
                     dlgGroupAttribute.Show();
                     break;
                 case "GROUPMEMBERATTRIBUTES":
@@ -1086,7 +1124,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     string qualifierValue = inheritedGroupType.Id.ToString();
 
-                    foreach ( var attribute in attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
+                    foreach ( var attribute in attributeService.GetByEntityTypeId( new GroupType().TypeId, true ).AsQueryable()
                         .Where( a =>
                             a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase ) &&
                             a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -1102,7 +1140,7 @@ namespace RockWeb.Blocks.Groups
                             inheritedGroupType.Name ) );
                     }
 
-                    foreach ( var attribute in attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
+                    foreach ( var attribute in attributeService.GetByEntityTypeId( new Group().TypeId, true ).AsQueryable()
                         .Where( a =>
                             a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
                             a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -1118,7 +1156,7 @@ namespace RockWeb.Blocks.Groups
                             inheritedGroupType.Name ) );
                     }
 
-                    foreach ( var attribute in attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
+                    foreach ( var attribute in attributeService.GetByEntityTypeId( new GroupMember().TypeId, true ).AsQueryable()
                         .Where( a =>
                             a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
                             a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -1288,20 +1326,19 @@ namespace RockWeb.Blocks.Groups
             // Get the existing attributes for this entity type and qualifier value
             var attributeService = new AttributeService( rockContext );
             var regFieldService = new RegistrationTemplateFormFieldService( rockContext );
-            var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+            var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
 
             // Delete any of those attributes that were removed in the UI
             var selectedAttributeGuids = viewStateAttributes.Select( a => a.Guid );
             foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
-                foreach( var field in regFieldService.Queryable().Where( f => f.AttributeId.HasValue && f.AttributeId.Value == attr.Id ).ToList() )
+                foreach ( var field in regFieldService.Queryable().Where( f => f.AttributeId.HasValue && f.AttributeId.Value == attr.Id ).ToList() )
                 {
                     regFieldService.Delete( field );
                 }
 
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
-                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
             }
 
             // Update the Attributes that were assigned in the UI
@@ -1364,6 +1401,7 @@ namespace RockWeb.Blocks.Groups
             cbReceiveRequirementsNotifications.Checked = groupTypeRole.ReceiveRequirementsNotifications;
             cbCanView.Checked = groupTypeRole.CanView;
             cbCanEdit.Checked = groupTypeRole.CanEdit;
+            cbCanManageMembers.Checked = groupTypeRole.CanManageMembers;
 
             nbMinimumRequired.Text = groupTypeRole.MinCount.HasValue ? groupTypeRole.MinCount.ToString() : string.Empty;
             nbMinimumRequired.Help = string.Format(
@@ -1400,8 +1438,17 @@ namespace RockWeb.Blocks.Groups
         protected void gGroupTypeRoles_Delete( object sender, RowEventArgs e )
         {
             Guid rowGuid = (Guid)e.RowKeyValue;
-            GroupTypeRolesState.RemoveEntity( rowGuid );
 
+            string errorMessage = string.Empty;
+            var groupTypeRoleService = new GroupTypeRoleService( new RockContext() );
+            var groupTypeRole = groupTypeRoleService.Get( rowGuid );
+            if ( !groupTypeRoleService.CanDelete( groupTypeRole, out errorMessage ) )
+            {
+                mdGroupTypeRolesDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                return;
+            }
+
+            GroupTypeRolesState.RemoveEntity( rowGuid );
             BindGroupTypeRolesGrid();
         }
 
@@ -1441,6 +1488,7 @@ namespace RockWeb.Blocks.Groups
             groupTypeRole.ReceiveRequirementsNotifications = cbReceiveRequirementsNotifications.Checked;
             groupTypeRole.CanView = cbCanView.Checked;
             groupTypeRole.CanEdit = cbCanEdit.Checked;
+            groupTypeRole.CanManageMembers = cbCanManageMembers.Checked;
             groupTypeRole.MinCount = nbMinimumRequired.Text.AsIntegerOrNull();
             groupTypeRole.MaxCount = nbMaximumAllowed.Text.AsIntegerOrNull();
             groupTypeRole.LoadAttributes();
@@ -1774,7 +1822,7 @@ namespace RockWeb.Blocks.Groups
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtGroupTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for group type " + tbName.Text );
             }
             else
@@ -1927,7 +1975,7 @@ namespace RockWeb.Blocks.Groups
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 if (hfGroupTypeId.Value.AsInteger() > 0)
                 {
                     attribute.EntityTypeQualifierColumn = "GroupTypeId";
@@ -2086,7 +2134,7 @@ namespace RockWeb.Blocks.Groups
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtGroupMemberAttributes.ActionTitle = ActionTitle.Add( "attribute for members in groups of group type " + tbName.Text );
             }
             else
@@ -2584,6 +2632,39 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Handles the CheckedChanged event of the cbEnableGroupHistory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbEnableGroupHistory_CheckedChanged( object sender, EventArgs e )
+        {
+            if ( cbEnableGroupHistory.Checked == false )
+            {
+                // if toggling EnableGroupHistory from True to False, show a warning if Group/GroupMember History will be deleted when this group type is saved
+                int groupTypeId = hfGroupTypeId.Value.AsInteger();
+                var groupType = GroupTypeCache.Get( groupTypeId );
+                if ( groupType != null && groupType.EnableGroupHistory )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        if ( new GroupHistoricalService( rockContext ).Queryable().Any( a => a.GroupTypeId == groupTypeId ) )
+                        {
+                            nbGroupHistoryWarning.Visible = true;
+                        }
+                        else if ( new GroupMemberHistoricalService( rockContext ).Queryable().Any( a => a.Group.GroupTypeId == groupTypeId ) )
+                        {
+                            nbGroupHistoryWarning.Visible = true;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                nbGroupHistoryWarning.Visible = false;
+            }
+        }
+
+        /// <summary>
         /// Handles the SaveClick event of the dlgGroupMemberAttribute control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -2736,5 +2817,7 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
+
+        
     }
 }

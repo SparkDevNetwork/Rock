@@ -14,160 +14,54 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Web.UI.WebControls.Adapters;
-
-using Rock;
 
 namespace Rock.Web.UI.Adapters
 {
     /// <summary>
     /// Control adapter for checkbox list
     /// </summary>
-    public class CheckBoxListAdapter : WebControlAdapter
+    public class CheckBoxListAdapter : ListControlAdaptor
     {
         /// <summary>
-        /// Creates the beginning tag for the Web control in the markup that is transmitted to the target browser.
+        /// Gets the type of the input tag.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> containing methods to render the target-specific output.</param>
-        protected override void RenderBeginTag( System.Web.UI.HtmlTextWriter writer )
+        /// <param name="listControl">The list control.</param>
+        /// <returns></returns>
+        public override string GetInputTagType( ListControl listControl )
         {
-            // Preserve any classes that a developer put on the control (such as a "well") by wrapping it in a <div>.
-            CheckBoxList cbl = Control as CheckBoxList;
-            if ( cbl != null && ! string.IsNullOrEmpty( cbl.CssClass ) )
-            {
-                writer.AddAttribute( "class", cbl.CssClass );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            }
+            return "checkbox";
         }
 
         /// <summary>
-        /// Creates the ending tag for the Web control in the markup that is transmitted to the target browser.
+        /// Gets the repeat columns.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> containing methods to render the target-specific output.</param>
-        protected override void RenderEndTag( System.Web.UI.HtmlTextWriter writer )
+        /// <param name="listControl">The list control.</param>
+        /// <returns></returns>
+        public override int GetRepeatColumns( ListControl listControl )
         {
-            // Close the <div> tag we may have started in the BeginTag above.
-            CheckBoxList cbl = Control as CheckBoxList;
-            if ( cbl != null && !string.IsNullOrEmpty( cbl.CssClass ) )
-            {
-                writer.RenderEndTag();
-            }
+            return ( listControl as CheckBoxList )?.RepeatColumns ?? 0;
         }
 
         /// <summary>
-        /// Generates the target-specific inner markup for the Web control to which the control adapter is attached.
+        /// Gets the repeat direction.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> containing methods to render the target-specific output.</param>
-        protected override void RenderContents( System.Web.UI.HtmlTextWriter writer )
+        /// <param name="listControl">The list control.</param>
+        /// <returns></returns>
+        protected override RepeatDirection GetRepeatDirection( ListControl listControl )
         {
-            CheckBoxList cbl = Control as CheckBoxList;
-            if ( cbl != null )
-            {
-                PostBackOptions postBackOption = null;
+            return ( listControl as CheckBoxList )?.RepeatDirection ?? RepeatDirection.Vertical;
+        }
 
-                if ( cbl.AutoPostBack )
-                {
-                    postBackOption = new PostBackOptions(cbl, string.Empty);
-                    if (cbl.CausesValidation && this.Page.GetValidators(cbl.ValidationGroup).Count > 0)
-                    {
-                        postBackOption.PerformValidation = true;
-                        postBackOption.ValidationGroup = cbl.ValidationGroup;
-                    }
-                    if (this.Page.Form != null)
-                    {
-                        postBackOption.AutoPostBack = true;
-                    }
-                }
-
-                int i = 0;
-                foreach (ListItem li in cbl.Items)
-                {
-                    writer.WriteLine();
-
-                    if ( cbl.RepeatDirection == RepeatDirection.Vertical )
-                    {
-                        string cssClass = "checkbox";
-                        if ( cbl.RepeatColumns > 1 )
-                        {
-                            switch( cbl.RepeatColumns )
-                            {
-                                case 2: cssClass += " col-md-6"; break;
-                                case 3: cssClass += " col-md-4"; break;
-                                case 4: cssClass += " col-md-3"; break;
-                                case 6: cssClass += " col-md-2"; break;
-                            }
-                        }
-                        writer.AddAttribute( "class", cssClass );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                        // use the muted text class on the label if the CBL is disabled
-                        if ( !cbl.Enabled )
-                        {
-                            writer.AddAttribute( "class", "text-muted" );
-                        }
-                    }
-                    else
-                    {
-                        // use the muted text class on the label if the CBL is disabled along with the checkbox-inline class
-                        writer.AddAttribute( "class", ( !cbl.Enabled ) ? "text-muted checkbox-inline" : "checkbox-inline" );
-                    }
-
-                    writer.RenderBeginTag(HtmlTextWriterTag.Label);
-
-                    string itemId = string.Format("{0}_{1}", cbl.ClientID, i);
-                    writer.AddAttribute("id", itemId);
-                    writer.AddAttribute("type", "checkbox");
-                    var checkboxInputName = string.Format( "{0}${1}", cbl.UniqueID, i++ );
-                    writer.AddAttribute("name", checkboxInputName);
-                    writer.AddAttribute("value", li.Value);
-                    if (li.Selected)
-                    {
-                        writer.AddAttribute("checked", "checked");
-                    }
-
-                    if ( !cbl.Enabled )
-                    {
-                        writer.AddAttribute( "disabled", "" );
-                    }
-
-                    foreach (var attributeKey in li.Attributes.Keys)
-                    {
-                        var key = attributeKey as string;
-                        writer.AddAttribute(key, li.Attributes[key]);
-                    }
-
-                    if (postBackOption != null)
-                    {
-                        var postBackReference = Page.ClientScript.GetPostBackEventReference( postBackOption, true );
-                        postBackReference = postBackReference.Replace( cbl.UniqueID, checkboxInputName );
-                        writer.AddAttribute(HtmlTextWriterAttribute.Onclick, postBackReference );
-                    }
-
-                    writer.RenderBeginTag(HtmlTextWriterTag.Input);
-                    writer.RenderEndTag();
-
-                    writer.Write(li.Text);
-
-                    writer.RenderEndTag();      // Label
-
-                    if ( cbl.RepeatDirection == RepeatDirection.Vertical )
-                    {
-                        writer.RenderEndTag();   // div
-                    }
-
-                    if ( Page != null && Page.ClientScript != null )
-                    {
-                        Page.ClientScript.RegisterForEventValidation(cbl.UniqueID, li.Value);
-                    }
-                }
-                
-                if ( Page != null && Page.ClientScript != null )
-                {
-                    Page.ClientScript.RegisterForEventValidation( cbl.UniqueID );
-                }
-            }
+        /// <summary>
+        /// Gets the name of the input.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="itemIndex">Index of the item.</param>
+        /// <returns></returns>
+        public override string GetInputName( ListControl listControl, int itemIndex )
+        {
+            return $"{listControl.UniqueID}${itemIndex}";
         }
     }
 }

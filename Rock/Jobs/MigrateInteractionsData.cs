@@ -160,8 +160,8 @@ CommunicationRecipientActivity Moved: {_communicationRecipientActivityMoved}/{_c
         {
             using ( var rockContext = new RockContext() )
             {
-                var componentEntityTypePage = EntityTypeCache.Read<Rock.Model.Page>();
-                var channelMediumWebsite = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
+                var componentEntityTypePage = EntityTypeCache.Get<Rock.Model.Page>();
+                var channelMediumWebsite = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
                 var sqlInsertSitesToChannels = $@"
 -- Insert Websites
 INSERT INTO [InteractionChannel] (
@@ -465,8 +465,8 @@ END
         {
             using ( var rockContext = new RockContext() )
             {
-                var componentEntityTypeCommunicationRecipient = EntityTypeCache.Read<Rock.Model.CommunicationRecipient>();
-                var channelMediumCommunication = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_COMMUNICATION );
+                var componentEntityTypeCommunicationRecipient = EntityTypeCache.Get<Rock.Model.CommunicationRecipient>();
+                var channelMediumCommunication = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_COMMUNICATION );
 
                 // InteractionChannel for Communications already exists (in a migration)
                 var interactionChannel = new InteractionChannelService( rockContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
@@ -651,7 +651,7 @@ DECLARE @ipaddressPatternSendGridMandrill NVARCHAR(max) = '%([0-9]%.%[0-9]%.%[0-
 			) x
 		) x
 	INNER JOIN CommunicationRecipientActivity cra ON cra.Id = x.Id
-	LEFT JOIN InteractionDeviceType dt ON dt.DeviceTypeData = rtrim(ltrim(x.DeviceTypeData))
+	CROSS APPLY (SELECT TOP 1 Id FROM InteractionDeviceType WHERE DeviceTypeData = rtrim(ltrim(x.DeviceTypeData))) dt
 	WHERE (@alreadyInsertedCount = 0 or cra.[Guid] NOT IN (
 			SELECT ForeignGuid
 			FROM InteractionSession where ForeignGuid is not null
@@ -791,8 +791,7 @@ BEGIN
 	INNER JOIN InteractionSession iss ON iss.[ForeignGuid] = cra.[Guid]
 	INNER JOIN CommunicationRecipient cr ON cra.CommunicationRecipientId = cr.Id
 	INNER JOIN Communication c ON cr.CommunicationId = c.Id
-	INNER JOIN InteractionComponent icmp ON icmp.ChannelId = {interactionChannelId}
-		AND icmp.EntityId = c.Id
+	CROSS APPLY (select top 1 icmp.Id from InteractionComponent icmp WHERE icmp.ChannelId = {interactionChannelId} AND icmp.EntityId = c.Id) icmp
      where cra.[Guid] not in (select ForeignGuid from Interaction where ForeignGuid is not null)
 END
 ";

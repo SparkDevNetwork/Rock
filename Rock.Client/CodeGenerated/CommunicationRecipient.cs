@@ -67,6 +67,9 @@ namespace Rock.Client
         public string ResponseCode { get; set; }
 
         /// <summary />
+        public DateTime? SendDateTime { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.CommunicationRecipientStatus Status { get; set; }
 
         /// <summary />
@@ -121,6 +124,7 @@ namespace Rock.Client
             this.OpenedDateTime = source.OpenedDateTime;
             this.PersonAliasId = source.PersonAliasId;
             this.ResponseCode = source.ResponseCode;
+            this.SendDateTime = source.SendDateTime;
             this.Status = source.Status;
             this.StatusNote = source.StatusNote;
             this.TransportEntityTypeName = source.TransportEntityTypeName;

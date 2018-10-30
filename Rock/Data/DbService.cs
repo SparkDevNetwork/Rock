@@ -69,16 +69,29 @@ namespace Rock.Data
         /// <param name="query">The query.</param>
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
+        /// <param name="timeOut">The time out.</param>
         /// <returns></returns>
-        public static DataTable GetDataTable( string query, CommandType commandType, Dictionary<string, object> parameters )
+        public static DataTable GetDataTable( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut )
         {
-            DataSet dataSet = DbService.GetDataSet( query, commandType, parameters, null, false );
+            DataSet dataSet = DbService.GetDataSet( query, commandType, parameters, timeOut, false );
             if ( dataSet.Tables.Count > 0 )
             {
                 return dataSet.Tables[0];
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets a data table.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public static DataTable GetDataTable( string query, CommandType commandType, Dictionary<string, object> parameters )
+        {
+            return GetDataTable( query, commandType, parameters, null );
         }
 
         /// <summary>

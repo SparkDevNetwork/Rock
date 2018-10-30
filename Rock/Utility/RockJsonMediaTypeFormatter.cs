@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Net.Http.Formatting;
 using System.Text;
+
 using Rock.Web.Cache;
 
 namespace Rock.Utility
@@ -96,15 +97,15 @@ namespace Rock.Utility
             // query should be filtered by now, so iterate thru items and load attributes before the response is serialized
             if ( LoadAttributes )
             {
-                if ( value is IEnumerable<Rock.Attribute.IHasAttributes> )
+                if ( value is IEnumerable<Attribute.IHasAttributes> )
                 {
                     // if the REST call specified that Attributes should be loaded and we are returning a list of IHasAttributes..
-                    items = value as IEnumerable<Rock.Attribute.IHasAttributes>;
+                    items = value as IEnumerable<Attribute.IHasAttributes>;
                 }
-                else if ( value is Rock.Attribute.IHasAttributes )
+                else if ( value is Attribute.IHasAttributes )
                 {
                     // if the REST call specified that Attributes should be loaded and we are returning a single IHasAttributes..
-                    items = new List<Attribute.IHasAttributes>( new Attribute.IHasAttributes[] { value as Rock.Attribute.IHasAttributes } );
+                    items = new List<Attribute.IHasAttributes>( new Attribute.IHasAttributes[] { value as Attribute.IHasAttributes } );
                 }
                 else if ( value is IQueryable )
                 {
@@ -146,7 +147,7 @@ namespace Rock.Utility
 
             // Special Code if an $expand clause is specified and a $select clause is NOT specified
             // This fixes a couple of issues:
-            //  1) our special loadAttributes stuff did't work if $expand is specified
+            //  1) our special loadAttributes stuff didn't work if $expand is specified
             //  2) Only non-virtual,non-inherited fields were included (for example: Person.PrimaryAliasId, etc, wasn't getting included) if $expand was specified
             if ( value is IQueryable && typeof( IQueryable<Rock.Data.IEntity> ).IsAssignableFrom( type ) )
             {
@@ -218,11 +219,11 @@ namespace Rock.Utility
                         }
 
                         // if LoadAttributes was specified, add those last
-                        if ( LoadAttributes && ( entity is Rock.Attribute.IHasAttributes ) )
+                        if ( LoadAttributes && ( entity is Attribute.IHasAttributes ) )
                         {
                             // Add Attributes and AttributeValues
-                            valueDictionary.Add( "Attributes", ( entity as Rock.Attribute.IHasAttributes ).Attributes );
-                            valueDictionary.Add( "AttributeValues", ( entity as Rock.Attribute.IHasAttributes ).AttributeValues );
+                            valueDictionary.Add( "Attributes", ( entity as Attribute.IHasAttributes ).Attributes );
+                            valueDictionary.Add( "AttributeValues", ( entity as Attribute.IHasAttributes ).AttributeValues );
                         }
 
                         valueAsDictionary.Add( valueDictionary );
@@ -251,7 +252,7 @@ namespace Rock.Utility
 
             var itemType = items.First().GetType();
 
-            var entityType = EntityTypeCache.Read( itemType );
+            var entityType = EntityTypeCache.Get( itemType );
             if ( entityType == null )
             {
                 // shouldn't happen
@@ -265,7 +266,7 @@ namespace Rock.Utility
             {
                 foreach ( var attributeId in entityAttribute.AttributeIds )
                 {
-                    var attribute = AttributeCache.Read( attributeId );
+                    var attribute = AttributeCache.Get( attributeId );
                     if ( !attribute.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                     {
                         foreach ( var item in items )

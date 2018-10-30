@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Data;
@@ -47,10 +48,13 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var mergeTemplate = new MergeTemplateService( new RockContext() ).Get( value.AsGuid() );
-                if ( mergeTemplate != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = mergeTemplate.Name;
+                    var mergeTemplate = new MergeTemplateService( rockContext ).GetNoTracking( value.AsGuid() );
+                    if ( mergeTemplate != null )
+                    {
+                        formattedValue = mergeTemplate.Name;
+                    }
                 }
             }
 
@@ -84,22 +88,23 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            MergeTemplatePicker mergeTemplatePicker = control as MergeTemplatePicker;
-
-            if ( mergeTemplatePicker != null )
+            var picker = control as MergeTemplatePicker;
+            if ( picker != null )
             {
-                int? mergeTemplateId = mergeTemplatePicker.SelectedValue.AsIntegerOrNull();
-                if ( mergeTemplateId.HasValue )
+                int? itemId = picker.SelectedValue.AsIntegerOrNull();
+                Guid? itemGuid = null;
+                if ( itemId.HasValue )
                 {
-                    var mergeTemplate = new MergeTemplateService( new RockContext() ).Get( mergeTemplateId.Value );
-                    if ( mergeTemplate != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        return mergeTemplate.Guid.ToString();
+                        itemGuid = new MergeTemplateService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
+
+                return itemGuid?.ToString() ?? string.Empty;
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>
@@ -111,15 +116,23 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            MergeTemplatePicker mergeTemplatePicker = control as MergeTemplatePicker;
-
-            if ( mergeTemplatePicker != null )
+            var picker = control as MergeTemplatePicker;
+            if ( picker != null )
             {
-                Guid guid = value.AsGuid();
-
-                // get the item (or null) and set it
-                var mergeTemplate = new MergeTemplateService( new RockContext() ).Get( guid );
-                mergeTemplatePicker.SetValue( mergeTemplate );
+                MergeTemplate item = null;
+                Guid? itemGuid = value.AsGuidOrNull();
+                if ( itemGuid.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        item = new MergeTemplateService( rockContext ).Get( itemGuid.Value );
+                        picker.SetValue( item );
+                    }
+                }
+                else
+                {
+                    picker.SetValue( null );
+                }
             }
         }
 

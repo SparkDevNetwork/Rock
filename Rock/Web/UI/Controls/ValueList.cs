@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -391,7 +392,7 @@ namespace Rock.Web.UI.Controls
             {
                 valueHtml.AppendFormat( @"<input class=""form-control input-width-lg js-value-list-input"" type=""text"" placeholder=""{0}""></input>", ValuePrompt );
             }
-            valueHtml.Append( @"<a href=""#"" class=""btn btn-sm btn-danger value-list-remove""><i class=""fa fa-minus-circle""></i></a></div>" );
+            valueHtml.Append( @"<a href=""#"" class=""btn btn-sm btn-danger value-list-remove""><i class=""fa fa-times""></i></a></div>" );
 
             var hfValueHtml = new HtmlInputHidden();
             hfValueHtml.AddCssClass( "js-value-list-html" );
@@ -403,7 +404,9 @@ namespace Rock.Web.UI.Controls
             writer.WriteLine();
 
 
-            string[] values = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            var values = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).AsEnumerable();
+            values = values.Select( s => HttpUtility.UrlDecode( s ) );
+
             foreach ( string value in values )
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls controls-row form-control-group" );
@@ -438,7 +441,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-danger value-list-remove" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute(HtmlTextWriterAttribute.Class, "fa fa-minus-circle");
+                writer.AddAttribute(HtmlTextWriterAttribute.Class, "fa fa-times" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
@@ -455,7 +458,14 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-action btn-xs value-list-add" );
+            var addButtonCssClass = "btn btn-action btn-xs btn-square value-list-add";
+            if ( !this.Enabled )
+            {
+                addButtonCssClass += " aspNetDisabled disabled";
+            }
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, addButtonCssClass );
+
             writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.AddAttribute(HtmlTextWriterAttribute.Class, "fa fa-plus-circle");
@@ -468,50 +478,6 @@ namespace Rock.Web.UI.Controls
 
             writer.RenderEndTag();
             writer.WriteLine();
-
-            RegisterClientScript();
         }
-
-        private void RegisterClientScript()
-        {
-            string script = @"
-;(function () {
-    function updateKeyValues( e ) {
-        var $span = e.closest('span.value-list');
-        var newValue = '';
-        $span.children('span.value-list-rows:first').children('div.controls-row').each(function( index ) {
-            newValue += $(this).children('.js-value-list-input:first').val() + '|'
-        });
-        $span.children('input:first').val(newValue);            
-    }
-
-    $('a.value-list-add').click(function (e) {
-        e.preventDefault();
-        var $ValueList = $(this).closest('.value-list');
-        $ValueList.find('.value-list-rows').append($ValueList.find('.js-value-list-html').val());
-        updateKeyValues($(this));            
-        Rock.controls.modal.updateSize($(this));
-    });
-
-    $(document).on('click', 'a.value-list-remove', function (e) {
-        e.preventDefault();
-        var $rows = $(this).closest('span.value-list-rows');
-        $(this).closest('div.controls-row').remove();
-        updateKeyValues($rows);            
-        Rock.controls.modal.updateSize($(this));
-    });
-
-    $(document).on('keyup', '.js-value-list-input', function (e) {
-        updateKeyValues($(this));            
-    });
-    $(document).on('focusout', '.js-value-list-input', function (e) {
-        updateKeyValues($(this));            
-    });
-})();
-";
-
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "value-list", script, true );
-        }
-
     }
 }

@@ -97,10 +97,18 @@ namespace RockWeb.Blocks.Event
             gContentChannels.GridRebind += gContentChannels_GridRebind;
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the calendar items! Are you sure you wish to continue with the delete?');", EventCalendar.FriendlyTypeName );
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.EventCalendar ) ).Id;
+            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.EventCalendar ) ).Id;
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upEventCalendar );
+
+            // Setup for being able to copy text to clipboard
+            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js", false );
+            string script = string.Format( @"
+    new ClipboardJS('#{0}');
+    $('#{0}').tooltip();
+", btnCopyToClipboard.ClientID );
+            ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
         }
 
         /// <summary>
@@ -113,7 +121,15 @@ namespace RockWeb.Blocks.Event
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "EventCalendarId" ).AsInteger() );
+                var calendarEventId = PageParameter( "EventCalendarId" ).AsInteger();
+
+                // Set URL in feed button
+                var globalAttributes = GlobalAttributesCache.Get();
+                btnCopyToClipboard.Attributes["data-clipboard-text"] = string.Format( "{0}GetEventCalendarFeed.ashx?CalendarId={1}", globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash(), calendarEventId );
+                btnCopyToClipboard.Disabled = false;
+
+
+                ShowDetail( calendarEventId );
             }
             else
             {
@@ -410,7 +426,7 @@ namespace RockWeb.Blocks.Event
         protected void lbCalendarsDetail_Click( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
-            var pageCache = PageCache.Read( RockPage.PageId );
+            var pageCache = PageCache.Get( RockPage.PageId );
             if ( pageCache != null && pageCache.ParentPage != null )
             {
                 NavigateToPage( pageCache.ParentPage.Guid, qryParams );
@@ -802,7 +818,7 @@ namespace RockWeb.Blocks.Event
         {
             var attributeService = new AttributeService( rockContext );
             EventAttributesState = attributeService
-                .GetByEntityTypeId( new EventCalendarItem().TypeId ).AsQueryable()
+                .GetByEntityTypeId( new EventCalendarItem().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "EventCalendarId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( eventCalendar.Id.ToString() ) )
@@ -893,7 +909,7 @@ namespace RockWeb.Blocks.Event
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
             }
             else
             {
@@ -919,7 +935,7 @@ namespace RockWeb.Blocks.Event
         {
             // Get the existing attributes for this entity type and qualifier value
             var attributeService = new AttributeService( rockContext );
-            var existingAttributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+            var existingAttributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
 
             // Delete any of those attributes that were removed in the UI
             var selectedAttributeGuids = attributes.Select( a => a.Guid );
@@ -927,7 +943,6 @@ namespace RockWeb.Blocks.Event
             {
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
-                AttributeCache.Flush( attr.Id );
             }
 
             // Update the Attributes that were assigned in the UI
@@ -935,8 +950,6 @@ namespace RockWeb.Blocks.Event
             {
                 Helper.SaveAttributeEdits( attribute, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
-
-            AttributeCache.FlushEntityAttributes();
         }
 
         #endregion
@@ -962,6 +975,5 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #endregion
-
     }
 }

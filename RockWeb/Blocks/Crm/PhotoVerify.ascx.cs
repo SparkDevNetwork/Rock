@@ -74,9 +74,9 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js", false );
 
 
             size = GetAttributeValue( "PhotoSize" ).AsInteger();
@@ -126,7 +126,7 @@ namespace RockWeb.Blocks.Crm
         #region Events
 
         /// <summary>
-        /// Builds the image html for the person in the perticular row.
+        /// Builds the image html for the person in the particular row.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Crm
                             lImage.Text = imgTag;
 
                             var deleteField = gList.Columns.OfType<DeleteField>().First();
-                            var cell = ( e.Row.Cells[gList.Columns.IndexOf( deleteField )] as DataControlFieldCell ).Controls[0];
+                            var cell = ( e.Row.Cells[gList.GetColumnIndex( deleteField )] as DataControlFieldCell ).Controls[0];
                             if ( cell != null )
                             {
                                 var lb = cell.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();

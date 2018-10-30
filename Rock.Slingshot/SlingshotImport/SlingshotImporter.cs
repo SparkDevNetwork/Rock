@@ -100,13 +100,13 @@ namespace Rock.Slingshot
                      }
                      catch ( Exception ex )
                      {
-                         System.Diagnostics.Debug.WriteLine( $"Unable to extract {a.FullName} from imageZipFile: {ex.Message}");
+                         System.Diagnostics.Debug.WriteLine( $"Unable to extract {a.FullName} from imageZipFile: {ex.Message}" );
                      }
                  } );
-
-                var imageFilesInFolder = Directory.EnumerateFiles( extractedImagesFolder );
-                this.SlingshotImageFileNames.AddRange( imageFilesInFolder );
             }
+
+            var imageFilesInFolder = Directory.EnumerateFiles( extractedImagesFolder );
+            this.SlingshotImageFileNames.AddRange( imageFilesInFolder );
 
             BulkImporter = new BulkImporter();
             BulkImporter.ImportUpdateOption = importUpdateType;
@@ -175,12 +175,14 @@ namespace Rock.Slingshot
             }
         }
 
-        List<string> _samplePhotoLocalUrls = null;
+        private List<string> _samplePhotoLocalUrls = null;
 
         /* Person Related */
         private Dictionary<Guid, DefinedValueCache> PersonRecordTypeValues { get; set; }
 
         private Dictionary<Guid, DefinedValueCache> PersonRecordStatusValues { get; set; }
+
+        private Dictionary<Guid, DefinedValueCache> RecordStatusReasonValues { get; set; }
 
         private Dictionary<string, DefinedValueCache> PersonConnectionStatusValues { get; set; }
 
@@ -200,9 +202,13 @@ namespace Rock.Slingshot
 
         private Dictionary<string, AttributeCache> FamilyAttributeKeyLookup { get; set; }
 
+        private Dictionary<string, AttributeCache> GroupAttributeKeyLookup { get; set; }
+
         private List<SlingshotCore.Model.PersonAttribute> SlingshotPersonAttributes { get; set; }
 
         private List<SlingshotCore.Model.FamilyAttribute> SlingshotFamilyAttributes { get; set; }
+
+        private List<SlingshotCore.Model.GroupAttribute> SlingshotGroupAttributes { get; set; }
 
         private List<SlingshotCore.Model.Person> SlingshotPersonList { get; set; }
 
@@ -356,11 +362,13 @@ namespace Rock.Slingshot
             AddPersonTitles();
             AddPersonSuffixes();
             AddPhoneTypes();
+            AddLocationTypes();
             AddAttributeCategories();
             AddPersonAttributes();
             AddFamilyAttributes();
 
             AddGroupTypes();
+            AddGroupAttributes();
 
             // load lookups again in case we added some new ones
             this.ReportProgress( 0, "Reloading Rock Lookups..." );
@@ -398,9 +406,9 @@ namespace Rock.Slingshot
         /// </summary>
         public void DoImportPhotos()
         {
-            // NOTE: Images can either be a URL or FileName specified in Person or Family import, 
+            // NOTE: Images can either be a URL or FileName specified in Person or Family import,
             // or in *.images.slingshot folders in the following format:
-            /*  
+            /*
                 exportfilename.slingshot
                 exportfilename_1.images.slingshot( max size 100MB )
                   - FinancialTransaction_{ Id}[_{ImageNum}].jpg/dif
@@ -499,7 +507,6 @@ namespace Rock.Slingshot
                 if ( photoImport.FileName.StartsWith( "FinancialTransaction_" ) )
                 {
                     photoImport.PhotoType = Slingshot.Model.PhotoImport.PhotoImportType.FinancialTransaction;
-
                 }
                 else if ( photoImport.FileName.StartsWith( "Person_" ) )
                 {
@@ -648,8 +655,8 @@ namespace Rock.Slingshot
             {
                 try
                 {
-                    HttpWebRequest imageRequest = ( HttpWebRequest ) HttpWebRequest.Create( photoUri );
-                    HttpWebResponse imageResponse = ( HttpWebResponse ) imageRequest.GetResponse();
+                    HttpWebRequest imageRequest = (HttpWebRequest)HttpWebRequest.Create( photoUri );
+                    HttpWebResponse imageResponse = (HttpWebResponse)imageRequest.GetResponse();
                     var imageStream = imageResponse.GetResponseStream();
                     using ( MemoryStream ms = new MemoryStream() )
                     {
@@ -689,7 +696,6 @@ namespace Rock.Slingshot
             return true;
         }
 
-
         #region Person and Family Notes
 
         /// <summary>
@@ -701,7 +707,7 @@ namespace Rock.Slingshot
         /// <exception cref="System.Exception">Unexpected Note EntityType</exception>
         private void SubmitEntityNotesImport<T>( IEnumerable<SlingshotCore.Data.EntityNote> slingshotEntityNoteList, bool? groupEntityIsFamily ) where T : Rock.Data.IEntity
         {
-            var entityType = EntityTypeCache.Read<T>();
+            var entityType = EntityTypeCache.Get<T>();
 
             string entityFriendlyName = entityType.FriendlyName;
             if ( entityType.Id == EntityTypeCache.GetId<Rock.Model.Group>().Value )
@@ -737,7 +743,6 @@ namespace Rock.Slingshot
                     noteType.Name = noteTypeName;
                     noteType.UserSelectable = true;
                     noteType.IconCssClass = string.Empty;
-                    noteType.CssClass = string.Empty;
                     noteTypeService.Add( noteType );
                     rockContext.SaveChanges();
 
@@ -799,28 +804,35 @@ namespace Rock.Slingshot
                 switch ( slingshotFinancialPledge.PledgeFrequency )
                 {
                     case SlingshotCore.Model.PledgeFrequency.OneTime:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME )?.Id;
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME )?.Id;
                         break;
+
                     case SlingshotCore.Model.PledgeFrequency.Weekly:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY )?.Id;
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY )?.Id;
                         break;
+
                     case SlingshotCore.Model.PledgeFrequency.BiWeekly:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY )?.Id;
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY )?.Id;
                         break;
+
                     case SlingshotCore.Model.PledgeFrequency.TwiceAMonth:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY )?.Id;
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY )?.Id;
                         break;
+
                     case SlingshotCore.Model.PledgeFrequency.Monthly:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY )?.Id;
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY )?.Id;
                         break;
+
                     case SlingshotCore.Model.PledgeFrequency.Quarterly:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_QUARTERLY )?.Id;
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_QUARTERLY )?.Id;
                         break;
+
                     case SlingshotCore.Model.PledgeFrequency.TwiceAYear:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEYEARLY )?.Id;
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEYEARLY )?.Id;
                         break;
+
                     case SlingshotCore.Model.PledgeFrequency.Yearly:
-                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_YEARLY )?.Id;
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_YEARLY )?.Id;
                         break;
                 }
 
@@ -865,7 +877,7 @@ namespace Rock.Slingshot
                     financialAccountImport.CampusId = this.CampusLookupByForeignId[slingshotFinancialAccount.CampusId.Value]?.Id;
                 }
 
-                financialAccountImport.ParentFinancialAccountForeignId = slingshotFinancialAccount.ParentAccountId == 0 ? ( int? ) null : slingshotFinancialAccount.ParentAccountId;
+                financialAccountImport.ParentFinancialAccountForeignId = slingshotFinancialAccount.ParentAccountId == 0 ? (int?)null : slingshotFinancialAccount.ParentAccountId;
 
                 financialAccountImportList.Add( financialAccountImport );
             }
@@ -906,15 +918,17 @@ namespace Rock.Slingshot
                     case SlingshotCore.Model.BatchStatus.Closed:
                         financialBatchImport.Status = Rock.Slingshot.Model.FinancialBatchImport.BatchStatus.Closed;
                         break;
+
                     case SlingshotCore.Model.BatchStatus.Open:
                         financialBatchImport.Status = Rock.Slingshot.Model.FinancialBatchImport.BatchStatus.Open;
                         break;
+
                     case SlingshotCore.Model.BatchStatus.Pending:
                         financialBatchImport.Status = Rock.Slingshot.Model.FinancialBatchImport.BatchStatus.Pending;
                         break;
                 }
 
-                financialBatchImport.CampusId = slingshotFinancialBatch.CampusId.HasValue ? this.CampusLookupByForeignId[slingshotFinancialBatch.CampusId.Value]?.Id : ( int? ) null;
+                financialBatchImport.CampusId = slingshotFinancialBatch.CampusId.HasValue ? this.CampusLookupByForeignId[slingshotFinancialBatch.CampusId.Value]?.Id : (int?)null;
 
                 financialBatchImportList.Add( financialBatchImport );
             }
@@ -944,21 +958,27 @@ namespace Rock.Slingshot
                     case SlingshotCore.Model.CurrencyType.ACH:
                         financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.CurrencyType.Cash:
                         financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CASH.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.CurrencyType.Check:
                         financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.CurrencyType.CreditCard:
                         financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.CurrencyType.NonCash:
                         financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.CurrencyType.Unknown:
                         financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.CurrencyType.Other:
                         // TODO: Do we need to support this?
                         break;
@@ -969,15 +989,19 @@ namespace Rock.Slingshot
                     case SlingshotCore.Model.TransactionSource.BankChecks:
                         financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_BANK_CHECK.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.TransactionSource.Kiosk:
                         financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_KIOSK.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.TransactionSource.MobileApplication:
                         financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.TransactionSource.OnsiteCollection:
                         financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.TransactionSource.Website:
                         financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE.AsGuid()].Id;
                         break;
@@ -988,6 +1012,7 @@ namespace Rock.Slingshot
                     case SlingshotCore.Model.TransactionType.Contribution:
                         financialTransactionImport.TransactionTypeValueId = this.TransactionTypeValues[Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.TransactionType.EventRegistration:
                         financialTransactionImport.TransactionTypeValueId = this.TransactionTypeValues[Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION.AsGuid()].Id;
                         break;
@@ -1181,10 +1206,17 @@ namespace Rock.Slingshot
                 groupImport.GroupTypeId = this.GroupTypeLookupByForeignId[slingshotGroup.GroupTypeId].Id;
 
                 groupImport.Name = slingshotGroup.Name;
+                groupImport.Description = slingshotGroup.Description;
                 if ( string.IsNullOrWhiteSpace( slingshotGroup.Name ) )
                 {
                     groupImport.Name = "Unnamed Group";
                 }
+
+                groupImport.IsActive = slingshotGroup.IsActive;
+                groupImport.IsPublic = slingshotGroup.IsPublic;
+                groupImport.Capacity = slingshotGroup.Capacity;
+                groupImport.MeetingDay = slingshotGroup.MeetingDay;
+                groupImport.MeetingTime = slingshotGroup.MeetingTime;
 
                 groupImport.Order = slingshotGroup.Order;
                 if ( slingshotGroup.CampusId.HasValue )
@@ -1192,7 +1224,7 @@ namespace Rock.Slingshot
                     groupImport.CampusId = this.CampusLookupByForeignId[slingshotGroup.CampusId.Value]?.Id;
                 }
 
-                groupImport.ParentGroupForeignId = slingshotGroup.ParentGroupId == 0 ? ( int? ) null : slingshotGroup.ParentGroupId;
+                groupImport.ParentGroupForeignId = slingshotGroup.ParentGroupId == 0 ? (int?)null : slingshotGroup.ParentGroupId;
                 groupImport.GroupMemberImports = new List<Rock.Slingshot.Model.GroupMemberImport>();
 
                 foreach ( var groupMember in slingshotGroup.GroupMembers )
@@ -1204,6 +1236,69 @@ namespace Rock.Slingshot
                         groupMemberImport.RoleName = groupMember.Role;
                         groupImport.GroupMemberImports.Add( groupMemberImport );
                     }
+                }
+
+                // Addresses
+                groupImport.Addresses = new List<Rock.Slingshot.Model.GroupAddressImport>();
+                foreach ( var slingshotGroupAddress in slingshotGroup.Addresses )
+                {
+                    if ( !string.IsNullOrEmpty( slingshotGroupAddress.Street1 ) )
+                    {
+                        int? groupLocationTypeValueId = null;
+                        switch ( slingshotGroupAddress.AddressType )
+                        {
+                            case SlingshotCore.Model.AddressType.Home:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Previous:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Work:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Other:
+                                var locationTypeOther = this.GroupLocationTypeValues.Values.FirstOrDefault( t => t.Value.Equals( "Other" ) );
+                                groupLocationTypeValueId = locationTypeOther != null ? this.GroupLocationTypeValues[locationTypeOther.Guid].Id :
+                                    this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
+                                break;
+                        }
+
+                        if ( groupLocationTypeValueId.HasValue )
+                        {
+                            var addressImport = new Rock.Slingshot.Model.GroupAddressImport()
+                            {
+                                GroupLocationTypeValueId = groupLocationTypeValueId.Value,
+                                IsMailingLocation = slingshotGroupAddress.IsMailing,
+                                IsMappedLocation = slingshotGroupAddress.AddressType == SlingshotCore.Model.AddressType.Home,
+                                Street1 = slingshotGroupAddress.Street1.Left( 100 ),
+                                Street2 = slingshotGroupAddress.Street2.Left( 100 ),
+                                City = slingshotGroupAddress.City.Left( 50 ),
+                                State = slingshotGroupAddress.State.Left( 50 ),
+                                Country = slingshotGroupAddress.Country.Left( 50 ),
+                                PostalCode = slingshotGroupAddress.PostalCode.Left( 50 ),
+                                Latitude = slingshotGroupAddress.Latitude.AsDoubleOrNull(),
+                                Longitude = slingshotGroupAddress.Longitude.AsDoubleOrNull()
+                            };
+
+                            groupImport.Addresses.Add( addressImport );
+                        }
+                        else
+                        {
+                            throw new Exception( $"Unexpected Address Type: {slingshotGroupAddress.AddressType}" );
+                        }
+                    }
+                }
+
+                // Attribute Values
+                groupImport.AttributeValues = new List<Rock.Slingshot.Model.AttributeValueImport>();
+                foreach ( var slingshotGroupAttributeValue in slingshotGroup.Attributes )
+                {
+                    int attributeId = this.GroupAttributeKeyLookup[slingshotGroupAttributeValue.AttributeKey].Id;
+                    var attributeValueImport = new Rock.Slingshot.Model.AttributeValueImport { AttributeId = attributeId, Value = slingshotGroupAttributeValue.AttributeValue };
+                    groupImport.AttributeValues.Add( attributeValueImport );
                 }
 
                 groupImportList.Add( groupImport );
@@ -1258,6 +1353,11 @@ namespace Rock.Slingshot
 
             var familyRolesLookup = GroupTypeCache.GetFamilyGroupType().Roles.ToDictionary( k => k.Guid );
 
+            var gradeOffsetLookupFromDescription = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() )?.DefinedValues.ToDictionary( k => k.Description, v => v.Value.AsInteger(), StringComparer.OrdinalIgnoreCase );
+            var gradeOffsetLookupFromAbbreviation = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() )?.DefinedValues
+                .Select( a => new { Value = a.Value.AsInteger(), Abbreviation = a.AttributeValues["Abbreviation"]?.Value } )
+                .Where( a => !string.IsNullOrWhiteSpace( a.Abbreviation ) ).ToDictionary( k => k.Abbreviation, v => v.Value, StringComparer.OrdinalIgnoreCase );
+
             foreach ( var slingshotPerson in this.SlingshotPersonList )
             {
                 var personImport = new Rock.Slingshot.Model.PersonImport();
@@ -1282,6 +1382,7 @@ namespace Rock.Slingshot
                     case SlingshotCore.Model.FamilyRole.Adult:
                         personImport.GroupRoleId = familyRolesLookup[Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.FamilyRole.Child:
                         personImport.GroupRoleId = familyRolesLookup[Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid()].Id;
                         break;
@@ -1297,15 +1398,19 @@ namespace Rock.Slingshot
                     case SlingshotCore.Model.RecordStatus.Active:
                         personImport.RecordStatusValueId = this.PersonRecordStatusValues[Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid()]?.Id;
                         break;
+
                     case SlingshotCore.Model.RecordStatus.Inactive:
                         personImport.RecordStatusValueId = this.PersonRecordStatusValues[Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid()]?.Id;
                         break;
+
                     case SlingshotCore.Model.RecordStatus.Pending:
                         personImport.RecordStatusValueId = this.PersonRecordStatusValues[Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid()]?.Id;
                         break;
                 }
 
                 personImport.InactiveReasonNote = slingshotPerson.InactiveReason;
+                personImport.IsDeceased = slingshotPerson.InactiveReason.Equals( "Deceased" );
+                personImport.RecordStatusReasonValueId = this.RecordStatusReasonValues.Values.FirstOrDefault( v => v.Value.Equals( slingshotPerson.InactiveReason ) )?.Id;
 
                 if ( !string.IsNullOrEmpty( slingshotPerson.ConnectionStatus ) )
                 {
@@ -1333,19 +1438,21 @@ namespace Rock.Slingshot
                 {
                     personImport.BirthMonth = slingshotPerson.Birthdate.Value.Month;
                     personImport.BirthDay = slingshotPerson.Birthdate.Value.Day;
-                    personImport.BirthYear = slingshotPerson.Birthdate.Value.Year == slingshotPerson.BirthdateNoYearMagicYear ? ( int? ) null : slingshotPerson.Birthdate.Value.Year;
+                    personImport.BirthYear = slingshotPerson.Birthdate.Value.Year == slingshotPerson.BirthdateNoYearMagicYear ? (int?)null : slingshotPerson.Birthdate.Value.Year;
                 }
 
                 switch ( slingshotPerson.Gender )
                 {
                     case SlingshotCore.Model.Gender.Male:
-                        personImport.Gender = ( int ) Rock.Model.Gender.Male;
+                        personImport.Gender = (int)Rock.Model.Gender.Male;
                         break;
+
                     case SlingshotCore.Model.Gender.Female:
-                        personImport.Gender = ( int ) Rock.Model.Gender.Female;
+                        personImport.Gender = (int)Rock.Model.Gender.Female;
                         break;
+
                     case SlingshotCore.Model.Gender.Unknown:
-                        personImport.Gender = ( int ) Rock.Model.Gender.Unknown;
+                        personImport.Gender = (int)Rock.Model.Gender.Unknown;
                         break;
                 }
 
@@ -1354,12 +1461,15 @@ namespace Rock.Slingshot
                     case SlingshotCore.Model.MaritalStatus.Married:
                         personImport.MaritalStatusValueId = this.PersonMaritalStatusValues[Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.MaritalStatus.Single:
                         personImport.MaritalStatusValueId = this.PersonMaritalStatusValues[Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.MaritalStatus.Divorced:
                         personImport.MaritalStatusValueId = this.PersonMaritalStatusValues[Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_DIVORCED.AsGuid()].Id;
                         break;
+
                     case SlingshotCore.Model.MaritalStatus.Unknown:
                         personImport.MaritalStatusValueId = null;
                         break;
@@ -1367,7 +1477,23 @@ namespace Rock.Slingshot
 
                 personImport.AnniversaryDate = slingshotPerson.AnniversaryDate;
 
+                // do a case-insensitive lookup GradeOffset from either the Description ("Kindergarten", "1st Grade", etc) or Abbreviation ("K", "1st", etc)
                 personImport.Grade = slingshotPerson.Grade;
+                int? gradeOffset = null;
+                if ( !string.IsNullOrWhiteSpace( personImport.Grade ) )
+                {
+                    gradeOffset = gradeOffsetLookupFromDescription.GetValueOrNull( personImport.Grade );
+                    if ( gradeOffset == null )
+                    {
+                        gradeOffset = gradeOffsetLookupFromAbbreviation.GetValueOrNull( personImport.Grade );
+                    }
+                }
+
+                if ( gradeOffset.HasValue )
+                {
+                    personImport.GraduationYear = Person.GraduationYearFromGradeOffset( gradeOffset );
+                }
+
                 personImport.Email = slingshotPerson.Email;
 
                 // slingshot doesn't include an IsEmailActive, so default it to True
@@ -1376,13 +1502,15 @@ namespace Rock.Slingshot
                 switch ( slingshotPerson.EmailPreference )
                 {
                     case SlingshotCore.Model.EmailPreference.EmailAllowed:
-                        personImport.EmailPreference = ( int ) Rock.Model.EmailPreference.EmailAllowed;
+                        personImport.EmailPreference = (int)Rock.Model.EmailPreference.EmailAllowed;
                         break;
+
                     case SlingshotCore.Model.EmailPreference.DoNotEmail:
-                        personImport.EmailPreference = ( int ) Rock.Model.EmailPreference.DoNotEmail;
+                        personImport.EmailPreference = (int)Rock.Model.EmailPreference.DoNotEmail;
                         break;
+
                     case SlingshotCore.Model.EmailPreference.NoMassEmails:
-                        personImport.EmailPreference = ( int ) Rock.Model.EmailPreference.NoMassEmails;
+                        personImport.EmailPreference = (int)Rock.Model.EmailPreference.NoMassEmails;
                         break;
                 }
 
@@ -1416,11 +1544,19 @@ namespace Rock.Slingshot
                             case SlingshotCore.Model.AddressType.Home:
                                 groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid()].Id;
                                 break;
+
                             case SlingshotCore.Model.AddressType.Previous:
                                 groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
                                 break;
+
                             case SlingshotCore.Model.AddressType.Work:
                                 groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Other:
+                                var locationTypeOther = this.GroupLocationTypeValues.Values.FirstOrDefault( t => t.Value.Equals( "Other" ) );
+                                groupLocationTypeValueId = locationTypeOther != null ? this.GroupLocationTypeValues[locationTypeOther.Guid].Id :
+                                    this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
                                 break;
                         }
 
@@ -1429,14 +1565,14 @@ namespace Rock.Slingshot
                             var addressImport = new Rock.Slingshot.Model.PersonAddressImport()
                             {
                                 GroupLocationTypeValueId = groupLocationTypeValueId.Value,
-                                IsMailingLocation = slingshotPersonAddress.AddressType == SlingshotCore.Model.AddressType.Home,
+                                IsMailingLocation = slingshotPersonAddress.IsMailing,
                                 IsMappedLocation = slingshotPersonAddress.AddressType == SlingshotCore.Model.AddressType.Home,
-                                Street1 = slingshotPersonAddress.Street1,
-                                Street2 = slingshotPersonAddress.Street2,
-                                City = slingshotPersonAddress.City,
-                                State = slingshotPersonAddress.State,
-                                Country = slingshotPersonAddress.Country,
-                                PostalCode = slingshotPersonAddress.PostalCode,
+                                Street1 = slingshotPersonAddress.Street1.Left( 100 ),
+                                Street2 = slingshotPersonAddress.Street2.Left( 100 ),
+                                City = slingshotPersonAddress.City.Left( 50 ),
+                                State = slingshotPersonAddress.State.Left( 50 ),
+                                Country = slingshotPersonAddress.Country.Left( 50 ),
+                                PostalCode = slingshotPersonAddress.PostalCode.Left( 50 ),
                                 Latitude = slingshotPersonAddress.Latitude.AsDoubleOrNull(),
                                 Longitude = slingshotPersonAddress.Longitude.AsDoubleOrNull()
                             };
@@ -1485,10 +1621,7 @@ namespace Rock.Slingshot
             var campusService = new CampusService( rockContext );
 
             // Flush the campuscache just in case it was updated in the Database without rock knowing about it
-            foreach ( var campuscache in CampusCache.All() )
-            {
-                Rock.Web.Cache.CampusCache.Flush( campuscache.Id );
-            }
+            CampusCache.Clear();
 
             // Rock has a Unique Constraint on Campus.Name so, make sure campus name is unique and rename it if a new campus happens to have the same name as an existing campus
             var usedCampusNames = CampusCache.All().Select( a => a.Name ).ToList();
@@ -1514,9 +1647,10 @@ namespace Rock.Slingshot
                 campusToAdd.Guid = Guid.NewGuid();
                 campusService.Add( campusToAdd );
                 rockContext.SaveChanges();
-
-                Rock.Web.Cache.CampusCache.Flush( campusToAdd.Id );
             }
+
+            // Flush the campuscache to force to reload
+            CampusCache.Clear();
         }
 
         /// <summary>
@@ -1552,15 +1686,16 @@ namespace Rock.Slingshot
         {
             int entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>().Value;
             int entityTypeIdAttribute = EntityTypeCache.GetId<Rock.Model.Attribute>().Value;
-            var attributeCategoryNames = this.SlingshotPersonAttributes.Where( a => !string.IsNullOrWhiteSpace( a.Category ) ).Select( a => a.Category ).Distinct().ToList();
-            attributeCategoryNames.AddRange( this.SlingshotFamilyAttributes.Where( a => !string.IsNullOrWhiteSpace( a.Category ) ).Select( a => a.Category ).Distinct().ToList() );
+            int entityTypeIdGroup = EntityTypeCache.GetId<Rock.Model.Group>().Value;
+            var personCategoryNames = this.SlingshotPersonAttributes.Where( a => !string.IsNullOrWhiteSpace( a.Category ) ).Select( a => a.Category ).Distinct().ToList();
+            personCategoryNames.AddRange( this.SlingshotFamilyAttributes.Where( a => !string.IsNullOrWhiteSpace( a.Category ) ).Select( a => a.Category ).Distinct().ToList() );
 
             var rockContext = new RockContext();
             var categoryService = new CategoryService( rockContext );
 
             var attributeCategoryList = categoryService.Queryable().Where( a => a.EntityTypeId == entityTypeIdAttribute ).ToList();
 
-            foreach ( var slingshotAttributeCategoryName in attributeCategoryNames.Distinct().ToList() )
+            foreach ( var slingshotAttributeCategoryName in personCategoryNames.Distinct().ToList() )
             {
                 if ( !attributeCategoryList.Any( a => a.Name.Equals( slingshotAttributeCategoryName, StringComparison.OrdinalIgnoreCase ) ) )
                 {
@@ -1623,8 +1758,6 @@ namespace Rock.Slingshot
             }
 
             rockContext.SaveChanges();
-
-            AttributeCache.FlushEntityAttributes();
         }
 
         /// <summary>
@@ -1675,6 +1808,52 @@ namespace Rock.Slingshot
         }
 
         /// <summary>
+        /// Adds the group attributes.
+        /// </summary>
+        private void AddGroupAttributes()
+        {
+            int entityTypeIdGroup = EntityTypeCache.GetId<Rock.Model.Group>().Value;
+
+            var rockContext = new RockContext();
+            var attributeService = new AttributeService( rockContext );
+            var entityTypeIdAttribute = EntityTypeCache.GetId<Rock.Model.Attribute>().Value;
+            var attributeCategoryList = new CategoryService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdAttribute ).ToList();
+
+            // Add any Group Attributes to Rock that aren't in Rock yet
+            foreach ( var slingshotGroupAttribute in this.SlingshotGroupAttributes )
+            {
+                slingshotGroupAttribute.Key = slingshotGroupAttribute.Key;
+
+                if ( !this.GroupAttributeKeyLookup.Keys.Any( a => a.Equals( slingshotGroupAttribute.Key, StringComparison.OrdinalIgnoreCase ) ) )
+                {
+                    // the group attribute category targets the grouptype
+                    var rockGroupAttribute = new Rock.Model.Attribute();
+                    rockGroupAttribute.Key = slingshotGroupAttribute.Key;
+                    rockGroupAttribute.Name = slingshotGroupAttribute.Name;
+                    rockGroupAttribute.Guid = Guid.NewGuid();
+                    rockGroupAttribute.EntityTypeId = entityTypeIdGroup;
+                    rockGroupAttribute.EntityTypeQualifierColumn = "GroupTypeId";
+                    rockGroupAttribute.EntityTypeQualifierValue = this.SlingshotGroupTypeList.FirstOrDefault( gt => gt.Name.Equals( slingshotGroupAttribute.Category ) )?.Id.ToString();
+                    rockGroupAttribute.FieldTypeId = this.FieldTypeLookup[slingshotGroupAttribute.FieldType].Id;
+
+                    if ( !string.IsNullOrWhiteSpace( slingshotGroupAttribute.Category ) )
+                    {
+                        var attributeCategory = attributeCategoryList.FirstOrDefault( a => a.Name.Equals( slingshotGroupAttribute.Category, StringComparison.OrdinalIgnoreCase ) );
+                        if ( attributeCategory != null )
+                        {
+                            rockGroupAttribute.Categories = new List<Rock.Model.Category>();
+                            rockGroupAttribute.Categories.Add( attributeCategory );
+                        }
+                    }
+
+                    attributeService.Add( rockGroupAttribute );
+                }
+            }
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
         /// Adds the connection statuses.
         /// </summary>
         private void AddConnectionStatuses()
@@ -1707,6 +1886,16 @@ namespace Rock.Slingshot
         }
 
         /// <summary>
+        /// Adds the location types.
+        /// </summary>
+        private void AddLocationTypes()
+        {
+            // temporarily convert to Dictionary<ValueName, ValueCache> for the Add method
+            var groupLocationTypeValues = this.GroupLocationTypeValues.Values.ToDictionary( k => k.Value, p => p );
+            AddDefinedValues( this.SlingshotPersonList.SelectMany( a => a.Addresses ).Select( a => Enum.GetName( typeof( SlingshotCore.Model.AddressType ), a.AddressType ) ).Distinct().ToList(), groupLocationTypeValues );
+        }
+
+        /// <summary>
         /// Adds the defined values.
         /// </summary>
         /// <param name="importDefinedValues">The import defined values.</param>
@@ -1726,8 +1915,6 @@ namespace Rock.Slingshot
             }
 
             rockContext.SaveChanges();
-
-            DefinedTypeCache.Flush( definedTypeId );
         }
 
         /// <summary>
@@ -1741,12 +1928,11 @@ namespace Rock.Slingshot
             // Family Attributes
             this.SlingshotFamilyAttributes = LoadSlingshotListFromFile<SlingshotCore.Model.FamilyAttribute>();
 
-
             /* Attendance */
             this.SlingshotAttendanceList = LoadSlingshotListFromFile<SlingshotCore.Model.Attendance>( false );
 
             /* Groups (non-family) (note: there might be duplicates, so just get the distinct ones */
-            this.SlingshotGroupList = LoadSlingshotListFromFile<SlingshotCore.Model.Group>().DistinctBy( a => a.Id ).ToList();
+            LoadGroupSlingshotLists();
 
             /* Group Members*/
             var groupMemberList = LoadSlingshotListFromFile<SlingshotCore.Model.GroupMember>().GroupBy( a => a.GroupId ).ToDictionary( k => k.Key, v => v.ToList() );
@@ -1809,16 +1995,26 @@ namespace Rock.Slingshot
             var fileName = Path.Combine( this.SlingshotDirectoryName, new T().GetFileName() );
             if ( File.Exists( fileName ) )
             {
-                using ( var slingshotFileStream = File.OpenText( fileName ) )
+                try
                 {
-                    CsvReader csvReader = new CsvReader( slingshotFileStream );
-                    csvReader.Configuration.HasHeaderRecord = true;
-                    if ( willThrowOnMissingField.HasValue )
+                    using ( var slingshotFileStream = File.OpenText( fileName ) )
                     {
-                        csvReader.Configuration.WillThrowOnMissingField = willThrowOnMissingField.Value;
-                    }
+                        CsvReader csvReader = new CsvReader( slingshotFileStream );
+                        csvReader.Configuration.HasHeaderRecord = true;
+                        if ( willThrowOnMissingField.HasValue )
+                        {
+                            csvReader.Configuration.WillThrowOnMissingField = willThrowOnMissingField.Value;
+                        }
 
-                    return csvReader.GetRecords<T>().ToList();
+                        return csvReader.GetRecords<T>().ToList();
+                    }
+                }
+                catch
+                {
+                    var exceptions = AnalyzeImportFileExceptions<T>( willThrowOnMissingField, fileName );
+                    var exception = new AggregateException( $"File '{Path.GetFileName( fileName )}' cannot be properly read during Slingshot import. See InnerExceptions for line number(s).", exceptions );
+                    ExceptionLogService.LogException( exception );
+                    throw exception;
                 }
             }
             else
@@ -1828,13 +2024,55 @@ namespace Rock.Slingshot
         }
 
         /// <summary>
+        /// Process the import file and log all the lines where exceptions occur.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="willThrowOnMissingField">The will throw on missing field.</param>
+        /// <param name="fileName">Name of the file.</param>
+        /// <returns>Exceptions</returns>
+        private static List<Exception> AnalyzeImportFileExceptions<T>( bool? willThrowOnMissingField, string fileName ) where T : SlingshotCore.Model.IImportModel, new()
+        {
+            List<Exception> exceptions = new List<Exception>();
+
+            using ( var slingshotFileStream = File.OpenText( fileName ) )
+            {
+                // Pre process file to see if there are errors.
+                CsvReader csvReader = new CsvReader( slingshotFileStream );
+                csvReader.Configuration.HasHeaderRecord = true;
+                if ( willThrowOnMissingField.HasValue )
+                {
+                    csvReader.Configuration.WillThrowOnMissingField = willThrowOnMissingField.Value;
+                    csvReader.Configuration.IgnoreReadingExceptions = true;
+                }
+
+                // We're just reading these to spot any problems on a particular row.
+                int i = 1; // start count at the header row
+                while ( csvReader.Read() )
+                {
+                    i++;
+                    try
+                    {
+                        var record = csvReader.GetRecord<T>();
+                    }
+                    catch ( Exception ex )
+                    {
+                        exceptions.Add( new CsvBadDataException( $"Line {i} cannot be properly read during Slingshot import.", ex ) );
+                    }
+                }
+            }
+
+            return exceptions;
+        }
+
+
+        /// <summary>
         /// Loads the person slingshot lists.
         /// </summary>
         private void LoadPersonSlingshotLists()
         {
             this.SlingshotPersonList = LoadSlingshotListFromFile<SlingshotCore.Model.Person>( false );
 
-            Dictionary<int, List<SlingshotCore.Model.PersonAddress>> slingshotPersonAddressListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.PersonAddress>().GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
+            Dictionary<int, List<SlingshotCore.Model.PersonAddress>> slingshotPersonAddressListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.PersonAddress>( false ).GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
             Dictionary<int, List<SlingshotCore.Model.PersonAttributeValue>> slingshotPersonAttributeValueListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.PersonAttributeValue>().GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
             Dictionary<int, List<SlingshotCore.Model.PersonPhone>> slingshotPersonPhoneListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.PersonPhone>().GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
 
@@ -1849,13 +2087,32 @@ namespace Rock.Slingshot
         }
 
         /// <summary>
+        /// Loads the group slingshot lists.
+        /// </summary>
+        private void LoadGroupSlingshotLists()
+        {
+            this.SlingshotGroupList = LoadSlingshotListFromFile<SlingshotCore.Model.Group>( false ).DistinctBy( a => a.Id ).ToList();
+
+            var groupAddressLookup = LoadSlingshotListFromFile<SlingshotCore.Model.GroupAddress>().GroupBy( a => a.GroupId ).ToDictionary( k => k.Key, v => v.ToList() );
+            var groupAttributeValueLookup = LoadSlingshotListFromFile<SlingshotCore.Model.GroupAttributeValue>().GroupBy( a => a.GroupId ).ToDictionary( k => k.Key, v => v.ToList() );
+
+            foreach ( var slingshotGroup in this.SlingshotGroupList )
+            {
+                slingshotGroup.Addresses = groupAddressLookup.ContainsKey( slingshotGroup.Id ) ? groupAddressLookup[slingshotGroup.Id] : new List<SlingshotCore.Model.GroupAddress>();
+                slingshotGroup.Attributes = groupAttributeValueLookup.ContainsKey( slingshotGroup.Id ) ? groupAttributeValueLookup[slingshotGroup.Id].ToList() : new List<SlingshotCore.Model.GroupAttributeValue>();
+            }
+
+            this.SlingshotGroupAttributes = LoadSlingshotListFromFile<SlingshotCore.Model.GroupAttribute>().ToList();
+        }
+
+        /// <summary>
         /// Ensures that the defined values that we need exist on the Rock Server
         /// </summary>
         private void EnsureDefinedValues()
         {
             List<Rock.Model.DefinedValue> definedValuesToAdd = new List<Rock.Model.DefinedValue>();
-            int definedTypeIdCurrencyType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() ).Id;
-            int definedTypeIdTransactionSourceType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() ).Id;
+            int definedTypeIdCurrencyType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() ).Id;
+            int definedTypeIdTransactionSourceType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() ).Id;
 
             // The following DefinedValues are not IsSystem, but are potentionally needed to do an import, so make sure they exist on the server
             if ( !this.CurrencyTypeValues.ContainsKey( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH.AsGuid() ) )
@@ -1928,11 +2185,6 @@ namespace Rock.Slingshot
             var definedValueService = new DefinedValueService( rockContext );
             definedValueService.AddRange( definedValuesToAdd );
             rockContext.SaveChanges();
-
-            foreach ( var definedTypeId in definedValuesToAdd.Select( a => a.DefinedTypeId ).Distinct().ToList() )
-            {
-                DefinedTypeCache.Flush( definedTypeId );
-            }
         }
 
         /// <summary>
@@ -1942,6 +2194,7 @@ namespace Rock.Slingshot
         {
             this.PersonRecordTypeValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_RECORD_TYPE.AsGuid() );
             this.PersonRecordStatusValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() );
+            this.RecordStatusReasonValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
             this.PersonConnectionStatusValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Select( a => a.Value ).ToDictionary( k => k.Value, v => v );
             this.PersonTitleValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ).Select( a => a.Value ).ToDictionary( k => k.Value, v => v );
             this.PersonSuffixValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ).Select( a => a.Value ).ToDictionary( k => k.Value, v => v );
@@ -1960,20 +2213,24 @@ namespace Rock.Slingshot
             var rockContext = new RockContext();
 
             // Person Attributes
-            var personAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdPerson ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Read( a ) ).ToList();
+            var personAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdPerson ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Get( a ) ).ToList();
             this.PersonAttributeKeyLookup = personAttributes.ToDictionary( k => k.Key, v => v );
 
             // Family Attributes
             string groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id.ToString();
 
-            var familyAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdGroup && a.EntityTypeQualifierColumn == "GroupTypeId" && a.EntityTypeQualifierValue == groupTypeIdFamily ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Read( a ) ).ToList();
+            var familyAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdGroup && a.EntityTypeQualifierColumn == "GroupTypeId" && a.EntityTypeQualifierValue == groupTypeIdFamily ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Get( a ) ).ToList();
             this.FamilyAttributeKeyLookup = familyAttributes.ToDictionary( k => k.Key, v => v );
 
             // FieldTypes
-            this.FieldTypeLookup = new FieldTypeService( rockContext ).Queryable().Select( a => a.Id ).ToList().Select( a => FieldTypeCache.Read( a ) ).ToDictionary( k => k.Class, v => v );
+            this.FieldTypeLookup = new FieldTypeService( rockContext ).Queryable().Select( a => a.Id ).ToList().Select( a => FieldTypeCache.Get( a ) ).ToDictionary( k => k.Class, v => v );
+
+            // Group Attributes
+            var groupAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdGroup ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Get( a ) ).ToList();
+            this.GroupAttributeKeyLookup = groupAttributes.ToDictionary( k => k.Key, v => v );
 
             // GroupTypes
-            this.GroupTypeLookupByForeignId = new GroupTypeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == this.ForeignSystemKey ).ToList().Select( a => GroupTypeCache.Read( a ) ).ToDictionary( k => k.ForeignId.Value, v => v );
+            this.GroupTypeLookupByForeignId = new GroupTypeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == this.ForeignSystemKey ).ToList().Select( a => GroupTypeCache.Get( a ) ).ToDictionary( k => k.ForeignId.Value, v => v );
 
             // Campuses
             this.CampusLookupByForeignId = CampusCache.All().Where( a => a.ForeignId.HasValue && a.ForeignKey == this.ForeignSystemKey ).ToList().ToDictionary( k => k.ForeignId.Value, v => v );
@@ -1986,7 +2243,7 @@ namespace Rock.Slingshot
         /// <returns></returns>
         private Dictionary<Guid, DefinedValueCache> LoadDefinedValues( Guid definedTypeGuid )
         {
-            return DefinedTypeCache.Read( definedTypeGuid ).DefinedValues.ToDictionary( k => k.Guid );
+            return DefinedTypeCache.Get( definedTypeGuid ).DefinedValues.ToDictionary( k => k.Guid );
         }
     }
 }

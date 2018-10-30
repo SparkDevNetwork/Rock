@@ -97,6 +97,7 @@ namespace Rock.Model
             target.AllowSearch = source.AllowSearch;
             target.DefaultValue = source.DefaultValue;
             target.Description = source.Description;
+            target.EnableHistory = source.EnableHistory;
             target.EntityTypeId = source.EntityTypeId;
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
@@ -104,6 +105,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
+            target.IsActive = source.IsActive;
             target.IsAnalytic = source.IsAnalytic;
             target.IsAnalyticHistory = source.IsAnalyticHistory;
             target.IsGridColumn = source.IsGridColumn;

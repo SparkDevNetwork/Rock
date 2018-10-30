@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Runtime.Caching;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -40,30 +39,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static List<GroupMemberWorkflowTrigger> GetCachedTriggers()
         {
-            return GetOrAddExisting( () => LoadCache() );
-        }
-
-        /// <summary>
-        /// Gets the or add existing.
-        /// </summary>
-        /// <param name="factory">The factory.</param>
-        /// <returns></returns>
-        private static List<GroupMemberWorkflowTrigger> GetOrAddExisting( Func<List<GroupMemberWorkflowTrigger>> factory )
-        {
-            RockMemoryCache cache = RockMemoryCache.Default;
-
-            var value = cache.Get( CACHE_KEY ) as List<GroupMemberWorkflowTrigger>;
-            if ( value != null )
-            {
-                return value;
-            }
-
-            value = factory();
-            if ( value != null )
-            {
-                cache.Set( CACHE_KEY, value, new CacheItemPolicy() );
-            }
-            return value; 
+            return RockCache.GetOrAddExisting( CACHE_KEY, () => LoadCache() ) as List<GroupMemberWorkflowTrigger>;
         }
 
         /// <summary>
@@ -87,12 +63,21 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Flushes the cached triggers.
+        /// Flushes cached triggers.
         /// </summary>
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use RemovedCachedTriggers() instead.")]
         public static void FlushCachedTriggers()
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-            cache.Remove( CACHE_KEY );
+            RemoveCachedTriggers();
+        }        
+        
+        /// <summary>
+        /// Removes cached triggers.
+        /// </summary>
+        public static void RemoveCachedTriggers()
+        {
+            RockCache.Remove( CACHE_KEY );
         }
 
     }

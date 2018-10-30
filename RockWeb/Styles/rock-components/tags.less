@@ -31,40 +31,41 @@ div.tagsinput {
     }
 
     span {
-      cursor: default;
       display: block;
       float: left;
       max-width: 120px;
       overflow: hidden;
       text-overflow: ellipsis;
-      transition: all 2s;
       white-space: nowrap;
+      cursor: default;
+      transition: all 2s;
     }
 
     a {
+      display: block;
+      float: left;
+      max-width: 0;
       font-size: 11px;
       font-weight: bold;
       color: @tag-text-color;
       text-decoration: none;
       opacity: 0;
-      display: block;
-      float: left;
-      max-width: 0px;
-      transition-duration: .5s;
       transition-delay: 1s;
+      transition-duration: .5s;
     }
 
     small {
       font-size: 11px;
     }
 
-    &:before {
+    &::before {
       position: absolute;
       top: 0;
       left: -10px; // chrome looks better with -11px but IE has line if so
       float: left;
       width: 0;
       height: 0;
+
       /* tag point */
       content: "";
       border-color: transparent @tag-bg transparent transparent;
@@ -72,13 +73,14 @@ div.tagsinput {
       border-width: 11px 11px 11px 0;
     }
 
-    &:after {
+    &::after {
       position: absolute;
       top: 8px;
       left: 0;
       float: left;
       width: 5px;
       height: 5px;
+
       /* tag dot */
       content: "";
       background: @tag-dot-color;
@@ -92,9 +94,9 @@ div.tagsinput {
       }
 
       a {
-        opacity: 1;
-        padding: 0px 2px;
         max-width: 100px;
+        padding: 0 2px;
+        opacity: 1;
         transition-delay: 0s;
       }
     }
@@ -111,7 +113,7 @@ div.tagsinput {
 
   span.tag.personal {
     background: @tag-bg-alt;
-    &:before {
+    &::before {
       border-color: transparent @tag-bg-alt transparent transparent;
     }
   }
@@ -200,6 +202,7 @@ div.tagsinput {
 
   li {
     margin-right: 12px;
+    cursor: default;
   }
 
   a {

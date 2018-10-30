@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Fundraising
 </p>
 ", order: 1 )]
 
-    [LinkedPage( "Participant Page", "The partipant page for a participant of this fundraising opportunity", required: false, order: 2 )]
+    [LinkedPage( "Participant Page", "The participant page for a participant of this fundraising opportunity", required: false, order: 2 )]
     [LinkedPage( "Main Page", "The main page for the fundraising opportunity", required: false, order: 3 )]
     public partial class FundraisingLeaderToolbox : RockBlock
     {

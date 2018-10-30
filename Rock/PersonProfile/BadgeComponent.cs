@@ -148,7 +148,6 @@ namespace Rock.PersonProfile
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public abstract void Render( PersonBadgeCache badge, HtmlTextWriter writer );
-
+        public abstract void Render( Web.Cache.PersonBadgeCache badge, HtmlTextWriter writer );
     }
 }

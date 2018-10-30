@@ -115,7 +115,7 @@ namespace Rock.Field.Types
                 Guid entityTypeGuid = value.AsGuid();
                 if ( entityTypeGuid != Guid.Empty )
                 {
-                    var entityType = EntityTypeCache.Read( entityTypeGuid );
+                    var entityType = EntityTypeCache.Get( entityTypeGuid );
                     if ( entityType != null )
                     {
                         formattedValue = entityType.FriendlyName;
@@ -190,8 +190,8 @@ namespace Rock.Field.Types
             var picker = control as ComponentPicker;
             if ( picker != null )
             {
-                Guid guid = value.AsGuid();
-                picker.SelectedValue = guid.ToString().ToUpper();
+                Guid? guid = value.AsGuidOrNull();
+                picker.SetValue( guid );
             }
         }
 

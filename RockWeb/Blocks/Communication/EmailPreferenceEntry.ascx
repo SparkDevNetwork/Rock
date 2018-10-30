@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel ID="upSettings" runat="server">
     <ContentTemplate>
-
+        <div class="email-error"></div>
         <div class="radio margin-t-sm margin-b-md">
             <Rock:RockRadioButton ID="rbUnsubscribe" runat="server" Text="Option 1" GroupName="EmailPreference" DisplayInline="false" CssClass="js-email-radio-option" />
             <div id="divUnsubscribeLists" runat="server" class="margin-l-lg margin-t-sm" style="display: none">
@@ -10,16 +10,22 @@
             </div>
         </div>
         <div class="radio">
-            <Rock:RockRadioButton ID="rbEmailPreferenceEmailAllowed" runat="server" Text="Option 2" GroupName="EmailPreference" DisplayInline="false" CssClass="js-email-radio-option" />
+            <Rock:RockRadioButton ID="rbUpdateEmailAddress" runat="server" Text="Option 2" GroupName="EmailPreference" DisplayInline="false" CssClass="js-email-radio-option" />
+        </div>
+        <div id="divUpdateEmail" runat="server" style="display: none">
+            <Rock:EmailBox ID="tbEmail" runat="server" Placeholder="Email" Label="Email" AllowMultiple="false" CssClass="input-width-xxl" />
+        </div>
+        <div class="radio" style="margin-top: -5px">
+            <Rock:RockRadioButton ID="rbEmailPreferenceEmailAllowed" runat="server" Text="Option 3" GroupName="EmailPreference" DisplayInline="false" CssClass="js-email-radio-option" />
         </div>
         <div class="radio">
-            <Rock:RockRadioButton ID="rbEmailPreferenceNoMassEmails" runat="server" Text="Option 3" GroupName="EmailPreference" DisplayInline="false" CssClass="js-email-radio-option" />
+            <Rock:RockRadioButton ID="rbEmailPreferenceNoMassEmails" runat="server" Text="Option 4" GroupName="EmailPreference" DisplayInline="false" CssClass="js-email-radio-option" />
         </div>
         <div class="radio">
-            <Rock:RockRadioButton ID="rbEmailPreferenceDoNotEmail" runat="server" Text="Option 4" GroupName="EmailPreference" DisplayInline="false" CssClass="js-email-radio-option" />
+            <Rock:RockRadioButton ID="rbEmailPreferenceDoNotEmail" runat="server" Text="Option 5" GroupName="EmailPreference" DisplayInline="false" CssClass="js-email-radio-option" />
         </div>
         <div class="radio">
-            <Rock:RockRadioButton ID="rbNotInvolved" runat="server" Text="Option 5" GroupName="EmailPreference" DisplayInline="false" CssClass="js-email-radio-option" />
+            <Rock:RockRadioButton ID="rbNotInvolved" runat="server" Text="Option 6" GroupName="EmailPreference" DisplayInline="false" CssClass="js-email-radio-option" />
         </div>
 
         <div id="divNotInvolved" runat="server" style="display: none">
@@ -28,7 +34,7 @@
         </div>
 
         <div class="actions">
-            <asp:LinkButton ID="btnSubmit" runat="server" Text="Submit" CssClass="btn btn-primary" OnClick="btnSubmit_Click" />
+            <asp:LinkButton ID="btnSubmit" runat="server" Text="Submit" CssClass="btn btn-primary" OnClientClick="return fnValidateForm();" OnClick="btnSubmit_Click" />
         </div>
         <br />
         <Rock:NotificationBox ID="nbEmailPreferenceSuccessMessage" runat="server" NotificationBoxType="Success" Visible="false" />
@@ -40,12 +46,23 @@
                     if ($('#<%=rbNotInvolved.ClientID%>').is(':checked')) {
                         $('#<%=divNotInvolved.ClientID%>').slideDown('fast');
                         $('#<%=divUnsubscribeLists.ClientID%>').slideUp('fast');
+                        $('#<%=divUpdateEmail.ClientID%>').slideUp('fast');
+
                     } else if ($('#<%=rbUnsubscribe.ClientID%>').is(':checked')) {
                         $('#<%=divNotInvolved.ClientID%>').slideUp('fast');
                         $('#<%=divUnsubscribeLists.ClientID%>').slideDown('fast');
-                    } else {
+                        $('#<%=divUpdateEmail.ClientID%>').slideUp('fast');
+
+                    } else if ($('#<%=rbUpdateEmailAddress.ClientID%>').is(':checked')) {
                         $('#<%=divNotInvolved.ClientID%>').slideUp('fast');
                         $('#<%=divUnsubscribeLists.ClientID%>').slideUp('fast');
+                        $('#<%=divUpdateEmail.ClientID%>').slideDown('fast');
+
+                    }
+                    else {
+                        $('#<%=divNotInvolved.ClientID%>').slideUp('fast');
+                        $('#<%=divUnsubscribeLists.ClientID%>').slideUp('fast');
+                        $('#<%=divUpdateEmail.ClientID%>').slideUp('fast');
                     }
                 }
 
@@ -55,6 +72,19 @@
 
                 toggleVisibility();
             });
+
+            function fnValidateForm() {
+                //validate text box is not empty
+                if ($('#<%=tbEmail.ClientID%>').val() == "" && $('#<%=rbUpdateEmailAddress.ClientID%>').is(':checked')) {
+                    $('.email-error').html('<div class="alert alert-danger">Email is required.</div>')
+                    return false;
+                }
+                // your other validation goes here
+                ///...
+
+                // Finally return true if all validation are success
+                return true;
+            }
         </script>
 
     </ContentTemplate>

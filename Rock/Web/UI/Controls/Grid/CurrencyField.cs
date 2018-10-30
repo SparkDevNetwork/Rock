@@ -34,6 +34,7 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+            this.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
         }
 
         /// <summary>

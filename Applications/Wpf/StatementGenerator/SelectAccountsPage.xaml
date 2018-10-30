@@ -4,12 +4,12 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       mc:Ignorable="d"
-      d:DesignHeight="600"
-      d:DesignWidth="800"
+      d:DesignHeight="580"
+      d:DesignWidth="940"
       Style="{StaticResource pageBackgroundGrey}"
       Title="Select Accounts">
 
-    <Grid>
+    <Grid Name="grdOuter">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}" />
             <ColumnDefinition Width="*" />
@@ -32,52 +32,115 @@
 
             <StackPanel Grid.Row="0"
                         Style="{StaticResource panelBanner}">
-                <Label Content="STEP 2:"
+                <Label Content="STEP 4:"
                        Style="{StaticResource labelStyleBannerTitle}" />
                 <Label Content="Account Selection"
                        Style="{StaticResource labelStyleBannerText}" />
             </StackPanel>
 
-            <StackPanel VerticalAlignment="Center"
-                        HorizontalAlignment="Center"
-                        Grid.Column="1"
-                        Grid.Row="1">
+            <Grid Name="grdAccounts" Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <StackPanel VerticalAlignment="Top"
+                        HorizontalAlignment="Left"
+                        Grid.Column="0"
+                        Grid.Row="0"
+                        Style="{StaticResource indentStyle}">
+                    
+                    <Label Content="Accounts"
+                       Style="{StaticResource labelStyleLegend}"   />
 
-                <Label Content="Select Accounts"
-                       Style="{StaticResource labelStyleLegend}" />
-                <ScrollViewer Height="200"
-                              HorizontalScrollBarVisibility="Hidden"
-                              VerticalScrollBarVisibility="Visible">
                     <ListBox Name="lstAccounts"
-                             Margin="16,8,0,0"
-                             Width="320">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <CheckBox Content="{Binding Name}"
-                                          IsChecked="{Binding IsChecked}" />
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
+                             Width="360" 
+                             Height="180"
+                             SelectionMode="Multiple"
+                             ScrollViewer.VerticalScrollBarVisibility="Visible">
                     </ListBox>
-                </ScrollViewer>
-                <StackPanel Orientation="Horizontal"
-                            HorizontalAlignment="Center">
-                    <Button Content="Select all"
-                            Name="btnSelectAll"
-                            Style="{StaticResource buttonStyle}"
-                            Margin="4"
+
+                    <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Left" Margin="4">
+                        <Button Content="Select all"
+                            Name="btnSelectAllAccounts"
+                            Style="{StaticResource buttonStyleMini}"
+                                
                             Click="btnSelectAll_Click" />
-                    <Button Content="Select none"
-                            Name="btnSelectNone"
-                            Style="{StaticResource buttonStyle}"
-                            Margin="4"
+                        <Border Width="4" />
+                        <Button Content="Select none"
+                            Name="btnSelectNoneAccounts"
+                            Style="{StaticResource buttonStyleMini}"
                             Click="btnSelectNone_Click" />
+                    </StackPanel>
+
+                    <StackPanel Margin="0,16,0,0">
+                        <CheckBox Name="cbShowTaxDeductible" 
+                          Content="Show Tax Deductible Accounts"
+                          Style="{StaticResource checkboxStyle}"
+                          Checked="cbFilter_Changed"
+                          Unchecked="cbFilter_Changed"
+                          IsChecked="True" />
+                        <CheckBox Name="cbShowNonTaxDeductible" 
+                          Content="Show Non Tax Deductible Accounts"
+                          Style="{StaticResource checkboxStyle}"
+                          Checked="cbFilter_Changed"
+                          Unchecked="cbFilter_Changed"
+                          IsChecked="True" 
+                          />
+                        <CheckBox Name="cbShowInactive" 
+                          Content="Show Inactive Accounts"
+                          Style="{StaticResource checkboxStyle}"
+                          Checked="cbFilter_Changed"
+                          Unchecked="cbFilter_Changed"
+                          IsChecked="True" />
+                    </StackPanel>
+
+
                 </StackPanel>
-                <Label Name="lblWarning"
+                <StackPanel VerticalAlignment="Top"
+                        HorizontalAlignment="Left"
+                        Margin="16,0,16,0"
+                        Grid.Column="1"
+                        Grid.Row="0">
+                    
+                    <Label Content="Currency Types for Cash Gifts"
+                       Style="{StaticResource labelStyleLegend}" />
+
+                    <ListBox Name="lstCashCurrencyTypes"
+                             Width="360"
+                             Height="120"
+                             ScrollViewer.VerticalScrollBarVisibility="Visible"
+                             SelectionMode="Multiple">
+                    </ListBox>
+
+                    <Label Content="Currency Types for Non-Cash Gifts"
+                       Style="{StaticResource labelStyleLegend}" />
+
+                    <ListBox Name="lstNonCashCurrencyTypes"
+                             Width="360"
+                             Height="120"
+                             ScrollViewer.VerticalScrollBarVisibility="Visible"
+                             SelectionMode="Multiple">
+                    </ListBox>
+
+                    
+
+
+                </StackPanel>
+
+            </Grid>
+
+            <Label Name="lblAccountsCurrencyTypesWarning" Grid.Row="2" VerticalAlignment="Bottom"
+                   HorizontalAlignment="Center"
                        Style="{StaticResource labelStyleAlert}"
-                       Content="Please select at least one account."
-                       Visibility="Hidden">
-                </Label>
-            </StackPanel>
+                       Content="Please select at least one account and currency type."
+                       Visibility="Visible">
+            </Label>
+
+
 
             <Button x:Name="btnPrev"
                     Grid.Row="2"
@@ -107,7 +170,7 @@
             </Button>
         </Grid>
 
-        <Frame Grid.Row="3"
+        <Frame Grid.Row="4"
                Grid.Column="2"
                Source="images/statement-generator.xaml"
                Style="{StaticResource logoStyleBottomRight}" />

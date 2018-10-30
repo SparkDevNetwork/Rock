@@ -14,7 +14,7 @@
                 </div>
                 <div class="panel-body">
 
-                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
                     <div class="row">
@@ -36,15 +36,13 @@
                         <div class="col-md-6">
                             <Rock:NumberBox ID="nbStartOffset" Label="Enable Check-in" AppendText="Mins Before Start" runat="server" NumberType="Integer" CssClass="input-width-lg" />
                             <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.Schedule" Label="Category" Required="true" />
+                            <Rock:ScheduleBuilder ID="sbSchedule" runat="server" Label="Schedule" OnSaveSchedule="sbSchedule_SaveSchedule" />
                         </div>
                         <div class="col-md-6">
                             <Rock:NumberBox ID="nbEndOffset" Label="Close Check-in" AppendText="Mins After Start&nbsp;&nbsp;" runat="server" NumberType="Integer" CssClass="input-width-lg" />
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-12">
-                            <Rock:ScheduleBuilder ID="sbSchedule" runat="server" Label="Schedule" OnSaveSchedule="sbSchedule_SaveSchedule" />
+                            <div class="attributes">
+                                <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
+                            </div>
                         </div>
                     </div>
 
@@ -80,8 +78,11 @@
 
                     <fieldset>
                         <div class="row">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <asp:Literal ID="lblMainDetails" runat="server" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:DynamicPlaceHolder ID="phDisplayAttributes" runat="server" />
                             </div>
                         </div>
                         <div class="actions">

@@ -104,7 +104,7 @@ namespace Rock.Web.UI.Controls
             ParentGrid = control as Grid;
             if ( ParentGrid != null )
             {
-                ColumnIndex = ParentGrid.Columns.IndexOf( this );
+                ColumnIndex = ParentGrid.GetColumnIndex( this );
             }
 
             return base.Initialize( sortingEnabled, control );

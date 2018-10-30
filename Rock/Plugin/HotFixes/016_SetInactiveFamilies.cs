@@ -27,32 +27,33 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            Sql( @"
-	-- Clean up migration for issue #1103.
-	-- Find family groups that have only 'inactive' people (record status) and mark the groups inactive.
-	DECLARE @cFAMILY_GROUPTYPE_GUID uniqueidentifier = '790E3215-3B10-442B-AF69-616C0DCB998E'
-	DECLARE @FamilyGroupTypeId int = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = @cFAMILY_GROUPTYPE_GUID)
+            // Moved to core migration: 201711271827181_V7Rollup
+            //            Sql( @"
+            //	-- Clean up migration for issue #1103.
+            //	-- Find family groups that have only 'inactive' people (record status) and mark the groups inactive.
+            //	DECLARE @cFAMILY_GROUPTYPE_GUID uniqueidentifier = '790E3215-3B10-442B-AF69-616C0DCB998E'
+            //	DECLARE @FamilyGroupTypeId int = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = @cFAMILY_GROUPTYPE_GUID)
 
-	DECLARE @cPERSON_RECORD_STATUS_INACTIVE_GUID uniqueidentifier = '1DAD99D5-41A9-4865-8366-F269902B80A4';
-	DECLARE @RecordStatusInactiveId int = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = @cPERSON_RECORD_STATUS_INACTIVE_GUID)
+            //	DECLARE @cPERSON_RECORD_STATUS_INACTIVE_GUID uniqueidentifier = '1DAD99D5-41A9-4865-8366-F269902B80A4';
+            //	DECLARE @RecordStatusInactiveId int = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = @cPERSON_RECORD_STATUS_INACTIVE_GUID)
 
-	-- All groups that are currently active, but don't have a single member whose record status is not inactive
-	UPDATE [Group]
-	SET
-		[IsActive] = 0
-	WHERE NOT EXISTS (
-		-- All family groups whose members are NOT inactive
-		SELECT 1 FROM [Group] g 
-		INNER JOIN [GroupMember] gm ON gm.[GroupId] = g.[Id]
-		INNER JOIN [Person] p on p.[Id] = gm.[PersonId]
-		WHERE 
-			g.[Id] = [Group].[Id]
-			AND g.[GroupTypeId] = @FamilyGroupTypeId 
-			AND p.[RecordStatusValueId] <> @RecordStatusInactiveId
-	)
-	AND [Group].[GroupTypeId] = @FamilyGroupTypeId 
-	AND [Group].[IsActive] = 1
-" );
+            //	-- All groups that are currently active, but don't have a single member whose record status is not inactive
+            //	UPDATE [Group]
+            //	SET
+            //		[IsActive] = 0
+            //	WHERE NOT EXISTS (
+            //		-- All family groups whose members are NOT inactive
+            //		SELECT 1 FROM [Group] g 
+            //		INNER JOIN [GroupMember] gm ON gm.[GroupId] = g.[Id]
+            //		INNER JOIN [Person] p on p.[Id] = gm.[PersonId]
+            //		WHERE 
+            //			g.[Id] = [Group].[Id]
+            //			AND g.[GroupTypeId] = @FamilyGroupTypeId 
+            //			AND p.[RecordStatusValueId] <> @RecordStatusInactiveId
+            //	)
+            //	AND [Group].[GroupTypeId] = @FamilyGroupTypeId 
+            //	AND [Group].[IsActive] = 1
+            //" ); 
         }
 
         /// <summary>

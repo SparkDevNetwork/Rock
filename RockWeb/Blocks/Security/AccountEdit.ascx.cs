@@ -52,8 +52,8 @@ namespace RockWeb.Blocks.Security
         {
             base.OnInit( e );
 
-            ddlTitle.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
-            ddlSuffix.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
+            dvpTitle.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ).Id;
+            dvpSuffix.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ).Id;
             string smsScript = @"
     $('.js-sms-number').click(function () {
         if ($(this).is(':checked')) {
@@ -120,8 +120,6 @@ namespace RockWeb.Blocks.Security
             {
                 var personService = new PersonService( rockContext );
 
-                var changes = new List<string>();
-
                 var person = personService.Get( CurrentPersonId ?? 0 );
                 if ( person != null )
                 {
@@ -130,40 +128,13 @@ namespace RockWeb.Blocks.Security
                     {
                         orphanedPhotoId = person.PhotoId;
                         person.PhotoId = imgPhoto.BinaryFileId;
-
-                        if ( orphanedPhotoId.HasValue )
-                        {
-                            if ( person.PhotoId.HasValue )
-                            {
-                                changes.Add( "Modified the photo." );
-                            }
-                            else
-                            {
-                                changes.Add( "Deleted the photo." );
-                            }
-                        }
-                        else if ( person.PhotoId.HasValue )
-                        {
-                            changes.Add( "Added a photo." );
-                        }
                     }
 
-                    int? newTitleId = ddlTitle.SelectedValueAsInt();
-                    History.EvaluateChange( changes, "Title", DefinedValueCache.GetName( person.TitleValueId ), DefinedValueCache.GetName( newTitleId ) );
-                    person.TitleValueId = newTitleId;
-
-                    History.EvaluateChange( changes, "First Name", person.FirstName, tbFirstName.Text );
+                    person.TitleValueId = dvpTitle.SelectedValueAsInt(); ;
                     person.FirstName = tbFirstName.Text;
-
-                    History.EvaluateChange(changes, "Nick Name", person.NickName, tbNickName.Text);
                     person.NickName = tbNickName.Text;
-
-                    History.EvaluateChange( changes, "Last Name", person.LastName, tbLastName.Text );
                     person.LastName = tbLastName.Text;
-
-                    int? newSuffixId = ddlSuffix.SelectedValueAsInt();
-                    History.EvaluateChange( changes, "Suffix", DefinedValueCache.GetName( person.SuffixValueId ), DefinedValueCache.GetName( newSuffixId ) );
-                    person.SuffixValueId = newSuffixId;
+                    person.SuffixValueId = dvpSuffix.SelectedValueAsInt(); ;
 
                     var birthMonth = person.BirthMonth;
                     var birthDay = person.BirthDay;
@@ -195,13 +166,7 @@ namespace RockWeb.Blocks.Security
                         person.SetBirthDate( null );
                     }
 
-                    History.EvaluateChange( changes, "Birth Month", birthMonth, person.BirthMonth );
-                    History.EvaluateChange( changes, "Birth Day", birthDay, person.BirthDay );
-                    History.EvaluateChange( changes, "Birth Year", birthYear, person.BirthYear );
-
-                    var newGender = rblGender.SelectedValue.ConvertToEnum<Gender>();
-                    History.EvaluateChange( changes, "Gender", person.Gender, newGender );
-                    person.Gender = newGender;
+                    person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>(); ;
 
                     var phoneNumberTypeIds = new List<int>();
 
@@ -225,15 +190,10 @@ namespace RockWeb.Blocks.Security
                                 if ( int.TryParse( hfPhoneType.Value, out phoneNumberTypeId ) )
                                 {
                                     var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberTypeId );
-                                    string oldPhoneNumber = string.Empty;
                                     if ( phoneNumber == null )
                                     {
                                         phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberTypeId };
                                         person.PhoneNumbers.Add( phoneNumber );
-                                    }
-                                    else
-                                    {
-                                        oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
                                     }
 
                                     phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
@@ -252,12 +212,6 @@ namespace RockWeb.Blocks.Security
 
                                     phoneNumber.IsUnlisted = cbUnlisted.Checked;
                                     phoneNumberTypeIds.Add( phoneNumberTypeId );
-
-                                    History.EvaluateChange(
-                                        changes,
-                                        string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumberTypeId ) ),
-                                        oldPhoneNumber,
-                                        phoneNumber.NumberFormattedWithCountryCode );
                                 }
                             }
                         }
@@ -269,37 +223,17 @@ namespace RockWeb.Blocks.Security
                         .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
                         .ToList() )
                     {
-                        History.EvaluateChange(
-                            changes,
-                            string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumber.NumberTypeValueId ) ),
-                            phoneNumber.ToString(),
-                            string.Empty );
-
                         person.PhoneNumbers.Remove( phoneNumber );
                         phoneNumberService.Delete( phoneNumber );
                     }
 
-                    History.EvaluateChange( changes, "Email", person.Email, tbEmail.Text );
                     person.Email = tbEmail.Text.Trim();
-
-                    var newEmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
-                    History.EvaluateChange( changes, "Email Preference", person.EmailPreference, newEmailPreference );
-                    person.EmailPreference = newEmailPreference;
+                    person.EmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>(); ;
 
                     if ( person.IsValid )
                     {
                         if ( rockContext.SaveChanges() > 0 )
                         {
-                            if ( changes.Any() )
-                            {
-                                HistoryService.SaveChanges(
-                                    rockContext,
-                                    typeof( Person ),
-                                    Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                    person.Id,
-                                    changes );
-                            }
-
                             if ( orphanedPhotoId.HasValue )
                             {
                                 BinaryFileService binaryFileService = new BinaryFileService( rockContext );
@@ -349,12 +283,11 @@ namespace RockWeb.Blocks.Security
                                     {
                                         var groupLocationService = new GroupLocationService( rockContext );
 
-                                        var dvHomeAddressType = DefinedValueCache.Read( addressTypeGuid.Value );
+                                        var dvHomeAddressType = DefinedValueCache.Get( addressTypeGuid.Value );
                                         var familyAddress = groupLocationService.Queryable().Where( l => l.GroupId == familyGroup.Id && l.GroupLocationTypeValueId == dvHomeAddressType.Id ).FirstOrDefault();
                                         if ( familyAddress != null && string.IsNullOrWhiteSpace( acAddress.Street1 ) )
                                         {
                                             // delete the current address
-                                            History.EvaluateChange( changes, familyAddress.GroupLocationTypeValue.Value + " Location", familyAddress.Location.ToString(), string.Empty );
                                             groupLocationService.Delete( familyAddress );
                                             rockContext.SaveChanges();
                                         }
@@ -377,7 +310,7 @@ namespace RockWeb.Blocks.Security
                                                     var previousAddress = new GroupLocation();
                                                     groupLocationService.Add( previousAddress );
 
-                                                    var previousAddressValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
+                                                    var previousAddressValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
                                                     if ( previousAddressValue  != null )
                                                     {
                                                         previousAddress.GroupLocationTypeValueId = previousAddressValue.Id;
@@ -398,22 +331,16 @@ namespace RockWeb.Blocks.Security
                                                 familyAddress.IsMailingLocation = cbIsMailingAddress.Checked;
                                                 familyAddress.IsMappedLocation = cbIsPhysicalAddress.Checked;
 
-                                                var updatedHomeAddress = new Location();
-                                                acAddress.GetValues( updatedHomeAddress );
+                                                var loc = new Location();
+                                                acAddress.GetValues( loc );
 
-                                                History.EvaluateChange( changes, dvHomeAddressType.Value + " Location", familyAddress.Location != null ? familyAddress.Location.ToString() : string.Empty, updatedHomeAddress.ToString() );
+                                                familyAddress.Location = new LocationService( rockContext ).Get(
+                                                    loc.Street1, loc.Street2, loc.City, loc.State, loc.PostalCode, loc.Country, familyGroup, true );
 
-                                                familyAddress.Location = updatedHomeAddress;
                                                 rockContext.SaveChanges();
                                             }
                                         }
 
-                                        HistoryService.SaveChanges(
-                                            rockContext,
-                                            typeof( Person ),
-                                            Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                            person.Id,
-                                            changes );
                                     }
                                 }
                             }
@@ -450,11 +377,11 @@ namespace RockWeb.Blocks.Security
             {
                 imgPhoto.BinaryFileId = person.PhotoId;
                 imgPhoto.NoPictureUrl = Person.GetPersonNoPictureUrl( person, 200, 200 );
-                ddlTitle.SelectedValue = person.TitleValueId.HasValue ? person.TitleValueId.Value.ToString() : string.Empty;
+                dvpTitle.SelectedValue = person.TitleValueId.HasValue ? person.TitleValueId.Value.ToString() : string.Empty;
                 tbFirstName.Text = person.FirstName;
                 tbNickName.Text = person.NickName;
                 tbLastName.Text = person.LastName;
-                ddlSuffix.SelectedValue = person.SuffixValueId.HasValue ? person.SuffixValueId.Value.ToString() : string.Empty;
+                dvpSuffix.SelectedValue = person.SuffixValueId.HasValue ? person.SuffixValueId.Value.ToString() : string.Empty;
                 bpBirthDay.SelectedDate = person.BirthDate;
                 rblGender.SelectedValue = person.Gender.ConvertToString();
                 tbEmail.Text = person.Email;             
@@ -463,7 +390,7 @@ namespace RockWeb.Blocks.Security
                 Guid? locationTypeGuid = GetAttributeValue( "LocationType" ).AsGuidOrNull();
                 if ( locationTypeGuid.HasValue )
                 {
-                    var addressTypeDv = DefinedValueCache.Read( locationTypeGuid.Value );
+                    var addressTypeDv = DefinedValueCache.Get( locationTypeGuid.Value );
 
                     // if address type is home enable the move and is mailing/physical
                     if (addressTypeDv.Guid == Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )
@@ -484,7 +411,7 @@ namespace RockWeb.Blocks.Security
 
                     if ( familyGroupTypeGuid.HasValue )
                     {
-                        var familyGroupType = GroupTypeCache.Read( familyGroupTypeGuid.Value );
+                        var familyGroupType = GroupTypeCache.Get( familyGroupTypeGuid.Value );
 
                         var familyAddress = new GroupLocationService( rockContext ).Queryable()
                                             .Where( l => l.Group.GroupTypeId == familyGroupType.Id
@@ -501,10 +428,10 @@ namespace RockWeb.Blocks.Security
                     }
                 }
 
-                var mobilePhoneType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
+                var mobilePhoneType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
 
                 var phoneNumbers = new List<PhoneNumber>();
-                var phoneNumberTypes = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
+                var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
                 if ( phoneNumberTypes.DefinedValues.Any() )
                 {
                     foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues )

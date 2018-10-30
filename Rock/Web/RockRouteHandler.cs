@@ -84,7 +84,7 @@ namespace Rock.Web
                             int? siteId = httpRequest.QueryString["SiteId"].AsIntegerOrNull();
                             if ( siteId.HasValue )
                             {
-                                site = SiteCache.Read( siteId.Value );
+                                site = SiteCache.Get( siteId.Value );
                             }
 
                             // Then check to see if site can be determined by domain
@@ -98,7 +98,7 @@ namespace Rock.Web
                             {
                                 if ( siteCookie != null && siteCookie.Value != null )
                                 {
-                                    site = SiteCache.Read( siteCookie.Value.AsInteger() );
+                                    site = SiteCache.Get( siteCookie.Value.AsInteger() );
                                 }
                             }
 
@@ -106,7 +106,7 @@ namespace Rock.Web
                             {
                                 foreach ( var pageAndRouteId in pageAndRouteIds )
                                 {
-                                    var pageCache = PageCache.Read( pageAndRouteId.PageId );
+                                    var pageCache = PageCache.Get( pageAndRouteId.PageId );
                                     if ( pageCache != null && pageCache.Layout != null && pageCache.Layout.SiteId == site.Id )
                                     {
                                         pageId = pageAndRouteId.PageId.ToJson();
@@ -124,7 +124,7 @@ namespace Rock.Web
                     }
                 }
 
-                // If page has not been specified get the site by the domain and use the site's default page
+                // If page has not been specified get the site by the domain 
                 if ( string.IsNullOrEmpty( pageId ) )
                 {
                     SiteCache site = SiteCache.GetSiteByDomain( httpRequest.Url.Host );
@@ -133,31 +133,54 @@ namespace Rock.Web
                         // Use last site
                         if ( siteCookie != null && siteCookie.Value != null )
                         {
-                            site = SiteCache.Read( siteCookie.Value.AsInteger() );
+                            site = SiteCache.Get( siteCookie.Value.AsInteger() );
                         }
                     }
 
                     // if not found use the default site
                     if ( site == null )
                     {
-                        site = SiteCache.Read( SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid() );
+                        site = SiteCache.Get( SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid() );
                     }
 
                     if ( site != null )
                     {
+                        // First default to the site's default page
+                        if ( string.IsNullOrWhiteSpace( pageId ) )
+                        {
+                            if ( site.DefaultPageId.HasValue )
+                            {
+                                pageId = site.DefaultPageId.Value.ToString();
+                            }
+                            else
+                            {
+                                throw new SystemException( "Invalid Site Configuration" );
+                            }
+
+                            if ( site.DefaultPageRouteId.HasValue )
+                            {
+                                routeId = site.DefaultPageRouteId.Value;
+                            }
+                        }
+
                         // Check to see if this is a short link route
                         if ( requestContext.RouteData.Values.ContainsKey( "shortlink" ) )
                         {
+                            pageId = string.Empty;
+                            routeId = 0;
+
                             string shortlink = requestContext.RouteData.Values["shortlink"].ToString();
                             using ( var rockContext = new Rock.Data.RockContext() )
                             {
                                 var pageShortLink = new PageShortLinkService( rockContext ).GetByToken( shortlink, site.Id );
                                 if ( pageShortLink != null )
                                 {
+                                    string trimmedUrl = pageShortLink.Url.RemoveCrLf().Trim();
+
                                     var transaction = new ShortLinkTransaction();
                                     transaction.PageShortLinkId = pageShortLink.Id;
                                     transaction.Token = pageShortLink.Token;
-                                    transaction.Url = pageShortLink.Url;
+                                    transaction.Url = trimmedUrl;
                                     if ( requestContext.HttpContext.User != null )
                                     {
                                         transaction.UserName = requestContext.HttpContext.User.Identity.Name;
@@ -167,7 +190,7 @@ namespace Rock.Web
                                     transaction.UserAgent = httpRequest.UserAgent ?? "";
                                     RockQueue.TransactionQueue.Enqueue( transaction );
 
-                                    requestContext.HttpContext.Response.Redirect( pageShortLink.Url );
+                                    requestContext.HttpContext.Response.Redirect( trimmedUrl );
                                     return null;
                                 }
                             }
@@ -203,6 +226,7 @@ namespace Rock.Web
                                 if ( site.MobilePageId.HasValue )
                                 {
                                     pageId = site.MobilePageId.Value.ToString();
+                                    routeId = 0;
                                 }
                                 else if ( !string.IsNullOrWhiteSpace( site.ExternalUrl ) )
                                 {
@@ -211,35 +235,16 @@ namespace Rock.Web
                                 }
                             }
                         }
-
-                        if ( string.IsNullOrWhiteSpace( pageId ) )
-                        {
-                            if ( site.DefaultPageId.HasValue )
-                            {
-                                pageId = site.DefaultPageId.Value.ToString();
-                            }
-
-                            if ( site.DefaultPageRouteId.HasValue )
-                            {
-                                routeId = site.DefaultPageRouteId.Value;
-                            }
-                        }
-                    }
-
-                    if ( string.IsNullOrEmpty( pageId ) )
-                    {
-                        throw new SystemException( "Invalid Site Configuration" );
                     }
                 }
 
                 PageCache page = null;
-
                 if ( !string.IsNullOrEmpty( pageId ) )
                 {
                     int pageIdNumber = 0;
                     if ( Int32.TryParse( pageId, out pageIdNumber ) )
                     {
-                        page = PageCache.Read( pageIdNumber );
+                        page = PageCache.Get( pageIdNumber );
                     }
                 }
 
@@ -252,27 +257,29 @@ namespace Rock.Web
                         // Use last site
                         if ( siteCookie != null && siteCookie.Value != null )
                         {
-                            site = SiteCache.Read( siteCookie.Value.AsInteger() );
+                            site = SiteCache.Get( siteCookie.Value.AsInteger() );
                         }
                     }
 
                     if ( site != null && site.PageNotFoundPageId != null )
                     {
-                        if ( Convert.ToBoolean( GlobalAttributesCache.Read().GetValue( "Log404AsException" ) ) )
+                        if ( Convert.ToBoolean( GlobalAttributesCache.Get().GetValue( "Log404AsException" ) ) )
                         {
                             Rock.Model.ExceptionLogService.LogException(
                                 new Exception( string.Format( "404 Error: {0}", httpRequest.Url.AbsoluteUri ) ),
                                 requestContext.HttpContext.ApplicationInstance.Context );
                         }
 
-                        page = PageCache.Read( site.PageNotFoundPageId ?? 0 );
+                        page = PageCache.Get( site.PageNotFoundPageId ?? 0 );
+                        requestContext.HttpContext.Response.StatusCode = 404;
+                        requestContext.HttpContext.Response.TrySkipIisCustomErrors = true;
                     }
                     else
                     {
                         // no 404 page found for the site, return the default 404 error page
                         return (System.Web.UI.Page)BuildManager.CreateInstanceFromVirtualPath( "~/Http404Error.aspx", typeof( System.Web.UI.Page ) );
                     }
-
+                      
                 }
 
                 string theme = page.Layout.Site.Theme;
@@ -357,7 +364,7 @@ namespace Rock.Web
     }
 
     /// <summary>
-    /// Handler used when an error occurrs
+    /// Handler used when an error occurs
     /// </summary>
     public class HttpHandlerError : System.Web.IHttpHandler
     {

@@ -110,7 +110,7 @@ namespace Rock.Tests.Rock.Model
             };
 
             var result = page.ToJson();
-            const string key = "\"PageTitle\": \"FooPage\"";
+            const string key = "\"PageTitle\":\"FooPage\"";
             Assert.NotEqual( result.IndexOf( key ), -1 );
         }
 
@@ -128,7 +128,7 @@ namespace Rock.Tests.Rock.Model
 
             var result = page.ToJson();
             result = result.Substring( result.IndexOf( "\"Pages\":" ) + 7 );
-            const string key = "\"PageTitle\": \"BarPage\"";
+            const string key = "\"PageTitle\":\"BarPage\"";
             Assert.NotEqual( result.IndexOf( key ), -1 );
         }
 
@@ -144,9 +144,9 @@ namespace Rock.Tests.Rock.Model
             parent.Pages = new List<Page> { child };
             child.Pages = new List<Page> { grandchild };
             var result = parent.ToJson();
-            const string parentKey = "\"PageTitle\": \"Parent\"";
-            const string childKey = "\"PageTitle\": \"Child\"";
-            const string grandChildKey = "\"PageTitle\": \"Grandchild\"";
+            const string parentKey = "\"PageTitle\":\"Parent\"";
+            const string childKey = "\"PageTitle\":\"Child\"";
+            const string grandChildKey = "\"PageTitle\":\"Grandchild\"";
             Assert.NotEqual( result.IndexOf( parentKey ), -1 );
             Assert.NotEqual( result.IndexOf( childKey ), -1 );
             Assert.NotEqual( result.IndexOf( grandChildKey ), -1 );
@@ -269,7 +269,7 @@ namespace Rock.Tests.Rock.Model
             };
 
             // the AttributeCacheJsonConverter won't convert null to AttributeCache
-            var json = obj.ToJson().Replace( "\"foobar\": null", "\"foobar\": {}" );
+            var json = obj.ToJson().Replace( "\"foobar\":null", "\"foobar\":{}" );
 
             var page = Page.FromJson( json );
             Assert.NotNull( page.Attributes );
@@ -295,7 +295,7 @@ namespace Rock.Tests.Rock.Model
             var page = Page.FromJson( json );
             Assert.NotNull( page.AttributeValues );
             Assert.NotEmpty( page.AttributeValues );
-            Assert.Equal( page.AttributeValues.First().Value.Value, "baz" );
+            Assert.Equal( "baz", page.AttributeValues.First().Value.Value );
         }
     }
 }

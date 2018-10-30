@@ -66,7 +66,7 @@ namespace Rock.Workflow.Action
 
             // Get the site
             int siteId = GetAttributeValue( action, "Site", true ).AsInteger();
-            SiteCache site = SiteCache.Read( siteId );
+            SiteCache site = SiteCache.Get( siteId );
             if ( site == null )
             {
                 errorMessages.Add( string.Format( "Invalid Site Value" ) );
@@ -79,10 +79,10 @@ namespace Rock.Workflow.Action
             {
                 int tokenLen = GetAttributeValue( action, "RandomTokenLength" ).AsIntegerOrNull() ?? 7;
                 token = service.GetUniqueToken( site.Id, tokenLen );
-            } 
+            }
 
             // Get the target url
-            string url = GetAttributeValue( action, "Url", true ).ResolveMergeFields( mergeFields );
+            string url = GetAttributeValue( action, "Url", true ).ResolveMergeFields( mergeFields ).RemoveCrLf().Trim();
             if ( url.IsNullOrWhiteSpace() )
             {
                 errorMessages.Add( "A valid Target Url was not specified." );
@@ -114,11 +114,10 @@ namespace Rock.Workflow.Action
             rockContext.SaveChanges();
 
             // Save the resulting short link url
-            var attribute = AttributeCache.Read( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
+            var attribute = AttributeCache.Get( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
             if ( attribute != null )
             {
-                string domain = new SiteService( rockContext ).GetDefaultDomainUri( site.Id ).ToString();
-                string shortLink = domain.EnsureTrailingForwardslash() + token;
+                string shortLink = link.ShortLinkUrl;
 
                 SetWorkflowAttributeValue( action, attribute.Guid, shortLink );
                 action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, shortLink ) );

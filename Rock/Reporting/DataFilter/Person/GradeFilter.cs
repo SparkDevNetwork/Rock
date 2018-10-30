@@ -71,7 +71,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         private string GetGlobalGradeLabel()
         {
-            var value = GlobalAttributesCache.Read().GetValue( "core.GradeLabel" );
+            var value = GlobalAttributesCache.Get().GetValue( "core.GradeLabel" );
             return string.IsNullOrWhiteSpace( value ) ? "Grade" : value;
         }
 
@@ -128,7 +128,7 @@ function() {{
             }
             else if ( values.Length >= 2 )
             {
-                var gradeNameValue = DefinedValueCache.Read( values[1].AsGuid() );
+                var gradeNameValue = DefinedValueCache.Get( values[1].AsGuid() );
                 string gradeDescription = gradeNameValue != null ? gradeNameValue.Description : "??";
                 ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
                 if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank )
@@ -169,7 +169,7 @@ function() {{
             // add blank item as first item
             ddlGradeDefinedValue.Items.Add( new ListItem() );
 
-            var schoolGrades = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
             if ( schoolGrades != null )
             {
                 foreach ( var schoolGrade in schoolGrades.DefinedValues.OrderByDescending( a => a.Value.AsInteger() ) )
@@ -260,28 +260,20 @@ function() {{
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            // GradeTransitionDate is stored as just MM/DD so it'll resolve to the current year
-            DateTime? gradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime();
+            // see if they have a grade transition date
+            bool hasGradeTransitionDate = GlobalAttributesCache.Get().GetValue( "GradeTransitionDate" ).MonthDayStringAsDateTime().HasValue;
 
             var values = selection.Split( '|' );
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
             Guid? gradeDefinedValueGuid = values[1].AsGuidOrNull();
-            DefinedTypeCache gradeDefinedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            DefinedTypeCache gradeDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
             DefinedValueCache gradeDefinedValue = gradeDefinedType.DefinedValues.FirstOrDefault( a => a.Guid == gradeDefinedValueGuid );
             int? gradeOffset = gradeDefinedValue != null ? gradeDefinedValue.Value.AsIntegerOrNull() : null;
 
             var personGradeQuery = new PersonService( (RockContext)serviceInstance.Context ).Queryable();
+            int currentSchoolYear = RockDateTime.CurrentGraduationYear;
 
-            // if the next MM/DD of a graduation isn't until next year, treat next year as the current school year
-            int currentYearAdjustor = 0;
-            if ( gradeTransitionDate.HasValue && !( RockDateTime.Now < gradeTransitionDate ) )
-            {
-                currentYearAdjustor = 1;
-            }
-
-            int currentSchoolYear = RockDateTime.Now.AddYears( currentYearAdjustor ).Year;
-
-            if ( gradeTransitionDate.HasValue && gradeOffset.HasValue )
+            if ( hasGradeTransitionDate && gradeOffset.HasValue )
             {
                 /*
                  * example (assuming defined values are the stock values):
@@ -402,7 +394,7 @@ function() {{
             }
             else
             {
-                if ( !gradeTransitionDate.HasValue )
+                if ( !hasGradeTransitionDate )
                 {
                     if ( comparisonType == ComparisonType.IsBlank )
                     {

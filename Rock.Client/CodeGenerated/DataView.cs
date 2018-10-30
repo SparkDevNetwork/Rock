@@ -64,6 +64,12 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public DateTime? PersistedLastRefreshDateTime { get; set; }
+
+        /// <summary />
+        public int? PersistedScheduleIntervalMinutes { get; set; }
+
+        /// <summary />
         public int? TransformEntityTypeId { get; set; }
 
         /// <summary>
@@ -108,6 +114,8 @@ namespace Rock.Client
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.PersistedLastRefreshDateTime = source.PersistedLastRefreshDateTime;
+            this.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
             this.TransformEntityTypeId = source.TransformEntityTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

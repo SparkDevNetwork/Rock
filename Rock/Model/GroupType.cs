@@ -19,12 +19,16 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Web.Cache;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
+using Rock.Security;
+using Rock.Transactions;
 
 namespace Rock.Model
 {
@@ -36,7 +40,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupType" )]
     [DataContract]
-    public partial class GroupType : Model<GroupType>, IOrdered
+    public partial class GroupType : Model<GroupType>, IOrdered, ICacheable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupType"/> class.
@@ -354,6 +358,259 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool GroupAttendanceRequiresSchedule { get; set; }
+
+        /// <summary>
+        /// Gets or sets a lava template that can be used for generating  view details for Group.
+        /// </summary>
+        /// <value>
+        /// The Group View Lava Template.
+        /// </value>
+        [DataMember]
+        public string GroupViewLavaTemplate
+        {
+            get
+            {
+                if ( _groupViewLavaTemplate.IsNullOrWhiteSpace() )
+                {
+                    return _defaultLavaTemplate;
+                }
+                else
+                {
+                    return _groupViewLavaTemplate;
+                }
+            }
+            set
+            {
+                _groupViewLavaTemplate = value;
+            }
+        }
+        private string _groupViewLavaTemplate;
+        private string _defaultLavaTemplate = @"{% if Group.GroupType.GroupCapacityRule != 'None' and  Group.GroupCapacity != '' %}
+		{% assign warningLevel = ''warning'' %}
+
+		{% if Group.GroupType.GroupCapacityRule == 'Hard' %}
+			{% assign warningLevel = 'danger' %}
+		{% endif %}
+
+		{% assign activeMemberCount = countActive | Plus:1 %} {% comment %}the counter is zero based{% endcomment %}
+		{% assign overageAmount = activeMemberCount | Minus:Group.GroupCapacity %}
+
+		{% if overageAmount > 0 %}
+			<div class=""alert alert-{{ warningLevel }} margin-t-sm"">This group is over capacity by {{ overageAmount }} {{ 'individual' | PluralizeForQuantity:overageAmount }}.</div>
+		{% endif %}
+	{% endif %}
+	
+	
+	
+{% if Group.Description != '' -%}
+    <p class='description'>{{ Group.Description }}</p>
+{% endif -%}
+
+<div class=""row"">
+   <div class=""col-md-6"">
+        <dl>
+            {% if Group.ParentGroup != null %}
+            <dt> Parent Group </ dt>
+               <dd>{{ Group.ParentGroup.Name }}</dd>
+            {% endif %}
+            {% if Group.RequiredSignatureDocumentTemplate != null %}
+            <dt> Required Signed Document </dt>
+               <dd>{{ Group.RequiredSignatureDocumentTemplate.Name }}</ dd >
+            {% endif %}
+            {% if Group.Schedule != null %}
+
+            <dt> Schedule </dt>
+            <dd>{{ Group.Schedule.FriendlyScheduleText }}</ dd >
+            {% endif %}
+            {% if Group.GroupCapacity != null and Group.GroupCapacity != '' %}
+
+            <dt> Capacity </dt>
+
+            <dd>{{ Group.GroupCapacity }}</dd>
+            {% endif %}
+        </dl>
+        <dl>
+        {% for attribute in Group.AttributeValues %}
+        <dt>{{ attribute.AttributeName }}:</dt>
+
+<dd>{{ attribute.ValueFormatted }} </dd>
+        {% endfor %}
+        </dl>
+    </div>
+
+    <div class=""col-md-6 location-maps"">
+	{% assign googleAPIKey = 'Global' | Attribute: 'GoogleAPIKey' %}
+	{% assign staticMapStyle = MapStyle | Attribute: 'StaticMapStyle' %}
+
+	{% if Group.GroupLocations != null %}
+	{% assign groupLocations = Group.GroupLocations %}
+	{% assign locationCount = groupLocations | Size %}
+	    {% if locationCount > 0 and googleAPIKey != null and googleAPIKey !='' and staticMapStyle != null and staticMapStyle != '' %}
+		{% for groupLocation in groupLocations %}
+	    	{% if groupLocation.Location.GeoPoint != null and groupLocation.Location.GeoPoint != '' %}
+	    	{% capture markerPoints %}{{ groupLocation.Location.Latitude }},{{ groupLocation.Location.Longitude }}{% endcapture %}
+	    	{% assign mapLink = staticMapStyle | Replace:'{MarkerPoints}', markerPoints   %}
+	    	{% assign mapLink = mapLink | Replace:'{PolygonPoints}','' %}
+	    	{% assign mapLink = mapLink | Append:'&sensor=false&size=450x250&zoom=13&format=png&key=' %}
+            {% assign mapLink = mapLink | Append: googleAPIKey %}
+	    	<div class=""group-location-map"">
+	    	    {% if groupLocation.GroupLocationTypeValue != null %}
+	    	    <h4> {{ groupLocation.GroupLocationTypeValue.Value }} </h4>
+	    	    {% endif %}
+	    	    <a href = '{{ GroupMapUrl }}'>
+	    	    <img class='img-thumbnail' src='{{ mapLink }}'/>
+	    	    </a>
+	    	    {% if groupLocation.Location.FormattedAddress != null and groupLocation.Location.FormattedAddress != '' and ShowLocationAddresses == true %}
+	    	    {{ groupLocation.Location.FormattedAddress }}
+	    	    {% endif %}
+	    	 </div>
+		    {% endif %}
+		    {% if groupLocation.Location.GeoFence != null and groupLocation.Location.GeoFence != ''  %}
+
+		    {% assign mapLink = staticMapStyle | Replace:'{MarkerPoints}','' %}
+		    {% assign googlePolygon = 'enc:' | Append: groupLocation.Location.GooglePolygon %}
+	    	{% assign mapLink = mapLink | Replace:'{PolygonPoints}', googlePolygon  %}
+	    	{% assign mapLink = mapLink | Append:'&sensor=false&size=350x200&format=png&key=' %}
+	    	{% assign mapLink = mapLink | Append: googleAPIKey %}
+		    <div class='group-location-map'>
+		        {% if groupLocation.GroupLocationTypeValue != null %}
+		        <h4> {{ groupLocation.GroupLocationTypeValue.Value }} </h4>
+		        {% endif %}
+		    <a href = '{{ GroupMapUrl }}'><img class='img-thumbnail' src='{{ mapLink }}'/></a>
+		    </div>	
+		    {% endif %}
+		{% endfor %}
+		{% endif %}
+	{% endif %}
+	{% if Group.Linkages != null %}
+	{% assign linkages = Group.Linkages %}
+	{% assign linkageCount = linkages | Size %}
+	{% if linkageCount > 0 %}
+	{% assign countRegistration = 0 %}
+	{% assign countLoop = 0 %}
+	{% assign countEventItemOccurrences = 0 %}
+	{% assign countContentItems = 0 %}
+	{% for linkage in linkages %}
+		{% if linkage.RegistrationInstanceId != null and linkage.RegistrationInstanceId != '' %}
+			{% if countRegistration == 0 %}
+			<strong> Registrations</strong>
+			<ul class=""list-unstyled"">
+			{% endif %}
+			<li><a href = '{{ RegistrationInstancePage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}'>{% if linkage.EventItemOccurrence != null %} {{ linkage.EventItemOccurrence.EventItem.Name }} ({% if linkage.EventItemOccurrence.Campus != null %} {{ linkage.EventItemOccurrence.Campus.Name }}  {% else %}  All Campuses {% endif %}) {% endif %} - {{ linkage.RegistrationInstance.Name }}</a></li>
+			{% assign countRegistration = countRegistration | Plus: 1 %}
+		{% endif %}
+		{% assign countLoop = countLoop | Plus: 1 %}
+		{% if countRegistration > 0 and countLoop == linkageCount  %}
+		</ul>
+		{% endif %}
+	{% endfor %}
+	{% assign countLoop = 0 %}
+	{% for linkage in linkages %}
+		{% if linkage.EventItemOccurrence != null and linkage.EventItemOccurrence.EventItem != null %}
+			{% if countEventItemOccurrences == 0 %}
+			<strong> Event Item Occurrences</strong>
+			<ul class=""list-unstyled"">
+			{% endif %}
+			<li><a href = '{{ EventItemOccurrencePage }}?EventItemOccurrenceId={{ linkage.EventItemOccurrence.Id }}'>{% if linkage.EventItemOccurrence != null %} {{ linkage.EventItemOccurrence.EventItem.Name }} -{% if linkage.EventItemOccurrence.Campus != null %} {{ linkage.EventItemOccurrence.Campus.Name }}  {% else %}  All Campuses {% endif %} {% endif %}</a></li>
+			{% assign countEventItemOccurrences = countEventItemOccurrences | Plus: 1 %}
+		{% endif %}
+		{% assign countLoop = countLoop | Plus: 1 %}
+		{% if countEventItemOccurrences > 0  and countLoop == linkageCount %}
+			</ul>
+		{% endif %}
+	{% endfor %}
+	{% assign countLoop = 0 %}
+	{% for linkage in linkages %}
+		{% if linkage.EventItemOccurrence != null and linkage.EventItemOccurrence.EventItem != null %}
+			{% assign contentChannelItemsCount = linkage.EventItemOccurrence.ContentChannelItems | Size %}
+			{% if contentChannelItemsCount > 0 %}
+			{% assign contentChannelItems = linkage.EventItemOccurrence.ContentChannelItems %}
+				{% for contentChannelItem in contentChannelItems %}
+				{% if contentChannelItem.ContentChannelItem != null  %}
+					{% if countContentItems == 0 %}
+					<strong> Content Items</strong>
+					<ul class=""list-unstyled"">
+					{% endif %}
+					<li><a href = '{{ ContentItemPage }}?ContentItemId={{ contentChannelItem.ContentChannelItemId }}'>{{ contentChannelItem.ContentChannelItem.Title }} <small>({{ contentChannelItem.ContentChannelItem.ContentChannelType.Name }})</small></a></li>
+					{% assign countContentItems = countContentItems | Plus: 1 %}
+				{% endif %}
+				{% endfor %}
+			{% endif %}
+    	{% endif %}
+    	{% assign countLoop = countLoop | Plus: 1 %}
+    	{% if countContentItems > 0 and countLoop == linkageCount %}
+			</ul>
+		{% endif %}
+	{% endfor %}
+	{% endif %}
+{% endif %}
+	</div>
+</div>";
+
+        /// <summary>
+        /// Gets or sets a flag indicating if specific groups are allowed to have their own member attributes.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this specific group are allowed to have their own member attributes, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowSpecificGroupMemberAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if group requirements section is enabled for group of this type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if group requirements section is enabled for group of this type, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableSpecificGroupRequirements { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if groups of this type are allowed to be sync'ed.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if groups of this type are allowed to be sync'ed, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowGroupSync { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if groups of this type should be allowed to have Group Member Workflows.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if groups of this type should be allowed to have group member workflows, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowSpecificGroupMemberWorkflows { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether group history should be enabled for groups of this type
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable group history]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableGroupHistory { get; set; } = false;
+
+        /// <summary>
+        /// The color used to visually distinguish groups on lists.
+        /// </summary>
+        /// <value>
+        /// The group type color.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string GroupTypeColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DefinedType that Groups of this type will use for the Group.StatusValue
+        /// </summary>
+        /// <value>
+        /// The group status defined type identifier.
+        /// </value>
+        [DataMember]
+        public int? GroupStatusDefinedTypeId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -527,6 +784,33 @@ namespace Rock.Model
         }
         private ICollection<GroupRequirement> _groupsRequirements;
 
+        /// <summary>
+        /// Gets or sets the DefinedType that Groups of this type will use for the Group.StatusValue
+        /// </summary>
+        /// <value>
+        /// The type of the group status defined.
+        /// </value>
+        public DefinedType GroupStatusDefinedType { get; set; }
+
+        /// <summary>
+        /// A dictionary of actions that this class supports and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions {
+            get {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = new Dictionary<string, string>();
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    _supportedActions.Add( Authorization.MANAGE_MEMBERS, "The roles and/or users that have access to manage the group members." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                }
+                return _supportedActions;
+            }
+        }
+
+        private Dictionary<string, string> _supportedActions;
+
         #endregion
 
         #region Public Methods
@@ -561,6 +845,12 @@ namespace Rock.Model
                             parent = parent.InheritedGroupType;
                         }
                     }
+
+                    if ( string.IsNullOrEmpty( GroupViewLavaTemplate ) )
+                    {
+                        this.ValidationResults.Add( new ValidationResult( "Lava template for group view is mandatory." ) );
+                        return false;
+                    }
                 }
 
                 return result;
@@ -572,7 +862,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="state">The state.</param>
-        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
         {
             if (state == System.Data.Entity.EntityState.Deleted)
             {
@@ -617,6 +907,106 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a list of GroupType Ids, including our own Id, that identifies the
+        /// inheritence tree.
+        /// </summary>
+        /// <param name="rockContext">The database context to operate in.</param>
+        /// <returns>A list of GroupType Ids, including our own Id, that identifies the inheritance tree.</returns>
+        public List<int> GetInheritedGroupTypeIds( Rock.Data.RockContext rockContext )
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            //
+            // Can't use GroupTypeCache here since it loads attributes and could
+            // result in a recursive stack overflow situation when we are called
+            // from a GetInheritedAttributes() method.
+            //
+            var groupTypeService = new GroupTypeService( rockContext );
+            var groupTypeIds = new List<int>();
+
+            var groupType = this;
+
+            //
+            // Loop until we find a recursive loop or run out of parent group types.
+            //
+            while ( groupType != null && !groupTypeIds.Contains( groupType.Id ) )
+            {
+                groupTypeIds.Insert( 0, groupType.Id );
+
+                if ( groupType.InheritedGroupTypeId.HasValue )
+                {
+                    groupType = groupType.InheritedGroupType ?? groupTypeService
+                        .Queryable().AsNoTracking().FirstOrDefault( t => t.Id == ( groupType.InheritedGroupTypeId ?? 0 ) );
+                }
+                else
+                {
+                    groupType = null;
+                }
+            }
+
+            return groupTypeIds;
+        }
+
+        /// <summary>
+        /// Gets a list of all attributes defined for the GroupTypes specified that
+        /// match the entityTypeQualifierColumn and the GroupType Ids.
+        /// </summary>
+        /// <param name="rockContext">The database context to operate in.</param>
+        /// <param name="entityTypeId">The Entity Type Id for which Attributes to load.</param>
+        /// <param name="entityTypeQualifierColumn">The EntityTypeQualifierColumn value to match against.</param>
+        /// <returns>A list of attributes defined in the inheritance tree.</returns>
+        public List<AttributeCache> GetInheritedAttributesForQualifier( Rock.Data.RockContext rockContext, int entityTypeId, string entityTypeQualifierColumn )
+        {
+            var groupTypeIds = GetInheritedGroupTypeIds( rockContext );
+
+            var inheritedAttributes = new Dictionary<int, List<AttributeCache>>();
+            groupTypeIds.ForEach( g => inheritedAttributes.Add( g, new List<AttributeCache>() ) );
+
+            //
+            // Walk each group type and generate a list of matching attributes.
+            //
+            foreach ( var entityAttributes in AttributeCache.GetByEntity( entityTypeId ) )
+            {
+                // group type ids exist and qualifier is for a group type id
+                if ( string.Compare( entityAttributes.EntityTypeQualifierColumn, entityTypeQualifierColumn, true ) == 0 )
+                {
+                    int groupTypeIdValue = int.MinValue;
+                    if ( int.TryParse( entityAttributes.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
+                    {
+                        foreach ( int attributeId in entityAttributes.AttributeIds )
+                        {
+                            inheritedAttributes[groupTypeIdValue].Add( AttributeCache.Get( attributeId ) );
+                        }
+                    }
+                }
+            }
+
+            //
+            // Walk the generated list of attribute groups and put them, ordered, into a list
+            // of inherited attributes.
+            //
+            var attributes = new List<AttributeCache>();
+            foreach ( var attributeGroup in inheritedAttributes )
+            {
+                foreach ( var attribute in attributeGroup.Value.OrderBy( a => a.Order ) )
+                {
+                    attributes.Add( attribute );
+                }
+            }
+
+            return attributes;
+        }
+
+        /// <summary>
+        /// Get a list of all inherited Attributes that should be applied to this entity.
+        /// </summary>
+        /// <returns>A list of all inherited AttributeCache objects.</returns>
+        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        {
+            return GetInheritedAttributesForQualifier( rockContext, TypeId, "Id" );
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> containing the Name of the GroupType that represents this instance.
         /// </summary>
         /// <returns>
@@ -630,45 +1020,76 @@ namespace Rock.Model
         #endregion
 
         #region Index Methods
+
         /// <summary>
-        /// Deletes the indexed documents by group type.
+        /// Queues groups of this type to have their indexes deleted
         /// </summary>
         /// <param name="groupTypeId">The group type identifier.</param>
         public void DeleteIndexedDocumentsByGroupType( int groupTypeId )
         {
-            var groups = new GroupService( new RockContext() ).Queryable()
-                                    .Where( i => i.GroupTypeId == groupTypeId );
+            var groupIds = new GroupService( new RockContext() ).Queryable()
+                .Where( i => i.GroupTypeId == groupTypeId )
+                .Select( a => a.Id ).ToList();
 
-            foreach ( var group in groups )
+            int groupEntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>().Value;
+
+            foreach ( var groupId in groupIds )
             {
-                var indexableGroup = GroupIndex.LoadByModel( group );
-                IndexContainer.DeleteDocument<GroupIndex>( indexableGroup );
+                var transaction = new DeleteIndexEntityTransaction { EntityId = groupId, EntityTypeId = groupEntityTypeId };
+                transaction.Enqueue();
             }
         }
 
         /// <summary>
-        /// Bulks the index documents by content channel.
+        /// Queues groups of this type to have their indexes updated
         /// </summary>
-        /// <param name="groupTypeId">The content channel identifier.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
         public void BulkIndexDocumentsByGroupType( int groupTypeId )
         {
-            List<GroupIndex> indexableGroups = new List<GroupIndex>();
+            var groupIds = new GroupService( new RockContext() ).Queryable()
+                .Where( i => i.GroupTypeId == groupTypeId )
+                .Select( a => a.Id ).ToList();
 
-            // return all approved content channel items that are in content channels that should be indexed
-            RockContext rockContext = new RockContext();
-            var groups = new GroupService( rockContext ).Queryable()
-                                            .Where( g =>
-                                                g.GroupTypeId == groupTypeId
-                                                && g.IsActive);
+            int groupEntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>().Value;
 
-            foreach ( var group in groups )
+            foreach ( var groupId in groupIds )
             {
-                var indexableChannelItem = GroupIndex.LoadByModel( group );
-                indexableGroups.Add( indexableChannelItem );
+                var transaction = new IndexEntityTransaction { EntityId = groupId, EntityTypeId = groupEntityTypeId };
+                transaction.Enqueue();
+            }
+        }
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return GroupTypeCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            var parentGroupTypeIds = new GroupTypeService( dbContext as RockContext ).GetParentGroupTypes( this.Id ).Select( a => a.Id ).ToList();
+            if ( parentGroupTypeIds?.Any() == true )
+            {
+                foreach ( var parentGroupTypeId in parentGroupTypeIds )
+                {
+                    GroupTypeCache.UpdateCachedEntity( parentGroupTypeId, EntityState.Detached );
+                }
             }
 
-            IndexContainer.IndexDocuments( indexableGroups );
+            GroupTypeCache.UpdateCachedEntity( this.Id, entityState );
         }
+
         #endregion
     }
 
@@ -686,6 +1107,7 @@ namespace Rock.Model
         {
             this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => { m.MapLeftKey( "GroupTypeId" ); m.MapRightKey( "ChildGroupTypeId" ); m.ToTable( "GroupTypeAssociation" ); } );
             this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.GroupStatusDefinedType ).WithMany().HasForeignKey( p => p.GroupStatusDefinedTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.InheritedGroupType ).WithMany().HasForeignKey( p => p.InheritedGroupTypeId ).WillCascadeOnDelete( false );
         }
     }

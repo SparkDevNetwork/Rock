@@ -37,6 +37,7 @@
         $img.unwrap();
       }
     }
+    context.invoke('triggerEvent', 'change');
   });
 
   // create button

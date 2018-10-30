@@ -22,6 +22,7 @@ using Quartz;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
@@ -68,7 +69,7 @@ namespace Rock.Jobs
             Guid workflowTypeGuid = Guid.NewGuid();
             if ( Guid.TryParse( workflowName, out workflowTypeGuid ) )
             {
-                var workflowType = Web.Cache.WorkflowTypeCache.Read( workflowTypeGuid );
+                var workflowType = WorkflowTypeCache.Get( workflowTypeGuid );
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
                     var workflow = Rock.Model.Workflow.Activate( workflowType, workflowName );

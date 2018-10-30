@@ -115,7 +115,7 @@ namespace Rock.Storage
 
                 if ( uri == null )
                 {
-                    uri = new Uri( GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ) );
+                    uri = new Uri( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) );
                 }
 
                 if ( uri != null )

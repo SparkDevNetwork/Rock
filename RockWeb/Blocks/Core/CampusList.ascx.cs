@@ -159,8 +159,6 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
-                CampusCache.Flush( campus.Id );
-
                 campusService.Delete( campus );
                 rockContext.SaveChanges();
             }
@@ -192,8 +190,6 @@ namespace RockWeb.Blocks.Core
             {
                 new CampusService( rockContext ).Reorder( campuses, e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
-
-                campuses.ForEach( t => CampusCache.Flush( t.Id ) );
             }
 
             BindGrid();
@@ -219,7 +215,7 @@ namespace RockWeb.Blocks.Core
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {
-                AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+                AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
             }
         }
 
@@ -246,7 +242,7 @@ namespace RockWeb.Blocks.Core
                         boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
 
-                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                         if ( attributeCache != null )
                         {
                             boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;

@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
                 string[] entityValues = ( GetAttributeValue( "Entity" ) ?? string.Empty ).Split( '|' );
                 if ( entityValues.Length == 2 && !string.IsNullOrEmpty( entityValues[1] ) )
                 {
-                    var entityType = EntityTypeCache.Read( entityValues[0].AsGuid() );
+                    var entityType = EntityTypeCache.Get( entityValues[0].AsGuid() );
                     if ( entityType != null )
                     {
                         result += string.Format( "?entityTypeId={0}", entityType.Id );
@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
                 {
                     if ( this.ContextEntity() != null )
                     {
-                        var entityType = EntityTypeCache.Read( this.ContextEntity().GetType(), false );
+                        var entityType = EntityTypeCache.Get( this.ContextEntity().GetType(), false );
                         if ( entityType != null )
                         {
                             result += string.Format( "?entityTypeId={0}&entityId={1}", entityType.Id, this.ContextEntity().Id );

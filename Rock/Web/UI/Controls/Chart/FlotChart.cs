@@ -121,30 +121,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the entity identifier.
-        /// </summary>
-        /// <value>
-        /// The entity identifier.
-        /// </value>
-        [Obsolete("use MetricValuePartitionEntityIds instead")]
-        public int? EntityId
-        {
-            get
-            {
-                legacyEntityId = ViewState["EntityId"] as int?;
-                return legacyEntityId;
-            }
-
-            set
-            {
-                legacyEntityId = value;
-                ViewState["EntityId"] = legacyEntityId;
-            }
-        }
-        private int? legacyEntityId;
-
-
-        /// <summary>
         /// Gets a value indicating whether to combine values with different EntityId values into one series vs. showing each in its own series
         /// </summary>
         /// <value>
@@ -376,26 +352,6 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["DataSourceUrl"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the series name URL.
-        /// </summary>
-        /// <value>
-        /// The series name URL.
-        /// </value>
-        [Obsolete]
-        public string SeriesNameUrl
-        {
-            get
-            {
-                return SeriesPartitionNameUrl;
-            }
-
-            set
-            {
-                SeriesPartitionNameUrl = value;
             }
         }
 
@@ -761,12 +717,6 @@ namespace Rock.Web.UI.Controls
                     position++;
                 }
             }
-            else if ( this.legacyEntityId.HasValue )
-            {
-                
-                int partitionId = metric.MetricPartitions.OrderBy( a => a.Order ).First().Id;
-                filterParams.Add( string.Format( "MetricValuePartitions/any(metricValuePartition: metricValuePartition/EntityId eq {0} and metricValuePartition/MetricPartitionId eq {1})", this.legacyEntityId, partitionId ) );
-            }
 
             if ( filterParams.Count > 0 )
             {
@@ -787,21 +737,20 @@ namespace Rock.Web.UI.Controls
             string chartClickScript = null;
             if ( ChartClick != null )
             {
-                string chartClickScriptFormat = @"
-                $('#{0}').find('.js-chart-placeholder').bind('plotclick', function (event, pos, item) {{
-                    
+                chartClickScript = $@"
+                $('#{this.ClientID}').find('.js-chart-placeholder').bind('plotclick', function (event, pos, item) {{
+                    var postbackArg;
                     if (item) {{
-                        __doPostBack('{1}', 'DateStamp=' + item.series.chartData[item.dataIndex].DateTimeStamp + ';YValue=' + item.series.chartData[item.dataIndex].YValue + ';SeriesId=' + item.series.chartData[item.dataIndex].SeriesId + ';MetricValueId=' + item.series.chartData[item.dataIndex].Id);
+                        postbackArg = 'DateStamp=' + item.series.chartData[item.dataIndex].DateTimeStamp + ';YValue=' + item.series.chartData[item.dataIndex].YValue + ';SeriesId=' + item.series.chartData[item.dataIndex].SeriesId + ';MetricValueId=' + item.series.chartData[item.dataIndex].Id;
                     }}
                     else
                     {{
                         // no point was clicked
-                        __doPostBack('{1}', 'DateStamp=;YValue=;SeriesId=');
+                        postbackArg =  'DateStamp=;YValue=;SeriesId=';
                     }}
-                }});
-";
 
-                chartClickScript = string.Format( chartClickScriptFormat, this.ClientID, _pnlChartPlaceholder.UniqueID );
+                    window.location = ""javascript:__doPostBack('{_pnlChartPlaceholder.UniqueID}', '"" +  postbackArg + ""')"";
+                }});";
             }
 
             return chartClickScript;

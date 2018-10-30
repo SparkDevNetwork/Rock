@@ -112,7 +112,8 @@
                     update: function (event, ui) {
                         {
                             var newItemIndex = $(ui.item).prevAll('.panel-widget').length;
-                            __doPostBack('<%=upGroupMembers.ClientID %>', 're-order-panel-widget:' + ui.item.attr('id') + ';' + newItemIndex);
+                            var postbackArg = 're-order-panel-widget:' + ui.item.attr('id') + ';' + newItemIndex;
+                            window.location = "javascript:__doPostBack('<%=upGroupMembers.ClientID %>', '" +  postbackArg + "')";
                         }
                     }
                 });

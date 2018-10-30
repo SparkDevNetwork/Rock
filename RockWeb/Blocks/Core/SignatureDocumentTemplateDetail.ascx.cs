@@ -312,7 +312,7 @@ namespace RockWeb.Blocks.Core
             int? entityTypeId = cpProvider.SelectedEntityTypeId;
             if ( entityTypeId.HasValue )
             {
-                var entityType = EntityTypeCache.Read( entityTypeId.Value );
+                var entityType = EntityTypeCache.Get( entityTypeId.Value );
                 if ( entityType != null )
                 {
                     var component = DigitalSignatureContainer.GetComponent( entityType.Name );

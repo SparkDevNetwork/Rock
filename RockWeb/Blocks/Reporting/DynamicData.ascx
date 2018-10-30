@@ -53,7 +53,7 @@
                                     </div>
                                     <Rock:RockTextBox ID="tbParams" runat="server" Label="Parameters" TextMode="MultiLine" Rows="1" CssClass="input-xlarge"
                                         Help="The parameters that the stored procedure expects in the format of 'param1=value;param2=value'.  Any parameter with the same name as a page parameter (i.e. querystring,
-                                            form, or page route) will have it's value replaced with the page's current value.  A parameter with the name of 'CurrentPersonId' will have it's value replaced with the currently logged in person's id." />
+                                            form, or page route) will have its value replaced with the page's current value.  A parameter with the name of 'CurrentPersonId' will have its value replaced with the currently logged in person's id." />
                                     <div class="js-grid-options-container">
                                         <Rock:RockCheckBox ID="cbPersonReport" runat="server" Text="Person Report" CssClass="js-checkbox-person-report"
                                             Help="Does this query return a list of people? If it does, then additional options will be available from the result grid.  (i.e. Communicate, etc).  Note: A column named 'Id' that contains the person's Id is required for a person report." />
@@ -80,6 +80,10 @@
                                         Help="The column name(s) that contain a person id field to use as the recipient for a communication. If left blank, it will assume a column named 'Id' contains the recipient's person Id." />
 
                                     <Rock:NumberBox ID="nbTimeout" runat="server" Label="Timeout" Help="In seconds." />
+
+                                    <Rock:RockTextBox ID="tbEncryptedFields" runat="server" Label="Encrypted Fields" TextMode="MultiLine" Rows="1" CssClass="input-xlarge"
+                                        Help="Any fields that need to be decrypted before displaying their value." />
+
                                 </div>
 
                                 <div class="col-md-12">

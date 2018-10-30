@@ -51,7 +51,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if (guid.HasValue)
             {
-                var activityType = new ConnectionActivityTypeService( new RockContext() ).Get( guid.Value );
+                var activityType = new ConnectionActivityTypeService( new RockContext() ).GetNoTracking( guid.Value );
                 if ( activityType != null )
                 {
                     formattedValue = activityType.Name;
@@ -131,10 +131,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            var picker = control as DropDownList;
-            if ( picker != null )
+            var editControl = control as ListControl;
+            if ( editControl != null )
             {
-                picker.SelectedValue = value.ToUpper();
+                editControl.SetValue( value );
             }
         }
 

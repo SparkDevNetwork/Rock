@@ -60,6 +60,7 @@ namespace Rock.Field.Types
             controls.Add( textBoxGroupAndRolePickerLabel );
             textBoxGroupAndRolePickerLabel.Label = "Group/Role Picker Label";
             textBoxGroupAndRolePickerLabel.Help = "The label for the group/role picker";
+            textBoxGroupAndRolePickerLabel.Text = "Group";
 
             return controls;
         }
@@ -72,7 +73,7 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( CONFIG_GROUP_AND_ROLE_PICKER_LABEL, new ConfigurationValue( "Group/Role Picker Label", "The label for the group/role picker.", string.Empty ) );
+            configurationValues.Add( CONFIG_GROUP_AND_ROLE_PICKER_LABEL, new ConfigurationValue( "Group/Role Picker Label", "The label for the group/role picker.", "Group" ) );
 
             if ( controls != null && controls.Count == 1 )
             {
@@ -96,7 +97,7 @@ namespace Rock.Field.Types
             if ( controls != null && controls.Count == 1 && configurationValues != null )
             {
                 var textBoxGroupAndRolePickerLabel = controls[0] as RockTextBox;
-                if ( textBoxGroupAndRolePickerLabel != null )
+                if ( textBoxGroupAndRolePickerLabel != null && configurationValues?.ContainsKey(CONFIG_GROUP_AND_ROLE_PICKER_LABEL) == true )
                 {
                     textBoxGroupAndRolePickerLabel.Text = configurationValues[CONFIG_GROUP_AND_ROLE_PICKER_LABEL].Value;
                 }
@@ -138,30 +139,32 @@ namespace Rock.Field.Types
                 }
             }
 
-            var rockContext = new RockContext();
-            if ( groupGuid.HasValue )
+            using ( var rockContext = new RockContext() )
             {
-                var group = new GroupService( rockContext ).Get( groupGuid.Value );
-                if ( group != null )
+                if ( groupGuid.HasValue )
                 {
-                    formattedValue = "Group: " + group.Name;
+                    var group = new GroupService( rockContext ).GetNoTracking( groupGuid.Value );
+                    if ( group != null )
+                    {
+                        formattedValue = "Group: " + group.Name;
+                    }
                 }
-            }
-            else if ( groupTypeGuid.HasValue )
-            {
-                var groupType = new GroupTypeService( rockContext ).Get( groupTypeGuid.Value );
-                if ( groupType != null )
+                else if ( groupTypeGuid.HasValue )
                 {
-                    formattedValue = "Group type: " + groupType.Name;
+                    var groupType = new GroupTypeService( rockContext ).GetNoTracking( groupTypeGuid.Value );
+                    if ( groupType != null )
+                    {
+                        formattedValue = "Group type: " + groupType.Name;
+                    }
                 }
-            }
 
-            if ( groupTypeRoleGuid.HasValue )
-            {
-                var groupTypeRole = new GroupTypeRoleService( rockContext ).Get( groupTypeRoleGuid.Value );
-                if ( groupTypeRole != null )
+                if ( groupTypeRoleGuid.HasValue )
                 {
-                    formattedValue += string.IsNullOrEmpty( formattedValue ) ? string.Empty : ", " + "Role: " + groupTypeRole.Name;
+                    var groupTypeRole = new GroupTypeRoleService( rockContext ).GetNoTracking( groupTypeRoleGuid.Value );
+                    if ( groupTypeRole != null )
+                    {
+                        formattedValue += string.IsNullOrEmpty( formattedValue ) ? string.Empty : ", " + "Role: " + groupTypeRole.Name;
+                    }
                 }
             }
 
@@ -183,7 +186,7 @@ namespace Rock.Field.Types
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             GroupAndRolePicker editControl = new GroupAndRolePicker { ID = id };
-            if ( configurationValues != null )
+            if ( configurationValues != null && configurationValues.ContainsKey( CONFIG_GROUP_AND_ROLE_PICKER_LABEL ) )
             {
                 editControl.GroupControlLabel = configurationValues[CONFIG_GROUP_AND_ROLE_PICKER_LABEL].Value;
             }
@@ -209,7 +212,7 @@ namespace Rock.Field.Types
                 Guid? groupTypeRoleGuid = null;
                 if ( groupAndRolePicker.GroupTypeId.HasValue )
                 {
-                    var groupType = new GroupTypeService( rockContext ).Get( groupAndRolePicker.GroupTypeId.Value );
+                    var groupType = new GroupTypeService( rockContext ).GetNoTracking( groupAndRolePicker.GroupTypeId.Value );
                     if ( groupType != null )
                     {
                         groupTypeGuid = groupType.Guid;
@@ -234,7 +237,10 @@ namespace Rock.Field.Types
                     }
                 }
 
-                return string.Format( "{0}|{1}|{2}", groupTypeGuid, groupGuid, groupTypeRoleGuid );
+                if ( groupTypeGuid.HasValue || groupGuid.HasValue || groupTypeRoleGuid.HasValue )
+                {
+                    return string.Format( "{0}|{1}|{2}", groupTypeGuid, groupGuid, groupTypeRoleGuid );
+                }
             }
 
             return null;

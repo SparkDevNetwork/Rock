@@ -22,8 +22,8 @@ using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock.Model;
 using Rock.PersonProfile;
-using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Security;
 
 namespace Rock.Web.UI.Controls
 { 

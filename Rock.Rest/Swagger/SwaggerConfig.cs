@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web.Http;
@@ -37,6 +39,32 @@ namespace Rock.Rest.Swagger
 
             var swaggerRoute = "api/doc/{apiVersion}";
             var swaggerUiRoute = "api/docs/{*assetPath}";
+
+            var apiControllerTypes = Rock.Reflection.FindTypes( typeof( ApiController ) );
+            var restAssemblyNames = apiControllerTypes.Select( a =>
+            {
+                if ( a.Value.Assembly?.ManifestModule?.Name == "<Unknown>" )
+                {
+                    return a.Value.Assembly?.ManifestModule?.ScopeName;
+                }
+                else
+                {
+                    return a.Value.Assembly?.ManifestModule?.Name;
+                }
+
+            } ).Distinct().Where(a => a != null).ToList();
+            var rockWebBinPath = Path.Combine( System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath, "bin" );
+
+            List<string> xmlDocs;
+            try
+            {
+                xmlDocs = restAssemblyNames.Select( a => Path.Combine( rockWebBinPath, Path.ChangeExtension( a, "xml" ) ) ).Where( a => File.Exists( a ) ).ToList();
+            }
+            catch (Exception ex)
+            {
+                Rock.Model.ExceptionLogService.LogException( new Exception("Error loading XML Docs for REST Api plugins", ex ) );
+                xmlDocs = new List<string>();
+            }
 
             config
                 .EnableSwagger( swaggerRoute, c =>
@@ -121,7 +149,20 @@ namespace Rock.Rest.Swagger
                          // those comments into the generated docs and UI. You can enable this by providing the path to one or
                          // more Xml comment files.
                          //
-                         c.IncludeXmlComments( Path.Combine( System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath, "bin", "Rock.Rest.XML" ) );
+
+                         foreach ( var otherXmlDoc in xmlDocs )
+                         {
+                             try
+                             {
+                                 // load into an xmlPathDoc to ensure it is a valid xml doc
+                                 var xmlPathDoc = new System.Xml.XPath.XPathDocument( otherXmlDoc );
+                                 c.IncludeXmlComments( otherXmlDoc );
+                             }
+                             catch
+                             {
+                                 // ignore bad xml doc
+                             }
+                         }
 
                          // Swashbuckle makes a best attempt at generating Swagger compliant JSON schemas for the various types
                          // exposed in your API. However, there may be occasions when more control of the output is needed.

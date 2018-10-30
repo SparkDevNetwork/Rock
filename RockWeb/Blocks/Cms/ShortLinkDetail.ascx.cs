@@ -35,7 +35,7 @@ using System.Data.Entity;
 namespace RockWeb.Blocks.Crm
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName("Short Link Detail")]
     [Category("CMS")]
@@ -48,9 +48,9 @@ namespace RockWeb.Blocks.Crm
 
         protected override void OnInit( EventArgs e )
         {
-            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
+            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js", false );
             string script = @"
-    new Clipboard('.js-copy-clipboard');
+    new ClipboardJS('.js-copy-clipboard');
     $('.js-copy-clipboard').tooltip();
 ";
             ScriptManager.RegisterStartupScript( btnCopy, btnCopy.GetType(), "copy-short-link", script, true );
@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Crm
 
                     int? siteId = ddlSite.SelectedValueAsInt();
                     string token = tbToken.Text.Trim();
-                    string url = tbUrl.Text.Trim();
+                    string url = tbUrl.Text.RemoveCrLf().Trim();
 
                     if ( !siteId.HasValue )
                     {
@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Crm
 
                     if ( errors.Any() )
                     {
-                        nbError.Text = "Please Correct the Following<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
+                        nbError.Text = "Please correct the following:<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
                         nbError.Visible = true;
                         return;
                     }
@@ -322,7 +322,7 @@ namespace RockWeb.Blocks.Crm
                     .OrderBy( s => s.Name )
                     .Select( a => a.Id )
                     .ToList()
-                    .Select( a => SiteCache.Read( a ) ) )
+                    .Select( a => SiteCache.Get( a ) ) )
                 {
                     ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
                 }

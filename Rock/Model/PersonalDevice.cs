@@ -139,12 +139,13 @@ namespace Rock.Model
         /// <value>
         /// The personal device type identifier.
         /// </value>
-        [DataMember]
-        [Obsolete("Use PersonalDeviceTypeValueId instead.")]
+        [NotMapped]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use PersonalDeviceTypeValueId instead.", true )]
         public virtual int PersonalDeviceTypeId
         {
             get { return PersonalDeviceTypeValueId ?? 0; }
-            set { PersonalDeviceTypeValueId = value;  }
+            set { PersonalDeviceTypeValueId = value; }
         }
 
         #endregion

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -33,34 +34,16 @@ namespace Rock.Apps.StatementGenerator
         private RockRestClient _rockRestClient;
 
         /// <summary>
-        /// 
+        /// All of the Financial Accounts from Rock
         /// </summary>
-        private class NameIdIsChecked
-        {
-            /// <summary>
-            /// Gets or sets the unique identifier.
-            /// </summary>
-            /// <value>
-            /// The unique identifier.
-            /// </value>
-            public int Id { get; set; }
+        private List<Rock.Client.FinancialAccount> _financialAccountList = null;
+        private List<Rock.Client.DefinedValue> _currencyTypes = null;
 
-            /// <summary>
-            /// Gets or sets the name.
-            /// </summary>
-            /// <value>
-            /// The name.
-            /// </value>
-            public string Name { get; set; }
+        /// <summary>
+        /// The selected cash account ids
+        /// </summary>
+        private List<int> _selectedAccountIds = null;
 
-            /// <summary>
-            /// Gets or sets a value indicating whether [is checked].
-            /// </summary>
-            /// <value>
-            ///   <c>true</c> if [is checked]; otherwise, <c>false</c>.
-            /// </value>
-            public bool IsChecked { get; set; }
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SelectAccountsPage"/> class.
@@ -74,11 +57,93 @@ namespace Rock.Apps.StatementGenerator
             _rockRestClient = new RockRestClient( rockConfig.RockBaseUrl );
             _rockRestClient.Login( rockConfig.Username, rockConfig.Password );
 
-            var accounts = _rockRestClient.GetData<List<Rock.Client.FinancialAccount>>( "api/FinancialAccounts" );
+            _financialAccountList = _rockRestClient.GetData<List<Rock.Client.FinancialAccount>>( "api/FinancialAccounts" );
+            var currencyDefinedType = _rockRestClient.GetDataByGuid<Rock.Client.DefinedType>( "api/DefinedTypes", Rock.Client.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() );
+            _currencyTypes = _rockRestClient.GetData<List<Rock.Client.DefinedValue>>( $"api/DefinedValues?$filter=DefinedTypeId eq {currencyDefinedType.Id}" );
+            lstCashCurrencyTypes.Items.Clear();
+            var defaultUnselectedCashCurrencyGuids = new Guid[] {
+                Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH.AsGuid()
+            };
 
-            lstAccounts.ItemsSource = accounts.OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new NameIdIsChecked { Id = a.Id, Name = a.PublicName, IsChecked = true } );
+            var defaultNonCashCurrencyGuids = new Guid[] {
+                Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH.AsGuid()
+            };
 
-            lblWarning.Visibility = Visibility.Hidden;
+            // Default Cash Currency Types to 
+            foreach ( var currencyType in _currencyTypes )
+            {
+
+                var cashCurrencyCheckbox = new CheckBox { Tag = currencyType.Id, Content = currencyType.Value };
+                if ( ReportOptions.Current.CurrencyTypeIdsCash != null )
+                {
+                    cashCurrencyCheckbox.IsChecked = ReportOptions.Current.CurrencyTypeIdsCash.Contains( currencyType.Id );
+                }
+                else
+                {
+                    cashCurrencyCheckbox.IsChecked = !defaultUnselectedCashCurrencyGuids.Contains( currencyType.Guid );
+                }
+
+                lstCashCurrencyTypes.Items.Add( cashCurrencyCheckbox );
+
+                var nonCashCurrencyCheckbox = new CheckBox { Tag = currencyType.Id, Content = currencyType.Value };
+                if ( ReportOptions.Current.CurrencyTypeIdsNonCash != null )
+                {
+                    nonCashCurrencyCheckbox.IsChecked = ReportOptions.Current.CurrencyTypeIdsNonCash.Contains( currencyType.Id );
+                }
+                else
+                {
+                    nonCashCurrencyCheckbox.IsChecked = defaultNonCashCurrencyGuids.Contains( currencyType.Guid );
+                }
+
+                lstNonCashCurrencyTypes.Items.Add( nonCashCurrencyCheckbox );
+            }
+
+            // default to the currently configured CashAccountsId (if configured), or default to all
+            _selectedAccountIds = ReportOptions.Current.TransactionAccountIds ?? _financialAccountList.Select( a => a.Id ).ToList();
+
+            cbShowInactive.IsChecked = rockConfig.ShowInactiveAccounts;
+            cbShowTaxDeductible.IsChecked = rockConfig.ShowTaxDeductibleAccounts;
+            cbShowNonTaxDeductible.IsChecked = rockConfig.ShowNonTaxDeductibleAccounts;
+
+            ApplyFilter();
+
+            lblAccountsCurrencyTypesWarning.Visibility = Visibility.Hidden;
+        }
+
+        /// <summary>
+        /// Applies the filter.
+        /// </summary>
+        private void ApplyFilter()
+        {
+            if ( _financialAccountList == null )
+            {
+                return;
+            }
+
+            IEnumerable<Rock.Client.FinancialAccount> displayedAccounts = _financialAccountList.OrderBy( a => a.Order ).ThenBy( a => a.PublicName );
+            if ( cbShowInactive.IsChecked == false )
+            {
+                displayedAccounts = displayedAccounts.Where( a => a.IsActive == true );
+            }
+
+            if ( cbShowTaxDeductible.IsChecked == false && cbShowNonTaxDeductible.IsChecked == false )
+            {
+                displayedAccounts = displayedAccounts.Where( a => false );
+            }
+            else if ( cbShowTaxDeductible.IsChecked == true && cbShowNonTaxDeductible.IsChecked == true )
+            {
+                displayedAccounts = displayedAccounts.Where( a => true );
+            }
+            else
+            {
+                displayedAccounts = displayedAccounts.Where( a => a.IsTaxDeductible == cbShowTaxDeductible.IsChecked == true );
+            }
+
+            lstAccounts.Items.Clear();
+            foreach ( var account in displayedAccounts )
+            {
+                lstAccounts.Items.Add( new CheckBox { Tag = account.Id, Content = account.PublicName, IsChecked = _selectedAccountIds.Contains( account.Id ) } );
+            }
         }
 
         /// <summary>
@@ -88,41 +153,72 @@ namespace Rock.Apps.StatementGenerator
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnNext_Click( object sender, RoutedEventArgs e )
         {
-            var accountIds = lstAccounts.Items.OfType<NameIdIsChecked>().Where( a => a.IsChecked == true ).Select( s => s.Id ).ToList();
-            if ( accountIds.Count > 0 )
+            if ( SaveChanges( true ) )
             {
-                ReportOptions.Current.AccountIds = accountIds;
-                SelectDateRangePage nextPage = new SelectDateRangePage();
+                var nextPage = new SelectPledgeAccountsPage();
                 this.NavigationService.Navigate( nextPage );
-            }
-            else
-            {
-                lblWarning.Visibility = Visibility.Visible;
             }
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSelectAll control.
+        /// Saves the changes.
+        /// </summary>
+        /// <param name="showWarnings">if set to <c>true</c> [show warnings].</param>
+        /// <returns></returns>
+        private bool SaveChanges( bool showWarnings )
+        {
+            var rockConfig = RockConfig.Load();
+            rockConfig.ShowInactiveAccounts = cbShowInactive.IsChecked == true;
+            rockConfig.ShowTaxDeductibleAccounts = cbShowTaxDeductible.IsChecked == true;
+            rockConfig.ShowNonTaxDeductibleAccounts = cbShowNonTaxDeductible.IsChecked == true;
+
+            ReportOptions.Current.TransactionAccountIds = lstAccounts.Items.OfType<CheckBox>().Where( a => a.IsChecked == true ).Select( s => ( int ) s.Tag ).ToList();
+            ReportOptions.Current.CurrencyTypeIdsCash = lstCashCurrencyTypes.Items.OfType<CheckBox>().Where( a => a.IsChecked == true ).Select( s => ( int ) s.Tag ).ToList();
+            ReportOptions.Current.CurrencyTypeIdsNonCash = lstNonCashCurrencyTypes.Items.OfType<CheckBox>().Where( a => a.IsChecked == true ).Select( s => ( int ) s.Tag ).ToList();
+            var currencySelected = ReportOptions.Current.CurrencyTypeIdsCash.Any() || ReportOptions.Current.CurrencyTypeIdsNonCash.Any();
+            if ( !ReportOptions.Current.TransactionAccountIds.Any() || !currencySelected )
+            {
+                if ( showWarnings )
+                {
+                    if ( !ReportOptions.Current.TransactionAccountIds.Any() && !currencySelected )
+                    {
+                        lblAccountsCurrencyTypesWarning.Content = "Please select at least one account and currency type.";
+                    }
+                    else if ( !ReportOptions.Current.TransactionAccountIds.Any() )
+                    {
+                        lblAccountsCurrencyTypesWarning.Content = "Please select at least one account.";
+                    }
+                    else if ( !currencySelected )
+                    {
+                        lblAccountsCurrencyTypesWarning.Content = "Please select at least one currency type.";
+                    }
+
+                    lblAccountsCurrencyTypesWarning.Visibility = Visibility.Visible;
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSelectAllForCashGifts and btnSelectAllForNonCashGifts controls.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnSelectAll_Click( object sender, RoutedEventArgs e )
         {
-            var list = lstAccounts.Items.OfType<NameIdIsChecked>().ToList();
-            list.ForEach( a => a.IsChecked = true );
-            lstAccounts.ItemsSource = list;
+            lstAccounts.Items.OfType<CheckBox>().ToList().ForEach( a => a.IsChecked = true );
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSelectNone control.
+        /// Handles the Click event of the btnSelectNoneForCashGifts and btnSelectNoneForNonCashGifts controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnSelectNone_Click( object sender, RoutedEventArgs e )
         {
-            var list = lstAccounts.Items.OfType<NameIdIsChecked>().ToList();
-            list.ForEach( a => a.IsChecked = false );
-            lstAccounts.ItemsSource = list;
+            lstAccounts.Items.OfType<CheckBox>().ToList().ForEach( a => a.IsChecked = false );
         }
 
         /// <summary>
@@ -132,7 +228,23 @@ namespace Rock.Apps.StatementGenerator
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnPrev_Click( object sender, RoutedEventArgs e )
         {
+            SaveChanges( false );
             this.NavigationService.GoBack();
+        }
+
+        /// <summary>
+        /// Handles the Checked and UnChecked event of the filter checkboxes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void cbFilter_Changed( object sender, RoutedEventArgs e )
+        {
+            // if the page isn't loaded yet, skip
+            if ( this.IsLoaded )
+            {
+                _selectedAccountIds = lstAccounts.Items.OfType<CheckBox>().Where( a => a.IsChecked == true ).Select( a => ( int ) a.Tag ).ToList();
+                ApplyFilter();
+            }
         }
     }
 }

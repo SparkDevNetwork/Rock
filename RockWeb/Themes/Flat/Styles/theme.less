@@ -1,4 +1,4 @@
-﻿//
+//
 // Flat Theme
 // ----------
 //
@@ -16,7 +16,7 @@
 @import "_variables.less";
 @import "_variable-overrides.less";
 @import "_print.less";
-@import "_ad-rotater.less";
+@import "_ad-rotator.less";
 
 @import url(https://fonts.googleapis.com/css?family=Montserrat:700);
 @import url(https://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
@@ -298,25 +298,25 @@ table,
     text-decoration: underline;
   }
 
-    .success,
-    .warning,
-    .danger,
-    .info {
+  .success,
+  .warning,
+  .danger,
+  .info {
+    color: #fff;
+
+    a {
       color: #fff;
-
-      a {
-        color: #fff;
-      }
     }
+  }
 
-      > thead > tr > th,
-      > tbody > tr > th,
-      > tfoot > tr > th,
-      > thead > tr > td,
-      > tbody > tr > td,
-      > tfoot > tr > td {
-        border: 0;
-      }
+  > thead > tr > th,
+  > tbody > tr > th,
+  > tfoot > tr > th,
+  > thead > tr > td,
+  > tbody > tr > td,
+  > tfoot > tr > td {
+    border: 0;
+  }
 
   &-bordered > thead > tr > th,
   &-bordered > tbody > tr > th,

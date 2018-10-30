@@ -41,10 +41,10 @@
                 attentionAnimation: '',
                 modalOverflow: true
             });
-        },
+        }
 
         // shows a non-IFrame modal dialog control
-        _showModalControl = function ($modalDialog, managerId) {
+        var _showModalControl = function ($modalDialog, managerId) {
             $('body').addClass('modal-open');
             $modalDialog.modal({
                 show: true,
@@ -55,9 +55,14 @@
                 modalOverflow: true,
                 replace: true
             });
-        },
 
-        exports = {
+            if ($('.modal-backdrop').length == 0) {
+                // ensure that there is a modal-backdrop and include its owner as an attribute so that we can remove it when this modal is closed
+                $('<div class="modal-backdrop" data-modal-id="' + $modalDialog.prop('id') + '" />').appendTo('body');
+            }
+        }
+
+        var exports = {
             // updates the side of the modal that the control is in.  
             // this function works for both the IFrame modal and ModalDialog control
             updateSize: function (controlId) {
@@ -109,10 +114,19 @@
                     $modalDialog.modal('hide');
                 }
 
-                // if all modals are closed, remove all the modal-open class 
+                // if all modals are closed, remove all the modal-open class
                 if (!$('.modal').is(':visible')) {
                     {
                         $('.modal-open').removeClass('modal-open');
+                    }
+                }
+
+                // ensure the modalBackdrop is removed if its owner is no longer visible
+                var $modalBackdrop = $('.modal-backdrop');
+                if ($modalBackdrop.length) {
+                    var $modalBackdropOwner = $('#' + $modalBackdrop.attr('data-modal-id'));
+                    if (!$modalBackdropOwner.is(':visible')) {
+                        $('.modal-backdrop').remove();
                     }
                 }
             },

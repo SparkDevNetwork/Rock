@@ -40,17 +40,31 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}/{activeOnly}" )]
         public IQueryable<TreeViewItem> GetChildren( int id, bool activeOnly )
         {
+            return GetChildren( id, activeOnly, true );
+        }
+
+        /// <summary>
+        /// Gets the children.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="activeOnly">if set to <c>true</c> [active only].</param>
+        /// <param name="displayPublicName">if set to <c>true</c> [public name].</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}/{activeOnly}/{displayPublicName}" )]
+        public IQueryable<TreeViewItem> GetChildren( int id, bool activeOnly, bool displayPublicName )
+        {
             IQueryable<FinancialAccount> qry;
 
             if ( id == 0 )
             {
-                qry = Get().Where( f => 
+                qry = Get().Where( f =>
                     f.ParentAccountId.HasValue == false );
             }
             else
             {
-                qry = Get().Where( f => 
-                    f.ParentAccountId.HasValue && 
+                qry = Get().Where( f =>
+                    f.ParentAccountId.HasValue &&
                     f.ParentAccountId.Value == id );
             }
 
@@ -66,15 +80,15 @@ namespace Rock.Rest.Controllers
                 .ToList();
 
             var accountItemList = accountList.Select( a => new TreeViewItem
-                {
-                    Id = a.Id.ToString(),
-                    Name = HttpUtility.HtmlEncode( a.PublicName )
-                } ).ToList();
+            {
+                Id = a.Id.ToString(),
+                Name = HttpUtility.HtmlEncode( displayPublicName ? a.PublicName : a.Name )
+            } ).ToList();
 
             var resultIds = accountList.Select( f => f.Id ).ToList();
 
             var qryHasChildren = Get()
-                .Where( f => 
+                .Where( f =>
                     f.ParentAccountId.HasValue &&
                     resultIds.Contains( f.ParentAccountId.Value ) )
                 .Select( f => f.ParentAccountId.Value )
@@ -89,7 +103,7 @@ namespace Rock.Rest.Controllers
                 {
                     // since there usually aren't that many accounts, go ahead and fetch all the children so that they don't need to be lazy loaded.
                     // this will also help the "Select Children" btn in the AccountPicker work better
-                    accountItem.Children = this.GetChildren( accountId, activeOnly ).ToList();
+                    accountItem.Children = this.GetChildren( accountId, activeOnly, displayPublicName ).ToList();
                 }
 
                 accountItem.IconCssClass = "fa fa-file-o";

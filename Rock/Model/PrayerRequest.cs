@@ -46,6 +46,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [Previewable]
         public string FirstName { get; set; }
 
         /// <summary>
@@ -56,6 +57,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember( IsRequired = false )]
+        [Previewable]
         public string LastName { get; set; }
 
         /// <summary>
@@ -66,6 +68,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 254 )]
+        [Previewable]
         [RegularExpression( @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage = "The Email address is invalid" )]
         public string Email { get; set; }
 
@@ -214,6 +217,7 @@ namespace Rock.Model
         /// <value>
         /// The campus identifier.
         /// </value>
+        [HideFromReporting]
         [DataMember]
         public int? CampusId { get; set; }
 

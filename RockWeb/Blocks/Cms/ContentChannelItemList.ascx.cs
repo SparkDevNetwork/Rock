@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Cms
     [Description("Lists content channel items.")]
 
     [ContextAware]
-    [LinkedPage("Detail Page", order:0)]
+    [LinkedPage("Detail Page", order: 0)]
     [BooleanField("Filter Items For Current User", "Filters the items by those created by the current logged in user.", false, order: 1)]
     [BooleanField("Show Filters", "Allows you to show/hide the grids filters.", true, order: 2)]
     [BooleanField("Show Event Occurrences Column", "Determines if the column that lists event occurrences should be shown if any of the items has an event occurrence.", true, order: 3)]
@@ -95,6 +95,7 @@ namespace RockWeb.Blocks.Cms
             {
                 _channelId = new ContentChannelService(new RockContext()).Get(GetAttributeValue("ContentChannel").AsGuid()).Id;
             }
+
             if ( _channelId != null )
             {
                 upnlContent.Visible = true;
@@ -113,7 +114,7 @@ namespace RockWeb.Blocks.Cms
                     var expireDateColumn = gItems.ColumnsWithDataField( "ExpireDateTime" ).OfType<DateField>().FirstOrDefault();
                     var priorityColumn = gItems.ColumnsWithDataField( "Priority" ).FirstOrDefault();
                     
-                    // NOTE: The EventOccurrences Column's visibility is set in GridBind()
+                    //// NOTE: The EventOccurrences Column's visibility is set in GridBind()
 
                     startDateTimeColumn.HeaderText = startHeading;
                     startDateColumn.HeaderText = startHeading;
@@ -167,7 +168,7 @@ namespace RockWeb.Blocks.Cms
                 gItems.Actions.AddClick += gItems_Add;
                 gItems.GridRebind += gItems_GridRebind;
                 gItems.GridReorder += GItems_GridReorder;
-                gItems.EntityTypeId = EntityTypeCache.Read<ContentChannelItem>().Id;
+                gItems.EntityTypeId = EntityTypeCache.Get<ContentChannelItem>().Id;
 
                 AddAttributeColumns();
 
@@ -184,7 +185,7 @@ namespace RockWeb.Blocks.Cms
                 var securityField = new SecurityField();
                 gItems.Columns.Add( securityField );
                 securityField.TitleField = "Title";
-                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
                 
                 var deleteField = new DeleteField();
                 gItems.Columns.Add( deleteField );
@@ -222,35 +223,31 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        void gfFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        protected void gfFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
             switch ( e.Key )
             {
                 case "Date Range":
-                    {
-                        e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
-                        break;
-                    }
+                    e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                    break;
+
                 case "Status":
+                    var status = e.Value.ConvertToEnumOrNull<ContentChannelItemStatus>();
+                    if ( status.HasValue )
                     {
-                        var status = e.Value.ConvertToEnumOrNull<ContentChannelItemStatus>();
-                        if ( status.HasValue )
                         {
-                            {
-                                e.Value = status.ConvertToString();
-                            }
+                            e.Value = status.ConvertToString();
                         }
-                        break;
                     }
+
+                    break;
+
                 case "Title":
-                    {
-                        break;
-                    }
+                    break;
+
                 default:
-                    {
-                        e.Value = string.Empty;
-                        break;
-                    }
+                    e.Value = string.Empty;
+                    break;
             }
         }
 
@@ -259,7 +256,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void gfFilter_ApplyFilterClick( object sender, EventArgs e )
+        protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             gfFilter.SaveUserPreference( "Date Range", drpDateRange.DelimitedValues );
             gfFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
@@ -275,7 +272,11 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gItems_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "contentItemId", 0, "contentChannelId", _channelId );
+            Dictionary<string, string> pageParams = new Dictionary<string, string>();
+            pageParams.Add( "contentItemId", "0" );
+            pageParams.Add( "contentChannelId", _channelId.ToString() );
+
+            NavigateToLinkedPage( "DetailPage", pageParams );
         }
 
         /// <summary>
@@ -298,6 +299,7 @@ namespace RockWeb.Blocks.Cms
             var rockContext = new RockContext();
             var contentItemService = new ContentChannelItemService( rockContext );
             var contentItemAssociationService = new ContentChannelItemAssociationService( rockContext );
+            var contentItemSlugService = new ContentChannelItemSlugService( rockContext );
 
             ContentChannelItem contentItem = contentItemService.Get( e.RowKeyId );
 
@@ -314,6 +316,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     contentItemAssociationService.DeleteRange( contentItem.ChildItems );
                     contentItemAssociationService.DeleteRange( contentItem.ParentItems );
+                    contentItemSlugService.DeleteRange( contentItem.ContentChannelItemSlugs );
                     contentItemService.Delete( contentItem );
                     rockContext.SaveChanges();
                 } );
@@ -388,7 +391,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             // Add attribute columns
-            int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
+            int entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
             foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
@@ -411,7 +414,7 @@ namespace RockWeb.Blocks.Cms
                     boundField.AttributeId = attribute.Id;
                     boundField.HeaderText = attribute.Name;
 
-                    var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                     if ( attributeCache != null )
                     {
                         boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -451,7 +454,6 @@ namespace RockWeb.Blocks.Cms
                     reorderField.Visible = true;
                     gItems.AllowSorting = false;
                 }
-                
             }
             else
             {
@@ -460,6 +462,7 @@ namespace RockWeb.Blocks.Cms
                     reorderField.Visible = false;
                     gItems.AllowSorting = true;
                 }
+
                 SortProperty sortProperty = gItems.SortProperty;
                 if ( sortProperty != null )
                 {
@@ -519,6 +522,7 @@ namespace RockWeb.Blocks.Cms
                         ( i.ExpireDateTime.HasValue && i.ExpireDateTime.Value >= drp.LowerValue.Value ) ||
                         ( !i.ExpireDateTime.HasValue && i.StartDateTime >= drp.LowerValue.Value ) );
                 }
+
                 if ( drp.UpperValue.HasValue )
                 {
                     isFiltered = true;
@@ -573,7 +577,11 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
-
+        /// <summary>
+        /// Displays the status.
+        /// </summary>
+        /// <param name="contentItemStatus">The content item status.</param>
+        /// <returns></returns>
         protected string DisplayStatus (ContentChannelItemStatus contentItemStatus)
         {
             string labelType = "default";

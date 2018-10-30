@@ -51,10 +51,11 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var eventCalendar = EventCalendarCache.Read( value.AsGuid() );
-                if ( eventCalendar != null )
+                var guids = value.SplitDelimitedValues();
+                var eventCalendars = guids.Select( g => EventCalendarCache.Get( g ) );
+                if ( eventCalendars.Any() )
                 {
-                    formattedValue = eventCalendar.Name;
+                    formattedValue = string.Join( ", ", ( from eventCalendar in eventCalendars select eventCalendar.Name ).ToArray() );
                 }
             }
 
@@ -77,11 +78,8 @@ namespace Rock.Field.Types
         {
             var eventCalendarPicker = new EventCalendarPicker { ID = id };
 
-            var eventCalendarList = EventCalendarCache.All();
-
-            if ( eventCalendarList.Any() )
+            if ( EventCalendarCache.All().Any() )
             {
-                eventCalendarPicker.EventCalendars = eventCalendarList;
                 return eventCalendarPicker;
             }
 
@@ -104,7 +102,7 @@ namespace Rock.Field.Types
                 int? eventCalendarId = eventCalendarPicker.SelectedEventCalendarId;
                 if (eventCalendarId.HasValue)
                 {
-                    var eventCalendar = EventCalendarCache.Read( eventCalendarId.Value );
+                    var eventCalendar = EventCalendarCache.Get( eventCalendarId.Value );
                     if (eventCalendar != null )
                     {
                         return eventCalendar.Guid.ToString();
@@ -131,7 +129,7 @@ namespace Rock.Field.Types
                 Guid guid = value.AsGuid();
 
                 // get the item (or null) and set it
-                var eventCalendar = EventCalendarCache.Read( guid );
+                var eventCalendar = EventCalendarCache.Get( guid );
                 eventCalendarPicker.SetValue( eventCalendar == null ? "0" : eventCalendar.Id.ToString() );
             }
         }
@@ -277,15 +275,50 @@ namespace Rock.Field.Types
             if ( filterValues.Count == 1 )
             {
                 List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                if ( selectedValues.Any() )
+                int valueCount = selectedValues.Count();
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                if ( valueCount == 0 )
                 {
-                    MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                    // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
+                    return new NoAttributeFilterExpression();
+                }
+                else if ( valueCount == 1 )
+                {
+                    // only one value, so do an Equal instead of Contains which might compile a little bit faster
+                    ComparisonType comparisonType = ComparisonType.EqualTo;
+                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( selectedValues[0] ) );
+                }
+                else
+                {
                     ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
                     return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
                 }
             }
 
             return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
+        }
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                var guids = value.SplitDelimitedValues();
+                var eventCalendars = guids.Select( g => EventCalendarCache.Get( g ) );
+                if ( eventCalendars.Any() )
+                {
+                    formattedValue = string.Join( "' OR '", ( from eventCalendar in eventCalendars select eventCalendar.Name ).ToArray() );
+                }
+            }
+
+            return AddQuotes( formattedValue );
         }
 
         #endregion
@@ -301,7 +334,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = EventCalendarCache.Read( guid );
+            var item = EventCalendarCache.Get( guid );
             return item != null ? item.Id : (int?)null;
         }
 
@@ -316,7 +349,7 @@ namespace Rock.Field.Types
             EventCalendarCache item = null;
             if ( id.HasValue )
             {
-                item = EventCalendarCache.Read( id.Value );
+                item = EventCalendarCache.Get( id.Value );
             }
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );

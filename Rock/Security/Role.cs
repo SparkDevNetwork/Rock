@@ -15,12 +15,9 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Data.Entity;
-using System.Linq;
-using System.Runtime.Caching;
-using Rock.Data;
+using System.Collections.Generic;
+
 using Rock.Web.Cache;
 
 namespace Rock.Security
@@ -30,12 +27,22 @@ namespace Rock.Security
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [RockObsolete( "1.8" )]
+    [Obsolete( "Use RoleCache Instead")]
     public class Role
     {
         /// <summary>
         /// Use Static Read() method to instantiate a new Role object
         /// </summary>
         private Role() { }
+
+        private Role( RoleCache role )
+        {
+            Id = role.Id;
+            Name = role.Name;
+            IsSecurityTypeGroup = role.IsSecurityTypeGroup;
+            People = new ConcurrentDictionary<Guid, bool>( role.People );
+        }
 
         /// <summary>
         /// Gets the id.
@@ -70,28 +77,32 @@ namespace Rock.Security
         /// <returns></returns>
         public bool IsPersonInRole( Guid? personGuid )
         {
-            if ( personGuid.HasValue )
-            {
-                bool inRole = false;
-                if ( People.TryGetValue( personGuid.Value, out inRole ) )
-                {
-                    return inRole;
-                }
-            }
+            if (!personGuid.HasValue) return false;
 
-            return false;
+            var inRole = false;
+            return People.TryGetValue( personGuid.Value, out inRole ) && inRole;
         }
+
+        /// <summary>
+        /// Copies from new cache.
+        /// </summary>
+        /// <param name="cacheEntity">The cache entity.</param>
+        protected void CopyFromNewCache( IEntityCache cacheEntity )
+        {
+          }
 
         #region Static Methods
 
         /// <summary>
-        /// Caches the key.
+        /// Performs an implicit conversion from <see cref="Role"/> to <see cref="RoleCache"/>.
         /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        private static string CacheKey( int id )
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator RoleCache( Role c )
         {
-            return string.Format( "Rock:Role:{0}", id );
+            return RoleCache.Get( c.Id );
         }
 
         /// <summary>
@@ -102,8 +113,7 @@ namespace Rock.Security
         /// <returns></returns>
         public static Role Read( int id )
         {
-            return GetOrAddExisting( Role.CacheKey( id ),
-                () => LoadById( id ) );
+            return new Role( RoleCache.Get( id ) );
         }
 
         /// <summary>
@@ -114,20 +124,8 @@ namespace Rock.Security
         /// <returns></returns>
         public static Role GetOrAddExisting( string key, Func<Role> valueFactory )
         {
-            RockMemoryCache cache = RockMemoryCache.Default;
-
-            object cacheValue = cache.Get( key );
-            if ( cacheValue != null )
-            {
-                return (Role)cacheValue;
-            }
-
-            Role value = valueFactory();
-            if ( value != null )
-            {
-                cache.Set( key, value, new CacheItemPolicy() );
-            }
-            return value;
+            // This mehod should not have been public, but it was, so leaving it with just a get.
+            return new Role( RoleCache.Get( key.AsInteger() ) );
         }
 
         /// <summary>
@@ -137,41 +135,7 @@ namespace Rock.Security
         /// <returns></returns>
         public static Role LoadById( int id )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var securityGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid(), rockContext );
-                int securityGroupTypeId = securityGroupType != null ? securityGroupType.Id : 0;
-
-                Rock.Model.GroupService groupService = new Rock.Model.GroupService( rockContext );
-                Rock.Model.GroupMemberService groupMemberService = new Rock.Model.GroupMemberService( rockContext );
-                Rock.Model.Group groupModel = groupService.Get( id );
-
-                if ( groupModel != null && groupModel.IsActive && ( groupModel.IsSecurityRole == true || groupModel.GroupTypeId == securityGroupTypeId ) )
-                {
-                    var role = new Role();
-                    role.Id = groupModel.Id;
-                    role.Name = groupModel.Name;
-                    role.People = new ConcurrentDictionary<Guid,bool>();
-
-                    var groupMembersQry = groupMemberService.Queryable().Where( a => a.GroupId == groupModel.Id );
-
-                    // Add the members
-                    foreach ( var personGuid in groupMembersQry
-                        .Where( m => m.GroupMemberStatus == Model.GroupMemberStatus.Active )
-                        .Select( m => m.Person.Guid )
-                        .ToList()
-                        .Distinct() )
-                    {
-                        role.People.TryAdd( personGuid, true );
-                    }
-
-                    role.IsSecurityTypeGroup = groupModel.GroupTypeId == securityGroupTypeId;
-                        
-                    return role;
-                }
-            }
-
-            return null;
+            return new Role( RoleCache.LoadById( id ) );
         }
 
         /// <summary>
@@ -180,21 +144,14 @@ namespace Rock.Security
         /// <returns></returns>
         public static List<Role> AllRoles()
         {
-            List<Role> roles = new List<Role>();
+            var roles = new List<Role>();
 
-            var securityGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
-            int securityGroupTypeId = securityGroupType != null ? securityGroupType.Id : 0;
+            var cacheRoles = RoleCache.AllRoles();
+            if ( cacheRoles == null ) return roles;
 
-            Rock.Model.GroupService groupService = new Rock.Model.GroupService( new RockContext() );
-            foreach ( int id in groupService.Queryable()
-                .Where( g => 
-                    g.IsActive &&
-                    ( g.GroupTypeId == securityGroupTypeId || g.IsSecurityRole == true  ) )
-                .OrderBy( g => g.Name )
-                .Select( g => g.Id )
-                .ToList() )
+            foreach ( var cacheRole in cacheRoles )
             {
-                roles.Add( Role.Read( id ) );
+                roles.Add( new Role( cacheRole ) );
             }
 
             return roles;
@@ -206,8 +163,7 @@ namespace Rock.Security
         /// <param name="id">The id.</param>
         public static void Flush( int id )
         {
-            ObjectCache cache = Rock.Web.Cache.RockMemoryCache.Default;
-            cache.Remove( Role.CacheKey( id ) );
+            RoleCache.Remove( id );
         }
 
         #endregion

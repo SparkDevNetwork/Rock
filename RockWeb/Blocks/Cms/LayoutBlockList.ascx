@@ -24,7 +24,7 @@
                             </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="Zone" HeaderText="Zone" SortExpression="Zone" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
-                            <Rock:RockTemplateField ItemStyle-HorizontalAlign="Center">
+                            <Rock:RockTemplateField ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center">
                                 <ItemTemplate>
                                     <%# CreateConfigIcon( Eval("Id").ToString() ) %>
                                 </ItemTemplate>

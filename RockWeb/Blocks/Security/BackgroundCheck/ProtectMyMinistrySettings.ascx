@@ -13,17 +13,15 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-shield"></i> Protect My Ministry</h1>
-                <div class="panel-labels">
-                    <Rock:HighlightLabel ID="hlMode" runat="server" LabelType="Type" />
-                    <Rock:HighlightLabel ID="hlActive" runat="server" />
+                <div class="pull-right">
+                    <asp:LinkButton ID="btnDefault" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnDefault_Click">Enable As Default Background Check Provider</asp:LinkButton>
                 </div>
-
             </div>
 
             <div class="panel-body">
 
-                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
-                <Rock:NotificationBox ID="nbNotification" runat="server" Title="Please Correct the Following" NotificationBoxType="Danger" Visible="false" />
+                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+                <Rock:NotificationBox ID="nbNotification" runat="server" Title="Please correct the following:" NotificationBoxType="Danger" Visible="false" />
 
                 <div id="pnlNew" runat="server" class="row">
                     <div class="col-md-6">
@@ -53,6 +51,14 @@
                             <Rock:RockLiteral ID="lPackages" runat="server" Label="Enabled Background Check Types" />
                         </div>
                     </div>
+
+                    <Rock:NotificationBox ID="nbSSLWarning" runat="server" CssClass="clearfix" NotificationBoxType="Danger">
+                        <i class="fa fa-2x fa-exclamation-triangle pull-left margin-v-sm margin-r-md"></i>
+                        Your current configuration will cause Protect My Ministry to send results to your server over an
+                        insecure connection. Please ensure that your server is configured for SSL and use a <code>https://</code>
+                        URL to protect the data during transmission before using in production.
+                    </Rock:NotificationBox>
+
                     <div class="actions">
                         <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="lbEdit_Click" />
                     </div>
@@ -68,12 +74,11 @@
                             <Rock:UrlLinkBox ID="urlWebHook" runat="server" Label="Result Webhook" Required="true"
                                 Help="The URL that Protect My Ministry should use when sending background check results back to your server." />
                             <Rock:RockCheckBox id="cbActive" runat="server" Label="Active" />
-                            <Rock:RockCheckBox ID="cbTestMode" runat="server" Label="Test Mode" />
                         </div>
                     </div>
                     <div class="actions">
-                        <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
-                        <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
+                        <asp:LinkButton ID="lbSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
+                        <asp:LinkButton ID="lbCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                     </div>
                 </div>
 
@@ -121,7 +126,7 @@
             <Content>
 
                 <asp:HiddenField ID="hfDefinedValueId" runat="server" />
-                <asp:ValidationSummary ID="valSummaryPackage" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Package" />
+                <asp:ValidationSummary ID="valSummaryPackage" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Package" />
 
                 <div class="row">
                     <div class="col-md-6">
@@ -165,7 +170,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlMVRJurisdication" runat="server" Label="MVR Jurisdication Code" ValidationGroup="Package" Help="Select an MVR Jurisdiction code to request a Motor Vehicle Record search." />
+                        <Rock:DefinedValuePicker ID="dvpMVRJurisdication" runat="server" Label="MVR Jurisdication Code" ValidationGroup="Package" Help="Select an MVR Jurisdiction code to request a Motor Vehicle Record search." />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbSendStateMVR" runat="server" Label="Use Home Address State" Text="Yes" ValidationGroup="Package" Help="If the person's home address includes a state, use that instead of state from jurisdication code." />

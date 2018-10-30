@@ -79,7 +79,9 @@ namespace Rock.Jobs
                             m.GroupMemberStatus == GroupMemberStatus.Active &&
                             m.Person != null &&
                             m.Person.Email != null &&
-                            m.Person.Email != "" )
+                            m.Person.Email != string.Empty &&
+                            m.Person.EmailPreference != EmailPreference.DoNotEmail &&
+                            m.Person.IsEmailActive )
                         .Select( m => m.PersonId )
                         .Distinct();
 
@@ -138,7 +140,7 @@ namespace Rock.Jobs
                                     components.Add( suggestionType.Id, suggestionComponent );
 
                                     // Get the entitytype for this suggestion type
-                                    var suggestionEntityType = EntityTypeCache.Read( suggestionComponent.FollowedType );
+                                    var suggestionEntityType = EntityTypeCache.Get( suggestionComponent.FollowedType );
                                     if ( suggestionEntityType != null )
                                     {
                                         var entityIds = new List<int>();
@@ -217,8 +219,8 @@ namespace Rock.Jobs
                                                                 {
                                                                     // If found, and it has not been ignored, and it's time to promote again, update the promote date
                                                                     if ( suggestion.Status != FollowingSuggestedStatus.Ignored &&
+                                                                        suggestionType.ReminderDays.HasValue &&
                                                                         (
-                                                                            !suggestionType.ReminderDays.HasValue ||
                                                                             !suggestion.LastPromotedDateTime.HasValue ||
                                                                             suggestion.LastPromotedDateTime.Value.AddDays( suggestionType.ReminderDays.Value ) <= timestamp
                                                                         ) )
@@ -287,7 +289,7 @@ namespace Rock.Jobs
                             .Distinct()
                             .ToList();
 
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
+                        var appRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot", rockContext );
 
                         foreach ( var person in new PersonService( rockContext )
                             .Queryable().AsNoTracking()
@@ -341,7 +343,9 @@ namespace Rock.Jobs
 
                                     var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
                                     emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
-                                    emailMessage.Send();
+                                    var errors = new List<string>();
+                                    emailMessage.Send(out errors);
+                                    exceptionMsgs.AddRange( errors );
 
                                     followingSuggestionsEmailsSent += 1;
                                     followingSuggestionsSuggestionsTotal += personSuggestionNotices.Count();

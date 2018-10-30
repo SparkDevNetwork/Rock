@@ -124,7 +124,7 @@ function() {
         /// </summary>
         private LocationPicker lp = null;
 
-        private RockDropDownList ddlLocationType = null;
+        private DefinedValuePicker dvpLocationType = null;
 
         /// <summary>
         /// Creates the child controls.
@@ -136,7 +136,7 @@ function() {
             lp.ID = filterControl.ID + "_lp";
             lp.Label = "Location";
             lp.AllowedPickerModes = LocationPickerMode.Named | LocationPickerMode.Polygon;
-            lp.CurrentPickerMode = lp.GetBestPickerModeForLocation( null );
+            lp.SetBestPickerModeForLocation( null );
             lp.CssClass = "col-lg-4";
             filterControl.Controls.Add( lp );
 
@@ -144,17 +144,16 @@ function() {
             panel.CssClass = "col-lg-8";
             filterControl.Controls.Add( panel );
 
-            ddlLocationType = new RockDropDownList();
-            ddlLocationType.ID = filterControl.ID + "_ddlLocationType";
-            ddlLocationType.Label = "Location Type";
-            ddlLocationType.DataValueField = "Id";
-            ddlLocationType.DataTextField = "Value";
-            DefinedTypeCache locationDefinedType = DefinedTypeCache.Read( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() );
-            ddlLocationType.BindToDefinedType( locationDefinedType );
-            ddlLocationType.Items.Insert( 0, new ListItem( "(All Location Types)", "" ) );
-            panel.Controls.Add( ddlLocationType );
+            dvpLocationType = new DefinedValuePicker();
+            dvpLocationType.ID = filterControl.ID + "_dvpLocationType";
+            dvpLocationType.Label = "Location Type";
+            dvpLocationType.DataValueField = "Id";
+            dvpLocationType.DataTextField = "Value";
+            DefinedTypeCache locationDefinedType = DefinedTypeCache.Get( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() );
+            dvpLocationType.DefinedTypeId = locationDefinedType.Id;
+            panel.Controls.Add( dvpLocationType );
 
-            return new Control[3] { lp, ddlLocationType, panel };
+            return new Control[3] { lp, dvpLocationType, panel };
         }
 
         /// <summary>
@@ -207,7 +206,7 @@ function() {
             if ( location != null )
             {
                 LocationPicker locationPicker = controls[0] as LocationPicker;
-                locationPicker.GetBestPickerModeForLocation( location );
+                locationPicker.SetBestPickerModeForLocation( location );
                 locationPicker.Location = location;
             }
 

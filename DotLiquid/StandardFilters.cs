@@ -68,6 +68,24 @@ namespace DotLiquid
 				: CultureInfo.CurrentCulture.TextInfo.ToTitleCase(input);
 		}
 
+		/// <summary>
+		/// capitalize first word in the input sentence
+		/// </summary>
+		/// <param name="input"></param>
+		/// <returns></returns>
+		public static string CapitalizeFirstWord(string input)
+		{
+			if (input.IsNullOrWhiteSpace())
+				return input;
+
+			if (string.IsNullOrEmpty(input))
+				return input;
+	
+			char[] a = input.ToCharArray();
+			a[0] = char.ToUpper(a[0]);
+			return new string(a);
+		}
+
 		public static string Escape(string input)
 		{
 			if (string.IsNullOrEmpty(input))

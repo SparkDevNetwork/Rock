@@ -61,6 +61,7 @@ BEGIN
 		    P.[Id],
 		    P.[NickName],
 		    P.[LastName],
+			P.[Gender],
 		    P.[Email],
             P.[GivingId],
 		    P.[BirthDate],
@@ -71,9 +72,10 @@ BEGIN
 				SELECT 
 					A.[PersonAliasId],
 					A.[CampusId],
-					A.[ScheduleId]
+					O.[ScheduleId]
  				FROM [Attendance] A
-				INNER JOIN @GroupTbl G ON G.[Id] = A.[GroupId]
+				INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
+				INNER JOIN @GroupTbl G ON G.[Id] = O.[GroupId]
 				WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
 				AND [DidAttend] = 1
 			) A
@@ -97,13 +99,14 @@ BEGIN
         DECLARE @ChildRoleId INT = ( SELECT TOP 1 [Id] FROM [GroupTypeRole] WHERE [Guid] = 'C8B1814F-6AA7-4055-B2D7-48FE20429CB9' )
 
         IF @IncludeParentsWithChild = 1 
-        BEGIN
+   BEGIN
 
             -- Child attended, also include their parents
 	        SELECT	
                 C.[Id],
                 C.[NickName],
                 C.[LastName],
+				C.[Gender],
                 C.[Email],
                 C.[GivingId],
                 C.[BirthDate],
@@ -120,9 +123,10 @@ BEGIN
 					SELECT 
 						A.[PersonAliasId],
 						A.[CampusId],
-						A.[ScheduleId]
+						O.[ScheduleId]
  					FROM [Attendance] A
-					INNER JOIN @GroupTbl G ON G.[Id] = A.[GroupId]
+					INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
+					INNER JOIN @GroupTbl G ON G.[Id] = O.[GroupId]
 					WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
 					AND [DidAttend] = 1
 				) A
@@ -156,6 +160,7 @@ BEGIN
                 A.[Id],
                 A.[NickName],
                 A.[LastName],
+				A.[Gender],
                 A.[Email],
                 A.[GivingId],
                 A.[BirthDate],
@@ -172,9 +177,10 @@ BEGIN
 					SELECT 
 						A.[PersonAliasId],
 						A.[CampusId],
-						A.[ScheduleId]
+						O.[ScheduleId]
  					FROM [Attendance] A
-					INNER JOIN @GroupTbl G ON G.[Id] = A.[GroupId]
+					INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
+					INNER JOIN @GroupTbl G ON G.[Id] = O.[GroupId]
 					WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
 					AND [DidAttend] = 1
 				) A

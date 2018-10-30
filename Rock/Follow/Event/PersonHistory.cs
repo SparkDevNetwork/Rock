@@ -38,7 +38,7 @@ namespace Rock.Follow.Event
     [Export( typeof( EventComponent ) )]
     [ExportMetadata( "ComponentName", "PersonHistory" )]
 
-    [TextField( "Fields", "Field name(s) to monitor in history data. Seperate multiple items by a comma. If you look at a person's history data it would be in the format of 'Modified FIELD value from OLD to NEW'.", true, order: 0 )]
+    [TextField( "Fields", "Field name(s) to monitor in history data. Separate multiple items by a comma. If you look at a person's history data it would be in the format of 'Modified FIELD value from OLD to NEW'.", true, order: 0 )]
     [IntegerField( "Max Days Back", "Maximum number of days back to look at a person's history.", true, 30, "", order: 1 )]
 
     [BooleanField( "Match Both", "Require a match on both the Old Value and the New Value. This equates to an AND comparison, otherwise it equates to an OR comparison on the values.", true, category: "Values", order: 0 )]
@@ -49,10 +49,6 @@ namespace Rock.Follow.Event
     [PersonField( "Person", "Filter by the person who changed the value. This is always an AND condition with the two value changes. If the Negate Changed By option is also set then this becomes and AND NOT condition.", false, category: "Changed By", order: 1 )]
     public class PersonHistory : EventComponent
     {
-        static readonly string AddedRegex = "Added.*<span class=['\"]field-name['\"]>(.*)<\\/span>.*<span class=['\"]field-value['\"]>(.*)<\\/span>";
-        static readonly string ModifiedRegex = "Modified.*<span class=['\"]field-name['\"]>(.*)<\\/span>.*<span class=['\"]field-value['\"]>(.*)<\\/span>.*<span class=['\"]field-value['\"]>(.*)<\\/span>";
-        static readonly string DeletedRegex = "Deleted.*<span class=['\"]field-name['\"]>(.*)<\\/span>.*<span class=['\"]field-value['\"]>(.*)<\\/span>";
-
         /// <summary>
         /// Gets the followed entity type identifier.
         /// </summary>
@@ -99,8 +95,8 @@ namespace Rock.Follow.Event
                     PersonAlias targetPersonAlias = new PersonAliasService( new RockContext() ).Get( targetPersonGuid.AsGuid() );
                     DateTime daysBackDate = RockDateTime.Now.AddDays( -daysBack );
                     var person = personAlias.Person;
-                    int personEntityTypeId = EntityTypeCache.Read( typeof( Person ) ).Id;
-                    int categoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid() ).Id;
+                    int personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
+                    int categoryId = CategoryCache.Get( Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid() ).Id;
 
                     //
                     // Start building the basic query. We want all History items that are for
@@ -123,42 +119,24 @@ namespace Rock.Follow.Event
                     //
                     // Walk each history item found that matches our filter.
                     //
-                    Dictionary<string, List<HistoryChange>> changes = new Dictionary<string, List<HistoryChange>>();
+                    Dictionary<string, List<PersonHistoryChange>> changes = new Dictionary<string, List<PersonHistoryChange>>();
                     foreach ( var history in qry.ToList() )
                     {
-                        Match modified = Regex.Match( history.Summary, ModifiedRegex );
-                        Match added = Regex.Match( history.Summary, AddedRegex );
-                        Match deleted = Regex.Match( history.Summary, DeletedRegex );
+                        //
+                        // Check what kind of change this was.
+                        //
+                        History.HistoryVerb? historyVerb = history.Verb.ConvertToEnumOrNull<History.HistoryVerb>();
+                        string title = history.ValueName;
 
                         //
                         // Walk each attribute entered by the user to match against.
                         //
                         foreach ( var attribute in attributes )
                         {
-                            HistoryChange change = new HistoryChange();
-                            string title = null;
-
-                            //
-                            // Check what kind of change this was.
-                            //
-                            if ( modified.Success )
-                            {
-                                title = modified.Groups[1].Value;
-                                change.Old = modified.Groups[2].Value;
-                                change.New = modified.Groups[3].Value;
-                            }
-                            else if ( added.Success )
-                            {
-                                title = added.Groups[1].Value;
-                                change.Old = string.Empty;
-                                change.New = added.Groups[2].Value;
-                            }
-                            else if ( deleted.Success )
-                            {
-                                title = deleted.Groups[1].Value;
-                                change.Old = deleted.Groups[2].Value;
-                                change.New = string.Empty;
-                            }
+                            PersonHistoryChange change = new PersonHistoryChange();
+                            
+                            change.Old = history.OldValue;
+                            change.New = history.NewValue;
 
                             //
                             // Check if this is one of the attributes we are following.
@@ -170,7 +148,7 @@ namespace Rock.Follow.Event
                                 //
                                 if ( !changes.ContainsKey( attribute ) )
                                 {
-                                    changes.Add( attribute, new List<HistoryChange>() );
+                                    changes.Add( attribute, new List<PersonHistoryChange>() );
                                 }
 
                                 change.PersonId = history.CreatedByPersonId;
@@ -197,7 +175,7 @@ namespace Rock.Follow.Event
                     //
                     foreach ( var items in changes.Values )
                     {
-                        foreach ( HistoryChange change in items )
+                        foreach ( PersonHistoryChange change in items )
                         {
                             //
                             // Check for a match on the person who made the change.
@@ -233,7 +211,7 @@ namespace Rock.Follow.Event
         /// Change C changes the value back to what it was before change A happened, therefore
         /// it becomes a non-op).
         /// </summary>
-        class HistoryChange
+        class PersonHistoryChange
         {
             public string Old = string.Empty;
 

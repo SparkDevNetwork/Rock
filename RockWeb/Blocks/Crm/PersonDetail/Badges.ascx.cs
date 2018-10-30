@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         Guid guid = badgeGuid.AsGuid();
                         if ( guid != Guid.Empty )
                         {
-                            var personBadge = PersonBadgeCache.Read( guid );
+                            var personBadge = PersonBadgeCache.Get( guid );
                             if ( personBadge != null )
                             {
                                 blBadges.PersonBadges.Add( personBadge );

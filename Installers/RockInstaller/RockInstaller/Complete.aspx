@@ -3,21 +3,13 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en">
 <head runat="server">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Rock Installer</title>
-    <link rel='stylesheet' href='//fonts.googleapis.com/css?family=Open+Sans:300,400,600,700' type='text/css' />
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
-    <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" />
-    
-    <style type="text/css">
-
-        body {
-            background-color: #dbd5cb;
-            border-top: 24px solid #282526;
-        }
-
-    </style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 
     <script src="//code.jquery.com/jquery-1.9.0.min.js"></script>
 
@@ -38,7 +30,7 @@
                             <asp:Panel ID="pnlSuccess" runat="server" Visible="true">
                                 <div class="content-narrow">
                                     <img src="<%=storageUrl %>Images/laptop.png" />
-                                
+
                                     <h1>Success</h1>
 
                                     <div class="success-message">
@@ -47,13 +39,13 @@
                                             left is to login and get started.
                                         </p>
 
-                                        <a href="#" class="btn btn-primary start-up"><i class="fa fa-lightbulb-o "></i> Flip the Switch</a>
+                                        <a href="#" class="btn btn-primary start-up"><i class="far fa-lightbulb"></i> Flip the Switch</a>
                                     </div>
 
                                     <div id="waiting-message" class="alert alert-info" style="display: none;">
                                         <strong>Something To Keep In Mind...</strong>
                                         <p>
-                                            Rock can take a minute or two to intially start-up when the server has been shutdown. Once started 
+                                            Rock can take a minute or two to initially start-up when the server has been shutdown. Once started
                                             though, pages will load quickly.
                                         </p>
                                         <span class="blink label label-info" style="margin-top: 6px;">Rock Loading...</span>
@@ -64,7 +56,7 @@
 
                             <asp:Panel ID="pnlError" runat="server" Visible="false">
                                 <img src="<%=storageUrl %>Images/laptop.png" />
-                                
+
                                 <h1>An Error Occurred Moving Rock Into Place</h1>
 
                                 <asp:Literal ID="lErrorMessage" runat="server" />
@@ -90,21 +82,21 @@
 </body>
 
 <script language="CS" runat="server">
-    
+
 
     const string baseStorageUrl = "https://rockrms.blob.core.windows.net/install/";
-    const string baseVersion = "2_7_0";
+    const string baseVersion = "2_8_0";
 
     string storageUrl = string.Empty;
 
     bool isDebug = false;
-    string serverPath = string.Empty; 
-   
+    string serverPath = string.Empty;
+
     void Page_Init( object sender, EventArgs e )
     {
         bool cleanupSuccessful = true;
         string errorMessage = string.Empty;
-        
+
         serverPath = serverPath = (System.Web.HttpContext.Current == null)
                     ? System.Web.Hosting.HostingEnvironment.MapPath( "~/" )
                     : System.Web.HttpContext.Current.Server.MapPath( "~/" );
@@ -117,12 +109,12 @@
         {
             storageUrl = String.Format( "{0}{1}/", baseStorageUrl, baseVersion );
         }
-        
+
         if ( Request["Debug"] != null )
         {
             isDebug = Convert.ToBoolean( Request["Debug"] );
         }
-        
+
         try
         {
             // remove installer data files
@@ -142,14 +134,14 @@
             {
                 File.Delete( serverPath + @"\webconfig.xml" );
             }
-            
+
         }
         catch ( Exception ex )
         {
             cleanupSuccessful = false;
             errorMessage = ex.Message;
         }
-            
+
         if (!cleanupSuccessful) {
             pnlSuccess.Visible = false;
             pnlError.Visible = true;
@@ -162,7 +154,7 @@
     {
         // wait for a few ms to keep app from recycling before the page is flushed
         System.Threading.Thread.Sleep( 300 );
-        
+
         // remove installer files
         File.Delete( serverPath + @"Start.aspx" );
         File.Delete( serverPath + @"Install.aspx" );
@@ -171,7 +163,7 @@
 
         // move the rock application into place
         if ( DirectoryContentsMove( serverPath + @"\rock", serverPath ) )
-        {            
+        {
             // delete this page
             File.Delete( serverPath + @"Complete.aspx" );
 
@@ -259,16 +251,16 @@
                 file.MoveTo( temppath );
             }
         }
-        
+
         catch (Exception ex)
         {
             LogException( ex );
             return false;
         }
-        
+
         return true;
     }
-    
+
     private void LogException(Exception ex)
     {
         string directory = AppDomain.CurrentDomain.BaseDirectory;

@@ -69,7 +69,6 @@ while @communicationCounter < @maxCommunicationCount
            ,[Status]
            ,[ReviewedDateTime]
            ,[ReviewerNote]
-           ,[MediumEntityTypeId]
            ,[AdditionalMergeFieldsJson]
            ,[Guid]
            ,[CreatedDateTime]
@@ -87,7 +86,6 @@ while @communicationCounter < @maxCommunicationCount
            ,@communicationStatus
            ,DATEADD(DAY, round(50*rand(), 0), @communicationDateTime)
            ,'some note'
-           ,@mediumId
            ,''
            ,newid()
            ,@communicationDateTime

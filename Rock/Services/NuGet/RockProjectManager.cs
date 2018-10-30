@@ -103,7 +103,7 @@ namespace Rock.Services.NuGet
                 catch ( IOException )
                 {
                     // try one more time
-                    System.Threading.Thread.Sleep( 10 );
+                    System.Threading.Tasks.Task.Delay( 10 ).Wait();
                     if ( Directory.Exists( packageRestorePath ) )
                     {
                         Directory.Delete( packageRestorePath, recursive: true );
@@ -160,7 +160,7 @@ namespace Rock.Services.NuGet
                 return false;
             }
 
-            // This really shouldn't happen since it was theoretically‎ just added before
+            // This really shouldn't happen since it was theoretically just added before
             // we were called.
             if ( !File.Exists( transformFile ) )
             {

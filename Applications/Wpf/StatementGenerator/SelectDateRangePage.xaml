@@ -36,8 +36,9 @@
                 <Label Content="Statement Date Range"
                        Style="{StaticResource labelStyleBannerText}" />
             </StackPanel>
-            <StackPanel VerticalAlignment="Center"
-                        HorizontalAlignment="Center"
+            <StackPanel VerticalAlignment="Top"
+                        HorizontalAlignment="Left"
+                        Style="{StaticResource indentStyle}"
                         Grid.Column="1"
                         Grid.Row="1">
 

@@ -43,7 +43,6 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnLoad( e );
 
-            RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
             var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
@@ -118,7 +117,7 @@ namespace RockWeb.Blocks.CheckIn
                         }
 
                         lTitle.Text = string.Format( GetAttributeValue( "Title" ), person.ToString() );
-                        lSubTitle.Text = string.Format( GetAttributeValue( "SubTitle"), string.Format( "{0} - {1}", group.ToString(), location.ToString() ) );
+                        lSubTitle.Text = string.Format( GetAttributeValue( "SubTitle"), string.Format( "{0} - {1}", group.ToString(), location.Location.Name ) );
 
                         lbSelect.Text = "Check In";
                         lbSelect.Attributes.Add( "data-loading-text", "Printing..." );

@@ -52,11 +52,13 @@ namespace Rock.Field.Types
                 Guid? guid = value.AsGuidOrNull();
                 if ( guid.HasValue )
                 {
-                    var workflowType = new WorkflowTypeService( new RockContext() )
-                        .Queryable().FirstOrDefault( a => a.Guid.Equals( guid.Value ) );
-                    if ( workflowType != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        formattedValue = workflowType.Name;
+                        var workflowTypeName = new WorkflowTypeService( rockContext ).GetSelect( guid.Value, a => a.Name );
+                        if ( workflowTypeName != null )
+                        {
+                            formattedValue = workflowTypeName;
+                        }
                     }
                 }
             }
@@ -91,19 +93,22 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as WorkflowTypePicker;
-            string result = null;
-
             if ( picker != null )
             {
-                var id = picker.SelectedValueAsInt();
-                var workflowType = new WorkflowTypeService( new RockContext() ).Queryable().FirstOrDefault( a => a.Id == id );
-                if ( workflowType != null )
+                int? itemId = picker.SelectedValue.AsIntegerOrNull();
+                Guid? itemGuid = null;
+                if ( itemId.HasValue )
                 {
-                    result = workflowType.Guid.ToString();
+                    using ( var rockContext = new RockContext() )
+                    {
+                        itemGuid = new WorkflowTypeService( rockContext ).GetGuid( itemId.Value );
+                    }
                 }
+
+                return itemGuid?.ToString() ?? string.Empty;
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>
@@ -114,18 +119,21 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as WorkflowTypePicker;
+
+            if ( picker != null )
             {
-                var picker = control as WorkflowTypePicker;
-                if ( picker != null )
+                WorkflowType item = null;
+                Guid? guid = value.AsGuidOrNull();
+
+                // get the item (or null) and set it
+                if ( guid.HasValue )
                 {
-                    Guid? guid = value.AsGuidOrNull();
-                    if ( guid.HasValue )
-                    {
-                        var workflowType = new WorkflowTypeService( new RockContext() ).Queryable().FirstOrDefault( a => a.Guid.Equals( guid.Value ) );
-                        picker.SetValue( workflowType );
-                    }
+                    var rockContext = new RockContext();
+                    item = new WorkflowTypeService( rockContext ).GetNoTracking( guid.Value );
                 }
+
+                picker.SetValue( item );
             }
         }
 
@@ -142,8 +150,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new WorkflowTypeService( new RockContext() ).Get( guid );
-            return item != null ? item.Id : (int?)null;
+            return new WorkflowTypeService( new RockContext() ).GetId( guid );
         }
 
         /// <summary>

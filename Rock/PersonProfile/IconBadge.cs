@@ -27,7 +27,7 @@ namespace Rock.PersonProfile
     /// <summary>
     /// Base class for person profile icon badges
     /// </summary>
-    public abstract class IconBadge : BadgeComponent 
+    public abstract class IconBadge : BadgeComponent
     {
         /// <summary>
         /// Gets the tool tip text.

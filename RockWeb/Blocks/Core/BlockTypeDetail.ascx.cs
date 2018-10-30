@@ -121,7 +121,6 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                BlockTypeCache.Flush( blockTypeId );
                 blockType = blockTypeService.Get( blockTypeId );
             }
 
@@ -315,7 +314,7 @@ namespace RockWeb.Blocks.Core
                 List<string> blockStaticAttributeKeys = GetBlockTypeStaticAttributeKeys();
 
                 var attributes = new AttributeService( new RockContext() )
-                    .GetByEntityTypeId( new Rock.Model.Block().TypeId ).AsQueryable()
+                    .GetByEntityTypeId( new Rock.Model.Block().TypeId, true ).AsQueryable()
                     .Where( a =>
                         a.EntityTypeQualifierColumn.Equals( "BlockTypeId", StringComparison.OrdinalIgnoreCase ) &&
                         a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -340,7 +339,7 @@ namespace RockWeb.Blocks.Core
         /// <returns></returns>
         private List<string> GetBlockTypeStaticAttributeKeys()
         {
-            var blockTypeCache = BlockTypeCache.Read( hfBlockTypeId.Value.AsInteger() );
+            var blockTypeCache = BlockTypeCache.Get( hfBlockTypeId.Value.AsInteger() );
             List<FieldAttribute> blockProperties = new List<FieldAttribute>(); ;
             try
             {
@@ -374,7 +373,7 @@ namespace RockWeb.Blocks.Core
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtBlockTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for block type " + tbName.Text );
             }
             else
@@ -385,7 +384,7 @@ namespace RockWeb.Blocks.Core
             }
 
             edtBlockTypeAttributes.ReservedKeyNames = new AttributeService( new RockContext() )
-                .GetByEntityTypeId( new Rock.Model.Block().TypeId ).AsQueryable()
+                .GetByEntityTypeId( new Rock.Model.Block().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "BlockTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( hfBlockTypeId.Value ) &&
@@ -414,7 +413,7 @@ namespace RockWeb.Blocks.Core
 
             int order = 0;
             var attributes = attributeService
-                .GetByEntityTypeId( new Rock.Model.Block().TypeId ).AsQueryable()
+                .GetByEntityTypeId( new Rock.Model.Block().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "BlockTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -425,7 +424,6 @@ namespace RockWeb.Blocks.Core
             foreach ( var attribute in attributes )
             {
                 attribute.Order = order++;
-                AttributeCache.Flush( attribute.Id );
             }
 
             var movedItem = attributes.Where( a => a.Order == e.OldIndex ).FirstOrDefault();
@@ -475,31 +473,12 @@ namespace RockWeb.Blocks.Core
                     mdGridWarningAttributes.Show( errorMessage, ModalAlertType.Information );
                     return;
                 }
-
-                AttributeCache.Flush( attribute.Id );
+                
                 attributeService.Delete( attribute );
                 rockContext.SaveChanges();
             }
 
-            FlushBlockTypeAttributes();
-
             BindBlockTypeAttributesGrid();
-        }
-
-        /// <summary>
-        /// Flushes the block type attributes.
-        /// </summary>
-        private void FlushBlockTypeAttributes()
-        {
-            // Flush BlockType, Block and Entity Attributes
-            AttributeCache.FlushEntityAttributes();
-
-            BlockTypeCache.Flush( hfBlockTypeId.Value.AsInteger() );
-            var blockTypeCache = BlockTypeCache.Read( hfBlockTypeId.Value.AsInteger() );
-            foreach ( var blockId in new BlockService( new RockContext() ).GetByBlockTypeId( hfBlockTypeId.Value.AsInteger() ).Select( a => a.Id ).ToList() )
-            {
-                BlockCache.Flush( blockId );
-            }
         }
 
         /// <summary>
@@ -510,7 +489,7 @@ namespace RockWeb.Blocks.Core
         protected void edtBlockTypeAttributes_SaveClick( object sender, EventArgs e )
         {
             var attribute = Rock.Attribute.Helper.SaveAttributeEdits(
-                edtBlockTypeAttributes, EntityTypeCache.Read( typeof( Rock.Model.Block ) ).Id, "BlockTypeId", hfBlockTypeId.Value );
+                edtBlockTypeAttributes, EntityTypeCache.Get( typeof( Rock.Model.Block ) ).Id, "BlockTypeId", hfBlockTypeId.Value );
 
             // Attribute will be null if it was not valid
             if ( attribute == null )
@@ -520,8 +499,6 @@ namespace RockWeb.Blocks.Core
 
             pnlDetails.Visible = true;
             pnlBlockTypeAttributesEdit.Visible = false;
-
-            FlushBlockTypeAttributes();
 
             BindBlockTypeAttributesGrid();
             this.HideSecondaryBlocks( false );

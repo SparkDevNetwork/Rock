@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Web.UI.Controls;
 
@@ -132,7 +132,7 @@ namespace Rock.Field.Types
                 Guid guid = Guid.Empty;
                 if ( Guid.TryParse( value, out guid ) )
                 {
-                    var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                    var definedValue = DefinedValueCache.Get( guid );
                     if ( definedValue != null )
                     {
                         formattedValue = definedValue.Value;
@@ -159,7 +159,7 @@ namespace Rock.Field.Types
         {
             ListControl editControl;
 
-            editControl = new Rock.Web.UI.Controls.RockDropDownList { ID = id }; 
+            editControl = new Rock.Web.UI.Controls.RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
             if ( configurationValues != null && configurationValues.ContainsKey( GROUP_TYPE_KEY ) )
@@ -167,27 +167,23 @@ namespace Rock.Field.Types
                 Guid groupTypeGuid = Guid.Empty;
                 if ( Guid.TryParse( configurationValues[GROUP_TYPE_KEY].Value, out groupTypeGuid ) )
                 {
-                    var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeGuid );
-                    if (groupType != null)
+                    var groupType = GroupTypeCache.Get( groupTypeGuid );
+                    if ( groupType != null )
                     {
                         var locationTypeValues = groupType.LocationTypeValues;
                         if ( locationTypeValues != null )
                         {
-                            if ( locationTypeValues.Any() )
+                            foreach ( var locationTypeValue in locationTypeValues )
                             {
-                                foreach ( var locationTypeValue in locationTypeValues )
-                                {
-                                    editControl.Items.Add( new ListItem( locationTypeValue.Value, locationTypeValue.Id.ToString() ) );
-                                }
-
-                                return editControl;
+                                editControl.Items.Add( new ListItem( locationTypeValue.Value, locationTypeValue.Id.ToString() ) );
                             }
+
                         }
                     }
                 }
             }
             
-            return null;
+            return editControl;
         }
 
         /// <summary>
@@ -198,24 +194,20 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            var ids = new List<string>();
-
-            if ( control != null && control is RockDropDownList )
+            var picker = control as RockDropDownList;
+            if ( picker != null )
             {
-                string id  = ( (ListControl)control ).SelectedValue;
-
-                int definedValueId = int.MinValue;
-                if ( int.TryParse( id, out definedValueId ) )
+                DefinedValueCache definedValue = null;
+                int? definedValueId = picker.SelectedValue.AsIntegerOrNull();
+                if ( definedValueId.HasValue )
                 {
-                    var definedValue = Rock.Web.Cache.DefinedValueCache.Read( definedValueId );
-                    if ( definedValue != null )
-                    {
-                        return definedValue.Guid.ToString();
-                    }
+                    definedValue = DefinedValueCache.Get( definedValueId.Value );
                 }
+
+                return definedValue?.Guid.ToString() ?? string.Empty;
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>
@@ -226,32 +218,20 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as RockDropDownList;
+            if ( picker != null )
             {
-                if ( control != null && control is RockDropDownList )
+                DefinedValueCache definedValue = null;
+                Guid? definedValueGuid = value.AsGuidOrNull();
+                if ( definedValueGuid.HasValue )
                 {
-                    string id = string.Empty;
-
-                    Guid guid = Guid.Empty;
-                    if ( Guid.TryParse( value, out guid ) )
-                    {
-                        var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
-                        if ( definedValue != null )
-                        {
-                            id = definedValue.Id.ToString();
-                        }
-                    }
-
-                    var listControl = control as RockDropDownList;
-                    foreach ( ListItem li in listControl.Items )
-                    {
-                        li.Selected = id == li.Value;
-                    }
+                    definedValue = DefinedValueCache.Get( definedValueGuid.Value );
                 }
+
+                picker.SetValue( definedValue?.Id );
             }
         }
 
         #endregion
-
     }
 }

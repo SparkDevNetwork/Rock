@@ -132,11 +132,11 @@ The SQL can include Lava merge fields:";
 
             ceWarningSqlExpression.Text = groupRequirementType.WarningSqlExpression;
 
-            dpDataView.EntityTypeId = EntityTypeCache.Read<Person>().Id;
-            dpDataView.SelectedValue = groupRequirementType.DataViewId.ToString();
+            dpDataView.EntityTypeId = EntityTypeCache.Get<Person>().Id;
+            dpDataView.SetValue( groupRequirementType.DataViewId );
 
-            dpWarningDataView.EntityTypeId = EntityTypeCache.Read<Person>().Id;
-            dpWarningDataView.SelectedValue = groupRequirementType.WarningDataViewId.ToString();
+            dpWarningDataView.EntityTypeId = EntityTypeCache.Get<Person>().Id;
+            dpWarningDataView.SetValue( groupRequirementType.WarningDataViewId );
 
             hfRequirementCheckType.Value = groupRequirementType.RequirementCheckType.ConvertToInt().ToString();
         }

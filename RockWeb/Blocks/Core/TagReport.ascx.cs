@@ -75,6 +75,7 @@ namespace RockWeb.Blocks.Core
             gReport.DataKeyNames = new string[] { "Id" };
             gReport.Actions.ShowAdd = false;
             gReport.GridRebind += gReport_GridRebind;
+            gReport.Actions.AddClick += gReport_AddClick;
 
             TagId = PageParameter( "TagId" ).AsIntegerOrNull();
             if ( TagId.HasValue && TagId.Value > 0 )
@@ -85,13 +86,14 @@ namespace RockWeb.Blocks.Core
                     pnlGrid.Visible = true;
                     lTaggedTitle.Text = "Tagged Items";
 
-                    TagEntityType = EntityTypeCache.Read( _tag.EntityTypeId ?? 0 );
+                    TagEntityType = EntityTypeCache.Get( _tag.EntityTypeId ?? 0 );
                     if ( TagEntityType != null )
                     {
                         if ( TagEntityType.Name == "Rock.Model.Person" )
                         {
                             gReport.ColumnsOfType<SelectField>().First().Visible = true;
                             gReport.PersonIdField = "PersonId";
+                            gReport.Actions.ShowAdd = _tag.IsAuthorized( "Tag", CurrentPerson );
                         }
 
                         var entityType = TagEntityType.GetEntityType();
@@ -117,6 +119,28 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            var personPickerStartupScript = @"Sys.Application.add_load(function () {
+
+                // if the person picker is empty then open it for quick entry
+                var personPicker = $('.js-newperson');
+                var currentPerson = personPicker.find('.picker-selectedperson').html();
+                if (currentPerson != null && currentPerson.length == 0) {
+                    $(personPicker).find('a.picker-label').trigger('click');
+                }
+
+            });";
+
+            this.Page.ClientScript.RegisterStartupScript( this.GetType(), "StartupScript", personPickerStartupScript, true );
+        }
+
+        /// <summary>
         /// Handles the GridRebind event of the gReport control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -138,14 +162,14 @@ namespace RockWeb.Blocks.Core
                 var taggedItem = new TaggedItemService( rockContext ).Get( e.RowKeyId );
                 if ( taggedItem != null )
                 {
-                    var entityType = EntityTypeCache.Read( taggedItem.EntityTypeId );
+                    var entityType = EntityTypeCache.Get( taggedItem.EntityTypeId );
                     if ( entityType != null )
                     {
                         var entity = GetGenericEntity( entityType.GetEntityType(), taggedItem.EntityGuid ) as IEntity;
                         if ( entity != null )
                         {
                             string url = string.Format( "~/{0}/{1}", entityType.FriendlyName.Replace( " ", "" ), entity.Id );
-                            if ( entityType.LinkUrlLavaTemplate.IsNotNullOrWhitespace() )
+                            if ( entityType.LinkUrlLavaTemplate.IsNotNullOrWhiteSpace() )
                             {
                                 url = entityType.LinkUrlLavaTemplate.ResolveMergeFields( new Dictionary<string, object> { { "Entity", entity } } );
                             }
@@ -181,6 +205,81 @@ namespace RockWeb.Blocks.Core
                 }
 
                 BindGrid();
+            }
+        }
+
+        /// <summary>
+        /// Handles the AddClick event of the gReport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gReport_AddClick( object sender, EventArgs e )
+        {
+            nbAddPersonExists.Visible = false;
+            mdAddPerson.Show();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdAddPerson control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdAddPerson_SaveClick( object sender, EventArgs e )
+        {
+            if ( !AddPerson( ppNewPerson.SelectedValue.Value ) )
+            {
+                nbAddPersonExists.Visible = true;
+                return;
+            }
+
+            mdAddPerson.Hide();
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the SaveThenAddClick event of the mdAddPerson control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdAddPerson_SaveThenAddClick( object sender, EventArgs e )
+        {
+            if ( !AddPerson( ppNewPerson.SelectedValue.Value ) )
+            {
+                nbAddPersonExists.Visible = true;
+                return;
+            }
+
+            BindGrid();
+            ppNewPerson.SetValue( null );
+            nbAddPersonExists.Visible = false;
+        }
+
+        /// <summary>
+        /// Add the person to the tag.
+        /// </summary>
+        /// <returns>True if the person was added, false if they already existed in the tag.</returns>
+        private bool AddPerson( int personId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var taggedItemService = new TaggedItemService( rockContext );
+                Tag tag = new TagService( rockContext ).Get( TagId.Value );
+                var person = new PersonService( rockContext ).Get( personId );
+
+                if ( taggedItemService.Get( tag.Id, person.Guid ) != null )
+                {
+                    return false;
+                }
+
+                var taggedItem = new TaggedItem();
+                taggedItem.TagId = TagId.Value;
+                taggedItem.EntityTypeId = TagEntityType.Id;
+                taggedItem.EntityGuid = person.Guid;
+                taggedItemService.Add( taggedItem );
+
+                rockContext.SaveChanges();
+
+                return true;
             }
         }
 
@@ -228,6 +327,11 @@ namespace RockWeb.Blocks.Core
                         } );
                 }
 
+                if ( TagEntityType != null )
+                {
+                    gReport.EntityTypeId = TagEntityType.Id;
+                }
+
                 gReport.DataSource = results.ToList();
                 gReport.DataBind();
             }
@@ -235,7 +339,7 @@ namespace RockWeb.Blocks.Core
 
         public string GetItemName( int entityTypeId, Guid entityGuid )
         {
-            var entityType = EntityTypeCache.Read( entityTypeId );
+            var entityType = EntityTypeCache.Get( entityTypeId );
             if ( entityType != null )
             {
                 var entity = GetGenericEntity( entityType.GetEntityType(), entityGuid ) as IEntity;
@@ -302,6 +406,4 @@ namespace RockWeb.Blocks.Core
             public DateTime? CreatedDateTime { get; set; }
         }
     }
-
-    
 }

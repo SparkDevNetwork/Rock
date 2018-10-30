@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -59,7 +59,8 @@ namespace RockWeb.Blocks.Core
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            cpCategory.EntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.MERGE_TEMPLATE.AsGuid() ).Id;
+            cpCategory.EntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.MERGE_TEMPLATE.AsGuid() ).Id;
+            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.MergeTemplate ) ).Id;
         }
 
         /// <summary>
@@ -192,7 +193,7 @@ namespace RockWeb.Blocks.Core
             mergeTemplate.PersonAliasId = ppPerson.PersonAliasId;
             mergeTemplate.CategoryId = cpCategory.SelectedValue.AsInteger();
 
-            int personalMergeTemplateCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id;
+            int personalMergeTemplateCategoryId = CategoryCache.Get( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id;
             if ( mergeTemplate.PersonAliasId.HasValue )
             {
                 if ( mergeTemplate.CategoryId == 0 )
@@ -332,7 +333,11 @@ namespace RockWeb.Blocks.Core
                 {
                     mergeTemplate.PersonAliasId = this.CurrentPersonAliasId;
                     mergeTemplate.PersonAlias = this.CurrentPersonAlias;
+
+                    // Don't show security on a personal merge template.
+                    btnSecurity.Visible = false;
                 }
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -354,6 +359,10 @@ namespace RockWeb.Blocks.Core
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( MergeTemplate.FriendlyTypeName );
             }
 
+            btnSecurity.Visible = mergeTemplate.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            btnSecurity.Title = mergeTemplate.Name;
+            btnSecurity.EntityId = mergeTemplate.Id;
+
             if ( readOnly )
             {
                 btnEdit.Visible = false;
@@ -365,6 +374,7 @@ namespace RockWeb.Blocks.Core
                 btnEdit.Visible = true;
                 string errorMessage = string.Empty;
                 btnDelete.Visible = mergeTemplateService.CanDelete( mergeTemplate, out errorMessage );
+            
                 if ( mergeTemplate.Id > 0 )
                 {
                     ShowReadonlyDetails( mergeTemplate );
@@ -425,7 +435,7 @@ namespace RockWeb.Blocks.Core
                 ppPerson.Visible = false;
                 ppPerson.Required = false;
                 cpCategory.Visible = true;
-                cpCategory.ExcludedCategoryIds = CategoryCache.Read( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id.ToString();
+                cpCategory.ExcludedCategoryIds = CategoryCache.Get( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id.ToString();
             }
             else if ( mergeTemplateOwnership == MergeTemplateOwnership.Personal )
             {
@@ -476,7 +486,7 @@ namespace RockWeb.Blocks.Core
         protected void fuTemplateBinaryFile_FileUploaded( object sender, EventArgs e )
         {
             nbFileTypeWarning.Visible = false;
-            var mergeTemplateEntityType = EntityTypeCache.Read( ddlMergeTemplateType.SelectedValue.AsInteger() );
+            var mergeTemplateEntityType = EntityTypeCache.Get( ddlMergeTemplateType.SelectedValue.AsInteger() );
             var binaryFile = new BinaryFileService( new RockContext() ).Get( fuTemplateBinaryFile.BinaryFileId ?? 0 );
             if ( binaryFile != null )
             {
@@ -507,7 +517,7 @@ namespace RockWeb.Blocks.Core
                                 if ( testMergeTemplateType.SupportedFileExtensions.Contains( fileExtension ) )
                                 {
                                     mergeTemplateType = testMergeTemplateType;
-                                    var entityType = EntityTypeCache.Read( mergeTemplateType.EntityType.Id );
+                                    var entityType = EntityTypeCache.Get( mergeTemplateType.EntityType.Id );
                                     if ( entityType != null )
                                     {
                                         ddlMergeTemplateType.SetValue( entityType.Id );

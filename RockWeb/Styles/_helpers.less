@@ -1,4 +1,4 @@
-﻿cmd/*
+/*
 
   Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
 
@@ -18,54 +18,6 @@
 
 // 1. Colors
 // -------------------------
-
-// accent color (DEPRACATED DO NOT USE: INSTEAD USER @theme-color-X)
-.accent-color {
-  color: @accent-text-color;
-  background-color: @accent-color;
-}
-
-.accent-color-bordered {
-  color: @accent-text-color;
-  background-color: @accent-color;
-  border: 1px solid darken(@accent-color, 10%);
-}
-
-// accent light color (DEPRACATED DO NOT USE: INSTEAD USER @theme-color-X)
-.accent-light-color {
-  color: @accent-light-text-color;
-  background-color: @accent-light-color;
-}
-
-.accent-light-color-bordered {
-  color: @accent-light-text-color;
-  background-color: @accent-light-color;
-  border: 1px solid darken(@accent-light-color, 10%);
-}
-
-// accent semibold color (DEPRACATED DO NOT USE: INSTEAD USER @theme-color-X)
-.accent-semibold-color {
-  color: @accent-semibold-text-color;
-  background-color: @accent-semibold-color;
-}
-
-.accent-semibold-color-bordered {
-  color: @accent-semibold-text-color;
-  background-color: @accent-semibold-color;
-  border: 1px solid darken(@accent-semibold-color, 10%);
-}
-
-// accent bold color (DEPRACATED DO NOT USE: INSTEAD USER @theme-color-X)
-.accent-bold-color {
-  color: @accent-bold-text-color;
-  background-color: @accent-bold-color;
-}
-
-.accent-bold-color-bordered {
-  color: @accent-bold-text-color;
-  background-color: @accent-bold-color;
-  border: 1px solid darken(@accent-bold-color, 10%);
-}
 
 // primary color
 .primary-color {
@@ -181,6 +133,18 @@
 
 .text-bold {
   font-weight: @font-weight-bold;
+}
+
+.text-light {
+  text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+}
+
+.text-shadow {
+  text-shadow: -1px -1px 0 #777, 1px -1px 0 #777, -1px 1px 0 #777, 1px 1px 0 #777;
+}
+
+.text-shadow-dark {
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
 }
 
 .is-inactive {
@@ -448,6 +412,8 @@
 
 // 3. Even Height Columns - provides classes for making columns even heights
 // -------------------------
+
+// usage row row-eq-height
 
 .row-eq-height {
   display: -webkit-flex;

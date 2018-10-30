@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            _groupType = GroupTypeCache.Read( GetAttributeValue( "GroupType" ).AsGuid() );
+            _groupType = GroupTypeCache.Get( GetAttributeValue( "GroupType" ).AsGuid() );
             if ( _groupType == null )
             {
                 _groupType = GroupTypeCache.GetFamilyGroupType();
@@ -192,10 +192,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         var groupHeaderLava = GetAttributeValue( "GroupHeaderLava" );
                         var groupFooterLava = GetAttributeValue( "GroupFooterLava" );
 
-                        if ( groupHeaderLava.IsNotNullOrWhitespace() || groupFooterLava.IsNotNullOrWhitespace() )
+                        if ( groupHeaderLava.IsNotNullOrWhiteSpace() || groupFooterLava.IsNotNullOrWhiteSpace() )
                         {
                             // add header and footer information
-                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson );
+                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
                             mergeFields.Add( "Group", group );
                             mergeFields.Add( "GroupMembers", members );
 
@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             Literal lGroupFooter = e.Item.FindControl( "lGroupFooter" ) as Literal;
 
                             lGroupHeader.Text = groupHeaderLava.ResolveMergeFields( mergeFields );
-                            lGroupFooter.Text = groupHeaderLava.ResolveMergeFields( mergeFields );
+                            lGroupFooter.Text = groupFooterLava.ResolveMergeFields( mergeFields );
                         }
 
                         var orderedMembers = new List<GroupMember>();
@@ -372,7 +372,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     LinkButton lbLocationSettings = e.Item.FindControl( "lbLocationSettings" ) as LinkButton;
                     if ( lbLocationSettings != null )
                     {
-                        if ( UserCanAdministrate )
+                        if ( UserCanEdit )
                         {
                             lbLocationSettings.Visible = true;
                             lbLocationSettings.CommandArgument = loc.Id.ToString();

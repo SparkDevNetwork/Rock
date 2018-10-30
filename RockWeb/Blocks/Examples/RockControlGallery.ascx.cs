@@ -27,6 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -56,8 +57,8 @@ namespace RockWeb.Blocks.Examples
             gExample.DataKeyNames = new string[] { "Id" };
             gExample.GridRebind += gExample_GridRebind;
 
-            geopExamplePoint.SelectGeography += geoPicker_SelectGeography;
-            geopExamplePolygon.SelectGeography += geoPicker1_SelectGeography;
+            geopExamplePoint.SelectGeography += geopExamplePoint_SelectGeography;
+            geopExamplePolygon.SelectGeography += geopExamplePolygon_SelectGeography;
             geopExamplePoint.MapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
 
             htmlEditorLight.MergeFields.Add( "GlobalAttribute" );
@@ -93,14 +94,14 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         private void InitSyntaxHighlighting()
         {
-            RockPage.AddCSSLink( ResolveUrl( "~/Blocks/Examples/prettify.css" ) );
+            RockPage.AddCSSLink( "~/Blocks/Examples/prettify.css" );
             RockPage.AddScriptLink( "//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js", false );
         }
 
         /// <summary>
         /// Reads this block to find embedded examples and returns them in a indexed list.
         /// </summary>
-        /// <returns>code examples by postion index</returns>
+        /// <returns>code examples by position index</returns>
         private List<string> ReadExamples()
         {
             var list = new List<string>();
@@ -189,8 +190,8 @@ namespace RockWeb.Blocks.Examples
                 rblExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
                 rblExampleHorizontal.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
 
-                campExample.Campuses = Rock.Web.Cache.CampusCache.All();
-                campsExample.Campuses = Rock.Web.Cache.CampusCache.All();
+                campExample.Campuses = CampusCache.All();
+                campsExample.Campuses = CampusCache.All();
                 
                 var rockContext = new RockContext();
                 var allGroupTypes = new GroupTypeService( rockContext ).Queryable().OrderBy( a => a.Name ).ToList();
@@ -212,7 +213,6 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnShowAttributeEditor_Click( object sender, EventArgs e )
         {
-            edtExample.FieldTypeId = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
             pnlAttributeEditor.Visible = !pnlAttributeEditor.Visible;
         }
 
@@ -372,23 +372,23 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
-        /// Handles the SelectGeography event of the geoPicker1 control.
+        /// Handles the SelectGeography event of the geopExamplePolygon control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void geoPicker1_SelectGeography( object sender, EventArgs e )
+        protected void geopExamplePolygon_SelectGeography( object sender, EventArgs e )
         {
-            string debug = geopExamplePoint.SelectedValue.AsText();
+            string debug = geopExamplePolygon.SelectedValue.AsText();
         }
 
         /// <summary>
-        /// Handles the SelectGeography event of the geoPicker control.
+        /// Handles the SelectGeography event of the geopExamplePoint control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void geoPicker_SelectGeography( object sender, EventArgs e )
+        protected void geopExamplePoint_SelectGeography( object sender, EventArgs e )
         {
-            string debug = geopExamplePolygon.SelectedValue.AsText();
+            string debug = geopExamplePoint.SelectedValue.AsText();
         }
 
         /// <summary>
@@ -401,16 +401,36 @@ namespace RockWeb.Blocks.Examples
             string physicalFileName = this.Request.MapPath( fuprExampleContentFile.UploadedContentFilePath );
             lblPhysicalFileName.Text = "Uploaded File: " + physicalFileName;
         }
-        
+
+        /// <summary>
+        /// Handles the Click event of the lbTestSlider control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbTestSlider_Click( object sender, EventArgs e )
         {
             var val1 = rsSlider.SelectedValue;
             var val2 = rsSlider2.SelectedValue;
         }
 
+        /// <summary>
+        /// Handles the SelectedDatePartsChanged event of the dppExample control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dppExample_SelectedDatePartsChanged( object sender, EventArgs e )
         {
+            //  if you wanted to do something of any of the date parts changed
+        }
 
+        /// <summary>
+        /// Handles the Click event of the btnMarkdownPreview control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnMarkdownPreview_Click( object sender, EventArgs e )
+        {
+            lMarkdownHtml.Text = mdMarkdownEditor.Text.ConvertMarkdownToHtml(true);
         }
     }
 }

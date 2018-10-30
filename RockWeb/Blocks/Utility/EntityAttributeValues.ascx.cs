@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Utility
         /// <param name="e">Arguments that describe this event.</param>
         protected void Page_Load( object sender, EventArgs e )
         {
-            IHasAttributes entity = ContextEntity() as IHasAttributes;
+            var entity = ContextEntity() as Rock.Attribute.IHasAttributes;
 
             if ( entity == null || entity.Attributes.Count == 0 )
             {
@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Utility
         /// </summary>
         protected void ShowDetails()
         {
-            IHasAttributes entity = ContextEntity() as IHasAttributes;
+            var entity = ContextEntity() as Rock.Attribute.IHasAttributes;
 
             if ( entity != null )
             {
@@ -118,7 +118,7 @@ namespace RockWeb.Blocks.Utility
         /// <param name="setValues">If true then the values are set from the database, otherwise the postback values will be used.</param>
         protected void ShowEdit( bool setValues )
         {
-            IHasAttributes entity = ContextEntity() as IHasAttributes;
+            var entity = ContextEntity() as Rock.Attribute.IHasAttributes;
 
             if ( entity != null )
             {
@@ -167,7 +167,7 @@ namespace RockWeb.Blocks.Utility
             pnlView.Visible = true;
             pnlEdit.Visible = false;
 
-            IHasAttributes entity = ContextEntity() as IHasAttributes;
+            var entity = ContextEntity() as Rock.Attribute.IHasAttributes;
             Rock.Attribute.Helper.GetEditValues( phEditAttributes, entity );
             entity.SaveAttributeValues();
 

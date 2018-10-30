@@ -26,7 +26,7 @@ namespace Rock.Attribute
     /// <summary>
     /// Field Attribute for selecting radio button options from an enum.
     /// </summary>
-    [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = true )]
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class EnumFieldAttribute : FieldAttribute
     {
         /// <summary>

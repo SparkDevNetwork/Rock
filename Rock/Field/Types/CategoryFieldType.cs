@@ -164,12 +164,19 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            if ( this is CategoriesFieldType )
             {
-                var category = CategoryCache.Read( value.AsGuid() );
-                if ( category != null )
+                formattedValue = value;
+            }
+            else
+            {
+                if ( !string.IsNullOrWhiteSpace( value ) )
                 {
-                    formattedValue = category.Name;
+                    var category = CategoryCache.Get( value.AsGuid() );
+                    if ( category != null )
+                    {
+                        formattedValue = category.Name;
+                    }
                 }
             }
 
@@ -231,15 +238,17 @@ namespace Rock.Field.Types
                 var id = picker.ItemId.AsIntegerOrNull();
                 if ( id.HasValue )
                 {
-                    var category = CategoryCache.Read( id.Value );
+                    var category = CategoryCache.Get( id.Value );
                     if ( category != null )
                     {
                         return category.Guid.ToString();
                     }
                 }
+
+                return string.Empty;
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>

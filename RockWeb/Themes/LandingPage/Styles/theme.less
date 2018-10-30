@@ -1,0 +1,401 @@
+
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+//@import "_print.less";
+@import "_root.less";
+@import "_mixins.less";
+
+.navigation-bar-toggle(@enable-navigation-bar);
+.help-text-toggle(@enable-help-text);
+.required-indicator-toggle(@enable-required-indicator);
+
+.btn-ghost {
+  .button-outline-variant(#ffffff; #ffffff; #ffffff);
+  background-color: rgba(255,255,255,.15);
+
+  &:hover,
+  &:focus {
+    color: #fff;
+    background: transparent;
+  }
+}
+
+.hero {
+  background-color: @hero-background;
+  background-position: center;
+  background-size: cover;
+
+  &.has-fade {
+    position: relative;
+    &::before {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      z-index: 0;
+      width: 100%;
+      height: 200px;
+      content: " ";
+      background-image: -webkit-linear-gradient(-180deg, hero-fade-rgb-0 0%, @hero-fade-rgb-60 60%, @hero-fade-rgb-80 80%, @hero-fade-rgb-100 100%);
+      background-image: -moz-linear-gradient(-180deg, @hero-fade-rgb-0 0%, @hero-fade-rgb-60 60%, @hero-fade-rgb-80 80%, @hero-fade-rgb-100 100%);
+      background-image: linear-gradient(-180deg, @hero-fade-rgb-0 0%, @hero-fade-rgb-60 60%, @hero-fade-rgb-80 80%, @hero-fade-rgb-100 100%);
+      background-repeat: no-repeat;
+    }
+  }
+
+  &.has-porthole{
+    position: relative;
+    &::before {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      content: "";
+      background: -webkit-linear-gradient(rgba(0,0,0,.6) 0%, rgba(0,0,0,0) 20%, rgba(0,0,0,0) 60%, rgba(0,0,0,.6) 100%);
+      background: -moz-linear-gradient(rgba(0,0,0,.6) 0%, rgba(0,0,0,0) 20%, rgba(0,0,0,0) 60%, rgba(0,0,0,.6) 100%);
+      background: linear-gradient(rgba(0,0,0,.6) 0%, rgba(0,0,0,0) 20%, rgba(0,0,0,0) 60%, rgba(0,0,0,.6) 100%);
+    }
+  }
+
+
+  &.has-overlay {
+    position: relative;
+    &::before {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      content: "";
+      background-color: @hero-overlay-color;
+    }
+  }
+}
+
+
+
+.hero-split-bright(@hero-split-is-bright);
+
+.hero-card {
+  #zone-headline {
+    h1,
+    h1 small {
+      color: @hero-split-dark-headline;
+      text-shadow: none !important;
+    }
+  }
+
+  .btn-ghost {
+    color: @hero-split-dark-headline;
+    border-color: @hero-split-dark-headline;
+
+    &:hover,
+    &:focus {
+      color: @hero-split-dark-headline;
+      background: transparent;
+      border-color: @hero-split-dark-headline;
+    }
+  }
+}
+
+// Simple top of page notification bar
+#zone-notificationbar {
+  > .zone-content {
+    position: relative;
+    padding: 15px 50px;
+    font-size: 13px;
+    line-height: 1.3;
+    color: @text-color;
+    color: @notification-bar-color;
+    text-align: center;
+    background: @notification-bar-bg;
+  }
+}
+
+// Control logo width and add hover effect
+.logo {
+  width: @logo-mobile-width;
+
+  &:hover {
+    filter: brightness(20);
+  }
+
+  @media @md {
+    width: @logo-full-width;
+  }
+}
+
+// Workflow Zone
+//
+// Provides styling for form elements
+.zone-workflow {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin-top: 0;
+  }
+
+  p {
+    margin: 0 0 @font-size-base;
+    font-size: 110%;
+
+    & + & {
+      margin: 0 0 11px;
+    }
+  }
+
+  .panel {
+    margin: 0;
+    border: 0;
+    .box-shadow(none);
+  }
+
+  .panel-heading {
+    display: none;
+  }
+
+  .panel-body {
+    padding: 32px;
+    color: @text-color;
+
+    .pad-workflow & {
+      padding: 48px;
+    }
+  }
+
+  &.no-pad .panel-body {
+    padding: 0;
+  }
+
+  .actions > .btn {
+    display: block;
+    padding: 12px 24px;
+    + .btn {
+      margin-top: 12px;
+    }
+  }
+
+  .alert-success {
+    padding: 0;
+    margin: 0 !important; // Override margin-t-lg
+    font-size: @font-size-h4;
+    color: @text-color;
+    background: transparent;
+    border-color: transparent;
+  }
+
+  // Show workflow inline, without any framing (Used on Full Centered Inline)
+  .noframe-workflow & {
+    .panel {
+      background-color: transparent;
+    }
+
+    .noframe-fields(@noframe-workflow-button);
+
+    .panel-body {
+      padding: 0;
+      color: #fff;
+    }
+
+    .alert-success {
+      color: #fff;
+    }
+  }
+}
+
+// Headline Zone
+//
+// Provides styling for form elements
+.zone-headline {
+  h1 {
+    padding: 0;
+    margin: 0;
+    margin-bottom: 16px;
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 39px;
+    color: #fff;
+    text-shadow: 1px 1px 40px rgba(22, 23, 31, .5);
+    letter-spacing: -.6px;
+
+    @media @md {
+      margin-bottom: 24px;
+      font-size: 44px;
+      line-height: 56px;
+      letter-spacing: -.8px;
+    }
+
+    @media @lg {
+      font-size: 55px;
+      line-height: 60px;
+      letter-spacing: -.8px;
+    }
+    small {
+      display: block;
+      padding: 0 0 0 3px;
+      margin: 0;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 16px;
+      text-shadow: rgba(1, 1, 1, .99) 0 0 10px;
+      text-transform: uppercase;
+      letter-spacing: .2px;
+      white-space: nowrap;
+
+      @media @md {
+        font-size: 15px;
+        line-height: 18px;
+        color: #fff;
+        letter-spacing: .2px;
+      }
+    }
+
+
+    .classic-hero & {
+      margin-bottom: 0;
+    }
+  }
+}
+
+
+.section-3col {
+  min-height: 275px;
+  background-color: @hero-background;
+}
+
+.secondary-hero {
+  color: #fff;
+
+  h1 {
+    font-size: 28px;
+    @media @md {
+      font-size: 44px;
+    }
+
+    @media @lg {
+      font-size: 55px;
+    }
+  }
+}
+
+
+// CTA Buttons Zone
+//
+// Adds margin to buttons
+#zone-ctabuttons {
+  .btn {
+    margin: 0 8px 8px 0;
+  }
+}
+
+// Main Zone
+//
+// Larger text and spacing, automatically responsive images with padding above and below the image.
+#zone-main {
+  p {
+    padding-bottom: 24px;
+    font-size: 18px;
+  }
+
+  img,
+  .split {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 24px 0;
+  }
+
+  // Expand images beyond the edge of the zone content
+  &.pop-content {
+    img,
+    .split {
+      @media @md {
+        max-width: ~"calc(100% + 300px)";
+        padding-bottom: 24px;
+        margin: 48px -150px;
+      }
+
+      @media @lg {
+        max-width: ~"calc(100% + 450px)";
+        margin: 48px -225px;
+      }
+    }
+  }
+
+  // Split content
+  //
+  // Simple floating of image and content to split the view
+  .split {
+    .clearfix();
+
+    img {
+      @media @md {
+        &:first-child {
+          float: left;
+          max-width: 47%;
+          margin: 0 6% 0 0;
+        }
+      }
+    }
+
+    &.right {
+      img {
+        @media @md {
+          &:first-child {
+            float: right;
+            margin: 0 0 0 6%;
+          }
+        }
+      }
+    }
+  }
+}
+
+//
+// Theme Utility Classes
+//
+
+#zone-main.pop-content .note-editor {
+  img,
+  .split {
+    max-width: 100%;
+    margin: 16px 0;
+  }
+}
+
+// Hide zones if they're empty
+.zone-instance {
+  > .zone-content {
+    &:empty {
+      display: none !important;
+    }
+  }
+}
+
+// Show the workflow modal on the page when blocks or zones are highlighted
+.block-highlight,
+.zone-highlight {
+  padding-bottom: 50px;
+
+  .workflow-modal {
+    position: relative;
+    display: block;
+    margin-top: 50px;
+    margin-bottom: 50px;
+    overflow-y: auto;
+    opacity: 1;
+    > .modal-dialog {
+      transform: translate(0, 0);
+    }
+  }
+}
+
+@import "_css-overrides.less";

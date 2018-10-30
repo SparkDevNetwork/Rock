@@ -1,4 +1,4 @@
-﻿/*
+/*
     Used to manage styles for check-in administration.
 
     1. Group / Location
@@ -8,6 +8,40 @@
 
 // 1. Group / Location
 // -------------------------
+.checkin-item {
+  padding: 12px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  border: 1px solid @input-border;
+  border-top-width: 3px;
+
+  .fa-bars {
+    margin-right: 6px;
+    opacity: .5;
+  }
+
+  &-selected {
+    background-color: @gray-lightest;
+  }
+}
+
+.checkin-list {
+  padding-left: 40px;
+  list-style-type: none;
+
+  &-first {
+    padding-left: 0;
+  }
+}
+
+.checkin-group {
+  border-top-color: #afd074;
+}
+
+.checkin-area {
+  border-top-color: #5593a4;
+}
+
 .panel.panel-widget {
   &.checkin-group {
     border-top-color: @checkin-group-border-color;

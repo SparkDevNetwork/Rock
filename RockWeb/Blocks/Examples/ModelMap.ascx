@@ -2,6 +2,8 @@
 
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
+        <asp:HiddenField ID="hfSelectedCategoryGuid" runat="server" />
+        <asp:HiddenField ID="hfSelectedEntityId" runat="server" />
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-object-ungroup"></i> Model Map</h1>
@@ -49,11 +51,44 @@
             </div>
             <div class="col-md-8">
 
-                <asp:Literal ID="lClasses" runat="server" ViewStateMode="Disabled"></asp:Literal>
+                <Rock:NotificationBox ID="nbClassesWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
 
+                <asp:Panel ID="pnlClassDetail" runat="server" CssClass="panel panel-block">
+                    <div class="panel-heading">
+                        <h1 class="panel-title rollover-container"><asp:Literal ID="lClassName" runat="server" /></h1>
+                        <asp:HyperLink ID="hlAnchor" runat="server" CssClass="text-color pull-left margin-l-sm"><i class="fa fa-link"></i></asp:HyperLink>
+                        <p class='description'><asp:Literal ID="lClassDescription" runat="server" /></p>
+                    </div>
+
+                    <Rock:GridFilter ID="gfSettings" runat="server" OnApplyFilterClick="gfSettings_ApplyFilterClick" OnClearFilterClick="gfSettings_ClearFilterClick">
+                        <Rock:RockDropDownList ID="ddlIsRequired" runat="server" Label="Is Required">
+                            <asp:ListItem Value="" Text="" />
+                            <asp:ListItem Value="True" Text="Yes" />
+                            <asp:ListItem Value="False" Text="No" />
+                        </Rock:RockDropDownList>
+
+                        <Rock:RockDropDownList ID="ddlIsDatabase" runat="server" Label="Database Property">
+                            <asp:ListItem Value="" Text="" />
+                            <asp:ListItem Value="True" Text="Yes" />
+                            <asp:ListItem Value="False" Text="No" />
+                        </Rock:RockDropDownList>
+
+                        <Rock:RockDropDownList ID="ddlIsLava" runat="server" Label="Lava Supported">
+                            <asp:ListItem Value="" Text="" />
+                            <asp:ListItem Value="True" Text="Yes" />
+                            <asp:ListItem Value="False" Text="No" />
+                        </Rock:RockDropDownList>
+                    </Rock:GridFilter>
+                    
+                    <div class="panel-body">
+                        <small class="pull-right">Show: 
+                            <span class="js-model-inherited"><i class="js-model-check fa fa-fw fa-square-o"></i> inherited</span>
+                        </small>
+
+                        <asp:Literal ID="lClasses" runat="server" ViewStateMode="Disabled"></asp:Literal>
+                    </div>
+                </asp:Panel>
             </div>
-
-               
         </div>
 
         <asp:Panel ID="pnlKey" runat="server" CssClass="well" Visible="false" >
@@ -78,6 +113,11 @@
                             <div class="col-xs-5 col-sm-3 col-md-1 text-center"><small><i class='fa fa-bolt fa-fw text-warning'></i></small></div>
                             <div class="col-xs-7 col-sm-9 col-md-10">These fields are available where Lava is supported.</div>
                         </div>
+                        <hr />
+                        <div class="row">
+                            <div class="col-xs-5 col-sm-3 col-md-1 text-center"><small><i class='fa fa-ban fa-fw text-danger'></i></small></div>
+                            <div class="col-xs-7 col-sm-9 col-md-10">These methods or fields are obsolete and should not be used anymore.</div>
+                        </div>
             </asp:Panel>
 
 
@@ -86,7 +126,7 @@
                 // Hide and unhide inherited properties and methods
                 $('.js-model-inherited').on('click', function () {
                     $(this).find('i.js-model-check').toggleClass('fa-check-square-o fa-square-o');
-                    $(this).parent().find('li.js-model').toggleClass('non-hidden hidden ');
+                    $(this).closest('.panel-body').find('li.js-model').toggleClass('non-hidden hidden ');
                 });
 
             });

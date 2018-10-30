@@ -318,6 +318,21 @@ namespace Rock.Model
         /// The grade
         /// </summary>
         Grade = 11,
+
+        /// <summary>
+        /// The connection status
+        /// </summary>
+        ConnectionStatus = 12,
+
+        /// <summary>
+        /// The middle name
+        /// </summary>
+        MiddleName = 13,
+
+        /// <summary>
+        /// The anniversary date
+        /// </summary>
+        AnniversaryDate = 14,
     }
 
     #endregion

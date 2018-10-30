@@ -186,7 +186,7 @@ namespace RockWeb.Blocks.Finance
         private void BindGrid()
         {
             var rockContext = new RockContext();
-            var recordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+            var recordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
             var queryable = new PersonService( rockContext ).Queryable()
                 .Where( q => q.RecordTypeValueId == recordTypeValueId );
@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( ! viaSearch )
             {
-                var activeRecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                var activeRecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
                 string activeFilterValue = gfBusinessFilter.GetUserPreference( "Active Status" );
                 if ( activeFilterValue == "inactive" )
                 {
@@ -236,6 +236,8 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
+            var workLocationTypeGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
+
             var groupMemberQuery = new GroupMemberService( rockContext ).Queryable();
 
             var businessList = queryable.Select( b => new
@@ -247,7 +249,7 @@ namespace RockWeb.Blocks.Finance
                 Email = b.Email,
                 Address = b.Members
                                 .Where( m => m.Group.GroupType.Guid.ToString() == Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY )
-                                .SelectMany( m => m.Group.GroupLocations )
+                                .SelectMany( m => m.Group.GroupLocations.Where( l => l.GroupLocationTypeValue != null && l.GroupLocationTypeValue.Guid == workLocationTypeGuid ) )
                                 .FirstOrDefault()
                                 .Location,
                 Contacts = b.Members
@@ -263,7 +265,7 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                gBusinessList.EntityTypeId = EntityTypeCache.Read<Person>().Id;
+                gBusinessList.EntityTypeId = EntityTypeCache.Get<Person>().Id;
                 gBusinessList.DataSource = businessList.ToList();
                 gBusinessList.DataBind();
             }
@@ -280,8 +282,8 @@ namespace RockWeb.Blocks.Finance
 
         protected string FormatContactInfo( string phone, string address )
         {
-            var values = new List<string> { phone, address, "&nbsp;", "&nbsp" };
-            return values.Where( v => v.IsNotNullOrWhitespace() ).Take( 2 ).ToList().AsDelimited( "<br/>" );
+            var values = new List<string> { phone, address, "&nbsp;", "&nbsp;" };
+            return values.Where( v => v.IsNotNullOrWhiteSpace() ).Take( 2 ).ToList().AsDelimited( "<br/>" );
         }
 
         #endregion Internal Methods

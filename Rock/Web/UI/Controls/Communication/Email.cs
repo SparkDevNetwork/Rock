@@ -174,6 +174,7 @@ namespace Rock.Web.UI.Controls.Communication
             tbFromName = new RockTextBox();
             tbFromName.ID = string.Format( "tbFromName_{0}", this.ID );
             tbFromName.Label = "From Name";
+            tbFromName.MaxLength = 100;
             Controls.Add( tbFromName );
 
             lFromName = new RockLiteral();
@@ -200,6 +201,7 @@ namespace Rock.Web.UI.Controls.Communication
             tbSubject.ID = string.Format( "tbSubject_{0}", this.ID );
             tbSubject.Label = "Subject";
             tbSubject.Help = "<span class='tip tip-lava'></span>";
+            tbSubject.MaxLength = 100;
             Controls.Add( tbSubject );
 
             htmlMessage = new HtmlEditor();
@@ -224,13 +226,13 @@ namespace Rock.Web.UI.Controls.Communication
             ebCcAddress = new EmailBox();
             ebCcAddress.ID = string.Format( "ebCcAddress_{0}", this.ID );
             ebCcAddress.Label = "CC Address";
-            ebCcAddress.Help = "Any address in this field will be copied on the email sent to every recipient.  Lava can be used to access recipent data. <span class='tip tip-lava'></span>";
+            ebCcAddress.Help = "Any address in this field will be copied on the email sent to every recipient.  Lava can be used to access recipient data. <span class='tip tip-lava'></span>";
             Controls.Add( ebCcAddress );
 
             ebBccAddress = new EmailBox();
             ebBccAddress.ID = string.Format( "ebBccAddress{0}", this.ID );
             ebBccAddress.Label = "Bcc Address";
-            ebBccAddress.Help = "Any address in this field will be copied on the email sent to every recipient.  Lava can be used to access recipent data. <span class='tip tip-lava'></span>";
+            ebBccAddress.Help = "Any address in this field will be copied on the email sent to every recipient.  Lava can be used to access recipient data. <span class='tip tip-lava'></span>";
             Controls.Add( ebBccAddress );
         }
 

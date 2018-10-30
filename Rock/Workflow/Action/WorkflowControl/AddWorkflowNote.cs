@@ -63,7 +63,7 @@ namespace Rock.Workflow.Action
                 note.Caption = string.Empty;
                 note.Text = text;
 
-                var noteType = NoteTypeCache.Read( GetAttributeValue( action, "NoteType" ).AsGuid() );
+                var noteType = NoteTypeCache.Get( GetAttributeValue( action, "NoteType" ).AsGuid() );
                 if ( noteType != null )
                 {
                     note.NoteTypeId = noteType.Id;

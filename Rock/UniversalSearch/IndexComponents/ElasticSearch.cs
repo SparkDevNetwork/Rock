@@ -65,6 +65,10 @@ namespace Rock.UniversalSearch.IndexComponents
                 if ( _client == null )
                 {
                     ConnectToServer();
+                    if ( _client == null )
+                    {
+                        return false;
+                    }
                 }
 
                 return (_client.Ping().IsValid);
@@ -538,7 +542,7 @@ namespace Rock.UniversalSearch.IndexComponents
 
                             var indexBoost = GlobalAttributesCache.Value( "UniversalSearchIndexBoost" );
 
-                            if ( indexBoost.IsNotNullOrWhitespace() )
+                            if ( indexBoost.IsNotNullOrWhiteSpace() )
                             {
                                 var boostItems = indexBoost.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
                                 foreach (var boostItem in boostItems )
@@ -561,7 +565,7 @@ namespace Rock.UniversalSearch.IndexComponents
 
                 totalResultsAvailable = results.Total;
 
-                // normallize the results to rock search results
+                // normalize the results to rock search results
                 if ( results != null )
                 {
                     foreach ( var hit in results.Hits )

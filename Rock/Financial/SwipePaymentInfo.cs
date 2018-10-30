@@ -106,7 +106,7 @@ namespace Rock.Financial
             get
             {
                 string cc = Number.AsNumeric();
-                foreach ( var dv in DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ) ).DefinedValues )
+                foreach ( var dv in DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ) ).DefinedValues )
                 {
                     string pattern = dv.GetAttributeValue( "RegExPattern" );
                     if ( !string.IsNullOrWhiteSpace( pattern ) )
@@ -136,7 +136,7 @@ namespace Rock.Financial
         /// </summary>
         public override DefinedValueCache CurrencyTypeValue
         {
-            get { return DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ); }
+            get { return DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ); }
         }
 
 

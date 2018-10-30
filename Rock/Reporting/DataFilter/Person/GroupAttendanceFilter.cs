@@ -29,7 +29,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Description( "Filter people on whether they have attended the selected group(s) a specified number of times" )]
     [Export( typeof( DataFilterComponent ) )]
@@ -57,7 +57,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string Section
         {
-            get { return "Group Attendance"; }
+            get { return "Attendance"; }
         }
 
         #endregion
@@ -80,7 +80,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
         /// <value>
@@ -345,23 +345,23 @@ namespace Rock.Reporting.DataFilter.Person
             if ( dateRange.Start.HasValue )
             {
                 var startDate = dateRange.Start.Value;
-                attendanceQry = attendanceQry.Where( a => a.StartDateTime >= startDate );
+                attendanceQry = attendanceQry.Where( a => a.Occurrence.OccurrenceDate >= startDate );
             }
 
             if ( dateRange.End.HasValue )
             {
                 var endDate = dateRange.End.Value;
-                attendanceQry = attendanceQry.Where( a => a.StartDateTime < endDate );
+                attendanceQry = attendanceQry.Where( a => a.Occurrence.OccurrenceDate < endDate );
             }
 
             if ( groupIds.Count == 1 )
             {
                 int groupId = groupIds[0];
-                attendanceQry = attendanceQry.Where( a => a.GroupId.HasValue && a.GroupId.Value == groupId );
+                attendanceQry = attendanceQry.Where( a => a.Occurrence.GroupId.HasValue && a.Occurrence.GroupId.Value == groupId );
             }
             else if ( groupIds.Count > 1 )
             {
-                attendanceQry = attendanceQry.Where( a => a.GroupId.HasValue && groupIds.Contains( a.GroupId.Value ) );
+                attendanceQry = attendanceQry.Where( a => a.Occurrence.GroupId.HasValue && groupIds.Contains( a.Occurrence.GroupId.Value ) );
             }
             else
             {

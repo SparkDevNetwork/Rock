@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Administration
         {
             int? pageId = PageParameter( "Page" ).AsIntegerOrNull();
 
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Page ) ).Id;
+            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Page ) ).Id;
 
             // only show if there was a Page parameter specified
             this.Visible = pageId.HasValue;
@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Administration
                 // hide the current page in the page picker to prevent setting this page's parent page to itself (or one of it's child pages)
                 ppParentPage.HiddenPageIds = new int[] { pageId.Value };
 
-                var pageCache = Rock.Web.Cache.PageCache.Read( pageId.Value );
+                var pageCache = PageCache.Get( pageId.Value );
 
                 DialogPage dialogPage = this.Page as DialogPage;
                 if ( dialogPage != null )
@@ -110,7 +110,7 @@ namespace RockWeb.Blocks.Administration
 
                 if ( pageCache != null && pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
-                    var blockContexts = new List<Tuple<string, string, List<BlockCache>>>();
+                    var blockContexts = new List<BlockContextsInfo>();
                     foreach ( var block in pageCache.Blocks )
                     {
                         try
@@ -121,14 +121,14 @@ namespace RockWeb.Blocks.Administration
                                 blockControl.SetBlock( pageCache, block );
                                 foreach ( var context in blockControl.ContextTypesRequired )
                                 {
-                                    var tuple = blockContexts.FirstOrDefault( t => t.Item1 == context.Name );
-                                    if ( tuple == null )
+                                    var blockContextsInfo = blockContexts.FirstOrDefault( t => t.EntityTypeName == context.Name );
+                                    if ( blockContextsInfo == null )
                                     {
-                                        tuple = new Tuple<string, string, List<BlockCache>>( context.Name, context.FriendlyName, new List<BlockCache>() );
-                                        blockContexts.Add( tuple );
+                                        blockContextsInfo = new BlockContextsInfo { EntityTypeName = context.Name, EntityTypeFriendlyName = context.FriendlyName, BlockList = new List<BlockCache>() };
+                                        blockContexts.Add( blockContextsInfo );
                                     }
 
-                                    tuple.Item3.Add( block );
+                                    blockContextsInfo.BlockList.Add( block );
                                 }
                             }
                         }
@@ -140,17 +140,17 @@ namespace RockWeb.Blocks.Administration
 
                     phContextPanel.Visible = blockContexts.Count > 0;
 
-                    foreach ( var context in blockContexts.OrderBy( t => t.Item2 ) )
+                    foreach ( var context in blockContexts.OrderBy( t => t.EntityTypeName ) )
                     {
                         var tbContext = new RockTextBox();
-                        tbContext.ID = string.Format( "context_{0}", context.Item1.Replace( '.', '_' ) );
-                        tbContext.Required = true;
-                        tbContext.Label = context.Item2 + " Parameter Name";
+                        tbContext.ID = string.Format( "context_{0}", context.EntityTypeName.Replace( '.', '_' ) );
+                        tbContext.Required = false;
+                        tbContext.Label = context.EntityTypeFriendlyName + " Parameter Name";
                         tbContext.Help = string.Format( "The page parameter name that contains the id of this context entity. This parameter will be used by the following {0}: {1}",
-                            "block".PluralizeIf( context.Item3.Count > 1 ), string.Join( ", ", context.Item3 ) );
-                        if ( pageCache.PageContexts.ContainsKey( context.Item1 ) )
+                            "block".PluralizeIf( context.BlockList.Count > 1 ), string.Join( ", ", context.BlockList ) );
+                        if ( pageCache.PageContexts.ContainsKey( context.EntityTypeName ) )
                         {
-                            tbContext.Text = pageCache.PageContexts[context.Item1];
+                            tbContext.Text = pageCache.PageContexts[context.EntityTypeName];
                         }
 
                         phContext.Controls.Add( tbContext );
@@ -166,12 +166,45 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        private class BlockContextsInfo
+        {
+            /// <summary>
+            /// Gets or sets the name of the entity type.
+            /// </summary>
+            /// <value>
+            /// The name of the entity type.
+            /// </value>
+            public string EntityTypeName { get; internal set; }
+
+            /// <summary>
+            /// Gets or sets the name of the entity type friendly.
+            /// </summary>
+            /// <value>
+            /// The name of the entity type friendly.
+            /// </value>
+            public string EntityTypeFriendlyName { get; internal set; }
+
+            /// <summary>
+            /// Gets or sets the block list.
+            /// </summary>
+            /// <value>
+            /// The block list.
+            /// </value>
+            public List<BlockCache> BlockList { get; internal set; }
+        }
+
+        /// <summary>
         /// Shows the readonly details.
         /// </summary>
         /// <param name="page">The page.</param>
         private void ShowReadonlyDetails( Rock.Model.Page page )
         {
             SetEditMode( false );
+
+            pdAuditDetails.Visible = true;
+            pdAuditDetails.SetEntity( page, ResolveRockUrl( "~" ) );
 
             string pageIconHtml = !string.IsNullOrWhiteSpace( page.IconCssClass ) ?
                 pageIconHtml = string.Format( "<i class='{0} fa-2x' ></i>", page.IconCssClass ) : string.Empty;
@@ -186,7 +219,7 @@ namespace RockWeb.Blocks.Administration
                 lIcon.Text = "<i class='fa fa-file-text-o'></i>";
             }
 
-            var site = SiteCache.Read( page.Layout.SiteId );
+            var site = SiteCache.Get( page.Layout.SiteId );
             hlblSiteName.Text = "Site: " + site.Name;
 
             lblMainDetailsCol1.Text = new DescriptionList()
@@ -302,8 +335,16 @@ namespace RockWeb.Blocks.Administration
             {
                 page = new Rock.Model.Page { Id = 0, IsSystem = false, ParentPageId = parentPageId };
 
-                // fetch the ParentCategory (if there is one) so that security can check it
-                page.ParentPage = pageService.Get( parentPageId ?? 0 );
+                // fetch the ParentPage (if there is one) so that security can check it, and also default some stuff based on the ParentPage
+                if ( parentPageId.HasValue )
+                {
+                    page.ParentPage = pageService.Get( parentPageId.Value );
+                    if ( page.ParentPage != null )
+                    {
+                        page.AllowIndexing = page.ParentPage.AllowIndexing;
+                        page.LayoutId = page.ParentPage.LayoutId;
+                    }
+                }
             }
 
             hfPageId.Value = page.Id.ToString();
@@ -372,6 +413,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="page">The page.</param>
         private void ShowEditDetails( Rock.Model.Page page )
         {
+            pdAuditDetails.Visible = false;
             if ( page.Id > 0 )
             {
                 lTitle.Text = ActionTitle.Edit( Rock.Model.Page.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -402,14 +444,14 @@ namespace RockWeb.Blocks.Administration
             }
             else if ( page.ParentPageId.HasValue )
             {
-                var parentPageCache = PageCache.Read( page.ParentPageId.Value );
+                var parentPageCache = PageCache.Get( page.ParentPageId.Value );
                 if ( parentPageCache != null && parentPageCache.Layout != null )
                 {
                     ddlSite.SetValue( parentPageCache.Layout.SiteId );
                 }
             }
 
-            LoadLayouts( rockContext, SiteCache.Read( ddlSite.SelectedValue.AsInteger() ) );
+            LoadLayouts( rockContext, SiteCache.Get( ddlSite.SelectedValue.AsInteger() ) );
             if ( page.LayoutId == 0 )
             {
                 // default a new page's layout to whatever the parent page's layout is
@@ -477,7 +519,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlSite_SelectedIndexChanged( object sender, EventArgs e )
         {
-            LoadLayouts( new RockContext(), SiteCache.Read( ddlSite.SelectedValueAsInt().Value ) );
+            LoadLayouts( new RockContext(), SiteCache.Get( ddlSite.SelectedValueAsInt().Value ) );
         }
 
         /// <summary>
@@ -604,18 +646,6 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 int parentPageId = ppParentPage.SelectedValueAsInt() ?? 0;
-                if ( page.ParentPageId != parentPageId )
-                {
-                    if ( page.ParentPageId.HasValue )
-                    {
-                        PageCache.Flush( page.ParentPageId.Value );
-                    }
-
-                    if ( parentPageId != 0 )
-                    {
-                        PageCache.Flush( parentPageId );
-                    }
-                }
 
                 page.InternalName = tbPageName.Text;
                 page.PageTitle = tbPageTitle.Text;
@@ -625,6 +655,16 @@ namespace RockWeb.Blocks.Administration
                 if ( parentPageId != 0 )
                 {
                     page.ParentPageId = parentPageId;
+
+                    if ( page.Id == 0 )
+                    {
+                        // newly added page, make sure the Order is correct
+                        Rock.Model.Page lastPage = pageService.GetByParentPageId( parentPageId ).OrderByDescending( b => b.Order ).FirstOrDefault();
+                        if ( lastPage != null )
+                        {
+                            page.Order = lastPage.Order + 1;
+                        }
+                    }
                 }
                 else
                 {
@@ -758,8 +798,6 @@ namespace RockWeb.Blocks.Administration
                         }
                     }
 
-                    Rock.Web.Cache.PageCache.Flush( page.Id );
-
                     string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close('PAGE_UPDATED');";
                     ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
 
@@ -804,7 +842,7 @@ namespace RockWeb.Blocks.Administration
         protected void lbImport_Click( object sender, EventArgs e )
         {
             int? pageId = hfPageId.Value.AsIntegerOrNull();
-            var page = PageCache.Read( pageId ?? 0 );
+            var page = PageCache.Get( pageId ?? 0 );
             if ( page != null )
             {
                 var extension = fuImport.FileName.Substring( fuImport.FileName.LastIndexOf( '.' ) );
@@ -886,7 +924,7 @@ namespace RockWeb.Blocks.Administration
         private void LoadSites( RockContext rockContext )
         {
             ddlSite.Items.Clear();
-            foreach ( SiteCache site in new SiteService( rockContext ).Queryable().OrderBy( s => s.Name ).Select( a => a.Id ).ToList().Select( a => SiteCache.Read( a ) ) )
+            foreach ( SiteCache site in new SiteService( rockContext ).Queryable().OrderBy( s => s.Name ).Select( a => a.Id ).ToList().Select( a => SiteCache.Get( a ) ) )
             {
                 ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
             }
@@ -1022,8 +1060,6 @@ namespace RockWeb.Blocks.Administration
 
                 rockContext.SaveChanges();
 
-                Rock.Web.Cache.PageCache.Flush( page.Id );
-
                 // reload page, selecting the deleted page's parent
                 var qryParams = new Dictionary<string, string>();
                 if ( parentPageId.HasValue )
@@ -1155,7 +1191,7 @@ namespace RockWeb.Blocks.Administration
             Guid? copiedPageGuid = pageService.CopyPage( sourcePageId, cbCopyPageIncludeChildPages.Checked, this.CurrentPersonAliasId );
             if ( copiedPageGuid.HasValue )
             {
-                var copiedPage = PageCache.Read( copiedPageGuid.Value );
+                var copiedPage = PageCache.Get( copiedPageGuid.Value );
 
                 // reload page (Assuming we are using Page Builder UI) to the new copied page
                 var qryParams = new Dictionary<string, string>();

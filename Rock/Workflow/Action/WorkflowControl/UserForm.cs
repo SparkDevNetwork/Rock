@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Communication;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -92,12 +93,17 @@ namespace Rock.Workflow.Action
 
                     if ( recipients.Count > 0 )
                     {
+                        // The email may need to reference activity Id, so we need to save here.
+                        WorkflowService workflowService = new WorkflowService( rockContext );
+                        workflowService.PersistImmediately( action );
+
                         var systemEmail = new SystemEmailService( rockContext ).Get( action.ActionTypeCache.WorkflowForm.NotificationSystemEmailId.Value );
                         if ( systemEmail != null )
                         {
                             var emailMessage = new RockEmailMessage( systemEmail );
                             emailMessage.SetRecipients( recipients );
                             emailMessage.CreateCommunicationRecord = false;
+                            emailMessage.AppRoot = GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" ) ?? string.Empty;
                             emailMessage.Send();
                         }
                         else

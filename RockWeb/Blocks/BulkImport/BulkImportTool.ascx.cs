@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.BulkImport
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", fingerprint: false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", false );
         }
 
         /// <summary>
@@ -208,7 +208,7 @@ namespace RockWeb.Blocks.BulkImport
 
                 if ( !tableList.Any() )
                 {
-                    nbCheckForeignSystemKey.Text = "OK. Foreign System Key <strong>" + tbForeignSystemKey.Text + "</strong> has not be used to import data.";
+                    nbCheckForeignSystemKey.Text = "OK. Foreign System Key <strong>" + tbForeignSystemKey.Text + "</strong> has not been used to import data.";
                     nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Success;
                 }
                 else
@@ -260,7 +260,7 @@ namespace RockWeb.Blocks.BulkImport
             var importTask = new Task( () =>
             {
                 // wait a little so the browser can render and start listening to events
-                System.Threading.Thread.Sleep( 1000 );
+                Task.Delay( 1000 ).Wait();
                 _hubContext.Clients.All.showButtons( this.SignalRNotificationKey, false );
 
                 Stopwatch stopwatch = Stopwatch.StartNew();

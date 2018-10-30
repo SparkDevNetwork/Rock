@@ -34,7 +34,7 @@ namespace Rock.Web.UI.Controls.Communication
     {
         #region UI Controls
 
-        private RockDropDownList ddlFrom;
+        private DefinedValuePicker dvpFrom;
         private RockControlWrapper rcwMessage;
         private MergeFieldPicker mfpMessage;
         private Label lblCount;
@@ -74,13 +74,27 @@ namespace Rock.Web.UI.Controls.Communication
         public int CharacterLimit { get; set; }
 
         /// <summary>
+        /// Gets or sets the selected numbers to display.
+        /// </summary>
+        /// <value>
+        /// A guid list of numbers from the defined type to filter the dropdown list down.
+        /// </value>
+        public List<Guid> SelectedNumbers { get; set; }
+
+        /// <summary>
         /// Sets control values from a communication record.
         /// </summary>
         /// <param name="communication">The communication.</param>
         public override void SetFromCommunication( CommunicationDetails communication )
         {
             EnsureChildControls();
-            ddlFrom.SetValue( communication.SMSFromDefinedValueId );
+            var valueItem = dvpFrom.Items.FindByValue( communication.SMSFromDefinedValueId.ToString() );
+            if ( valueItem == null && communication.SMSFromDefinedValueId != null )
+            {
+                var lookupDefinedValue = DefinedValueCache.Get( communication.SMSFromDefinedValueId.GetValueOrDefault() );
+                dvpFrom.Items.Add( new ListItem( lookupDefinedValue.Description, lookupDefinedValue.Id.ToString() ) );
+            }
+            dvpFrom.SetValue( communication.SMSFromDefinedValueId );
             tbMessage.Text = communication.SMSMessage;
         }
 
@@ -91,7 +105,7 @@ namespace Rock.Web.UI.Controls.Communication
         public override void UpdateCommunication( CommunicationDetails communication )
         {
             EnsureChildControls();
-            communication.SMSFromDefinedValueId = ddlFrom.SelectedValueAsId();
+            communication.SMSFromDefinedValueId = dvpFrom.SelectedValueAsId();
             communication.SMSMessage = tbMessage.Text;
         }
 
@@ -107,13 +121,32 @@ namespace Rock.Web.UI.Controls.Communication
             base.CreateChildControls();
             Controls.Clear();
 
-            ddlFrom = new RockDropDownList();
-            ddlFrom.ID = string.Format( "ddlFrom_{0}", this.ID );
-            ddlFrom.Label = "From";
-            ddlFrom.Help = "The number to originate message from (configured under Admin Tools > General Settings > Defined Types > SMS From Values).";
-            ddlFrom.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ), false, true );
-            ddlFrom.Required = true;
-            Controls.Add( ddlFrom );
+            var selectedNumberGuids = SelectedNumbers; //GetAttributeValue( "FilterCategories" ).SplitDelimitedValues( true ).AsGuidList();
+            var definedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
+
+
+            dvpFrom = new DefinedValuePicker();
+            dvpFrom.ID = string.Format( "dvpFrom_{0}", this.ID );
+            dvpFrom.Label = "From";
+            dvpFrom.Help = "The number to originate message from (configured under Admin Tools > General Settings > Defined Types > SMS From Values).";
+            if ( selectedNumberGuids.Any() )
+            {
+                dvpFrom.SelectedIndex = -1;
+                dvpFrom.DataSource = definedType.DefinedValues.Where( v => selectedNumberGuids.Contains( v.Guid ) ).Select( v => new
+                {
+                    v.Description,
+                    v.Id
+                } );
+                dvpFrom.DataTextField = "Description";
+                dvpFrom.DataValueField = "Id";
+                dvpFrom.DataBind();
+            }
+            else
+            {
+                dvpFrom.DefinedTypeId = definedType.Id;
+            }
+            dvpFrom.Required = true;
+            Controls.Add( dvpFrom );
 
             rcwMessage = new RockControlWrapper();
             rcwMessage.ID = string.Format( "rcwMessage_{0}", this.ID );
@@ -160,7 +193,7 @@ namespace Rock.Web.UI.Controls.Communication
             set
             {
                 EnsureChildControls();
-                ddlFrom.ValidationGroup = value;
+                dvpFrom.ValidationGroup = value;
                 mfpMessage.ValidationGroup = value;
                 tbMessage.ValidationGroup = value;
             }
@@ -173,7 +206,7 @@ namespace Rock.Web.UI.Controls.Communication
         /// <exception cref="System.NotImplementedException"></exception>
         public override void InitializeFromSender( Person sender )
         {
-            var numbers = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
+            var numbers = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
             if( numbers != null )
             {
                 foreach ( var number in numbers.DefinedValues )
@@ -181,7 +214,7 @@ namespace Rock.Web.UI.Controls.Communication
                     var personAliasGuid = number.GetAttributeValue( "ResponseRecipient" ).AsGuidOrNull(); 
                     if ( personAliasGuid.HasValue && sender.Aliases.Any( a => a.Guid == personAliasGuid.Value ) )
                     {
-                        ddlFrom.SetValue( number.Id );
+                        dvpFrom.SetValue( number.Id );
                         break;
                     }
                 }
@@ -194,7 +227,7 @@ namespace Rock.Web.UI.Controls.Communication
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            ddlFrom.RenderControl( writer );
+            dvpFrom.RenderControl( writer );
             rcwMessage.RenderControl( writer );
         }
 

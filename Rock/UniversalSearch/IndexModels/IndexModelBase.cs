@@ -19,14 +19,11 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Rock.Attribute;
-using Rock.Model;
 using Rock.Web.Cache;
-using Rock.UniversalSearch.IndexModels.Attributes;
 using Rock.Data;
-using Newtonsoft.Json;
+using Rock.Model;
+using Rock.UniversalSearch.IndexModels.Attributes;
 
 namespace Rock.UniversalSearch.IndexModels
 {
@@ -126,7 +123,7 @@ namespace Rock.UniversalSearch.IndexModels
             if ( sourceModelEntity != null ) {
                 var template = sourceModelEntity.IndexResultTemplate;
 
-                if ( template.IsNotNullOrWhitespace() )
+                if ( template.IsNotNullOrWhiteSpace() )
                 {
                     if ( mergeFields == null)
                     {
@@ -157,7 +154,7 @@ namespace Rock.UniversalSearch.IndexModels
             {
                 var template = sourceModelEntity.IndexDocumentUrl;
 
-                if ( template.IsNotNullOrWhitespace() )
+                if ( template.IsNotNullOrWhiteSpace() )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
                     mergeFields.Add( "IndexDocument", this );
@@ -220,14 +217,14 @@ namespace Rock.UniversalSearch.IndexModels
         /// </summary>
         /// <param name="indexModel">The index model.</param>
         /// <param name="sourceModel">The source model.</param>
-        protected static void AddIndexableAttributes( IndexModelBase indexModel, IHasAttributes sourceModel )
+        protected static void AddIndexableAttributes( IndexModelBase indexModel, Attribute.IHasAttributes sourceModel )
         {
             sourceModel.LoadAttributes();
 
             foreach ( var attributeValue in sourceModel.AttributeValues )
             {
                 // check that the attribute is marked as IsIndexEnabled
-                var attribute = AttributeCache.Read(attributeValue.Value.AttributeId);
+                var attribute = AttributeCache.Get(attributeValue.Value.AttributeId);
 
                 if ( attribute.IsIndexEnabled )
                 {
@@ -463,7 +460,7 @@ namespace Rock.UniversalSearch.IndexModels
 
         #region ILiquid Implementation
         /// <summary>
-        /// Gets the available keys (for debuging info).
+        /// Gets the available keys (for debugging info).
         /// </summary>
         /// <value>
         /// The available keys.

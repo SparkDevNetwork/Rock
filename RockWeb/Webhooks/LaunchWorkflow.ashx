@@ -56,7 +56,7 @@ public class LaunchWorkflow : IHttpHandler
                     Guid guid = hook.GetAttributeValue( "WorkflowType" ).AsGuid();
 
 
-                    WorkflowTypeCache workflowType = WorkflowTypeCache.Read( guid );
+                    WorkflowTypeCache workflowType = WorkflowTypeCache.Get( guid );
                     if ( workflowType != null )
                     {
                         Workflow workflow = Workflow.Activate( workflowType, context.Request.UserHostName );
@@ -76,7 +76,7 @@ public class LaunchWorkflow : IHttpHandler
                                 List<string> errorMessages;
                                 new WorkflowService( rockContext ).Process( workflow, out errorMessages );
 
-                                // We send a response (if one is available) wether the workflow has ended
+                                // We send a response (if one is available) whether the workflow has ended
                                 // or not. This gives them a chance to send a "let me work on that for you"
                                 // type response and then continue processing in the background.
                                 SetWorkflowResponse( context, workflow );
@@ -126,7 +126,7 @@ public class LaunchWorkflow : IHttpHandler
     {
         var hooks = new List<DefinedValueCache>();
 
-        var dt = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.WEBHOOK_TO_WORKFLOW.AsGuid() );
+        var dt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.WEBHOOK_TO_WORKFLOW.AsGuid() );
         if ( dt != null )
         {
             foreach ( DefinedValueCache hook in dt.DefinedValues.OrderBy( h => h.Order ) )
@@ -164,7 +164,7 @@ public class LaunchWorkflow : IHttpHandler
 
         // set workflow name
         string nameTemplate = hook.GetAttributeValue( "WorkflowNameTemplate" ).ResolveMergeFields( mergeFields );
-        if ( nameTemplate.IsNotNullOrWhitespace() )
+        if ( nameTemplate.IsNotNullOrWhiteSpace() )
         {
             workflow.Name = nameTemplate.ResolveMergeFields( mergeFields );
         }
@@ -255,10 +255,10 @@ public class LaunchWorkflow : IHttpHandler
         string response = workflow.GetAttributeValue( "WebhookResponse" );
         string contentType = workflow.GetAttributeValue( "WebhookResponseContentType" );
 
-        if ( response.IsNotNullOrWhitespace() )
+        if ( response.IsNotNullOrWhiteSpace() )
         {
             httpContext.Response.Write( response );
-            httpContext.Response.ContentType = contentType.IsNotNullOrWhitespace() ? contentType : "text/plain";
+            httpContext.Response.ContentType = contentType.IsNotNullOrWhiteSpace() ? contentType : "text/plain";
         }
     }
 
@@ -290,7 +290,7 @@ public class LaunchWorkflow : IHttpHandler
             {
                 if ( retry < maxRetry - 1 )
                 {
-                    System.Threading.Thread.Sleep( 2000 );
+                    System.Threading.Tasks.Task.Delay( 2000 ).Wait();
                 }
             }
         }

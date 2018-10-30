@@ -14,9 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -24,6 +26,8 @@ namespace Rock.Web.UI.Controls
     /// A composite control that renders a label, dropdownlist, and datavalidation control for a specific field of a data model
     /// </summary>
     [ToolboxData( "<{0}:FieldTypeList runat=server></{0}:FieldTypeList>" )]
+    [RockObsolete( "1.7" )]
+    [Obsolete("Use FieldTypePicker instead", true )]
     public class FieldTypeList : DataDropDownList
     {
         /// <summary>
@@ -35,7 +39,7 @@ namespace Rock.Web.UI.Controls
 
             this.Items.Clear();
             this.Items.Add( new ListItem() );
-            foreach ( var item in Rock.Web.Cache.FieldTypeCache.All() )
+            foreach ( var item in FieldTypeCache.All() )
             {
                 this.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
             }

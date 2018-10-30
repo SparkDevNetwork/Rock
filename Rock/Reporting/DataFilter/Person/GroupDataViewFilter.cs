@@ -232,7 +232,7 @@ function ()
             return selectExpression;
         }
 
-        private const string _CtlDataView = "ddlDataView";
+        private const string _CtlDataView = "dvpDataView";
         private const string _CtlGroupStatus = "ddlGroupStatus";
         private const string _CtlRoleType = "ddlRoleType";
 
@@ -248,11 +248,11 @@ function ()
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             // Define Control: Group Data View Picker
-            var ddlDataView = new DataViewPicker();
-            ddlDataView.ID = filterControl.GetChildControlInstanceName( _CtlDataView );
-            ddlDataView.Label = "Is Member of Group from Data View";
-            ddlDataView.Help = "A Data View that filters the Groups included in the result. If no value is selected, any Groups that would be visible in a Group List will be included.";
-            filterControl.Controls.Add( ddlDataView );
+            var dvpDataView = new DataViewItemPicker();
+            dvpDataView.ID = filterControl.GetChildControlInstanceName( _CtlDataView );
+            dvpDataView.Label = "Is Member of Group from Data View";
+            dvpDataView.Help = "A Data View that filters the Groups included in the result. If no value is selected, any Groups that would be visible in a Group List will be included.";
+            filterControl.Controls.Add( dvpDataView );
 
             // Define Control: Group Member Status DropDown List
             var ddlGroupMemberStatus = new RockDropDownList();
@@ -275,10 +275,10 @@ function ()
             filterControl.Controls.Add( ddlRoleType );
 
             // Populate the Data View Picker
-            int entityTypeId = EntityTypeCache.Read( typeof( Model.Group ) ).Id;
-            ddlDataView.EntityTypeId = entityTypeId;
+            int entityTypeId = EntityTypeCache.Get( typeof( Model.Group ) ).Id;
+            dvpDataView.EntityTypeId = entityTypeId;
 
-            return new Control[] { ddlDataView, ddlGroupMemberStatus, ddlRoleType };
+            return new Control[] { dvpDataView, ddlGroupMemberStatus, ddlRoleType };
         }
 
         /// <summary>
@@ -292,7 +292,7 @@ function ()
         /// </returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            var ddlDataView = controls.GetByName<DataViewPicker>( _CtlDataView );
+            var dvpDataView = controls.GetByName<DataViewItemPicker>( _CtlDataView );
             var ddlRoleType = controls.GetByName<RockDropDownList>( _CtlRoleType );
             var ddlGroupMemberStatus = controls.GetByName<RockDropDownList>( _CtlGroupStatus );
 
@@ -300,7 +300,7 @@ function ()
 
             settings.MemberStatus = ddlGroupMemberStatus.SelectedValue.ConvertToEnumOrNull<GroupMemberStatus>();
             settings.RoleType = ddlRoleType.SelectedValue.ConvertToEnumOrNull<RoleTypeSpecifier>();
-            settings.DataViewGuid = DataComponentSettingsHelper.GetDataViewGuid( ddlDataView.SelectedValue );
+            settings.DataViewGuid = DataComponentSettingsHelper.GetDataViewGuid( dvpDataView.SelectedValue );
 
             return settings.ToSelectionString();
         }
@@ -314,7 +314,7 @@ function ()
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            var ddlDataView = controls.GetByName<DataViewPicker>( _CtlDataView );
+            var dvpDataView = controls.GetByName<DataViewItemPicker>( _CtlDataView );
             var ddlRoleType = controls.GetByName<RockDropDownList>( _CtlRoleType );
             var ddlGroupMemberStatus = controls.GetByName<RockDropDownList>( _CtlGroupStatus );
 
@@ -331,10 +331,7 @@ function ()
 
                 var dataView = dsService.Get( settings.DataViewGuid.Value );
 
-                if ( dataView != null )
-                {
-                    ddlDataView.SelectedValue = dataView.Id.ToString();
-                }
+                dvpDataView.SetValue( dataView );
             }
 
             ddlRoleType.SelectedValue = settings.RoleType.ToStringSafe();

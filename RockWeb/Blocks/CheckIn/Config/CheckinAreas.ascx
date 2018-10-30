@@ -1,47 +1,14 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CheckinAreas.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Config.CheckinAreas" %>
 
-<style>
-    .checkin-item {
-        padding: 12px;
-        border: 1px solid #d8d1c8;
-        cursor: pointer;
-        margin-bottom: 6px;
-        border-top-width: 3px;
-    }
-
-    .checkin-item-selected {
-        background-color: #d8d1c8;
-    }
-
-    .checkin-list {
-        list-style-type: none;
-        padding-left: 40px;
-    }
-
-    .checkin-list-first {
-        padding-left: 0;
-    }
-
-    .checkin-item .fa-bars {
-        opacity: .5;
-        margin-right: 6px;
-    }
-
-    .checkin-group {
-        border-top-color: #afd074;
-    }
-
-    .checkin-area {
-        border-top-color: #5593a4;
-    }
-</style>
-
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
         <asp:HiddenField runat="server" ID="hfAreaGroupClicked" />
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block js-panel-details">
             <div class="panel-heading">
-                <h3 class="panel-title"><i class="fa fa-list"></i>Areas and Groups</h3>
+                <h3 class="panel-title">
+                    <i class="fa fa-list"></i>
+                    Areas and Groups
+                </h3>
                 <div class="pull-right">
                     <asp:CheckBox Text="Show Inactive Groups" ID="cbShowInactive" AutoPostBack="true" OnCheckedChanged="cbShowInactive_CheckedChanged" runat="server" />
                 </div>
@@ -63,7 +30,7 @@
 
                         <asp:HiddenField ID="hfIsDirty" runat="server" Value="false" />
 
-                        <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                        <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                         <Rock:NotificationBox ID="nbInvalid" runat="server" NotificationBoxType="Danger" Visible="false" />
                         <Rock:NotificationBox ID="nbSaveSuccess" runat="server" NotificationBoxType="Success" Text="Changes have been saved." Visible="false" />
 
@@ -73,7 +40,7 @@
                         <div class="actions margin-t-md">
                             <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" Visible="false" />
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" Visible="false" />
-                            
+
                         </div>
 
                     </div>
@@ -95,7 +62,7 @@
         </Rock:ModalDialog>
 
         <script>
-            /* This function is called after post back to animate scroll to the proper element 
+            /* This function is called after post back to animate scroll to the proper element
              * if the user just clicked an area/group.
             */
             var AfterPostBack = function () {
@@ -129,12 +96,16 @@
 
                 $('section.checkin-item').click(function () {
                     if (!isDirty()) {
-                        var $li = $(this).closest('li');
-                        if ($(this).hasClass('checkin-area')) {
-                            __doPostBack('<%=upDetail.ClientID %>', 'select-area:' + $li.attr('data-key'));
+                        var dataKeyValue = $(this).closest('li').attr('data-key');
+                        var isCheckinArea = $(this).hasClass('checkin-area');
+                        var postbackArg;
+                        if (isCheckinArea) {
+                            var postbackArg = 'select-area:' + dataKeyValue;
                         } else {
-                            __doPostBack('<%=upDetail.ClientID %>', 'select-group:' + $li.attr('data-key'));
+                            var postbackArg = 'select-group:' + dataKeyValue;
                         }
+
+                        window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" + postbackArg + "')";
                     }
                 });
 
@@ -154,7 +125,9 @@
                         {
                             if (!isDirty()) {
                                 var newGroupTypeIndex = $(ui.item).prevAll('li').length;
-                                __doPostBack('<%=upDetail.ClientID %>', 're-order-area:' + ui.item.attr('data-key') + ';' + newGroupTypeIndex);
+                                var dataKeyValue = ui.item.attr('data-key');
+                                var postbackArg = 're-order-area:' + dataKeyValue + ';' + newGroupTypeIndex;
+                                window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" + postbackArg + "')";
                             }
                         }
                     }
@@ -176,7 +149,9 @@
                         {
                             if (!isDirty()) {
                                 var newGroupIndex = $(ui.item).prevAll('li').length;
-                                __doPostBack('<%=upDetail.ClientID %>', 're-order-group:' + ui.item.attr('data-key') + ';' + newGroupIndex);
+                                var dataKeyValue = ui.item.attr('data-key');
+                                var postbackArg = 're-order-group:' + dataKeyValue + ';' + newGroupIndex;
+                                window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" + postbackArg + "')";
                             }
                         }
                     }

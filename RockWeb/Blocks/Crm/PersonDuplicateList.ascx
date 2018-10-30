@@ -13,7 +13,7 @@
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gList" runat="server" DataKeyNames="PersonId" AllowSorting="true" OnRowSelected="gList_RowSelected">
                         <Columns>
-                            <Rock:RockTemplateField HeaderText="Confidence" ItemStyle-HorizontalAlign="Center" SortExpression="MaxConfidenceScore">
+                            <Rock:RockTemplateField HeaderText="Confidence" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" SortExpression="MaxConfidenceScore">
                                 <ItemTemplate>
                                     <%# GetConfidenceScoreColumnHtml((double?)Eval("MaxConfidenceScore")) %>
                                 </ItemTemplate>
@@ -21,8 +21,7 @@
                             
                             <Rock:RockBoundField DataField="FirstName" HeaderText="First Name" SortExpression="FirstName, LastName" />
                             <Rock:RockBoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName, FirstName" />
-                            <Rock:RockBoundField DataField="MatchCount" HeaderText="Match Count" SortExpression="MatchCount" ItemStyle-HorizontalAlign="Right" />
-
+                            <Rock:RockBoundField DataField="MatchCount" HeaderText="Match Count" SortExpression="MatchCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"/>
                             <Rock:DateTimeField DataField="PersonModifiedDateTime" HeaderText="Modified" SortExpression="PersonModifiedDateTime" />
                             <Rock:RockBoundField DataField="CreatedByPerson" HeaderText="Created By" SortExpression="CreatedByPerson" />
                         </Columns>

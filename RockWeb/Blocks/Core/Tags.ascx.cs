@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Core
                 tagEntityTags.Visible = contextEntity != null;
                 if ( contextEntity != null )
                 {
-                    tagEntityTags.EntityTypeId = EntityTypeCache.Read( contextEntity.GetType() ).Id;
+                    tagEntityTags.EntityTypeId = EntityTypeCache.Get( contextEntity.GetType() ).Id;
                     tagEntityTags.EntityGuid = contextEntity.Guid;
                     tagEntityTags.EntityQualifierColumn = GetAttributeValue( "EntityQualifierColumn" );
                     tagEntityTags.EntityQualifierValue = GetAttributeValue( "EntityQualifierValue" );

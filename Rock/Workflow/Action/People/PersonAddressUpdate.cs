@@ -68,7 +68,7 @@ namespace Rock.Workflow.Action
             Guid? guidPersonAttribute = personAttributeValue.AsGuidOrNull();
             if ( guidPersonAttribute.HasValue )
             {
-                var attributePerson = AttributeCache.Read( guidPersonAttribute.Value, rockContext );
+                var attributePerson = AttributeCache.Get( guidPersonAttribute.Value, rockContext );
                 if ( attributePerson != null || attributePerson.FieldType.Class != "Rock.Field.Types.PersonFieldType" )
                 {
                     string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute.Value );
@@ -102,11 +102,11 @@ namespace Rock.Workflow.Action
             var locationTypeAttributeValue = action.GetWorklowAttributeValue( GetAttributeValue( action, "LocationTypeAttribute" ).AsGuid() );
             if ( locationTypeAttributeValue != null )
             {
-                locationType = DefinedValueCache.Read( locationTypeAttributeValue.AsGuid() );
+                locationType = DefinedValueCache.Get( locationTypeAttributeValue.AsGuid() );
             }
             if ( locationType == null )
             {
-                locationType = DefinedValueCache.Read( GetAttributeValue( action, "LocationType" ).AsGuid() );
+                locationType = DefinedValueCache.Get( GetAttributeValue( action, "LocationType" ).AsGuid() );
             }
             if ( locationType == null )
             {
@@ -173,7 +173,7 @@ namespace Rock.Workflow.Action
             var groupLocationService = new GroupLocationService( rockContext );
             foreach ( var family in person.GetFamilies( rockContext ).ToList() )
             {
-                var groupChanges = new List<string>();
+                bool locationUpdated = false;
 
                 if ( savePreviousAddress )
                 {
@@ -204,39 +204,34 @@ namespace Rock.Workflow.Action
                         oldValue = groupLocation.Location.ToString();
                     }
 
-
-                    History.EvaluateChange(
-                        groupChanges,
-                        locationType.Value + " Location",
-                        oldValue,
-                        location.ToString() );
+                    locationUpdated = oldValue != location.ToString();
 
                     groupLocation.Location = location;
 
                     if ( mailing.HasValue )
                     {
-                        History.EvaluateChange(
-                            groupChanges,
-                            locationType.Value + " Is Mailing",
-                            ( oldValue == string.Empty ) ? null : groupLocation.IsMailingLocation.ToString(),
-                            mailing.Value.ToString() );
+                        if ( ( ( oldValue == string.Empty ) ? null : groupLocation.IsMailingLocation.ToString() ) != mailing.Value.ToString() )
+                        {
+                            locationUpdated = true;
+                        }
                         groupLocation.IsMailingLocation = mailing.Value;
                     }
 
                     if ( mapped.HasValue )
                     {
-                        History.EvaluateChange(
-                            groupChanges,
-                            locationType.Value + " Is Map Location",
-                            ( oldValue == string.Empty ) ? null : groupLocation.IsMappedLocation.ToString(),
-                            mapped.Value.ToString() );
+                        if ( ( ( oldValue == string.Empty ) ? null : groupLocation.IsMappedLocation.ToString() ) != mapped.Value.ToString() )
+                        {
+                            locationUpdated = true;
+                        }
                         groupLocation.IsMappedLocation = mapped.Value;
                     }
                 }
 
-                if ( groupChanges.Any() )
+                if ( locationUpdated  )
                 {
-                    groupChanges.Add( string.Format( "<em>(Updated by the '{0}' workflow)</em>", action.ActionTypeCache.ActivityType.WorkflowType.Name ) );
+                    var groupChanges = new History.HistoryChangeList();
+                    groupChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, "Location" ).SourceOfChange = $"{action.ActionTypeCache.ActivityType.WorkflowType.Name} workflow";
+
                     foreach ( var fm in family.Members )
                     {
                         HistoryService.SaveChanges(
@@ -248,7 +243,9 @@ namespace Rock.Workflow.Action
                             family.Name,
                             typeof( Group ),
                             family.Id,
-                            false );
+                            false,
+                            null,
+                            rockContext.SourceOfChange );
                     }
                 }
 

@@ -77,7 +77,6 @@ namespace RockWeb.Blocks.Security
             rockContext.WrapTransaction( () =>
             {
                 var personService = new PersonService( rockContext );
-                var changes = new List<string>();
                 var restUser = new Person();
                 if ( int.Parse( hfRestUserId.Value ) != 0 )
                 {
@@ -90,36 +89,24 @@ namespace RockWeb.Blocks.Security
                 }
 
                 // the rest user name gets saved as the last name on a person
-                History.EvaluateChange( changes, "Last Name", restUser.LastName, tbName.Text );
                 restUser.LastName = tbName.Text;
-                restUser.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() ).Id;
+                restUser.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() ).Id;
                 if ( cbActive.Checked )
                 {
-                    restUser.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                    restUser.RecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
                 }
                 else
                 {
-                    restUser.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
+                    restUser.RecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
                 }
 
                 if ( restUser.IsValid )
                 {
-                    if ( rockContext.SaveChanges() > 0 )
-                    {
-                        if ( changes.Any() )
-                        {
-                            HistoryService.SaveChanges(
-                                rockContext,
-                                typeof( Person ),
-                                Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                restUser.Id,
-                                changes );
-                        }
-                    }
+                    rockContext.SaveChanges();
                 }
 
                 // the description gets saved as a system note for the person
-                var noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE.AsGuid() );
+                var noteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE.AsGuid() );
                 if ( noteType != null )
                 {
                     var noteService = new NoteService( rockContext );
@@ -246,7 +233,7 @@ namespace RockWeb.Blocks.Security
             {
                 tbName.Text = restUser.LastName;
                 cbActive.Checked = false;
-                var activeStatusId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                var activeStatusId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
                 if ( restUser.RecordStatusValueId == activeStatusId )
                 {
                     cbActive.Checked = true;

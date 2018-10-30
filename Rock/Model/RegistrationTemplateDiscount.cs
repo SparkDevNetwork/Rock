@@ -132,6 +132,15 @@ namespace Rock.Model
         [DataMember]
         public DateTime? EndDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the discount applies automatically.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this discount applies automatically; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AutoApplyDiscount { get; set; }
+
         #endregion
 
         #region Virtual Properties

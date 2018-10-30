@@ -2,7 +2,7 @@ IF OBJECT_ID(N'[dbo].[AnalyticsDimFinancialAccount]', 'V') IS NOT NULL
     DROP VIEW AnalyticsDimFinancialAccount
 GO
 
-CREATE VIEW AnalyticsDimFinancialAccount
+CREATE VIEW [dbo].[AnalyticsDimFinancialAccount]
 AS
 SELECT fa.Id [AccountId]
     ,fa.[Name]
@@ -11,8 +11,8 @@ SELECT fa.Id [AccountId]
     ,fa.[PublicDescription]
     ,CASE fa.[IsTaxDeductible]
         WHEN 1
-            THEN 'Taxable'
-        ELSE 'Not Taxable'
+            THEN 'Not Taxable'
+        ELSE 'Taxable'
         END [TaxStatus]
     ,fa.[GlCode]
     ,fa.[Order]
@@ -42,6 +42,7 @@ SELECT fa.Id [AccountId]
     ,c.Name [CampusName]
 	,c.ShortCode [CampusShortCode]
     ,fa.[ParentAccountId]
+	,1 [Count]
 FROM FinancialAccount fa
 LEFT JOIN DefinedValue dvAccountType ON fa.AccountTypeValueId = dvAccountType.Id
 LEFT JOIN Campus c ON fa.CampusId = c.Id

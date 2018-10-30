@@ -69,24 +69,25 @@ namespace Rock.Workflow.Action.CheckIn
                                 person.AttendanceIds.Contains( a.Id ) &&
                                 a.PersonAlias != null &&
                                 a.PersonAlias.Person != null &&
-                                a.Group != null &&
-                                a.Location != null )
+                                a.Occurrence != null &&
+                                a.Occurrence.Group != null &&
+                                a.Occurrence.Location != null )
                             .ToList();
 
                         foreach ( var attendanceRec in attendanceRecs )
                         {
-                            var key = string.Format( "{0}:{1}", attendanceRec.Group.Id, attendanceRec.Location.Id );
+                            var key = string.Format( "{0}:{1}", attendanceRec.Occurrence.Group.Id, attendanceRec.Occurrence.Location.Id );
                             if ( !person.Labels.Any( l => l.LabelKey.StartsWith( key ) ) )
                             {
-                                var groupType = GroupTypeCache.Read( attendanceRec.Group.GroupTypeId );
+                                var groupType = GroupTypeCache.Get( attendanceRec.Occurrence.Group.GroupTypeId );
                                 if ( groupType != null )
                                 {
                                     var groupLocAttendance = attendanceRecs
                                         .Where( a =>
-                                            a.GroupId.HasValue &&
-                                            a.GroupId == attendanceRec.Group.Id &&
-                                            a.LocationId.HasValue &&
-                                            a.LocationId == attendanceRec.Location.Id )
+                                            a.Occurrence.GroupId.HasValue &&
+                                            a.Occurrence.GroupId == attendanceRec.Occurrence.Group.Id &&
+                                            a.Occurrence.LocationId.HasValue &&
+                                            a.Occurrence.LocationId == attendanceRec.Occurrence.Location.Id )
                                         .ToList();
 
                                     var PrinterIPs = new Dictionary<int, string>();
@@ -103,12 +104,12 @@ namespace Rock.Workflow.Action.CheckIn
                                         mergeObjects.Add( "Attendances", groupLocAttendance );
                                         mergeObjects.Add( "Person", attendanceRec.PersonAlias.Person );
                                         mergeObjects.Add( "GroupType", groupType );
-                                        mergeObjects.Add( "Group", attendanceRec.Group );
-                                        mergeObjects.Add( "Location", attendanceRec.Location );
+                                        mergeObjects.Add( "Group", attendanceRec.Occurrence.Group );
+                                        mergeObjects.Add( "Location", attendanceRec.Occurrence.Location );
 
                                         //string debugInfo = mergeObjects.lavaDebugInfo();
                                         var label = new CheckInLabel( labelCache, mergeObjects, person.Person.Id );
-                                        label.LabelKey = string.Format( "{0}:{1}:{2}", attendanceRec.Group.Id, attendanceRec.Location.Id, labelCache.Guid );
+                                        label.LabelKey = string.Format( "{0}:{1}:{2}", attendanceRec.Occurrence.Group.Id, attendanceRec.Occurrence.Location.Id, labelCache.Guid );
                                         label.FileGuid = labelCache.Guid;
                                         label.PrintFrom = checkInState.Kiosk.Device.PrintFrom;
 
@@ -127,7 +128,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         }
                                         else if ( label.PrintTo == PrintTo.Location )
                                         {
-                                            var deviceId = attendanceRec.Location.PrinterDeviceId;
+                                            var deviceId = attendanceRec.Occurrence.Location.PrinterDeviceId;
                                             if ( deviceId != null )
                                             {
                                                 label.PrinterDeviceId = deviceId;
@@ -176,14 +177,12 @@ namespace Rock.Workflow.Action.CheckIn
             //groupType.LoadAttributes();
             foreach ( var attribute in groupType.Attributes.OrderBy( a => a.Value.Order ) )
             {
-                if ( attribute.Value.FieldType.Guid == SystemGuid.FieldType.BINARY_FILE.AsGuid() &&
-                    attribute.Value.QualifierValues.ContainsKey( "binaryFileType" ) &&
-                    attribute.Value.QualifierValues["binaryFileType"].Value.Equals( SystemGuid.BinaryFiletype.CHECKIN_LABEL, StringComparison.OrdinalIgnoreCase ) )
+                if ( attribute.Value.FieldType.Guid == SystemGuid.FieldType.LABEL.AsGuid() )
                 {
                     Guid? binaryFileGuid = groupType.GetAttributeValue( attribute.Key ).AsGuidOrNull();
                     if ( binaryFileGuid != null )
                     {
-                        var labelCache = KioskLabel.Read( binaryFileGuid.Value );
+                        var labelCache = KioskLabel.Get( binaryFileGuid.Value );
                         labelCache.Order = attribute.Value.Order;
                         if ( labelCache != null && labelCache.LabelType == KioskLabelType.Checkout )
                         {

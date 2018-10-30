@@ -4,6 +4,7 @@
 
 .picker {
   .clearfix();
+
   @media @sm {
     position: relative;
     width: 250px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
@@ -14,14 +15,13 @@
   }
 
   .picker-label {
-    display: inline-block;
     float: left;
     width: 225px;
     padding: @padding-base-vertical @padding-base-horizontal;
     font-size: @font-size-base;
     color: @input-color;
-    background-color: @input-group-addon-bg;
-    border: 1px solid @input-group-addon-border-color;
+    background-color: transparent;
+    border: 1px solid @input-border;
     border-radius: @border-radius-base;
 
     i {
@@ -77,10 +77,11 @@
     h4:first-child {
       margin-top: 0;
     }
-      @media (max-width: @screen-xs-max) {
-        position: static;
-        max-width: 100%;
-      }
+
+    @media (max-width: @screen-xs-max) {
+      position: static;
+      max-width: 100%;
+    }
   }
 
   &.picker-menu-right {
@@ -97,13 +98,20 @@
     border-top: 1px solid darken(@picker-action-bg, 10%);
     border-radius: 0 0 @border-radius-base @border-radius-base;
   }
+
+  .picker-select-item {
+    margin-left: 3px;
+
+    .label-text {
+      display: block;
+    }
+  }
+
   // details used for pickers like person picker to show the details of the selected item
   .picker-select-item-details {
-    margin-left: 20px;
+    margin-left: 29px;
 
     .person-image {
-      display: inline-block;
-      float: left;
       float: left;
       width: 70px;
       height: 70px;
@@ -137,9 +145,9 @@
       position: relative;
 
       label {
-          position: absolute;
-          top: 0;
-          right: 0;
+        position: absolute;
+        top: 0;
+        right: 0;
       }
 
       img {
@@ -162,18 +170,18 @@
 }
 
 .picker.picker-lg {
-    @media @sm {
-      position: relative;
-      width: 350px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
-    }
+  @media @sm {
+    position: relative;
+    width: 350px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
+  }
 
-    .picker-label {
-      width: 325px;
+  .picker-label {
+    width: 325px;
 
-      span {
-        width: 240px;
-      }
+    span {
+      width: 240px;
     }
+  }
 }
 
 #dialog .scroll-container-picker {
@@ -192,23 +200,4 @@
   .input-group {
     margin-bottom: 4px;
   }
-}
-
-// campuses picker
-
-.campuses-picker {
-  .clearfix();
-
-  .checkbox {
-    float: left;
-    margin-top: 0;
-    margin-right: 24px;
-  }
-}
-
-
-.campuses-picker .campuses-picker-vertical .checkbox {
-  float: none;
-  margin-top: inherit;
-  margin-right: 0;
 }

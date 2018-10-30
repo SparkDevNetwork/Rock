@@ -18,10 +18,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -31,7 +33,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowActivityType" )]
     [DataContract]
-    public partial class WorkflowActivityType : Model<WorkflowActivityType>, IOrdered
+    public partial class WorkflowActivityType : Model<WorkflowActivityType>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -148,6 +150,30 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return WorkflowActivityTypeCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        {
+            WorkflowTypeCache.UpdateCachedEntity( this.WorkflowTypeId, EntityState.Modified );
+            WorkflowActivityTypeCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion

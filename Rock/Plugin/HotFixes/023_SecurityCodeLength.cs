@@ -30,25 +30,26 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.GroupType", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "GroupTypePurposeValueId", "", "Security Code Alpha Length", "", 0, "0", "B76A6877-FD96-4A00-9470-AEFC3788D795", "core_checkin_SecurityCodeAlphaLength" );
-            RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.GroupType", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "GroupTypePurposeValueId", "", "Security Code Numeric Length", "", 0, "0", "90980CBA-9842-40AB-A258-880087973258", "core_checkin_SecurityCodeNumericLength" );
-            RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.GroupType", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "GroupTypePurposeValueId", "", "Security Code Numeric Value Randomized", "", 0, "True", "FD72C08A-81E9-4D93-9370-2BA1B4192601", "core_checkin_SecurityCodeNumericRandom" );
+            // Moved to core migration: 201711271827181_V7Rollup
+            //            RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.GroupType", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "GroupTypePurposeValueId", "", "Security Code Alpha Length", "", 0, "0", "B76A6877-FD96-4A00-9470-AEFC3788D795", "core_checkin_SecurityCodeAlphaLength" );
+            //            RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.GroupType", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "GroupTypePurposeValueId", "", "Security Code Numeric Length", "", 0, "0", "90980CBA-9842-40AB-A258-880087973258", "core_checkin_SecurityCodeNumericLength" );
+            //            RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.GroupType", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "GroupTypePurposeValueId", "", "Security Code Numeric Value Randomized", "", 0, "True", "FD72C08A-81E9-4D93-9370-2BA1B4192601", "core_checkin_SecurityCodeNumericRandom" );
 
-            Sql( @"
-        UPDATE [Attribute] SET [Name] = 'Security Code Alpha-Numeric Length' WHERE [Guid] = '712CFC8A-7B67-4793-A71E-E2EEB2D1048D'
+            //            Sql( @"
+            //        UPDATE [Attribute] SET [Name] = 'Security Code Alpha-Numeric Length' WHERE [Guid] = '712CFC8A-7B67-4793-A71E-E2EEB2D1048D'
 
-        DECLARE @GroupTypeEntityTypeId int = ( SELECT TOP 1[Id] FROM[EntityType] WHERE[Name] = 'Rock.Model.GroupType' )
-        DECLARE @CheckInTemplatePurposeId int = ( SELECT TOP 1[Id] FROM[DefinedValue] WHERE[Guid] = '4A406CB0-495B-4795-B788-52BDFDE00B01' )
-        IF @GroupTypeEntityTypeId IS NOT NULL AND @CheckInTemplatePurposeId IS NOT NULL
-        BEGIN
+            //        DECLARE @GroupTypeEntityTypeId int = ( SELECT TOP 1[Id] FROM[EntityType] WHERE[Name] = 'Rock.Model.GroupType' )
+            //        DECLARE @CheckInTemplatePurposeId int = ( SELECT TOP 1[Id] FROM[DefinedValue] WHERE[Guid] = '4A406CB0-495B-4795-B788-52BDFDE00B01' )
+            //        IF @GroupTypeEntityTypeId IS NOT NULL AND @CheckInTemplatePurposeId IS NOT NULL
+            //        BEGIN
 
-            UPDATE[Attribute] SET[EntityTypeQualifierValue] = CAST( @CheckInTemplatePurposeId AS varchar )
-            WHERE[EntityTypeId] = @GroupTypeEntityTypeId
-            AND[EntityTypeQualifierColumn] = 'GroupTypePurposeValueId'
-            AND[Key] LIKE 'core_checkin_%'
+            //            UPDATE[Attribute] SET[EntityTypeQualifierValue] = CAST( @CheckInTemplatePurposeId AS varchar )
+            //            WHERE[EntityTypeId] = @GroupTypeEntityTypeId
+            //            AND[EntityTypeQualifierColumn] = 'GroupTypePurposeValueId'
+            //            AND[Key] LIKE 'core_checkin_%'
 
-        END
-" );
+            //        END
+            //" );
 
         }
 
@@ -57,7 +58,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Down()
         {
-            RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.GroupType", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "GroupTypePurposeValueId", "", "Security Code Length", "", 0, "3", "712CFC8A-7B67-4793-A71E-E2EEB2D1048D", "core_checkin_SecurityCodeLength" );
+           // RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.GroupType", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "GroupTypePurposeValueId", "", "Security Code Length", "", 0, "3", "712CFC8A-7B67-4793-A71E-E2EEB2D1048D", "core_checkin_SecurityCodeLength" );
         }
     }
 }

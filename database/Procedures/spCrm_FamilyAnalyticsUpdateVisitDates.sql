@@ -52,9 +52,10 @@ BEGIN
 			MIN([StartDateTime]) [FirstVisit]
 		FROM
 			[Attendance] a
+			INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 			INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 		WHERE 
-			[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
+			O.[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
 			AND a.[DidAttend] = 1
 			AND pa.[PersonId] = p.[Id]
 	) a
@@ -73,10 +74,11 @@ BEGIN
 			MIN([StartDateTime]) [FirstVisit]
 		FROM
 			[Attendance] a
+			INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 			INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 			INNER JOIN [GroupMember] agm ON agm.[PersonId] = pa.[PersonId] AND agm.[GroupRoleId] = @ChildRoleId
 		WHERE 
-			a.[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
+			O.[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
 			AND a.[DidAttend] = 1
 			AND agm.[GroupId] = gm.[GroupId]
 	) a
@@ -99,9 +101,10 @@ BEGIN
 			MIN([StartDateTime]) [SecondVisit]
 		FROM
 			[Attendance] a
+			INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 			INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 		WHERE 
-			[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
+			O.[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
 			AND pa.[PersonId] = p.[Id]
 			AND a.[DidAttend] = 1
 			AND CONVERT(date, a.[StartDateTime]) > (SELECT MAX([ValueAsDateTime]) FROM [AttributeValue] WHERE [AttributeId] = @FirstVisitAttributeId AND [EntityId] = pa.[PersonId] AND [IsSystem] = 1)
@@ -123,10 +126,11 @@ BEGIN
 			MIN([StartDateTime]) [SecondVisit]
 		FROM
 			[Attendance] a
+			INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 			INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 			INNER JOIN [GroupMember] agm ON agm.[PersonId] = pa.[PersonId] AND agm.[GroupRoleId] = @ChildRoleId
 		WHERE 
-			a.[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
+			O.[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
 			AND agm.[GroupId] = gm.[GroupId]
 			AND a.[DidAttend] = 1
 			AND CONVERT(date, a.[StartDateTime]) > (SELECT MAX([ValueAsDateTime]) FROM [AttributeValue] WHERE [AttributeId] = @FirstVisitAttributeId AND [EntityId] = pa.[PersonId] AND [IsSystem] = 1)

@@ -16,15 +16,15 @@
                 <div class="panel-body">
 
                     <div id="pnlEditDetails" runat="server">
-                        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                         <asp:HiddenField ID="hfBusinessId" runat="server" />
                         <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
                         <div class="row">
                             <div class="col-md-3">
                                 <fieldset>
-                                    <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
-                                    <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false"></Rock:RockDropDownList>
+                                    <Rock:DefinedValuePicker ID="dvpRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
+                                    <Rock:DefinedValuePicker ID="dvpReason" runat="server" Label="Reason" Visible="false"></Rock:DefinedValuePicker>
                                 </fieldset>
                             </div>
                             <div class="col-md-9">
@@ -49,7 +49,7 @@
                                     </div>
                                 </div>
 
-                                <Rock:RockTextBox ID="tbEmail" runat="server" PrependText="<i class='fa fa-envelope'></i>" Label="Email Address" />
+                                <Rock:EmailBox ID="tbEmail" runat="server" Label="Email Address" />
 
                                 <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference">
                                     <asp:ListItem Text="Email Allowed" Value="EmailAllowed" Selected="True" />
@@ -108,7 +108,7 @@
             <Rock:ModalDialog ID="mdAddContact" runat="server" Title="Add Contact" ValidationGroup="AddContact">
                 <Content>
                     <asp:HiddenField ID="hfModalOpen" runat="server" />
-                    <asp:ValidationSummary ID="valSummaryAddContact" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AddContact" />
+                    <asp:ValidationSummary ID="valSummaryAddContact" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="AddContact" />
                     <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" Required="true" ValidationGroup="AddContact" />
                 </Content>
             </Rock:ModalDialog>

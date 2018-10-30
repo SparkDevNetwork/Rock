@@ -36,15 +36,15 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Person Phone Update" )]
 
-    [WorkflowAttribute("Person", "Workflow attribute that contains the person to update.", true, "", "", 0, null,
+    [WorkflowAttribute( "Person", "Workflow attribute that contains the person to update.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [WorkflowAttribute( "Phone Type (From Attribute)", "The attribute that contains the phone number type to update.", false, "", "", 1, "PhoneTypeAttribute",
         new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Type", "The type of phone numer to update (if attribute is not specified or is an invalid value).", true, false, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, "", 2 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Type", "The type of phone number to update (if attribute is not specified or is an invalid value).", true, false, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, "", 2 )]
     [WorkflowTextOrAttribute( "Phone Number", "Attribute Value", "The value or attribute value to set the phone number to. <span class='tip tip-lava'></span>", false, "", "", 3, "PhoneNumber" )]
     [WorkflowTextOrAttribute( "Unlisted", "Attribute Value", "The value or attribute value to indicate if number should be unlisted. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 4, "Unlisted" )]
     [WorkflowTextOrAttribute( "Messaging Enabled", "Attribute Value", "The value or attribute value to indicate if messaging (SMS) should be enabled for phone. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 5, "MessagingEnabled" )]
-    [BooleanField("Ignore Blank Values", "If a value is blank should it be ignored, or should it be used to wipe out the current phone number?", true, order: 6)]
+    [BooleanField( "Ignore Blank Values", "If a value is blank should it be ignored, or should it be used to wipe out the current phone number?", true, order: 6 )]
     public class PersonPhoneUpdate : ActionComponent
     {
         /// <summary>
@@ -66,8 +66,8 @@ namespace Rock.Workflow.Action
             Guid? guidPersonAttribute = personAttributeValue.AsGuidOrNull();
             if ( guidPersonAttribute.HasValue )
             {
-                var attributePerson = AttributeCache.Read( guidPersonAttribute.Value, rockContext );
-                if ( attributePerson != null || attributePerson.FieldType.Class != "Rock.Field.Types.PersonFieldType" )
+                var attributePerson = AttributeCache.Get( guidPersonAttribute.Value, rockContext );
+                if ( attributePerson != null && attributePerson.FieldType.Class == "Rock.Field.Types.PersonFieldType" )
                 {
                     string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute.Value );
                     if ( !string.IsNullOrWhiteSpace( attributePersonValue ) )
@@ -100,11 +100,11 @@ namespace Rock.Workflow.Action
             var phoneTypeAttributeValue = action.GetWorklowAttributeValue( GetAttributeValue( action, "PhoneTypeAttribute" ).AsGuid() );
             if ( phoneTypeAttributeValue != null )
             {
-                phoneType = DefinedValueCache.Read( phoneTypeAttributeValue.AsGuid() );
+                phoneType = DefinedValueCache.Get( phoneTypeAttributeValue.AsGuid() );
             }
             if ( phoneType == null )
             {
-                phoneType = DefinedValueCache.Read( GetAttributeValue( action, "PhoneType" ).AsGuid() );
+                phoneType = DefinedValueCache.Get( GetAttributeValue( action, "PhoneType" ).AsGuid() );
             }
             if ( phoneType == null )
             {
@@ -155,6 +155,7 @@ namespace Rock.Workflow.Action
             bool? smsEnabled = smsEnabledValue.AsBooleanOrNull();
 
             bool updated = false;
+            bool newPhoneNumber = false;
             var phoneNumberService = new PhoneNumberService( rockContext );
             var phoneNumber = phoneNumberService.Queryable()
                 .Where( n =>
@@ -165,7 +166,7 @@ namespace Rock.Workflow.Action
             if ( phoneNumber == null )
             {
                 phoneNumber = new PhoneNumber { NumberTypeValueId = phoneType.Id, PersonId = personId.Value };
-                phoneNumberService.Add( phoneNumber );
+                newPhoneNumber = true;
                 updated = true;
             }
             else
@@ -191,17 +192,26 @@ namespace Rock.Workflow.Action
 
             if ( updated )
             {
-                var changes = new List<string>();
-                History.EvaluateChange(
-                    changes,
-                    string.Format( "{0} Phone", phoneType.Value ),
-                    oldValue,
-                    phoneNumber.NumberFormattedWithCountryCode );
-
-                if ( changes.Any() )
+                if ( oldValue != phoneNumber.NumberFormattedWithCountryCode )
                 {
-                    changes.Add( string.Format( "<em>(Updated by the '{0}' workflow)</em>", action.ActionTypeCache.ActivityType.WorkflowType.Name ) );
+                    var changes = new History.HistoryChangeList();
+                    changes.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, "Phone" ).SetSourceOfChange( $"{action.ActionTypeCache.ActivityType.WorkflowType.Name} workflow" );
                     HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), personId.Value, changes, false );
+                }
+
+                if ( phoneNumber.Number.IsNullOrWhiteSpace() )
+                {
+                    if ( !newPhoneNumber )
+                    {
+                        phoneNumberService.Delete( phoneNumber );
+                    }
+                }
+                else
+                {
+                    if ( newPhoneNumber )
+                    {
+                        phoneNumberService.Add( phoneNumber );
+                    }
                 }
 
                 rockContext.SaveChanges();

@@ -323,72 +323,6 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// PUT endpoint. Use this to UPDATE a person record
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="person">The person.</param>
-        public override void Put( int id, Person person )
-        {
-            SetProxyCreation( true );
-
-            var rockContext = ( RockContext ) Service.Context;
-            var existingPerson = Service.Get( id );
-            if ( existingPerson != null )
-            {
-                var changes = new List<string>();
-                History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( existingPerson.RecordStatusValueId ), DefinedValueCache.GetName( person.RecordStatusValueId ) );
-                History.EvaluateChange( changes, "Inactive Reason", DefinedValueCache.GetName( existingPerson.RecordStatusReasonValueId ), DefinedValueCache.GetName( person.RecordStatusReasonValueId ) );
-                History.EvaluateChange( changes, "Title", DefinedValueCache.GetName( existingPerson.TitleValueId ), DefinedValueCache.GetName( person.TitleValueId ) );
-                History.EvaluateChange( changes, "First Name", existingPerson.FirstName, person.FirstName );
-                History.EvaluateChange( changes, "Nick Name", existingPerson.NickName, person.NickName );
-                History.EvaluateChange( changes, "Middle Name", existingPerson.MiddleName, person.MiddleName );
-                History.EvaluateChange( changes, "Last Name", existingPerson.LastName, person.LastName );
-                History.EvaluateChange( changes, "Suffix", DefinedValueCache.GetName( existingPerson.SuffixValueId ), DefinedValueCache.GetName( person.SuffixValueId ) );
-                History.EvaluateChange( changes, "Birth Month", existingPerson.BirthMonth, person.BirthMonth );
-                History.EvaluateChange( changes, "Birth Day", existingPerson.BirthDay, person.BirthDay );
-                History.EvaluateChange( changes, "Birth Year", existingPerson.BirthYear, person.BirthYear );
-                History.EvaluateChange( changes, "Graduation Year", existingPerson.GraduationYear, person.GraduationYear );
-                History.EvaluateChange( changes, "Anniversary Date", existingPerson.AnniversaryDate, person.AnniversaryDate );
-                History.EvaluateChange( changes, "Gender", existingPerson.Gender, person.Gender );
-                History.EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( existingPerson.MaritalStatusValueId ), DefinedValueCache.GetName( person.MaritalStatusValueId ) );
-                History.EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( existingPerson.ConnectionStatusValueId ), DefinedValueCache.GetName( person.ConnectionStatusValueId ) );
-                History.EvaluateChange( changes, "Email", existingPerson.Email, person.Email );
-                History.EvaluateChange( changes, "Email Active", existingPerson.IsEmailActive, person.IsEmailActive );
-                History.EvaluateChange( changes, "Email Preference", existingPerson.EmailPreference, person.EmailPreference );
-
-                if ( person.GivingGroupId != existingPerson.GivingGroupId )
-                {
-                    string oldGivingGroupName = existingPerson.GivingGroup != null ? existingPerson.GivingGroup.Name : string.Empty;
-                    string newGivingGroupName = person.GivingGroup != null ? person.GivingGroup.Name : string.Empty;
-                    if ( person.GivingGroupId.HasValue && string.IsNullOrWhiteSpace( newGivingGroupName ) )
-                    {
-                        var givingGroup = new GroupService( rockContext ).Get( person.GivingGroupId.Value );
-                        newGivingGroupName = givingGroup != null ? givingGroup.Name : string.Empty;
-                    }
-                    History.EvaluateChange( changes, "Giving Group", oldGivingGroupName, newGivingGroupName );
-                }
-
-                if ( changes.Any() )
-                {
-                    System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
-
-                    int? modifiedByPersonAliasId = person.ModifiedAuditValuesAlreadyUpdated ? person.ModifiedByPersonAliasId : ( int? ) null;
-
-                    HistoryService.SaveChanges(
-                        rockContext,
-                        typeof( Person ),
-                        Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                        person.Id,
-                        changes,
-                        true,
-                        modifiedByPersonAliasId );
-                }
-            }
-
-            base.Put( id, person );
-        }
-
-        /// <summary>
         /// Adds a new person and adds them to the specified family.
         /// </summary>
         /// <param name="person">The person.</param>
@@ -475,7 +409,7 @@ namespace Rock.Rest.Controllers
                 allowFirstNameOnly = searchComponent.GetAttributeValue( "FirstNameSearch" ).AsBoolean();
             }
 
-            var activeRecordStatusValue = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+            var activeRecordStatusValue = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
             int activeRecordStatusValueId = activeRecordStatusValue != null ? activeRecordStatusValue.Id : 0;
 
             IQueryable<Person> sortedPersonQry = ( this.Service as PersonService )
@@ -492,7 +426,7 @@ namespace Rock.Rest.Controllers
                     ? Person.FormatFullNameReversed( a.LastName, a.NickName, a.SuffixValueId, a.RecordTypeValueId )
                     : Person.FormatFullName( a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId ),
                     IsActive = a.RecordStatusValueId.HasValue && a.RecordStatusValueId == activeRecordStatusValueId,
-                    RecordStatus = a.RecordStatusValueId.HasValue ? DefinedValueCache.Read( a.RecordStatusValueId.Value ).Value : string.Empty,
+                    RecordStatus = a.RecordStatusValueId.HasValue ? DefinedValueCache.Get( a.RecordStatusValueId.Value ).Value : string.Empty,
                     Age = Person.GetAge( a.BirthDate ) ?? -1,
                     FormattedAge = a.FormatAge(),
                     SpouseName = personService.GetSpouse( a, x => x.Person.NickName )
@@ -510,15 +444,15 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Gets the search details (for the person picker)
         /// </summary>
-        /// <param name="Id">The identifier.</param>
+        /// <param name="id">The identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetSearchDetails" )]
-        public string GetSearchDetails( int Id )
+        public string GetSearchDetails( int id )
         {
             PersonSearchResult personSearchResult = new PersonSearchResult();
-            var person = this.Get().Include( a => a.PhoneNumbers ).Where( a => a.Id == Id ).FirstOrDefault();
+            var person = this.Get().Include( a => a.PhoneNumbers ).Where( a => a.Id == id ).FirstOrDefault();
             if ( person != null )
             {
                 GetPersonSearchDetails( personSearchResult, person );
@@ -555,7 +489,7 @@ namespace Rock.Rest.Controllers
                 personSearchResult.Name = showFullNameReversed ? person.FullNameReversed : person.FullName;
                 if ( person.RecordStatusValueId.HasValue )
                 {
-                    var recordStatus = DefinedValueCache.Read( person.RecordStatusValueId.Value );
+                    var recordStatus = DefinedValueCache.Get( person.RecordStatusValueId.Value );
                     personSearchResult.RecordStatus = recordStatus.Value;
                     personSearchResult.IsActive = recordStatus.Guid.Equals( activeRecord );
                 }
@@ -592,10 +526,10 @@ namespace Rock.Rest.Controllers
 </div>
 ";
 
-            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             int adultRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
 
-            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
+            int groupTypeFamilyId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
 
             // figure out Family, Address, Spouse
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
@@ -603,12 +537,12 @@ namespace Rock.Rest.Controllers
             Guid? recordTypeValueGuid = null;
             if ( person.RecordTypeValueId.HasValue )
             {
-                recordTypeValueGuid = DefinedValueCache.Read( person.RecordTypeValueId.Value ).Guid;
+                recordTypeValueGuid = DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid;
             }
 
             personSearchResult.ImageHtmlTag = Person.GetPersonPhotoImageTag( person, 50, 50 );
             personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
-            personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Read( person.ConnectionStatusValueId.Value ).Value : string.Empty;
+            personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Get( person.ConnectionStatusValueId.Value ).Value : string.Empty;
             personSearchResult.Gender = person.Gender.ConvertToString();
             personSearchResult.Email = person.Email;
 
@@ -704,7 +638,7 @@ namespace Rock.Rest.Controllers
                 string phoneNumberList = "<div class='phones'>";
                 foreach ( var phoneNumber in person.PhoneNumbers )
                 {
-                    var phoneType = DefinedValueCache.Read( phoneNumber.NumberTypeValueId ?? 0 );
+                    var phoneType = DefinedValueCache.Get( phoneNumber.NumberTypeValueId ?? 0 );
                     phoneNumberList += string.Format(
                         "<br>{0} <small>{1}</small>",
                         phoneNumber.IsUnlisted ? "Unlisted" : phoneNumber.NumberFormatted,
@@ -732,24 +666,11 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetSearchDetails/{personId}" )]
-        [Obsolete( "Returns incorrect results, will be removed in a future version" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Returns incorrect results, will be removed in a future version", true )]
         public string GetImpersonationParameterObsolete( int personId )
         {
-            // NOTE: This route is called GetSearchDetails but really returns an ImpersonationParameter due to a copy/paste bug. 
-            // Marked obsolete but kept around in case anybody was taking advantage of this bug 
-
-            string result = string.Empty;
-
-            var rockContext = this.Service.Context as Rock.Data.RockContext;
-
-            var person = new PersonService( rockContext ).Queryable().Include( a => a.Aliases ).AsNoTracking().FirstOrDefault( a => a.Id == personId );
-
-            if ( person != null )
-            {
-                result = person.ImpersonationParameter;
-            }
-
-            return result;
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -823,7 +744,7 @@ namespace Rock.Rest.Controllers
                 Guid? recordTypeValueGuid = null;
                 if ( person.RecordTypeValueId.HasValue )
                 {
-                    recordTypeValueGuid = DefinedValueCache.Read( person.RecordTypeValueId.Value ).Guid;
+                    recordTypeValueGuid = DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid;
                 }
 
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );

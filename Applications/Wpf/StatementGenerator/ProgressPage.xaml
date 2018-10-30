@@ -48,12 +48,15 @@
                     <Label x:Name="lblReportProgress"
                            Visibility="Visible"
                            Style="{StaticResource labelStyleAlert}"
-                           Content="Progress" />
+                           Content="Progress"
+                           MouseDoubleClick="lblReportProgress_MouseDoubleClick"/>
                     <ProgressBar x:Name="pgReportProgress"
                                  Maximum="100"
                                  Value="0"
                                  Height="4"
                                  Visibility="Collapsed"/>
+
+                    
                 </StackPanel>
 
             </Grid>

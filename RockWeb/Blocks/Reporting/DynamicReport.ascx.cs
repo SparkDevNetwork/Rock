@@ -26,13 +26,14 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
 {
-    [DisplayName( "Report Data" )]
+    [DisplayName( "Dynamic Report" )]
     [Category( "Reporting" )]
     [Description( "Block to display a report with options to edit the filter" )]
     [BooleanField( "Show 'Merge Template' action on grid", "", defaultValue: true, key: "ShowGridMergeTemplateAction" )]
@@ -44,12 +45,22 @@ namespace RockWeb.Blocks.Reporting
     [TextField( "FilterTitle", "Title for the results list.", false, "Filters", "CustomSetting" )]
     [TextField( "FilterIconCssClass", "Title for the results list.", false, "fa fa-filter", "CustomSetting" )]
     [TextField( "Report", "The report to use for this block", false, "", "CustomSetting" )]
+
+    // NOTE: attribute names should have been called *DataFilter* not *DataField*, but probably can't change to keep backward compat :(
     [TextField( "SelectedDataFieldGuids", "The DataFilters to present to the user", false, "", "CustomSetting" )]
     [TextField( "ConfigurableDataFieldGuids", "Of the DataFilters that are presented to the user, which are configurable vs just a checkbox", false, "", "CustomSetting" )]
-    [TextField( "TogglableDataFieldGuids", "The configurable datafilters that include a checkbox that can disable/enable the filter", false, "", "CustomSetting" )]
+    [TextField( "TogglableDataFieldGuids", "The configurable DataFilters that include a checkbox that can disable/enable the filter", false, "", "CustomSetting" )]
+
     [TextField( "PersonIdField", "If this isn't a Person report, but there is a person id field, specify the name of the field", false, "", "CustomSetting" )]
+
+    [TextField( "DataFiltersPrePostHtmlConfig", "JSON for the Dictionary<Guid,DataFilterPrePostHtmlConfig>", false, "", "CustomSetting" )]
     public partial class DynamicReport : RockBlockCustomSettings
     {
+        private List<Guid> _selectedDataFilterGuids = null;
+        private List<Guid> _configurableDataFilterGuids = null;
+        private List<Guid> _togglableDataFilterGuids = null;
+        private Dictionary<Guid, DataFilterPrePostHtmlConfig> _dataFiltersPrePostHtmlConfig = null;
+
         /// <summary>
         /// Gets the settings tool tip.
         /// </summary>
@@ -76,6 +87,11 @@ namespace RockWeb.Blocks.Reporting
             gReport.Actions.ShowMergeTemplate = this.GetAttributeValue( "ShowGridMergeTemplateAction" ).AsBooleanOrNull() ?? true;
             gReport.Actions.ShowCommunicate = this.GetAttributeValue( "ShowGridCommunicationsAction" ).AsBooleanOrNull() ?? true;
 
+            _selectedDataFilterGuids = ( this.GetAttributeValue( "SelectedDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
+            _configurableDataFilterGuids = ( this.GetAttributeValue( "ConfigurableDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
+            _togglableDataFilterGuids = ( this.GetAttributeValue( "TogglableDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
+            _dataFiltersPrePostHtmlConfig = this.GetAttributeValue( "DataFiltersPrePostHtmlConfig" ).FromJsonOrNull<Dictionary<Guid, DataFilterPrePostHtmlConfig>>() ?? new Dictionary<Guid, DataFilterPrePostHtmlConfig>();
+
             var setFilterValues = !this.IsPostBack;
             ShowFilters( setFilterValues );
 
@@ -100,9 +116,9 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gReport_GridRebind( object sender, EventArgs e )
+        protected void gReport_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindReportGrid();
+            BindReportGrid(e.IsCommunication);
         }
 
         /// <summary>
@@ -118,6 +134,8 @@ namespace RockWeb.Blocks.Reporting
                 ShowReport();
             }
         }
+
+        #region View
 
         /// <summary>
         /// Shows the report.
@@ -142,82 +160,6 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        /// Shows the settings.
-        /// </summary>
-        protected override void ShowSettings()
-        {
-            pnlConfigure.Visible = true;
-            LoadDropDowns();
-            ddlReport.SetValue( this.GetAttributeValue( "Report" ).AsGuidOrNull() );
-            txtResultsTitle.Text = this.GetAttributeValue( "ResultsTitle" );
-            txtResultsIconCssClass.Text = this.GetAttributeValue( "ResultsIconCssClass" );
-            txtFilterTitle.Text = this.GetAttributeValue( "FilterTitle" );
-            txtFilterIconCssClass.Text = this.GetAttributeValue( "FilterIconCssClass" );
-            BindDataFiltersGrid( false );
-            ddlPersonIdField.SetValue( this.GetAttributeValue( "PersonIdField" ) );
-            mdConfigure.Show();
-        }
-
-        /// <summary>
-        /// Handles the SaveClick event of the mdConfigure control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void mdConfigure_SaveClick( object sender, EventArgs e )
-        {
-            if ( grdDataFilters.Visible )
-            {
-                var selectCols = grdDataFilters.Columns.OfType<SelectField>().ToArray();
-                var isVisibleField = selectCols.First( a => a.DataSelectedField == "IsVisible" );
-                var isConfigurableField = selectCols.First( a => a.DataSelectedField == "IsConfigurable" );
-                var isTogglableField = selectCols.First( a => a.DataSelectedField == "IsTogglable" );
-                var selectedDataFieldGuids = isVisibleField.SelectedKeys.OfType<Guid>();
-                var configurableDataFieldGuids = isConfigurableField.SelectedKeys.OfType<Guid>();
-                var togglableDataFieldGuids = isTogglableField.SelectedKeys.OfType<Guid>();
-
-                this.SetAttributeValue( "SelectedDataFieldGuids", selectedDataFieldGuids.Select( a => a.ToString() ).ToList().AsDelimited( "|" ) );
-                this.SetAttributeValue( "ConfigurableDataFieldGuids", configurableDataFieldGuids.Select( a => a.ToString() ).ToList().AsDelimited( "|" ) );
-                this.SetAttributeValue( "TogglableDataFieldGuids", togglableDataFieldGuids.Select( a => a.ToString() ).ToList().AsDelimited( "|" ) );
-            }
-            else
-            {
-                this.SetAttributeValue( "SelectedDataFieldGuids", null );
-                this.SetAttributeValue( "ConfigurableDataFieldGuids", null );
-                this.SetAttributeValue( "TogglableDataFieldGuids", null );
-            }
-
-            mdConfigure.Hide();
-            pnlConfigure.Visible = false;
-
-            this.SetAttributeValue( "ResultsTitle", txtResultsTitle.Text );
-            this.SetAttributeValue( "ResultsIconCssClass", txtResultsIconCssClass.Text );
-            this.SetAttributeValue( "FilterTitle", txtFilterTitle.Text );
-            this.SetAttributeValue( "FilterIconCssClass", txtFilterIconCssClass.Text );
-            this.SetAttributeValue( "Report", ddlReport.SelectedValue.AsGuidOrNull().ToString() );
-            this.SetAttributeValue( "PersonIdField", ddlPersonIdField.SelectedValue );
-            SaveAttributeValues();
-
-            this.Block_BlockUpdated( sender, e );
-        }
-
-        /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        protected void LoadDropDowns()
-        {
-            var rockContext = new RockContext();
-            var reportService = new ReportService( rockContext );
-            var reportQry = reportService.Queryable().OrderBy( a => a.Name );
-
-            ddlReport.Items.Clear();
-            ddlReport.Items.Add( new ListItem() );
-            foreach ( var report in reportQry.ToList() )
-            {
-                ddlReport.Items.Add( new ListItem( report.Name, report.Guid.ToString() ) );
-            }
-        }
-
-        /// <summary>
         /// Creates and shows the Filter controls
         /// </summary>
         /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
@@ -230,9 +172,6 @@ namespace RockWeb.Blocks.Reporting
                 var reportService = new ReportService( rockContext );
 
                 var reportGuid = this.GetAttributeValue( "Report" ).AsGuidOrNull();
-                var selectedDataFieldGuids = ( this.GetAttributeValue( "SelectedDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
-                var configurableDataFieldGuids = ( this.GetAttributeValue( "ConfigurableDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
-                var togglableDataFieldGuids = ( this.GetAttributeValue( "TogglableDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
                 Report report = null;
                 if ( reportGuid.HasValue )
                 {
@@ -258,9 +197,6 @@ namespace RockWeb.Blocks.Reporting
                                 report.DataView.DataViewFilter,
                                 report.EntityType,
                                 setSelection,
-                                selectedDataFieldGuids,
-                                configurableDataFieldGuids,
-                                togglableDataFieldGuids,
                                 rockContext );
                         }
                     }
@@ -294,28 +230,22 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="parentControl">The parent control.</param>
         /// <param name="filter">The filter.</param>
         /// <param name="reportEntityType">Type of the report entity.</param>
-        /// <param name="filteredEntityTypeName">Name of the filtered entity type.</param>
         /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
-        /// <param name="selectedDataFieldGuids">The selected data field guids.</param>
-        /// <param name="configurableDataFieldGuids">The configurable data field guids.</param>
         /// <param name="rockContext">The rock context.</param>
         private void CreateFilterControl(
             Control parentControl,
             DataViewFilter filter,
             EntityType reportEntityType,
             bool setSelection,
-            List<Guid> selectedDataFieldGuids,
-            List<Guid> configurableDataFieldGuids,
-            List<Guid> togglableDataFieldGuids,
             RockContext rockContext )
         {
             try
             {
-                var filteredEntityTypeName = EntityTypeCache.Read( reportEntityType ).Name;
+                var filteredEntityTypeName = EntityTypeCache.Get( reportEntityType ).Name;
                 if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
                     var filterControl = new FilterField();
-                    bool filterIsVisible = selectedDataFieldGuids.Contains( filter.Guid );
+                    bool filterIsVisible = _selectedDataFilterGuids.Contains( filter.Guid );
 
                     if ( filterIsVisible )
                     {
@@ -327,10 +257,14 @@ namespace RockWeb.Blocks.Reporting
                         filterControl.FilterMode = FilterMode.AdvancedFilter;
                     }
 
-                    bool filterIsConfigurable = configurableDataFieldGuids.Contains( filter.Guid );
-                    bool showCheckbox = togglableDataFieldGuids.Contains( filter.Guid ) || !filterIsConfigurable;
+                    bool filterIsConfigurable = _configurableDataFilterGuids.Contains( filter.Guid );
+                    bool showCheckbox = _togglableDataFilterGuids.Contains( filter.Guid ) || !filterIsConfigurable;
+                    var dataFilterPrePostHtmlConfig = _dataFiltersPrePostHtmlConfig.GetValueOrNull( filter.Guid ) ?? new DataFilterPrePostHtmlConfig();
+
                     filterControl.Visible = filterIsVisible;
+
                     parentControl.Controls.Add( filterControl );
+
                     filterControl.DataViewFilterGuid = filter.Guid;
 
                     filterControl.HideFilterCriteria = !filterIsConfigurable;
@@ -339,7 +273,7 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( filter.EntityTypeId.HasValue )
                     {
-                        var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( filter.EntityTypeId.Value, rockContext );
+                        var entityTypeCache = EntityTypeCache.Get( filter.EntityTypeId.Value, rockContext );
                         if ( entityTypeCache != null )
                         {
                             filterControl.FilterEntityTypeName = entityTypeCache.Name;
@@ -350,10 +284,10 @@ namespace RockWeb.Blocks.Reporting
 
                     filterControl.ShowCheckbox = filterIsVisible && showCheckbox;
 
-                    var reportEntityTypeCache = EntityTypeCache.Read( reportEntityType );
+                    var reportEntityTypeCache = EntityTypeCache.Get( reportEntityType );
                     var reportEntityTypeModel = reportEntityTypeCache.GetEntityType();
 
-                    var filterEntityType = EntityTypeCache.Read( filter.EntityTypeId ?? 0 );
+                    var filterEntityType = EntityTypeCache.Get( filter.EntityTypeId ?? 0 );
                     var component = Rock.Reporting.DataFilterContainer.GetComponent( filterEntityType.Name );
                     if ( component != null )
                     {
@@ -368,7 +302,7 @@ namespace RockWeb.Blocks.Reporting
 
                             if ( filterControl.ShowCheckbox )
                             {
-                                checkedUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Checked", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) ).AsBooleanOrNull();
+                                checkedUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Checked", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) ).AsBooleanOrNull() ?? true;
                             }
                         }
 
@@ -407,22 +341,42 @@ namespace RockWeb.Blocks.Reporting
                             }
                         }
 
-                        if (!filterIsConfigurable )
+                        string defaultFilterLabel;
+                        if ( !filterIsConfigurable )
                         {
                             // not configurable so just label it with the selection summary
-                            filterControl.Label = component.FormatSelection( reportEntityTypeModel, filter.Selection );
+                            defaultFilterLabel = component.FormatSelection( reportEntityTypeModel, filter.Selection );
 
                             // configuration not visible, so set the selection to what it was in the dataview when it was saved, even if setSelection=False
                             filterControl.SetSelection( filter.Selection );
                         }
                         else if ( component is Rock.Reporting.DataFilter.PropertyFilter )
                         {
-                            // Property Filters already render a Label based on the selected Property Field, so leave the filter control label blank
-                            filterControl.Label = string.Empty;
+                            defaultFilterLabel = ( component as Rock.Reporting.DataFilter.PropertyFilter ).GetSelectionLabel( reportEntityTypeModel, filter.Selection );
+                        }
+                        else if ( component is Rock.Reporting.DataFilter.EntityFieldFilter )
+                        {
+                            defaultFilterLabel = ( component as Rock.Reporting.DataFilter.EntityFieldFilter ).GetSelectedFieldName( filter.Selection );
                         }
                         else
                         {
-                            filterControl.Label = component.GetTitle( reportEntityTypeModel );
+                            defaultFilterLabel = component.GetTitle( reportEntityTypeModel );
+                        }
+
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                        mergeFields.Add( "Filter", filter );
+                        mergeFields.Add( "Label", defaultFilterLabel );
+
+                        filterControl.Label = dataFilterPrePostHtmlConfig.LabelHtml.ResolveMergeFields( mergeFields );
+
+                        if ( !string.IsNullOrEmpty( dataFilterPrePostHtmlConfig.PreHtml ) )
+                        {
+                            filterControl.PreHtml = dataFilterPrePostHtmlConfig.PreHtml.ResolveMergeFields( mergeFields );
+                        }
+
+                        if ( !string.IsNullOrEmpty( dataFilterPrePostHtmlConfig.PostHtml ) )
+                        {
+                            filterControl.PostHtml = dataFilterPrePostHtmlConfig.PostHtml.ResolveMergeFields( mergeFields );
                         }
 
                         if ( component is Rock.Reporting.DataFilter.OtherDataViewFilter )
@@ -434,7 +388,7 @@ namespace RockWeb.Blocks.Reporting
                             var otherDataView = otherDataViewFilter.GetSelectedDataView( filter.Selection );
                             if ( otherDataView != null )
                             {
-                                CreateFilterControl( parentControl, otherDataView.DataViewFilter, reportEntityType, setSelection, selectedDataFieldGuids, configurableDataFieldGuids, togglableDataFieldGuids, rockContext );
+                                CreateFilterControl( parentControl, otherDataView.DataViewFilter, reportEntityType, setSelection, rockContext );
                             }
                         }
                     }
@@ -455,7 +409,7 @@ namespace RockWeb.Blocks.Reporting
 
                     foreach ( var childFilter in filter.ChildFilters )
                     {
-                        CreateFilterControl( groupControl, childFilter, reportEntityType, setSelection, selectedDataFieldGuids, configurableDataFieldGuids, togglableDataFieldGuids, rockContext );
+                        CreateFilterControl( groupControl, childFilter, reportEntityType, setSelection, rockContext );
                     }
                 }
             }
@@ -528,7 +482,7 @@ namespace RockWeb.Blocks.Reporting
         /// <summary>
         /// Binds the report grid.
         /// </summary>
-        private void BindReportGrid()
+        private void BindReportGrid(bool isCommunication = false)
         {
             var rockContext = new RockContext();
             var reportService = new ReportService( rockContext );
@@ -552,15 +506,21 @@ namespace RockWeb.Blocks.Reporting
                 nbConfigurationWarning.Text = string.Format( "The {0} report does not have a dataview", report );
                 pnlView.Visible = false;
             }
+            else if ( report.DataView.EntityTypeId != report.EntityTypeId )
+            {
+                nbConfigurationWarning.Visible = true;
+                nbConfigurationWarning.Text = string.Format( "The {0} report's EntityType doesn't match the dataview's EntityType", report );
+                pnlView.Visible = false;
+            }
             else
             {
                 nbConfigurationWarning.Visible = false;
 
-                report.DataView.DataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
-
                 string errorMessage;
 
-                ReportingHelper.BindGrid( report, gReport, this.CurrentPerson, null, out errorMessage );
+                DataViewFilterOverrides dataViewFilterOverrides = ReportingHelper.GetFilterOverridesFromControls( report.DataView, phFilters );
+
+                ReportingHelper.BindGrid( report, gReport, this.CurrentPerson, dataViewFilterOverrides, null, isCommunication, out errorMessage );
 
                 if ( report.EntityTypeId != EntityTypeCache.GetId<Rock.Model.Person>() )
                 {
@@ -584,44 +544,139 @@ namespace RockWeb.Blocks.Reporting
             }
         }
 
+        #endregion View
+
+        #region Configuration
+
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlReport control.
+        /// Shows the settings.
+        /// </summary>
+        protected override void ShowSettings()
+        {
+            pnlConfigure.Visible = true;
+
+            Guid? reportGuid = this.GetAttributeValue( "Report" ).AsGuidOrNull();
+            int? reportId = reportGuid != null ? new ReportService( new RockContext() ).GetId( reportGuid.Value ) : null;
+
+            rpReport.SetValue( reportId );
+            txtResultsTitle.Text = this.GetAttributeValue( "ResultsTitle" );
+            txtResultsIconCssClass.Text = this.GetAttributeValue( "ResultsIconCssClass" );
+            txtFilterTitle.Text = this.GetAttributeValue( "FilterTitle" );
+            txtFilterIconCssClass.Text = this.GetAttributeValue( "FilterIconCssClass" );
+            BindDataFiltersGrid();
+            ddlPersonIdField.SetValue( this.GetAttributeValue( "PersonIdField" ) );
+            mdConfigure.Show();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdConfigure control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlReport_SelectedIndexChanged( object sender, EventArgs e )
+        protected void mdConfigure_SaveClick( object sender, EventArgs e )
         {
-            BindDataFiltersGrid( true );
+            if ( rptDataFilters.Visible )
+            {
+                _selectedDataFilterGuids = new List<Guid>();
+                _configurableDataFilterGuids = new List<Guid>();
+                _togglableDataFilterGuids = new List<Guid>();
+                _dataFiltersPrePostHtmlConfig = new Dictionary<Guid, DataFilterPrePostHtmlConfig>();
+                foreach ( var item in rptDataFilters.Items.OfType<RepeaterItem>() )
+                {
+                    HiddenField hfDataFilterGuid = item.FindControl( "hfDataFilterGuid" ) as HiddenField;
+                    RockCheckBox cbIsVisible = item.FindControl( "cbIsVisible" ) as RockCheckBox;
+                    RockCheckBox cbIsConfigurable = item.FindControl( "cbIsConfigurable" ) as RockCheckBox;
+                    RockCheckBox cbIsTogglable = item.FindControl( "cbIsTogglable" ) as RockCheckBox;
+                    RockTextBox tbLabelHtml = item.FindControl( "tbLabelHtml" ) as RockTextBox;
+                    RockTextBox tbPreHtml = item.FindControl( "tbPreHtml" ) as RockTextBox;
+                    RockTextBox tbPostHtml = item.FindControl( "tbPostHtml" ) as RockTextBox;
+
+                    Guid dataFilterGuid = hfDataFilterGuid.Value.AsGuid();
+                    if ( cbIsVisible.Checked )
+                    {
+                        _selectedDataFilterGuids.Add( dataFilterGuid );
+                    }
+
+                    if ( cbIsConfigurable.Checked )
+                    {
+                        _configurableDataFilterGuids.Add( dataFilterGuid );
+                    }
+
+                    if ( cbIsTogglable.Checked )
+                    {
+                        _togglableDataFilterGuids.Add( dataFilterGuid );
+                    }
+
+                    _dataFiltersPrePostHtmlConfig.Add(
+                        dataFilterGuid,
+                        new DataFilterPrePostHtmlConfig
+                        {
+                            LabelHtml = tbLabelHtml.Text,
+                            PreHtml = tbPreHtml.Text,
+                            PostHtml = tbPostHtml.Text
+                        } );
+                }
+
+                this.SetAttributeValue( "SelectedDataFieldGuids", _selectedDataFilterGuids.Select( a => a.ToString() ).ToList().AsDelimited( "|" ) );
+                this.SetAttributeValue( "ConfigurableDataFieldGuids", _configurableDataFilterGuids.Select( a => a.ToString() ).ToList().AsDelimited( "|" ) );
+                this.SetAttributeValue( "TogglableDataFieldGuids", _togglableDataFilterGuids.Select( a => a.ToString() ).ToList().AsDelimited( "|" ) );
+                this.SetAttributeValue( "DataFiltersPrePostHtmlConfig", _dataFiltersPrePostHtmlConfig.ToJson() );
+            }
+
+            mdConfigure.Hide();
+            pnlConfigure.Visible = false;
+
+            this.SetAttributeValue( "ResultsTitle", txtResultsTitle.Text );
+            this.SetAttributeValue( "ResultsIconCssClass", txtResultsIconCssClass.Text );
+            this.SetAttributeValue( "FilterTitle", txtFilterTitle.Text );
+            this.SetAttributeValue( "FilterIconCssClass", txtFilterIconCssClass.Text );
+
+            Guid? reportGuid = rpReport.SelectedValueAsId().HasValue ? new ReportService( new RockContext() ).GetGuid( rpReport.SelectedValueAsId().Value ) : null;
+            this.SetAttributeValue( "Report", reportGuid.ToString() );
+            this.SetAttributeValue( "PersonIdField", ddlPersonIdField.SelectedValue );
+            SaveAttributeValues();
+
+            this.Block_BlockUpdated( sender, e );
+        }
+
+        /// <summary>
+        /// Handles the SelectItem event of the rpReport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rpReport_SelectItem( object sender, EventArgs e )
+        {
+            // reset the configs since there is a new report selected
+            _configurableDataFilterGuids = null;
+            _selectedDataFilterGuids = null;
+            _togglableDataFilterGuids = null;
+            _dataFiltersPrePostHtmlConfig = new Dictionary<Guid, DataFilterPrePostHtmlConfig>();
+            BindDataFiltersGrid();
         }
 
         /// <summary>
         /// Binds the data filters grid in the Settings dialog
         /// </summary>
-        protected void BindDataFiltersGrid( bool selectDefault )
+        protected void BindDataFiltersGrid()
         {
             var rockContext = new RockContext();
             var reportService = new ReportService( rockContext );
 
-            var reportGuid = ddlReport.SelectedValueAsGuid();
+            var reportId = rpReport.SelectedValueAsId();
             Report report = null;
-            if ( reportGuid.HasValue )
+            if ( reportId.HasValue )
             {
-                report = reportService.Get( reportGuid.Value );
+                report = reportService.Get( reportId.Value );
             }
 
             nbConfigurationWarning.Visible = false;
 
             if ( report != null && report.DataView != null && report.DataView.DataViewFilter != null )
             {
-                var selectedDataFieldGuids = ( this.GetAttributeValue( "SelectedDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
-                var configurableDataFieldGuids = ( this.GetAttributeValue( "ConfigurableDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
-                var togglableDataFieldGuids = ( this.GetAttributeValue( "TogglableDataFieldGuids" ) ?? string.Empty ).Split( '|' ).AsGuidList();
+                var filters = ReportingHelper.GetFilterInfoList( report.DataView );
 
-                var filters = new List<FilterInfo>();
-                GetFilterListRecursive( filters, report.DataView.DataViewFilter, report.EntityType );
-
-                // remove the top level group filter
-                filters = filters.Where( a => a.ParentFilter != null ).ToList();
+                // remove the top level group filter if it is just a GROUPALL
+                filters = filters.Where( a => a.ParentFilter != null || a.FilterExpressionType != FilterExpressionType.GroupAll ).ToList();
 
                 // set the Title and Summary of Grouped Filters based on the GroupFilter's child filter titles
                 foreach ( var groupedFilter in filters.Where( a => a.FilterExpressionType != FilterExpressionType.Filter ) )
@@ -638,347 +693,145 @@ namespace RockWeb.Blocks.Reporting
                     ddlPersonIdField.Items.Add( new ListItem( reportField.ColumnHeaderText, reportField.ColumnHeaderText ) );
                 }
 
-                // remove any filter that are part of a child group filter
-                filters = filters.Where( a => a.ParentFilter != null && a.ParentFilter.ParentFilter == null ).ToList();
-
-                grdDataFilters.Visible = true;
+                rptDataFilters.Visible = true;
                 mdConfigure.ServerSaveLink.Disabled = false;
-                grdDataFilters.DataSource = filters.Select( a =>
-                {
-                    var result = new
-                    {
-                        a.Guid,
-                        a.Title,
-                        a.TitlePath,
-                        a.Summary,
-                        a.FilterExpressionType,
-                        a.ParentFilter,
-                        IsVisible = selectDefault || selectedDataFieldGuids.Contains( a.Guid ),
-                        IsConfigurable = selectDefault || configurableDataFieldGuids.Contains( a.Guid ),
-                        IsTogglable = selectDefault || togglableDataFieldGuids.Contains( a.Guid ),
-                        FilterInfo = a,
-                        ParentDataView = a.FromOtherDataView
-                    };
+                rptDataFilters.DataSource = filters;
 
-                    return result;
-                } );
-
-                grdDataFilters.DataBind();
+                rptDataFilters.DataBind();
             }
             else
             {
-                grdDataFilters.Visible = false;
+                rptDataFilters.Visible = false;
             }
         }
 
         /// <summary>
-        /// private class just for this block used to show the configuration of which fields are shown and configurable
-        /// </summary>
-        private class FilterInfo
-        {
-            public FilterInfo( DataViewFilter dataViewFilter )
-            {
-                DataViewFilter = dataViewFilter;
-            }
-
-            private DataViewFilter DataViewFilter { get; set; }
-
-            /// <summary>
-            /// Gets or sets the unique identifier.
-            /// </summary>
-            /// <value>
-            /// The unique identifier.
-            /// </value>
-            public Guid Guid
-            {
-                get
-                {
-                    return this.DataViewFilter.Guid;
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the title.
-            /// </summary>
-            /// <value>
-            /// The title.
-            /// </value>
-            public string Title { get; set; }
-
-            /// <summary>
-            /// Gets the title including the parent filter titles
-            /// </summary>
-            /// <value>
-            /// The title path.
-            /// </value>
-            public string TitlePath
-            {
-                get
-                {
-                    string parentPath = this.Title;
-                    var parentFilter = this.ParentFilter;
-                    while ( parentFilter != null )
-                    {
-                        if ( parentFilter.ParentFilter == null )
-                        {
-                            // don't include the root group filter
-                            break;
-                        }
-
-                        parentPath = parentFilter.Title + " > " + parentPath;
-                        parentFilter = parentFilter.ParentFilter;
-                    }
-
-                    return parentPath;
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the summary.
-            /// </summary>
-            /// <value>
-            /// The summary.
-            /// </value>
-            public string Summary
-            {
-                get
-                {
-                    string result;
-                    if ( FilterExpressionType != FilterExpressionType.Filter )
-                    {
-                        var childFilters = this.FilterList.Where( a => a.ParentFilter == this ).ToList();
-                        var parentSummaries = childFilters.Select( a => a.Summary ?? string.Empty ).ToList().AsDelimited( ", ", this.FilterExpressionType == FilterExpressionType.GroupAny ? " OR " : " AND " );
-                        if ( childFilters.Count > 1 )
-                        {
-                            result = string.Format( "( {0} )", parentSummaries );
-                        }
-                        else
-                        {
-                            result = parentSummaries;
-                        }
-                    }
-                    else if ( this.Component != null )
-                    {
-                        result = this.Component.FormatSelection( this.ReportEntityTypeModel, this.Selection );
-                    }
-                    else
-                    {
-                        result = "-";
-                    }
-
-                    return result;
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the type of the filter expression.
-            /// </summary>
-            /// <value>
-            /// The type of the filter expression.
-            /// </value>
-            public FilterExpressionType FilterExpressionType
-            {
-                get
-                {
-                    return this.DataViewFilter.ExpressionType;
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the parent filter.
-            /// </summary>
-            /// <value>
-            /// The parent filter.
-            /// </value>
-            public FilterInfo ParentFilter
-            {
-                get
-                {
-                    return this.DataViewFilter.ParentId.HasValue ? this.FilterList.FirstOrDefault( a => a.Guid == this.DataViewFilter.Parent.Guid ) : null;
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the filter list.
-            /// </summary>
-            /// <value>
-            /// The filter list.
-            /// </value>
-            public List<FilterInfo> FilterList { get; internal set; }
-
-            /// <summary>
-            /// Gets or sets the component.
-            /// </summary>
-            /// <value>
-            /// The component.
-            /// </value>
-            public DataFilterComponent Component { get; internal set; }
-
-            /// <summary>
-            /// Gets or sets the report entity type model.
-            /// </summary>
-            /// <value>
-            /// The report entity type model.
-            /// </value>
-            public Type ReportEntityTypeModel { get; internal set; }
-
-            /// <summary>
-            /// Gets or sets from other data view.
-            /// </summary>
-            /// <value>
-            /// From other data view.
-            /// </value>
-            public string FromOtherDataView { get; set; }
-
-            /// <summary>
-            /// Gets or sets the selection.
-            /// </summary>
-            /// <value>
-            /// The selection.
-            /// </value>
-            public string Selection
-            {
-                get
-                {
-                    return this.DataViewFilter.Selection;
-                }
-            }
-
-            /// <summary>
-            /// Returns a <see cref="System.String" /> that represents this instance.
-            /// </summary>
-            /// <returns>
-            /// A <see cref="System.String" /> that represents this instance.
-            /// </returns>
-            public override string ToString()
-            {
-                return TitlePath;
-            }
-        }
-
-        /// <summary>
-        /// Gets the filter recursive.
-        /// </summary>
-        /// <param name="filterList">The filter list.</param>
-        /// <param name="filter">The filter.</param>
-        /// <param name="reportEntityType">Type of the report entity.</param>
-        private void GetFilterListRecursive( List<FilterInfo> filterList, DataViewFilter filter, EntityType reportEntityType )
-        {
-            var result = new Dictionary<Guid, string>();
-
-            var entityType = EntityTypeCache.Read( filter.EntityTypeId ?? 0 );
-            var reportEntityTypeCache = EntityTypeCache.Read( reportEntityType );
-            var reportEntityTypeModel = reportEntityTypeCache.GetEntityType();
-
-            var filterInfo = new FilterInfo( filter );
-            filterInfo.FilterList = filterList;
-
-            if ( entityType != null )
-            {
-                var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
-                filterInfo.Component = component;
-                filterInfo.ReportEntityTypeModel = reportEntityTypeModel;
-
-                if ( component != null )
-                {
-                    if ( component is Rock.Reporting.DataFilter.EntityFieldFilter )
-                    {
-                        var entityFieldFilter = component as Rock.Reporting.DataFilter.EntityFieldFilter;
-                        var fieldName = entityFieldFilter.GetSelectedFieldName( filter.Selection );
-                        if ( !string.IsNullOrWhiteSpace( fieldName ) )
-                        {
-                            var entityFields = EntityHelper.GetEntityFields( reportEntityTypeModel );
-                            var entityField = entityFields.Where( a => a.Name == fieldName ).FirstOrDefault();
-                            if ( entityField != null )
-                            {
-                                filterInfo.Title = entityField.Title;
-                            }
-                            else
-                            {
-                                filterInfo.Title = fieldName;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        filterInfo.Title = component.GetTitle( reportEntityType.GetType() );
-                    }
-                }
-            }
-
-            filterList.Add( filterInfo );
-
-            if ( filterInfo.Component is Rock.Reporting.DataFilter.OtherDataViewFilter )
-            {
-                Rock.Reporting.DataFilter.OtherDataViewFilter otherDataViewFilter = filterInfo.Component as Rock.Reporting.DataFilter.OtherDataViewFilter;
-                var otherDataView = otherDataViewFilter.GetSelectedDataView( filterInfo.Selection );
-                if ( otherDataView != null )
-                {
-                    var otherDataViewFilterList = new List<FilterInfo>();
-                    GetFilterListRecursive( otherDataViewFilterList, otherDataView.DataViewFilter, reportEntityType );
-                    foreach ( var otherFilter in otherDataViewFilterList )
-                    {
-                        if ( otherFilter.FromOtherDataView == null )
-                        {
-                            otherFilter.FromOtherDataView = otherDataView.Name;
-                        }
-                    }
-
-                    filterList.AddRange( otherDataViewFilterList );
-                }
-            }
-
-            foreach ( var childFilter in filter.ChildFilters )
-            {
-                GetFilterListRecursive( filterList, childFilter, reportEntityType );
-            }
-        }
-
-        /// <summary>
-        /// Handles the RowDataBound event of the grdDataFilters control.
+        /// Handles the ItemDataBound event of the rptDataFilters control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        protected void grdDataFilters_RowDataBound( object sender, GridViewRowEventArgs e )
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptDataFilters_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var dataItem = e.Row.DataItem;
-            if ( dataItem != null )
+            var filterInfo = e.Item.DataItem as ReportingHelper.FilterInfo;
+            if ( filterInfo != null )
             {
-                var hideCheckboxes = false;
-                if ( ( FilterExpressionType ) dataItem.GetPropertyValue( "FilterExpressionType" ) != FilterExpressionType.Filter )
+                var showInputs = true;
+                if ( filterInfo.FilterExpressionType != FilterExpressionType.Filter )
                 {
-                    // Don't show Checkboxes for any of the Grouped Filter types
-                    hideCheckboxes = true;
+                    // Don't show Checkboxes or PrePostHtml for any of the Grouped Filter types
+                    showInputs = false;
                 }
                 else
                 {
-                    var filterInfo = e.Row.DataItem.GetPropertyValue( "FilterInfo" ) as FilterInfo;
-                    if ( filterInfo != null )
+                    var otherDataViewFilter = filterInfo.Component as Rock.Reporting.DataFilter.OtherDataViewFilter;
+                    if ( otherDataViewFilter != null && otherDataViewFilter.GetSelectedDataView( filterInfo.Selection ) != null )
                     {
-                        var otherDataViewFilter = filterInfo.Component as Rock.Reporting.DataFilter.OtherDataViewFilter;
-
-                        if ( otherDataViewFilter != null && otherDataViewFilter.GetSelectedDataView( filterInfo.Selection ) != null )
-                        {
-                            // Don't show the Row (or Checkboxes) for any of the OtherDataView filters
-                            e.Row.Visible = false;
-                            hideCheckboxes = true;
-                        }
+                        // Don't show the Row (or Checkboxes) for any of the OtherDataView filters
+                        e.Item.Visible = false;
+                        showInputs = false;
                     }
                 }
 
-                if ( hideCheckboxes )
+                HiddenField hfDataFilterGuid = e.Item.FindControl( "hfDataFilterGuid" ) as HiddenField;
+                RockCheckBox cbIsVisible = e.Item.FindControl( "cbIsVisible" ) as RockCheckBox;
+                RockCheckBox cbIsConfigurable = e.Item.FindControl( "cbIsConfigurable" ) as RockCheckBox;
+                RockCheckBox cbIsTogglable = e.Item.FindControl( "cbIsTogglable" ) as RockCheckBox;
+                RockTextBox tbLabelHtml = e.Item.FindControl( "tbLabelHtml" ) as RockTextBox;
+                RockTextBox tbPreHtml = e.Item.FindControl( "tbPreHtml" ) as RockTextBox;
+                RockTextBox tbPostHtml = e.Item.FindControl( "tbPostHtml" ) as RockTextBox;
+                Literal lFilterDetails = e.Item.FindControl( "lFilterDetails" ) as Literal;
+
+                cbIsVisible.Visible = showInputs;
+                cbIsConfigurable.Visible = showInputs;
+                cbIsTogglable.Visible = showInputs;
+                tbLabelHtml.Visible = showInputs;
+                tbPreHtml.Visible = showInputs;
+                tbPostHtml.Visible = showInputs;
+
+                hfDataFilterGuid.Value = filterInfo.Guid.ToString();
+                if (_selectedDataFilterGuids != null)
                 {
-                    foreach ( var selectField in grdDataFilters.Columns.OfType<SelectField>() )
-                    {
-                        var cb = e.Row.Cells[selectField.ColumnIndex].ControlsOfTypeRecursive<CheckBox>().FirstOrDefault();
-                        if ( cb != null )
-                        {
-                            // hide the checkbox/selectfields if this is a GroupAny/GroupAll filter
-                            cb.Visible = false;
-                        }
-                    }
+                    cbIsVisible.Checked = _selectedDataFilterGuids.Contains( filterInfo.Guid );
                 }
+                else
+                {
+                    cbIsVisible.Checked = true;
+                }
+
+                if ( _configurableDataFilterGuids != null )
+                {
+                    cbIsConfigurable.Checked = _configurableDataFilterGuids.Contains( filterInfo.Guid );
+                }
+                else
+                {
+                    cbIsConfigurable.Checked = true;
+                }
+
+                if ( _togglableDataFilterGuids != null )
+                {
+                    cbIsTogglable.Checked = _togglableDataFilterGuids.Contains( filterInfo.Guid );
+                }
+                else
+                {
+                    cbIsTogglable.Checked = true;
+                }
+
+                var dataFilterPrePostHtmlConfig = _dataFiltersPrePostHtmlConfig.GetValueOrNull( filterInfo.Guid );
+                if ( dataFilterPrePostHtmlConfig != null )
+                {
+                    tbLabelHtml.Text = dataFilterPrePostHtmlConfig.LabelHtml;
+                    tbPreHtml.Text = dataFilterPrePostHtmlConfig.PreHtml;
+                    tbPostHtml.Text = dataFilterPrePostHtmlConfig.PostHtml;
+                }
+                else
+                {
+                    tbLabelHtml.Text = "{{ Label }}";
+                }
+
+                lFilterDetails.Text = new DescriptionList()
+                    .Add( "Filter", filterInfo.TitlePath )
+                    .Add( "Summary", filterInfo.Summary )
+                    .Add( "Parent Data View", filterInfo.FromOtherDataView )
+                    .Html;
             }
         }
+
+        #endregion Configuration
+
+        #region Configuration Classes
+
+        /// <summary>
+        ///
+        /// </summary>
+        public class DataFilterPrePostHtmlConfig
+        {
+            /// <summary>
+            /// Gets or sets the label HTML (or the Checkbox text)
+            /// </summary>
+            /// <value>
+            /// The label HTML.
+            /// </value>
+            public string LabelHtml { get; set; }
+
+            /// <summary>
+            /// Gets or sets the pre HTML.
+            /// </summary>
+            /// <value>
+            /// The pre HTML.
+            /// </value>
+            public string PreHtml { get; set; }
+
+            /// <summary>
+            /// Gets or sets the post HTML.
+            /// </summary>
+            /// <value>
+            /// The post HTML.
+            /// </value>
+            public string PostHtml { get; set; }
+        }
+
+        #endregion Configuration Classes
+
+
     }
 }

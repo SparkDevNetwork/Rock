@@ -22,8 +22,8 @@ using System.Web.Http;
 using System.Web.Routing;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
@@ -101,7 +101,7 @@ namespace Rock.Rest.Controllers
 
                                     string fieldType = idParts.Length > 1 ? idParts[1] : fieldId;
 
-                                    var entityType = EntityTypeCache.Read( fieldType, false );
+                                    var entityType = EntityTypeCache.Get( fieldType, false );
                                     if ( entityType != null )
                                     {
                                         items.Add( new TreeViewItem
@@ -129,7 +129,7 @@ namespace Rock.Rest.Controllers
 
                 case "GlobalAttribute":
                     {
-                        var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                        var globalAttributes = GlobalAttributesCache.Get();
 
                         foreach ( var attributeCache in globalAttributes.Attributes.OrderBy( a => a.Key ) )
                         {
@@ -149,7 +149,7 @@ namespace Rock.Rest.Controllers
 
                 default:
                     {
-                        // In this scenario, the id should be a concatnation of a root qualified entity name and then the property path
+                        // In this scenario, the id should be a concatenation of a root qualified entity name and then the property path
                         var idParts = id.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                         if ( idParts.Count > 0 )
                         {
@@ -162,7 +162,7 @@ namespace Rock.Rest.Controllers
                                 string[] itemParts = item.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
                                 string itemType = itemParts.Length > 1 ? itemParts[1] : item;
 
-                                entityType = EntityTypeCache.Read( itemType, false );
+                                entityType = EntityTypeCache.Get( itemType, false );
                                 pathPointer++;
                             }
 
@@ -189,7 +189,7 @@ namespace Rock.Rest.Controllers
                                     pathPointer++;
                                 }
 
-                                entityType = EntityTypeCache.Read( type );
+                                entityType = EntityTypeCache.Get( type );
 
                                 // Add the tree view items
                                 foreach ( var propInfo in type.GetProperties() )
@@ -213,7 +213,7 @@ namespace Rock.Rest.Controllers
                                         }
 
                                         bool hasChildren = false;
-                                        if ( EntityTypeCache.Read( propertyType.FullName, false ) != null )
+                                        if ( EntityTypeCache.Get( propertyType.FullName, false ) != null )
                                         {
                                             foreach ( var childPropInfo in propertyType.GetProperties() )
                                             {
@@ -242,7 +242,7 @@ namespace Rock.Rest.Controllers
 
                                 if ( entityType.IsEntity )
                                 {
-                                    foreach ( Rock.Model.Attribute attribute in new AttributeService( new Rock.Data.RockContext() ).GetByEntityTypeId( entityType.Id ) )
+                                    foreach ( Rock.Model.Attribute attribute in new AttributeService( new Rock.Data.RockContext() ).GetByEntityTypeId( entityType.Id, false ) )
                                     {
                                         // Only include attributes without a qualifier (since we don't have a specific instance of this entity type)
                                         if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) &&

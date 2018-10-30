@@ -127,7 +127,7 @@ namespace Rock.Model
         {
             if ( EntityTypeId.HasValue )
             {
-                var entityType = EntityTypeCache.Read( EntityTypeId.Value );
+                var entityType = EntityTypeCache.Get( EntityTypeId.Value );
                 if ( entityType != null )
                 {
                     return GatewayContainer.GetComponent( entityType.Name );

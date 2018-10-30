@@ -48,18 +48,18 @@ namespace Rock.Web.UI.Controls
             ItemRestUrlExtraParams = "?getCategorizedItems=true&showUnnamedEntityItems=false&showCategoriesThatHaveNoChildren=false";
             if ( this.MergeTemplateOwnership == MergeTemplateOwnership.Global )
             {
-                ItemRestUrlExtraParams += string.Format( "&excludedCategoryIds={0}", CategoryCache.Read( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id );
+                ItemRestUrlExtraParams += string.Format( "&excludedCategoryIds={0}", CategoryCache.Get( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id );
             }
             else if ( this.MergeTemplateOwnership == MergeTemplateOwnership.Personal )
             {
-                ItemRestUrlExtraParams += string.Format( "&includedCategoryIds={0}", CategoryCache.Read( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id );
+                ItemRestUrlExtraParams += string.Format( "&includedCategoryIds={0}", CategoryCache.Get( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Id );
             }
             else if ( this.MergeTemplateOwnership == MergeTemplateOwnership.PersonalAndGlobal )
             {
                 //
             }
 
-            ItemRestUrlExtraParams += "&entityTypeId=" + EntityTypeCache.Read( Rock.SystemGuid.EntityType.MERGE_TEMPLATE.AsGuid() ).Id;
+            ItemRestUrlExtraParams += "&entityTypeId=" + EntityTypeCache.Get( Rock.SystemGuid.EntityType.MERGE_TEMPLATE.AsGuid() ).Id;
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Rock.Web.UI.Controls
                 ItemId = mergeTemplate.Id.ToString();
 
                 var parentCategoryIds = new List<string>();
-                var parentCategory = mergeTemplate.Category;
+                var parentCategory = CategoryCache.Get( mergeTemplate.CategoryId );
                 while ( parentCategory != null )
                 {
                     if ( !parentCategoryIds.Contains( parentCategory.Id.ToString() ) )

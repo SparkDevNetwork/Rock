@@ -17,6 +17,7 @@
 namespace Rock.Migrations
 {
     using System;
+    using System.Collections.Generic;
     using System.Data.Entity;
     using System.Data.Entity.Migrations;
     using System.Linq;
@@ -31,49 +32,15 @@ namespace Rock.Migrations
             CommandTimeout = 300;
         }
 
-        protected override void Seed(Rock.Data.RockContext context)
+        protected override void Seed( Rock.Data.RockContext context )
         {
-            // Previous to Rock v4.0 the saved routing|account numbers in the PersonBankAccount table may have included
-            // leading or trailing spaces for the routing number and/or account number. v4.0 trims these leading/trailing
-            // spaces before looking for and saving the routing|account numbers. Because of this, any existing saved 
-            // values need to be updated so they don't include any spaces. This can probably be removed in a future update 
-            // after v4.0 -DT
-            var txnService = new Rock.Model.FinancialTransactionService( context );
-            var personBankAcctService = new Rock.Model.FinancialPersonBankAccountService( context );
-
-            foreach( string encryptedMicr in txnService
-                .Queryable()
-                .Where( t => 
-                    t.CheckMicrParts != null &&
-                    t.CheckMicrParts != "" )
-                .Select( t => t.CheckMicrParts )
-                .Distinct() )
+            // MP: Populate AnalyticsSourceDate (if it isn't already)
+            if ( !context.AnalyticsSourceDates.AsQueryable().Any() )
             {
-                if ( !string.IsNullOrWhiteSpace( encryptedMicr ) )
-                {
-                    string clearMicr = Rock.Security.Encryption.DecryptString( encryptedMicr ) ?? string.Empty;
-                    var parts = clearMicr.Split( '_' );
-                    if ( parts.Length >= 2 && ( parts[0] != parts[0].Trim() || parts[1] != parts[1].Trim() ) )
-                    {
-                        string oldHash = Rock.Security.Encryption.GetSHA1Hash( string.Format( "{0}|{1}", parts[0], parts[1] ) );
-                        string newHash = Rock.Security.Encryption.GetSHA1Hash( string.Format( "{0}|{1}", parts[0].Trim(), parts[1].Trim() ) );
-
-                        foreach( var match in personBankAcctService.Queryable().Where( a => a.AccountNumberSecured == oldHash ) )
-                        {
-                            match.AccountNumberSecured = newHash;
-                        }
-
-                        context.SaveChanges();
-                    }
-                }
+                var analyticsStartDate = new DateTime( RockDateTime.Today.AddYears( -150 ).Year, 1, 1 );
+                var analyticsEndDate = new DateTime( RockDateTime.Today.AddYears( 101 ).Year, 1, 1 ).AddDays( -1 );
+                Rock.Model.AnalyticsSourceDate.GenerateAnalyticsSourceDateData( 1, false, analyticsStartDate, analyticsEndDate );
             }
-
-            // In V7, the Communication and CommunicationTemplate models were updated to move data stored as JSON in a varchar(max) 
-            // column (MediumDataJson) to specific columns. This method will update all of the communication templates, and the most 
-            // recent 5000 communications. A job will runto convert the remaining communications. This can be removed after every 
-            // customer has migrated past v7
-            Jobs.MigrateCommunicationMediumData.UpdateCommunicationRecords( true, 5000 );
-
         }
     }
 }

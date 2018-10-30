@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -36,6 +37,65 @@ namespace RockWeb.Blocks.Utility
     [Description( "Block to be used as part of the RockFileBrowser HtmlEditor Plugin" )]
     public partial class HtmlEditorFileBrowser : RockBlock
     {
+        #region Properties
+
+        private List<string> RestrictedFolders
+        {
+            get
+            {
+                return new List<string>()
+                {
+                    "bin",
+                    "App_Data",
+                    "App_Code",
+                    "App_Browsers",
+                    "Assets",
+                    "Blocks",
+                    "Content",
+                    "Plugins",
+                    "Scripts",
+                    "SqlServerTypes",
+                    "Styles",
+                    "Themes",
+                    "Webhooks"
+                };
+            }
+        }
+
+        private List<string> UploadRestrictedFolders
+        {
+            get
+            {
+                return new List<string>()
+                {
+                    "bin",
+                    "App_Code"
+                };
+            }
+        }
+
+        private List<string> RestrictedFileExtension
+        {
+            get
+            {
+                return new List<string>()
+                {
+                    ".bin",
+                    ".png",
+                    ".jpg",
+                    ".ico",
+                    ".jpeg",
+                    ".config",
+                    ".eot",
+                    ".woff",
+                    ".woff2"
+                };
+            }
+
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -50,7 +110,7 @@ namespace RockWeb.Blocks.Utility
             fuprFileUpload.RootFolder = GetRootFolderPath();
 
             string submitScriptFormat = @"
-    // include the selected folder in the post to ~/FileUploader.ashx    
+    // include the selected folder in the post to ~/FileUploader.ashx
     var selectedFolderPath = $('#{0}').val();
     data.formData = {{ folderPath: selectedFolderPath }};
 ";
@@ -59,7 +119,7 @@ namespace RockWeb.Blocks.Utility
             fuprFileUpload.SubmitFunctionClientScript = string.Format( submitScriptFormat, hfSelectedFolder.ClientID );
 
             string doneScriptFormat = @"
-    // reselect the node to refresh the list of files    
+    // reselect the node to refresh the list of files
     var selectedFolderPath = $('#{0}').val();
     var foldersTree = $('.js-folder-treeview .treeview').data('rockTree');
     foldersTree.$el.trigger('rockTree:selected', selectedFolderPath);
@@ -95,7 +155,7 @@ namespace RockWeb.Blocks.Utility
                 pnlModalHeader.Visible = PageParameter( "ModalMode" ).AsBoolean();
                 pnlModalFooterActions.Visible = PageParameter( "ModalMode" ).AsBoolean();
                 lTitle.Text = PageParameter( "Title" );
-                
+
                 BuildFolderTreeView();
             }
 
@@ -109,13 +169,13 @@ namespace RockWeb.Blocks.Utility
                     string eventParam = nameValue[0];
                     if ( eventParam.Equals( "folder-selected" ) )
                     {
-                        string folderPath = nameValue[1];
+                        string folderPath = nameValue[1].Replace( @"/", @"\" );
                         hfSelectedFolder.Value = folderPath;
                         ListFolderContents( folderPath );
                     }
                     else if ( eventParam.Equals( "file-delete" ) )
                     {
-                        string fileRelativePath = nameValue[1];
+                        string fileRelativePath = nameValue[1].Replace( @"/", @"\" );
                         DeleteFile( fileRelativePath );
                     }
                 }
@@ -175,7 +235,7 @@ namespace RockWeb.Blocks.Utility
         /// <returns></returns>
         private string GetRootFolderPath()
         {
-            //// the rootFolder param is encrypted to help prevent the web user from specifying a folder 
+            //// the rootFolder param is encrypted to help prevent the web user from specifying a folder
             //// and must be provided to help prevent directly browsing to this page and getting access to the filesystem
             //// we'll return Http 400 if someone is attempting to get to this page directly without a valid (encrypted) rootFolder specified
             string rootFolderEncrypted = PageParameter( "rootFolder" );
@@ -196,7 +256,7 @@ namespace RockWeb.Blocks.Utility
             }
             else
             {
-                // respond with BadRequest if they did not specify rootFolder 
+                // respond with BadRequest if they did not specify rootFolder
                 Response.StatusCode = 400;
                 Response.End();
                 return null;
@@ -311,9 +371,23 @@ namespace RockWeb.Blocks.Utility
                 string physicalRootFolder = this.MapPath( rootFolder );
                 string physicalFolder = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( '/', '\\' ) );
 
-                var sb = new StringBuilder();
-                sb.AppendLine( "<ul class='js-rocklist rocklist'>" );
+                bool isRestricted = false;
+                bool isUploadRestricted = false;
 
+                if ( RestrictedFolders.Contains( relativeFolderPath.TrimStart( '/', '\\' ), StringComparer.OrdinalIgnoreCase ) )
+                {
+                    isRestricted = true;
+                }
+
+
+                if ( UploadRestrictedFolders.Any( a => relativeFolderPath.TrimStart( '/', '\\' ).StartsWith( a, StringComparison.OrdinalIgnoreCase ) ) )
+                {
+                    isUploadRestricted = true;
+                }
+
+                hfIsRestrictedFolder.Value = isRestricted.ToString();
+                hfIsUploadRestrictedFolder.Value = isUploadRestricted.ToString();
+                
                 string imageFileTypeWhiteList = PageParameter( "imageFileTypeWhiteList" );
                 if ( string.IsNullOrWhiteSpace( imageFileTypeWhiteList ) )
                 {
@@ -330,20 +404,50 @@ namespace RockWeb.Blocks.Utility
                     fileList.AddRange( Directory.GetFiles( physicalFolder, filter ).OrderBy( a => a ).ToList() );
                 }
 
-                nbNoFilesInfo.Visible = !fileList.Any();
+                lbNoFilesFound.Visible = !fileList.Any();
+                if ( !fileList.Any() )
+                {
+                    lblFiles.Text = string.Empty;
+                    return;
+                }
+
+                var sb = new StringBuilder();
+                sb.AppendLine( "<ul class='js-rocklist rocklist'>" );
+
+                string editFilePage = PageParameter( "editFilePage" );
 
                 foreach ( var filePath in fileList )
                 {
+                    string ext = Path.GetExtension( filePath );
+                    string fileName = Path.GetFileName( filePath );
+                    string relativeFilePath = filePath.Replace( physicalRootFolder, string.Empty );
+                    string imagePath = rootFolder.TrimEnd( '/', '\\' ) + "/" + relativeFilePath.TrimStart( '/', '\\' ).Replace( "\\", "/" );
+                    string imageUrl = this.ResolveUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( imagePath ) );
+
+                    string editHtml = string.Empty;
+                    if ( !RestrictedFileExtension.Any( a => ext.Equals( a, StringComparison.OrdinalIgnoreCase ) ) && !string.IsNullOrWhiteSpace( editFilePage ) )
+                    {
+
+                        string url = editFilePage + "?RelativeFilePath=" + HttpUtility.UrlEncode( imagePath );
+
+                        editHtml = string.Format( @"
+                        <a data-href='{0}' title='edit' class='btn btn-xs btn-square btn-default js-edit-file action'>
+                        <i class='fa fa-pencil'></i>
+                        </a>
+                       ", url );
+                    }
+
                     string nameHtmlFormat = @"
 <li class='js-rocklist-item rocklist-item' data-id='{0}'>
     <div class='rollover-container'>
         <div class='rollover-item actions'>
-            <a title='delete' class='btn btn-xs btn-danger js-delete-file action'>
+            <a title='delete' class='btn btn-xs btn-square btn-danger js-delete-file action'>
                 <i class='fa fa-times'></i>
-            </a> 
-            <a href='{3}' target='_blank' title='download' class='btn btn-xs btn-default js-download-file action'>
+            </a>
+            <a href='{3}' target='_blank' title='download' class='btn btn-xs btn-square btn-default js-download-file action'>
                 <i class='fa fa-download'></i>
             </a>
+            {4}
         </div>
 
         <img src='{1}' class='file-browser-image' />
@@ -353,21 +457,17 @@ namespace RockWeb.Blocks.Utility
 </li>
 ";
 
-                    string fileName = Path.GetFileName( filePath );
-                    string relativeFilePath = filePath.Replace( physicalRootFolder, string.Empty );
-                    string imagePath = rootFolder.TrimEnd( '/', '\\' ) + "/" + relativeFilePath.TrimStart( '/', '\\' ).Replace( "\\", "/" );
-                    string imageUrl = this.ResolveUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( imagePath ) );
-
                     // put the file timestamp as part of the url to that changed files are loaded from the server instead of the browser cache
                     var fileDateTime = File.GetLastWriteTimeUtc( filePath );
                     imageUrl += "&timeStamp=" + fileDateTime.Ticks.ToString();
-                    
+
                     string nameHtml = string.Format(
                         nameHtmlFormat,
                         HttpUtility.HtmlEncode( relativeFilePath ),
                         imageUrl,
                         fileName,
-                        HttpUtility.HtmlEncode( this.ResolveUrl( imagePath ) ) );
+                        HttpUtility.HtmlEncode( this.ResolveUrl( imagePath ) ),
+                        editHtml );
 
                     sb.AppendLine( nameHtml );
                 }
@@ -447,6 +547,11 @@ namespace RockWeb.Blocks.Utility
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDeleteFolder_Click( object sender, EventArgs e )
         {
+            if ( string.IsNullOrWhiteSpace( hfSelectedFolder.Value ) )
+            {
+                return;
+            }
+
             try
             {
                 string selectedPhysicalFolder = GetSelectedPhysicalFolder();
@@ -475,7 +580,11 @@ namespace RockWeb.Blocks.Utility
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRenameFolder_Click( object sender, EventArgs e )
         {
-            tbOrigFolderName.Text = hfSelectedFolder.Value;
+            if ( string.IsNullOrWhiteSpace( hfSelectedFolder.Value ) )
+            {
+                return;
+            }
+            tbOrigFolderName.Description = hfSelectedFolder.Value;
             tbRenameFolderName.PrependText = Path.GetDirectoryName( hfSelectedFolder.Value ) + "\\";
             tbRenameFolderName.Text = string.Empty;
 
@@ -488,6 +597,21 @@ namespace RockWeb.Blocks.Utility
         }
 
         /// <summary>
+        /// Handles the Click event of the lbArchive control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbArchive_Click( object sender, EventArgs e )
+        {
+            if ( string.IsNullOrWhiteSpace( hfSelectedFolder.Value ) )
+            {
+                return;
+            }
+
+            mdArchive.Show();
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbMoveFolder control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -497,9 +621,14 @@ namespace RockWeb.Blocks.Utility
             string physicalRootFolder = this.Request.MapPath( GetRootFolderPath() );
             var folders = GetRecursiveFolders( physicalRootFolder, physicalRootFolder );
 
+            if ( string.IsNullOrWhiteSpace( hfSelectedFolder.Value ) )
+            {
+                return;
+            }
+
             if ( folders != null )
             {
-                tbMoveOrigFolderName.Text = hfSelectedFolder.Value;
+                tbMoveOrigFolderName.Description = hfSelectedFolder.Value;
                 var currentFolder = Path.GetDirectoryName( hfSelectedFolder.Value );
 
                 ddlMoveFolderTarget.Items.Clear();
@@ -596,6 +725,60 @@ namespace RockWeb.Blocks.Utility
                 string relativeFolderPath = hfSelectedFolder.Value;
                 this.ShowErrorMessage( ex, "An error occurred when attempting to rename folder " + relativeFolderPath );
             }
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdArchive control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdArchive_SaveClick( object sender, EventArgs e )
+        {
+            mdArchive.Hide();
+            try
+            {
+                var physicalZipFile = this.Request.MapPath( fupZipUpload.UploadedContentFilePath );
+                if ( File.Exists( physicalZipFile ) )
+                {
+                    string selectedPhysicalFolder = GetSelectedPhysicalFolder();
+                    FileInfo fileInfo = new FileInfo( physicalZipFile );
+                    if ( fileInfo.Extension.Equals( ".zip", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        using ( ZipArchive archive = ZipFile.OpenRead( physicalZipFile ) )
+                        {
+                            foreach ( ZipArchiveEntry file in archive.Entries )
+                            {
+                                string completeFileName = Path.Combine( selectedPhysicalFolder, file.FullName );
+                                if ( file.Name == "" )
+                                {// Assuming Empty for Directory
+                                    Directory.CreateDirectory( Path.GetDirectoryName( completeFileName ) );
+                                    continue;
+                                }
+                                file.ExtractToFile( completeFileName, true );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        nbErrorMessage.Text = "Invalid File Uploaded.";
+                        nbErrorMessage.Visible = true;
+                    }
+                }
+                else
+                {
+                    nbErrorMessage.Text = "Error Uploading the File.";
+                    nbErrorMessage.Visible = true;
+                }
+
+                File.Delete( physicalZipFile );
+                BuildFolderTreeView();
+            }
+            catch ( Exception ex )
+            {
+                string relativeFolderPath = hfSelectedFolder.Value;
+                this.ShowErrorMessage( ex, "An error occurred when attempting to rename folder " + relativeFolderPath );
+            }
+
         }
 
         /// <summary>
