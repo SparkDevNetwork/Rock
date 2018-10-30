@@ -244,6 +244,8 @@ achieve our mission.  We are so grateful for your commitment.
                     if ( page != null )
                     {
                         page.PageNavigate += page_PageNavigate;
+                        page.AddScriptLink( "~/Scripts/moment.min.js", false );
+                        page.AddScriptLink( "~/Scripts/moment-with-locales.min.js", false );
                     }
 
                     FluidLayout = GetAttributeValue( "LayoutStyle" ) == "Fluid";
@@ -1375,15 +1377,15 @@ achieve our mission.  We are so grateful for your commitment.
 
                 // Set date to tomorrow if it is equal or less than today's date
                 var $dateInput = $when.find('input');
-                var dt = new Date(Date.parse($dateInput.val()));
-                var curr = new Date();
+                var locale = window.navigator.userLanguage || window.navigator.language;
+                moment.locale(locale);
+                var dt = moment($dateInput.val(), 'l');
+                var curr = moment();
                 if ( (dt-curr) <= 0 ) {{
-                    curr.setDate(curr.getDate() + 1);
-                    var dd = curr.getDate();
-                    var mm = curr.getMonth()+1;
-                    var yy = curr.getFullYear();
-                    $dateInput.val(mm+'/'+dd+'/'+yy);
-                    $dateInput.data('datePicker').value(mm+'/'+dd+'/'+yy);
+                    curr = curr.add(1, 'day');
+
+                    $dateInput.val(curr.format('l'));
+                    //$dateInput.data('datePicker').value(curr.format('l'));
                 }}
             }};
         }});

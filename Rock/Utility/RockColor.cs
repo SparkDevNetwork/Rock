@@ -296,7 +296,7 @@ namespace Rock.Utility
         /// <summary>
         /// Initializes a new instance of the <see cref="RockColor" /> class.
         /// </summary>
-        /// <param name="color">The color.</param>
+        /// <param name="color">The color in hexidecimal or rgba format.</param>
         public RockColor( string color )
         {
             // #ee7625
