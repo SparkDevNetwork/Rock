@@ -203,27 +203,31 @@ namespace Rock.Model
         /// <summary>
         /// Raw question data with code as key.
         /// </summary>
-        private static Dictionary<Guid, SpiritalGift> constructData = new Dictionary<Guid, SpiritalGift>()
+        private static Dictionary<Guid, SpiritualGift> constructData = new Dictionary<Guid, SpiritualGift>()
         {
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_ADMINISTRATION.AsGuid(),  new SpiritalGift(6.722,3.647, new List<string>(){"C6","C18","C94","C99","C102" }) },
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_APOSTLESHIP.AsGuid(), new SpiritalGift(8.377, 3.947,  new List<string>(){"C5","C8","C26","C56","C96"}) },
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_DISCERNMENT.AsGuid(), new SpiritalGift(6.586,3.853, new List<string>(){"C1","C20","C51","C76","C109"}) },
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_ENCOURAGEMENT.AsGuid(), new SpiritalGift(5.960, 3.653, new List<string>(){"C59","C63","C75","C78","C111"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_EVANGELISM.AsGuid(), new SpiritalGift(11.173,4.484, new List<string>(){"C80","C112","C114","C117","C118"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_FAITH.AsGuid(), new SpiritalGift(7.130,3.677, new List<string>(){"C42","C57","C106","C108","C113"}) },
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_GIVING.AsGuid(), new SpiritalGift(6.210,3.548, new List<string>(){"C50","C71","C83","C86","C101"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_HELPS.AsGuid(), new SpiritalGift(5.377,3.028, new List<string>(){"C9","C39","C70","C81","C103"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_HOSPITALITY.AsGuid(),new SpiritalGift(11.211, 4.800, new List<string>(){"C12","C16","C30","C66","C105"}) },
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_KNOWLEDGE.AsGuid(),new SpiritalGift(8.753,4.095, new List<string>(){"C64","C69","C72","C85","C119"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_LEADERSHIP.AsGuid(),new SpiritalGift(7.483,4.081, new List<string>(){"C25","C29","C47","C74","C116"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_MERCY.AsGuid(),new SpiritalGift(6.774,3.664, new List<string>(){"C4","C31","C67","C90","C100"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_PASTOR_SHEPHERD.AsGuid(),new SpiritalGift(7.227,3.248, new List<string>(){"C13","C14","C15","C22","C61"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_PASTOR_TEACHER.AsGuid(), new SpiritalGift(8.249,3.612, new List<string>(){"C65","C68","C88","C89","C92"}) },
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_PROPHECY.AsGuid(), new SpiritalGift(8.184,3.682, new List<string>(){"C7","C19","C35","C41","C60"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_TEACHING.AsGuid(),new SpiritalGift(8.757,4.227, new List<string>(){"C17","C33","C37","C45","C77"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_WISDOM.AsGuid(), new SpiritalGift(7.619,3.712, new List<string>(){"C3","C21","C58","C62","C87"} )}
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_ADMINISTRATION.AsGuid(),  new SpiritualGift(6.722,3.647, new List<string>(){"C6","C18","C94","C99","C102" }) },
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_APOSTLESHIP.AsGuid(), new SpiritualGift(8.377, 3.947,  new List<string>(){"C5","C8","C26","C56","C96"}) },
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_DISCERNMENT.AsGuid(), new SpiritualGift(6.586,3.853, new List<string>(){"C1","C20","C51","C76","C109"}) },
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_ENCOURAGEMENT.AsGuid(), new SpiritualGift(5.960, 3.653, new List<string>(){"C59","C63","C75","C78","C111"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_EVANGELISM.AsGuid(), new SpiritualGift(11.173,4.484, new List<string>(){"C80","C112","C114","C117","C118"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_FAITH.AsGuid(), new SpiritualGift(7.130,3.677, new List<string>(){"C42","C57","C106","C108","C113"}) },
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_GIVING.AsGuid(), new SpiritualGift(6.210,3.548, new List<string>(){"C50","C71","C83","C86","C101"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_HELPS.AsGuid(), new SpiritualGift(5.377,3.028, new List<string>(){"C9","C39","C70","C81","C103"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_HOSPITALITY.AsGuid(),new SpiritualGift(11.211, 4.800, new List<string>(){"C12","C16","C30","C66","C105"}) },
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_KNOWLEDGE.AsGuid(),new SpiritualGift(8.753,4.095, new List<string>(){"C64","C69","C72","C85","C119"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_LEADERSHIP.AsGuid(),new SpiritualGift(7.483,4.081, new List<string>(){"C25","C29","C47","C74","C116"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_MERCY.AsGuid(),new SpiritualGift(6.774,3.664, new List<string>(){"C4","C31","C67","C90","C100"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_PASTOR_SHEPHERD.AsGuid(),new SpiritualGift(7.227,3.248, new List<string>(){"C13","C14","C15","C22","C61"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_PASTOR_TEACHER.AsGuid(), new SpiritualGift(8.249,3.612, new List<string>(){"C65","C68","C88","C89","C92"}) },
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_PROPHECY.AsGuid(), new SpiritualGift(8.184,3.682, new List<string>(){"C7","C19","C35","C41","C60"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_TEACHING.AsGuid(),new SpiritualGift(8.757,4.227, new List<string>(){"C17","C33","C37","C45","C77"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_WISDOM.AsGuid(), new SpiritualGift(7.619,3.712, new List<string>(){"C3","C21","C58","C62","C87"} )}
         };
 
+        /// <summary>
+        /// Gets the questions.
+        /// </summary>
+        /// <returns></returns>
         public static Dictionary<string, string> GetQuestions()
         {
             Random r = new Random();
@@ -267,8 +271,8 @@ namespace Rock.Model
         /// <summary>
         /// Saves Assessment results to a Person's PersonProperties
         /// </summary>
-        /// <param name="person"></param>
-        /// <param name="personalityType">One or two letters of DISC that represents the personality.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="assessmentResults">The assessment results.</param>
         static public void SaveAssessmentResults( Person person, AssessmentResults assessmentResults )
         {
             person.LoadAttributes();
@@ -298,29 +302,81 @@ namespace Rock.Model
             return savedScores;
         }
 
-
         /// <summary>
         /// The AssessmentResults struct used to return the final assessment scores
         /// </summary>
         public class AssessmentResults
         {
+            /// <summary>
+            /// Gets or sets the dominant gifts.
+            /// </summary>
+            /// <value>
+            /// The dominant gifts.
+            /// </value>
             public List<Guid> DominantGifts { get; set; }
+
+            /// <summary>
+            /// Gets or sets the supportive gifts.
+            /// </summary>
+            /// <value>
+            /// The supportive gifts.
+            /// </value>
             public List<Guid> SupportiveGifts { get; set; }
+
+            /// <summary>
+            /// Gets or sets the other gifts.
+            /// </summary>
+            /// <value>
+            /// The other gifts.
+            /// </value>
             public List<Guid> OtherGifts { get; set; }
+
+            /// <summary>
+            /// The last save date
+            /// </summary>
             public DateTime? LastSaveDate;
         }
 
-        public class SpiritalGift
+        /// <summary>
+        /// 
+        /// </summary>
+        public class SpiritualGift
         {
-            public SpiritalGift( double mean, double standardDeviation, List<string> constructs )
+            /// <summary>
+            /// Initializes a new instance of the <see cref="SpiritualGift"/> class.
+            /// </summary>
+            /// <param name="mean">The mean.</param>
+            /// <param name="standardDeviation">The standard deviation.</param>
+            /// <param name="constructs">The constructs.</param>
+            public SpiritualGift( double mean, double standardDeviation, List<string> constructs )
             {
                 Mean = mean;
                 StandardDeviation = standardDeviation;
                 Constructs = constructs;
             }
 
+            /// <summary>
+            /// Gets or sets the mean.
+            /// </summary>
+            /// <value>
+            /// The mean.
+            /// </value>
             public double Mean { get; set; }
+
+            /// <summary>
+            /// Gets or sets the standard deviation.
+            /// </summary>
+            /// <value>
+            /// The standard deviation.
+            /// </value>
             public double StandardDeviation { get; set; }
+
+            /// <summary>
+            /// Gets or sets the constructs.
+            /// </summary>
+            /// <value>
+            /// The constructs.
+            /// </value>
             public List<string> Constructs { get; set; }
         }
     }

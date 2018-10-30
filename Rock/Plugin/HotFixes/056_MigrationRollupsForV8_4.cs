@@ -39,7 +39,7 @@ namespace Rock.Plugin.HotFixes
             //FixShortcodeFunctionality();
             //AddDefaultBackgroundCheckSystemSetting();
             //EnableNCOA();
-            FixLavaIfStatementIssues();
+            //FixLavaIfStatementIssues();
         }
 
 

@@ -170,7 +170,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlMVRJurisdication" runat="server" Label="MVR Jurisdication Code" ValidationGroup="Package" Help="Select an MVR Jurisdiction code to request a Motor Vehicle Record search." />
+                        <Rock:DefinedValuePicker ID="dvpMVRJurisdication" runat="server" Label="MVR Jurisdication Code" ValidationGroup="Package" Help="Select an MVR Jurisdiction code to request a Motor Vehicle Record search." />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbSendStateMVR" runat="server" Label="Use Home Address State" Text="Yes" ValidationGroup="Package" Help="If the person's home address includes a state, use that instead of state from jurisdication code." />

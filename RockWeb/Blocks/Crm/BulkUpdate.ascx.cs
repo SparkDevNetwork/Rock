@@ -88,19 +88,19 @@ namespace RockWeb.Blocks.Crm
 
             var personEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
 
-            ddlTitle.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
-            ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ) );
-            ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ) );
-            ddlSuffix.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
-            ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
-            ddlInactiveReason.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ) );
-            ddlReviewReason.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_REVIEW_REASON ) ), true );
+            dvpTitle.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ).Id;
+            dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ).Id;
+            dvpMaritalStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ).Id;
+            dvpSuffix.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ).Id;
+            dvpRecordStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ).Id;
+            dvpInactiveReason.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ).Id;
+            dvpReviewReason.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_REVIEW_REASON ) ).Id;
 
             _canEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( "EditConnectionStatus" );
-            ddlConnectionStatus.Visible = _canEditConnectionStatus;
+            dvpConnectionStatus.Visible = _canEditConnectionStatus;
 
             _canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
-            ddlRecordStatus.Visible = _canEditRecordStatus;
+            dvpRecordStatus.Visible = _canEditRecordStatus;
 
             rlbWorkFlowType.Items.Clear();
             var guidList = GetAttributeValue( "WorkflowTypes" ).SplitDelimitedValues().AsGuidList();
@@ -451,32 +451,32 @@ namespace RockWeb.Blocks.Crm
 
                 var changes = new List<string>();
 
-                if ( SelectedFields.Contains( ddlTitle.ClientID ) )
+                if ( SelectedFields.Contains( dvpTitle.ClientID ) )
                 {
-                    int? newTitleId = ddlTitle.SelectedValueAsInt();
+                    int? newTitleId = dvpTitle.SelectedValueAsInt();
                     EvaluateChange( changes, "Title", DefinedValueCache.GetName( newTitleId ) );
                 }
 
-                if ( SelectedFields.Contains( ddlSuffix.ClientID ) )
+                if ( SelectedFields.Contains( dvpSuffix.ClientID ) )
                 {
-                    int? newSuffixId = ddlSuffix.SelectedValueAsInt();
+                    int? newSuffixId = dvpSuffix.SelectedValueAsInt();
                     EvaluateChange( changes, "Suffix", DefinedValueCache.GetName( newSuffixId ) );
                 }
 
-                if ( SelectedFields.Contains( ddlConnectionStatus.ClientID ) && _canEditConnectionStatus )
+                if ( SelectedFields.Contains( dvpConnectionStatus.ClientID ) && _canEditConnectionStatus )
                 {
-                    int? newConnectionStatusId = ddlConnectionStatus.SelectedValueAsInt();
+                    int? newConnectionStatusId = dvpConnectionStatus.SelectedValueAsInt();
                     EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( newConnectionStatusId ) );
                 }
 
-                if ( SelectedFields.Contains( ddlRecordStatus.ClientID ) && _canEditRecordStatus )
+                if ( SelectedFields.Contains( dvpRecordStatus.ClientID ) && _canEditRecordStatus )
                 {
-                    int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
+                    int? newRecordStatusId = dvpRecordStatus.SelectedValueAsInt();
                     EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( newRecordStatusId ) );
 
                     if ( newRecordStatusId.HasValue && newRecordStatusId.Value == inactiveStatusId )
                     {
-                        int? newInactiveReasonId = ddlInactiveReason.SelectedValueAsInt();
+                        int? newInactiveReasonId = dvpInactiveReason.SelectedValueAsInt();
                         EvaluateChange( changes, "Inactive Reason", DefinedValueCache.GetName( newInactiveReasonId ) );
 
                         string newInactiveReasonNote = tbInactiveReasonNote.Text;
@@ -493,9 +493,9 @@ namespace RockWeb.Blocks.Crm
                     EvaluateChange( changes, "Gender", newGender );
                 }
 
-                if ( SelectedFields.Contains( ddlMaritalStatus.ClientID ) )
+                if ( SelectedFields.Contains( dvpMaritalStatus.ClientID ) )
                 {
-                    int? newMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
+                    int? newMaritalStatusId = dvpMaritalStatus.SelectedValueAsInt();
                     EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( newMaritalStatusId ) );
                 }
 
@@ -543,9 +543,9 @@ namespace RockWeb.Blocks.Crm
                     EvaluateChange( changes, "System Note", newSystemNote );
                 }
 
-                if ( SelectedFields.Contains( ddlReviewReason.ClientID ) )
+                if ( SelectedFields.Contains( dvpReviewReason.ClientID ) )
                 {
-                    int? newReviewReason = ddlReviewReason.SelectedValueAsInt();
+                    int? newReviewReason = dvpReviewReason.SelectedValueAsInt();
                     EvaluateChange( changes, "Review Reason", DefinedValueCache.GetName( newReviewReason ) );
                 }
 
@@ -778,6 +778,8 @@ namespace RockWeb.Blocks.Crm
             pnlConfirm.Visible = false;
         }
 
+        private long _errorCount;
+
         /// <summary>
         /// Handles the Click event of the btnConfirm control.
         /// </summary>
@@ -787,6 +789,7 @@ namespace RockWeb.Blocks.Crm
         {
             if ( Page.IsValid )
             {
+                _errorCount = 0;
                 var individuals = Individuals.ToList();
 
                 var task = new Task( () =>
@@ -864,8 +867,17 @@ namespace RockWeb.Blocks.Crm
                     }
                     else
                     {
-                        var status = string.Format( "{0} {1} successfully updated.",
-                            Individuals.Count().ToString( "N0" ), ( Individuals.Count() > 1 ? "people were" : "person was" ) );
+                        string status;
+                        if ( _errorCount == 0 )
+                        {
+                            status = string.Format( "{0} {1} successfully updated.",
+                                Individuals.Count().ToString( "N0" ), ( Individuals.Count() > 1 ? "people were" : "person was" ) );
+                        }
+                        else
+                        {
+                            status = string.Format( "{0} {1} updated with {2} error(s). Please look in the exception log for more details.",
+                                Individuals.Count().ToString( "N0" ), ( Individuals.Count() > 1 ? "people were" : "person was" ), _errorCount );
+                        }
 
                         HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateStatus( status.EncodeHtml(), true );
                     }
@@ -935,17 +947,18 @@ namespace RockWeb.Blocks.Crm
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
             var ids = individuals.Select( i => i.PersonId ).ToList();
+            //int errorCount = 0;
 
             #region Individual Details Updates
 
-            int? newTitleId = ddlTitle.SelectedValueAsInt();
-            int? newSuffixId = ddlSuffix.SelectedValueAsInt();
-            int? newConnectionStatusId = ddlConnectionStatus.SelectedValueAsInt();
-            int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
-            int? newInactiveReasonId = ddlInactiveReason.SelectedValueAsInt();
+            int? newTitleId = dvpTitle.SelectedValueAsInt();
+            int? newSuffixId = dvpSuffix.SelectedValueAsInt();
+            int? newConnectionStatusId = dvpConnectionStatus.SelectedValueAsInt();
+            int? newRecordStatusId = dvpRecordStatus.SelectedValueAsInt();
+            int? newInactiveReasonId = dvpInactiveReason.SelectedValueAsInt();
             string newInactiveReasonNote = tbInactiveReasonNote.Text;
             Gender newGender = ddlGender.SelectedValue.ConvertToEnum<Gender>();
-            int? newMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
+            int? newMaritalStatusId = dvpMaritalStatus.SelectedValueAsInt();
 
             int? newGraduationYear = null;
             if ( ypGraduation.SelectedYear.HasValue )
@@ -966,7 +979,7 @@ namespace RockWeb.Blocks.Crm
 
             string newEmailNote = tbEmailNote.Text;
 
-            int? newReviewReason = ddlReviewReason.SelectedValueAsInt();
+            int? newReviewReason = dvpReviewReason.SelectedValueAsInt();
             string newSystemNote = tbSystemNote.Text;
             string newReviewReasonNote = tbReviewReasonNote.Text;
 
@@ -975,22 +988,22 @@ namespace RockWeb.Blocks.Crm
             var people = personService.Queryable( true ).Where( p => ids.Contains( p.Id ) ).ToList();
             foreach ( var person in people )
             {
-                if ( SelectedFields.Contains( ddlTitle.ClientID ) )
+                if ( SelectedFields.Contains( dvpTitle.ClientID ) )
                 {
                     person.TitleValueId = newTitleId;
                 }
 
-                if ( SelectedFields.Contains( ddlSuffix.ClientID ) )
+                if ( SelectedFields.Contains( dvpSuffix.ClientID ) )
                 {
                     person.SuffixValueId = newSuffixId;
                 }
 
-                if ( SelectedFields.Contains( ddlConnectionStatus.ClientID ) && _canEditConnectionStatus )
+                if ( SelectedFields.Contains( dvpConnectionStatus.ClientID ) && _canEditConnectionStatus )
                 {
                     person.ConnectionStatusValueId = newConnectionStatusId;
                 }
 
-                if ( SelectedFields.Contains( ddlRecordStatus.ClientID )  && _canEditRecordStatus )
+                if ( SelectedFields.Contains( dvpRecordStatus.ClientID )  && _canEditRecordStatus )
                 {
                     person.RecordStatusValueId = newRecordStatusId;
 
@@ -1010,7 +1023,7 @@ namespace RockWeb.Blocks.Crm
                     person.Gender = newGender;
                 }
 
-                if ( SelectedFields.Contains( ddlMaritalStatus.ClientID ) )
+                if ( SelectedFields.Contains( dvpMaritalStatus.ClientID ) )
                 {
                     person.MaritalStatusValueId = newMaritalStatusId;
                 }
@@ -1050,7 +1063,7 @@ namespace RockWeb.Blocks.Crm
                     person.SystemNote = newSystemNote;
                 }
 
-                if ( SelectedFields.Contains( ddlReviewReason.ClientID ) )
+                if ( SelectedFields.Contains( dvpReviewReason.ClientID ) )
                 {
                     person.ReviewReasonValueId = newReviewReason;
                 }
@@ -1303,6 +1316,8 @@ namespace RockWeb.Blocks.Crm
                     string action = ddlGroupAction.SelectedValue;
                     if ( action == "Remove" )
                     {
+                        var groupTypeCache = GroupTypeCache.Get( group.GroupTypeId );
+
                         var existingIds = existingMembersQuery.Select( gm => gm.Id ).Distinct().ToList();
 
                         Action<RockContext, List<int>> deleteAction = ( context, items ) =>
@@ -1312,16 +1327,47 @@ namespace RockWeb.Blocks.Crm
 
                             var batchGroupMembers = groupMemberService.Queryable( true ).Where( x => items.Contains( x.Id ) ).ToList();
 
-                            // also unregister them from any registration groups
-                            RegistrationRegistrantService registrantService = new RegistrationRegistrantService( context );
-                            foreach ( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId.HasValue && items.Contains( r.GroupMemberId.Value ) ) )
+                            GroupMemberHistoricalService groupMemberHistoricalService = new GroupMemberHistoricalService( context );
+
+                            foreach( GroupMember groupMember in batchGroupMembers )
                             {
-                                registrant.GroupMemberId = null;
+                                try
+                                {
+                                    bool archive = false;
+                                    if ( groupTypeCache.EnableGroupHistory == true && groupMemberHistoricalService.Queryable().Any( a => a.GroupMemberId == groupMember.Id ) )
+                                    {
+                                        // if the group has GroupHistory enabled, and this group member has group member history snapshots, they were prompted to Archive
+                                        archive = true;
+                                    }
+                                    else
+                                    {
+                                        string errorMessage;
+                                        if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )
+                                        {
+                                            ExceptionLogService.LogException( new Exception( string.Format( "Error removing person {0} from group {1}: ", groupMember.Person.FullName, group.Name ) + errorMessage ), null );
+                                            Interlocked.Increment( ref _errorCount );
+                                            continue;
+                                        }
+                                    }
+
+                                    if ( archive )
+                                    {
+                                        // NOTE: Delete will AutoArchive, but since we know that we need to archive, we can call .Archive directly
+                                        groupMemberService.Archive( groupMember, this.CurrentPersonAliasId, true );
+                                    }
+                                    else
+                                    {
+                                        groupMemberService.Delete( groupMember, true );
+                                    }
+
+                                    context.SaveChanges();
+                                }
+                                catch (Exception ex)
+                                {
+                                    ExceptionLogService.LogException( new Exception( string.Format("Error removing person {0} from group {1}", groupMember.Person.FullName, group.Name), ex ), null );
+                                    Interlocked.Increment( ref _errorCount );
+                                }
                             }
-
-                            groupMemberService.DeleteRange( batchGroupMembers );
-
-                            context.SaveChanges();
                         };
 
                         ProcessBatchUpdate( existingIds, 50, deleteAction );
@@ -1546,8 +1592,8 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            ddlInactiveReason.Visible = ( ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
-            tbInactiveReasonNote.Visible = ddlInactiveReason.Visible;
+            dvpInactiveReason.Visible = ( dvpRecordStatus.SelectedValueAsInt() == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
+            tbInactiveReasonNote.Visible = dvpInactiveReason.Visible;
         }
 
         /// <summary>
@@ -1609,23 +1655,23 @@ namespace RockWeb.Blocks.Crm
 
         private void SetControlSelection()
         {
-            SetControlSelection( ddlTitle, "Title" );
-            SetControlSelection( ddlConnectionStatus, "Connection Status", _canEditConnectionStatus );
+            SetControlSelection( dvpTitle, "Title" );
+            SetControlSelection( dvpConnectionStatus, "Connection Status", _canEditConnectionStatus );
             SetControlSelection( ddlGender, "Gender" );
-            SetControlSelection( ddlMaritalStatus, "Marital Status" );
+            SetControlSelection( dvpMaritalStatus, "Marital Status" );
             SetControlSelection( ddlGradePicker, GlobalAttributesCache.Get().GetValue( "core.GradeLabel" ) );
             ypGraduation.Enabled = ddlGradePicker.Enabled;
 
             SetControlSelection( cpCampus, "Campus" );
             SetControlSelection( ddlCommunicationPreference, "Communication Preference" );
-            SetControlSelection( ddlSuffix, "Suffix" );
-            SetControlSelection( ddlRecordStatus, "Record Status", _canEditRecordStatus );
+            SetControlSelection( dvpSuffix, "Suffix" );
+            SetControlSelection( dvpRecordStatus, "Record Status", _canEditRecordStatus );
             SetControlSelection( ddlIsEmailActive, "Email Status" );
             SetControlSelection( ddlEmailPreference, "Email Preference" );
             SetControlSelection( tbEmailNote, "Email Note" );
             SetControlSelection( ddlFollow, "Follow" );
             SetControlSelection( tbSystemNote, "System Note" );
-            SetControlSelection( ddlReviewReason, "Review Reason" );
+            SetControlSelection( dvpReviewReason, "Review Reason" );
             SetControlSelection( tbReviewReasonNote, "Review Reason Note" );
         }
 

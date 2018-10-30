@@ -355,6 +355,14 @@ namespace Rock.Field.Types
                 // should be either "Contains" or "Not Contains"
                 ComparisonType comparisonType = filterValues[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains );
 
+                // No comparison value was specified, so we can filter if the Comparison Type using no value still makes sense
+                if ( ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
+                {
+                    // Just checking if IsBlank or IsNotBlank, so let ComparisonExpression do its thing
+                    MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
+                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( string.Empty ) );
+                }
+
                 List<string> selectedValues = filterValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
 
                 foreach ( var selectedValue in selectedValues )

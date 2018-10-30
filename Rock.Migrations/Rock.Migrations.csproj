@@ -120,6 +120,10 @@
     <Compile Include="Migrations\201810161814574_Rollup_1016.Designer.cs">
       <DependentUpon>201810161814574_Rollup_1016.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201810301818354_Rollup_1030.cs" />
+    <Compile Include="Migrations\201810301818354_Rollup_1030.Designer.cs">
+      <DependentUpon>201810301818354_Rollup_1030.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -451,6 +455,9 @@
     <EmbeddedResource Include="Migrations\201810161814574_Rollup_1016.resx">
       <DependentUpon>201810161814574_Rollup_1016.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201810301818354_Rollup_1030.resx">
+      <DependentUpon>201810301818354_Rollup_1030.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
     </EmbeddedResource>
@@ -701,6 +708,9 @@
     </Content>
     <Content Include="Migrations\201810161814574_Rollup_1016_spCrm_FamilyAnalyticsFirstVisitsAttributeUpdate.sql">
       <DependentUpon>201810161814574_Rollup_1016.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201810301818354_Rollup_1030_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>201810301818354_Rollup_1030.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.sql">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

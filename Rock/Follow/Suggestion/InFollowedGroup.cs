@@ -95,7 +95,7 @@ namespace Rock.Follow.Suggestion
                         .Where( m =>
                             m.GroupMemberStatus == GroupMemberStatus.Active &&
                             m.Group != null &&
-                            m.Group.IsActive &&
+                            m.Group.IsActive && !m.Group.IsArchived &&
                             m.Group.GroupType.Guid.Equals( groupTypeGuid.Value ) &&
                             followedGroup.Contains( m.GroupId ) );
 

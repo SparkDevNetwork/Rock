@@ -55,6 +55,15 @@ namespace Rock.Model
                 ValueAsNumeric = value.AsDecimalOrNull()
             };
 
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                using ( var rockContext = new RockContext())
+                {
+                    attributeValue.ValueAsPersonId = new PersonAliasService( rockContext).Queryable().Where( a => a.Guid.Equals( guid.Value ) ).Select( a => a.PersonId).FirstOrDefault();
+                }
+            }
+
             return attributeValue;
         }
 
@@ -583,6 +592,10 @@ namespace Rock.Model
                 if ( entityType?.HasEntityCache() == true )
                 {
                     entityType.FlushCachedItem( this.EntityId.Value );
+                }
+                else if ( cacheAttribute.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Device>())
+                {
+                    Rock.CheckIn.KioskDevice.FlushItem( this.EntityId.Value );
                 }
             }
 
