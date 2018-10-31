@@ -124,6 +124,10 @@
     <Compile Include="Migrations\201810301818354_Rollup_1030.Designer.cs">
       <DependentUpon>201810301818354_Rollup_1030.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201810312001375_MissingPluginMigrations.cs" />
+    <Compile Include="Migrations\201810312001375_MissingPluginMigrations.Designer.cs">
+      <DependentUpon>201810312001375_MissingPluginMigrations.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -457,6 +461,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201810301818354_Rollup_1030.resx">
       <DependentUpon>201810301818354_Rollup_1030.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201810312001375_MissingPluginMigrations.resx">
+      <DependentUpon>201810312001375_MissingPluginMigrations.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
