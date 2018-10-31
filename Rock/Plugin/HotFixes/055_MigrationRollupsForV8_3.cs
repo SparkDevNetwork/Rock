@@ -111,6 +111,7 @@ namespace Rock.Plugin.HotFixes
 
 //<input type=""hidden"" id=""hf-{{ uniqueid }}"" value=""{{ blockContent }}"" />' WHERE [Guid] = '4B6452EF-6FEA-4A66-9FB9-1A7CCE82E7A4'" );
 
+            // This plug-in Migration is intentionally left out of release migrations
 //            // GP: Disable NCOA
 //            Sql( @"DECLARE @entityTypeId int
 //SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '" + Rock.SystemGuid.EntityType.PAGE.AsGuid() + @"')
