@@ -59,8 +59,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.StatementGenerator", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Security.Authentication.Auth0", "Rock.Security.Authentication.Auth0\Rock.Security.Authentication.Auth0.csproj", "{5055F482-72C7-4CC9-8ED0-A77090C777DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.centralaz.SpiritualGifts", "..\rock-spiritual-gifts\com.centralaz.SpiritualGifts.csproj", "{6879E00D-7EBC-406B-A479-84EF816B10B4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cc.newspring.F1", "..\rock-f1\cc.newspring.F1.csproj", "{9F3591C6-451C-4C38-A1D2-6E8B99C81DB4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cc.newspring.CacheBreak", "..\rock-cache-sync\cc.newspring.CacheBreak.csproj", "{9F3591C6-451C-4C38-A1D2-6E8B99C81DA3}"
