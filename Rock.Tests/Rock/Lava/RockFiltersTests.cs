@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Dynamic;
 using System.Linq;
 using DDay.iCal;
 using DDay.iCal.Serialization.iCalendar;
+using DotLiquid;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Rock.Lava;
+using Rock.Model;
 using Subtext.TestLibrary;
 using Xunit;
 
@@ -737,6 +742,339 @@ namespace Rock.Tests.Rock.Lava
         {
             var output = RockFilters.Index( new string[] { "value1", "value2", "value3" }, int.MaxValue );
             Assert.Null( output );
+        }
+
+        #endregion
+
+        #region Sort
+
+        /// <summary>
+        /// For use in Lava -- sort from JSON
+        /// </summary>
+        [Fact]
+        public void Sort_FromJson()
+        {
+            var json = @"[{
+		""Title"": ""Hallelujah!( 6 / 12 / 16 )"",
+        ""StartDateTime"": ""6/12/2016 12:00:00 AM""
+
+    }, {
+		""Title"": ""Are You Dealing With Insecurity? (6/19/16)"",
+		""StartDateTime"": ""6/19/2016 12:00:00 AM""
+
+    }, {
+		""Title"": ""Woman's Infirmity Healed (6/5/16)"",
+		""StartDateTime"": ""6/5/2016 12:00:00 AM""
+
+    }, {
+		""Title"": ""Test new sermon (5/29/16)"",
+		""StartDateTime"": ""5/29/2016 12:00:00 AM""
+
+    }, {
+		""Title"": ""Test new sermon (7/3/16)"",
+		""StartDateTime"": ""7/3/2016 12:00:00 AM""
+
+    }]";
+            var converter = new ExpandoObjectConverter();
+            object input = null;
+            input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) StandardFilters.Sort( input, "StartDateTime" );
+            Assert.Equal( "Test new sermon (5/29/16)", ( ( IDictionary<string, object> ) output.First() )["Title"] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort from JSON
+        /// </summary>
+        [Fact]
+        public void Sort_FromJsonDesc()
+        {
+            var json = @"[{
+		""Title"": ""Hallelujah!( 6/12/16 )"",
+        ""StartDateTime"": ""6/12/2016 12:00:00 AM""
+
+    }, {
+		""Title"": ""Are You Dealing With Insecurity? (6/19/16)"",
+		""StartDateTime"": ""6/19/2016 12:00:00 AM""
+
+    }, {
+		""Title"": ""Woman's Infirmity Healed (6/5/16)"",
+		""StartDateTime"": ""6/5/2016 12:00:00 AM""
+
+    }, {
+		""Title"": ""Test new sermon (5/29/16)"",
+		""StartDateTime"": ""5/29/2016 12:00:00 AM""
+
+    }, {
+		""Title"": ""Test new sermon (7/3/16)"",
+		""StartDateTime"": ""7/3/2016 12:00:00 AM""
+
+    }]";
+            var converter = new ExpandoObjectConverter();
+            object input = null;
+            input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) StandardFilters.Sort( input, "StartDateTime", "desc" );
+            Assert.Equal( "Test new sermon (7/3/16)", ( ( IDictionary<string, object> ) output.First() )["Title"] );
+        }
+
+
+
+
+        /// <summary>
+        /// For use in Lava -- sort by DateTime
+        /// </summary>
+        [Fact]
+        public void Sort_DateTime()
+        {
+            var input = new List<DateTime>
+            {
+                new DateTime().AddDays(1),
+                new DateTime()
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, null );
+            Assert.Equal( new DateTime(), output[0] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort by DateTime desc
+        /// </summary>
+        [Fact]
+        public void Sort_DateTimeDesc()
+        {
+            var input = new List<DateTime>
+            {
+                new DateTime(),
+                new DateTime().AddDays(1),
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, null, "desc" );
+            Assert.Equal( new DateTime().AddDays( 1 ), output[0] );
+        }
+
+
+        /// <summary>
+        /// For use in Lava -- sort by int
+        /// </summary>
+        [Fact]
+        public void Sort_Int()
+        {
+            var input = new List<int> { 2, 1 };
+            var output = ( List<object> ) StandardFilters.Sort( input, null );
+            Assert.Equal( 1, output[0] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort by int
+        /// </summary>
+        [Fact]
+        public void Sort_IntDesc()
+        {
+            var input = new List<int> { 1, 2 };
+            var output = ( List<object> ) StandardFilters.Sort( input, null, "desc" );
+            Assert.Equal( 2, output[0] );
+        }
+
+
+        /// <summary>
+        /// For use in Lava -- sort by string
+        /// </summary>
+        [Fact]
+        public void Sort_StringDesc()
+        {
+            var input = new List<string> { "A", "B" };
+            var output = ( List<object> ) StandardFilters.Sort( input, null, "desc" );
+            Assert.Equal( "B", output[0] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort by string
+        /// </summary>
+        [Fact]
+        public void Sort_String()
+        {
+            var input = new List<string> { "B", "A" };
+            var output = ( List<object> ) StandardFilters.Sort( input, null );
+            Assert.Equal( "A", output[0] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort arbitrary by date
+        /// </summary>
+        [Fact]
+        public void Sort_ArbitraryDateTime()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", new DateTime().AddDays(1) }, { "Value", "2" } },
+               new Dictionary<string, object> { { "Id", new DateTime() }, { "Value", "1" } }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "Id" );
+            Assert.Equal( "1", ( ( Dictionary<string, object> ) output[0] )["Value"] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort arbitrary by date desc
+        /// </summary>
+        [Fact]
+        public void Sort_ArbitraryDateTimeDesc()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", new DateTime() }, { "Value", "1" } },
+               new Dictionary<string, object> { { "Id", new DateTime().AddDays(1) }, { "Value", "2" } }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "Id", "desc" );
+            Assert.Equal( "2", ( ( Dictionary<string, object> ) output[0] )["Value"] );
+        }
+
+
+        /// <summary>
+        /// For use in Lava -- sort arbitrary by int
+        /// </summary>
+        [Fact]
+        public void Sort_ArbitraryInt()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", 2 }, { "Value", "2" } },
+               new Dictionary<string, object> { { "Id", 1 }, { "Value", "1" } }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "Id" );
+            Assert.Equal( "1", ( ( Dictionary<string, object> ) output[0] )["Value"] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort arbitrary by int desc
+        /// </summary>
+        [Fact]
+        public void Sort_ArbitraryIntDesc()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", 1 }, { "Value", "1" } },
+               new Dictionary<string, object> { { "Id", 2 }, { "Value", "2" } }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "Id", "desc" );
+            Assert.Equal( "2", ( ( Dictionary<string, object> ) output[0] )["Value"] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort arbitrary by string
+        /// </summary>
+        [Fact]
+        public void Sort_ArbitraryString()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", "B"}, { "Value", "2" } },
+               new Dictionary<string, object> { { "Id", "A" }, { "Value", "1" } }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "Id" );
+            Assert.Equal( "1", ( ( Dictionary<string, object> ) output[0] )["Value"] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort arbitrary by string desc
+        /// </summary>
+        [Fact]
+        public void Sort_ArbitraryStringDesc()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", "A" }, { "Value", "1" } },
+               new Dictionary<string, object> { { "Id", "B"}, { "Value", "2" } },
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "Id", "desc" );
+            Assert.Equal( "2", ( ( Dictionary<string, object> ) output[0] )["Value"] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort ILiquidizable by date
+        /// </summary>
+        [Fact]
+        public void Sort_ILiquidizableDateTime()
+        {
+            var input = new List<object>
+            {
+               new Person(){ AnniversaryDate = new DateTime().AddDays(1), NickName="2" },
+                new Person(){ AnniversaryDate = new DateTime(), NickName="1" }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "AnniversaryDate" );
+            Assert.Equal( "1", ( ( Person ) output[0] ).NickName );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort ILiquidizable by date desc
+        /// </summary>
+        [Fact]
+        public void Sort_ILiquidizableDateTimeDesc()
+        {
+            var input = new List<object>
+            {
+                new Person(){ AnniversaryDate = new DateTime(), NickName="1" },
+               new Person(){ AnniversaryDate = new DateTime().AddDays(1), NickName="2" }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "AnniversaryDate", "desc" );
+            Assert.Equal( "2", ( ( Person ) output[0] ).NickName );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort ILiquidizable by int
+        /// </summary>
+        [Fact]
+        public void Sort_ILiquidizableInt()
+        {
+            var input = new List<object>
+            {
+               new Person(){ Id = 2, NickName="2" },
+                new Person(){ Id = 1, NickName="1" }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "Id" );
+            Assert.Equal( "1", ( ( Person ) output[0] ).NickName );
+        }
+
+
+        /// <summary>
+        /// For use in Lava -- sort ILiquidizable by int desc
+        /// </summary>
+        [Fact]
+        public void Sort_ILiquidizableIntDesc()
+        {
+            var input = new List<object>
+            {
+                new Person(){ Id = 1, NickName="1" },
+               new Person(){ Id = 2, NickName="2" }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "Id", "desc" );
+            Assert.Equal( "2", ( ( Person ) output[0] ).NickName );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort ILiquidizable by string
+        /// </summary>
+        [Fact]
+        public void Sort_ILiquidizableString()
+        {
+            var input = new List<object>
+            {
+               new Person(){ NickName="2" },
+                new Person(){ NickName="1" },
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "NickName" );
+            Assert.Equal( "1", ( ( Person ) output[0] ).NickName );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort ILiquidizable by string desc
+        /// </summary>
+        [Fact]
+        public void Sort_ILiquidizableStringDesc()
+        {
+            var input = new List<object>
+            {
+               new Person(){ NickName="1" },
+                new Person(){ NickName="2" },
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "NickName", "desc" );
+            Assert.Equal( "2", ( ( Person ) output[0] ).NickName );
         }
 
         #endregion
