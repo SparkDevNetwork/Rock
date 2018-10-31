@@ -17,7 +17,7 @@ namespace RockWeb.Plugins.org_newpointe.NFCI
     /// <summary>
     /// Block for adding new families
     /// </summary>
-    [DisplayName( "NFCI Edit Person" )]
+    [DisplayName( "Edit Person" )]
     [Category( "NewPointe NFCI" )]
     [Description( "Allows for quickly editing a Person" )]
 
@@ -34,233 +34,187 @@ namespace RockWeb.Plugins.org_newpointe.NFCI
         {
             base.OnLoad( e );
 
-            person = new PersonService( rContext ).Get( PageParameter("PersonGuid").AsGuid() );
+            person = new PersonService( rContext ).Get( PageParameter( "PersonGuid" ).AsGuid() );
 
             if ( !Page.IsPostBack )
             {
-                if ( person != null && person.IsAuthorized( "View", CurrentPerson ) )
+                if ( person != null && person.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) )
                 {
-                    pPersonInfo.Visible = true;
-                    pPersonError.Visible = false;
-                    BindControls();
+                    ShowEdit( person );
                 }
                 else
                 {
-                    pPersonInfo.Visible = false;
-                    pPersonError.Visible = true;
+                    ShowError( "Error", "This person does not exist or you do not have permission to edit them.", true );
                 }
             }
         }
 
-        protected void BindControls()
+        protected void ShowError( string title, string message, bool hideSecondary = false )
         {
-            if(person != null)
+            rlErrorTitle.Text = title;
+            rlErrorMessage.Text = message;
+            pPersonError.Visible = true;
+            pPersonEdit.Visible = !hideSecondary;
+        }
+
+        protected void ShowEdit( Person person )
+        {
+            SetupControls();
+            LoadPersonDetails( person );
+            pPersonEdit.Visible = true;
+            pPersonError.Visible = false;
+        }
+
+        protected void SetupControls()
+        {
+            DefinedTypeCache dtcPersonTitle = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_TITLE.AsGuid() );
+            DefinedTypeCache dtcPersonSuffix = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() );
+
+            dvpTitle.DefinedTypeId = dtcPersonTitle.Id;
+            dvpSuffix.DefinedTypeId = dtcPersonSuffix.Id;
+            rblGender.BindToEnum<Gender>( false );
+        }
+
+        protected void LoadPersonDetails( Person person )
+        {
+            DefinedTypeCache dtcPersonPhoneTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() );
+
+            tbNickName.Text = person.NickName;
+
+            dvpTitle.SelectedValue = person.TitleValueId.ToString();
+            tbFirstName.Text = person.FirstName;
+            tbMiddleName.Text = person.MiddleName;
+            tbLastName.Text = person.LastName;
+            dvpSuffix.SelectedValue = person.SuffixValueId.ToString();
+
+            rblGender.SelectedValue = person.Gender.ConvertToInt().ToString();
+            bpBirthday.SelectedDate = person.BirthDate;
+            gpGrade.SelectedValue = person.GradeOffset.ToString();
+
+            person.LoadAttributes();
+            rtbAllergy.Text = person.GetAttributeValue( "Allergy" );
+
+            ebEmail.Text = person.Email;
+
+            var phoneNumbers = dtcPersonPhoneTypes.DefinedValues.Select( dv =>
+                person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == dv.Id )
+                ?? new PhoneNumber { NumberTypeValueId = dv.Id, NumberTypeValue = new DefinedValue { Id = dv.Id, Value = dv.Value } }
+            ).ToList();
+            rContactInfo.DataSource = phoneNumbers;
+            rContactInfo.DataBind();
+        }
+
+        protected void SavePersonDetails( Person person, RockContext rockContext )
+        {
+            person.NickName = tbNickName.Text;
+
+            person.TitleValueId = dvpTitle.SelectedValue.AsIntegerOrNull();
+            person.FirstName = tbFirstName.Text;
+            person.MiddleName = tbMiddleName.Text;
+            person.LastName = tbLastName.Text;
+            person.SuffixValueId = dvpSuffix.SelectedValue.AsIntegerOrNull();
+
+            person.Gender = rblGender.SelectedValueAsEnum<Gender>();
+            person.SetBirthDate( bpBirthday.SelectedDate );
+            person.GradeOffset = gpGrade.SelectedValue.AsIntegerOrNull();
+
+            person.LoadAttributes();
+            person.SetAttributeValue( "Allergy", rtbAllergy.Text );
+
+            person.Email = ebEmail.Text;
+
+
+            var newPhoneNumbers = new List<PhoneNumber>();
+            foreach ( RepeaterItem item in rContactInfo.Items )
             {
-                tbNickName.Text = person.NickName;
+                HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
+                PhoneNumberBox pnbPhone = item.FindControl( "pnbPhone" ) as PhoneNumberBox;
+                CheckBox cbUnlisted = item.FindControl( "cbUnlisted" ) as CheckBox;
 
-                dvpTitle.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ), true );
-                dvpTitle.SelectedValue = person.TitleValueId.ToString();
-
-                tbFirstName.Text = person.FirstName;
-                tbMiddleName.Text = person.MiddleName;
-                tbLastName.Text = person.LastName;
-
-                dvpSuffix.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ), true );
-                dvpSuffix.SelectedValue = person.SuffixValueId.ToString();
-
-                rblGender.BindToEnum<Gender>( false );
-                rblGender.SelectedValue = person.Gender.ConvertToInt().ToString();
-
-                bpBirthday.SelectedDate = person.BirthDate;
-                
-                if ( !person.HasGraduated ?? false )
+                if ( hfPhoneType != null && pnbPhone != null && cbUnlisted != null )
                 {
-                    gpGrade.SetValue( person.GradeOffset.Value );
+                    var countryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
+                    var phoneNumber = PhoneNumber.CleanNumber( pnbPhone.Number );
+                    if ( !string.IsNullOrWhiteSpace( countryCode ) && !string.IsNullOrWhiteSpace( phoneNumber ) )
+                    {
+                        newPhoneNumbers.Add( new PhoneNumber
+                        {
+                            NumberTypeValueId = hfPhoneType.ValueAsInt(),
+                            Number = phoneNumber,
+                            CountryCode = countryCode,
+                            IsMessagingEnabled = false,
+                            IsUnlisted = cbUnlisted.Checked
+                        } );
+                    }
+                }
+            }
+
+            foreach ( PhoneNumber oldPhoneNumber in person.PhoneNumbers.ToList() )
+            {
+                var matchingPhoneNumber = newPhoneNumbers.FirstOrDefault( pn => pn.NumberTypeValueId == oldPhoneNumber.NumberTypeValueId );
+                if ( matchingPhoneNumber != null )
+                {
+                    oldPhoneNumber.CountryCode = matchingPhoneNumber.CountryCode;
+                    oldPhoneNumber.Number = matchingPhoneNumber.Number;
+                    oldPhoneNumber.IsUnlisted = matchingPhoneNumber.IsUnlisted;
+                    newPhoneNumbers.Remove( matchingPhoneNumber );
                 }
                 else
                 {
-                    gpGrade.SelectedIndex = 0;
-                }
-
-                person.LoadAttributes();
-                rtbAllergy.Text = person.AttributeValues["Allergy"].Value;
-                
-                ebEmail.Text = person.Email;
-
-                var mobilePhoneType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
-
-                var phoneNumbers = new List<PhoneNumber>();
-                var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
-                if ( phoneNumberTypes.DefinedValues.Any() )
-                {
-                    foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues )
-                    {
-                        var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
-                        if ( phoneNumber == null )
-                        {
-                            var numberType = new DefinedValue();
-                            numberType.Id = phoneNumberType.Id;
-                            numberType.Value = phoneNumberType.Value;
-
-                            phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
-                            phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;
-                        }
-                        else
-                        {
-                            // Update number format, just in case it wasn't saved correctly
-                            phoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number );
-                        }
-
-                        phoneNumbers.Add( phoneNumber );
-                    }
-
-                    rContactInfo.DataSource = phoneNumbers;
-                    rContactInfo.DataBind();
+                    person.PhoneNumbers.Remove( oldPhoneNumber );
+                    new PhoneNumberService( rockContext ).Delete( oldPhoneNumber );
                 }
             }
+
+            foreach ( PhoneNumber newPhoneNumber in newPhoneNumbers )
+            {
+                person.PhoneNumbers.Add( newPhoneNumber );
+            }
+
         }
 
-        protected void lbSubmit_Click( object sender, EventArgs e )
+        protected void lbSubmit_Click( object sender, EventArgs evt )
         {
-            if ( Page.IsValid )
+            if ( person == null || !person.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) )
             {
-                var rockContext = new RockContext();
+                ShowError( "Error", "This person does not exist or you do not have permission to edit them.", true );
+                return;
+            }
 
-                rockContext.WrapTransaction( () =>
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            SavePersonDetails( person, rContext );
+
+            if ( !person.IsValid )
+            {
+                ShowError( "Error", "<ul><li>" + String.Join( "</li><li>", person.ValidationResults.Select( vr => vr.ErrorMessage ) ) + "</li></ul>", true );
+                return;
+            }
+
+            try
+            {
+                rContext.WrapTransaction( () =>
                 {
-
-                    if ( person != null )
-                    {
-                        var personService = new PersonService( rockContext );
-
-                        var changes = new List<string>();
-
-                        var personSave = personService.Get( person.Id );
-                        personSave.LoadAttributes();
-
-
-                        personSave.TitleValueId = dvpTitle.SelectedValueAsInt();
-                        personSave.FirstName = tbFirstName.Text;
-                        personSave.NickName = tbNickName.Text;
-                        personSave.MiddleName = tbMiddleName.Text;
-                        personSave.LastName = tbLastName.Text;
-                        personSave.SuffixValueId = dvpSuffix.SelectedValueAsInt();
-                        var birthMonth = personSave.BirthMonth;
-                        var birthDay = personSave.BirthDay;
-                        var birthYear = personSave.BirthYear;
-
-                        var birthday = bpBirthday.SelectedDate;
-                        if ( birthday.HasValue )
-                        {
-                            // If setting a future birthdate, subtract a century until birthdate is not greater than today.
-                            var today = RockDateTime.Today;
-                            while ( birthday.Value.CompareTo( today ) > 0 )
-                            {
-                                birthday = birthday.Value.AddYears( -100 );
-                            }
-
-                            personSave.BirthMonth = birthday.Value.Month;
-                            personSave.BirthDay = birthday.Value.Day;
-                            if ( birthday.Value.Year != DateTime.MinValue.Year )
-                            {
-                                personSave.BirthYear = birthday.Value.Year;
-                            }
-                            else
-                            {
-                                personSave.BirthYear = null;
-                            }
-                        }
-                        else
-                        {
-                            personSave.SetBirthDate( null );
-                        }
-                        
-                        DateTime gradeTransitionDate = GlobalAttributesCache.Get().GetValue( "GradeTransitionDate" ).AsDateTime() ?? new DateTime( RockDateTime.Now.Year, 6, 1 );
-
-                        // add a year if the next graduation mm/dd won't happen until next year
-                        int gradeOffsetRefactor = ( RockDateTime.Now < gradeTransitionDate ) ? 0 : 1;
-
-
-                        int? graduationYear = null;
-                        if ( gpGrade.SelectedValue.AsIntegerOrNull() != null )
-                        {
-                            graduationYear = gradeTransitionDate.Year + gradeOffsetRefactor + gpGrade.SelectedValue.AsIntegerOrNull();
-                        }
-                        
-                        personSave.GraduationYear = graduationYear;
-                        
-                        personSave.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
-
-                        personSave.SetAttributeValue( "Allergy", rtbAllergy.Text );
-
-                        var phoneNumberTypeIds = new List<int>();
-
-                        foreach ( RepeaterItem item in rContactInfo.Items )
-                        {
-                            HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
-                            PhoneNumberBox pnbPhone = item.FindControl( "pnbPhone" ) as PhoneNumberBox;
-                            CheckBox cbUnlisted = item.FindControl( "cbUnlisted" ) as CheckBox;
-
-                            if ( hfPhoneType != null &&
-                                pnbPhone != null &&
-                                cbUnlisted != null )
-                            {
-                                if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) )
-                                {
-                                    int phoneNumberTypeId;
-                                    if ( int.TryParse( hfPhoneType.Value, out phoneNumberTypeId ) )
-                                    {
-                                        var phoneNumber = personSave.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberTypeId );
-                                        string oldPhoneNumber = string.Empty;
-                                        if ( phoneNumber == null )
-                                        {
-                                            phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberTypeId };
-                                            personSave.PhoneNumbers.Add( phoneNumber );
-                                        }
-                                        else
-                                        {
-                                            oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
-                                        }
-
-                                        phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
-                                        phoneNumber.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
-
-                                        phoneNumber.IsUnlisted = cbUnlisted.Checked;
-                                        phoneNumberTypeIds.Add( phoneNumberTypeId );
-                                        
-                                    }
-                                }
-                            }
-                        }
-
-                        // Remove any blank numbers
-                        var phoneNumberService = new PhoneNumberService( rockContext );
-                        foreach ( var phoneNumber in personSave.PhoneNumbers
-                            .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
-                            .ToList() )
-                        {
-                            personSave.PhoneNumbers.Remove( phoneNumber );
-                            phoneNumberService.Delete( phoneNumber );
-                        }
-                        
-                        personSave.Email = ebEmail.Text.Trim();
-
-                        if ( personSave.IsValid )
-                        {
-
-                            personSave.SaveAttributeValues();
-
-                            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "PersonDetailsPage" ) ) )
-                            {
-                                NavigateToLinkedPage( "PersonDetailsPage", new Dictionary<string, string>() { { "PersonId", person.Id.ToString() } } );
-                            }
-                            else
-                            {
-                                NavigateToCurrentPage( new Dictionary<string, string>() { { "PersonId", person.Id.ToString() } } );
-                            }
-                        }
-                    }
+                    person.SaveAttributeValues( rContext );
+                    rContext.SaveChanges();
                 } );
+            }
+            catch ( Exception err )
+            {
+                ShowError( "Error", "There was an error saving this person: " + err.Message );
+                return;
+            }
+            
+            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "PersonDetailsPage" ) ) )
+            {
+                NavigateToLinkedPage( "PersonDetailsPage", new Dictionary<string, string>() { { "PersonGuid", person.Guid.ToString() } } );
+            }
+            else
+            {
+                NavigateToCurrentPage( new Dictionary<string, string>() { { "PersonGuid", person.Guid.ToString() } } );
             }
         }
 
