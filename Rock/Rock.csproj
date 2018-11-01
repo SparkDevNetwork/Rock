@@ -499,6 +499,8 @@
     <Compile Include="Jobs\NoRetryAggregateException.cs" />
     <Compile Include="Jobs\NoRetryException.cs" />
     <Compile Include="Jobs\PostV84DataMigrations.cs" />
+    <Compile Include="Lava\Shortcodes\Scripturize.cs" />
+    <Compile Include="Lava\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
     <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
     <Compile Include="Plugin\HotFixes\059_MigrationRollupsForV8_5_2.cs" />
     <Compile Include="Plugin\HotFixes\057_MigrationRollupsForV8_5.cs" />
@@ -522,6 +524,7 @@
     <Compile Include="SystemGuid\SystemSetting.cs" />
     <Compile Include="SystemKey\GroupTypeAttributeKey.cs" />
     <Compile Include="Utility\RockColor.cs" />
+    <Compile Include="Utility\Scripturize.cs" />
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentChannelCache.cs" />
