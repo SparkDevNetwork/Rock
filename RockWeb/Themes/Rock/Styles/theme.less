@@ -593,7 +593,7 @@ td.grid-select-field {
   }
 
   .navbar-brand-corner {
-    position: relative;
+    position: fixed;
     display: none;
     float: left;
     width: @navbarside-width;
@@ -604,6 +604,7 @@ td.grid-select-field {
     background-color: var(--navbarside-background-color);
     background-size: 45px;
     border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
+    top: 0;
 
     &.no-logo::after {
       position: absolute;
@@ -889,7 +890,7 @@ td.grid-select-field {
   top: 0;
   left: 0;
   bottom: 0;
-  z-index: @zindex-navbar-fixed + 50;
+  z-index: @zindex-navbar-fixed + 10;
   display: none;
   width: @navbarside-width;
   height: 100%;
@@ -1134,7 +1135,15 @@ td.grid-select-field {
 }
 
 .navbar-side-open #cms-admin-footer {
-  padding-left: @navbarside-width;
+  left: @navbarside-width;
+  width: auto;
+}
+
+@media (min-width: @screen-sm-min) {
+  #cms-admin-footer {
+    left: @navbarside-width;
+    width: auto;
+  }
 }
 
 // expanded view
