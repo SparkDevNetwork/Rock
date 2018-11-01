@@ -70,10 +70,10 @@
                                 </div>
                             </div>
                             </Rock:RockControlWrapper>
-                            <Rock:RockCheckBoxList ID="cblTransactionType" runat="server" Label="Transaction Types" RepeatDirection="Vertical" />
+                            <Rock:DefinedValuesPicker ID="dvpTransactionType" runat="server" Label="Transaction Types" RepeatDirection="Vertical" />
                         </div>
-                        <Rock:RockCheckBoxList ID="cblCurrencyTypes" runat="server" FormGroupCssClass="currency-list js-currency-list" Label="Currency Types" RepeatDirection="Vertical" />
-                        <Rock:RockCheckBoxList ID="cblTransactionSource" runat="server" FormGroupCssClass="source-list js-source-list" Label="Transaction Source" RepeatDirection="Vertical" />
+                        <Rock:DefinedValuesPicker ID="dvpCurrencyTypes" runat="server" FormGroupCssClass="currency-list js-currency-list" Label="Currency Types" RepeatDirection="Vertical" />
+                        <Rock:DefinedValuesPicker ID="dvpTransactionSource" runat="server" FormGroupCssClass="source-list js-source-list" Label="Transaction Source" RepeatDirection="Vertical" />
                         <asp:PlaceHolder ID="phAccounts" runat="server" />
 
                     </div>

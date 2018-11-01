@@ -269,12 +269,12 @@ namespace Rock.Field.Types
                     {
                         var binaryFileGuid = new BinaryFileService( rockContext ).GetGuid( id.Value );
 
-                        return binaryFileGuid?.ToString();
+                        return binaryFileGuid?.ToString() ?? string.Empty;
                     }
                 }
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>

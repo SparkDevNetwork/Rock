@@ -99,14 +99,14 @@
 
                         <div class="row">
                             <div class="col-sm-6">
-                                <Rock:RockDropDownList ID="ddlTitle" runat="server" />
-                                <Rock:RockDropDownList ID="ddlConnectionStatus" runat="server" />
+                                <Rock:DefinedValuePicker ID="dvpTitle" runat="server" />
+                                <Rock:DefinedValuePicker ID="dvpConnectionStatus" runat="server" />
                                 <Rock:RockDropDownList ID="ddlGender" runat="server" >
                                     <asp:ListItem Text="Male" Value="Male" />
                                     <asp:ListItem Text="Female" Value="Female" />
                                     <asp:ListItem Text="Unknown" Value="Unknown" />
                                 </Rock:RockDropDownList>
-                                <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" />
+                                <Rock:DefinedValuePicker ID="dvpMaritalStatus" runat="server" />
                                 <div class="row">
                                     <div class="col-xs-5">
                                         <Rock:GradePicker ID="ddlGradePicker" runat="server" UseAbbreviation="true" UseGradeOffsetAsValue="true" Label="" />
@@ -122,10 +122,10 @@
                                 </Rock:RockDropDownList>
                             </div>
                             <div class="col-sm-6">
-                                <Rock:RockDropDownList ID="ddlSuffix" runat="server" />
+                                <Rock:DefinedValuePicker ID="dvpSuffix" runat="server" />
 
-                                <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
-                                <Rock:RockDropDownList ID="ddlInactiveReason" runat="server" Visible="false" Label="Inactive Reason"></Rock:RockDropDownList>
+                                <Rock:DefinedValuePicker ID="dvpRecordStatus" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
+                                <Rock:DefinedValuePicker ID="dvpInactiveReason" runat="server" Visible="false" Label="Inactive Reason"></Rock:DefinedValuePicker>
                                 <Rock:RockTextBox ID="tbInactiveReasonNote" runat="server" TextMode="MultiLine" Rows="2" Visible="false" Label="Inactive Reason Note"></Rock:RockTextBox>
                             </div>
                         </div>
@@ -161,7 +161,7 @@
                                 <Rock:RockTextBox ID="tbSystemNote" runat="server" TextMode="MultiLine" Rows="2"></Rock:RockTextBox>
                             </div>
                             <div class="col-sm-6">
-                                <Rock:RockDropDownList ID="ddlReviewReason" runat="server" Enabled="false" 
+                                <Rock:DefinedValuePicker ID="dvpReviewReason" runat="server" Enabled="false" 
                                     Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Review Reason" />
                                 <Rock:RockTextBox ID="tbReviewReasonNote" runat="server" Enabled="false" 
                                     Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Review Reason Note" TextMode="MultiLine" Rows="2"></Rock:RockTextBox>

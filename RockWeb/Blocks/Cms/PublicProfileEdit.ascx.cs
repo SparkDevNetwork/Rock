@@ -77,11 +77,11 @@ namespace RockWeb.Blocks.Cms
         {        
             base.OnInit( e );
             ScriptManager.RegisterStartupScript( ddlGradePicker, ddlGradePicker.GetType(), "grade-selection-" + BlockId.ToString(), ddlGradePicker.GetJavascriptForYearPicker( ypGraduation ), true );
-            ddlTitle.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
-            ddlSuffix.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
-            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+            dvpTitle.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ).Id;
+            dvpSuffix.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ).Id;
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
             _canEdit = !GetAttributeValue( "ViewOnly" ).AsBoolean();
             lbEditPerson.Visible = _canEdit;
@@ -360,11 +360,11 @@ namespace RockWeb.Blocks.Cms
                         {
                             var groupMemberService = new GroupMemberService( rockContext );
                             var groupMember = new GroupMember() { Person = new Person(), Group = group, GroupId = group.Id };
-                            groupMember.Person.TitleValueId = ddlTitle.SelectedValueAsId();
+                            groupMember.Person.TitleValueId = dvpTitle.SelectedValueAsId();
                             groupMember.Person.FirstName = tbFirstName.Text;
                             groupMember.Person.NickName = tbNickName.Text;
                             groupMember.Person.LastName = tbLastName.Text;
-                            groupMember.Person.SuffixValueId = ddlSuffix.SelectedValueAsId();
+                            groupMember.Person.SuffixValueId = dvpSuffix.SelectedValueAsId();
                             groupMember.Person.Gender = rblGender.SelectedValueAsEnum<Gender>();
                             DateTime? birthdate = bpBirthDay.SelectedDate;
                             if ( birthdate.HasValue )
@@ -434,11 +434,11 @@ namespace RockWeb.Blocks.Cms
                                 person.PhotoId = imgPhoto.BinaryFileId;
                             }
 
-                            person.TitleValueId = ddlTitle.SelectedValueAsInt();
+                            person.TitleValueId = dvpTitle.SelectedValueAsInt();
                             person.FirstName = tbFirstName.Text;
                             person.NickName = tbNickName.Text;
                             person.LastName = tbLastName.Text;
-                            person.SuffixValueId = ddlSuffix.SelectedValueAsInt();
+                            person.SuffixValueId = dvpSuffix.SelectedValueAsInt();
 
                             var birthMonth = person.BirthMonth;
                             var birthDay = person.BirthDay;
@@ -909,11 +909,11 @@ namespace RockWeb.Blocks.Cms
                         {
                             imgPhoto.BinaryFileId = person.PhotoId;
                             imgPhoto.NoPictureUrl = Person.GetPersonNoPictureUrl( person, 200, 200 );
-                            ddlTitle.SelectedValue = person.TitleValueId.HasValue ? person.TitleValueId.Value.ToString() : string.Empty;
+                            dvpTitle.SetValue( person.TitleValueId );
                             tbFirstName.Text = person.FirstName;
                             tbNickName.Text = person.NickName;
                             tbLastName.Text = person.LastName;
-                            ddlSuffix.SelectedValue = person.SuffixValueId.HasValue ? person.SuffixValueId.Value.ToString() : string.Empty;
+                            dvpSuffix.SetValue( person.SuffixValueId );
                             bpBirthDay.SelectedDate = person.BirthDate;
                             rblGender.SelectedValue = person.Gender.ConvertToString();
                             if ( group.Members.Where( gm => gm.PersonId == person.Id && gm.GroupRole.Guid == childGuid ).Any() )

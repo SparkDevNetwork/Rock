@@ -927,6 +927,11 @@ namespace RockWeb.Blocks.Event
             wpAttributes.Visible = false;
             phAttributeEdits.Controls.Clear();
 
+            if ( eventItemOccurrence.EventItemId == 0 )
+            {
+                eventItemOccurrence.EventItemId = PageParameter( "EventItemId" ).AsIntegerOrNull() ?? 0;
+            }
+
             eventItemOccurrence.LoadAttributes();
 
             if ( eventItemOccurrence.Attributes.Count > 0 )

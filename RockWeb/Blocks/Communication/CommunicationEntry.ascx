@@ -108,6 +108,7 @@
                 </asp:Panel>
 
                 <asp:Panel ID="pnlResult" runat="server" Visible="false" CssClass="js-pnl-result">
+                    <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
                     <Rock:NotificationBox ID="nbResult" runat="server" NotificationBoxType="Success" />
                     <br />
                     <asp:HyperLink ID="hlViewCommunication" runat="server" Text="View Communication" />
