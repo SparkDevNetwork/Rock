@@ -870,9 +870,9 @@ namespace Rock.Slingshot
 
             // populate GroupMembers
             List<GroupMember> groupMembersToInsert = new List<GroupMember>();
-            var groupMemberImports = groupImports.Where( g => groupsToInsert.Select( x => x.ForeignId ).ToList().Contains( g.GroupForeignId )).SelectMany( a => a.GroupMemberImports ).ToList();
+            var groupMemberImports = groupImports.SelectMany( a => a.GroupMemberImports ).ToList();
 
-            foreach ( var groupWithMembers in groupImports.Where( a => a.GroupMemberImports.Any() && groupsToInsert.Select( x => x.ForeignId ).ToList().Contains( a.GroupForeignId ) ) )
+            foreach ( var groupWithMembers in groupImports.Where( g => groupsToInsert.Select( x => x.ForeignId ).ToList().Contains( g.GroupForeignId ) ) )
             {
                 var groupTypeRoleLookup = GroupTypeCache.Get( groupWithMembers.GroupTypeId ).Roles.ToDictionary( k => k.Name, v => v.Id );
 
@@ -884,13 +884,13 @@ namespace Rock.Slingshot
                     var personId = personIdLookup.GetValueOrNull( groupMemberImport.PersonForeignId );
                     if ( groupId.HasValue && groupRoleId.HasValue && personId.HasValue )
                     {
-                        var groupMember = new GroupMember();
-                        groupMember.GroupId = groupId.Value;
-                        groupMember.GroupRoleId = groupRoleId.Value;
-                        groupMember.PersonId = personId.Value;
-                        groupMember.CreatedDateTime = importedDateTime;
-                        groupMember.ModifiedDateTime = importedDateTime;
-                        groupMembersToInsert.Add( groupMember );
+                            var groupMember = new GroupMember();
+                            groupMember.GroupId = groupId.Value;
+                            groupMember.GroupRoleId = groupRoleId.Value;
+                            groupMember.PersonId = personId.Value;
+                            groupMember.CreatedDateTime = importedDateTime;
+                            groupMember.ModifiedDateTime = importedDateTime;
+                            groupMembersToInsert.Add( groupMember );
                     }
                     else
                     {
@@ -1266,6 +1266,53 @@ WHERE gta.GroupTypeId IS NULL" );
                     group.SaveAttributeValues();
                 }
 
+                //Update Members
+
+               var groupMemberService = new GroupMemberService( rockContextForGroupUpdate );
+               var personIdLookup = new PersonService( rockContextForGroupUpdate ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
+                    .Select( a => new { a.Id, ForeignId = a.ForeignId.Value } ).ToDictionary( k => k.ForeignId, v => v.Id );
+
+                var groupMemberList = group.Members.Where( x => x.Person.ForeignKey == foreignSystemKey ).Select( a => new
+                {
+                    a.Id,
+                    a.Person.ForeignId
+                } ).ToList();
+
+                // populate/update GroupMembers
+                foreach ( var groupMemberImport in groupImport.GroupMemberImports )
+                {
+
+                    var groupTypeRoleLookup = GroupTypeCache.Get( groupImport.GroupTypeId ).Roles.ToDictionary( k => k.Name, v => v.Id );
+                    var groupRoleId = groupTypeRoleLookup.GetValueOrNull( groupMemberImport.RoleName );
+                    var personId = personIdLookup.GetValueOrNull( groupMemberImport.PersonForeignId );
+                    GroupMember groupMember = group.Members.Where( m => m.Person.ForeignId == groupMemberImport.PersonForeignId && m.Person.ForeignKey == foreignSystemKey ).FirstOrDefault();
+
+                    if ( groupMember == null )
+                    {
+                        groupMember = new GroupMember();
+                        groupMember.GroupId = group.Id;
+                        groupMember.GroupRoleId = groupRoleId.Value;
+                        groupMember.PersonId = personId.Value;
+                        groupMember.CreatedDateTime = importDateTime;
+                        groupMember.ModifiedDateTime = importDateTime;
+                        groupMemberService.Add( groupMember );
+                    }
+                    else
+                    {
+                        groupMember.GroupRoleId = groupRoleId.Value;
+                        groupMember.ModifiedDateTime = importDateTime;
+                    }
+                }
+
+                foreach ( var member in groupMemberList.Where(gm => !groupImport.GroupMemberImports.Any( x => x.PersonForeignId == gm.ForeignId ) ) )
+                {
+                    var groupMember = groupMemberService.Get( member.Id );
+                    if ( groupMember != null )
+                    {
+                        groupMemberService.Delete( groupMember );
+                    }
+                }
+               
                 var updatedRecords = rockContextForGroupUpdate.SaveChanges( true );
 
                 return scheduleUpdated || addressesUpdated || groupAttributesUpdated || updatedRecords > 0;
