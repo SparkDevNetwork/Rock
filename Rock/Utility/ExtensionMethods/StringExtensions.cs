@@ -686,12 +686,17 @@ namespace Rock
         /// Attempts to convert string to DateTime.  Returns null if unsuccessful.
         /// NOTE: If this is a '#[#]/#[#]' string it will be interpreted as a "MM/dd", "M/dd", "M/d" or "MM/d" string and will resolve to a datetime with the year as the current year.
         /// However, in those cases, it would be better to use MonthDayStringAsDateTime.
+        /// Non-ASCI and control characters are stripped from the string to prevent invisible control characters from causing a null to return.
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        [System.Diagnostics.DebuggerStepThrough()]
+        //[System.Diagnostics.DebuggerStepThrough()]
         public static DateTime? AsDateTime( this string str )
         {
+            // Edge likes to put in 8206 when doing a toLocaleString(), which makes this method return null.
+            // This will correct the error and any other caused by non-ASCI & control characters.
+            str = new string( str.Where( c => c > 31 && c < 127 ).ToArray() );
+
             DateTime value;
             DateTime? valueFromMMDD = str.MonthDayStringAsDateTime();
 
