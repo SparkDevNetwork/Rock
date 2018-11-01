@@ -92,6 +92,7 @@ namespace Rock.Web.UI.Controls
                 this.IsAlert = value.IsAlert.HasValue && value.IsAlert.Value;
                 this.IsPrivate = value.IsPrivateNote;
                 this.ParentNoteId = value.ParentNoteId;
+                this.CreatedDateTime = value.CreatedDateTime;
             }
         }
 
@@ -250,6 +251,20 @@ namespace Rock.Web.UI.Controls
             set
             {
                 _tbNote.Text = value;
+            }
+        }
+
+        public DateTime? CreatedDateTime
+        {
+            get
+            {
+                EnsureChildControls();
+                return _dtCreateDate.SelectedDateTime;
+            }
+            set
+            {
+                EnsureChildControls();
+                _dtCreateDate.SelectedDateTime = value;
             }
         }
 
@@ -464,6 +479,7 @@ namespace Rock.Web.UI.Controls
 
             _dtCreateDate.ID = this.ID + "_tbCreateDate";
             _dtCreateDate.Label = "Note Created Date";
+            _dtCreateDate.AddCssClass( "js-notecreateddate" );
             Controls.Add( _dtCreateDate );
         }
 
