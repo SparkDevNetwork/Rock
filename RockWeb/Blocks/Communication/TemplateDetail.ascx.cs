@@ -191,13 +191,13 @@ namespace RockWeb.Blocks.Communication
             // add any new attachments that were added
             foreach ( var attachmentBinaryFileId in binaryFileIds.Where( a => communicationTemplate.Attachments.All( x => x.BinaryFileId != a ) ) )
             {
-                communicationTemplate.Attachments.Add( new CommunicationTemplateAttachment { BinaryFileId = attachmentBinaryFileId } );
+                communicationTemplate.Attachments.Add( new CommunicationTemplateAttachment { BinaryFileId = attachmentBinaryFileId, CommunicationType = CommunicationType.Email } );
             }
 
             communicationTemplate.Subject = tbEmailSubject.Text;
             communicationTemplate.Message = ceEmailTemplate.Text;
 
-            communicationTemplate.SMSFromDefinedValueId = ddlSMSFrom.SelectedValue.AsIntegerOrNull();
+            communicationTemplate.SMSFromDefinedValueId = dvpSMSFrom.SelectedValue.AsIntegerOrNull();
             communicationTemplate.SMSMessage = tbSMSTextMessage.Text;
 
             communicationTemplate.CategoryId = cpCategory.SelectedValueAsInt();
@@ -454,7 +454,7 @@ namespace RockWeb.Blocks.Communication
             UpdateAttachedFiles( false );
 
             // SMS Fields
-            ddlSMSFrom.SetValue( communicationTemplate.SMSFromDefinedValueId );
+            dvpSMSFrom.SetValue( communicationTemplate.SMSFromDefinedValueId );
             tbSMSTextMessage.Text = communicationTemplate.SMSMessage;
 
             // render UI based on Authorized and IsSystem
@@ -494,7 +494,7 @@ namespace RockWeb.Blocks.Communication
             ceEmailTemplate.ReadOnly = readOnly;
 
             mfpSMSMessage.Visible = !restrictedEdit;
-            ddlSMSFrom.Enabled = !restrictedEdit;
+            dvpSMSFrom.Enabled = !restrictedEdit;
             tbSMSTextMessage.ReadOnly = restrictedEdit;
             ceEmailTemplate.ReadOnly = restrictedEdit;
 
@@ -509,7 +509,8 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlSMSFrom.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ), true, true );
+            dvpSMSFrom.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ).Id;
+            dvpSMSFrom.DisplayDescriptions = true;
         }
 
         /// <summary>

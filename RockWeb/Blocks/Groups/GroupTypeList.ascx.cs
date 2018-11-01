@@ -94,7 +94,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Purpose", ddlPurpose.SelectedValue );
+            rFilter.SaveUserPreference( "Purpose", dvpPurpose.SelectedValue );
             rFilter.SaveUserPreference( "System Group Types", ddlIsSystem.SelectedValue );
             rFilter.SaveUserPreference( "Shown in Navigation", ddlShowInNavigation.SelectedValue );
             BindGrid();
@@ -221,8 +221,8 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindFilter()
         {
-            ddlPurpose.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ), true );
-            ddlPurpose.SelectedValue = rFilter.GetUserPreference( "Purpose" );
+            dvpPurpose.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ).Id;
+            dvpPurpose.SelectedValue = rFilter.GetUserPreference( "Purpose" );
             ddlIsSystem.SelectedValue = rFilter.GetUserPreference( "System Group Types" );
             ddlIsSystem.SelectedValue = rFilter.GetUserPreference( "Shown in Navigation" );
         }

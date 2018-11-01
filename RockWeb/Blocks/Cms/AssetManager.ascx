@@ -97,14 +97,13 @@
                         <label class="js-renamefile-notification alert alert-warning clearfix" style="display:none"></label>
                     </div>
                     
-                    <table class="table table-striped table-responsive table-no-border">
+                    <table class="table table-striped table-responsive table-no-border assetmanager-files">
                         <asp:Repeater ID="rptFiles" runat="server">
                             <ItemTemplate>
                                 <tr>
                                     <td><Rock:RockCheckBox ID="cbSelected" runat="server" CssClass="js-checkbox" /></td>
-                                    <%--<div class="col-md-1"><i class='<%# Eval("IconCssClass") %>'></i></div>--%>
-                                    <td><img src='<%# Eval("IconPath") %>' style='width: 24px; height: 24px;'></img></td>
-                                    <td><asp:Label ID="lbName" runat="server" Text='<%# Eval("Name") %>'></asp:Label></td>
+                                    <td><img src='<%# Eval("IconPath") %>' style='max-width:100%;'></td>
+                                    <td><asp:Label ID="lbName" runat="server" Text='<%# Eval("Name") %>' CssClass="align-middle"></asp:Label></td>
                                     <td data-priority="3"><asp:Label ID="lbLastModified" runat="server" Text='<%# Eval("LastModifiedDateTime") %>'></asp:Label></td>
                                     <td><asp:Label ID="lbFileSize" runat="server" Text='<%# Eval("FormattedFileSize") %>'></asp:Label>
                                     <asp:Label ID="lbKey" runat="server" Text='<%# Eval("Key") %>' Visible="false"></asp:Label></td>

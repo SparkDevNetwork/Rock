@@ -11,11 +11,12 @@ root = true
 indent_style = space
 trim_trailing_whitespace = true
 
-[*.{json,js,csproj,less}]
+[*.{json,csproj,less}]
 indent_size = 2
 
 # JS
 [*.js]
+indent_size = 4
 insert_final_newline = true
 
 # LESS files that compile to CSS
@@ -25,7 +26,14 @@ insert_final_newline = true
 # Code files
 [*.{cs,ashx}]
 indent_size = 4
-charset = utf-8-bom 
+charset = utf-8-bom
+
+[*.sql]
+trim_trailing_whitespace = false
+
+# Whitespace override for all Rock.Migrations
+[Rock.Migrations/**.cs]
+trim_trailing_whitespace = false
 
 # Style: https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference
 
@@ -60,7 +68,7 @@ dotnet_naming_rule.classes.style = classes_style
 dotnet_naming_style.classes_style.capitalization = pascal_case
 
 dotnet_naming_rule.classes.severity = warning
- 
+
 
 # Local Variables and Method Parameters (local_var_method_param)
 dotnet_naming_rule.local_var_method_param.symbols = local_var_method_param_symbols

@@ -682,6 +682,7 @@ TransactionAccountDetails: [
                         }
 
                         SetPage( 2 );
+                        lbStep2Return.Focus();
                     }
                     else
                     {
@@ -692,6 +693,7 @@ TransactionAccountDetails: [
                 {
                     this.AddHistory( "GivingDetail", "1", null );
                     SetPage( 3 );
+                    pnlConfirmation.Focus();
                 }
             }
             else
@@ -709,6 +711,7 @@ TransactionAccountDetails: [
         {
             this.AddHistory( "GivingDetail", "2", null );
             SetPage( 1 );
+            pnlSelection.Focus();
         }
 
         /// <summary>
@@ -724,6 +727,7 @@ TransactionAccountDetails: [
             tdAccountNumberConfirm.Visible = !string.IsNullOrWhiteSpace( paymentInfo.MaskedNumber );
 
             SetPage( 3 );
+            pnlConfirmation.Focus();
         }
 
         /// <summary>
@@ -734,6 +738,7 @@ TransactionAccountDetails: [
         protected void btnConfirmationPrev_Click( object sender, EventArgs e )
         {
             SetPage( 1 );
+            pnlSelection.Focus();
         }
 
         /// <summary>
@@ -751,6 +756,7 @@ TransactionAccountDetails: [
                 {
                     this.AddHistory( "GivingDetail", "3", null );
                     SetPage( 4 );
+                    pnlSuccess.Focus();
                 }
                 else
                 {
@@ -763,6 +769,7 @@ TransactionAccountDetails: [
                 {
                     this.AddHistory( "GivingDetail", "2", null );
                     SetPage( 4 );
+                    pnlSuccess.Focus();
                 }
                 else
                 {
@@ -786,6 +793,7 @@ TransactionAccountDetails: [
             if ( ProcessConfirmation( out errorMessage ) )
             {
                 SetPage( 4 );
+                pnlSuccess.Focus();
             }
             else
             {
@@ -3126,7 +3134,7 @@ TransactionAccountDetails: [
         /// </summary>
         private void RegisterScript()
         {
-            RockPage.AddScriptLink( ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
+            RockPage.AddScriptLink( "~/Scripts/jquery.creditCardTypeDetector.js" );
 
             int oneTimeFrequencyId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
 
@@ -3208,11 +3216,6 @@ TransactionAccountDetails: [
             }}
         }});
     }});
-
-    // Scroll position. The script on the ascx page will try to keep the window scroll position after a postback.
-    // If that script is removed the page will jump to the bottom, that's good unless there is a lot of content in
-    // the footer. Delete the scrollTo function and uncomment the line below to force the scroll position to the top of the page.
-    //setTimeout('window.scrollTo(0,0)',0);
 
     // Posts the iframe (step 2)
     $('#aStep2Submit').on('click', function(e) {{

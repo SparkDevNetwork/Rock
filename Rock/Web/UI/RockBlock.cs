@@ -997,6 +997,15 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Disables the idle redirect blocks if disable = true, or re-enables them if disable = false
+        /// </summary>
+        /// <param name="disable">if set to <c>true</c> [disable].</param>
+        public void DisableIdleRedirectBlocks( bool disable )
+        {
+            RockPage.DisableIdleRedirectBlocks( this, disable );
+        }
+
+        /// <summary>
         /// Adds a history point to the <see cref="System.Web.UI.ScriptManager"/>.
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> that represents the name of the key to use for the history point.</param>
