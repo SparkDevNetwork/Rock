@@ -84,6 +84,7 @@ namespace RockWeb.Blocks.Communication
             gPending.GridRebind += gRecipients_GridRebind;
             gDelivered.GridRebind += gRecipients_GridRebind;
             gFailed.GridRebind += gRecipients_GridRebind;
+            gFailed.Actions.MergeTemplateClick += gFailed_Actions_MergeTemplateClick;
             gCancelled.GridRebind += gRecipients_GridRebind;
             gOpened.GridRebind += gRecipients_GridRebind;
 
@@ -126,6 +127,65 @@ namespace RockWeb.Blocks.Communication
                 mdCreateTemplate.SaveClick += mdSaveTemplate_Click;
             }
 
+        }
+
+        private void gFailed_Actions_MergeTemplateClick( object sender, EventArgs e )
+        {
+            gFailed.AllowPaging = false;
+            gRecipients_GridRebind( sender, e );
+
+            var entitySet = new Rock.Model.EntitySet();
+            entitySet.EntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
+            entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
+            List<Rock.Model.EntitySetItem> entitySetItems = new List<Rock.Model.EntitySetItem>();
+
+            List<int> keys = new List<int>();
+            // Check to see if specific keys were selected
+            if ( !gFailed.SelectedKeys.Any() )
+            {
+                keys = gFailed.DataSourceAsList.OfType<CommunicationRecipient>().Select( a => a.PersonAlias.PersonId ).Distinct().ToList();
+            }
+            else
+            {
+                keys = gFailed.DataSourceAsList.OfType<CommunicationRecipient>().Where(cr => gFailed.SelectedKeys.Contains(cr.Id) ).Select( a => a.PersonAlias.PersonId ).Distinct().ToList();
+            }
+
+            int itemOrder = 0;
+            foreach(int key in keys)
+            {
+
+                var item = new Rock.Model.EntitySetItem();
+                item.EntityId = key;
+                item.Order = itemOrder++;
+                entitySetItems.Add( item );
+            }
+            int? entitySetId = new Nullable<int>();
+            if ( entitySetItems.Any() )
+            {
+                var rockContext = new RockContext();
+                var service = new Rock.Model.EntitySetService( rockContext );
+                service.Add( entitySet );
+                rockContext.SaveChanges();
+                entitySetItems.ForEach( a =>
+                {
+                    a.EntitySetId = entitySet.Id;
+                } );
+
+                rockContext.BulkInsert( entitySetItems );
+
+                entitySetId = entitySet.Id;
+            }
+
+            if ( entitySetId.HasValue )
+            {
+                Page.Response.Redirect( string.Format( gFailed.MergeTemplatePageRoute, entitySetId.Value ), false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
+            else
+            {
+                // empty entityset ( probably because the list has 0 items)
+                gFailed.ShowModalAlertMessage( "Grid has no " + gFailed.RowItemText.Pluralize(), ModalAlertType.Warning );
+            }
         }
 
         /// <summary>
