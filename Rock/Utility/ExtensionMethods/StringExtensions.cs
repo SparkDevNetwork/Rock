@@ -729,6 +729,11 @@ namespace Rock
         [System.Diagnostics.DebuggerStepThrough]
         public static DateTime? AsDateTime( this string str )
         {
+            if ( str == null )
+            {
+                return null;
+            }
+
             // Edge likes to put in 8206 when doing a toLocaleString(), which makes this method return null.
             // This will correct the error and any other caused by non-ASCI & control characters.
             str = new string( str.Where( c => c > 31 && c < 127 ).ToArray() );
