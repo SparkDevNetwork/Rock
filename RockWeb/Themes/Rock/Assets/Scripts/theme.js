@@ -74,6 +74,7 @@ function BindNavEvents() {
 
 
     $('#content-wrapper').click(function() {
+      $('body').removeClass('modal-open');
       $('.navbar-static-side').removeClass('open-secondary-nav');
       $('.navbar-side li').removeClass('open');
     });
