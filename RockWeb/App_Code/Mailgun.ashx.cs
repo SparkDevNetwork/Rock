@@ -110,13 +110,25 @@ public class Mailgun : IHttpHandler
                 mailgunRequestPayload.DeviceType = jObject["event-data"]["client-info"]["device-type"] != null ? ( string ) jObject["event-data"]["client-info"]["device-type"] : string.Empty;
             }
 
-            if ( jObject["event-data"]["user-variables"] != null )
+            if ( jObject["event-data"]["user-variables"] != null && jObject["event-data"]["user-variables"]["X-Mailgun-Variables"] != null )
             {
-                mailgunRequestPayload.WorkflowActionGuid = jObject["event-data"]["user-variables"]["workflow_action_guid"] != null
-                    ? ( string ) jObject["event-data"]["user-variables"]["workflow_action_guid"] : string.Empty;
+                string mailgunVariables = HttpContext.Current.Server.UrlDecode( mailgunRequestPayload.XMailgunVariables );
 
-                mailgunRequestPayload.CommunicationRecipientGuid = jObject["event-data"]["user-variables"]["communication_recipient_guid"] != null
-                    ? ( string ) jObject["event-data"]["user-variables"]["communication_recipient_guid"] : string.Empty;
+                if ( mailgunVariables.IsNotNullOrWhiteSpace() )
+                {
+                    var mailgunLegacyVarDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>( mailgunVariables );
+                    var mailgunVarDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>( mailgunLegacyVarDictionary["X-Mailgun-Variables"] );
+
+                    if ( mailgunVarDictionary.ContainsKey( "workflow_action_guid" ) )
+                    {
+                        mailgunRequestPayload.WorkflowActionGuid = mailgunVarDictionary["workflow_action_guid"];
+                    }
+
+                    if ( mailgunVarDictionary.ContainsKey( "communication_recipient_guid" ) )
+                    {
+                        mailgunRequestPayload.CommunicationRecipientGuid = mailgunVarDictionary["communication_recipient_guid"];
+                    }
+                }
             }
 
             if ( jObject["event-data"]["delivery-status"] != null )
@@ -212,8 +224,16 @@ public class Mailgun : IHttpHandler
                 if ( mailgunVariables.IsNotNullOrWhiteSpace() )
                 {
                     var mailgunVarDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>( mailgunVariables );
-                    actionGuid = mailgunVarDictionary.ContainsKey( "workflow_action_guid" ) ? mailgunVarDictionary["workflow_action_guid"].AsGuidOrNull() : null;
-                    communicationRecipientGuid = mailgunVarDictionary.ContainsKey( "communication_recipient_guid" ) ? mailgunVarDictionary["communication_recipient_guid"].AsGuidOrNull() : null;
+
+                    if ( actionGuid == null && mailgunVarDictionary.ContainsKey( "workflow_action_guid" ) )
+                    {
+                        actionGuid = mailgunVarDictionary["workflow_action_guid"].AsGuidOrNull();
+                    }
+
+                    if ( communicationRecipientGuid == null && mailgunVarDictionary.ContainsKey( "communication_recipient_guid" ) )
+                    {
+                        communicationRecipientGuid = mailgunVarDictionary["communication_recipient_guid"].AsGuidOrNull();
+                    }
                 }
             }
 
