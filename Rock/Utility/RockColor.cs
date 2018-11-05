@@ -296,7 +296,7 @@ namespace Rock.Utility
         /// <summary>
         /// Initializes a new instance of the <see cref="RockColor"/> class.
         /// </summary>
-        /// <param name="hex">The color in hexidecimal or rgba format.</param>
+        /// <param name="color">The color in hexidecimal or rgba format.</param>
         public RockColor( string color )
         {
             // #ee7625
@@ -408,9 +408,9 @@ namespace Rock.Utility
         /// <summary>
         /// Initializes a new instance of the <see cref="RockColor"/> class.
         /// </summary>
-        /// <param name="r">The Red value.</param>
-        /// <param name="g">The Green value.</param>
-        /// <param name="b">The Blue value.</param>
+        /// <param name="red">The Red value.</param>
+        /// <param name="green">The Green value.</param>
+        /// <param name="blue">The Blue value.</param>
         /// <param name="alpha">The Alpha channel value.</param>
         /// <param name="text">The name for the color.</param>
         public RockColor( double red, double green, double blue, double alpha = 1.0, string text = null )
@@ -421,7 +421,12 @@ namespace Rock.Utility
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// The RGB value
+        /// </summary>
         public readonly double[] RGB = new double[3];
+
         private double _alpha = 1;
 
         private double _hue;
@@ -606,6 +611,10 @@ namespace Rock.Utility
             Saturation = Saturation + ( ( double ) percentage / ( double ) 100 );
         }
 
+        /// <summary>
+        /// Desaturates the color by the provided percentage.
+        /// </summary>
+        /// <param name="percentage">The percentage.</param>
         public void Desaturate( int percentage )
         {
             Saturation = Saturation - ( ( double ) percentage / ( double ) 100 );
@@ -630,9 +639,9 @@ namespace Rock.Utility
         }
 
         /// <summary>
-        /// Adjusts the hue by a certain percent.
+        /// Adjusts the hue by a the specified percentage.
         /// </summary>
-        /// <param name="degrees">The degrees.</param>
+        /// <param name="percentage">The percentage.</param>
         public void AdjustHueByPercent( int percentage )
         {
             Hue = _hue + ( 360 * ( ( double ) percentage / ( double ) 100 ) );
