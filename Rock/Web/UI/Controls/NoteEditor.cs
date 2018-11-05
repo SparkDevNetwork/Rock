@@ -254,6 +254,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the created date time
+        /// </summary>
+        /// <value>
+        /// The created date time.
+        /// </value>
         public DateTime? CreatedDateTime
         {
             get

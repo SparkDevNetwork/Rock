@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +24,9 @@ using Newtonsoft.Json;
 
 namespace Rock.Utility
 {
+    /// <summary>
+    /// Helper that parses strings for scriptures
+    /// </summary>
     public static class Scripturize
     {
         #region Private Members
@@ -17,6 +36,7 @@ namespace Rock.Utility
         #endregion
 
         #region Public Methods
+
         /// <summary>
         /// Parses the specified text looking for scripture references and converting them to links if they are not in
         /// code blocks, pre tags or anchors.
@@ -50,6 +70,7 @@ namespace Rock.Utility
         #endregion
 
         #region Private Methods
+
         /// <summary>
         /// Tokenizes the string into chunks of text that need to be checked for scriptures.
         /// </summary>
@@ -363,7 +384,11 @@ namespace Rock.Utility
         #endregion
 
         #region Configuration
-        // https://www.logos.com/bible-book-abbreviations
+
+        /// <summary>
+        /// The bible books in JSON format
+        /// see https://www.logos.com/bible-book-abbreviations
+        /// </summary>
         public static readonly string _bibleBooksJson = @"[
 	{
 		""name"": ""Genesis"",
@@ -947,12 +972,20 @@ namespace Rock.Utility
     }
 
     #region Enums
+
     /// <summary>
     /// Enum for the various scripture landing sites that are supported
     /// </summary>
     public enum LandingSite
     {
+        /// <summary>
+        /// YouVersion
+        /// </summary>
         YouVersion = 0,
+
+        /// <summary>
+        /// Bible Gateway
+        /// </summary>
         BibleGateway = 1
     }
     #endregion
