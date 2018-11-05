@@ -259,13 +259,13 @@ namespace RockWeb.Blocks.Finance
             {
                 foreach ( var transactionDetail in transaction.TransactionDetails )
                 {
-                    if ( accountTotals.Keys.Contains( transactionDetail.Account.Name ) )
+                    if ( accountTotals.Keys.Contains( transactionDetail.Account.PublicName ) )
                     {
-                        accountTotals[transactionDetail.Account.Name] += transactionDetail.Amount;
+                        accountTotals[transactionDetail.Account.PublicName] += transactionDetail.Amount;
                     }
                     else
                     {
-                        accountTotals.Add( transactionDetail.Account.Name, transactionDetail.Amount );
+                        accountTotals.Add( transactionDetail.Account.PublicName, transactionDetail.Amount );
                     }
                 }
             }

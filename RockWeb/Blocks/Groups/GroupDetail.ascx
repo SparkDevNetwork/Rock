@@ -12,6 +12,7 @@
 
 <asp:UpdatePanel ID="upnlGroupDetail" runat="server">
     <ContentTemplate>
+        <Rock:NotificationBox ID="nbNotFoundOrArchived" runat="server" NotificationBoxType="Warning"  Visible="false" Text="That group does not exist or it has been archived."  />
 
         <asp:Panel ID="pnlDetails" CssClass="js-group-panel" runat="server">
             <asp:HiddenField ID="hfGroupId" runat="server" />
