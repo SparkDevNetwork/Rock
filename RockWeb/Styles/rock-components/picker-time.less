@@ -74,25 +74,39 @@
     &::before {
       position: absolute;
       top: -7px;
-      left: 9px;
+      left: 6px;
       display: inline-block;
       content: "";
       border: 7px solid transparent;
-      border-bottom-color: rgba(0, 0, 0, .2);
+      border-top: 0;
+      border-bottom-color: @dropdown-border;
     }
 
     &::after {
       position: absolute;
       top: -6px;
-      left: 10px;
+      left: 7px;
       display: inline-block;
       content: "";
       border: 6px solid transparent;
-      border-bottom-color: #fff;
+      border-top: 0;
+      border-bottom-color: @dropdown-bg;
     }
   }
+  &.timepicker-orient-bottom::before {
+    top: auto;
+    bottom: -7px;
+    border-top: 7px solid @dropdown-border;
+    border-bottom: 0;
+  }
+  &.timepicker-orient-bottom::after {
+    top: auto;
+    bottom: -6px;
+    border-top: 6px solid @dropdown-bg;
+    border-bottom: 0;
+  }
 
-  a.btn, input {
+  a.btn {
     border-radius: 4px;
   }
 
@@ -146,10 +160,14 @@
         font-size: 12px;
         text-align: center;
         border: 1px solid @input-border;
-        border-radius: @border-radius-base;
+        border-radius: @input-border-radius;
+        outline: none;
+        box-shadow: none;
 
-        .box-shadow(inset 0 1px 1px rgba(0,0,0,.075));
-        .transition(~"border-color ease-in-out .15s, box-shadow ease-in-out .15s");
+        &:focus {
+          border: 1px solid @input-border-focus;
+          box-shadow: @input-focus-box-shadow;
+        }
       }
     }
   }

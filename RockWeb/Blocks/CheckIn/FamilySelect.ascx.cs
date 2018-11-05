@@ -96,13 +96,13 @@ namespace RockWeb.Blocks.CheckIn
                 }
                 else
                 {
+                    // make sure the ShowEditFamilyPrompt is disabled so that it doesn't show again until explicitly enabled after doing a Search (which happens in HandleRepeaterPostback)
+                    hfShowEditFamilyPrompt.Value = "0";
+
                     if ( this.Request.Params["__EVENTTARGET"] == rSelection.UniqueID )
                     {
                         HandleRepeaterPostback( this.Request.Params["__EVENTARGUMENT"] );
                     }
-
-                    // make sure the ShowEditFamilyPrompt is disabled so that it doesn't show again until explicitly enabled after doing a Search
-                    hfShowEditFamilyPrompt.Value = "0";
 
                     if ( this.Request.Params["__EVENTARGUMENT"] == "EditFamily" )
                     {
