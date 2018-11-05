@@ -1113,12 +1113,15 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
+            var isArchive = false;
+
+            // If we can't delete, then we'll have to archive the group member.
+            // This is making this assumption since the only reason why CanDelete would return
+            // false is because the group member is tied to an group that has history tracking enabled.
             string canDeleteWarning;
             if ( !groupMemberService.CanDelete( groupMember, out canDeleteWarning ) )
             {
-                nbMoveGroupMemberWarning.Visible = true;
-                nbMoveGroupMemberWarning.Text = string.Format( "Unable to remove {0} from {1}: {2}", groupMember.Person, groupMember.Group, canDeleteWarning );
-                return;
+                isArchive = true;
             }
 
             destGroupMember = new GroupMember();
@@ -1163,7 +1166,15 @@ namespace RockWeb.Blocks.Groups
                     rockContext.SaveChanges();
                 }
 
-                groupMemberService.Delete( groupMember );
+                if ( isArchive )
+                {
+                    groupMemberService.Archive( groupMember, this.CurrentPersonAliasId, true );
+                }
+                else
+                {
+                    groupMemberService.Delete( groupMember );
+                }
+
                 rockContext.SaveChanges();
 
                 destGroupMember.CalculateRequirements( rockContext, true );
