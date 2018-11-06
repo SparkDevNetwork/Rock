@@ -421,7 +421,10 @@ Guid - ContentChannelItem Guid
 
                 if ( contentChannelItem.ContentChannel.RequiresApproval )
                 {
-                    if ( contentChannelItem.Status != ContentChannelItemStatus.Approved )
+                    contentChannelItem.ContentChannel.LoadAttributes();
+                    var statusToShow = contentChannelItem.ContentChannel.GetAttributeValue("Status").SplitDelimitedValues();
+
+                    if ( !statusToShow.ToList().Contains( contentChannelItem.Status.ConvertToString() ) )
                     {
                         ShowNoDataFound();
                         return;
