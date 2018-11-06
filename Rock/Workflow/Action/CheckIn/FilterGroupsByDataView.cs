@@ -28,14 +28,14 @@ using Rock.Web.Cache;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Removes or excludes checkin groups that require the member to be in a particular dataview
+    /// Removes or excludes check-in groups that require the person to be in a particular data view.
     /// </summary>
     [ActionCategory( "Check-In" )]
-    [Description( "Removes or excludes checkin groups that require the member to be in a data view" )]
+    [Description( "Removes or excludes check-in groups that require the person to be in a data view." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Data View" )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "DataView Group Attribute", "Select the attribute used to filter by DataView.", true, false, defaultValue: "E8F8498F-5C51-4216-AC81-875349D6C2D0", order: 0 )]
-    [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true, order: 1 )]
+    [BooleanField( "Remove", "Select 'Yes' if groups should be removed.  Select 'No' if they should just be marked as excluded.", true, order: 1 )]
     public class FilterGroupsByDataView : CheckInActionComponent
     {
         /// <summary>
