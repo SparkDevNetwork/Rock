@@ -128,6 +128,10 @@
     <Compile Include="Migrations\201810312001375_MissingPluginMigrations.Designer.cs">
       <DependentUpon>201810312001375_MissingPluginMigrations.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201811062035033_AddCheckinFilterGroupsByDataView.cs" />
+    <Compile Include="Migrations\201811062035033_AddCheckinFilterGroupsByDataView.Designer.cs">
+      <DependentUpon>201811062035033_AddCheckinFilterGroupsByDataView.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -464,6 +468,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201810312001375_MissingPluginMigrations.resx">
       <DependentUpon>201810312001375_MissingPluginMigrations.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201811062035033_AddCheckinFilterGroupsByDataView.resx">
+      <DependentUpon>201811062035033_AddCheckinFilterGroupsByDataView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
