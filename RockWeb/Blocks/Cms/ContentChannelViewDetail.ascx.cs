@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Cms
     [LavaCommandsField( "Enabled Lava Commands", description: "The Lava commands that should be enabled for this content channel item block.", required: false, category: "CustomSetting" )]
 
     [ContentChannelField( "Content Channel", description: "Limits content channel items to a specific channel, or leave blank to leave unrestricted.", required: false, defaultValue: "", category: "CustomSetting" )]
+    [EnumsField( "Status", description: "Include items with the following status.", enumSourceType: typeof( ContentChannelItemStatus ), required: false, defaultValue: "2", category: "CustomSetting" )]
     [TextField( "Content Channel Query Parameter", description: CONTENT_CHANNEL_QUERY_PARAMETER_DESCRIPTION, required: false, category: "CustomSetting" )]
 
     [CodeEditorField( "Lava Template", description: "The template to use when formatting the content channel item.", mode: CodeEditorMode.Lava, theme: CodeEditorTheme.Rock, height: 200, required: false, category: "CustomSetting", defaultValue: @"
@@ -216,6 +217,16 @@ Guid - ContentChannelItem Guid
             ddlContentChannel.SetValue( channelGuid );
             UpdateSocialMediaDropdowns( channelGuid );
 
+            cblStatus.BindToEnum<ContentChannelItemStatus>();
+            foreach ( string status in GetAttributeValue( "Status" ).SplitDelimitedValues() )
+            {
+                var li = cblStatus.Items.FindByValue( status );
+                if ( li != null )
+                {
+                    li.Selected = true;
+                }
+            }
+
             nbDetailPage.Text = this.GetAttributeValue( "DetailPage" );
             tbContentChannelQueryParameter.Text = this.GetAttributeValue( "ContentChannelQueryParameter" );
             ceLavaTemplate.Text = this.GetAttributeValue( "LavaTemplate" );
@@ -287,6 +298,7 @@ Guid - ContentChannelItem Guid
         protected void mdSettings_SaveClick( object sender, EventArgs e )
         {
             this.SetAttributeValue( "ContentChannel", ddlContentChannel.SelectedValue );
+            this.SetAttributeValue( "Status", cblStatus.SelectedValuesAsInt.AsDelimited( "," ) );
             this.SetAttributeValue( "DetailPage", nbDetailPage.Text );
             this.SetAttributeValue( "ContentChannelQueryParameter", tbContentChannelQueryParameter.Text );
             this.SetAttributeValue( "LavaTemplate", ceLavaTemplate.Text );
@@ -421,10 +433,17 @@ Guid - ContentChannelItem Guid
 
                 if ( contentChannelItem.ContentChannel.RequiresApproval )
                 {
-                    contentChannelItem.ContentChannel.LoadAttributes();
-                    var statusToShow = contentChannelItem.ContentChannel.GetAttributeValue("Status").SplitDelimitedValues();
+                    var statuses = new List<ContentChannelItemStatus>();
+                    foreach ( var status in ( GetAttributeValue( "Status" ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                    {
+                        var statusEnum = status.ConvertToEnumOrNull<ContentChannelItemStatus>();
+                        if ( statusEnum != null )
+                        {
+                            statuses.Add( statusEnum.Value );
+                        }
+                    }
 
-                    if ( !statusToShow.ToList().Contains( contentChannelItem.Status.ConvertToString() ) )
+                    if ( !statuses.Contains( contentChannelItem.Status ) )
                     {
                         ShowNoDataFound();
                         return;
