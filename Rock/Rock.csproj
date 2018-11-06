@@ -2082,6 +2082,7 @@
     <Compile Include="Workflow\Action\CheckIn\FilterByGrade.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByAbilityLevel.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByAge.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterGroupsByDataView.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGrade.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGradeAndAge.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGender.cs" />
