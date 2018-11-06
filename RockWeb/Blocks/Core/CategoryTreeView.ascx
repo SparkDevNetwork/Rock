@@ -189,16 +189,7 @@
 
                     })
                     // update viewport height
-                    .on('rockTree:rendered', function () {
-                        resizeScrollbar(scrollbCategory);
-                    })
-                    .on('rockTree:itemClicked', function () {
-                        resizeScrollbar(scrollbCategory);
-                    })
-                    .on('rockTree:expand', function () {
-                        resizeScrollbar(scrollbCategory);
-                    })
-                    .on('rockTree:collapse', function () {
+                    .on('rockTree:rendered rockTree:expand rockTree:collapse rockTree:itemClicked', function () {
                         resizeScrollbar(scrollbCategory);
                     })
                     .rockTree({
