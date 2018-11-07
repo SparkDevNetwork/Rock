@@ -109,8 +109,17 @@ namespace RockWeb.Blocks.CheckIn
                         var editFamilyBlock = this.RockPage.ControlsOfTypeRecursive<CheckInEditFamilyBlock>().FirstOrDefault();
                         if ( editFamilyBlock != null )
                         {
-                            var firstListedFamily = this.CurrentCheckInState.CheckIn.Families.FirstOrDefault();
-                            editFamilyBlock.ShowEditFamily( firstListedFamily );
+                            CheckInFamily familyToEdit;
+                            int? editFamilyGroupId = hfShowEditFamilyGroupId.Value.AsIntegerOrNull();
+                            if ( editFamilyGroupId.HasValue )
+                            {
+                                familyToEdit = this.CurrentCheckInState.CheckIn.Families.Where( a => a.Group.Id == editFamilyGroupId ).FirstOrDefault();
+                                if ( familyToEdit != null )
+                                {
+                                    familyToEdit.Selected = true;
+                                    editFamilyBlock.ShowEditFamily( familyToEdit );
+                                }
+                            }
                         }
                     }
                 }
@@ -273,6 +282,15 @@ namespace RockWeb.Blocks.CheckIn
                     if ( CurrentCheckInState.Kiosk.RegistrationModeEnabled && editFamilyBlock != null )
                     {
                         hfShowEditFamilyPrompt.Value = "1";
+                        if ( CurrentCheckInState.CheckIn.CurrentFamily != null && CurrentCheckInState.CheckIn.CurrentFamily.Group != null )
+                        {
+                            hfShowEditFamilyGroupId.Value = CurrentCheckInState.CheckIn.CurrentFamily.Group.Id.ToString();
+                        }
+                        else
+                        {
+                            hfShowEditFamilyGroupId.Value = string.Empty;
+                        }
+
                         return true;
                     }
                     else
