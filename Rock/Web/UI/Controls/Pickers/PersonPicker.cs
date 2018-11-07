@@ -25,7 +25,7 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class PersonPicker : CompositeControl, IRockControl
     {
@@ -185,7 +185,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ValidationGroup
         {
-            get 
+            get
             {
                 return RequiredFieldValidator.ValidationGroup;
             }
@@ -418,7 +418,7 @@ namespace Rock.Web.UI.Controls
         }
 
         #endregion
-      
+
 
         #region Methods
 
@@ -546,7 +546,7 @@ namespace Rock.Web.UI.Controls
                 _hfSelfPersonId.RenderControl( writer );
                 _hfSelfPersonName.RenderControl( writer );
                 _hfIncludeBusinesses.RenderControl( writer );
-                
+
                 string pickerLabelHtmlFormat = @"
             <a class='picker-label' href='#'>
                 <i class='fa fa-user'></i>
@@ -587,12 +587,12 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 string pickMenuHtmlFormatStart = @"
-             <input id='{0}_personPicker' type='text' class='picker-search form-control input-sm' />
+             <input id='{0}_personPicker' type='text' class='picker-search form-control input-sm' autocorrect='off' autocapitalize='off' autocomplete='off' spellcheck='false' />
 
-             <hr />             
+             <hr />
 
              <h4>Results</h4>
-             
+
              <div id='personpicker-scroll-container_{0}' class='scroll-container scroll-container-vertical scroll-container-picker'>
                 <div class='scrollbar'>
                     <div class='track'>
@@ -622,7 +622,7 @@ namespace Rock.Web.UI.Controls
 ";
 
                 writer.Write( string.Format( pickMenuHtmlFormatEnd, this.ClientID ) );
-                
+
                 // picker-menu dropdown-menu
                 writer.RenderEndTag();
 
