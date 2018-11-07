@@ -22,7 +22,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with numerical validation 
+    /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with numerical validation
     /// </summary>
     [ToolboxData( "<{0}:NumberBox runat=server></{0}:NumberBox>" )]
     public class NumberBox : NumberBoxBase
@@ -33,7 +33,12 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public override void RenderBaseControl( HtmlTextWriter writer )
         {
-            this.Attributes["pattern"] = "[0-9]*";
+
+            string numberType = NumberType.ConvertToString();
+            if ( numberType == "Integer" )
+            {
+                this.Attributes["pattern"] = "[0-9]*";
+            }
 
             var minValue = MinimumValue.AsIntegerOrNull();
             if ( minValue.HasValue )
