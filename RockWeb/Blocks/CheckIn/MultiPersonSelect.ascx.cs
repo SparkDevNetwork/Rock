@@ -163,6 +163,7 @@ namespace RockWeb.Blocks.CheckIn
                     if ( family == null )
                     {
                         GoBack();
+                        return;
                     }
 
                     lbEditFamily.Visible = CurrentCheckInState.Kiosk.RegistrationModeEnabled;
