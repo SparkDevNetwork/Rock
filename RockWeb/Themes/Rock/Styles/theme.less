@@ -58,8 +58,9 @@ dt {
 input[type="text"],
 textarea,
 .form-control {
+  background-clip: padding-box;
+  -webkit-box-shadow: none;
   box-shadow: none;
-  transition: @input-focus-transition;
 
   &:focus {
     border: 1px solid @input-border-focus;
@@ -594,6 +595,7 @@ td.grid-select-field {
 
   .navbar-brand-corner {
     position: fixed;
+    top: 0;
     display: none;
     float: left;
     width: @navbarside-width;
@@ -604,7 +606,6 @@ td.grid-select-field {
     background-color: var(--navbarside-background-color);
     background-size: 45px;
     border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
-    top: 0;
 
     &.no-logo::after {
       position: absolute;
@@ -888,8 +889,8 @@ td.grid-select-field {
 .navbar-static-side {
   position: fixed;
   top: 0;
-  left: 0;
   bottom: 0;
+  left: 0;
   z-index: @zindex-navbar-fixed + 10;
   display: none;
   width: @navbarside-width;
