@@ -23,6 +23,7 @@
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
     <asp:HiddenField ID="hfShowEditFamilyPrompt" runat="server" Value="0" />
+    <asp:HiddenField ID="hfShowEditFamilyGroupId" runat="server" />
 
     <div class="checkin-header">
         <h1><asp:Literal ID="lTitle" runat="server" /></h1>
