@@ -360,8 +360,13 @@ namespace RockWeb
             new Thread( () =>
             {
                 Thread.CurrentThread.IsBackground = true;
-                RockTheme.CompileAll();
-                
+                string messages = string.Empty;
+                RockTheme.CompileAll( out messages );
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment && messages.IsNotNullOrWhiteSpace() )
+                {
+                    System.Diagnostics.Debug.WriteLine( "RockTheme.CompileAll messages: " + messages );
+                }
+
             } ).Start();
             
         }
