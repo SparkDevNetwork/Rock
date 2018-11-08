@@ -833,7 +833,7 @@ namespace RockWeb
             // Add page routes
             foreach ( var route in pageRouteService 
                 .Queryable().AsNoTracking()
-                .GroupBy( r => r.Route.ToLower() )
+                .GroupBy( r => r.Route )
                 .Select( s => new {
                     Name = s.Key,
                     Pages = s.Select( pr => new Rock.Web.PageAndRouteId { PageId = pr.PageId, RouteId = pr.Id } ).ToList() 
