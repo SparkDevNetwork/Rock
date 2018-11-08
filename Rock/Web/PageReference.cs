@@ -52,7 +52,7 @@ namespace Rock.Web
         /// <value>
         /// The route parameters.
         /// </value>
-        public Dictionary<string, string> Parameters { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Parameters { get; set; } = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
 
         /// <summary>
         /// Gets the query string.
@@ -144,6 +144,7 @@ namespace Rock.Web
             }
 
             Parameters = parameters;
+            FixParametersDictionary();
             QueryString = queryString;
         }
 
@@ -153,7 +154,6 @@ namespace Rock.Web
         /// <param name="pageId">The page id.</param>
         public PageReference( int pageId )
         {
-            Parameters = new Dictionary<string, string>();
             PageId = pageId;
         }
 
@@ -178,6 +178,7 @@ namespace Rock.Web
             : this( pageId, routeId )
         {
             Parameters = parameters;
+            FixParametersDictionary();
         }
 
         /// <summary>
@@ -191,6 +192,7 @@ namespace Rock.Web
             : this( pageId, routeId, parameters )
         {
             QueryString = queryString;
+            FixParametersDictionary();
         }
 
         /// <summary>
@@ -200,6 +202,7 @@ namespace Rock.Web
         public PageReference( PageReference pageReference )
             : this( pageReference.PageId, pageReference.RouteId, pageReference.Parameters, pageReference.QueryString )
         {
+            FixParametersDictionary();
         }
 
         /// <summary>
@@ -209,7 +212,7 @@ namespace Rock.Web
         /// <param name="applicationPath">The application path e.g.: HttpContext.Current.Request.ApplicationPath</param>
         public PageReference( Uri uri, string applicationPath )
         {
-            Parameters = new Dictionary<string, string>();
+            Parameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
 
             var routeInfo = new Rock.Web.RouteInfo( uri, applicationPath );
             if ( routeInfo != null )
@@ -349,6 +352,23 @@ namespace Rock.Web
         #endregion
 
         #region Private Methods
+
+        /// <summary>
+        /// The Parameters dictionary has to be string insensitive for matching a lowered route.
+        /// The method will enforce that.
+        /// </summary>
+        private void FixParametersDictionary()
+        {
+            if ( Parameters == null )
+            {
+                return;
+            }
+
+            if ( Parameters.Comparer != StringComparer.InvariantCultureIgnoreCase )
+            {
+                Parameters = new Dictionary<string, string>( Parameters, StringComparer.InvariantCultureIgnoreCase );
+            }
+        }
 
         /// <summary>
         /// Gets the route id from page and parms.
@@ -539,7 +559,7 @@ namespace Rock.Web
 
                                 parentPageReference.BreadCrumbs = new List<BreadCrumb>();
                                 parentPageReference.QueryString = new NameValueCollection();
-                                parentPageReference.Parameters = new Dictionary<string, string>();
+                                parentPageReference.Parameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
 
                                 string bcName = page.BreadCrumbText;
                                 if ( bcName != string.Empty )
