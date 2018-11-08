@@ -16,8 +16,8 @@
       clientValidate: function (validator, args)
       {
         var $dateRangePicker = $(validator).closest('.js-daterangepicker');
-        var lowerValue = $dateRangePicker.find('.js-lower').data('datepicker');
-        var upperValue = $dateRangePicker.find('.js-upper').data('datepicker');
+        var lowerValue = $dateRangePicker.find('.js-lower input').val();
+        var upperValue = $dateRangePicker.find('.js-upper input').val();
         var required = $dateRangePicker.attr('data-required') == 'true';
         var itemLabelText = $dateRangePicker.attr('data-itemlabel');
 
@@ -25,13 +25,13 @@
 
         if (required) {
             // if required, then make sure that the date range has a start and/or end date (can't both be blank)
-            if (lowerValue.dates.length == 0 && upperValue.dates.length == 0) {
+            if (lowerValue.length == 0 && upperValue.length == 0) {
                 isValid = false;
                 validator.errormessage = itemLabelText + " is required";
             }
         }
 
-        var control = $dateRangePicker
+        var control = $dateRangePicker;
         if (isValid)
         {
           control.removeClass('has-error');
