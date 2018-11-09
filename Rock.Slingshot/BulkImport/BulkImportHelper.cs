@@ -289,33 +289,85 @@ namespace Rock.Slingshot
             var financialAccountAlreadyExistForeignIdHash = new HashSet<int>( qryFinancialAccountsWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
 
             List<FinancialAccount> financialAccountsToInsert = new List<FinancialAccount>();
+            int financialAccountsUpdatedCount = 0;
             var newFinancialAccountImports = financialAccountImports.Where( a => !financialAccountAlreadyExistForeignIdHash.Contains( a.FinancialAccountForeignId ) ).ToList();
 
             var importDateTime = RockDateTime.Now;
 
-            foreach ( var financialAccountImport in newFinancialAccountImports )
+            foreach ( var financialAccountImport in financialAccountImports )
             {
-                var financialAccount = new FinancialAccount();
-                financialAccount.ForeignId = financialAccountImport.FinancialAccountForeignId;
-                financialAccount.ForeignKey = foreignSystemKey;
-                if ( financialAccountImport.Name.Length > 50 )
+                //if financialAccountImport variable does not have a cooresponding account, then create it.
+
+                if (!financialAccountAlreadyExistForeignIdHash.Contains(financialAccountImport.FinancialAccountForeignId))
                 {
-                    financialAccount.Name = financialAccountImport.Name.Left( 50 );
-                    financialAccount.Description = financialAccountImport.Name;
-                }
-                else
-                {
-                    financialAccount.Name = financialAccountImport.Name;
+                    var financialAccount = new FinancialAccount();
+                    financialAccount.ForeignId = financialAccountImport.FinancialAccountForeignId;
+                    financialAccount.ForeignKey = foreignSystemKey;
+                    if (financialAccountImport.Name.Length > 50)
+                    {
+                        financialAccount.Name = financialAccountImport.Name.Left(50);
+                        financialAccount.Description = financialAccountImport.Name;
+                    }
+                    else
+                    {
+                        financialAccount.Name = financialAccountImport.Name;
+                    }
+
+                    financialAccount.CampusId = financialAccountImport.CampusId;
+                    financialAccount.IsTaxDeductible = financialAccountImport.IsTaxDeductible;
+                    financialAccount.CreatedDateTime = importDateTime;
+                    financialAccount.ModifiedDateTime = importDateTime;
+
+                    financialAccountsToInsert.Add(financialAccount);
                 }
 
-                financialAccount.CampusId = financialAccountImport.CampusId;
-                financialAccount.IsTaxDeductible = financialAccountImport.IsTaxDeductible;
-                financialAccount.CreatedDateTime = importDateTime;
-                financialAccount.ModifiedDateTime = importDateTime;
+                //else, the account already is in the system. check for updates (if apply updates selected)
+                else if (financialAccountAlreadyExistForeignIdHash.Contains(financialAccountImport.FinancialAccountForeignId))
+                {
+                    var isAccountUpdated = false;
+                    if (this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate)
+                    {
+                        FinancialAccount existingFinancialAccount = qryFinancialAccountsWithForeignIds.Where(a => a.ForeignId == financialAccountImport.FinancialAccountForeignId).First();
 
-                financialAccountsToInsert.Add( financialAccount );
+                        if (financialAccountImport.Name != existingFinancialAccount.Name)
+                        {
+                            if (financialAccountImport.Name.Length > 50)
+                            {
+                                existingFinancialAccount.Name = financialAccountImport.Name.Truncate(50);
+                                existingFinancialAccount.Description = financialAccountImport.Name;
+                            }
+                            else
+                            {
+                                existingFinancialAccount.Name = financialAccountImport.Name;
+                            }
+                            isAccountUpdated = true;
+                        }
+                        if (financialAccountImport.CampusId != existingFinancialAccount.CampusId)
+                        {
+                            existingFinancialAccount.CampusId = financialAccountImport.CampusId;
+                            isAccountUpdated = true;
+                        }
+                        if (financialAccountImport.IsTaxDeductible != existingFinancialAccount.IsTaxDeductible)
+                        {
+                            existingFinancialAccount.IsTaxDeductible = financialAccountImport.IsTaxDeductible;
+                            isAccountUpdated = true;
+                        }
+                        if (financialAccountImport.IsTaxDeductible != existingFinancialAccount.IsTaxDeductible)
+                        {
+                            existingFinancialAccount.IsTaxDeductible = financialAccountImport.IsTaxDeductible;
+                            isAccountUpdated = true;
+                        }
+                    }
+                    if( isAccountUpdated )
+                    {
+                        //int to return number of records updated from existing accounts
+                        financialAccountsUpdatedCount++;
+                    }
+                    
+                }
             }
-
+            //save changes to financial accounts and insert new ones.
+            rockContext.SaveChanges( true ); 
             rockContext.BulkInsert( financialAccountsToInsert );
 
             var financialAccountsUpdated = false;
@@ -350,7 +402,7 @@ namespace Rock.Slingshot
 
             stopwatchTotal.Stop();
 
-            return GetResponseMessage( financialAccountsToInsert.Count, "Financial Accounts", stopwatchTotal.ElapsedMilliseconds );
+            return GetResponseMessage( financialAccountsToInsert.Count + financialAccountsUpdatedCount, "Financial Accounts", stopwatchTotal.ElapsedMilliseconds );
         }
 
         /// <summary>
@@ -490,6 +542,7 @@ namespace Rock.Slingshot
             var financialBatchAlreadyExistForeignIdHash = new HashSet<int>( qryFinancialBatchsWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
 
             List<FinancialBatch> financialBatchsToInsert = new List<FinancialBatch>();
+            int financialBatchUpdatedCount = 0;
             var newFinancialBatchImports = financialBatchImports.Where( a => !financialBatchAlreadyExistForeignIdHash.Contains( a.FinancialBatchForeignId ) ).ToList();
 
             // Get the primary alias id lookup for each person foreign id
@@ -498,61 +551,156 @@ namespace Rock.Slingshot
 
             var importDateTime = RockDateTime.Now;
 
-            foreach ( var financialBatchImport in newFinancialBatchImports )
+            foreach ( var financialBatchImport in financialBatchImports )
             {
-                var financialBatch = new FinancialBatch();
-                financialBatch.ForeignId = financialBatchImport.FinancialBatchForeignId;
-                financialBatch.ForeignKey = foreignSystemKey;
-                if ( financialBatchImport.Name.Length > 50 )
+                // if financialBatchImport variable does not exist in data, create it.
+                if ( !financialBatchAlreadyExistForeignIdHash.Contains( financialBatchImport.FinancialBatchForeignId ) )
                 {
-                    financialBatch.Name = financialBatchImport.Name.Left( 50 );
+                    var financialBatch = new FinancialBatch();
+                    financialBatch.ForeignId = financialBatchImport.FinancialBatchForeignId;
+                    financialBatch.ForeignKey = foreignSystemKey;
+                    if (financialBatchImport.Name.Length > 50)
+                    {
+                        financialBatch.Name = financialBatchImport.Name.Left(50);
+                    }
+                    else
+                    {
+                        financialBatch.Name = financialBatchImport.Name;
+                    }
+
+                    financialBatch.CampusId = financialBatchImport.CampusId;
+                    financialBatch.ControlAmount = financialBatchImport.ControlAmount;
+
+                    financialBatch.CreatedDateTime = financialBatchImport.CreatedDateTime ?? importDateTime;
+                    financialBatch.BatchEndDateTime = financialBatchImport.EndDate;
+
+                    financialBatch.ModifiedDateTime = financialBatchImport.ModifiedDateTime ?? importDateTime;
+                    financialBatch.BatchStartDateTime = financialBatchImport.StartDate;
+
+                    switch (financialBatchImport.Status)
+                    {
+                        case FinancialBatchImport.BatchStatus.Closed:
+                            financialBatch.Status = BatchStatus.Closed;
+                            break;
+
+                        case FinancialBatchImport.BatchStatus.Open:
+                            financialBatch.Status = BatchStatus.Open;
+                            break;
+
+                        case FinancialBatchImport.BatchStatus.Pending:
+                            financialBatch.Status = BatchStatus.Pending;
+                            break;
+                    }
+
+                    if (financialBatchImport.CreatedByPersonForeignId.HasValue)
+                    {
+                        financialBatch.CreatedByPersonAliasId = personAliasIdLookup.GetValueOrNull(financialBatchImport.CreatedByPersonForeignId.Value);
+                    }
+
+                    if (financialBatchImport.ModifiedByPersonForeignId.HasValue)
+                    {
+                        financialBatch.ModifiedByPersonAliasId = personAliasIdLookup.GetValueOrNull(financialBatchImport.ModifiedByPersonForeignId.Value);
+                    }
+
+                    financialBatchsToInsert.Add(financialBatch);
                 }
-                else
+
+                //if batch already exists, see if always update is true and update existing batches.
+                else if (financialBatchAlreadyExistForeignIdHash.Contains(financialBatchImport.FinancialBatchForeignId))
                 {
-                    financialBatch.Name = financialBatchImport.Name;
+                    var isBatchUpdated = false;
+                    if (this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate)
+                    {
+                        FinancialBatch existingFinancialBatch = qryFinancialBatchsWithForeignIds.Where(a => a.ForeignId == financialBatchImport.FinancialBatchForeignId).First();
+
+                        if (financialBatchImport.Name != existingFinancialBatch.Name)
+                        {
+                            if (financialBatchImport.Name.Length > 50)
+                            {
+                                existingFinancialBatch.Name = financialBatchImport.Name.Truncate(50);
+                            }
+                            else
+                            {
+                                existingFinancialBatch.Name = financialBatchImport.Name;
+                            }
+
+                            isBatchUpdated = true;
+                        }
+
+                        if (financialBatchImport.CampusId != existingFinancialBatch.CampusId)
+                        {
+                            existingFinancialBatch.CampusId = financialBatchImport.CampusId;
+                            isBatchUpdated = true;
+                        }
+                        if (financialBatchImport.ControlAmount != existingFinancialBatch.ControlAmount)
+                        {
+                            existingFinancialBatch.ControlAmount = financialBatchImport.ControlAmount;
+                            isBatchUpdated = true;
+                        }
+
+                        if (financialBatchImport.CreatedDateTime != existingFinancialBatch.CreatedDateTime)
+                        {
+                            existingFinancialBatch.CreatedDateTime = financialBatchImport.CreatedDateTime;
+                            isBatchUpdated = true;
+                        }
+                        if (financialBatchImport.ModifiedDateTime != existingFinancialBatch.ModifiedDateTime)
+                        {
+                            existingFinancialBatch.ModifiedDateTime = financialBatchImport.ModifiedDateTime;
+                            isBatchUpdated = true;
+                        }
+                        if (financialBatchImport.EndDate != existingFinancialBatch.BatchEndDateTime)
+                        {
+                            existingFinancialBatch.BatchEndDateTime = financialBatchImport.EndDate;
+                            isBatchUpdated = true;
+                        }
+                        if (financialBatchImport.StartDate != existingFinancialBatch.BatchStartDateTime)
+                        {
+                            existingFinancialBatch.BatchStartDateTime = financialBatchImport.StartDate;
+                            isBatchUpdated = true;
+                        }
+
+                        //override status as necessary
+                        switch (financialBatchImport.Status)
+                        {
+                            case FinancialBatchImport.BatchStatus.Closed:
+                                existingFinancialBatch.Status = BatchStatus.Closed;
+                                break;
+
+                            case FinancialBatchImport.BatchStatus.Open:
+                                existingFinancialBatch.Status = BatchStatus.Open;
+                                break;
+
+                            case FinancialBatchImport.BatchStatus.Pending:
+                                existingFinancialBatch.Status = BatchStatus.Pending;
+                                break;
+                        }
+
+                        //override as necessary
+                        if (financialBatchImport.CreatedByPersonForeignId.HasValue)
+                        {
+                            existingFinancialBatch.CreatedByPersonAliasId = personAliasIdLookup.GetValueOrNull(financialBatchImport.CreatedByPersonForeignId.Value);
+                        }
+
+                        if (financialBatchImport.ModifiedByPersonForeignId.HasValue)
+                        {
+                            existingFinancialBatch.ModifiedByPersonAliasId = personAliasIdLookup.GetValueOrNull(financialBatchImport.ModifiedByPersonForeignId.Value);
+                        }
+
+                        //update totals
+                        if (isBatchUpdated)
+                        {
+                            financialBatchUpdatedCount++;
+                        }
+                    }
                 }
 
-                financialBatch.CampusId = financialBatchImport.CampusId;
-                financialBatch.ControlAmount = financialBatchImport.ControlAmount;
-
-                financialBatch.CreatedDateTime = financialBatchImport.CreatedDateTime ?? importDateTime;
-                financialBatch.BatchEndDateTime = financialBatchImport.EndDate;
-
-                financialBatch.ModifiedDateTime = financialBatchImport.ModifiedDateTime ?? importDateTime;
-                financialBatch.BatchStartDateTime = financialBatchImport.StartDate;
-
-                switch ( financialBatchImport.Status )
-                {
-                    case FinancialBatchImport.BatchStatus.Closed:
-                        financialBatch.Status = BatchStatus.Closed;
-                        break;
-
-                    case FinancialBatchImport.BatchStatus.Open:
-                        financialBatch.Status = BatchStatus.Open;
-                        break;
-
-                    case FinancialBatchImport.BatchStatus.Pending:
-                        financialBatch.Status = BatchStatus.Pending;
-                        break;
-                }
-
-                if ( financialBatchImport.CreatedByPersonForeignId.HasValue )
-                {
-                    financialBatch.CreatedByPersonAliasId = personAliasIdLookup.GetValueOrNull( financialBatchImport.CreatedByPersonForeignId.Value );
-                }
-
-                if ( financialBatchImport.ModifiedByPersonForeignId.HasValue )
-                {
-                    financialBatch.ModifiedByPersonAliasId = personAliasIdLookup.GetValueOrNull( financialBatchImport.ModifiedByPersonForeignId.Value );
-                }
-
-                financialBatchsToInsert.Add( financialBatch );
             }
-
+            //save changes to financial batches and insert new ones.
+            rockContext.SaveChanges(true);
             rockContext.BulkInsert( financialBatchsToInsert );
 
             stopwatchTotal.Stop();
-            return GetResponseMessage( financialBatchsToInsert.Count, "Financial Batches", stopwatchTotal.ElapsedMilliseconds );
+            return GetResponseMessage( financialBatchsToInsert.Count + financialBatchUpdatedCount, "Financial Batches", stopwatchTotal.ElapsedMilliseconds );
         }
 
         #endregion FinancialBatchImport
@@ -575,6 +723,7 @@ namespace Rock.Slingshot
             var financialTransactionAlreadyExistForeignIdHash = new HashSet<int>( qryFinancialTransactionsWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
 
             var newFinancialTransactionImports = financialTransactionImports.Where( a => !financialTransactionAlreadyExistForeignIdHash.Contains( a.FinancialTransactionForeignId ) ).ToList();
+            var existingFinancialTransactionImports = financialTransactionImports.Where(a => financialTransactionAlreadyExistForeignIdHash.Contains(a.FinancialTransactionForeignId)).ToList();
 
             // Get the primary alias id lookup for each person foreign id
             var personAliasIdLookup = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.ForeignId.HasValue && a.Person.ForeignKey == foreignSystemKey && a.PersonId == a.AliasPersonId )
@@ -688,6 +837,81 @@ namespace Rock.Slingshot
 
             OnProgress?.Invoke( $"Bulk Importing FinancialTransactions ( Transaction Details )... " );
             rockContext.BulkInsert( financialTransactionDetailsToInsert );
+
+
+            //if apply updates is true, use existing transactions and update
+            if (this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate)
+            {
+                foreach (var financialTransactionImport in existingFinancialTransactionImports)
+                {
+                    FinancialTransaction financialTransaction = qryFinancialTransactionsWithForeignIds.Where(a => a.ForeignId.Value == financialTransactionImport.FinancialTransactionForeignId).First();
+
+                    //fors
+                    if (financialTransactionImport.AuthorizedPersonForeignId.HasValue)
+                    {
+                        financialTransaction.AuthorizedPersonAliasId = personAliasIdLookup.GetValueOrNull(financialTransactionImport.AuthorizedPersonForeignId.Value);
+                    }
+
+                    financialTransaction.BatchId = batchIdLookup.GetValueOrNull(financialTransactionImport.BatchForeignId);
+                    financialTransaction.FinancialPaymentDetailId = financialPaymentDetailLookup.GetValueOrNull(financialTransactionImport.FinancialTransactionForeignId);
+
+                    financialTransaction.Summary = financialTransactionImport.Summary;
+                    financialTransaction.TransactionCode = financialTransactionImport.TransactionCode;
+                    financialTransaction.TransactionDateTime = financialTransactionImport.TransactionDate;
+                    financialTransaction.SourceTypeValueId = financialTransactionImport.TransactionSourceValueId;
+                    financialTransaction.TransactionTypeValueId = financialTransactionImport.TransactionTypeValueId;
+                    financialTransaction.CreatedDateTime = financialTransactionImport.CreatedDateTime; 
+                    financialTransaction.ModifiedDateTime = financialTransactionImport.ModifiedDateTime; 
+
+                    if (financialTransactionImport.CreatedByPersonForeignId.HasValue)
+                    {
+                        financialTransaction.CreatedByPersonAliasId = personAliasIdLookup.GetValueOrNull(financialTransactionImport.CreatedByPersonForeignId.Value);
+                    }
+
+                    if (financialTransactionImport.ModifiedByPersonForeignId.HasValue)
+                    {
+                        financialTransaction.ModifiedByPersonAliasId = personAliasIdLookup.GetValueOrNull(financialTransactionImport.ModifiedByPersonForeignId.Value);
+                    }
+
+
+                    var qryFinancialTransactionDetailsWithForeignIds = new FinancialTransactionDetailService(rockContext).Queryable().Where(a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey);
+                    //loop through transactiondetails
+                    foreach (var financialTransactionDetailImport in financialTransactionImport.FinancialTransactionDetailImports)
+                    {
+                        //var financialTransactionDetail = new FinancialTransactionDetail();
+
+                        FinancialTransactionDetail financialTransactionDetail = qryFinancialTransactionDetailsWithForeignIds.Where(a => a.ForeignId.Value == financialTransactionDetailImport.FinancialTransactionDetailForeignId).First();
+
+
+                        financialTransactionDetail.TransactionId = financialTransactionIdLookup[financialTransactionImport.FinancialTransactionForeignId];
+                        financialTransactionDetail.ForeignId = financialTransactionDetailImport.FinancialTransactionDetailForeignId;
+                        financialTransactionDetail.ForeignKey = foreignSystemKey;
+                        financialTransactionDetail.Amount = financialTransactionDetailImport.Amount;
+                        financialTransactionDetail.AccountId = financialAccountIdLookup[financialTransactionDetailImport.FinancialAccountForeignId.Value];
+                        financialTransactionDetail.Summary = financialTransactionDetailImport.Summary;
+                        financialTransactionDetail.CreatedDateTime = financialTransactionDetailImport.CreatedDateTime ?? importDateTime;
+                        financialTransactionDetail.ModifiedDateTime = financialTransactionDetailImport.ModifiedDateTime ?? importDateTime;
+
+                        if (financialTransactionDetailImport.CreatedByPersonForeignId.HasValue)
+                        {
+                            financialTransactionDetail.CreatedByPersonAliasId = personAliasIdLookup.GetValueOrNull(financialTransactionDetailImport.CreatedByPersonForeignId.Value);
+                        }
+
+                        if (financialTransactionDetailImport.ModifiedByPersonForeignId.HasValue)
+                        {
+                            financialTransactionDetail.ModifiedByPersonAliasId = personAliasIdLookup.GetValueOrNull(financialTransactionDetailImport.ModifiedByPersonForeignId.Value);
+                        }
+
+                        financialTransactionDetailsToInsert.Add(financialTransactionDetail);
+                    }
+
+                }
+                //save existing updates to transactions
+                rockContext.SaveChanges(true);
+            }
+
+
+
 
             stopwatchTotal.Stop();
             return GetResponseMessage( financialTransactionsToInsert.Count, "Financial Transactions", stopwatchTotal.ElapsedMilliseconds );
@@ -2076,35 +2300,68 @@ and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
 
             var importDateTime = RockDateTime.Now;
 
-            foreach ( var financialPledgeImport in newFinancialPledgeImports )
+            foreach ( var financialPledgeImport in financialPledgeImports )
             {
-                var financialPledge = new FinancialPledge();
-                financialPledge.ForeignId = financialPledgeImport.FinancialPledgeForeignId;
-                financialPledge.ForeignKey = foreignSystemKey;
-                financialPledge.PersonAliasId = personAliasIdLookup.GetValueOrNull( financialPledgeImport.PersonForeignId );
-
-                if ( financialPledgeImport.FinancialAccountForeignId.HasValue )
+                if (!financialPledgeAlreadyExistForeignIdHash.Contains(financialPledgeImport.FinancialPledgeForeignId))
                 {
-                    financialPledge.AccountId = financialAccountIdLookup.GetValueOrNull( financialPledgeImport.FinancialAccountForeignId.Value );
-                }
+                    var financialPledge = new FinancialPledge();
+                    financialPledge.ForeignId = financialPledgeImport.FinancialPledgeForeignId;
+                    financialPledge.ForeignKey = foreignSystemKey;
+                    financialPledge.PersonAliasId = personAliasIdLookup.GetValueOrNull(financialPledgeImport.PersonForeignId);
 
-                if ( financialPledgeImport.GroupForeignId.HasValue )
+                    if (financialPledgeImport.FinancialAccountForeignId.HasValue)
+                    {
+                        financialPledge.AccountId = financialAccountIdLookup.GetValueOrNull(financialPledgeImport.FinancialAccountForeignId.Value);
+                    }
+
+                    if (financialPledgeImport.GroupForeignId.HasValue)
+                    {
+                        financialPledge.GroupId = familyGroupIdLookup.GetValueOrNull(financialPledgeImport.GroupForeignId.Value);
+                    }
+
+                    financialPledge.TotalAmount = financialPledgeImport.TotalAmount;
+
+                    financialPledge.PledgeFrequencyValueId = financialPledgeImport.PledgeFrequencyValueId;
+                    financialPledge.StartDate = financialPledgeImport.StartDate;
+                    financialPledge.EndDate = financialPledgeImport.EndDate;
+
+                    financialPledge.CreatedDateTime = financialPledgeImport.CreatedDateTime ?? importDateTime;
+                    financialPledge.ModifiedDateTime = financialPledgeImport.ModifiedDateTime ?? importDateTime;
+
+                    financialPledgesToInsert.Add(financialPledge); 
+                }
+                // if pledge already exists and always update is true, update pledge
+                else if (financialPledgeAlreadyExistForeignIdHash.Contains(financialPledgeImport.FinancialPledgeForeignId))
                 {
-                    financialPledge.GroupId = familyGroupIdLookup.GetValueOrNull( financialPledgeImport.GroupForeignId.Value );
+                    if (this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate)
+                    {
+                        FinancialPledge financialPledge = qryFinancialPledgesWithForeignIds.Where(a => a.ForeignId == financialPledgeImport.FinancialPledgeForeignId).First();
+                        
+                        financialPledge.PersonAliasId = personAliasIdLookup.GetValueOrNull(financialPledgeImport.PersonForeignId);
+
+                        if (financialPledgeImport.FinancialAccountForeignId.HasValue)
+                        {
+                            financialPledge.AccountId = financialAccountIdLookup.GetValueOrNull(financialPledgeImport.FinancialAccountForeignId.Value);
+                        }
+
+                        if (financialPledgeImport.GroupForeignId.HasValue)
+                        {
+                            financialPledge.GroupId = familyGroupIdLookup.GetValueOrNull(financialPledgeImport.GroupForeignId.Value);
+                        }
+
+                        financialPledge.TotalAmount = financialPledgeImport.TotalAmount;
+
+                        financialPledge.PledgeFrequencyValueId = financialPledgeImport.PledgeFrequencyValueId;
+                        financialPledge.StartDate = financialPledgeImport.StartDate;
+                        financialPledge.EndDate = financialPledgeImport.EndDate;
+
+                        financialPledge.CreatedDateTime = financialPledgeImport.CreatedDateTime ?? importDateTime;
+                        financialPledge.ModifiedDateTime = financialPledgeImport.ModifiedDateTime ?? importDateTime;
+                    }
                 }
-
-                financialPledge.TotalAmount = financialPledgeImport.TotalAmount;
-
-                financialPledge.PledgeFrequencyValueId = financialPledgeImport.PledgeFrequencyValueId;
-                financialPledge.StartDate = financialPledgeImport.StartDate;
-                financialPledge.EndDate = financialPledgeImport.EndDate;
-
-                financialPledge.CreatedDateTime = financialPledgeImport.CreatedDateTime ?? importDateTime;
-                financialPledge.ModifiedDateTime = financialPledgeImport.ModifiedDateTime ?? importDateTime;
-
-                financialPledgesToInsert.Add( financialPledge );
             }
-
+            //save and insert new
+            rockContext.SaveChanges( true );
             rockContext.BulkInsert( financialPledgesToInsert );
 
             stopwatchTotal.Stop();
