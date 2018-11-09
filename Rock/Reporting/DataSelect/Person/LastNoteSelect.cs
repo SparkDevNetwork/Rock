@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
@@ -139,7 +139,7 @@ namespace Rock.Reporting.DataSelect.Person
                 noteTypeId = selectionValues[0].AsIntegerOrNull();
             }
 
-            var entityTypeIdPerson = CacheEntityType.GetId<Rock.Model.Person>();
+            var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
 
             // only get PersonNotes that are not Private
             var qryNotes = new NoteService( context ).Queryable().Where( a => a.NoteType.EntityTypeId == entityTypeIdPerson && a.IsPrivateNote == false );
@@ -169,7 +169,7 @@ namespace Rock.Reporting.DataSelect.Person
             parentControl.Controls.Add( ddlNoteType );
 
             var noteTypeService = new NoteTypeService( new RockContext() );
-            var entityTypeIdPerson = CacheEntityType.GetId<Rock.Model.Person>();
+            var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
             var noteTypes = noteTypeService.Queryable().Where( a => a.EntityTypeId == entityTypeIdPerson ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new
             {
                 a.Id,

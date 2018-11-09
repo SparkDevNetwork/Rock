@@ -24,7 +24,7 @@ using System.Web.Http;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -77,7 +77,7 @@ namespace Rock.Rest.Controllers
                                 TimeSpan ts = interactionEnd.Subtract( interactionStart );
                                 string duration = ( ts.TotalMinutes >= 60 ? $"{ts:%h} hours and " : "" ) + $"{ts:%m} minutes";
 
-                                Interaction interaction = interactionService.Queryable().Where( i => i.ForeignKey == presence.SessionId ).FirstOrDefault();
+                                Interaction interaction = interactionService.Queryable().Where( i => i.ForeignKey != null && i.ForeignKey == presence.SessionId ).FirstOrDefault();
                                 if ( interaction == null )
                                 {
                                     if ( !interactionComponentIds.ContainsKey( presence.Space ) )

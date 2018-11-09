@@ -29,7 +29,7 @@
                     <asp:HiddenField ID="hfCommunicationId" runat="server" />
                     <asp:HiddenField ID="hfMediumId" runat="server" />
 
-                    <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <asp:CustomValidator ID="cvDelayDateTime" runat="server" />
 
                     <div class="well well-pillwrap">
@@ -108,6 +108,7 @@
                 </asp:Panel>
 
                 <asp:Panel ID="pnlResult" runat="server" Visible="false" CssClass="js-pnl-result">
+                    <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
                     <Rock:NotificationBox ID="nbResult" runat="server" NotificationBoxType="Success" />
                     <br />
                     <asp:HyperLink ID="hlViewCommunication" runat="server" Text="View Communication" />

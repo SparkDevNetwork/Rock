@@ -26,7 +26,7 @@ using System.Data.Entity;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Security;
@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Event
     [Description( "Block that takes a calendar item and displays occurrences for it using Lava." )]
     
     [EventItemField("Event Item", "The event item to use to display occurrences for.", order: 0)]
-    [CampusesField("Campuses", "List of which campuses to show occurrences for. This setting will be ignored if 'Use Campus Context' is enabled.", order:1, includeInactive:true)]
+    [CampusesField("Campuses", "List of which campuses to show occurrences for. This setting will be ignored if 'Use Campus Context' is enabled.", required: false, order:1, includeInactive:true)]
     [BooleanField("Use Campus Context", "Determine if the campus should be read from the campus context of the page.", order: 2)]
     [SlidingDateRangeField("Date Range", "Optional date range to filter the occurrences on.", false, enabledSlidingDateRangeTypes: "Next,Upcoming,Current", order:3)]
     [IntegerField("Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 4)]
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Event
                 // filter occurrences for campus
                 if ( GetAttributeValue( "UseCampusContext" ).AsBoolean() )
                 {
-                    var campusEntityType = CacheEntityType.Get( "Rock.Model.Campus" );
+                    var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
                     var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
                     if ( contextCampus != null )
@@ -142,7 +142,7 @@ namespace RockWeb.Blocks.Event
                     if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "Campuses" ) ) )
                     {
                         var selectedCampusGuids = GetAttributeValue( "Campuses" ).Split( ',' ).AsGuidList();
-                        var selectedCampusIds = selectedCampusGuids.Select( a => CacheCampus.Get( a ) ).Where( a => a != null ).Select( a => a.Id );
+                        var selectedCampusIds = selectedCampusGuids.Select( a => CampusCache.Get( a ) ).Where( a => a != null ).Select( a => a.Id );
 
                         // If an EventItemOccurrence's CampusId is null, then the occurrence is an 'All Campuses' event occurrence, so include those
                         qry = qry.Where( e => e.CampusId == null || selectedCampusIds.Contains( e.CampusId.Value) );

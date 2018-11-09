@@ -41,7 +41,7 @@ namespace Rock.Model
                 .Where( a =>
                     a.ActionType.WorkflowFormId.HasValue &&
                     ( a.ActionType.ActivityType.IsActive ?? true ) &&
-                    ( a.ActionType.ActivityType.WorkflowType.IsActive ) &&
+                    ( a.ActionType.ActivityType.WorkflowType.IsActive ?? true ) &&
                     a.ActionType.ActivityType.WorkflowType.CategoryId.HasValue &&
                     !a.CompletedDateTime.HasValue &&
                     a.Activity.ActivatedDateTime.HasValue &&

@@ -22,7 +22,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
@@ -109,10 +109,10 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             restApiUrl += string.Format( "&metricValueType={0}", metricValueType );
 
             string[] entityValues = ( GetAttributeValue( "Entity" ) ?? string.Empty ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-            CacheEntityType entityType = null;
+            EntityTypeCache entityType = null;
             if ( entityValues.Length >= 1 )
             {
-                entityType = CacheEntityType.Get( entityValues[0].AsGuid() );
+                entityType = EntityTypeCache.Get( entityValues[0].AsGuid() );
             }
 
             if ( entityValues.Length == 2 )
@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
                 if ( contextEntity != null )
                 {
-                    restApiUrl += string.Format( "&entityTypeId={0}&entityId={1}", CacheEntityType.GetId( contextEntity.GetType() ), contextEntity.Id );
+                    restApiUrl += string.Format( "&entityTypeId={0}&entityId={1}", EntityTypeCache.GetId( contextEntity.GetType() ), contextEntity.Id );
                 }
             }
 

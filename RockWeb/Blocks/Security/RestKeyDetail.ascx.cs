@@ -25,7 +25,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
@@ -90,14 +90,14 @@ namespace RockWeb.Blocks.Security
 
                 // the rest user name gets saved as the last name on a person
                 restUser.LastName = tbName.Text;
-                restUser.RecordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() ).Id;
+                restUser.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() ).Id;
                 if ( cbActive.Checked )
                 {
-                    restUser.RecordStatusValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                    restUser.RecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
                 }
                 else
                 {
-                    restUser.RecordStatusValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
+                    restUser.RecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
                 }
 
                 if ( restUser.IsValid )
@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Security
                 }
 
                 // the description gets saved as a system note for the person
-                var noteType = CacheNoteType.Get( Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE.AsGuid() );
+                var noteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE.AsGuid() );
                 if ( noteType != null )
                 {
                     var noteService = new NoteService( rockContext );
@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Security
             {
                 tbName.Text = restUser.LastName;
                 cbActive.Checked = false;
-                var activeStatusId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                var activeStatusId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
                 if ( restUser.RecordStatusValueId == activeStatusId )
                 {
                     cbActive.Checked = true;

@@ -31,7 +31,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Event
         {
             base.OnInit( e );
 
-            ddlCampus.DataSource = CacheCampus.All();
+            ddlCampus.DataSource = CampusCache.All();
             ddlCampus.DataBind();
             ddlCampus.Items.Insert( 0, new ListItem( All.Text, string.Empty ) );
         }
@@ -376,7 +376,7 @@ namespace RockWeb.Blocks.Event
         protected void lbCalendarsDetail_Click( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
-            var pageCache = CachePage.Get( RockPage.PageId );
+            var pageCache = PageCache.Get( RockPage.PageId );
             if ( pageCache != null && pageCache.ParentPage != null && pageCache.ParentPage.ParentPage != null && pageCache.ParentPage.ParentPage.ParentPage != null )
             {
                 NavigateToPage( pageCache.ParentPage.ParentPage.ParentPage.Guid, qryParams );
@@ -400,7 +400,7 @@ namespace RockWeb.Blocks.Event
                     var qryParams = new Dictionary<string, string>();
                     qryParams.Add( "EventCalendarId", eventItem.EventCalendarId.ToString() );
 
-                    var pageCache = CachePage.Get( RockPage.PageId );
+                    var pageCache = PageCache.Get( RockPage.PageId );
                     if ( pageCache != null && pageCache.ParentPage != null && pageCache.ParentPage.ParentPage != null )
                     {
                         NavigateToPage( pageCache.ParentPage.ParentPage.Guid, qryParams );
@@ -926,6 +926,11 @@ namespace RockWeb.Blocks.Event
         {
             wpAttributes.Visible = false;
             phAttributeEdits.Controls.Clear();
+
+            if ( eventItemOccurrence.EventItemId == 0 )
+            {
+                eventItemOccurrence.EventItemId = PageParameter( "EventItemId" ).AsIntegerOrNull() ?? 0;
+            }
 
             eventItemOccurrence.LoadAttributes();
 

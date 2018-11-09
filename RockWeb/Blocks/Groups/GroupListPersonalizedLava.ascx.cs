@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Lava;
@@ -39,20 +39,29 @@ namespace RockWeb.Blocks.Groups
     [Description( "Lists all group that the person is a member of using a Lava template." )]
 
     [LinkedPage( "Detail Page", "", false, "", "", 0 )]
-    [GroupField( "Parent Group", "If a group is chosen, only the groups under this group will be displayed.", false, order: 2 )]
-    [IntegerField( "Cache Duration", "Length of time in seconds to cache which groups are descendants of the parent group.", false, 3600, "", 3 )]
-    [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 4 )]
-    [GroupTypesField( "Exclude Group Types", "The group types to exclude from the list (only valid if including all groups).", false, "", "", 5 )]
-    [CodeEditorField( "Lava Template", "The lava template to use to format the group list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupListSidebar.lava' %}", "", 6 )]
-    [BooleanField( "Display Inactive Groups", "Include inactive groups in the lava results", false )]
-    [CustomDropdownListField( "Initial Active Setting", "Select whether to initially show all or just active groups in the lava", "0^All,1^Active", false, "1", "", 8 )]
-    [TextField( "Inactive Parameter Name", "The page parameter name to toggle inactive groups", false, "showinactivegroups" )]
+    [GroupField( "Parent Group", "If a group is chosen, only the groups under this group will be displayed.", false, order: 1 )]
+    [IntegerField( "Cache Duration", "Length of time in seconds to cache which groups are descendants of the parent group.", false, 3600, "", 2 )]
+    [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 3 )]
+    [GroupTypesField( "Exclude Group Types", "The group types to exclude from the list (only valid if including all groups).", false, "", "", 4 )]
+    [CodeEditorField( "Lava Template", "The lava template to use to format the group list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupListSidebar.lava' %}", "", 5 )]
+    [BooleanField( "Display Inactive Groups", "Include inactive groups in the lava results", false, order: 6 )]
+    [CustomDropdownListField( "Initial Active Setting", "Select whether to initially show all or just active groups in the lava", "0^All,1^Active", false, "1", "", 7 )]
+    [TextField( "Inactive Parameter Name", "The page parameter name to toggle inactive groups", false, "showinactivegroups", order: 8 )]
+    [CustomCheckboxListField( "Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", CACHE_TAG_LIST, false, key: "CacheTags", order: 9 )]
+
+
     public partial class GroupListPersonalizedLava : RockBlock
     {
 
         #region Fields
 
         private bool _hideInactive = true;
+
+        private const string CACHE_TAG_LIST = @"
+            SELECT CAST([DefinedValue].[Value] AS VARCHAR) AS [Value], [DefinedValue].[Value] AS [Text]
+            FROM[DefinedType]
+            JOIN[DefinedValue] ON[DefinedType].[Id] = [DefinedValue].[DefinedTypeId]
+            WHERE[DefinedType].[Guid] = 'BDF73089-9154-40C1-90E4-74518E9937DC'";
 
         #endregion
 
@@ -137,7 +146,8 @@ namespace RockWeb.Blocks.Groups
                         availableGroupIds = new List<int>();
                     }
                     var cacheLength = GetAttributeValue( "CacheDuration" ).AsInteger();
-                    AddCacheItem( "GroupListPersonalizedLava:" + parentGroupGuid.ToString(), availableGroupIds, cacheLength );
+                    string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                    AddCacheItem( "GroupListPersonalizedLava:" + parentGroupGuid.ToString(), availableGroupIds, cacheLength, cacheTags );
                 }
                 qry = qry.Where( m => availableGroupIds.Contains( m.GroupId ) );
             }
@@ -147,7 +157,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( _hideInactive )
             {
-                qry = qry.Where( m => m.Group.IsActive == true );
+                qry = qry.Where( m => m.Group.IsActive == true && !m.Group.IsArchived );
             }
 
             List<Guid> includeGroupTypeGuids = GetAttributeValue( "IncludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();

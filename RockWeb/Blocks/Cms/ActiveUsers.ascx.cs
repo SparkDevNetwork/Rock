@@ -26,7 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of active users of a website." )]
     [SiteField( "Site", "Site to show current active users for.", true )]
-    [BooleanField( "Show Site Name As Title", "Detmine whether to show the name of the site as a title above the list.", true )]
+    [BooleanField( "Show Site Name As Title", "Determine whether to show the name of the site as a title above the list.", true )]
     [BooleanField( "Show Guest Visitors", "Displays the number of guests visiting the site. (Guests are considered users not logged in.)", true )]
     [LinkedPage( "Person Profile Page", "Page reference to the person profile page you would like to use as a link. Not providing a reference will suppress the creation of a link.", false )]
     [IntegerField( "Page View Count", "The number of past page views to show on roll-over. A value of 0 will disable the roll-over.", true, 5 )]
@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Cms
         private void ShowActiveUsers()
         {
             int? siteId = GetAttributeValue( "Site" ).AsIntegerOrNull();
-            if ( !siteId.HasValue || CacheSite.Get(siteId.Value) == null )
+            if ( !siteId.HasValue || SiteCache.Get(siteId.Value) == null )
             {
                 lMessages.Text = "<div class='alert alert-warning'>No site is currently configured.</div>";
                 return;
@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Cms
 
                 StringBuilder sbUsers = new StringBuilder();
 
-                var site = CacheSite.Get( siteId.Value );
+                var site = SiteCache.Get( siteId.Value );
                 lSiteName.Text = "<h4>" + site.Name + "</h4>";
                 lSiteName.Visible = GetAttributeValue( "ShowSiteNameAsTitle" ).AsBoolean();
 

@@ -28,7 +28,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -78,7 +78,7 @@ namespace Rock.Reporting.DataFilter.Person
                 {
                     // at least one item should be set for this to be valid (otherwise it's just data view bloat).
                     return LocationTypeGuid.HasValue || ! string.IsNullOrWhiteSpace( Street1 ) || !string.IsNullOrWhiteSpace( City )
-                        || !string.IsNullOrWhiteSpace( State ) || !string.IsNullOrWhiteSpace( PostalCode );
+                        || !string.IsNullOrWhiteSpace( State ) || !string.IsNullOrWhiteSpace( PostalCode ) || !string.IsNullOrWhiteSpace( Country );
                 }
             }
 
@@ -191,7 +191,13 @@ function() {
   var city = $('.js-addresscontrol > input[id$_tbCity""]', $content).text();
   var street = $('.js-addresscontrol > input[id$_tbStreet1""]', $content).text();
   var state = $('.js-addresscontrol > select[id$=""_ddlState""]', $content).find(':selected').text();
+
+  if (!state) {
+     state = $('.js-addresscontrol > select[id$=""_tbState""]', $content).find(':selected').text();
+  }
+
   var postalCode = $('.js-addresscontrol > input[id$=""_tbPostalCode""]', $content).text();
+  var country = $('.js-addresscontrol > input[id$=""_ddlCountry""]', $content).find(':selected').text();
   var result = 'Location';
 
   if (locationType) {
@@ -212,6 +218,10 @@ function() {
 
   if (postalCode) {
      result = result + ' zip ""' + postalCode + "";
+  }
+
+  if (country) {
+     result = result + ' country ""' + country + "";
   }
 
   return result;
@@ -246,12 +256,12 @@ function() {
                 string state = string.IsNullOrWhiteSpace( settings.State ) ? null : settings.State;
                 string postalCode = string.IsNullOrWhiteSpace( settings.PostalCode ) ? null : settings.PostalCode;
 
-                string countryName = CacheGlobalAttributes.Get().GetValue( "SupportInternationalAddresses" ).AsBoolean() &&
+                string countryName = GlobalAttributesCache.Get().GetValue( "SupportInternationalAddresses" ).AsBoolean() &&
                     ! string.IsNullOrWhiteSpace( settings.Country ) ? settings.Country : null;
 
                 if ( settings.LocationTypeGuid.HasValue)
                 {
-                    locationTypeName = CacheDefinedValue.Get( settings.LocationTypeGuid.Value, context ).Value;
+                    locationTypeName = DefinedValueCache.Get( settings.LocationTypeGuid.Value, context ).Value;
                 }
 
                 result = string.Format( "Location {0} with: {1} {2} {3} {4} {5}",
@@ -284,7 +294,7 @@ function() {
             ddlLocationType.Label = "Address Type";
             ddlLocationType.Help = "Specifies the type of address the filter will be applied to. If no value is selected, all of the Person's addresses will be considered.";
 
-            var familyLocations = CacheGroupType.GetFamilyGroupType().LocationTypeValues.OrderBy( a => a.Order ).ThenBy( a => a.Value );
+            var familyLocations = GroupTypeCache.GetFamilyGroupType().LocationTypeValues.OrderBy( a => a.Order ).ThenBy( a => a.Value );
 
             foreach (var value in familyLocations)
             {
@@ -411,7 +421,7 @@ function() {
             }
 
             // Get all the Family Groups that have a Location matching one of the candidate Locations.
-            int familyGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
+            int familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
 
             var groupLocationsQuery = new GroupLocationService( context ).Queryable()
                 .Where( gl => gl.Group.GroupTypeId == familyGroupTypeId && locationQuery.Any( l => l.Id == gl.LocationId ) );
@@ -419,7 +429,7 @@ function() {
             // If a Location Type is specified, apply the filter condition.
             if (settings.LocationTypeGuid.HasValue)
             {
-                int groupLocationTypeId = CacheDefinedValue.Get( settings.LocationTypeGuid.Value ).Id;
+                int groupLocationTypeId = DefinedValueCache.Get( settings.LocationTypeGuid.Value ).Id;
                 groupLocationsQuery = groupLocationsQuery.Where( x => x.GroupLocationTypeValue.Id == groupLocationTypeId );
             }
 

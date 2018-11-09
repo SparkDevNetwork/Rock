@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Financial
 {
@@ -120,12 +120,12 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the currency type value.
         /// </summary>
-        public virtual CacheDefinedValue CurrencyTypeValue { get { return null; } }
+        public virtual DefinedValueCache CurrencyTypeValue { get { return null; } }
 
         /// <summary>
         /// Gets the credit card type value id.
         /// </summary>
-        public virtual CacheDefinedValue CreditCardTypeValue { get { return null; } }
+        public virtual DefinedValueCache CreditCardTypeValue { get { return null; } }
 
         /// <summary>
         /// Gets or sets the description.
@@ -155,7 +155,7 @@ namespace Rock.Financial
                 string result = string.Format( "{0} {1} {2}, {3} {4}",
                     this.Street1, this.Street2, this.City, this.State, this.PostalCode ).ReplaceWhileExists( "  ", " " );
 
-                var countryValue = Rock.Cache.CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
+                var countryValue = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                     .DefinedValues
                     .Where( v => v.Value.Equals( this.Country, StringComparison.OrdinalIgnoreCase ) )
                     .FirstOrDefault();

@@ -28,7 +28,7 @@ using System.Web;
 using System.Web.UI;
 
 using Rock;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
 
             // Get Version, database info and executing assembly location
-            lRockVersion.Text = string.Format("{0} <small>({1})</small>", VersionInfo.GetRockProductVersionFullName(), VersionInfo.GetRockProductVersionNumber() );
+            lRockVersion.Text = string.Format( "{0} <small>({1})</small>", VersionInfo.GetRockProductVersionFullName(), VersionInfo.GetRockProductVersionNumber() );
             lClientCulture.Text = System.Globalization.CultureInfo.CurrentCulture.ToString();
             lDatabase.Text = GetDbInfo();
             lSystemDateTime.Text = DateTime.Now.ToString( "G" ) + " " + DateTime.Now.ToString( "zzz" );
@@ -72,7 +72,11 @@ namespace RockWeb.Blocks.Administration
                 lProcessStartTime.Text = "-";
             }
 
-            lExecLocation.Text = Assembly.GetExecutingAssembly().Location;
+            try
+            {
+                lExecLocation.Text = Assembly.GetExecutingAssembly().Location + "<br/>" + HttpRuntime.AppDomainAppPath;
+            }
+            catch { }
             lLastMigrations.Text = GetLastMigrationData();
 
             var transactionQueueStats = RockQueue.TransactionQueue.ToList().GroupBy( a => a.GetType().Name ).ToList().Select( a => new { Name = a.Key, Count = a.Count() } );
@@ -317,7 +321,7 @@ namespace RockWeb.Blocks.Administration
                 try
                 {
                     // get database size
-                    reader = DbService.GetDataReader( "sp_helpdb " + catalog, System.Data.CommandType.Text, null );
+                    reader = DbService.GetDataReader( "sp_helpdb '" + catalog.ToStringSafe().Replace("'", "''") + "'", System.Data.CommandType.Text, null );
                     if ( reader != null )
                     {
                         // get second data table
@@ -379,7 +383,7 @@ namespace RockWeb.Blocks.Administration
         // method from Rick Strahl http://weblog.west-wind.com/posts/2006/Oct/08/Recycling-an-ASPNET-Application-from-within
         private bool RestartWebApplication()
         {
-            bool Error = false;
+            bool error = false;
             try
             {
                 // *** This requires full trust so this will fail
@@ -388,18 +392,18 @@ namespace RockWeb.Blocks.Administration
             }
             catch
             {
-                Error = true;
+                error = true;
             }
 
-            if ( !Error )
+            if ( !error )
                 return true;
 
             // *** Couldn't unload with Runtime - let's try modifying web.config
-            string ConfigPath = HttpContext.Current.Request.PhysicalApplicationPath + "\\web.config";
+            string configPath = HttpContext.Current.Request.PhysicalApplicationPath + "\\web.config";
 
             try
             {
-                File.SetLastWriteTimeUtc( ConfigPath, DateTime.UtcNow );
+                File.SetLastWriteTimeUtc( configPath, DateTime.UtcNow );
             }
             catch
             {

@@ -25,13 +25,13 @@
                 {% endif %}
             </p>
         {% elsif ScheduledTransactions.size > 1 %}
-            You currently have <span class='label label-default'>{{ ScheduledTransactions.size }}</span> 
+            You currently have <span class='label label-default'>{{ ScheduledTransactions.size }}</span>
             giving profiles active.
         {% else %}
             You currently have no active profiles.
         {% endif %}
         <div class="clearfix">
-            <a class="btn btn-default pull-left" href="{{ LinkedPages.ManageScheduledTransactionsPage }}">Manage</a> 
+            <a class="btn btn-default pull-left" href="{{ LinkedPages.ManageScheduledTransactionsPage }}">Manage</a>
             <a class="btn btn-default pull-right" href="{{ LinkedPages.TransactionHistoryPage }}">View History</a>
         </div>
         <a class="btn btn-primary btn-block margin-t-md" href="{{ LinkedPages.TransactionEntryPage }}">Give Now</a>

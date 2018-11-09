@@ -22,7 +22,7 @@ using System.Reflection;
 using System.Web.UI;
 
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock;
 using System.Web.UI.WebControls;
@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Core
         /// <value>
         /// The type of the tag entity.
         /// </value>
-        public CacheEntityType TagEntityType { get; set; }
+        public EntityTypeCache TagEntityType { get; set; }
 
         #endregion
 
@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Core
                     pnlGrid.Visible = true;
                     lTaggedTitle.Text = "Tagged Items";
 
-                    TagEntityType = CacheEntityType.Get( _tag.EntityTypeId ?? 0 );
+                    TagEntityType = EntityTypeCache.Get( _tag.EntityTypeId ?? 0 );
                     if ( TagEntityType != null )
                     {
                         if ( TagEntityType.Name == "Rock.Model.Person" )
@@ -162,14 +162,14 @@ namespace RockWeb.Blocks.Core
                 var taggedItem = new TaggedItemService( rockContext ).Get( e.RowKeyId );
                 if ( taggedItem != null )
                 {
-                    var entityType = CacheEntityType.Get( taggedItem.EntityTypeId );
+                    var entityType = EntityTypeCache.Get( taggedItem.EntityTypeId );
                     if ( entityType != null )
                     {
                         var entity = GetGenericEntity( entityType.GetEntityType(), taggedItem.EntityGuid ) as IEntity;
                         if ( entity != null )
                         {
                             string url = string.Format( "~/{0}/{1}", entityType.FriendlyName.Replace( " ", "" ), entity.Id );
-                            if ( entityType.LinkUrlLavaTemplate.IsNotNullOrWhitespace() )
+                            if ( entityType.LinkUrlLavaTemplate.IsNotNullOrWhiteSpace() )
                             {
                                 url = entityType.LinkUrlLavaTemplate.ResolveMergeFields( new Dictionary<string, object> { { "Entity", entity } } );
                             }
@@ -339,7 +339,7 @@ namespace RockWeb.Blocks.Core
 
         public string GetItemName( int entityTypeId, Guid entityGuid )
         {
-            var entityType = CacheEntityType.Get( entityTypeId );
+            var entityType = EntityTypeCache.Get( entityTypeId );
             if ( entityType != null )
             {
                 var entity = GetGenericEntity( entityType.GetEntityType(), entityGuid ) as IEntity;

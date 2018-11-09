@@ -20,7 +20,7 @@ using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
 
 namespace Rock.Model
@@ -162,7 +162,7 @@ namespace Rock.Model
             var rockContext = (RockContext)this.Context;
             var groupLocationService = new GroupLocationService( rockContext );
 
-            var familyGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
             return groupLocationService.GetMappedLocationsByGeofences( geofences )
                 .Where( l =>
@@ -523,7 +523,8 @@ namespace Rock.Model
         /// <param name="includeWarnings">if set to <c>true</c> [include warnings].</param>
         /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
         /// <returns></returns>
-        [Obsolete( "Use GroupMembersNotMeetingRequirements( roup, includeWarnings, includeInactive) instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use GroupMembersNotMeetingRequirements( roup, includeWarnings, includeInactive) instead", true )]
         public Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> GroupMembersNotMeetingRequirements( int groupId, bool includeWarnings, bool includeInactive = false )
         {
             var group = new GroupService( this.Context as RockContext ).Get( groupId );
@@ -673,7 +674,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static Group SaveNewFamily( RockContext rockContext, List<GroupMember> familyMembers, int? campusId, bool savePersonAttributes )
         {
-            var familyGroupType = CacheGroupType.GetFamilyGroupType();
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
             string familyName = familyMembers.FirstOrDefault().Person.LastName + " Family";
             return SaveNewGroup( rockContext, familyGroupType.Id, null, familyName, familyMembers, campusId, savePersonAttributes );
         }
@@ -691,7 +692,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static Group SaveNewGroup( RockContext rockContext, int groupTypeId, Guid? parentGroupGuid, string groupName, List<GroupMember> groupMembers, int? campusId, bool savePersonAttributes )
         {
-            var groupType = CacheGroupType.Get( groupTypeId );
+            var groupType = GroupTypeCache.Get( groupTypeId );
 
             if ( groupType != null )
             {
@@ -807,26 +808,6 @@ namespace Rock.Model
         /// Adds the new group address.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="family">The family.</param>
-        /// <param name="locationTypeGuid">The location type unique identifier.</param>
-        /// <param name="street1">The street1.</param>
-        /// <param name="street2">The street2.</param>
-        /// <param name="city">The city.</param>
-        /// <param name="state">The state.</param>
-        /// <param name="postalCode">The postal code.</param>
-        /// <param name="country">The country.</param>
-        /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
-        [Obsolete("Use AddNewGroupAddress instead.")]
-        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid,
-            string street1, string street2, string city, string state, string postalCode, string country, bool moveExistingToPrevious = false )
-        {
-            AddNewGroupAddress( rockContext, family, locationTypeGuid, street1, street2, city, state, postalCode, country, moveExistingToPrevious );
-        }
-
-        /// <summary>
-        /// Adds the new group address.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
         /// <param name="locationTypeGuid">The location type unique identifier.</param>
         /// <param name="street1">The street1.</param>
@@ -893,21 +874,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new family address.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="family">The family.</param>
-        /// <param name="locationTypeGuid">The location type unique identifier.</param>
-        /// <param name="locationId">The location identifier.</param>
-        /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
-        [Obsolete( "Use AddNewGroupAddress instead." )]
-        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid,
-            int? locationId, bool moveExistingToPrevious = false )
-        {
-            AddNewGroupAddress( rockContext, family, locationTypeGuid, locationId, moveExistingToPrevious );
-        }
-
-        /// <summary>
         /// Adds the new group address.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -956,22 +922,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new family address.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="family">The family.</param>
-        /// <param name="locationTypeGuid">The location type unique identifier.</param>
-        /// <param name="location">The location.</param>
-        /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
-        [Obsolete( "Use AddNewGroupAddress instead." )]
-        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid,
-            Location location, bool moveExistingToPrevious = false )
-        {
-            var isMappedMailing = locationTypeGuid != SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS; // Mapped and Mailing = true unless location type is Previous
-            AddNewGroupAddress( rockContext, family, locationTypeGuid, location, moveExistingToPrevious, "", isMappedMailing, isMappedMailing );
-        }
-
-        /// <summary>
         /// Adds the new group address.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -1013,7 +963,7 @@ namespace Rock.Model
         {
             if ( location != null )
             {
-                var groupType = CacheGroupType.Get( group.GroupTypeId );
+                var groupType = GroupTypeCache.Get( group.GroupTypeId );
                 if ( groupType != null )
                 {
                     var locationType = groupType.LocationTypeValues.FirstOrDefault( l => l.Guid.Equals( locationTypeGuid.AsGuid() ) );
@@ -1077,7 +1027,7 @@ namespace Rock.Model
         /// </returns>
         public override bool Delete( Group item )
         {
-            var groupTypeCache = CacheGroupType.Get( item.GroupTypeId );
+            var groupTypeCache = GroupTypeCache.Get( item.GroupTypeId );
             if ( groupTypeCache?.EnableGroupHistory == true )
             {
                 var rockContext = this.Context as RockContext;
@@ -1113,7 +1063,6 @@ namespace Rock.Model
             {
                 AuthService authService = new AuthService( this.Context as RockContext );
 
-                Rock.Cache.CacheRole.Remove( group.Id );
                 foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
                 {
                     authService.Delete( auth );
@@ -1141,8 +1090,7 @@ namespace Rock.Model
             if ( removeFromAuthTables && isSecurityRoleGroup )
             {
                 AuthService authService = new AuthService( this.Context as RockContext );
-
-                Rock.Cache.CacheRole.Remove( group.Id );
+                
                 foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
                 {
                     authService.Delete( auth );
@@ -1236,6 +1184,26 @@ namespace Rock.Model
                 .ThenBy( m => m.Person.BirthDay )
                 .Select( m => m.Person )
                 .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// For the group, gets a family member that matches the given person. A match
+        /// is found if the nickname matches the nickname or first name, the last name matches, and,
+        /// if there is a birth date on the potential match, the birth date matches.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="personToMatch">The person to match.</param>
+        /// <returns>a person (if a match was found) otherwise null</returns>
+        public static Person MatchingFamilyMember( this Group group, Person personToMatch )
+        {
+            return group.Members
+            .Where( m =>
+                ( m.Person.NickName == personToMatch.NickName || m.Person.FirstName == personToMatch.NickName ) &&
+                m.Person.LastName == personToMatch.LastName &&
+                m.Person.BirthDate.HasValue &&
+                m.Person.BirthDate.Value == personToMatch.BirthDate.Value )
+            .Select( m => m.Person )
+            .FirstOrDefault();
         }
 
         /// <summary>

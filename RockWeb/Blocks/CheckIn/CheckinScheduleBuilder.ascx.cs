@@ -24,7 +24,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -271,11 +271,11 @@ namespace RockWeb.Blocks.CheckIn
             int? categoryId = GetBlockUserPreference( "Category" ).AsIntegerOrNull();
             if ( !categoryId.HasValue )
             {
-                var categoryCache = CacheCategory.Get( Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid() );
+                var categoryCache = CategoryCache.Get( Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid() );
                 categoryId = categoryCache != null ? categoryCache.Id : (int?)null;
             }
 
-            pCategory.EntityTypeId = CacheEntityType.GetId( typeof( Rock.Model.Schedule ) ) ?? 0;
+            pCategory.EntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.Schedule ) ) ?? 0;
             if ( categoryId.HasValue )
             {
                 pCategory.SetValue( new CategoryService( rockContext ).Get( categoryId.Value ) );
@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.CheckIn
             var groupService = new GroupService( rockContext );
 
             var groupPaths = new List<GroupTypePath>();
-            var groupLocationQry = groupLocationService.Queryable().Where(gl => gl.Group.IsActive);
+            var groupLocationQry = groupLocationService.Queryable().Where( gl => gl.Group.IsActive && !gl.Group.IsArchived );
             int groupTypeId;
 
             // if this page has a PageParam for groupTypeId use that to limit which groupTypeId to see. Otherwise, use the groupTypeId specified in the filter
@@ -434,7 +434,7 @@ namespace RockWeb.Blocks.CheckIn
                 dataTable.Rows.Add( dataRow );
             }
 
-            gGroupLocationSchedule.EntityTypeId = CacheEntityType.Get<GroupLocation>().Id;
+            gGroupLocationSchedule.EntityTypeId = EntityTypeCache.Get<GroupLocation>().Id;
             gGroupLocationSchedule.DataSource = dataTable;
             gGroupLocationSchedule.DataBind();
         }
@@ -462,7 +462,7 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             // clear out any existing schedule columns and add the ones that match the current filter setting
-            var scheduleList = scheduleQry.ToList().OrderBy( a => a.ToString() ).ToList();
+            var scheduleList = scheduleQry.ToList().OrderBy( a => a.Name ).ToList();
 
             var checkBoxEditableFields = gGroupLocationSchedule.Columns.OfType<CheckBoxEditableField>().ToList();
             foreach ( var field in checkBoxEditableFields )
@@ -496,7 +496,7 @@ namespace RockWeb.Blocks.CheckIn
 
             // populate the GroupType DropDownList only with GroupTypes with GroupTypePurpose of Checkin Template
             // or with group types that allow multiple locations/schedules and support named locations
-            int groupTypePurposeCheckInTemplateId = CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
+            int groupTypePurposeCheckInTemplateId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
             GroupTypeService groupTypeService = new GroupTypeService( rockContext );
 
             // First find all the group types that have a purpose of 'Check-in Template'

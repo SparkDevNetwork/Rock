@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Communication
         {
             if ( !UserCanEdit && e.Row.RowType == DataControlRowType.DataRow )
             {
-                Rock.Model.Communication communication = e.Row.DataItem as Rock.Model.Communication;
+                CommunicationItem communication = e.Row.DataItem as CommunicationItem;
                 if (
                     !CurrentPersonAliasId.HasValue ||
                     communication == null || 
@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.Communication
         private void BindGrid()
         {
             // If configured for a person and person is null, return
-            int personEntityTypeId = CacheEntityType.Get<Person>().Id;
+            int personEntityTypeId = EntityTypeCache.Get<Person>().Id;
             if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && _person == null )
             {
                 return;
@@ -277,7 +277,7 @@ namespace RockWeb.Blocks.Communication
             string subject = tbSubject.Text;
             if ( !string.IsNullOrWhiteSpace( subject ) )
             {
-                qryCommunications = qryCommunications.Where( c => c.Subject.Contains( subject ) );
+                qryCommunications = qryCommunications.Where( c => ( string.IsNullOrEmpty( c.Subject ) && c.Name.Contains( subject ) ) || c.Subject.Contains( subject ) );
             }
 
             var communicationType = ddlType.SelectedValueAsEnumOrNull<CommunicationType>();
@@ -322,21 +322,45 @@ namespace RockWeb.Blocks.Communication
                     c.PushMessage.Contains( content ) );
             }
 
+            var queryable = qryCommunications
+            .Select( c => new CommunicationItem
+            {
+                Id = c.Id,
+                CommunicationType = c.CommunicationType,
+                Subject = string.IsNullOrEmpty( c.Subject ) ? c.Name : c.Subject,
+                CreatedDateTime = c.CreatedDateTime,
+                Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
+                Status = c.Status,
+                CreatedByPersonAliasId = c.CreatedByPersonAliasId
+            } );
+
+
             var sortProperty = gCommunication.SortProperty;
             if ( sortProperty != null )
             {
-                qryCommunications = qryCommunications.Sort( sortProperty );
+                queryable = queryable.Sort( sortProperty );
             }
             else
             {
-                qryCommunications = qryCommunications.OrderByDescending( c => c.CreatedDateTime );
+                queryable = queryable.OrderByDescending( c => c.CreatedDateTime );
             }
 
-            gCommunication.EntityTypeId = CacheEntityType.Get<Rock.Model.Communication>().Id;
-            gCommunication.SetLinqDataSource( qryCommunications.AsNoTracking() );
+            gCommunication.EntityTypeId = EntityTypeCache.Get<Rock.Model.Communication>().Id;
+            gCommunication.SetLinqDataSource( queryable.AsNoTracking() );
             gCommunication.DataBind();
         }
 
         #endregion
-}
+
+        protected class CommunicationItem
+        {
+            public int Id { get; set; }
+            public CommunicationType CommunicationType { get; set; }
+            public DateTime? CreatedDateTime { get; set; }
+            public string Subject { get; set; }
+            public Person Sender { get; set; }
+            public CommunicationStatus Status { get; set; }
+            public int? CreatedByPersonAliasId { get; set; }
+        }
+    }
 }

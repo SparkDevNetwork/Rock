@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
@@ -61,10 +62,13 @@ namespace Rock.Field.Types
 
                 if ( guids.Any() )
                 {
-                    var schedules = new ScheduleService( new RockContext() ).Queryable().Where( a => guids.Contains( a.Guid ) );
-                    if ( schedules.Any() )
+                    using ( var rockContext = new RockContext() )
                     {
-                        formattedValue = string.Join( ", ", ( from schedule in schedules select schedule.Name ).ToArray() );
+                        var schedules = new ScheduleService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid ) );
+                        if ( schedules.Any() )
+                        {
+                            formattedValue = string.Join( ", ", ( from schedule in schedules select schedule.Name ).ToArray() );
+                        }
                     }
                 }
             }
@@ -98,7 +102,7 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as SchedulePicker;
-            string result = null;
+            string result = string.Empty;
 
             if ( picker != null )
             {
@@ -112,9 +116,11 @@ namespace Rock.Field.Types
                         result = schedules.Select( s => s.Guid.ToString() ).ToList().AsDelimited( "," );
                     }
                 }
+
+                return result;
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>

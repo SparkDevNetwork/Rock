@@ -26,7 +26,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Web.UI;
@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Crm
     /// </summary>
     [DisplayName( "Person Merge Request List" )]
     [Category( "CRM" )]
-    [Description( "Lists Perge Merge Requests" )]
+    [Description( "Lists Person Merge Requests" )]
 
     public partial class PersonMergeRequestList : RockBlock, ICustomGridColumns
     {

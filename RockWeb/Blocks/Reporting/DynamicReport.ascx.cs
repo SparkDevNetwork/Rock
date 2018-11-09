@@ -27,13 +27,13 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
 {
-    [DisplayName( "Report Data" )]
+    [DisplayName( "Dynamic Report" )]
     [Category( "Reporting" )]
     [Description( "Block to display a report with options to edit the filter" )]
     [BooleanField( "Show 'Merge Template' action on grid", "", defaultValue: true, key: "ShowGridMergeTemplateAction" )]
@@ -241,7 +241,7 @@ namespace RockWeb.Blocks.Reporting
         {
             try
             {
-                var filteredEntityTypeName = CacheEntityType.Get( reportEntityType ).Name;
+                var filteredEntityTypeName = EntityTypeCache.Get( reportEntityType ).Name;
                 if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
                     var filterControl = new FilterField();
@@ -260,9 +260,9 @@ namespace RockWeb.Blocks.Reporting
                     bool filterIsConfigurable = _configurableDataFilterGuids.Contains( filter.Guid );
                     bool showCheckbox = _togglableDataFilterGuids.Contains( filter.Guid ) || !filterIsConfigurable;
                     var dataFilterPrePostHtmlConfig = _dataFiltersPrePostHtmlConfig.GetValueOrNull( filter.Guid ) ?? new DataFilterPrePostHtmlConfig();
-                    
+
                     filterControl.Visible = filterIsVisible;
-                    
+
                     parentControl.Controls.Add( filterControl );
 
                     filterControl.DataViewFilterGuid = filter.Guid;
@@ -273,7 +273,7 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( filter.EntityTypeId.HasValue )
                     {
-                        var entityTypeCache = Rock.Cache.CacheEntityType.Get( filter.EntityTypeId.Value, rockContext );
+                        var entityTypeCache = EntityTypeCache.Get( filter.EntityTypeId.Value, rockContext );
                         if ( entityTypeCache != null )
                         {
                             filterControl.FilterEntityTypeName = entityTypeCache.Name;
@@ -284,10 +284,10 @@ namespace RockWeb.Blocks.Reporting
 
                     filterControl.ShowCheckbox = filterIsVisible && showCheckbox;
 
-                    var reportEntityTypeCache = CacheEntityType.Get( reportEntityType );
+                    var reportEntityTypeCache = EntityTypeCache.Get( reportEntityType );
                     var reportEntityTypeModel = reportEntityTypeCache.GetEntityType();
 
-                    var filterEntityType = CacheEntityType.Get( filter.EntityTypeId ?? 0 );
+                    var filterEntityType = EntityTypeCache.Get( filter.EntityTypeId ?? 0 );
                     var component = Rock.Reporting.DataFilterContainer.GetComponent( filterEntityType.Name );
                     if ( component != null )
                     {
@@ -353,6 +353,10 @@ namespace RockWeb.Blocks.Reporting
                         else if ( component is Rock.Reporting.DataFilter.PropertyFilter )
                         {
                             defaultFilterLabel = ( component as Rock.Reporting.DataFilter.PropertyFilter ).GetSelectionLabel( reportEntityTypeModel, filter.Selection );
+                        }
+                        else if ( component is Rock.Reporting.DataFilter.EntityFieldFilter )
+                        {
+                            defaultFilterLabel = ( component as Rock.Reporting.DataFilter.EntityFieldFilter ).GetSelectedFieldName( filter.Selection );
                         }
                         else
                         {
@@ -502,6 +506,12 @@ namespace RockWeb.Blocks.Reporting
                 nbConfigurationWarning.Text = string.Format( "The {0} report does not have a dataview", report );
                 pnlView.Visible = false;
             }
+            else if ( report.DataView.EntityTypeId != report.EntityTypeId )
+            {
+                nbConfigurationWarning.Visible = true;
+                nbConfigurationWarning.Text = string.Format( "The {0} report's EntityType doesn't match the dataview's EntityType", report );
+                pnlView.Visible = false;
+            }
             else
             {
                 nbConfigurationWarning.Visible = false;
@@ -512,7 +522,7 @@ namespace RockWeb.Blocks.Reporting
 
                 ReportingHelper.BindGrid( report, gReport, this.CurrentPerson, dataViewFilterOverrides, null, isCommunication, out errorMessage );
 
-                if ( report.EntityTypeId != CacheEntityType.GetId<Rock.Model.Person>() )
+                if ( report.EntityTypeId != EntityTypeCache.GetId<Rock.Model.Person>() )
                 {
                     var personColumn = gReport.ColumnsOfType<BoundField>().Where( a => a.HeaderText == personIdField ).FirstOrDefault();
                     if ( personColumn != null )
@@ -544,8 +554,11 @@ namespace RockWeb.Blocks.Reporting
         protected override void ShowSettings()
         {
             pnlConfigure.Visible = true;
-            LoadDropDowns();
-            ddlReport.SetValue( this.GetAttributeValue( "Report" ).AsGuidOrNull() );
+
+            Guid? reportGuid = this.GetAttributeValue( "Report" ).AsGuidOrNull();
+            int? reportId = reportGuid != null ? new ReportService( new RockContext() ).GetId( reportGuid.Value ) : null;
+
+            rpReport.SetValue( reportId );
             txtResultsTitle.Text = this.GetAttributeValue( "ResultsTitle" );
             txtResultsIconCssClass.Text = this.GetAttributeValue( "ResultsIconCssClass" );
             txtFilterTitle.Text = this.GetAttributeValue( "FilterTitle" );
@@ -617,7 +630,9 @@ namespace RockWeb.Blocks.Reporting
             this.SetAttributeValue( "ResultsIconCssClass", txtResultsIconCssClass.Text );
             this.SetAttributeValue( "FilterTitle", txtFilterTitle.Text );
             this.SetAttributeValue( "FilterIconCssClass", txtFilterIconCssClass.Text );
-            this.SetAttributeValue( "Report", ddlReport.SelectedValue.AsGuidOrNull().ToString() );
+
+            Guid? reportGuid = rpReport.SelectedValueAsId().HasValue ? new ReportService( new RockContext() ).GetGuid( rpReport.SelectedValueAsId().Value ) : null;
+            this.SetAttributeValue( "Report", reportGuid.ToString() );
             this.SetAttributeValue( "PersonIdField", ddlPersonIdField.SelectedValue );
             SaveAttributeValues();
 
@@ -625,28 +640,11 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        protected void LoadDropDowns()
-        {
-            var rockContext = new RockContext();
-            var reportService = new ReportService( rockContext );
-            var reportQry = reportService.Queryable().OrderBy( a => a.Name );
-
-            ddlReport.Items.Clear();
-            ddlReport.Items.Add( new ListItem() );
-            foreach ( var report in reportQry.ToList() )
-            {
-                ddlReport.Items.Add( new ListItem( report.Name, report.Guid.ToString() ) );
-            }
-        }
-        
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlReport control.
+        /// Handles the SelectItem event of the rpReport control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlReport_SelectedIndexChanged( object sender, EventArgs e )
+        protected void rpReport_SelectItem( object sender, EventArgs e )
         {
             // reset the configs since there is a new report selected
             _configurableDataFilterGuids = null;
@@ -664,11 +662,11 @@ namespace RockWeb.Blocks.Reporting
             var rockContext = new RockContext();
             var reportService = new ReportService( rockContext );
 
-            var reportGuid = ddlReport.SelectedValueAsGuid();
+            var reportId = rpReport.SelectedValueAsId();
             Report report = null;
-            if ( reportGuid.HasValue )
+            if ( reportId.HasValue )
             {
-                report = reportService.Get( reportGuid.Value );
+                report = reportService.Get( reportId.Value );
             }
 
             nbConfigurationWarning.Visible = false;
@@ -686,7 +684,7 @@ namespace RockWeb.Blocks.Reporting
                     groupedFilter.Title = string.Format( "[{0}]", groupedFilter.FilterExpressionType.ConvertToString() );
                 }
 
-                ddlPersonIdField.Visible = report.EntityTypeId != CacheEntityType.GetId<Rock.Model.Person>();
+                ddlPersonIdField.Visible = report.EntityTypeId != EntityTypeCache.GetId<Rock.Model.Person>();
                 ddlPersonIdField.Items.Clear();
                 ddlPersonIdField.Items.Add( new ListItem() );
                 ddlPersonIdField.Items.Add( new ListItem( "Id", "Id" ) );
@@ -793,7 +791,7 @@ namespace RockWeb.Blocks.Reporting
                 lFilterDetails.Text = new DescriptionList()
                     .Add( "Filter", filterInfo.TitlePath )
                     .Add( "Summary", filterInfo.Summary )
-                    .Add( "Parent DataView", filterInfo.FromOtherDataView )
+                    .Add( "Parent Data View", filterInfo.FromOtherDataView )
                     .Html;
             }
         }
@@ -803,7 +801,7 @@ namespace RockWeb.Blocks.Reporting
         #region Configuration Classes
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class DataFilterPrePostHtmlConfig
         {
@@ -833,5 +831,7 @@ namespace RockWeb.Blocks.Reporting
         }
 
         #endregion Configuration Classes
+
+
     }
 }

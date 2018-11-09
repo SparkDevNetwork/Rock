@@ -85,11 +85,11 @@ namespace Rock.Workflow.Action.CheckIn
                         !a.EndDateTime.HasValue &&                                  
                         a.PersonAlias != null &&
                         personIds.Contains( a.PersonAlias.PersonId ) &&
-                        a.ScheduleId.HasValue )
+                        a.Occurrence.ScheduleId.HasValue )
                     .Select( a => new
                     {
                         PersonId = a.PersonAlias.PersonId,
-                        ScheduleId = a.ScheduleId.Value
+                        ScheduleId = a.Occurrence.ScheduleId.Value
                     } )
                     .ToList();
 

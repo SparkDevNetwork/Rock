@@ -23,7 +23,7 @@ using Rock.Extension;
 namespace Rock.Communication
 {
     /// <summary>
-    /// MEF Container class for Communication Transport Componenets
+    /// MEF Container class for Communication Transport Components
     /// </summary>
     public class TransportContainer : Container<TransportComponent, IComponentData>
     {

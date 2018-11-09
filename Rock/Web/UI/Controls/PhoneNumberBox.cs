@@ -21,7 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -237,12 +237,12 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string CountryCode
         {
-            get 
+            get
             {
                 EnsureChildControls();
                 return _hfCountryCode.Value;
             }
-            set 
+            set
             {
                 EnsureChildControls();
                 if ( !string.IsNullOrWhiteSpace( value ) )
@@ -309,7 +309,7 @@ namespace Rock.Web.UI.Controls
                     StringBuilder sbScript = new StringBuilder();
                     sbScript.Append( "\tvar phoneNumberFormats = {\n" );
 
-                    var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+                    var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
                     if ( definedType != null )
                     {
                         var definedValues = definedType.DefinedValues;
@@ -339,7 +339,7 @@ namespace Rock.Web.UI.Controls
     function phoneNumberBoxFormatNumber( tb ) {
         var countryCode = tb.closest('div.input-group').find('input:hidden').val();
         var origValue = tb.val();
-        var number = tb.val().replace(/\D/g,'');
+        var number = tb.val().replace(/\D/g,'').substring( 0, 20 );
         var formats = phoneNumberFormats[countryCode];
         for ( var i = 0; i < formats.length; i++) {
             var matchRegex = new RegExp(formats[i].match);
@@ -350,7 +350,7 @@ namespace Rock.Web.UI.Controls
         }
     }
 
-    $('div.phone-number-box input:text').on('change', function(e) {
+    $('div.phone-number-box input.js-phone-format').on('change', function(e) {
         phoneNumberBoxFormatNumber($(this));
     });
 
@@ -358,7 +358,7 @@ namespace Rock.Web.UI.Controls
         e.preventDefault();
         $(this).closest('div.input-group').find('input:hidden').val($(this).html());
         $(this).closest('div.input-group-btn').find('button').html($(this).html() + ' <span class=""caret""></span>');
-        phoneNumberBoxFormatNumber($(this).closest('div.input-group').find('input:text').first());
+        phoneNumberBoxFormatNumber($(this).closest('div.input-group').find('input.js-phone-format').first());
     });
 " );
 
@@ -431,7 +431,7 @@ namespace Rock.Web.UI.Controls
 
             bool renderCountryCodeButton = false;
 
-            var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
             if ( definedType != null )
             {
                 var countryCodes = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => v.Value ).Distinct();
@@ -495,17 +495,19 @@ namespace Rock.Web.UI.Controls
 
             _hfCountryCode.RenderControl( writer );
 
-            ( (WebControl)this ).AddCssClass( "form-control" );
+            ( (WebControl)this ).AddCssClass( "form-control js-phone-format" );
             if ( !string.IsNullOrWhiteSpace( Placeholder ) )
             {
                 this.Attributes["placeholder"] = Placeholder;
             }
 
+            this.Attributes["type"] = "tel";
+
+            ( ( WebControl ) this ).AddCssClass( cssClass );
+
             base.RenderControl( writer );
 
             writer.RenderEndTag();              // div.input-group
-
-            this.CssClass = cssClass;
-        }   
+        }
     }
 }

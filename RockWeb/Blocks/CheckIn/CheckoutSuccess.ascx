@@ -9,9 +9,9 @@
     </div>
 
     <div class="checkin-body">
-        
+
         <div class="checkin-scroll-panel">
-            <div class="scroller">           
+            <div class="scroller">
                 <ol class="checkin-summary checkin-body-container">
                     <asp:PlaceHolder ID="phResults" runat="server"></asp:PlaceHolder>
                 </ol>
@@ -22,9 +22,9 @@
     </div>
 
 
-    <div class="checkin-footer">   
+    <div class="checkin-footer">
         <div class="checkin-actions">
-            <asp:LinkButton CssClass="btn btn-primary" ID="lbDone" runat="server" OnClick="lbDone_Click" Text="Done" />
+            <asp:LinkButton CssClass="btn btn-primary btn-done" ID="lbDone" runat="server" OnClick="lbDone_Click" Text="Done" />
          </div>
     </div>
 

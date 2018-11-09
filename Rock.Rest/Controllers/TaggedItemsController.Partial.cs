@@ -23,7 +23,7 @@ using System.Web.Http;
 
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -50,10 +50,9 @@ namespace Rock.Rest.Controllers
         {
             SetProxyCreation( true );
 
-            var person = GetPerson();
-            var personAlias = GetPersonAlias();
+            var person = GetPerson( ( Rock.Data.RockContext ) Service.Context );
 
-            var tagService = new TagService( (Rock.Data.RockContext)Service.Context );
+            var tagService = new TagService( ( Rock.Data.RockContext ) Service.Context );
 
             var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name, categoryGuid, includeInactive );
             if ( tag == null || !tag.IsAuthorized( "Tag", person ) )
@@ -61,7 +60,7 @@ namespace Rock.Rest.Controllers
                 int? categoryId = null;
                 if ( categoryGuid.HasValue )
                 {
-                    var category = CacheCategory.Get( categoryGuid.Value );
+                    var category = CategoryCache.Get( categoryGuid.Value );
                     categoryId = category != null ? category.Id : (int?)null;
                 }
 
@@ -70,7 +69,7 @@ namespace Rock.Rest.Controllers
                 tag.CategoryId = categoryId;
                 tag.EntityTypeQualifierColumn = entityQualifier;
                 tag.EntityTypeQualifierValue = entityQualifierValue;
-                tag.OwnerPersonAliasId = new PersonAliasService( (Rock.Data.RockContext)Service.Context ).GetPrimaryAliasId( ownerId );
+                tag.OwnerPersonAliasId = new PersonAliasService( ( Rock.Data.RockContext ) Service.Context ).GetPrimaryAliasId( ownerId );
                 tag.Name = name;
                 tagService.Add( tag );
             }
@@ -112,8 +111,6 @@ namespace Rock.Rest.Controllers
         {
             SetProxyCreation( true );
 
-            var personAlias = GetPersonAlias();
-
             if ( name.Contains( '^' ) )
             {
                 name = name.Split( '^' )[0];
@@ -121,7 +118,7 @@ namespace Rock.Rest.Controllers
 
             TaggedItem taggedItem = null;
 
-            var tagService = new TagService( (Rock.Data.RockContext)Service.Context );
+            var tagService = new TagService( ( Rock.Data.RockContext ) Service.Context );
             var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name, categoryGuid, includeInactive );
             if ( tag != null )
             {
@@ -133,7 +130,7 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
-            if ( !taggedItem.IsAuthorized( "Tag", GetPerson() ))
+            if ( !taggedItem.IsAuthorized( "Tag", GetPerson( ( Rock.Data.RockContext ) Service.Context ) ))
             {
                 throw new HttpResponseException( HttpStatusCode.Unauthorized );
             }

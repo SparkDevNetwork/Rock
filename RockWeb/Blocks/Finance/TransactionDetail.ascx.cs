@@ -32,7 +32,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Refund Batch Name Suffix", "The suffix to append to new batch name when refunding transactions. If left blank, the batch name will be the same as the original transaction's batch name.", false, " - Refund", "", 3 )]
     [BooleanField( "Carry Over Account", "Keep Last Used Account when adding multiple transactions in the same session.", true, "", 4 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE, "Location Types", "The type of location type to display for person (if none are selected all addresses will be included ).", false, true, order: 5 )]
+    [BooleanField( "Transaction Source Required", "Determine if Transaction Source should be required.", false, "", 6 )]
     public partial class TransactionDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Properties
@@ -228,7 +229,7 @@ namespace RockWeb.Blocks.Finance
 
                     // Update the transaction's properties to match what is currently selected on the screen
                     // This allows the shown attributes to change during AutoPostBack events, based on any Qualifiers specified in the attributes
-                    txn.FinancialPaymentDetail.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
+                    txn.FinancialPaymentDetail.CurrencyTypeValueId = dvpCurrencyType.SelectedValueAsInt();
 
                     txn.LoadAttributes();
                     txn.FinancialPaymentDetail.LoadAttributes();
@@ -368,6 +369,7 @@ namespace RockWeb.Blocks.Finance
                     txn = new FinancialTransaction();
                     txnService.Add( txn );
                     txn.BatchId = batchId;
+                    txn.FinancialGatewayId = gpPaymentGateway.SelectedValueAsInt();
                 }
                 else
                 {
@@ -390,16 +392,17 @@ namespace RockWeb.Blocks.Finance
                 txn.AuthorizedPersonAliasId = ppAuthorizedPerson.PersonAliasId;
                 txn.ShowAsAnonymous = cbShowAsAnonymous.Checked;
                 txn.TransactionDateTime = dtTransactionDateTime.SelectedDateTime;
-                txn.TransactionTypeValueId = ddlTransactionType.SelectedValue.AsInteger();
-                txn.SourceTypeValueId = ddlSourceType.SelectedValueAsInt();
-                txn.FinancialGatewayId = gpPaymentGateway.SelectedValueAsInt();
+                txn.TransactionTypeValueId = dvpTransactionType.SelectedValue.AsInteger();
+                txn.SourceTypeValueId = dvpSourceType.SelectedValueAsInt();
+                // DO NOT ALLOW changing a payment gateway once it's already saved.
+                //txn.FinancialGatewayId = gpPaymentGateway.SelectedValueAsInt();
                 txn.TransactionCode = tbTransactionCode.Text;
-                txn.FinancialPaymentDetail.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
-                txn.FinancialPaymentDetail.CreditCardTypeValueId = ddlCreditCardType.SelectedValueAsInt();
+                txn.FinancialPaymentDetail.CurrencyTypeValueId = dvpCurrencyType.SelectedValueAsInt();
+                txn.FinancialPaymentDetail.CreditCardTypeValueId = dvpCreditCardType.SelectedValueAsInt();
 
                 txn.Summary = tbSummary.Text;
-
-                decimal totalAmount = TransactionDetailsState.Select( d => d.Amount ).ToList().Sum();
+                decimal totalAmount = tbSingleAccountAmount.Text == string.Empty ? TransactionDetailsState.Select( d => d.Amount ).ToList().Sum() : tbSingleAccountAmount.Text.AsDecimal();
+              
                 if ( cbIsRefund.Checked && totalAmount > 0 )
                 {
                     nbErrorMessage.Title = "Incorrect Refund Amount";
@@ -410,12 +413,19 @@ namespace RockWeb.Blocks.Finance
 
                 if ( cbIsRefund.Checked )
                 {
-                    if ( txn.RefundDetails != null )
+                    if ( txn.RefundDetails == null )
                     {
                         txn.RefundDetails = new FinancialTransactionRefund();
                     }
-                    txn.RefundDetails.RefundReasonValueId = ddlRefundReasonEdit.SelectedValueAsId();
+                    txn.RefundDetails.RefundReasonValueId = dvpRefundReasonEdit.SelectedValueAsId();
                     txn.RefundDetails.RefundReasonSummary = tbRefundSummaryEdit.Text;
+                }
+                else
+                {
+                    if ( txn.RefundDetails != null )
+                    {
+                        rockContext.FinancialTransactionRefunds.Remove( txn.RefundDetails );
+                    }
                 }
 
                 if ( !Page.IsValid || !txn.IsValid )
@@ -663,6 +673,7 @@ namespace RockWeb.Blocks.Finance
             if ( TransactionDetailsState.Count() == 1 )
             {
                 TransactionDetailsState.First().Amount = tbSingleAccountAmount.Text.AsDecimal();
+                tbSingleAccountAmount.Text = string.Empty;
                 UseSimpleAccountMode = false;
                 BindAccounts();
             }
@@ -676,7 +687,7 @@ namespace RockWeb.Blocks.Finance
         protected void ddlCurrencyType_SelectedIndexChanged( object sender, EventArgs e )
         {
             SetCreditCardVisibility();
-            _focusControl = ddlCurrencyType;
+            _focusControl = dvpCurrencyType;
         }
 
         /// <summary>
@@ -829,7 +840,7 @@ namespace RockWeb.Blocks.Finance
                 string errorMessage = string.Empty;
                 bool process = cbProcess.Visible && cbProcess.Checked;
 
-                var refundTxn = txnService.ProcessRefund( txn, tbRefundAmount.Text.AsDecimal(), ddlRefundReason.SelectedValueAsInt(), tbRefundSummary.Text, process, GetAttributeValue( "RefundBatchNameSuffix" ), out errorMessage );
+                var refundTxn = txnService.ProcessRefund( txn, tbRefundAmount.Text.AsDecimal(), dvpRefundReason.SelectedValueAsInt(), tbRefundSummary.Text, process, GetAttributeValue( "RefundBatchNameSuffix" ), out errorMessage );
                 if ( refundTxn != null )
                 {
                     rockContext.SaveChanges();
@@ -861,7 +872,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cbIsRefund_CheckedChanged( object sender, EventArgs e )
         {
-            ddlRefundReasonEdit.Visible = cbIsRefund.Checked;
+            dvpRefundReasonEdit.Visible = cbIsRefund.Checked;
             tbRefundSummaryEdit.Visible = cbIsRefund.Checked;
         }
 
@@ -962,7 +973,7 @@ namespace RockWeb.Blocks.Finance
                     boundField.AttributeId = attribute.Id;
                     boundField.HeaderText = attribute.Name;
 
-                    var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                     if ( attributeCache != null )
                     {
                         boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -1212,7 +1223,11 @@ namespace RockWeb.Blocks.Finance
 
                 if ( txn.FinancialGateway != null && txn.FinancialGateway.EntityType != null )
                 {
-                    detailsLeft.Add( "Payment Gateway", Rock.Financial.GatewayContainer.GetComponentName( txn.FinancialGateway.EntityType.Name ) );
+                    string fgName = txn.FinancialGateway.Name.IsNotNullOrWhiteSpace()
+                        ? txn.FinancialGateway.Name
+                        : Rock.Financial.GatewayContainer.GetComponentName( txn.FinancialGateway.EntityType.Name );
+
+                    detailsLeft.Add( "Payment Gateway", fgName );
                 }
 
                 detailsLeft.Add( "Foreign Key", txn.ForeignKey );
@@ -1254,7 +1269,7 @@ namespace RockWeb.Blocks.Finance
                     detailsLeft.Add( "Payment Method", "<div class='alert alert-warning'>No Payment Information found. This could be due to transaction that was imported from external system.</div>" );
                 }
 
-                var registrationEntityType = CacheEntityType.Get( typeof( Rock.Model.Registration ) );
+                var registrationEntityType = EntityTypeCache.Get( typeof( Rock.Model.Registration ) );
                 if ( registrationEntityType != null )
                 {
                     var registrationIds = txn.TransactionDetails
@@ -1370,7 +1385,7 @@ namespace RockWeb.Blocks.Finance
                     var groupLocations = authorizedPerson.GetFamilies().SelectMany( a => a.GroupLocations );
 
                     var locationTypeValueIdList = GetAttributeValue( "LocationTypes" ).SplitDelimitedValues().AsGuidList()
-                                            .Select( a => CacheDefinedValue.Get( a ) )
+                                            .Select( a => DefinedValueCache.Get( a ) )
                                             .Where( a => a != null )
                                             .Select( a => a.Id )
                                             .ToList();
@@ -1543,23 +1558,28 @@ namespace RockWeb.Blocks.Finance
                     ppAuthorizedPerson.SetValue( null );
                 }
 
+                BindDropdowns( rockContext );
+
                 cbShowAsAnonymous.Checked = txn.ShowAsAnonymous;
                 dtTransactionDateTime.SelectedDateTime = txn.TransactionDateTime;
-                ddlTransactionType.SetValue( txn.TransactionTypeValueId );
-                ddlSourceType.SetValue( txn.SourceTypeValueId );
+                dvpTransactionType.SetValue( txn.TransactionTypeValueId );
+                dvpSourceType.Required = this.GetAttributeValue( "TransactionSourceRequired" ).AsBoolean();
+                dvpSourceType.SetValue( txn.SourceTypeValueId );
                 gpPaymentGateway.SetValue( txn.FinancialGatewayId );
                 tbTransactionCode.Text = txn.TransactionCode;
-                ddlCurrencyType.SetValue( txn.FinancialPaymentDetail != null ? txn.FinancialPaymentDetail.CurrencyTypeValueId : ( int? ) null );
-                ddlCreditCardType.SetValue( txn.FinancialPaymentDetail != null ? txn.FinancialPaymentDetail.CreditCardTypeValueId : ( int? ) null );
+                dvpCurrencyType.SetValue( txn.FinancialPaymentDetail != null ? txn.FinancialPaymentDetail.CurrencyTypeValueId : ( int? ) null );
+                dvpCreditCardType.SetValue( txn.FinancialPaymentDetail != null ? txn.FinancialPaymentDetail.CreditCardTypeValueId : ( int? ) null );
                 SetCreditCardVisibility();
 
                 if ( txn.Id == 0 )
                 {
+                    gpPaymentGateway.Enabled = true;
                     btnSaveThenAdd.Visible = true;
                     btnSaveThenViewBatch.Visible = !string.IsNullOrEmpty( LinkedPageUrl( "BatchDetailPage" ) ) && txn.BatchId.HasValue;
                 }
                 else
                 {
+                    gpPaymentGateway.Enabled = false;
                     btnSaveThenAdd.Visible = false;
                     btnSaveThenViewBatch.Visible = false;
                 }
@@ -1567,15 +1587,15 @@ namespace RockWeb.Blocks.Finance
                 if ( txn.RefundDetails != null )
                 {
                     cbIsRefund.Checked = true;
-                    ddlRefundReasonEdit.Visible = true;
-                    ddlRefundReasonEdit.SetValue( txn.RefundDetails.RefundReasonValueId );
+                    dvpRefundReasonEdit.Visible = true;
+                    dvpRefundReasonEdit.SetValue( txn.RefundDetails.RefundReasonValueId );
                     tbRefundSummaryEdit.Visible = true;
                     tbRefundSummaryEdit.Text = txn.RefundDetails.RefundReasonSummary;
                 }
                 else
                 {
                     cbIsRefund.Checked = false;
-                    ddlRefundReasonEdit.Visible = false;
+                    dvpRefundReasonEdit.Visible = false;
                     tbRefundSummaryEdit.Visible = false;
                 }
 
@@ -1648,12 +1668,12 @@ namespace RockWeb.Blocks.Finance
         /// <param name="rockContext">The rock context.</param>
         private void BindDropdowns( RockContext rockContext )
         {
-            ddlTransactionType.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid(), rockContext ) );
-            ddlSourceType.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid(), rockContext ), true );
-            ddlCurrencyType.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid(), rockContext ), true );
-            ddlCreditCardType.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid(), rockContext ), true );
-            ddlRefundReasonEdit.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_REFUND_REASON.AsGuid(), rockContext ), true );
-            ddlRefundReason.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_REFUND_REASON.AsGuid(), rockContext ), true );
+            dvpTransactionType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid(), rockContext ).Id;
+            dvpSourceType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid(), rockContext ).Id;
+            dvpCurrencyType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid(), rockContext ).Id;
+            dvpCreditCardType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid(), rockContext ).Id;
+            dvpRefundReasonEdit.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_REFUND_REASON.AsGuid(), rockContext ).Id;
+            dvpRefundReason.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_REFUND_REASON.AsGuid(), rockContext ).Id;
         }
 
         /// <summary>
@@ -1661,9 +1681,9 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void SetCreditCardVisibility()
         {
-            int? currencyType = ddlCurrencyType.SelectedValueAsInt();
-            var creditCardCurrencyType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
-            ddlCreditCardType.Visible = currencyType.HasValue && currencyType.Value == creditCardCurrencyType.Id;
+            int? currencyType = dvpCurrencyType.SelectedValueAsInt();
+            var creditCardCurrencyType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
+            dvpCreditCardType.Visible = currencyType.HasValue && currencyType.Value == creditCardCurrencyType.Id;
         }
 
         /// <summary>
@@ -1778,9 +1798,13 @@ namespace RockWeb.Blocks.Finance
                             .Sum();
 
                         totalAmount += otherAmounts;
+                        if ( totalAmount > 0 )
+                        {
+                            tbRefundAmount.MaximumValue = totalAmount.ToString();
+                        }
 
                         tbRefundAmount.Text = ( totalAmount > 0.0m ? totalAmount : 0.0m ).ToString( "N2" );
-                        ddlRefundReason.SelectedIndex = -1;
+                        dvpRefundReason.SelectedIndex = -1;
                         tbRefundSummary.Text = string.Empty;
 
                         bool hasGateway = !string.IsNullOrWhiteSpace( txn.TransactionCode ) && txn.FinancialGateway != null;
@@ -1876,7 +1900,7 @@ namespace RockWeb.Blocks.Finance
         {
             if ( definedValueId.HasValue )
             {
-                var dv = CacheDefinedValue.Get( definedValueId.Value );
+                var dv = DefinedValueCache.Get( definedValueId.Value );
                 if ( dv != null )
                 {
                     return dv.Value;

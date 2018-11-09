@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Caching;
@@ -31,8 +32,9 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -57,6 +59,7 @@ namespace RockWeb.Blocks.Cms
     [IntegerField( "Count", "The maximum number of items to display.", false, 5, "CustomSetting" )]
     [IntegerField( "Item Cache Duration", "Number of seconds to cache the content items returned by the selected filter.", false, 3600, "CustomSetting", 0, "CacheDuration" )]
     [IntegerField( "Output Cache Duration", "Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.", false, 0, "CustomSetting", 0, "OutputCacheDuration" )]
+    [CustomCheckboxListField( "Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", listSource: "", required: false, key: "CacheTags", category: "CustomSetting" )]
     [IntegerField( "Filter Id", "The data filter that is used to filter items", false, 0, "CustomSetting" )]
     [BooleanField( "Query Parameter Filtering", "Determines if block should evaluate the query string parameters for additional filter criteria.", false, "CustomSetting" )]
     [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "", "CustomSetting" )]
@@ -75,7 +78,7 @@ namespace RockWeb.Blocks.Cms
         private readonly string TEMPLATE_CACHE_KEY = "Template";
         private readonly string OUTPUT_CACHE_KEY = "Output";
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
@@ -117,29 +120,9 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
-        #endregion
+        #endregion Properties
 
         #region Base Control Methods
-
-        /// <summary>
-        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
-        /// </summary>
-        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
-        protected override void LoadViewState( object savedState )
-        {
-            base.LoadViewState( savedState );
-
-            ChannelGuid = ViewState["ChannelGuid"] as Guid?;
-
-            var rockContext = new RockContext();
-
-            var channel = new ContentChannelService( rockContext ).Queryable( "ContentChannelType" )
-                .FirstOrDefault( c => c.Guid.Equals( ChannelGuid.Value ) );
-            if ( channel != null )
-            {
-                CreateFilterControl( channel, DataViewFilter.FromJson( ViewState["DataViewFilter"].ToString() ), false, rockContext );
-            }
-        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -158,6 +141,7 @@ namespace RockWeb.Blocks.Cms
             Button btnTrigger = new Button();
             btnTrigger.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             btnTrigger.ID = "rock-config-cancel-trigger";
+            btnTrigger.Style[HtmlTextWriterStyle.Display] = "none";
             btnTrigger.Click += btnTrigger_Click;
             pnlEditModal.Controls.Add( btnTrigger );
 
@@ -182,6 +166,26 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            ChannelGuid = ViewState["ChannelGuid"] as Guid?;
+
+            var rockContext = new RockContext();
+
+            var channel = new ContentChannelService( rockContext ).Queryable( "ContentChannelType" )
+                .FirstOrDefault( c => c.Guid.Equals( ChannelGuid.Value ) );
+            if ( channel != null )
+            {
+                CreateFilterControl( channel, DataViewFilter.FromJson( ViewState["DataViewFilter"].ToString() ), false, rockContext );
+            }
+        }
+
+        /// <summary>
         /// Saves any user control view-state changes that have occurred since the last page postback.
         /// </summary>
         /// <returns>
@@ -190,24 +194,35 @@ namespace RockWeb.Blocks.Cms
         protected override object SaveViewState()
         {
             ViewState["ChannelGuid"] = ChannelGuid;
-            ViewState["DataViewFilter"] = GetFilterControl().ToJson();
+            ViewState["DataViewFilter"] = ReportingHelper.GetFilterFromControls(phFilters).ToJson();
 
             return base.SaveViewState();
         }
 
-        #endregion
+        #endregion Base Control Methods
 
         #region Events
 
+        /// <summary>
+        /// Handles the BlockUpdated event of the block for when settings are changed.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         void ContentDynamic_BlockUpdated( object sender, EventArgs e )
         {
             RemoveCacheItem( CONTENT_CACHE_KEY );
             RemoveCacheItem( TEMPLATE_CACHE_KEY );
+            // When our cache supports regions, we can call ClearRegion to clear all the output pages.
             RemoveCacheItem( OUTPUT_CACHE_KEY );
-
+            
             ShowView();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnTrigger control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         void btnTrigger_Click( object sender, EventArgs e )
         {
             mdEdit.Hide();
@@ -216,16 +231,25 @@ namespace RockWeb.Blocks.Cms
             ShowView();
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlChannel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlChannel_SelectedIndexChanged( object sender, EventArgs e )
         {
             ChannelGuid = ddlChannel.SelectedValue.AsGuidOrNull();
             ShowEdit();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
-
-            var dataViewFilter = GetFilterControl();
+            var dataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
 
             // update Guids since we are creating a new dataFilter and children and deleting the old one
             SetNewDataFilterGuids( dataViewFilter );
@@ -262,6 +286,7 @@ namespace RockWeb.Blocks.Cms
             SetAttributeValue( "Count", ( nbCount.Text.AsIntegerOrNull() ?? 5 ).ToString() );
             SetAttributeValue( "CacheDuration", ( nbItemCacheDuration.Text.AsIntegerOrNull() ?? 0 ).ToString() );
             SetAttributeValue( "OutputCacheDuration", ( nbOutputCacheDuration.Text.AsIntegerOrNull() ?? 0 ).ToString() );
+            SetAttributeValue( "CacheTags", cblCacheTags.SelectedValues.AsDelimited( "," ) );
             SetAttributeValue( "FilterId", dataViewFilter.Id.ToString() );
             SetAttributeValue( "QueryParameterFiltering", cbQueryParamFiltering.Checked.ToString() );
             SetAttributeValue( "Order", kvlOrder.Value );
@@ -277,6 +302,7 @@ namespace RockWeb.Blocks.Cms
 
             RemoveCacheItem( CONTENT_CACHE_KEY );
             RemoveCacheItem( TEMPLATE_CACHE_KEY );
+            // When our cache supports regions, we can call ClearRegion to clear all the output pages.
             RemoveCacheItem( OUTPUT_CACHE_KEY );
 
             mdEdit.Hide();
@@ -295,6 +321,20 @@ namespace RockWeb.Blocks.Cms
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
+            Guid? channelGuid = GetAttributeValue( "Channel" ).AsGuidOrNull();
+            if ( channelGuid.HasValue )
+            {
+                var contentChannel = ContentChannelCache.Get( channelGuid.Value );
+                if ( contentChannel != null )
+                {
+                    filterField.Entity = new ContentChannelItem
+                    {
+                        ContentChannelId = contentChannel.Id,
+                        ContentChannelTypeId = contentChannel.ContentChannelTypeId
+                    };
+                }
+            }
+
             filterField.DataViewFilterGuid = Guid.NewGuid();
             groupControl.Controls.Add( filterField );
             filterField.ID = string.Format( "ff_{0}", filterField.DataViewFilterGuid.ToString( "N" ) );
@@ -303,6 +343,8 @@ namespace RockWeb.Blocks.Cms
             filterField.ExcludedFilterTypes = new string[] { typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ).FullName };
             filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             filterField.Expanded = true;
+
+            filterField.DeleteClick += filterControl_DeleteClick;
         }
 
         /// <summary>
@@ -319,6 +361,10 @@ namespace RockWeb.Blocks.Cms
             childGroupControl.ID = string.Format( "fg_{0}", childGroupControl.DataViewFilterGuid.ToString( "N" ) );
             childGroupControl.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             childGroupControl.FilterType = FilterExpressionType.GroupAll;
+
+            childGroupControl.AddFilterClick += groupControl_AddFilterClick;
+            childGroupControl.AddGroupClick += groupControl_AddGroupClick;
+            childGroupControl.DeleteGroupClick += groupControl_DeleteGroupClick;
         }
 
         /// <summary>
@@ -343,7 +389,7 @@ namespace RockWeb.Blocks.Cms
             groupControl.Parent.Controls.Remove( groupControl );
         }
 
-        #endregion
+        #endregion Events
 
         #region Internal Methods
 
@@ -353,7 +399,7 @@ namespace RockWeb.Blocks.Cms
         protected override void ShowSettings()
         {
             // Switch does not automatically initialize again after a partial-postback.  This script 
-            // looks for any switch elements that have not been initialized and re-intializes them.
+            // looks for any switch elements that have not been initialized and re-initializes them.
             string script = @"
 $(document).ready(function() {
     $('.switch > input').each( function () {
@@ -370,6 +416,7 @@ $(document).ready(function() {
             var rockContext = new RockContext();
             ddlChannel.DataSource = new ContentChannelService( rockContext ).Queryable()
                 .OrderBy( c => c.Name )
+                .Where(a => a.ContentChannelType.ShowInChannelList == true)
                 .Select( c => new { c.Guid, c.Name } )
                 .ToList();
             ddlChannel.DataBind();
@@ -394,6 +441,16 @@ $(document).ready(function() {
             nbCount.Text = GetAttributeValue( "Count" );
             nbItemCacheDuration.Text = GetAttributeValue( "CacheDuration" );
             nbOutputCacheDuration.Text = GetAttributeValue( "OutputCacheDuration" );
+
+            DefinedValueService definedValueService = new DefinedValueService( new RockContext() );
+            cblCacheTags.DataSource = definedValueService.GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.CACHE_TAGS.AsGuid() ).Select( v => v.Value ).ToList();
+            cblCacheTags.DataBind();
+            string[] selectedCacheTags = this.GetAttributeValue( "CacheTags" ).SplitDelimitedValues();
+            foreach ( ListItem cacheTag in cblCacheTags.Items )
+            {
+                cacheTag.Selected = selectedCacheTags.Contains( cacheTag.Value );
+            }
+
             hfDataFilterId.Value = GetAttributeValue( "FilterId" );
             cbQueryParamFiltering.Checked = GetAttributeValue( "QueryParameterFiltering" ).AsBoolean();
 
@@ -408,14 +465,21 @@ $(document).ready(function() {
             kvlOrder.Value = GetAttributeValue( "Order" );
             kvlOrder.Required = true;
 
-
             ShowEdit();
 
             upnlContent.Update();
         }
 
         /// <summary>
-        /// Binds the grid.
+        /// Shows the content channel item or items. If an output cache duration is set,
+        /// the content will attempt to be fetched from cache unless any of the following 
+        /// settings are enabled or set:
+        ///    * MergeContent (bool)
+        ///    * SetPageTitle (bool)
+        ///    * RssAutodiscover (bool)
+        ///    * MetaDescriptionAttribute (string)
+        ///    * MetaImageAttribute (string)
+        ///    * QueryParameterFiltering (bool)
         /// </summary>
         private void ShowView()
         {
@@ -424,7 +488,21 @@ $(document).ready(function() {
 
             string outputContents = null;
 
-            if ( OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 )
+            bool isMergeContentEnabled = GetAttributeValue( "MergeContent" ).AsBoolean();
+            bool isSetPageTitleEnabled = GetAttributeValue( "SetPageTitle" ).AsBoolean();
+            bool isRssAutodiscoverEnabled = GetAttributeValue( "RssAutodiscover" ).AsBoolean();
+            bool isQueryParameterFilteringEnabled = GetAttributeValue( "QueryParameterFiltering" ).AsBoolean( false );
+            string metaDescriptionAttributeValue = GetAttributeValue( "MetaDescriptionAttribute" );
+            string metaImageAttributeValue = GetAttributeValue( "MetaImageAttribute" );
+            int pageNumber = PageParameter( "Page" ).AsIntegerOrNull() ?? 1;
+
+            // Try fetching from cache if it's OK to do so. 
+            // For now, we'll only cache if pagination is page 1. When our cache supports caching as a region (set)
+            // we can then cache all pages and call ClearRegion if the block settings change.
+            if ( OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 && pageNumber == 1 &&
+                !( isSetPageTitleEnabled || isSetPageTitleEnabled || isRssAutodiscoverEnabled 
+                || isQueryParameterFilteringEnabled || ! string.IsNullOrWhiteSpace( metaDescriptionAttributeValue )
+                || ! string.IsNullOrWhiteSpace( metaImageAttributeValue ) ) )
             {
                 outputContents = GetCacheItem( OUTPUT_CACHE_KEY ) as string;
             }
@@ -438,10 +516,10 @@ $(document).ready(function() {
                 linkedPages.Add( "DetailPage", LinkedPageRoute( "DetailPage" ) );
 
                 var errorMessages = new List<string>();
-                List<ContentChannelItem> content;
+                List<ContentChannelItem> contentItemList;
                 try
                 {
-                    content = GetContent( errorMessages ) ?? new List<ContentChannelItem>();
+                    contentItemList = GetContent( errorMessages, isQueryParameterFilteringEnabled ) ?? new List<ContentChannelItem>();
                 }
                 catch ( Exception ex )
                 {
@@ -453,7 +531,7 @@ $(document).ready(function() {
                         exception = exception.InnerException;
                     }
 
-                    content = new List<ContentChannelItem>();
+                    contentItemList = new List<ContentChannelItem>();
                 }
 
                 if ( errorMessages.Any() )
@@ -465,18 +543,18 @@ $(document).ready(function() {
                 }
 
                 var pagination = new Pagination();
-                pagination.ItemCount = content.Count();
+                pagination.ItemCount = contentItemList.Count();
                 pagination.PageSize = GetAttributeValue( "Count" ).AsInteger();
-                pagination.CurrentPage = PageParameter( "Page" ).AsIntegerOrNull() ?? 1;
+                pagination.CurrentPage = pageNumber;
                 pagination.UrlTemplate = pageRef.BuildUrl();
-                var currentPageContent = pagination.GetCurrentPageItems( content );
+                var currentPageContent = pagination.GetCurrentPageItems( contentItemList );
 
                 var mergeFieldOptions = new Rock.Lava.CommonMergeFieldsOptions();
                 mergeFieldOptions.GetLegacyGlobalMergeFields = GetAttributeValue( "SupportLegacy" ).AsBoolean();
                 var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, mergeFieldOptions );
 
                 // Merge content and attribute fields if block is configured to do so.
-                if ( GetAttributeValue( "MergeContent" ).AsBoolean() )
+                if ( isMergeContentEnabled )
                 {
                     var itemMergeFields = new Dictionary<string, object>( commonMergeFields );
                     if ( CurrentPerson != null )
@@ -507,19 +585,19 @@ $(document).ready(function() {
                 mergeFields.AddOrIgnore( "Person", CurrentPerson );
 
                 // set page title
-                if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() && content.Count > 0 )
+                if ( isSetPageTitleEnabled && contentItemList.Count > 0 )
                 {
                     if ( string.IsNullOrWhiteSpace( PageParameter( "Item" ) ) )
                     {
                         // set title to channel name
-                        string channelName = content.Select( c => c.ContentChannel.Name ).FirstOrDefault();
+                        string channelName = contentItemList.Select( c => c.ContentChannel.Name ).FirstOrDefault();
                         RockPage.BrowserTitle = String.Format( "{0} | {1}", channelName, RockPage.Site.Name );
                         RockPage.PageTitle = channelName;
                         RockPage.Header.Title = String.Format( "{0} | {1}", channelName, RockPage.Site.Name );
                     }
                     else
                     {
-                        string itemTitle = content.Select( c => c.Title ).FirstOrDefault();
+                        string itemTitle = contentItemList.Select( c => c.Title ).FirstOrDefault();
                         RockPage.PageTitle = itemTitle;
                         RockPage.BrowserTitle = String.Format( "{0} | {1}", itemTitle, RockPage.Site.Name );
                         RockPage.Header.Title = String.Format( "{0} | {1}", itemTitle, RockPage.Site.Name );
@@ -533,13 +611,13 @@ $(document).ready(function() {
                 }
 
                 // set rss auto discover link
-                if ( GetAttributeValue( "RssAutodiscover" ).AsBoolean() && content.Count > 0 )
+                if ( isRssAutodiscoverEnabled && contentItemList.Count > 0 )
                 {
                     //<link rel="alternate" type="application/rss+xml" title="RSS Feed for petefreitag.com" href="/rss/" />
                     HtmlLink rssLink = new HtmlLink();
                     rssLink.Attributes.Add( "type", "application/rss+xml" );
                     rssLink.Attributes.Add( "rel", "alternate" );
-                    rssLink.Attributes.Add( "title", content.Select( c => c.ContentChannel.Name ).FirstOrDefault() );
+                    rssLink.Attributes.Add( "title", contentItemList.Select( c => c.ContentChannel.Name ).FirstOrDefault() );
 
                     var context = HttpContext.Current;
                     string channelRssUrl = string.Format( "{0}://{1}{2}{3}{4}",
@@ -549,17 +627,16 @@ $(document).ready(function() {
                                             ? string.Empty
                                             : ":" + context.Request.Url.Port,
                                         RockPage.ResolveRockUrl( "~/GetChannelFeed.ashx?ChannelId=" ),
-                                        content.Select( c => c.ContentChannelId ).FirstOrDefault() );
+                                        contentItemList.Select( c => c.ContentChannelId ).FirstOrDefault() );
 
                     rssLink.Attributes.Add( "href", channelRssUrl );
                     RockPage.Header.Controls.Add( rssLink );
                 }
 
                 // set description meta tag
-                string metaDescriptionAttributeValue = GetAttributeValue( "MetaDescriptionAttribute" );
-                if ( !string.IsNullOrWhiteSpace( metaDescriptionAttributeValue ) && content.Count > 0 )
+                if ( !string.IsNullOrWhiteSpace( metaDescriptionAttributeValue ) && contentItemList.Count > 0 )
                 {
-                    string attributeValue = GetMetaValueFromAttribute( metaDescriptionAttributeValue, content );
+                    string attributeValue = GetMetaValueFromAttribute( metaDescriptionAttributeValue, contentItemList );
 
                     if ( !string.IsNullOrWhiteSpace( attributeValue ) )
                     {
@@ -569,10 +646,9 @@ $(document).ready(function() {
                 }
 
                 // add meta images
-                string metaImageAttributeValue = GetAttributeValue( "MetaImageAttribute" );
-                if ( !string.IsNullOrWhiteSpace( metaImageAttributeValue ) && content.Count > 0 )
+                if ( !string.IsNullOrWhiteSpace( metaImageAttributeValue ) && contentItemList.Count > 0 )
                 {
-                    string attributeValue = GetMetaValueFromAttribute( metaImageAttributeValue, content );
+                    string attributeValue = GetMetaValueFromAttribute( metaImageAttributeValue, contentItemList );
 
                     if ( !string.IsNullOrWhiteSpace( attributeValue ) )
                     {
@@ -603,13 +679,21 @@ $(document).ready(function() {
 
                 if ( OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 )
                 {
-                    AddCacheItem( OUTPUT_CACHE_KEY, outputContents, OutputCacheDuration.Value );
+                    string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                    // When our cache supports regions, add the pagination page to the cache key and set them all with the same region.
+                    AddCacheItem( OUTPUT_CACHE_KEY, outputContents, OutputCacheDuration.Value, cacheTags );
                 }
             }
 
             phContent.Controls.Add( new LiteralControl( outputContents ) );
         }
 
+        /// <summary>
+        /// Gets the meta value from attribute.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="content">The content.</param>
+        /// <returns>a string value</returns>
         private string GetMetaValueFromAttribute( string input, List<ContentChannelItem> content )
         {
             string attributeEntityType = input.Split( '^' )[0].ToString() ?? "C";
@@ -629,13 +713,17 @@ $(document).ready(function() {
             return attributeValue;
         }
 
+        /// <summary>
+        /// Gets the template.
+        /// </summary>
+        /// <returns>a DotLiquid Template</returns>
+        /// <returns>A <see cref="DotLiquid.Template"/></returns>
         private Template GetTemplate()
         {
             Template template = null;
 
             try
             {
-
                 // only load from the cache if a cacheDuration was specified
                 if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
                 {
@@ -648,7 +736,8 @@ $(document).ready(function() {
 
                     if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
                     {
-                        AddCacheItem( TEMPLATE_CACHE_KEY, template, ItemCacheDuration.Value );
+                        string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                        AddCacheItem( TEMPLATE_CACHE_KEY, template, ItemCacheDuration.Value, cacheTags );
                     }
                 }
             }
@@ -660,7 +749,14 @@ $(document).ready(function() {
             return template;
         }
 
-        private List<ContentChannelItem> GetContent( List<string> errorMessages )
+        /// <summary>
+        /// Gets the content channel items from the item-cache (if there), or from 
+        /// the configured Channel and any given Item id or filter in the query string
+        /// if QueryParameterFiltering is enabled.
+        /// </summary>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns> a list of <see cref="Rock.Model.ContentChannelItem">ContentChannelItems</see></returns>
+        private List<ContentChannelItem> GetContent( List<string> errorMessages, bool isQueryParameterFilteringEnabled )
         {
             List<ContentChannelItem> items = null;
 
@@ -670,9 +766,7 @@ $(document).ready(function() {
                 items = GetCacheItem( CONTENT_CACHE_KEY ) as List<ContentChannelItem>;
             }
 
-            bool queryParameterFiltering = GetAttributeValue( "QueryParameterFiltering" ).AsBoolean( false );
-
-            if ( items == null || ( queryParameterFiltering && Request.QueryString.Count > 0 ) )
+            if ( items == null || ( isQueryParameterFilteringEnabled && Request.QueryString.Count > 0 ) )
             {
                 Guid? channelGuid = GetAttributeValue( "Channel" ).AsGuidOrNull();
                 if ( channelGuid.HasValue )
@@ -686,16 +780,16 @@ $(document).ready(function() {
                     var contentChannel = new ContentChannelService( rockContext ).Get( channelGuid.Value );
                     if ( contentChannel != null )
                     {
-                        var entityFields = HackEntityFields( contentChannel, rockContext );
-
                         items = new List<ContentChannelItem>();
 
                         var qry = service
-                            .Queryable( "ContentChannel,ContentChannelType" )
+                            .Queryable()
+                            .Include(a => a.ContentChannel)
+                            .Include(a => a.ContentChannelType)
                             .Where( i => i.ContentChannelId == contentChannel.Id );
 
                         int? itemId = PageParameter( "Item" ).AsIntegerOrNull();
-                        if ( queryParameterFiltering && itemId.HasValue )
+                        if ( isQueryParameterFilteringEnabled && itemId.HasValue )
                         {
                             qry = qry.Where( i => i.Id == itemId.Value );
                         }
@@ -824,13 +918,14 @@ $(document).ready(function() {
 
                         }
 
-                        if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 && !queryParameterFiltering )
+                        if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 && !isQueryParameterFilteringEnabled )
                         {
-                            AddCacheItem( CONTENT_CACHE_KEY, items, ItemCacheDuration.Value );
+                            string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                            AddCacheItem( CONTENT_CACHE_KEY, items, ItemCacheDuration.Value, cacheTags );
                         }
 
                         // If items could be filtered by querystring values, check for filters
-                        if ( queryParameterFiltering )
+                        if ( isQueryParameterFilteringEnabled )
                         {
                             var pageParameters = PageParameters();
                             if ( pageParameters.Count > 0 )
@@ -843,7 +938,7 @@ $(document).ready(function() {
                                     var selection = new List<string>();
                                     selection.Add( key );
 
-                                    var entityField = entityFields.FirstOrDefault( f => f.Name.Equals( key, StringComparison.OrdinalIgnoreCase ) );
+                                    var entityField = Rock.Reporting.EntityHelper.FindFromFilterSelection( contentChannel.GetType(), key );
                                     if ( entityField != null )
                                     {
                                         string value = PageParameter( key );
@@ -882,7 +977,6 @@ $(document).ready(function() {
             }
 
             return items;
-
         }
 
         /// <summary>
@@ -1010,98 +1104,6 @@ $(document).ready(function() {
         }
 
         /// <summary>
-        /// **The PropertyFilter checks for it's property/attribute list in a cached items object before recreating 
-        /// them using reflection and loading of generic attributes. Because of this, we're going to load them here
-        /// and exclude some properties and add additional attributes specific to the channel type, and then save
-        /// list to same cached object so that property filter lists our collection of properties/attributes
-        /// instead.
-        /// </summary>
-        private List<Rock.Reporting.EntityField> HackEntityFields( ContentChannel channel, RockContext rockContext )
-        {
-            if ( channel != null )
-            {
-                var entityTypeCache = CacheEntityType.Get( ITEM_TYPE_NAME );
-                if ( entityTypeCache != null )
-                {
-                    var entityType = entityTypeCache.GetEntityType();
-
-                    /// See above comments on HackEntityFields** to see why we are doing this
-                    HttpContext.Current.Items.Remove( Rock.Reporting.EntityHelper.GetCacheKey( entityType ) );
-
-                    var entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
-                    foreach ( var entityField in entityFields
-                        .Where( f =>
-                            f.FieldKind == Rock.Reporting.FieldKind.Attribute &&
-                            f.AttributeGuid.HasValue )
-                        .ToList() )
-                    {
-                        // remove EntityFields that aren't attributes for this ContentChannelType or ChannelChannel (to avoid duplicate Attribute Keys)
-                        var attribute = CacheAttribute.Get( entityField.AttributeGuid.Value );
-                        if ( attribute != null &&
-                            attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" &&
-                            attribute.EntityTypeQualifierValue.AsInteger() != channel.ContentChannelTypeId )
-                        {
-                            entityFields.Remove( entityField );
-                        }
-
-                        if ( attribute != null &&
-                            attribute.EntityTypeQualifierColumn == "ContentChannelId" &&
-                            attribute.EntityTypeQualifierValue.AsInteger() != channel.Id )
-                        {
-                            entityFields.Remove( entityField );
-                        }
-                    }
-
-                    if ( entityFields != null )
-                    {
-                        // Remove the status field
-                        var ignoreFields = new List<string>();
-                        ignoreFields.Add( "ContentChannelId" );
-                        ignoreFields.Add( "Status" );
-
-                        entityFields = entityFields.Where( f => !ignoreFields.Contains( f.Name ) ).ToList();
-
-                        // Add any additional attributes that are specific to channel/type
-                        var item = new ContentChannelItem();
-                        item.ContentChannel = channel;
-                        item.ContentChannelId = channel.Id;
-                        item.ContentChannelType = channel.ContentChannelType;
-                        item.ContentChannelTypeId = channel.ContentChannelTypeId;
-                        item.LoadAttributes( rockContext );
-                        foreach ( var attribute in item.Attributes
-                            .Where( a =>
-                                a.Value.EntityTypeQualifierColumn != "" &&
-                                a.Value.EntityTypeQualifierValue != "" )
-                            .Select( a => a.Value ) )
-                        {
-                            if ( !entityFields.Any( f => f.AttributeGuid.Equals( attribute.Guid ) ) )
-                            {
-                                Rock.Reporting.EntityHelper.AddEntityFieldForAttribute( entityFields, attribute );
-                            }
-                        }
-
-                        // Re-sort fields
-                        int index = 0;
-                        var sortedFields = new List<Rock.Reporting.EntityField>();
-                        foreach ( var entityProperty in entityFields.OrderBy( p => p.Title ).ThenBy( p => p.Name ) )
-                        {
-                            entityProperty.Index = index;
-                            index++;
-                            sortedFields.Add( entityProperty );
-                        }
-
-                        // Save new fields to cache ( which report field will use instead of reading them again )
-                        HttpContext.Current.Items[Rock.Reporting.EntityHelper.GetCacheKey( entityType )] = sortedFields;
-                    }
-
-                    return entityFields;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Creates the filter control.
         /// </summary>
         /// <param name="channel">The channel.</param>
@@ -1110,12 +1112,10 @@ $(document).ready(function() {
         /// <param name="rockContext">The rock context.</param>
         private void CreateFilterControl( ContentChannel channel, DataViewFilter filter, bool setSelection, RockContext rockContext )
         {
-            HackEntityFields( channel, rockContext );
-
             phFilters.Controls.Clear();
             if ( filter != null )
             {
-                CreateFilterControl( phFilters, filter, setSelection, rockContext );
+                CreateFilterControl( phFilters, filter, setSelection, rockContext, channel );
             }
         }
 
@@ -1126,13 +1126,19 @@ $(document).ready(function() {
         /// <param name="filter">The filter.</param>
         /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
         /// <param name="rockContext">The rock context.</param>
-        private void CreateFilterControl( Control parentControl, DataViewFilter filter, bool setSelection, RockContext rockContext )
+        /// <param name="contentChannel">The content channel.</param>
+        private void CreateFilterControl( Control parentControl, DataViewFilter filter, bool setSelection, RockContext rockContext, ContentChannel contentChannel )
         {
             try
             {
                 if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
                     var filterControl = new FilterField();
+                    filterControl.Entity = new ContentChannelItem
+                    {
+                        ContentChannelId = contentChannel.Id,
+                        ContentChannelTypeId = contentChannel.ContentChannelTypeId
+                    };
 
                     parentControl.Controls.Add( filterControl );
                     filterControl.DataViewFilterGuid = filter.Guid;
@@ -1144,7 +1150,7 @@ $(document).ready(function() {
 
                     if ( filter.EntityTypeId.HasValue )
                     {
-                        var entityTypeCache = Rock.Cache.CacheEntityType.Get( filter.EntityTypeId.Value, rockContext );
+                        var entityTypeCache = EntityTypeCache.Get( filter.EntityTypeId.Value, rockContext );
                         if ( entityTypeCache != null )
                         {
                             filterControl.FilterEntityTypeName = entityTypeCache.Name;
@@ -1184,7 +1190,7 @@ $(document).ready(function() {
                     groupControl.DeleteGroupClick += groupControl_DeleteGroupClick;
                     foreach ( var childFilter in filter.ChildFilters )
                     {
-                        CreateFilterControl( groupControl, childFilter, setSelection, rockContext );
+                        CreateFilterControl( groupControl, childFilter, setSelection, rockContext, contentChannel );
                     }
                 }
             }
@@ -1192,65 +1198,6 @@ $(document).ready(function() {
             {
                 this.LogException( new Exception( "Exception creating FilterControl for DataViewFilter: " + filter.Guid, ex ) );
             }
-        }
-
-        private DataViewFilter GetFilterControl()
-        {
-            if ( phFilters.Controls.Count > 0 )
-            {
-                return GetFilterControl( phFilters.Controls[0] );
-            }
-
-            return null;
-        }
-
-        private DataViewFilter GetFilterControl( Control control )
-        {
-            FilterGroup groupControl = control as FilterGroup;
-            if ( groupControl != null )
-            {
-                return GetFilterGroupControl( groupControl );
-            }
-
-            FilterField filterControl = control as FilterField;
-            if ( filterControl != null )
-            {
-                return GetFilterFieldControl( filterControl );
-            }
-
-            return null;
-        }
-
-        private DataViewFilter GetFilterGroupControl( FilterGroup filterGroup )
-        {
-            DataViewFilter filter = new DataViewFilter();
-            filter.Guid = filterGroup.DataViewFilterGuid;
-            filter.ExpressionType = filterGroup.FilterType;
-            foreach ( Control control in filterGroup.Controls )
-            {
-                DataViewFilter childFilter = GetFilterControl( control );
-                if ( childFilter != null )
-                {
-                    filter.ChildFilters.Add( childFilter );
-                }
-            }
-
-            return filter;
-        }
-
-        private DataViewFilter GetFilterFieldControl( FilterField filterField )
-        {
-            DataViewFilter filter = new DataViewFilter();
-            filter.Guid = filterField.DataViewFilterGuid;
-            filter.ExpressionType = FilterExpressionType.Filter;
-            filter.Expanded = filterField.Expanded;
-            if ( filterField.FilterEntityTypeName != null )
-            {
-                filter.EntityTypeId = Rock.Cache.CacheEntityType.Get( filterField.FilterEntityTypeName ).Id;
-                filter.Selection = filterField.GetSelection();
-            }
-
-            return filter;
         }
 
         private void SetNewDataFilterGuids( DataViewFilter dataViewFilter )

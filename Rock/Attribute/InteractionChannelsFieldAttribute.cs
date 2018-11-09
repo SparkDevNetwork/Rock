@@ -1,4 +1,5 @@
-﻿// Copyright by the Spark Development Network
+﻿// <copyright>
+// Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.

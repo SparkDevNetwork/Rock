@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.PayFlowPro
 {
@@ -54,26 +54,26 @@ namespace Rock.PayFlowPro
         /// <value>
         /// The supported payment schedules.
         /// </value>
-        public override List<CacheDefinedValue> SupportedPaymentSchedules
+        public override List<DefinedValueCache> SupportedPaymentSchedules
         {
             get
             {
-                var values = new List<CacheDefinedValue>();
-                values.Add( CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
-                values.Add( CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY ) );
-                values.Add( CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY ) );
-                values.Add( CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY ) );
-                values.Add( CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY ) );
+                var values = new List<DefinedValueCache>();
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY ) );
                 return values;
             }
         }
 
         /// <summary>
-        /// Returnes a boolean value indicating if 'Saved Account' functionality is supported for the given currency type.
+        /// Returns a boolean value indicating if 'Saved Account' functionality is supported for the given currency type.
         /// </summary>
         /// <param name="currencyType">Type of the currency.</param>
         /// <returns></returns>
-        public override bool SupportsSavedAccount( CacheDefinedValue currencyType )
+        public override bool SupportsSavedAccount( DefinedValueCache currencyType )
         {
             // PayflowPro only supports saved account functionality for credit card transactions
             return currencyType.Guid.Equals( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
@@ -666,7 +666,7 @@ namespace Rock.PayFlowPro
                 var transactionIdParams = new Dictionary<string, string>();
                 transactionIdParams.Add( "transaction_id", string.Empty );
 
-                var creditCardTypes = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid() ).DefinedValues;
+                var creditCardTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid() ).DefinedValues;
 
                 foreach ( DataRow recurringBillingRow in recurringBillingTable.Rows )
                 {
@@ -913,13 +913,13 @@ namespace Rock.PayFlowPro
             ppRecurringInfo.Start = schedule.StartDate.ToString( "MMddyyyy" );
             if ( schedule.TransactionFrequencyValueId > 0 )
             {
-                SetPayPeriod( ppRecurringInfo, CacheDefinedValue.Get( schedule.TransactionFrequencyValueId ) );
+                SetPayPeriod( ppRecurringInfo, DefinedValueCache.Get( schedule.TransactionFrequencyValueId ) );
             }
 
             return ppRecurringInfo;
         }
 
-        private void SetPayPeriod( RecurringInfo recurringInfo, CacheDefinedValue transactionFrequencyValue )
+        private void SetPayPeriod( RecurringInfo recurringInfo, DefinedValueCache transactionFrequencyValue )
         {
             recurringInfo.MaxFailPayments = 0;
             recurringInfo.Term = 0;

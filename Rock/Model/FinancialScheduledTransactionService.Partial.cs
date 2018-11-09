@@ -23,7 +23,7 @@ using System.Text;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Transactions;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -68,19 +68,6 @@ namespace Rock.Model
             return qry
                 .OrderByDescending( t => t.IsActive )
                 .ThenByDescending( t => t.StartDate );
-        }
-
-        /// <summary>
-        /// Gets the by schedule identifier.
-        /// </summary>
-        /// <param name="scheduleId">The schedule identifier.</param>
-        /// <returns></returns>
-        [Obsolete( "The GetByScheduleId( scheduleId, gatewayId ) method should be used instead." )]
-        public FinancialScheduledTransaction GetByScheduleId( string scheduleId )
-        {
-            return Queryable( "ScheduledTransactionDetails,AuthorizedPersonAlias.Person" )
-                .Where( t => t.GatewayScheduleId == scheduleId.Trim() )
-                .FirstOrDefault();
         }
 
         /// <summary>
@@ -138,7 +125,12 @@ namespace Rock.Model
                 var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
                 if ( gateway != null )
                 {
-                    return gateway.GetScheduledPaymentStatus( scheduledTransaction, out errorMessages );
+                    var result = gateway.GetScheduledPaymentStatus( scheduledTransaction, out errorMessages );
+
+                    var lastTransactionDate = scheduledTransaction.Transactions.Max( t => t.TransactionDateTime );
+                    scheduledTransaction.NextPaymentDate = gateway.GetNextPaymentDate( scheduledTransaction, lastTransactionDate );
+
+                    return result;
                 }
             }
 
@@ -249,7 +241,8 @@ namespace Rock.Model
         /// <param name="batchUrlFormat">The batch URL format.</param>
         /// <param name="receiptEmail">The receipt email.</param>
         /// <returns></returns>
-        [Obsolete("Use method with failed payment email and workflow type parameters")]
+        [RockObsolete( "1.7" )]
+        [Obsolete("Use method with failed payment email and workflow type parameters", true )]
         public static string ProcessPayments( FinancialGateway gateway, string batchNamePrefix, List<Payment> payments, string batchUrlFormat = "", Guid? receiptEmail = null )
         {
             return ProcessPayments( gateway, batchNamePrefix, payments, batchUrlFormat, receiptEmail, null, null );
@@ -285,7 +278,7 @@ namespace Rock.Model
             var newTransactions = new List<FinancialTransaction>();
             var failedPayments = new List<FinancialTransaction>();
 
-            var contributionTxnType = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            var contributionTxnType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
 
             int? defaultAccountId = null;
             using ( var rockContext2 = new RockContext() )
@@ -349,7 +342,7 @@ namespace Rock.Model
                             transaction.StatusMessage = payment.StatusMessage;
                             transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
 
-                            if ( payment.ForeignKey.IsNotNullOrWhitespace() )
+                            if ( payment.ForeignKey.IsNotNullOrWhiteSpace() )
                             {
                                 transaction.ForeignKey = payment.ForeignKey;
                             }
@@ -405,12 +398,12 @@ namespace Rock.Model
                             {
                                 if ( currencyTypeValue == null && financialPaymentDetail.CurrencyTypeValueId.HasValue )
                                 {
-                                    currencyTypeValue = CacheDefinedValue.Get( financialPaymentDetail.CurrencyTypeValueId.Value );
+                                    currencyTypeValue = DefinedValueCache.Get( financialPaymentDetail.CurrencyTypeValueId.Value );
                                 }
 
                                 if ( creditCardTypevalue == null && financialPaymentDetail.CreditCardTypeValueId.HasValue )
                                 {
-                                    creditCardTypevalue = CacheDefinedValue.Get( financialPaymentDetail.CreditCardTypeValueId.Value );
+                                    creditCardTypevalue = DefinedValueCache.Get( financialPaymentDetail.CreditCardTypeValueId.Value );
                                 }
 
                                 transaction.FinancialPaymentDetail.AccountNumberMasked = financialPaymentDetail.AccountNumberMasked;
@@ -710,7 +703,7 @@ namespace Rock.Model
             return processedAmount - rockAmount;
         }
 
-        private void LaunchWorkflow( CacheWorkflowType workflowType, FinancialTransaction transaction )
+        private void LaunchWorkflow( WorkflowTypeCache workflowType, FinancialTransaction transaction )
         {
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {

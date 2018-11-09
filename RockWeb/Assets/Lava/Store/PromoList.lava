@@ -5,7 +5,7 @@
     <div class="panel-body">
         <div class="row">
             {% for promo in Promos %}
-	
+
 	            <div class="col-sm-3 col-xs-6">
 		            <div class="packagesummary">
                         <a href="{{ LinkedPages.DetailPage }}?PackageId={{ promo.PackageId }}">
@@ -30,8 +30,8 @@
 							            {% endif %}
 						            </div>
 					            </div>
-                            
-				
+
+
                         </a>
                     </div>
 	            </div>

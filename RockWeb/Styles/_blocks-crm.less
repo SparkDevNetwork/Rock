@@ -17,7 +17,7 @@
     14. Bulk Update
     15. Photo Upload
     16. Duplicate Pages
-    17. DISC
+    17. DISC & Assessments
     19. Edit Person
 */
 
@@ -87,7 +87,8 @@
     margin-bottom: 4px;
     text-align: center;
 
-    .full-name, .previous-names {
+    .full-name,
+    .previous-names {
       display: none;
       font-size: 18px;
     }
@@ -163,7 +164,9 @@
 
     img {
       width: 100%;
+      max-width: 200px;
       height: auto;
+      max-height: 200px;
     }
 
     .fluidbox-ghost {
@@ -180,36 +183,29 @@
   .social-icons {
     text-align: center;
 
-    .icon {
+    .btn {
       display: inline-block;
-      margin: 0 2px;
       font-size: 16px;
+      color: #fff;
       background-color: @gray;
+      border: 0;
       border-radius: @border-radius-base;
 
-      a {
-        color: #fff;
-
-        &:hover {
-          opacity: .6;
-        }
+      &:hover {
+        opacity: .8;
       }
 
-      i {
-        margin: 4px;
-      }
-
-      &.icon-facebook {
+      &.btn-facebook {
         color: #fff;
         background-color: #44619d;
       }
 
-      &.icon-twitter {
+      &.btn-twitter {
         color: #fff;
         background-color: #55acee;
       }
 
-      &.icon-instagram {
+      &.btn-instagram {
         color: #fff;
         background-color: #39688f;
       }
@@ -263,7 +259,7 @@
 }
 
 .originate-call {
-  &:before {
+  &::before {
     margin-right: 6px;
     font-family: @fa-font-face;
     font-weight: @fa-theme-weight;
@@ -287,7 +283,7 @@
     text-align: center;
 
     .badge {
-      display: inline-block; // fixes issue in default browser on Andriod
+      display: inline-block; // fixes issue in default browser on Android
       padding: 3px 7px 0;
       background-color: inherit;
     }
@@ -309,7 +305,7 @@
 .badge-era {
   position: relative;
 
-  &:before {
+  &::before {
     font-family: @fa-font-face;
     font-size: 45px;
     font-weight: @fa-theme-weight;
@@ -360,7 +356,7 @@
         min-height: 1px;
         background: @persondetails-badge-color;
 
-        @media screen and (-webkit-min-device-pixel-ratio:0) {
+        @media screen and (-webkit-min-device-pixel-ratio: 0) {
           // needed for chrome but kills ie
           position: absolute;
           bottom: 0;
@@ -403,7 +399,7 @@
         min-height: 2px;
         background: lighten(#4f89bd, 20%);
 
-        @media screen and (-webkit-min-device-pixel-ratio:0) {
+        @media screen and (-webkit-min-device-pixel-ratio: 0) {
           // needed for chrome but kills ie
           position: absolute;
           bottom: 0;
@@ -451,7 +447,7 @@
   color: #686576;
 
   .duration-metric {
-    &:before {
+    &::before {
       font-family: @fa-font-face;
       font-size: 45px;
       font-weight: @fa-theme-weight;
@@ -502,7 +498,7 @@
     position: relative;
     color: #686576;
 
-    &:before {
+    &::before {
       font-family: @fa-font-face;
       font-size: 45px;
       font-weight: @fa-theme-weight;
@@ -673,7 +669,7 @@
     padding: 10px 15px;
     margin: 0 -15px;
     background-color: @persondetails-bio-bg;
-    border: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
+    border-bottom: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
     .clearfix();
 
     h1 {
@@ -722,19 +718,32 @@
       }
 
       .person-image {
+        position: relative;
+        overflow: hidden;
+        background-color: #fafafa;
+        background-position: center;
+        background-size: cover;
+        border: none;
         border-color: @persondetails-familybar-photo-bg;
         border-radius: 50%;
+
+        &::after {
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          pointer-events: none;
+          content: "";
+          border: 1px solid rgba(0,0,0,.0975);
+          border-radius: 50%;
+        }
       }
 
       &:hover {
         background-color: darken(@persondetails-familybar-bg, 8%);
         border-radius: @border-radius-base;
 
-        .person-image {
-          -webkit-filter: grayscale(0%);
-          filter: grayscale(0%);
-          filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 1 0\'/></filter></svg>#grayscale");
-        }
       }
     }
   }
@@ -814,7 +823,7 @@
 // history page
 span.field-name {
   padding: 2px 4px;
-  font-family: Monaco,Menlo,Consolas,"Courier New",monospace;
+  font-family: @font-family-monospace;
   font-size: 90%;
   color: @pagetitle-text-color;
   white-space: nowrap;
@@ -825,7 +834,7 @@ span.field-name {
 /* white-space was nowrap but changed to inherit; see discussion at https://github.com/SparkDevNetwork/Rock/commit/e4230496c8a1dc199f1bbb26f95dfa025d64dd02#r28278277 */
 span.field-value {
   padding: 2px 4px;
-  font-family: Monaco,Menlo,Consolas,"Courier New",monospace;
+  font-family: @font-family-monospace;
   font-size: 90%;
   color: @pagetitle-text-color;
   white-space: inherit;
@@ -837,9 +846,8 @@ span.field-value {
 // -------------------------
 
 .table-groupmembers .radio:first-child {
-  margin-top: 0;
+  margin-top: 0 !important;
 }
-
 
 @media (max-width: @screen-sm) {
   /* Force table to not be like tables anymore */
@@ -848,7 +856,13 @@ span.field-value {
   .table-groupmembers tbody,
   .table-groupmembers th,
   .table-groupmembers td,
-  .table-groupmembers tr {
+  .table-groupmembers tr,
+  table.table-groupcontactinfo,
+  .table-groupcontactinfo thead,
+  .table-groupcontactinfo tbody,
+  .table-groupcontactinfo th,
+  .table-groupcontactinfo td,
+  .table-groupcontactinfo tr {
     display: block;
   }
 
@@ -893,12 +907,12 @@ span.field-value {
     > tbody > tr {
       counter-increment: rowNumber;
 
-      &:before {
+      &::before {
         /* Now like a table header */
         position: relative;
         display: block;
         width: 100%;
-        padding: 6px;
+        padding: 10px;
 
         /* Top/left values mimic padding */
         font-size: @grid-column-header-font-size;
@@ -912,31 +926,31 @@ span.field-value {
 
     /* Label the data */
     tbody {
-      td:nth-of-type(1):before {
+      td:nth-of-type(1)::before {
         content: "Role";
       }
 
-      td:nth-of-type(2):before {
+      td:nth-of-type(2)::before {
         content: "Title";
       }
 
-      td:nth-of-type(3):before {
+      td:nth-of-type(3)::before {
         content: "Name";
       }
 
-      td:nth-of-type(4):before {
+      td:nth-of-type(4)::before {
         content: "Suffix";
       }
 
-      td:nth-of-type(5):before {
+      td:nth-of-type(5)::before {
         content: "Connection Status";
       }
 
-      td:nth-of-type(6):before {
+      td:nth-of-type(6)::before {
         content: "Gender";
       }
 
-      td:nth-of-type(7):before {
+      td:nth-of-type(7)::before {
         content: "Birthdate";
       }
 
@@ -944,16 +958,17 @@ span.field-value {
         display: none;
       }
 
-      td:nth-of-type(8):before {
+      td:nth-of-type(8)::before {
         content: "Grade";
       }
 
-      td:nth-of-type(9):before {
+      td:nth-of-type(9)::before {
         content: "Cancel";
       }
     }
 
-    > tfoot, > tfoot > tr > td {
+    > tfoot,
+    > tfoot > tr > td {
       display: block;
       width: 100%;
       padding: 0;
@@ -975,9 +990,89 @@ span.field-value {
         margin-bottom: 0;
       }
     }
+
+    .pull-right {
+      float: none !important;
+    }
+  }
+
+  .table-groupcontactinfo {
+    margin-bottom: 12px;
+
+    /* Hide table headers (but not display: none;, for accessibility) */
+    thead tr {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+    }
+
+    > thead > tr > th,
+    > tbody > tr > th,
+    > tfoot > tr > th,
+    > thead > tr > td,
+    > tbody > tr > td,
+    > tfoot > tr > td {
+      border: 0;
+    }
+
+    > tbody > tr > td {
+      position: relative;
+
+      /* Behave  like a "row" */
+      border: 0;
+      border-bottom: 1px solid @gray-lighter;
+    }
+
+    /* Label the data */
+    tbody {
+      .person-name {
+        /* Now like a table header */
+        position: relative;
+        display: block;
+        width: 100%;
+        padding: 10px;
+
+        /* Top/left values mimic padding */
+        font-size: @grid-column-header-font-size;
+        font-weight: @grid-column-header-font-weight;
+        color: @grid-column-header-text-color;
+        // content: "Person #" counter(rowNumber);
+        background-color: @grid-column-header-bg;
+        border-bottom: 2px solid @grid-column-header-border-color;
+
+        &:before {
+          content: "Contact Info: "
+        }
+      }
+
+      .person-sms{
+        position: relative;
+        padding-left: 35%;
+
+        /* Behave  like a "row" */
+        border: 0;
+        border-bottom: 1px solid @gray-lighter;
+
+        &:before {
+          /* Now like a table header */
+          position: absolute;
+
+          /* Top/left values mimic padding */
+          top: 14px;
+          left: 6px;
+          width: 35%;
+          padding-right: 10px;
+          font-weight: @grid-column-header-font-weight;
+          content: "Enable SMS";
+        }
+      }
+
+      > tr > td > .form-group {
+        margin-bottom: 0;
+      }
+    }
   }
 }
-
 
 
 // 8. Add Groups
@@ -1013,7 +1108,8 @@ span.field-value {
     .name {
       text-align: left;
 
-      .full-name, .previous-names {
+      .full-name,
+      .previous-names {
         display: inline;
       }
     }
@@ -1053,10 +1149,6 @@ span.field-value {
       }
     }
   }
-}
-
-/* Large devices (large desktops, 1200px and up) */
-@media (min-width: @screen-lg-min) {
 }
 
 // 11. Person Merge
@@ -1167,9 +1259,11 @@ tr.inactive {
   }
 }
 
-// 17. DISC
+// 17. DISC & Assessments
 // -------------------------
 .disc-assessment {
+  table-layout: fixed;
+
   th {
     padding: 6px;
 
@@ -1189,7 +1283,7 @@ tr.inactive {
   }
 
   .disc-answer {
-    width: 100px;
+    width: 80px;
   }
 }
 
@@ -1243,7 +1337,7 @@ tr.inactive {
   .discbar {
     border: 1px solid #ddd;
 
-    &:before {
+    &::before {
       position: absolute;
       top: 5%;
       right: 0;
@@ -1264,6 +1358,39 @@ tr.inactive {
   }
 }
 
+.question-row {
+  margin-bottom: @padding-base-vertical * 8;
+
+  .answered {
+    color: @text-muted;
+  }
+
+  .likert > .control-label {
+    margin-bottom: @padding-base-vertical * 1.5;
+  }
+
+  .likert {
+    .radio-inline {
+      padding: 5px @padding-base-horizontal 7px (@custom-control-indicator-size + @padding-base-horizontal + 4px);
+      margin-right: @padding-base-horizontal;
+      margin-left: -@padding-base-horizontal;
+      cursor: pointer;
+      background-clip: padding-box;
+      border-radius: 4px;
+
+      &:hover {
+        background-color: @gray-lighter;
+      }
+
+      .label-text::before,
+      .label-text::after {
+        top: 50%;
+        left: 8px;
+        transform: translateY(-50%);
+      }
+    }
+  }
+}
 
 // 18. Edit Person
 // -------------------------
@@ -1273,4 +1400,24 @@ tr.inactive {
   @media @sm {
     padding-top: 4px;
   }
+}
+
+// 19. Event Calendar Item Personalized Registration
+// -------------------------
+.eventitem {
+  cursor: pointer;
+}
+
+.eventitem-select {
+  font-family: @fa-font-face;
+  font-size: 38px;
+  font-weight: @fa-theme-weight;
+}
+
+.eventitem-select:after {
+  content: @fa-var-square;
+}
+
+.eventitem.selected .eventitem-select:after {
+  content: @fa-var-check-square;
 }

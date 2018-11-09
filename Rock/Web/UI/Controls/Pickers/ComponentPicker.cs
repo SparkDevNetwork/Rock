@@ -19,7 +19,7 @@ using System.Reflection;
 using System.Web.UI.WebControls;
 using Rock.Extension;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -63,7 +63,7 @@ namespace Rock.Web.UI.Controls
                                 {
                                     if ( component.Value.Value.IsActive )
                                     {
-                                        var entityType = CacheEntityType.Get( component.Value.Value.GetType() );
+                                        var entityType = EntityTypeCache.Get( component.Value.Value.GetType() );
                                         if ( entityType != null )
                                         {
                                             this.Items.Add( new ListItem( component.Value.Key.SplitCase(), entityType.Guid.ToString().ToUpper() ) );
@@ -90,7 +90,7 @@ namespace Rock.Web.UI.Controls
                 Guid? componentEntityTypeGuid = this.SelectedValueAsGuid();
                 if ( componentEntityTypeGuid.HasValue )
                 {
-                    var componentEntityType = CacheEntityType.Get( componentEntityTypeGuid.Value );
+                    var componentEntityType = EntityTypeCache.Get( componentEntityTypeGuid.Value );
                     if ( componentEntityType != null )
                     {
                         return componentEntityType.Id;

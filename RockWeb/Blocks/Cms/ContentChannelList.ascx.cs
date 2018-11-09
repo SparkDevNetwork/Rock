@@ -15,19 +15,21 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using System.ComponentModel;
-using Rock.Security;
-using Rock.Cache;
-using System.Collections.Generic;
-using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -67,7 +69,7 @@ namespace RockWeb.Blocks.Cms
             var securityField = gContentChannels.Columns.OfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.ContentChannel ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannel ) ).Id;
             }
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
@@ -239,7 +241,10 @@ namespace RockWeb.Blocks.Cms
         {
             ContentChannelService contentChannelService = new ContentChannelService( new RockContext() );
             SortProperty sortProperty = gContentChannels.SortProperty;
-            var qry = contentChannelService.Queryable( "ContentChannelType,Items" );
+            var qry = contentChannelService.Queryable()
+                .Include( a => a.ContentChannelType )
+                .Include( a => a.Items )
+                .Where( a => a.ContentChannelType.ShowInChannelList == true );
 
             int? typeId = gfFilter.GetUserPreference( "Type" ).AsIntegerOrNull();
             if ( typeId.HasValue )
@@ -277,7 +282,7 @@ namespace RockWeb.Blocks.Cms
                     ).Count()
             } ).AsQueryable();
 
-            gContentChannels.EntityTypeId = CacheEntityType.Get<ContentChannel>().Id;
+            gContentChannels.EntityTypeId = EntityTypeCache.Get<ContentChannel>().Id;
 
             if ( sortProperty != null )
             {

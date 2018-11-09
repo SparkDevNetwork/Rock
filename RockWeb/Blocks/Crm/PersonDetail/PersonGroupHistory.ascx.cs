@@ -21,10 +21,9 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -64,9 +63,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void ApplyBlockSettings()
         {
-            _blockSettingsGroupTypeIds = this.GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList().Select( a => CacheGroupType.Get( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
+            _blockSettingsGroupTypeIds = this.GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList().Select( a => GroupTypeCache.Get( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
 
-            IEnumerable<CacheGroupType> groupTypes = CacheGroupType.All();
+            IEnumerable<GroupTypeCache> groupTypes = GroupTypeCache.All();
 
             if ( _blockSettingsGroupTypeIds.Any() )
             {
@@ -142,21 +141,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 // if group types are filtered on the user filter, use that
                 groupTypeIds = gtGroupTypesFilter.SelectedGroupTypeIds;
-
-                // show the group type names from the UserFilter
-                lSelectedGroupTypes.Visible = gtGroupTypesFilter.SelectedGroupTypeIds.Any();
-                lSelectedGroupTypes.Text = gtGroupTypesFilter.SelectedGroupTypeIds.Select( a => CacheGroupType.Get( a ).Name ).ToList().AsDelimited( "," );
             }
             else
             {
                 // if no group types are selected in the user filter, restrict grouptypes to the ones in the block settings (if any)
                 groupTypeIds = _blockSettingsGroupTypeIds;
-                lSelectedGroupTypes.Visible = false;
             }
 
             hfGroupTypeIds.Value = groupTypeIds.AsDelimited( "," );
 
-            var legendGroupTypes = CacheGroupType.All().Where( a => a.EnableGroupHistory );
+            var legendGroupTypes = GroupTypeCache.All().Where( a => a.EnableGroupHistory );
             if ( groupTypeIds.Any() )
             {
                 legendGroupTypes = legendGroupTypes.Where( a => groupTypeIds.Contains( a.Id ) );
@@ -186,7 +180,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptGroupTypeLegend_ItemDataBound( object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e )
         {
-            CacheGroupType cacheGroupType = e.Item.DataItem as CacheGroupType;
+            GroupTypeCache cacheGroupType = e.Item.DataItem as GroupTypeCache;
             Literal lGroupTypeBadgeHtml = e.Item.FindControl( "lGroupTypeBadgeHtml" ) as Literal;
             if ( cacheGroupType != null )
             {

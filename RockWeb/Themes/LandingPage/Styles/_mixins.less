@@ -1,0 +1,113 @@
+
+
+.noframe-fields(inline) {
+  .form-group {
+    float: left;
+    max-width: (100% / (@noframe-workflow-fieldcount + 1));
+    padding-right: 8px;
+    text-align: left;
+  }
+
+  .actions {
+    float: left;
+    width: (100% / (@noframe-workflow-fieldcount + 1));
+    max-width: (100% / (@noframe-workflow-fieldcount + 1));
+    margin-top: 27px;
+    .btn {
+      height: @input-height-base;
+    }
+  }
+}
+
+.noframe-fields(default) {
+  .form-group {
+    float: left;
+    width: (100% / @noframe-workflow-fieldcount);
+    max-width: (100% / @noframe-workflow-fieldcount);
+    padding-right: 8px;
+    text-align: left;
+  }
+
+  .actions {
+    width: 100%;
+    max-width: 25%;
+    margin: 0 auto;
+    margin-top: 24px;
+    clear: both;
+  }
+}
+
+.navigation-bar-fixed(true) {
+  .navbar-static-top {
+    position: absolute;
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+.navigation-bar-fixed(@enable-fixed-navigation);
+
+.required-indicator-toggle(true){}
+.required-indicator-toggle(false) {
+  .form-group.required .control-label::after {
+    display: none;
+  }
+}
+.help-text-toggle(true){
+  // Decrease the size of the help icon
+  label .help {
+    font-size: 85%;
+  }
+}
+.help-text-toggle(false) {
+  .help {
+    display: none;
+  }
+}
+
+.navigation-bar-toggle(true){}
+.navigation-bar-toggle(false){
+  .navbar {
+    display: none;
+  }
+}
+
+
+.hero-split-bright(true){
+  .hero-split {
+    background-color: @hero-split-background;
+
+    .row {
+      min-height: 100vh;
+    }
+
+    #zone-headline {
+      h1,
+      h1 small {
+        color: @hero-split-dark-headline;
+        text-shadow: none !important;
+      }
+    }
+
+    .btn-ghost {
+      color: @hero-split-dark-headline;
+      border-color: @hero-split-dark-headline;
+
+      &:hover,
+      &:focus {
+        color: @hero-split-dark-headline;
+        background: transparent;
+        border-color: @hero-split-dark-headline;
+      }
+    }
+  }
+}
+
+.hero-split-bright(false){
+  .hero-split {
+    background-color: @hero-split-background;
+
+    .row {
+      min-height: 100vh;
+    }
+  }
+}

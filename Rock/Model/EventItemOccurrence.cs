@@ -181,7 +181,7 @@ namespace Rock.Model
             {
                 if ( Schedule != null )
                 {
-                    return Schedule.NextStartDateTime;
+                    return Schedule.GetNextStartDateTime( RockDateTime.Now );
                 }
 
                 return null;

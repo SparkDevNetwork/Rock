@@ -150,10 +150,13 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if (guid.HasValue)
             {
-                var opportunity = new ConnectionOpportunityService( new RockContext() ).Get( guid.Value );
-                if ( opportunity != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = opportunity.Name;
+                    var opportunity = new ConnectionOpportunityService( rockContext ).GetNoTracking( guid.Value );
+                    if ( opportunity != null )
+                    {
+                        formattedValue = opportunity.Name;
+                    }
                 }
             }
 

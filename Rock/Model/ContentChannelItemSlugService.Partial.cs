@@ -19,8 +19,9 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -107,37 +108,35 @@ namespace Rock.Model
 
         /// <summary>
         /// Replace space with dash
-        /// Remove unsafe and reserved characters ; / ? : @ = & < > # % " { } | \ ^ [ ] `
+        /// Remove unsafe and reserved characters ; / ? : @ = &amp; &gt; &lt; # % " { } | \ ^ [ ] `
         /// Limit to 75 characters.
         /// </summary>
         /// <param name="slug">The slug.</param>
         /// <returns></returns>
         private string MakeSlugValid( string slug )
         {
-            return slug
+            slug =  slug
+                .Trim()
                 .ToLower()
-                .Replace( " ", "-" )
-                .Replace( ";", "" )
-                .Replace( "/", "" )
-                .Replace( "?", "" )
-                .Replace( ":", "" )
-                .Replace( "@", "" )
-                .Replace( "=", "" )
-                .Replace( "&", "" )
-                .Replace( "<", "" )
-                .Replace( ">", "" )
-                .Replace( "#", "" )
-                .Replace( "%", "" )
-                .Replace( "\"", "" )
-                .Replace( "{", "" )
-                .Replace( "}", "" )
-                .Replace( "|", "" )
-                .Replace( "\\", "" )
-                .Replace( "^", "" )
-                .Replace( "[", "" )
-                .Replace( "]", "" )
-                .Replace( "`", "" )
-                .Left( 75 );
+                .Replace( "&nbsp;", "-" )
+                .Replace( "&#160;", "-" )
+                .Replace( "&ndash;", "-" )
+                .Replace( "&#8211;", "-" )
+                .Replace( "&mdash;", "-" )
+                .Replace( "&#8212;", "-" )
+                .Replace( "_", "-" )
+                .Replace( " ", "-" );
+
+            // Remove multiple -- in a row
+            slug = Regex.Replace( slug, @"-+", "-" );
+
+            // Remove any none alphanumeric characters, this negates the need
+            // for .RemoveInvalidReservedUrlChars()
+            slug = Regex.Replace( slug, @"[^a-zA-Z0-9 -]", string.Empty ); 
+
+            return slug
+                    .Left( 75 )
+                    .TrimEnd( '-' );
         }
     }
 }

@@ -45,8 +45,8 @@ namespace Rock.Jobs
         Regex MergedRegex = new Regex( "Merged <span class=['\"]field-value['\"]>(.*)<\\/span> with this record.", RegexOptions.Compiled );
 
         // Group Member history was written in the following format pre-v7.4
-        Regex AddedToGroupRegex = new Regex( "Added to (.*).", RegexOptions.Compiled );
-        Regex RemovedFromGroupRegex = new Regex( "Removed from (.*).", RegexOptions.Compiled );
+        Regex AddedToGroupRegex = new Regex( "Added to (.*)", RegexOptions.Compiled );
+        Regex RemovedFromGroupRegex = new Regex( "Removed from (.*)", RegexOptions.Compiled );
         Regex GroupMemberStatusChangeV6 = new Regex( "Group member status changed from (.*) to (.*)", RegexOptions.Compiled );
         Regex GroupRoleChangeV6 = new Regex( "Group role changed from (.*) to (.*)", RegexOptions.Compiled );
 
@@ -237,7 +237,7 @@ namespace Rock.Jobs
                         {
                             historyVerb = History.HistoryVerb.AddedToGroup;
                             historyChangeType = History.HistoryChangeType.Record;
-                            historyRecord.ValueName = addedToGroupMatch.Groups[1].Value.Trim();
+                            historyRecord.ValueName = addedToGroupMatch.Groups[1].Value.Trim().TrimEnd( new char[] { '.' } );
 
                             historyRecord.Summary = null;
                         }
@@ -245,7 +245,7 @@ namespace Rock.Jobs
                         {
                             historyVerb = History.HistoryVerb.RemovedFromGroup;
                             historyChangeType = History.HistoryChangeType.Record;
-                            historyRecord.ValueName = removedFromGroupMatch.Groups[1].Value.Trim();
+                            historyRecord.ValueName = removedFromGroupMatch.Groups[1].Value.Trim().TrimEnd( new char[] { '.' } );
 
                             historyRecord.Summary = null;
                         }
@@ -361,8 +361,10 @@ namespace Rock.Jobs
                         {
                             // some other type of history record. Set History.ChangeType so that we know that it has been migrated, but just leave Summary alone and the History UIs will use that as a fallback
                             historyChangeType = History.HistoryChangeType.Record;
-                            System.Diagnostics.Debug.WriteLine( $"Unexpected Summary:{historyRecord.Summary}" );
                         }
+
+                        // just in case the ValueName is over 250, truncate it (it could be a really long attribute name)
+                        historyRecord.ValueName = historyRecord.ValueName.Truncate( 250 );
 
                         historyRecord.Verb = historyVerb?.ConvertToString( false ).ToUpper();
                         historyRecord.ChangeType = historyChangeType.ConvertToString( false );
@@ -373,17 +375,6 @@ namespace Rock.Jobs
                         }
 
                         var summaryHtml = historyRecord.SummaryHtml;
-                        if ( origSummary != summaryHtml )
-                        {
-                            if ( groupMemberStatusChangeMatch.Success || groupRoleChangeMatch.Success || addedPhotoMatch.Success || modifiedPhotoMatch.Success || deletedPhotoMatch.Success || createdGeneratedMatch.Success )
-                            {
-                                // group member status, role change, and photo changes are standardized to be consistent with other history change styles instead of leaving it the v7 way
-                            }
-                            else
-                            {
-                                System.Diagnostics.Debug.WriteLine( $"ORIG:{origSummary}\n NEW:{summaryHtml}" );
-                            }
-                        }
                     }
 
                     int numberMigrated = howManyToConvert - howManyLeft;

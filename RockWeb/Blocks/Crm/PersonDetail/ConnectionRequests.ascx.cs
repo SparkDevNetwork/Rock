@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -37,9 +37,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to view connection requests of a particular person." )]
 
+    [BooleanField("Hide Inactive Connection Requests", "Show only connection requests that are active?", false, key: "HideInactive")]
     [LinkedPage( "Connection Request Detail" )]
     public partial class ConnectionRequests : Rock.Web.UI.PersonBlock
     {
+        DateTime _midnightTomorrow = RockDateTime.Today.AddDays( 1 );
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -69,11 +72,27 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( Person != null && Person.Id > 0 )
             {
+                bool hideInActive = GetAttributeValue( "HideInactive" ).AsBoolean();
                 var rockContext = new RockContext();
                 var connectionTypeService = new ConnectionTypeService( rockContext );
-                var connectionTypesQry = connectionTypeService.Queryable().Where( a => a.ConnectionOpportunities.Any( b => b.ConnectionRequests.Any( r => r.PersonAlias.PersonId == this.Person.Id) ) ).OrderBy( a => a.Name );
+                var connectionTypesQry = connectionTypeService
+                    .Queryable();
 
-                var connectionTypesList = connectionTypesQry.AsNoTracking().ToList();
+                if ( hideInActive )
+                {
+                    connectionTypesQry = connectionTypesQry
+                        .Where( t => t.ConnectionOpportunities.Any( o => o.IsActive == true ) )
+                        .Where( t => t.ConnectionOpportunities
+                        .Any( o => o.ConnectionRequests
+                            .Any( r => r.PersonAlias.PersonId == Person.Id && (r.ConnectionState == ConnectionState.Active ||
+                                ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value <= _midnightTomorrow ) ) ) ));
+                }
+                else
+                {
+                    connectionTypesQry = connectionTypesQry.Where( t => t.ConnectionOpportunities.Any( o => o.ConnectionRequests.Any( r => r.PersonAlias.PersonId == Person.Id ) ) );
+                }
+                
+                var connectionTypesList = connectionTypesQry.OrderBy( a => a.Name ).AsNoTracking().ToList();
 
                 rConnectionTypes.DataSource = connectionTypesList.Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).ToList();
                 rConnectionTypes.DataBind();
@@ -102,17 +121,35 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     using ( var rockContext = new RockContext() )
                     {
+                        string listHtml = string.Empty;
+
                         int personId = this.Person.Id;
                         var connectionRequestService = new ConnectionRequestService( rockContext );
-                        var connectionRequestList = connectionRequestService.Queryable().Where( a => a.PersonAlias.PersonId == personId && a.ConnectionOpportunity.ConnectionTypeId == connectionType.Id ).OrderBy( a => a.ConnectionOpportunity.Name ).AsNoTracking().ToList();
-                        string listHtml = string.Empty;
+                        var connectionRequestQuery = connectionRequestService
+                            .Queryable()
+                            .Where( a => a.PersonAlias.PersonId == personId && a.ConnectionOpportunity.ConnectionTypeId == connectionType.Id );
+
+                        var hideInactive = GetAttributeValue( "HideInactive" ).AsBoolean();
+
+                        if ( hideInactive )
+                        {
+                            connectionRequestQuery = connectionRequestQuery
+                                .Where( r => r.ConnectionState == ConnectionState.Active ||
+                                    ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value <= _midnightTomorrow ) );
+                        }
+
+                        var connectionRequestList = connectionRequestQuery
+                            .OrderBy( a => a.ConnectionOpportunity.Name )
+                            .AsNoTracking()
+                            .ToList();
+
                         foreach ( var connectionRequest in connectionRequestList )
                         {
                             string connectionNameHtml;
                             string connectionName;
                             if ( connectionRequest.CampusId.HasValue )
                             {
-                                connectionName = string.Format( "{0} ({1})", connectionRequest.ConnectionOpportunity, CacheCampus.Get( connectionRequest.CampusId.Value ) );
+                                connectionName = string.Format( "{0} ({1})", connectionRequest.ConnectionOpportunity, CampusCache.Get( connectionRequest.CampusId.Value ) );
                             }
                             else
                             {

@@ -248,8 +248,9 @@ namespace Rock.Field.Types
         {
             if ( control != null && control is RockDropDownList )
             {
-                return ( (RockDropDownList)control ).SelectedValue;
+                return ( (RockDropDownList)control ).SelectedValue ?? string.Empty;
             }
+
             return null;
         }
 
@@ -470,9 +471,10 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public override string FormatFilterValueValue(Dictionary<string,ConfigurationValue> configurationValues, string value)
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            return value;
+            string formattedValue = FormatValue( null, value, configurationValues, false );
+            return AddQuotes( formattedValue );
         }
 
         /// <summary>
@@ -488,7 +490,7 @@ namespace Rock.Field.Types
         {
             if ( filterValues.Count == 1 )
             {
-                // NOTE: this is for backwords compatility for filters that were saved when Boolean DataFilters didn't have a Compare Option
+                // NOTE: this is for backwords compatibility for filters that were saved when Boolean DataFilters didn't have a Compare Option
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
                 ConstantExpression constantExpression = Expression.Constant( bool.Parse( filterValues[0] ) );
                 ComparisonType comparisonType = ComparisonType.EqualTo;
@@ -525,7 +527,7 @@ namespace Rock.Field.Types
         {
             if ( filterValues.Count == 1 )
             {
-                // NOTE: this is for backwords compatility for filters that were saved when Boolean DataFilters didn't have a Compare Option
+                // NOTE: this is for backwords compatibility for filters that were saved when Boolean DataFilters didn't have a Compare Option
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
                 ConstantExpression constantExpression = Expression.Constant( filterValues[0] );
                 ComparisonType comparisonType = ComparisonType.EqualTo;

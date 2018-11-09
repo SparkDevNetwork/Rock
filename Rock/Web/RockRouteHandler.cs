@@ -21,7 +21,7 @@ using System.IO;
 using System.Web.Compilation;
 using System.Web.Routing;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Transactions;
 
 namespace Rock.Web
@@ -52,6 +52,7 @@ namespace Rock.Web
 
                 string pageId = "";
                 int routeId = 0;
+                bool isSiteMatch = false;
 
                 var parms = new Dictionary<string, string>();
 
@@ -59,6 +60,7 @@ namespace Rock.Web
                 if ( requestContext.RouteData.Values["PageId"] != null )
                 {
                     pageId = (string)requestContext.RouteData.Values["PageId"];
+                    isSiteMatch = true;
                 }
 
                 // Pages that use a custom URL route will have the page id in the RouteDate.DataTokens collection
@@ -70,27 +72,24 @@ namespace Rock.Web
                         // Default to first site/page
                         if ( pageAndRouteIds.Count >= 1 )
                         {
-                            var pageAndRouteId = pageAndRouteIds.First();
-                            pageId = pageAndRouteId.PageId.ToJson();
-                            routeId = pageAndRouteId.RouteId;
-                        }
+                            var pageAndRouteIdDefault = pageAndRouteIds.First();
+                            pageId = pageAndRouteIdDefault.PageId.ToJson();
+                            routeId = pageAndRouteIdDefault.RouteId;
 
-                        // Then check to see if any can be matched by site
-                        if ( pageAndRouteIds.Count > 1 )
-                        {
-                            CacheSite site = null;
+                            // Then check to see if any can be matched by site
+                            SiteCache site = null;
 
                             // First check to see if site was specified in querystring
                             int? siteId = httpRequest.QueryString["SiteId"].AsIntegerOrNull();
                             if ( siteId.HasValue )
                             {
-                                site = CacheSite.Get( siteId.Value );
+                                site = SiteCache.Get( siteId.Value );
                             }
 
                             // Then check to see if site can be determined by domain
                             if ( site == null )
                             {
-                                site = CacheSite.GetSiteByDomain( httpRequest.Url.Host );
+                                site = SiteCache.GetSiteByDomain( httpRequest.Url.Host );
                             }
 
                             // Then check the last site
@@ -98,7 +97,7 @@ namespace Rock.Web
                             {
                                 if ( siteCookie != null && siteCookie.Value != null )
                                 {
-                                    site = CacheSite.Get( siteCookie.Value.AsInteger() );
+                                    site = SiteCache.Get( siteCookie.Value.AsInteger() );
                                 }
                             }
 
@@ -106,11 +105,12 @@ namespace Rock.Web
                             {
                                 foreach ( var pageAndRouteId in pageAndRouteIds )
                                 {
-                                    var pageCache = CachePage.Get( pageAndRouteId.PageId );
+                                    var pageCache = PageCache.Get( pageAndRouteId.PageId );
                                     if ( pageCache != null && pageCache.Layout != null && pageCache.Layout.SiteId == site.Id )
                                     {
                                         pageId = pageAndRouteId.PageId.ToJson();
                                         routeId = pageAndRouteId.RouteId;
+                                        isSiteMatch = true;
                                         break;
                                     }
                                 }
@@ -125,22 +125,22 @@ namespace Rock.Web
                 }
 
                 // If page has not been specified get the site by the domain 
-                if ( string.IsNullOrEmpty( pageId ) )
+                if ( string.IsNullOrEmpty( pageId ) || !isSiteMatch )
                 {
-                    CacheSite site = CacheSite.GetSiteByDomain( httpRequest.Url.Host );
+                    SiteCache site = SiteCache.GetSiteByDomain( httpRequest.Url.Host );
                     if ( site == null )
                     {
                         // Use last site
                         if ( siteCookie != null && siteCookie.Value != null )
                         {
-                            site = CacheSite.Get( siteCookie.Value.AsInteger() );
+                            site = SiteCache.Get( siteCookie.Value.AsInteger() );
                         }
                     }
 
                     // if not found use the default site
                     if ( site == null )
                     {
-                        site = CacheSite.Get( SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid() );
+                        site = SiteCache.Get( SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid() );
                     }
 
                     if ( site != null )
@@ -164,17 +164,34 @@ namespace Rock.Web
                         }
 
                         // Check to see if this is a short link route
+                        string shortlink = null;
                         if ( requestContext.RouteData.Values.ContainsKey( "shortlink" ) )
                         {
-                            pageId = string.Empty;
-                            routeId = 0;
+                            shortlink = requestContext.RouteData.Values["shortlink"].ToString();
+                        }
 
-                            string shortlink = requestContext.RouteData.Values["shortlink"].ToString();
+                        // If shortlink have the same name as route and route's site did not match, then check if shortlink site match.
+                        if ( shortlink.IsNullOrWhiteSpace() && requestContext.RouteData.DataTokens["RouteName"] != null )
+                        {
+                            shortlink = requestContext.RouteData.DataTokens["RouteName"].ToString();
+                        }
+
+                        if ( shortlink.IsNotNullOrWhiteSpace() )
+                        {
                             using ( var rockContext = new Rock.Data.RockContext() )
                             {
                                 var pageShortLink = new PageShortLinkService( rockContext ).GetByToken( shortlink, site.Id );
-                                if ( pageShortLink != null )
+
+                                // Pick url on the following priority order:
+                                // Route match and site match
+                                // ShortLink match and site match
+                                // Route and no site match
+                                // ShortLink with no site match
+                                if ( pageShortLink != null && ( pageShortLink.SiteId == site.Id || requestContext.RouteData.DataTokens["RouteName"] == null  ) )
                                 {
+                                    pageId = string.Empty;
+                                    routeId = 0;
+
                                     string trimmedUrl = pageShortLink.Url.RemoveCrLf().Trim();
 
                                     var transaction = new ShortLinkTransaction();
@@ -238,39 +255,39 @@ namespace Rock.Web
                     }
                 }
 
-                CachePage page = null;
+                PageCache page = null;
                 if ( !string.IsNullOrEmpty( pageId ) )
                 {
                     int pageIdNumber = 0;
                     if ( Int32.TryParse( pageId, out pageIdNumber ) )
                     {
-                        page = CachePage.Get( pageIdNumber );
+                        page = PageCache.Get( pageIdNumber );
                     }
                 }
 
                 if ( page == null )
                 {
                     // try to get site's 404 page
-                    CacheSite site = CacheSite.GetSiteByDomain( httpRequest.Url.Host );
+                    SiteCache site = SiteCache.GetSiteByDomain( httpRequest.Url.Host );
                     if ( site == null )
                     {
                         // Use last site
                         if ( siteCookie != null && siteCookie.Value != null )
                         {
-                            site = CacheSite.Get( siteCookie.Value.AsInteger() );
+                            site = SiteCache.Get( siteCookie.Value.AsInteger() );
                         }
                     }
 
                     if ( site != null && site.PageNotFoundPageId != null )
                     {
-                        if ( Convert.ToBoolean( CacheGlobalAttributes.Get().GetValue( "Log404AsException" ) ) )
+                        if ( Convert.ToBoolean( GlobalAttributesCache.Get().GetValue( "Log404AsException" ) ) )
                         {
                             Rock.Model.ExceptionLogService.LogException(
                                 new Exception( string.Format( "404 Error: {0}", httpRequest.Url.AbsoluteUri ) ),
                                 requestContext.HttpContext.ApplicationInstance.Context );
                         }
 
-                        page = CachePage.Get( site.PageNotFoundPageId ?? 0 );
+                        page = PageCache.Get( site.PageNotFoundPageId ?? 0 );
                         requestContext.HttpContext.Response.StatusCode = 404;
                         requestContext.HttpContext.Response.TrySkipIisCustomErrors = true;
                     }
@@ -284,7 +301,7 @@ namespace Rock.Web
 
                 string theme = page.Layout.Site.Theme;
                 string layout = page.Layout.FileName;
-                string layoutPath = CachePage.FormatPath( theme, layout );
+                string layoutPath = PageCache.FormatPath( theme, layout );
 
                 if ( siteCookie == null )
                 {
@@ -318,7 +335,7 @@ namespace Rock.Web
                     }
 
                     // Build the path to the aspx file to
-                    layoutPath = CachePage.FormatPath( theme, layout );
+                    layoutPath = PageCache.FormatPath( theme, layout );
 
                     // Return the default layout and/or theme
                     Rock.Web.UI.RockPage cmsPage = (Rock.Web.UI.RockPage)BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
@@ -364,7 +381,7 @@ namespace Rock.Web
     }
 
     /// <summary>
-    /// Handler used when an error occurrs
+    /// Handler used when an error occurs
     /// </summary>
     public class HttpHandlerError : System.Web.IHttpHandler
     {

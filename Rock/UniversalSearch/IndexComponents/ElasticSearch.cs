@@ -31,7 +31,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels;
 using Rock.UniversalSearch.IndexModels.Attributes;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.UniversalSearch.IndexComponents
 {
@@ -65,6 +65,10 @@ namespace Rock.UniversalSearch.IndexComponents
                 if ( _client == null )
                 {
                     ConnectToServer();
+                    if ( _client == null )
+                    {
+                        return false;
+                    }
                 }
 
                 return (_client.Ping().IsValid);
@@ -536,9 +540,9 @@ namespace Rock.UniversalSearch.IndexComponents
 
                             searchDescriptor.Query( q => queryContainer );
 
-                            var indexBoost = CacheGlobalAttributes.Value( "UniversalSearchIndexBoost" );
+                            var indexBoost = GlobalAttributesCache.Value( "UniversalSearchIndexBoost" );
 
-                            if ( indexBoost.IsNotNullOrWhitespace() )
+                            if ( indexBoost.IsNotNullOrWhiteSpace() )
                             {
                                 var boostItems = indexBoost.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
                                 foreach (var boostItem in boostItems )
@@ -561,7 +565,7 @@ namespace Rock.UniversalSearch.IndexComponents
 
                 totalResultsAvailable = results.Total;
 
-                // normallize the results to rock search results
+                // normalize the results to rock search results
                 if ( results != null )
                 {
                     foreach ( var hit in results.Hits )

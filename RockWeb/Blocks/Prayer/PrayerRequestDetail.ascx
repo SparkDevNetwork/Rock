@@ -21,7 +21,7 @@
                 <div class="panel-body">
                     <asp:HiddenField ID="hfPrayerRequestId" runat="server" />
 
-                    <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                     <!-- Edit -->
                     <div id="pnlEditDetails" runat="server">

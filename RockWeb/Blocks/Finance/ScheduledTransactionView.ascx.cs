@@ -28,7 +28,7 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -510,7 +510,7 @@ namespace RockWeb.Blocks.Finance
                         rockContext.SaveChanges();
 
                         // Add a note about the change
-                        var noteType = CacheNoteType.Get( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
+                        var noteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
                         if ( noteType != null )
                         {
                             var noteService = new NoteService( rockContext );
@@ -629,7 +629,7 @@ namespace RockWeb.Blocks.Finance
                 gAccountsView.DataSource = txn.ScheduledTransactionDetails.ToList();
                 gAccountsView.DataBind();
 
-                var noteType = CacheNoteType.Get( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
+                var noteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
                 if ( noteType != null )
                 {
                     var rockContext = new RockContext();

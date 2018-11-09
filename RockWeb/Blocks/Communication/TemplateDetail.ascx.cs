@@ -30,7 +30,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -191,13 +191,13 @@ namespace RockWeb.Blocks.Communication
             // add any new attachments that were added
             foreach ( var attachmentBinaryFileId in binaryFileIds.Where( a => communicationTemplate.Attachments.All( x => x.BinaryFileId != a ) ) )
             {
-                communicationTemplate.Attachments.Add( new CommunicationTemplateAttachment { BinaryFileId = attachmentBinaryFileId } );
+                communicationTemplate.Attachments.Add( new CommunicationTemplateAttachment { BinaryFileId = attachmentBinaryFileId, CommunicationType = CommunicationType.Email } );
             }
 
             communicationTemplate.Subject = tbEmailSubject.Text;
             communicationTemplate.Message = ceEmailTemplate.Text;
 
-            communicationTemplate.SMSFromDefinedValueId = ddlSMSFrom.SelectedValue.AsIntegerOrNull();
+            communicationTemplate.SMSFromDefinedValueId = dvpSMSFrom.SelectedValue.AsIntegerOrNull();
             communicationTemplate.SMSMessage = tbSMSTextMessage.Text;
 
             communicationTemplate.CategoryId = cpCategory.SelectedValueAsInt();
@@ -230,6 +230,24 @@ namespace RockWeb.Blocks.Communication
                         {
                             communicationTemplate.AllowPerson( Authorization.EDIT, CurrentPerson );
                         }
+                    }
+
+                    // Always make sure RSR-Admin and Communication Admin can see
+                    var groupService = new GroupService( rockContext );
+                    var communicationAdministrators = groupService.Get( Rock.SystemGuid.Group.GROUP_COMMUNICATION_ADMINISTRATORS.AsGuid() );
+                    if ( communicationAdministrators != null )
+                    {
+                        communicationTemplate.AllowSecurityRole( Authorization.VIEW, communicationAdministrators, rockContext );
+                        communicationTemplate.AllowSecurityRole( Authorization.EDIT, communicationAdministrators, rockContext );
+                        communicationTemplate.AllowSecurityRole( Authorization.ADMINISTRATE, communicationAdministrators, rockContext );
+                    }
+
+                    var rockAdministrators = groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() );
+                    if ( rockAdministrators != null )
+                    {
+                        communicationTemplate.AllowSecurityRole( Authorization.VIEW, rockAdministrators, rockContext );
+                        communicationTemplate.AllowSecurityRole( Authorization.EDIT, rockAdministrators, rockContext );
+                        communicationTemplate.AllowSecurityRole( Authorization.ADMINISTRATE, rockAdministrators, rockContext );
                     }
                 }
             }
@@ -299,7 +317,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( lavaFieldsNode != null )
             {
-                var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhitespace() ).ToList();
+                var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhiteSpace() ).ToList();
 
                 // dictionary of keys and values from the lava fields in the 'lava-fields' div
                 foreach ( var templateDocLavaFieldLine in templateDocLavaFieldLines )
@@ -436,7 +454,7 @@ namespace RockWeb.Blocks.Communication
             UpdateAttachedFiles( false );
 
             // SMS Fields
-            ddlSMSFrom.SetValue( communicationTemplate.SMSFromDefinedValueId );
+            dvpSMSFrom.SetValue( communicationTemplate.SMSFromDefinedValueId );
             tbSMSTextMessage.Text = communicationTemplate.SMSMessage;
 
             // render UI based on Authorized and IsSystem
@@ -476,7 +494,7 @@ namespace RockWeb.Blocks.Communication
             ceEmailTemplate.ReadOnly = readOnly;
 
             mfpSMSMessage.Visible = !restrictedEdit;
-            ddlSMSFrom.Enabled = !restrictedEdit;
+            dvpSMSFrom.Enabled = !restrictedEdit;
             tbSMSTextMessage.ReadOnly = restrictedEdit;
             ceEmailTemplate.ReadOnly = restrictedEdit;
 
@@ -491,7 +509,8 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlSMSFrom.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ), true, true );
+            dvpSMSFrom.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ).Id;
+            dvpSMSFrom.DisplayDescriptions = true;
         }
 
         /// <summary>
@@ -606,7 +625,7 @@ namespace RockWeb.Blocks.Communication
             templateDoc.LoadHtml( ceEmailTemplate.Text );
 
             // only show the template logo uploader if there is a div with id='template-logo'
-            // then update the help-message on the loader based on the template-logo's data-instuctions attribute and width and height
+            // then update the help-message on the loader based on the template-logo's data-instructions attribute and width and height
             // this gets called when the codeeditor is done initializing and when the cursor blurs out of the template code editor
             var templateLogoNode = templateDoc.GetElementbyId( "template-logo" );
             if ( templateLogoNode != null )
@@ -634,7 +653,7 @@ namespace RockWeb.Blocks.Communication
                     helpHeight = templateLogoNode.Attributes["height"].Value;
                 }
 
-                if ( helpWidth.IsNotNullOrWhitespace() && helpHeight.IsNotNullOrWhitespace() )
+                if ( helpWidth.IsNotNullOrWhiteSpace() && helpHeight.IsNotNullOrWhiteSpace() )
                 {
                     helpText += string.Format( " (Image size: {0}px x {1}px)", helpWidth, helpHeight );
                 }
@@ -649,12 +668,18 @@ namespace RockWeb.Blocks.Communication
 
             if ( lavaFieldsNode == null )
             {
-                lavaFieldsNode = templateDoc.CreateElement( "div" );
+                lavaFieldsNode = templateDoc.CreateElement( "noscript" );
                 lavaFieldsNode.Attributes.Add( "id", "lava-fields" );
-                lavaFieldsNode.Attributes.Add( "style", "display:none" );
+            }
+            else if ( lavaFieldsNode.ParentNode.Name == "body" )
+            {
+                // if the lava-fields is a in the body (from pre-v9 template), remove it from body, and let it get added to head instead
+                lavaFieldsNode.Attributes.Remove( "style" );
+                lavaFieldsNode.Remove();
+                lavaFieldsNode.Name = "noscript";
             }
 
-            var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhitespace() ).ToList();
+            var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhiteSpace() ).ToList();
 
             // dictionary of keys and default values from Lava Fields KeyValueList control
             var lavaFieldsDefaultDictionary = kvlMergeFields.Value.AsDictionary();
@@ -713,7 +738,7 @@ namespace RockWeb.Blocks.Communication
             {
                 var lavaAssignsHtml = new StringBuilder();
                 lavaAssignsHtml.AppendLine();
-                lavaAssignsHtml.AppendLine( "    <!-- Lava Fields: Code-Generated from Template Editor -->" );
+                lavaAssignsHtml.AppendLine( "    {% comment %}  Lava Fields: Code-Generated from Template Editor {% endcomment %}" );
                 foreach ( var lavaFieldsTemplateItem in lavaFieldsTemplateDictionary )
                 {
                     lavaAssignsHtml.AppendLine( string.Format( "    {{% assign {0} = '{1}' %}}", lavaFieldsTemplateItem.Key, lavaFieldsTemplateItem.Value ) );
@@ -725,16 +750,16 @@ namespace RockWeb.Blocks.Communication
 
                 if ( lavaFieldsNode.ParentNode == null )
                 {
-                    var bodyNode = templateDoc.DocumentNode.SelectSingleNode( "//body" );
-                    if ( bodyNode != null )
+                    var headNode = templateDoc.DocumentNode.SelectSingleNode( "//head" );
+                    if ( headNode != null )
                     {
                         // prepend a linefeed so that it is after the lava node (to make it pretty printed)
-                        bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n" ) );
+                        headNode.PrependChild( templateDoc.CreateTextNode( "\r\n" ) );
 
-                        bodyNode.PrependChild( lavaFieldsNode );
+                        headNode.PrependChild( lavaFieldsNode );
 
                         // prepend a indented linefeed so that it ends up prior the lava node (to make it pretty printed)
-                        bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n  " ) );
+                        headNode.PrependChild( templateDoc.CreateTextNode( "\r\n  " ) );
                     }
                 }
             }

@@ -29,7 +29,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -104,9 +104,9 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
             string script = string.Format( @"
     $('.transaction-image-thumbnail').click( function() {{
@@ -223,7 +223,7 @@ namespace RockWeb.Blocks.Finance
             var optionalAccountGuidList = ( this.GetUserPreference( keyPrefix + "optional-account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
             var accountQry = new FinancialAccountService( rockContext )
-                .Queryable()
+                .GetTree()
                 .Where( a => a.IsActive );
 
             // no accounts specified means "all Active"
@@ -256,7 +256,7 @@ namespace RockWeb.Blocks.Finance
                 accountQry = accountQry.Where( a => !a.CampusId.HasValue || a.CampusId.Value == campusId.Value );
             }
 
-            _visibleDisplayedAccountIds = new List<int>( accountQry.OrderBy(a=>a.Order).Select( a => a.Id ).ToList() );
+            _visibleDisplayedAccountIds = new List<int>( accountQry.Select( a => a.Id ).ToList() );
             _visibleOptionalAccountIds = new List<int>();
 
             // make the datasource all accounts, but only show the ones that are in _visibleAccountIds or have a non-zero amount
@@ -274,7 +274,7 @@ namespace RockWeb.Blocks.Finance
 
             UpdateVisibleAccountBoxes();
 
-            rcwEnvelope.Visible = CacheGlobalAttributes.Get().EnableGivingEnvelopeNumber;
+            rcwEnvelope.Visible = GlobalAttributesCache.Get().EnableGivingEnvelopeNumber;
         }
 
         /// <summary>
@@ -494,7 +494,7 @@ namespace RockWeb.Blocks.Finance
 
                     // stored the value in cents to avoid javascript floating point math issues
                     hfOriginalTotalAmount.Value = (transactionToMatch.TotalAmount*100).ToString();
-                    hfCurrencySymbol.Value = CacheGlobalAttributes.Value( "CurrencySymbol" );
+                    hfCurrencySymbol.Value = GlobalAttributesCache.Value( "CurrencySymbol" );
 
                     // get the first 2 images (should be no more than 2, but just in case)
                     var transactionImages = transactionToMatch.Images.OrderBy( a => a.Order ).Take( 2 ).ToList();
@@ -583,6 +583,8 @@ namespace RockWeb.Blocks.Finance
                     {
                         cbTotalAmount.Text = string.Empty;
                     }
+
+                    tbTransactionCode.Text = transactionToMatch.TransactionCode;
 
                     // update accountboxes
                     foreach ( var accountBox in rptAccounts.ControlsOfTypeRecursive<CurrencyBox>() )
@@ -798,7 +800,7 @@ namespace RockWeb.Blocks.Finance
 
             cbOnlyShowSelectedAccounts.Checked = this.GetUserPreference( keyPrefix + "only-show-selected-accounts" ).AsBoolean();
 
-            cpAccounts.Campuses = Rock.Cache.CacheCampus.All();
+            cpAccounts.Campuses = CampusCache.All();
             cpAccounts.SelectedCampusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();
 
             mdAccountsPersonalFilter.Show();
@@ -975,6 +977,8 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
+                financialTransaction.TransactionCode = tbTransactionCode.Text;
+
                 financialTransaction.Summary = tbSummary.Text;
 
                 financialTransaction.ProcessedByPersonAliasId = this.CurrentPersonAlias.Id;
@@ -1088,7 +1092,7 @@ namespace RockWeb.Blocks.Finance
         protected void btnFindByEnvelopeNumber_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var personGivingEnvelopeAttribute = CacheAttribute.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            var personGivingEnvelopeAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
             var envelopeNumber = tbEnvelopeNumber.Text;
             if ( !string.IsNullOrEmpty( envelopeNumber ) )
             {

@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -102,12 +102,12 @@ namespace Rock.Workflow.Action
             {
                 var timedOut = false;
 
-                CacheWorkflowActivityType unopenedActivityType = null;
+                WorkflowActivityTypeCache unopenedActivityType = null;
                 int? unopenedTimeout = null;
                 Guid? guid = GetAttributeValue( action, "UnopenedTimeoutActivity" ).AsGuidOrNull();
                 if ( guid.HasValue )
                 {
-                    unopenedActivityType = CacheWorkflowActivityType.Get( guid.Value );
+                    unopenedActivityType = WorkflowActivityTypeCache.Get( guid.Value );
                     unopenedTimeout = GetAttributeValue( action, "UnopenedTimeoutLength" ).AsIntegerOrNull();
 
                     if ( emailStatus != OPENED_STATUS &&
@@ -122,12 +122,12 @@ namespace Rock.Workflow.Action
                     }
                 }
 
-                CacheWorkflowActivityType noActionActivityType = null;
+                WorkflowActivityTypeCache noActionActivityType = null;
                 int? noActionTimeout = null;
                 guid = GetAttributeValue( action, "NoActionTimeoutActivity" ).AsGuidOrNull();
                 if ( guid.HasValue )
                 {
-                    noActionActivityType = CacheWorkflowActivityType.Get( guid.Value );
+                    noActionActivityType = WorkflowActivityTypeCache.Get( guid.Value );
                     noActionTimeout = GetAttributeValue( action, "NoActionTimeoutLength" ).AsIntegerOrNull();
 
                     if ( emailStatus != CLICKED_STATUS &&
@@ -156,7 +156,7 @@ namespace Rock.Workflow.Action
             // Use the current action type' guid as the key for a 'DateTime Sent' attribute 
             string AttrKey = action.ActionTypeCache.Guid.ToString() + "_DateTimeSent";
 
-            // Check to see if the action's activity does not yet have the the 'DateTime Sent' attribute.
+            // Check to see if the action's activity does not yet have the 'DateTime Sent' attribute.
             // The first time this action runs on any workflow instance using this action instance, the 
             // attribute will not exist and need to be created
             if ( !action.Activity.Attributes.ContainsKey( AttrKey ) )
@@ -167,26 +167,24 @@ namespace Rock.Workflow.Action
                 attribute.EntityTypeQualifierValue = action.Activity.ActivityTypeId.ToString();
                 attribute.Name = "DateTime Sent";
                 attribute.Key = AttrKey;
-                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ).Id;
 
                 // Need to save the attribute now (using different context) so that an attribute id is returned.
                 using ( var newRockContext = new RockContext() )
                 {
                     new AttributeService( newRockContext ).Add( attribute );
                     newRockContext.SaveChanges();
-                    CacheAttribute.RemoveEntityAttributes();
-                    CacheWorkflowActivityType.Remove( action.Activity.ActivityTypeId );
                 }
 
-                action.Activity.Attributes.Add( AttrKey, CacheAttribute.Get( attribute ) );
-                var attributeValue = new CacheAttributeValue();
+                action.Activity.Attributes.Add( AttrKey, AttributeCache.Get( attribute ) );
+                var attributeValue = new AttributeValueCache();
                 attributeValue.AttributeId = attribute.Id;
                 attributeValue.Value = RockDateTime.Now.ToString( "o" );
                 action.Activity.AttributeValues.Add( AttrKey, attributeValue );
             }
             else
             {
-                // Check to see if this action instance has a value for the 'Delay Activated' attrbute
+                // Check to see if this action instance has a value for the 'Delay Activated' attribute
                 DateTime? dateSent = action.Activity.GetAttributeValue( AttrKey ).AsDateTime();
                 if ( dateSent.HasValue )
                 {
@@ -209,7 +207,7 @@ namespace Rock.Workflow.Action
             // Use the current action type' guid as the key for a 'Email Status' attribute 
             string AttrKey = action.ActionTypeCache.Guid.ToString() + "_EmailStatus";
 
-            // Check to see if the action's activity does not yet have the the 'Email Status' attribute.
+            // Check to see if the action's activity does not yet have the 'Email Status' attribute.
             // The first time this action runs on any workflow instance using this action instance, the 
             // attribute will not exist and need to be created
             if ( !action.Activity.Attributes.ContainsKey( AttrKey ) )
@@ -220,19 +218,17 @@ namespace Rock.Workflow.Action
                 attribute.EntityTypeQualifierValue = action.Activity.ActivityTypeId.ToString();
                 attribute.Name = "Email Status";
                 attribute.Key = AttrKey;
-                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ).Id;
 
                 // Need to save the attribute now (using different context) so that an attribute id is returned.
                 using ( var newRockContext = new RockContext() )
                 {
                     new AttributeService( newRockContext ).Add( attribute );
                     newRockContext.SaveChanges();
-                    CacheAttribute.RemoveEntityAttributes();
-                    CacheWorkflowActivityType.Remove( action.Activity.ActivityTypeId );
                 }
 
-                action.Activity.Attributes.Add( AttrKey, CacheAttribute.Get( attribute ) );
-                var attributeValue = new CacheAttributeValue();
+                action.Activity.Attributes.Add( AttrKey, AttributeCache.Get( attribute ) );
+                var attributeValue = new AttributeValueCache();
                 attributeValue.AttributeId = attribute.Id;
                 attributeValue.Value = string.Empty;
                 action.Activity.AttributeValues.Add( AttrKey, attributeValue );
@@ -260,7 +256,7 @@ namespace Rock.Workflow.Action
             Guid? fromGuid = fromValue.AsGuidOrNull();
             if ( fromGuid.HasValue )
             {
-                var attribute = CacheAttribute.Get( fromGuid.Value, rockContext );
+                var attribute = AttributeCache.Get( fromGuid.Value, rockContext );
                 if ( attribute != null )
                 {
                     string fromAttributeValue = action.GetWorklowAttributeValue( fromGuid.Value );
@@ -300,7 +296,7 @@ namespace Rock.Workflow.Action
             Guid? guid = to.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var attribute = CacheAttribute.Get( guid.Value, rockContext );
+                var attribute = AttributeCache.Get( guid.Value, rockContext );
                 if ( attribute != null )
                 {
                     string toValue = action.GetWorklowAttributeValue( guid.Value );
@@ -435,7 +431,7 @@ namespace Rock.Workflow.Action
                 if ( activityGuid.HasValue )
                 {
                     var workflow = action.Activity.Workflow;
-                    var activityType = CacheWorkflowActivityType.Get( activityGuid.Value );
+                    var activityType = WorkflowActivityTypeCache.Get( activityGuid.Value );
                     if ( workflow != null && activityType != null )
                     {
                         WorkflowActivity.Activate( activityType, workflow );

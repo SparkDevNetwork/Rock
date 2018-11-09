@@ -330,7 +330,7 @@ namespace Rock.Web.UI.Controls
         placeholder_text_multiple: '{1}',
         placeholder_text_single: ' '
     }});
-", this.ClientID, this.Placeholder.IsNotNullOrWhitespace() ? this.Placeholder : " " );
+", this.ClientID, this.Placeholder.IsNotNullOrWhiteSpace() ? this.Placeholder : " " );
 
             if ( DisplayDropAsAbsolute )
             {

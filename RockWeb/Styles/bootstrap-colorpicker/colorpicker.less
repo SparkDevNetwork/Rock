@@ -150,13 +150,13 @@
 
 .colorpicker-selectors {
   display: none;
-  height: 10px;
+  height: 16px;
   margin-top: 5px;
   clear: both;
   i {
     float: left;
-    width: 10px;
-    height: 10px;
+    width: 16px;
+    height: 16px;
     cursor: pointer;
   }
   i + i {
@@ -246,12 +246,15 @@
   display: none;
 }
 
-.colorpicker.colorpicker-visible {
-  display: block;
-}
-
-.colorpicker-inline.colorpicker-visible {
-  display: inline-block;
+.colorpicker,
+.colorpicker-inline,
+.colorpicker-alpha,
+.colorpicker-saturation,
+.colorpicker-hue,
+.colorpicker-selectors {
+  &.colorpicker-visible {
+    display: block;
+  }
 }
 
 .colorpicker-right {

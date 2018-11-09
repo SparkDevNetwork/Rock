@@ -33,6 +33,7 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            this.HeaderStyle.HorizontalAlign = HorizontalAlign.Center;
             this.HeaderStyle.CssClass = "grid-columncommand";
             this.ItemStyle.CssClass = "grid-columncommand";
         }
@@ -151,6 +152,24 @@ namespace Rock.Web.UI.Controls
         public event EventHandler<RowEventArgs> Click;
 
         /// <summary>
+        /// Occurs when [on data bound].
+        /// </summary>
+        public event EventHandler<RowEventArgs> DataBound;
+
+        /// <summary>
+        /// Handles the on data bound.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        internal void HandleOnDataBound( object sender, RowEventArgs e )
+        {
+            if ( this.DataBound != null )
+            {
+                this.DataBound( sender, e );
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:Click"/> event.
         /// </summary>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
@@ -168,6 +187,8 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class LinkButtonFieldTemplate : ITemplate
     {
+        private LinkButtonField LinkButtonField { get; set; }
+
         /// <summary>
         /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
         /// </summary>
@@ -178,6 +199,7 @@ namespace Rock.Web.UI.Controls
             if ( cell != null )
             {
                 LinkButtonField linkButtonField = cell.ContainingField as LinkButtonField;
+                LinkButtonField = linkButtonField;
                 ParentGrid = linkButtonField.ParentGrid;
                 LinkButton linkButton = new LinkButton();
                 linkButton.CausesValidation = false;
@@ -186,13 +208,32 @@ namespace Rock.Web.UI.Controls
                 linkButton.ToolTip = linkButtonField.ToolTip;
 
                 linkButton.Click += linkButton_Click;
+                linkButton.DataBinding += linkButton_DataBinding;
 
-                // make sure button is registered for async postback (needed just in case the grid was created at runtime)
-                var sm = ScriptManager.GetCurrent( this.ParentGrid.Page );
-                sm.RegisterAsyncPostBackControl( linkButton );
+                linkButton.PreRender += ( s, e ) =>
+                {
+                    if ( linkButton.Enabled )
+                    {
+                        // make sure button is registered for async postback (needed just in case the grid was created at runtime)
+                        var sm = ScriptManager.GetCurrent( this.ParentGrid.Page );
+                        sm.RegisterAsyncPostBackControl( linkButton );
+                    }
+                };
 
                 cell.Controls.Add( linkButton );
             }
+        }
+
+        /// <summary>
+        /// Handles the DataBinding event of the linkButton control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void linkButton_DataBinding( object sender, EventArgs e )
+        {
+            GridViewRow row = ( GridViewRow ) ( ( LinkButton ) sender ).Parent.Parent;
+            RowEventArgs args = new RowEventArgs( row );
+            LinkButtonField.HandleOnDataBound( sender, args );
         }
 
         /// <summary>
@@ -212,7 +253,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( LinkButtonClick != null )
             {
-                GridViewRow row = (GridViewRow)( (LinkButton)sender ).Parent.Parent;
+                GridViewRow row = ( GridViewRow ) ( ( LinkButton ) sender ).Parent.Parent;
                 RowEventArgs args = new RowEventArgs( row );
                 LinkButtonClick( sender, args );
             }

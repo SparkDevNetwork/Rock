@@ -21,7 +21,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Reporting.DataTransform.Person
 {
@@ -92,7 +92,7 @@ namespace Rock.Reporting.DataTransform.Person
             var rockContext = ( RockContext ) serviceInstance.Context;
 
             var personSpouseQuery = idQuery.Select( a => RockUdfHelper.ufnCrm_GetSpousePersonIdFromPersonId( a ) );
-            int maritalStatusMarriedId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
+            int maritalStatusMarriedId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
 
             var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable().Where( p => p.MaritalStatusValueId == maritalStatusMarriedId && personSpouseQuery.Contains( p.Id ) );
 

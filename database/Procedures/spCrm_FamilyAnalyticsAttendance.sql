@@ -79,12 +79,13 @@ BEGIN
 			, @FirstAttendedAttributeId AS [AttributeId]
 			, CASE WHEN [FamilyRole] = 'Adult' THEN 
 					(SELECT 
-						MIN(a.StartDateTime )
+						MIN(A.[StartDateTime] )
 					FROM
 						[Attendance] a
+						INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 						INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 					WHERE 
-						[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
+						O.[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
                         AND a.[DidAttend] = 1
 						AND pa.[PersonId] IN (SELECT [Id] FROM [dbo].[ufnCrm_FamilyMembersOfPersonId](i.[PersonId])))
 				ELSE
@@ -92,9 +93,10 @@ BEGIN
 						MIN(a.StartDateTime )
 					FROM
 						[Attendance] a
+						INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 						INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 					WHERE 
-						[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
+						O.[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
                         AND a.[DidAttend] = 1
 						AND pa.[PersonId] = i.[PersonId])
 			  END AS [FirstAttendedDate]
@@ -138,9 +140,10 @@ BEGIN
 						MAX(a.StartDateTime )
 					FROM
 						[Attendance] a
+						INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 						INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 					WHERE 
-						[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
+						O.[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
                         AND a.[DidAttend] = 1
 						AND pa.[PersonId] IN (SELECT [Id] FROM [dbo].[ufnCrm_FamilyMembersOfPersonId](i.[PersonId])))
 				ELSE
@@ -148,9 +151,10 @@ BEGIN
 						MAX(a.StartDateTime )
 					FROM
 						[Attendance] a
+						INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 						INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 					WHERE 
-						[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
+						O.[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
                         AND a.[DidAttend] = 1
 						AND pa.[PersonId] = i.[PersonId])
 			  END AS [LastAttendedDate]
@@ -194,9 +198,10 @@ BEGIN
 						COUNT(*)
 					FROM
 						[Attendance] a
+						INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 						INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 					WHERE 
-						[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
+						O.[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
 						AND CAST( a.[StartDateTime] AS DATE ) <= @SundayDateStart AND a.[StartDateTime] >= @SundayEntryAttendanceDuration
                         AND a.[DidAttend] = 1
 						AND pa.[PersonId] IN (SELECT [Id] FROM [dbo].[ufnCrm_FamilyMembersOfPersonId](i.[PersonId])))
@@ -205,9 +210,10 @@ BEGIN
 						COUNT(*)
 					FROM
 						[Attendance] a
+						INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 						INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 					WHERE 
-						[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
+						O.[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
 						AND CAST( a.[StartDateTime] AS DATE ) <= @SundayDateStart AND a.[StartDateTime] >= @SundayEntryAttendanceDuration
                         AND a.[DidAttend] = 1
 						AND pa.[PersonId] = i.[PersonId])

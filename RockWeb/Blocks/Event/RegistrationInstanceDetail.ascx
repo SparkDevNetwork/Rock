@@ -73,7 +73,7 @@
                 <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                 <div class="panel-body">
 
-                    <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                     <div id="pnlEditDetails" runat="server">
 
@@ -193,7 +193,7 @@
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="When" SortExpression="CreatedDateTime" />
-                                    <Rock:RockTemplateField HeaderText="Discount Code" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" SortExpression="DiscountCode" Visible="false">
+                                    <Rock:RockTemplateField HeaderText="Discount Code" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" SortExpression="DiscountCode" Visible="false">
                                         <ItemTemplate>
                                             <asp:Label ID="lDiscount" runat="server" CssClass="label label-default" />
                                         </ItemTemplate>
@@ -342,15 +342,15 @@
                             <Rock:Grid ID="gFees" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Fee" ExportSource="DataSource" >
                                 <Columns>
                                         <Rock:RockBoundField HeaderText ="Registration ID" DataField="RegistrationId" ExcelExportBehavior="AlwaysInclude" Visible="false" />
-                                        <Rock:DateField HeaderText ="Registration Date" DataField="RegistrationDate" />
-                                        <Rock:RockBoundField HeaderText ="Registered By" DataField="RegisteredByName" />
-                                        <Rock:RockBoundField HeaderText ="Registrant" DataField="RegistrantName" />
+                                        <Rock:DateField HeaderText ="Registration Date" DataField="RegistrationDate" SortExpression="RegistrationDate" />
+                                        <Rock:RockBoundField HeaderText ="Registered By" DataField="RegisteredByName" SortExpression="RegisteredByName" />
+                                        <Rock:RockBoundField HeaderText ="Registrant" DataField="RegistrantName" SortExpression="RegistrantName" />
                                         <Rock:RockBoundField HeaderText ="Registrant ID" DataField="RegistrantId" ExcelExportBehavior="AlwaysInclude" Visible="false" />
-		                                <Rock:RockBoundField HeaderText ="Fee Name" DataField="FeeName" />
-                                        <Rock:RockBoundField HeaderText ="Option" DataField="Option" />
-		                                <Rock:RockBoundField HeaderText ="Quanity" DataField="Quanity" />
-                                        <Rock:CurrencyField HeaderText ="Cost" DataField="Cost" />
-                                        <Rock:CurrencyField HeaderText ="Fee Total" DataField="FeeTotal"  />
+		                                <Rock:RockBoundField HeaderText ="Fee Name" DataField="FeeName" SortExpression="FeeName" />
+                                        <Rock:RockBoundField HeaderText ="Option" DataField="Option" SortExpression="Option" />
+		                                <Rock:RockBoundField HeaderText ="Quantity" DataField="Quantity" SortExpression="Quantity" />
+                                        <Rock:CurrencyField HeaderText ="Cost" DataField="Cost" SortExpression="Cost" />
+                                        <Rock:CurrencyField HeaderText ="Fee Total" DataField="FeeTotal" SortExpression="FeeTotal"  />
                                 </Columns>
                             </Rock:Grid>
                         </div>
@@ -368,22 +368,22 @@
                         <Rock:ModalAlert ID="mdDiscountsGridWarning" runat="server" />
                         <div class="grid grid-panel">
                             <Rock:GridFilter ID="fDiscounts" runat="server" OnDisplayFilterValue="fDiscounts_DisplayFilterValue" OnClearFilterClick="fDiscounts_ClearFilterClick">
-                                <Rock:SlidingDateRangePicker ID="sdrpDiscountDateRange" runat="server" Label="Discount Date Range" />
-                                <Rock:RockDropDownList ID="ddlDiscountCode" runat="server" Label="Discount Code" AutoPostBack="true" OnSelectedIndexChanged="ddlDiscountCode_SelectedIndexChanged"></Rock:RockDropDownList>
+                                <Rock:SlidingDateRangePicker ID="sdrpDiscountDateRange" runat="server" Label="Discount Date Range" Help="To filter based on when the discount code was used." />
+                                <Rock:RockDropDownList ID="ddlDiscountCode" runat="server" Label="Discount Code" AutoPostBack="true" OnSelectedIndexChanged="ddlDiscountCode_SelectedIndexChanged" EnhanceForLongLists="true"></Rock:RockDropDownList>
                                 <Rock:RockTextBox ID="tbDiscountCodeSearch" runat="server" Label="Code Search" Help="Enter a search parameter. Cannot be used with the 'Discount Code' list." />
                             </Rock:GridFilter>
                             <Rock:Grid ID="gDiscounts" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Discount" ExportSource="DataSource">
                                 <Columns>
                                     <Rock:RockBoundField HeaderText="Registration ID" DataField="RegistrationId" ExcelExportBehavior="AlwaysInclude" Visible="false" />
-                                    <Rock:RockBoundField HeaderText="Registered By" DataField="RegisteredByName" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left"/>
-                                    <Rock:DateField HeaderText="Registration Date" DataField="RegistrationDate" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
-                                    <Rock:RockBoundField HeaderText="Registrant Count" DataField="RegistrantCount" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
-                                    <Rock:RockBoundField HeaderText="Discount Code" DataField="DiscountCode" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
-                                    <Rock:RockBoundField HeaderText="Discount" DataField="Discount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
-                                    <Rock:CurrencyField HeaderText="Total Cost" DataField="TotalCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
-                                    <Rock:CurrencyField HeaderText="Discount Qualified Cost" DataField="DiscountQualifiedCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
-                                    <Rock:CurrencyField HeaderText="Total Discount" DataField="TotalDiscount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
-                                    <Rock:CurrencyField HeaderText="Registration Cost" DataField="RegistrationCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
+                                    <Rock:RockBoundField HeaderText="Registered By" DataField="RegisteredByName" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" SortExpression="RegisteredByName" />
+                                    <Rock:DateField HeaderText="Registration Date" DataField="RegistrationDate" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" SortExpression="RegistrationDate" />
+                                    <Rock:RockBoundField HeaderText="Registrant Count" DataField="RegistrantCount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="RegistrantCount" />
+                                    <Rock:RockBoundField HeaderText="Discount Code" DataField="DiscountCode" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" SortExpression="DiscountCode" />
+                                    <Rock:RockBoundField HeaderText="Discount" DataField="Discount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="Discount" />
+                                    <Rock:CurrencyField HeaderText="Total Cost" DataField="TotalCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="TotalCost" />
+                                    <Rock:CurrencyField HeaderText="Discount Qualified Cost" DataField="DiscountQualifiedCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="DiscountQualifiedCost" />
+                                    <Rock:CurrencyField HeaderText="Total Discount" DataField="TotalDiscount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="TotalDiscount" />
+                                    <Rock:CurrencyField HeaderText="Registration Cost" DataField="RegistrationCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="RegistrationCost" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
@@ -392,7 +392,7 @@
                             <div class="col-md-4 col-md-offset-8 margin-t-md">
                                 <asp:Panel ID="pnlDiscountSummary" runat="server" CssClass="panel panel-block">
                                     <div class="panel-heading">
-                                        <h1 class="panel-title">Totals For Results</h1>
+                                        <h1 class="panel-title">Total Results</h1>
                                     </div>
                                     <div class="panel-body">
                                         <div class="row">
@@ -400,7 +400,7 @@
                                             <div class='col-xs-4 text-right'><asp:Literal ID="lTotalTotalCost" runat="server" /></div>
                                         </div>
                                         <div class="row">
-                                            <div class="col-xs-8">Dicscount Qualified Cost</div>
+                                            <div class="col-xs-8">Discount Qualified Cost</div>
                                             <div class='col-xs-4 text-right'><asp:Literal ID="lTotalDiscountQualifiedCost" runat="server" /></div>
                                         </div>
                                         <div class="row">
@@ -509,13 +509,13 @@
                         <Rock:SlidingDateRangePicker ID="sdrpGroupPlacementsDateRange" runat="server" Label="Registration Date Range" />
                         <Rock:RockTextBox ID="tbGroupPlacementsFirstName" runat="server" Label="First Name" />
                         <Rock:RockTextBox ID="tbGroupPlacementsLastName" runat="server" Label="Last Name" />
-                        <Rock:RockDropDownList ID="ddlGroupPlacementsInGroup" runat="server" Label="In Group"  />    
+                        <Rock:RockDropDownList ID="ddlGroupPlacementsInGroup" runat="server" Label="In Group"  />
                         <Rock:RockDropDownList ID="ddlGroupPlacementsSignedDocument" runat="server" Label="Signed Document" />
                         <asp:PlaceHolder ID="phGroupPlacementsFormFieldFilters" runat="server" />
                     </Rock:GridFilter>
                     <div class="panel-body">
                         <Rock:NotificationBox ID="nbPlacementNotifiction" runat="server" Visible="false" />
-                        <div class="row">
+                        <div class="row margin-t-md">
                             <div class="col-sm-6">
                                 <Rock:GroupPicker ID="gpGroupPlacementParentGroup" runat="server" Label="Parent Group"
                                     OnSelectItem="gpGroupPlacementParentGroup_SelectItem" />

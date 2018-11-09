@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -31,6 +31,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="transactionCode">The transaction code.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use GetByTransactionCode(financialGatewayId, transaction). This one could return incorrect results if transactions from different financial gateways happen to use the same transaction code" )]
         public FinancialTransaction GetByTransactionCode( string transactionCode )
         {
@@ -164,6 +165,7 @@ namespace Rock.Model
             refundTransaction.TransactionDateTime = RockDateTime.Now;
             refundTransaction.FinancialGatewayId = transaction.FinancialGatewayId;
             refundTransaction.TransactionTypeValueId = transaction.TransactionTypeValueId;
+            refundTransaction.SourceTypeValueId = transaction.SourceTypeValueId;
             if ( transaction.FinancialPaymentDetail != null )
             {
                 refundTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
@@ -209,7 +211,7 @@ namespace Rock.Model
 
             var rockContext = this.Context as Rock.Data.RockContext;
 
-            var registrationEntityType = CacheEntityType.Get( typeof( Rock.Model.Registration ) );
+            var registrationEntityType = EntityTypeCache.Get( typeof( Rock.Model.Registration ) );
             if ( registrationEntityType != null )
             {
                 foreach ( var transactionDetail in refundTransaction.TransactionDetails
@@ -236,7 +238,7 @@ namespace Rock.Model
             refundTransaction.RefundDetails.OriginalTransactionId = transaction.Id;
 
             string batchName = transaction.Batch.Name;
-            if ( batchNameSuffix.IsNotNullOrWhitespace() && !batchName.EndsWith( batchNameSuffix ) )
+            if ( batchNameSuffix.IsNotNullOrWhiteSpace() && !batchName.EndsWith( batchNameSuffix ) )
             {
                 batchName += batchNameSuffix;
             }

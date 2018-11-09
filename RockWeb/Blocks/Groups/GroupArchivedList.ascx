@@ -23,10 +23,10 @@
                             <Rock:RockBoundField DataField="GroupType.Name" HeaderText="Group Type" SortExpression="GroupType.Name"/>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
-                            <Rock:DateField DataField="CreatedDateTime" HeaderText="Created" SortExpression="CreatedDateTime" HeaderStyle-HorizontalAlign="Right" />
-                            <Rock:DateField DataField="ArchivedDateTime" HeaderText="Archived" SortExpression="ArchivedDateTime" HeaderStyle-HorizontalAlign="Right" />
+                            <Rock:DateField DataField="CreatedDateTime" HeaderText="Created" SortExpression="CreatedDateTime" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
+                            <Rock:DateField DataField="ArchivedDateTime" HeaderText="Archived" SortExpression="ArchivedDateTime" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right"/>
                             <Rock:PersonField DataField="ArchivedByPersonAlias" HeaderText="Archived By" SortExpression="ArchivedByPersonAlias.Person.LastName, ArchivedByPersonAlias.Person.NickName" />
-                            <Rock:LinkButtonField CssClass="btn btn-default btn-sm" ID="btnUnarchive" Text="<i class='fa fa-undo' title='Unarchive'></i>" OnClick="btnUnarchive_Click" HeaderStyle-HorizontalAlign="Center" />
+                            <Rock:LinkButtonField CssClass="btn btn-default btn-sm" ID="btnUnarchive" Text="<i class='fa fa-undo' title='Unarchive'></i>" OnClick="btnUnarchive_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                         </Columns>
                     </Rock:Grid>
                 </div>

@@ -20,7 +20,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {
@@ -37,7 +37,7 @@ namespace Rock.CheckIn
         /// The type of the group.
         /// </value>
         [DataMember]
-        public CacheGroupType GroupType { get; set; }
+        public GroupTypeCache GroupType { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [excluded by filter].
@@ -198,7 +198,7 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Gets the available keys (for debuging info).
+        /// Gets the available keys (for debugging info).
         /// </summary>
         /// <value>
         /// The available keys.

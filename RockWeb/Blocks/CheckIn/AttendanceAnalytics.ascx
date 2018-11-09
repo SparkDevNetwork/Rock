@@ -52,7 +52,7 @@
                             </div>
 
                             <Rock:NotificationBox ID="nbDateRangeWarning" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" Dismissable="true" />
-                            <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Sunday Date Range" 
+                            <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Sunday Date Range"
                                 EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" EnabledSlidingDateRangeUnits="Week, Month, Year" />
 
                             <Rock:RockControlWrapper ID="rcwGroupBy" runat="server" Label="Group By">
@@ -71,21 +71,21 @@
                             <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedules" AllowMultiSelect="true"
                                 Help="The schedules to display attendance for. Leave blank to not filter by schedule." />
 
-                            <Rock:RockCheckBoxList ID="clbCampuses" runat="server" FormGroupCssClass="campuses-picker js-campuses-picker" CssClass="campuses-picker-vertical" Label="Campuses" 
+                            <Rock:RockCheckBoxList ID="clbCampuses" runat="server" FormGroupCssClass="campuses-picker js-campuses-picker" CssClass="campuses-picker-vertical" Label="Campuses"
                                 Help="The campuses to display attendance for. Leave blank to not filter by campus." />
-                        
+
                             <Rock:GroupPicker ID="gpGroups" runat="server" Label="Select Group(s)" AllowMultiSelect="true" Visible="false" OnSelectItem="gpGroups_SelectItem" />
                             <Rock:RockControlWrapper ID="rcwSelectedGroups" runat="server" Label="Selected Groups" Visible="false">
                                 <ul class="list-unstyled" visible="false" >
                                     <asp:Repeater ID="rptSelectedGroups" runat="server">
                                         <ItemTemplate><li><%# Container.DataItem %></li></ItemTemplate>
-                                    </asp:Repeater> 
+                                    </asp:Repeater>
                                 </ul>
                             </Rock:RockControlWrapper>
 
                             <asp:Panel ID="pnlGroups" runat="server" Visible="false" class="js-groups-container">
                                 <Rock:NotificationBox ID="nbGroupsWarning" runat="server" NotificationBoxType="Warning" Text="Please select at least one group." Visible="false"/>
-                            
+
                                 <div class="grouplist-actions rollover-container" id="divGroupListActions" runat="server">
                                     <Rock:Toggle runat="server" ID="cbShowInactive" CssClass="pull-right" ButtonSizeCssClass="btn-xs" OnCssClass="btn-primary" OffCssClass="btn-primary" OnText="All Groups" OffText="Active Groups" AutoPostBack="true" OnCheckedChanged="cbShowInactive_CheckedChanged" />
                                     <span class="h4 js-checkbox-selector cursor-pointer">Groups</span>
@@ -97,7 +97,7 @@
                                 <div class="js-groups-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
                                     <Rock:RockCheckBox ID="cbIncludeGroupsWithoutSchedule" runat="server" Text="Include groups that don't have a schedule" OnCheckedChanged="cbIncludeGroupsWithoutSchedule_CheckedChanged" AutoPostBack="true" />
                                 </div>
-                            
+
                                 <hr class="margin-t-sm" />
 
                                 <ul class="list-unstyled group-checkboxes" >
@@ -109,7 +109,7 @@
 
                             </asp:Panel>
 
-                            <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by DataView" Visible="false" EnhanceForLongLists="true" />
+                            <Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Limit by Data View" Visible="false" />
 
                         </div>
                         <div class="col-md-9">
@@ -147,7 +147,7 @@
                                 <asp:Panel ID="pnlShowByChart" runat="server">
                                     <div class="clearfix">
                                         <div class="pull-right">
-                                
+
                                                 <Rock:RockControlWrapper ID="rcwGraphBy" runat="server" Label="Graph By">
                                                     <div class="controls">
                                                         <div class="js-graph-by">
@@ -162,7 +162,7 @@
                                                         </div>
                                                     </div>
                                                 </Rock:RockControlWrapper>
-                                
+
                                         </div>
                                     </div>
                                     <Rock:LineChart ID="lcAttendance" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
@@ -236,7 +236,7 @@
                                                         </div>
                                                         <div class="padding-l-lg margin-t-sm">
                                                             <div class="form-inline">
-                                                                <Rock:RockCheckBox ID="cbPatternAndMissed" runat="server" />and missed at least                                                           
+                                                                <Rock:RockCheckBox ID="cbPatternAndMissed" runat="server" />and missed at least
                                                                             <Rock:NumberBox ID="tbPatternMissedXTimes" runat="server" CssClass="input-width-xs" />&nbsp;<asp:Literal ID="lPatternAndMissedXBetween" runat="server" Text=" weeks between" />
                                                                 <Rock:NotificationBox ID="nbMissedDateRangeRequired" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" />
                                                                 <div class="margin-t-sm">

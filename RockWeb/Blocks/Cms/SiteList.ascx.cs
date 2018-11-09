@@ -20,7 +20,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Cms
             var securityField = gSites.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Site ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Site ) ).Id;
             }
         }
 
@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Cms
                 gSites.DataSource = qry.OrderBy( s => s.Name ).ToList();
             }
 
-            gSites.EntityTypeId = CacheEntityType.Get<Site>().Id;
+            gSites.EntityTypeId = EntityTypeCache.Get<Site>().Id;
             gSites.DataBind();
         }
 

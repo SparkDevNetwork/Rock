@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
 using Rock.Data;
 
@@ -50,7 +50,7 @@ namespace Rock.Extension
     /// </summary>
     [IntegerField( "Order", "The order that this service should be used (priority)" )]
     [BooleanField( "Active", "Should Service be used?", false, "", 0)]
-    public abstract class Component : Data.IHasAttributes, ISecured
+    public abstract class Component : Attribute.IHasAttributes, ISecured
     {
         /// <summary>
         /// Gets the id.
@@ -65,7 +65,7 @@ namespace Rock.Extension
         /// <value>
         /// The attributes.
         /// </value>
-        public Dictionary<string, CacheAttribute> Attributes { get; set; }
+        public Dictionary<string, AttributeCache> Attributes { get; set; }
 
         /// <summary>
         /// Dictionary of all attributes and their value.  Key is the attribute key, and value is the associated attribute value
@@ -73,7 +73,7 @@ namespace Rock.Extension
         /// <value>
         /// The attribute values.
         /// </value>
-        public Dictionary<string, Cache.CacheAttributeValue> AttributeValues { get; set; }
+        public Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the attribute value defaults.
@@ -175,14 +175,14 @@ namespace Rock.Extension
                 int order = 0;
 
                 string value = GetAttributeValue( "Order" );
-                if ( Int32.TryParse( value, out order ) )
+                if ( int.TryParse( value, out order ) )
                 {
                     return order;
                 }
 
                 if (Attributes.ContainsKey("Order"))
                 {
-                    if ( Int32.TryParse( Attributes["Order"].DefaultValue, out order ) )
+                    if ( int.TryParse( Attributes["Order"].DefaultValue, out order ) )
                     {
                         return order;
                     }
@@ -251,9 +251,9 @@ namespace Rock.Extension
         /// <value>
         /// The type of the entity.
         /// </value>
-        public CacheEntityType EntityType
+        public EntityTypeCache EntityType
         {
-            get { return CacheEntityType.Get( this.GetType() ); }
+            get { return EntityTypeCache.Get( this.GetType() ); }
         }
 
         /// <summary>
@@ -392,7 +392,7 @@ namespace Rock.Extension
             var type = this.GetType();
             using ( var rockContext = new RockContext() )
             {
-                Rock.Attribute.Helper.UpdateAttributes( type, Rock.Cache.CacheEntityType.GetId( type.FullName ), rockContext );
+                Rock.Attribute.Helper.UpdateAttributes( type, EntityTypeCache.GetId( type.FullName ), rockContext );
                 this.LoadAttributes( rockContext );
             }
         }

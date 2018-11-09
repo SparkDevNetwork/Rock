@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Rock.Web.Cache;
 
 namespace Rock.Attribute
 {
@@ -48,7 +49,7 @@ namespace Rock.Attribute
                 Guid guid = Guid.Empty;
                 if ( Guid.TryParse( contentChannelGuid, out guid ) )
                 {
-                    var contentChannel = Rock.Cache.CacheContentChannel.Get( guid );
+                    var contentChannel = ContentChannelCache.Get( guid );
                     if ( contentChannel != null )
                     {
                         var configValue = new Field.ConfigurationValue( contentChannel.Id.ToString() );

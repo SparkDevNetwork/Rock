@@ -49,7 +49,7 @@ namespace Rock.Web.UI.Controls.Communication
             EnsureChildControls();
             tbTitle.Text = communication.PushTitle;
             tbMessage.Text = communication.PushMessage;
-            cbSound.Checked = communication.PushSound.IsNotNullOrWhitespace();
+            cbSound.Checked = communication.PushSound.IsNotNullOrWhiteSpace();
         }
 
         /// <summary>

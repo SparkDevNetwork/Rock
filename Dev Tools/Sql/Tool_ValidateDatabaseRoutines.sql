@@ -1,26 +1,36 @@
 BEGIN
 
-declare 
-  @routineName varchar(max),
-  @routineType varchar(max)
-declare
-  routine_cursor CURSOR for select concat(ROUTINE_SCHEMA,'.', ROUTINE_NAME), ROUTINE_TYPE FROM INFORMATION_SCHEMA.ROUTINES;
+CREATE TABLE #tmpResults(RountineType VARCHAR(50), RoutineName VARCHAR(100), ResultMessage VARCHAR(MAX));
 
-open routine_cursor
-fetch next from routine_cursor into @routineName,@routineType
+DECLARE 
+	@routineName VARCHAR(MAX),
+	@routineType VARCHAR(MAX)
 
-while @@FETCH_STATUS = 0
-begin
-    begin try
-      exec sp_refreshsqlmodule @routineName;
-    end try
-    begin catch
-        select 'Error in ' + @routineType + ' ' + @routineName + ': ' +  ERROR_MESSAGE();    
-    end catch
-    fetch next from routine_cursor into @routineName,@routineType
-end
+DECLARE
+  routine_cursor CURSOR FOR SELECT CONCAT(ROUTINE_SCHEMA,'.', ROUTINE_NAME), ROUTINE_TYPE FROM INFORMATION_SCHEMA.ROUTINES;
 
-close routine_cursor
-deallocate routine_cursor
+OPEN routine_cursor
+FETCH NEXT FROM routine_cursor INTO @routineName, @routineType
 
-end
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    BEGIN TRY
+		EXEC sp_refreshsqlmodule @routineName;
+    END TRY
+    BEGIN CATCH
+        INSERT INTO #tmpResults(RountineType, RoutineName, ResultMessage)
+		SELECT @routineType, @routineName, ERROR_MESSAGE();    
+    END CATCH
+    FETCH NEXT FROM routine_cursor INTO @routineName,@routineType
+END
+
+CLOSE routine_cursor
+DEALLOCATE routine_cursor
+
+SELECT *
+FROM #tmpResults
+WHERE ResultMessage NOT LIKE 'Cannot ALTER%because it is being referenced by object%'
+
+DROP TABLE #tmpResults
+
+END

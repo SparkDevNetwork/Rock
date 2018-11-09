@@ -24,7 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -186,7 +186,7 @@ namespace RockWeb.Blocks.Core
                     t.Country
                 } ).ToList();
 
-                rGrid.EntityTypeId = CacheEntityType.Get<Rock.Model.Location>().Id;
+                rGrid.EntityTypeId = EntityTypeCache.Get<Rock.Model.Location>().Id;
 
                 rGrid.DataBind();
             }

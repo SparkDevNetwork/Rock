@@ -28,7 +28,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm
@@ -175,7 +175,7 @@ validity of the request before completing this merge." :
                     if ( entitySet != null )
                     {
                         tbEntitySetNote.Text = entitySet.Note;
-                        var definedValuePurpose = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid() );
+                        var definedValuePurpose = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid() );
                         if ( definedValuePurpose != null )
                         {
                             nbNotAuthorized.Visible = false;
@@ -331,6 +331,10 @@ validity of the request before completing this merge." :
                 {
                     e.Row.AddCssClass( "grid-section-header" );
                 }
+                else
+                {
+                    e.Row.Cells[1].AddCssClass("grid-row-header");
+                }
             }
             else if ( e.Row.RowType == DataControlRowType.Header )
             {
@@ -375,7 +379,7 @@ validity of the request before completing this merge." :
                     var binaryFileService = new BinaryFileService( rockContext );
                     var phoneNumberService = new PhoneNumberService( rockContext );
                     var taggedItemService = new TaggedItemService( rockContext );
-
+                    var personSearchKeyService = new PersonSearchKeyService( rockContext );
                     Person primaryPerson = personService.Get( MergeData.PrimaryPersonId ?? 0 );
                     if ( primaryPerson != null )
                     {
@@ -419,7 +423,7 @@ validity of the request before completing this merge." :
                                                         .Min( a => a.CreatedDateTime );
 
                         // Update phone numbers
-                        var phoneTypes = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues;
+                        var phoneTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues;
                         foreach ( var phoneType in phoneTypes )
                         {
                             var phoneNumber = primaryPerson.PhoneNumbers.Where( p => p.NumberTypeValueId == phoneType.Id ).FirstOrDefault();
@@ -554,6 +558,33 @@ validity of the request before completing this merge." :
                         }
                         rockContext.SaveChanges();
 
+                        //merge search keys on merge
+                        var searchTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
+                        var personSearchKeys = primaryPerson.GetPersonSearchKeys( rockContext ).Where( a => a.SearchTypeValueId == searchTypeValue.Id ).ToList();
+                        foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
+                        {
+                            if ( !string.IsNullOrEmpty( p.Email ) && p.Email != GetNewStringValue( "Email" ) && !personSearchKeys.Any( a => a.SearchValue.Equals( p.Email, StringComparison.OrdinalIgnoreCase ) ) )
+                            {
+                                PersonSearchKey personSearchKey = new PersonSearchKey()
+                                {
+                                    PersonAliasId = primaryPerson.PrimaryAliasId.Value,
+                                    SearchTypeValueId = searchTypeValue.Id,
+                                    SearchValue = p.Email
+                                };
+                                personSearchKeyService.Add( personSearchKey );
+                                rockContext.SaveChanges();
+                            }
+
+                            var mergeSearchKeys = personService.GetPersonSearchKeys( p.Id ).Where( a => a.SearchTypeValueId == searchTypeValue.Id ).ToList();
+                            var duplicateKeys = mergeSearchKeys.Where( a => personSearchKeys.Any( b => b.SearchValue.Equals( a.SearchValue, StringComparison.OrdinalIgnoreCase ) ) );
+
+                            if ( duplicateKeys.Any() )
+                            {
+                                personSearchKeyService.DeleteRange( duplicateKeys );
+                                rockContext.SaveChanges();
+                            }
+                        }
+
                         // Delete merged person's family records and any families that would be empty after merge
                         foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
                         {
@@ -607,7 +638,7 @@ validity of the request before completing this merge." :
                                 Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
                                 if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
                                 {
-                                    Rock.Cache.CacheRole.Remove( group.Id );
+                                    RoleCache.Remove( group.Id );
                                     Rock.Security.Authorization.Clear();
                                 }
                             }
@@ -967,7 +998,7 @@ validity of the request before completing this merge." :
                 AddPerson( person );
             }
 
-            var phoneTypes = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues;
+            var phoneTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues;
             foreach ( var person in people )
             {
                 AddProperty( "PhoneNumbers", "Phone Numbers", 0, string.Empty );
@@ -1138,7 +1169,7 @@ validity of the request before completing this merge." :
             List<object> heading = null;
             foreach ( var personProperty in Properties )
             {
-                // If this is a heading property, or this is a property with more than one disctict value build the row data
+                // If this is a heading property, or this is a property with more than one distinct value build the row data
                 if ( headingKeys.Contains( personProperty.Key ) ||
                     personProperty.Values.Select( v => v.Value ).Distinct().Count() > 1 )
                 {

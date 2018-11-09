@@ -22,7 +22,7 @@ using System.Web.UI.WebControls;
 
 using Newtonsoft.Json;
 using RestSharp;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -300,8 +300,8 @@ namespace Rock.Web.UI.Controls
         public Captcha() : base()
         {
             CustomValidator = new CustomValidator();
-            SiteKey = CacheGlobalAttributes.Value( "core_GoogleReCaptchaSiteKey" );
-            SecretKey = CacheGlobalAttributes.Value( "core_GoogleReCaptchaSecretKey" );
+            SiteKey = GlobalAttributesCache.Value( "core_GoogleReCaptchaSiteKey" );
+            SecretKey = GlobalAttributesCache.Value( "core_GoogleReCaptchaSecretKey" );
         }
 
         #endregion
@@ -416,7 +416,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// This is where you implement the simple aspects of rendering your control.  The rest
         /// will be handled by calling RenderControlHelper's RenderControl() method.
         /// </summary>
         /// <param name="writer">The writer.</param>

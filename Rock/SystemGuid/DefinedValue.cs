@@ -50,12 +50,12 @@ namespace Rock.SystemGuid
         public const string CHECKIN_SEARCH_TYPE_NAME_AND_PHONE = "93773B0A-6E7F-1AA0-4F1D-9A4D6ACE930F";
 
         /// <summary>
-        /// Scanned Id Search Type
+        /// Scanned Id Search Type. This type is always supported and if a barcode or bio id is scanned, the attendance will be updated to reflect this type os search was used.
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_SCANNED_ID = "7668CE15-E372-47EE-8FF8-6FEE09F7C858";
 
         /// <summary>
-        /// Family Id Search Type
+        /// Family Id Search Type. This type is for future (face recognition) support and is not currently being used.
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_FAMILY_ID = "111385BB-DAEB-4CE3-A945-0B50DC15EE02";
 
@@ -120,6 +120,11 @@ namespace Rock.SystemGuid
         /// Unknown Currency Type
         /// </summary>
         public const string CURRENCY_TYPE_UNKNOWN = "56C9AE9C-B5EB-46D5-9650-2EF86B14F856";
+
+        /// <summary>
+        /// Other Currency Type
+        /// </summary>
+        public const string CURRENCY_TYPE_OTHER = "0FDF0BB3-B483-4C0A-9DFF-A35ABE3B688D";
 
         #endregion
 
@@ -555,11 +560,106 @@ namespace Rock.SystemGuid
         #region Person Search Keys
 
         /// <summary>
-        /// Interaction Channel Type: Website
+        /// Person Search Type: Email
         /// </summary>
         public const string PERSON_SEARCH_KEYS_EMAIL = "D6CFD200-B33B-4D01-B49F-24325E47D8B8";
 
+
+        /// <summary>
+        /// Person Search Type: Alternate Id
+        /// </summary>
+        public const string PERSON_SEARCH_KEYS_ALTERNATE_ID = "AD77CF28-E42B-44C2-8D5C-F6A0A6EE8022";
+
         #endregion
 
+        #region Spiritual Gifts
+
+        /// <summary>
+        /// Spiritual Gifts: Administration
+        /// </summary>
+        public const string SPIRITUAL_GIFTS_ADMINISTRATION = "A276421D-F662-4723-99DA-6FDF3E9CFF7C";
+
+
+        /// <summary>
+        /// Spiritual Gifts: Apostleship
+        /// </summary>
+        public const string SPIRITUAL_GIFTS_APOSTLESHIP = "A2C7074E-AC97-4D89-9240-47A552CDC4C0";
+
+        /// <summary>
+        /// Spiritual Gifts: Discernment
+        /// </summary>
+        public const string SPIRITUAL_GIFTS_DISCERNMENT = "3EB352F3-F624-4ED6-A9EE-7951B71B1952";
+
+        /// <summary>
+        /// Spiritual Gifts: Encouragement
+        /// </summary>
+        public const string SPIRITUAL_GIFTS_ENCOURAGEMENT = "809F65A6-1759-472A-8B8B-F37009F476BF";
+
+        /// <summary>
+        /// Spiritual Gifts: Evangelism
+        /// </summary>
+        public const string SPIRITUAL_GIFTS_EVANGELISM = "0F8D41AA-7236-40BF-AA37-980BCCF4A881";
+
+        /// <summary>
+        /// Spiritual Gifts: Faith
+        /// </summary>
+        public const string SPIRITUAL_GIFTS_FAITH = "7B30E2BA-9461-4688-9B43-D2B774E33A18";
+
+        /// <summary>
+        /// Spiritual Gifts: Giving
+        /// </summary>
+        public const string SPIRITUAL_GIFTS_GIVING = "C4259D6E-675C-417B-9175-6D599C86A204";
+
+        /// <summary>
+        /// Spiritual Gifts: Helps
+        /// </summary>
+        public const string SPIRITUAL_GIFTS_HELPS = "13C40209-F41D-4C1D-83D3-2EC530588245";
+
+        /// <summary>
+        /// Spiritual Gifts: Hospitality
+        /// </summary>
+        public const string SPIRITUAL_GIFTS_HOSPITALITY = "98D5EE08-633D-4635-80CD-169449604D18";
+
+        /// <summary>
+        /// Spiritual Gifts: Knowledge
+        /// </summary>
+        public const string SPIRITUAL_GIFTS_KNOWLEDGE = "462A5D10-6DEA-43D7-96EF-8F82FF1E2E14";
+
+        /// <summary>
+        /// Spiritual Gifts: Leadership
+        /// </summary>
+        public const string SPIRITUAL_GIFTS_LEADERSHIP = "A1CB038C-AAFC-4745-A7D2-7C8BA5028F05";
+
+        /// <summary>
+        /// Spiritual Gifts: Mercy
+        /// </summary>
+        public const string SPIRITUAL_GIFTS_MERCY = "0894EDBA-8FC8-4433-877C-53351A06A8B7";
+
+        /// <summary>
+        /// Spiritual Gifts: Pastor-Shepherd
+        /// </summary>
+        public const string SPIRITUAL_GIFTS_PASTOR_SHEPHERD = "FC4F1B46-F0C3-45B0-9FD9-D15F4FD05A31";
+
+        /// <summary>
+        /// Spiritual Gifts: Pastor-Teacher
+        /// </summary>
+        public const string SPIRITUAL_GIFTS_PASTOR_TEACHER = "C7291F22-05F0-4EF9-A7C2-2CFEBFEBCB45";
+
+        /// <summary>
+        /// Spiritual Gifts: Prophecy
+        /// </summary>
+        public const string SPIRITUAL_GIFTS_PROPHECY = "4ADAEED1-D0E6-4DA4-A0BA-8E7D058075C4";
+
+        /// <summary>
+        /// Spiritual Gifts: Teaching
+        /// </summary>
+        public const string SPIRITUAL_GIFTS_TEACHING = "E8278791-2400-4DDA-AEAA-C6F11E0AC9D0";
+
+        /// <summary>
+        /// Spiritual Gifts: Wisdom
+        /// </summary>
+        public const string SPIRITUAL_GIFTS_WISDOM = "5F1F5A92-D981-4027-A4BC-C3642E784D0B";
+
+        #endregion
     }
 }

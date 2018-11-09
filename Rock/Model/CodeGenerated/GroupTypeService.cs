@@ -144,6 +144,8 @@ namespace Rock.Model
             target.GroupCapacityRule = source.GroupCapacityRule;
             target.GroupMemberTerm = source.GroupMemberTerm;
             target.GroupsRequireCampus = source.GroupsRequireCampus;
+            target.GroupStatusDefinedType = source.GroupStatusDefinedType;
+            target.GroupStatusDefinedTypeId = source.GroupStatusDefinedTypeId;
             target.GroupTerm = source.GroupTerm;
             target.GroupTypeColor = source.GroupTypeColor;
             target.GroupTypePurposeValueId = source.GroupTypePurposeValueId;

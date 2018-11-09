@@ -1,4 +1,4 @@
-﻿
+
 
 //
 // MODAL STYLES
@@ -9,9 +9,8 @@
 // -------------------------
 
 // import as less files so they are concatenated properly
-@import "./bootstrap-modal/_bootstrap-modal-bs3patch";
+@import "./bootstrap-modal/_bootstrap-modal-bs3patch.less";
 @import (less) "./bootstrap-modal/bootstrap-modal.css";
-
 
 
 // Rock modal (page properties, etc.)
@@ -22,6 +21,7 @@
   color: @modal-body-text-color;
   background-color: @modal-body-bg;
   border: 0;
+  .box-shadow(@shadow-modal);
 
   .modal-header {
     min-height: 34px;
@@ -36,10 +36,16 @@
       margin-right: 12px;
     }
 
+    a {
+      color: @modal-header-text-color;
+      text-decoration: underline;
+    }
+
     .close {
       padding: 6px;
       margin: 0;
       color: @modal-header-text-color;
+      text-decoration: none;
       text-shadow: none;
     }
 

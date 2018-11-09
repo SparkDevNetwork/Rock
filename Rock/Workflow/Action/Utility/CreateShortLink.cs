@@ -22,7 +22,7 @@ using System.ComponentModel.Composition;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -66,7 +66,7 @@ namespace Rock.Workflow.Action
 
             // Get the site
             int siteId = GetAttributeValue( action, "Site", true ).AsInteger();
-            CacheSite site = CacheSite.Get( siteId );
+            SiteCache site = SiteCache.Get( siteId );
             if ( site == null )
             {
                 errorMessages.Add( string.Format( "Invalid Site Value" ) );
@@ -114,7 +114,7 @@ namespace Rock.Workflow.Action
             rockContext.SaveChanges();
 
             // Save the resulting short link url
-            var attribute = CacheAttribute.Get( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
+            var attribute = AttributeCache.Get( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
             if ( attribute != null )
             {
                 string shortLink = link.ShortLinkUrl;

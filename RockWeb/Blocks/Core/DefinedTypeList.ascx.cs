@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -38,7 +39,7 @@ namespace RockWeb.Blocks.Core
     [Description( "Lists all the defined types and allows for managing them and their values." )]
 
     [LinkedPage( "Detail Page", order: 0 )]
-    [CategoryField( "Categories", "If block should only display Defined Types from specific categories, select the categories here.", true, "Rock.Model.DefinedType", order: 1 )]
+    [CategoryField( "Categories", "If block should only display Defined Types from specific categories, select the categories here.", true, "Rock.Model.DefinedType", order: 1, required: false )]
     public partial class DefinedTypeList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
@@ -121,7 +122,7 @@ namespace RockWeb.Blocks.Core
                 int? categoryId = e.Value.AsIntegerOrNull();
                 if ( categoryId.HasValue )
                 {
-                    var category = Rock.Cache.CacheCategory.Get( categoryId.Value );
+                    var category = CategoryCache.Get( categoryId.Value );
                     if ( category != null )
                     {
                         e.Value = category.Name;
@@ -275,7 +276,7 @@ namespace RockWeb.Blocks.Core
                     } )
                 .ToList();
 
-            // SanitizeHtml can't be compilied into a SQL query so we have to ToList() the data and then sanitize the field in the List<T>
+            // SanitizeHtml can't be compiled into a SQL query so we have to ToList() the data and then sanitize the field in the List<T>
             //gDefinedType.DataSource = dataSource
             //    .Select( a =>
             //        new

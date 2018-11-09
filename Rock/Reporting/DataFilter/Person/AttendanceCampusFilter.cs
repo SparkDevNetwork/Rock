@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -59,7 +59,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string Section
         {
-            get { return "Group Attendance"; }
+            get { return "Attendance"; }
         }
 
         #endregion
@@ -126,7 +126,7 @@ function() {
                 List<string> campusNames = new List<string>();
                 foreach ( var campusGuid in campusGuidList )
                 {
-                    var campus = CacheCampus.Get( campusGuid );
+                    var campus = CampusCache.Get( campusGuid );
                     if ( campus != null )
                     {
                         campusNames.Add( campus.Name );
@@ -172,7 +172,7 @@ function() {
             campusesPicker.ID = filterControl.ID + "_0";
             campusesPicker.Label = string.Empty;
             campusesPicker.CssClass = "js-campuses-picker campuses-picker";
-            campusesPicker.Campuses = CacheCampus.All();
+            campusesPicker.Campuses = CampusCache.All();
             filterControl.Controls.Add( campusesPicker );
 
             var ddlIntegerCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes );
@@ -273,7 +273,7 @@ function() {
                 List<Guid> campusGuids = new List<Guid>();
                 foreach ( var campusId in campusIds )
                 {
-                    var campus = CacheCampus.Get( campusId );
+                    var campus = CampusCache.Get( campusId );
                     if ( campus != null )
                     {
                         campusGuids.Add( campus.Guid );
@@ -309,7 +309,7 @@ function() {
                 List<int> campusIds = new List<int>();
                 foreach ( var campusGuid in campusGuidList )
                 {
-                    var campus = CacheCampus.Get( campusGuid );
+                    var campus = CampusCache.Get( campusGuid );
                     if ( campus != null )
                     {
                         campusIds.Add( campus.Id );
@@ -360,7 +360,7 @@ function() {
             List<int> campusIds = new List<int>();
             foreach ( var campusGuid in campusGuidList )
             {
-                var campus = CacheCampus.Get( campusGuid );
+                var campus = CampusCache.Get( campusGuid );
                 if ( campus != null )
                 {
                     campusIds.Add( campus.Id );
@@ -401,13 +401,13 @@ function() {
             if ( dateRange.Start.HasValue )
             {
                 var startDate = dateRange.Start.Value;
-                attendanceQry = attendanceQry.Where( a => a.StartDateTime >= startDate );
+                attendanceQry = attendanceQry.Where( a => a.Occurrence.OccurrenceDate >= startDate );
             }
 
             if ( dateRange.End.HasValue )
             {
                 var endDate = dateRange.End.Value;
-                attendanceQry = attendanceQry.Where( a => a.StartDateTime < endDate );
+                attendanceQry = attendanceQry.Where( a => a.Occurrence.OccurrenceDate < endDate );
             }
 
             var qry = new PersonService( rockContext ).Queryable()

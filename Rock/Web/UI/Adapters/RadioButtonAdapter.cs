@@ -129,7 +129,7 @@ namespace Rock.Web.UI.Adapters
                     }
                     else
                     {
-                        writer.Write( "&nbsp" );
+                        writer.Write( "&nbsp;" );
                     }
                     writer.RenderEndTag();      // Span
                     writer.RenderEndTag();      // Label

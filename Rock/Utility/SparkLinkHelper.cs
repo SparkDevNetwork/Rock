@@ -26,7 +26,7 @@ using RestSharp;
 using Rock.Data;
 using Rock.Model;
 using Rock.Store;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Utility
 {
@@ -40,7 +40,8 @@ namespace Rock.Utility
         /// Sends to spark.
         /// </summary>
         /// <returns></returns>
-        [Obsolete("Use SendToSpark(rockContext) to avoid error about multiple database contexts")]
+        [RockObsolete( "1.7.1" )]
+        [Obsolete("Use SendToSpark(rockContext) to avoid error about multiple database contexts", true)]
         public static List<Notification> SendToSpark()
         {
             using ( var rockContext = new RockContext() )
@@ -64,7 +65,7 @@ namespace Rock.Utility
             sparkLinkRequest.VersionIds = installedPackages.Select( i => i.VersionId ).ToList();
             sparkLinkRequest.RockVersion = VersionInfo.VersionInfo.GetRockSemanticVersionNumber();
 
-            var globalAttributes = CacheGlobalAttributes.Get();
+            var globalAttributes = GlobalAttributesCache.Get();
             sparkLinkRequest.OrganizationName = globalAttributes.GetValue( "OrganizationName" );
             sparkLinkRequest.PublicUrl = globalAttributes.GetValue( "PublicApplicationRoot" );
 

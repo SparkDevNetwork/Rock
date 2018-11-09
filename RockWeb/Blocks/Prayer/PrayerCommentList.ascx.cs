@@ -26,7 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Prayer
         protected void gPrayerComments_Edit( object sender, RowEventArgs e )
         {
             // NOTE: DataKeys for Grid has two fields "id,entityId"
-            NavigateToLinkedPage( "DetailPage", "noteId", (int)e.RowKeyValues["id"], "prayerRequestId", (int)e.RowKeyValues["entityid"] );
+            NavigateToLinkedPage( "DetailPage", "noteId", (int)e.RowKeyValues["id"], "PrayerRequestId", (int)e.RowKeyValues["entityid"] );
         }
 
         /// <summary>
@@ -247,7 +247,7 @@ namespace RockWeb.Blocks.Prayer
                     }
                     else
                     {
-                        var category = Rock.Cache.CacheCategory.Get( categoryId );
+                        var category = CategoryCache.Get( categoryId );
                         if ( category != null )
                         {
                             e.Value = category.Name;
@@ -277,11 +277,11 @@ namespace RockWeb.Blocks.Prayer
             SortProperty sortProperty = gPrayerComments.SortProperty;
 
             // Filter by Category.  First see if there is a Block Setting, otherwise use the Grid Filter
-            CacheCategory categoryFilter = null;
+            CategoryCache categoryFilter = null;
             var blockCategoryGuid = GetAttributeValue( "PrayerRequestCategory" ).AsGuidOrNull();
             if ( blockCategoryGuid.HasValue )
             {
-                categoryFilter = CacheCategory.Get( blockCategoryGuid.Value );
+                categoryFilter = CategoryCache.Get( blockCategoryGuid.Value );
             }
 
             if ( categoryFilter == null && catpPrayerCategoryFilter.Visible )
@@ -289,7 +289,7 @@ namespace RockWeb.Blocks.Prayer
                 int? filterCategoryId = catpPrayerCategoryFilter.SelectedValue.AsIntegerOrNull();
                 if ( filterCategoryId.HasValue )
                 {
-                    categoryFilter = CacheCategory.Get( filterCategoryId.Value );
+                    categoryFilter = CategoryCache.Get( filterCategoryId.Value );
                 }
             }
 
@@ -347,11 +347,11 @@ namespace RockWeb.Blocks.Prayer
             catpPrayerCategoryFilter.SetValue( prayerCategory );
 
             // only show the Filter if there isn't Category set in the Block Setting
-            CacheCategory blockCategory = null;
+            CategoryCache blockCategory = null;
             var blockCategoryGuid = GetAttributeValue( "PrayerRequestCategory" ).AsGuidOrNull();
             if ( blockCategoryGuid.HasValue )
             {
-                blockCategory = CacheCategory.Get( blockCategoryGuid.Value );
+                blockCategory = CategoryCache.Get( blockCategoryGuid.Value );
             }
 
             catpPrayerCategoryFilter.Visible = blockCategory == null;

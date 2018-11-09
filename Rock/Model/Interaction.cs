@@ -211,10 +211,10 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the interaction componenent.
+        /// Gets or sets the interaction component.
         /// </summary>
         /// <value>
-        /// The interaction componenent.
+        /// The interaction component.
         /// </value>
         [DataMember]
         public virtual InteractionComponent InteractionComponent { get; set; }
@@ -238,10 +238,10 @@ namespace Rock.Model
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the interaction componenent.
+        /// Gets or sets the interaction component.
         /// </summary>
         /// <value>
-        /// The interaction componenent.
+        /// The interaction component.
         /// </value>
         [DataMember]
         public virtual InteractionSession InteractionSession { get; set; }

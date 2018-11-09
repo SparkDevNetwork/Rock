@@ -29,7 +29,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
@@ -56,10 +56,12 @@ namespace RockWeb.Blocks.Communication
     [BooleanField( "Allow CC/Bcc", "Allow CC and Bcc addresses to be entered for email communications?", false, "", 7, "AllowCcBcc" )]
     [BooleanField( "Show Attachment Uploader", "Should the attachment uploader be shown for email communications.", true, "", 8 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "Allowed SMS Numbers", "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included). ", false, true, "", "", 9 )]
+    [BooleanField( "Simple Communications Are Bulk", "Should simple mode communications be sent as a bulk communication?" , true, order: 10, key:"IsBulk")]
 
     [TextField( "Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 0, Category = "HTML Editor Settings" )]
     [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 1, Category = "HTML Editor Settings" )]
     [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 2, Category = "HTML Editor Settings" )]
+
     public partial class CommunicationEntry : RockBlock
     {
 
@@ -251,7 +253,7 @@ namespace RockWeb.Blocks.Communication
                 var communication = RockPage.GetSharedItem( "Communication" ) as Rock.Model.Communication;
                 if ( communication == null )
                 {
-                    // If not, check page parameter for existing communiciaton
+                    // If not, check page parameter for existing communication
                     int? communicationId = PageParameter( "CommunicationId" ).AsIntegerOrNull();
                     if ( communicationId.HasValue )
                     {
@@ -283,7 +285,7 @@ namespace RockWeb.Blocks.Communication
                     bool isCreator = ( communication.CreatedByPersonAlias != null && CurrentPersonId.HasValue && communication.CreatedByPersonAlias.PersonId == CurrentPersonId.Value );
                     bool isApprovalEditor = communication.Status == CommunicationStatus.PendingApproval && _editingApproved;
 
-                    // If communicatoin was just created only for authorization, set it to null so that Showing of details works correctly.
+                    // If communication was just created only for authorization, set it to null so that Showing of details works correctly.
                     if ( communication.Id == 0 )
                     {
                         communication = null;
@@ -408,7 +410,7 @@ namespace RockWeb.Blocks.Communication
                         }
                         else
                         {
-                            if ( MediumEntityTypeId == CacheEntityType.Get( "Rock.Communication.Medium.Email" ).Id )
+                            if ( MediumEntityTypeId == EntityTypeCache.Get( "Rock.Communication.Medium.Email" ).Id )
                             {
                                 if ( string.IsNullOrWhiteSpace( recipient.Email ) )
                                 {
@@ -445,7 +447,7 @@ namespace RockWeb.Blocks.Communication
                                     }
                                 }
                             }
-                            else if ( MediumEntityTypeId == CacheEntityType.Get( "Rock.Communication.Medium.Sms" ).Id )
+                            else if ( MediumEntityTypeId == EntityTypeCache.Get( "Rock.Communication.Medium.Sms" ).Id )
                             {
                                 if ( !recipient.HasSmsNumber )
                                 {
@@ -454,7 +456,7 @@ namespace RockWeb.Blocks.Communication
                                     textTooltip = "No phone number with SMS enabled.";
                                 }
                             }
-                            else if ( MediumEntityTypeId == CacheEntityType.Get( "Rock.Communication.Medium.PushNotification" ).Id )
+                            else if ( MediumEntityTypeId == EntityTypeCache.Get( "Rock.Communication.Medium.PushNotification" ).Id )
                             {
                                 if ( !recipient.HasNotificationsEnabled )
                                 {
@@ -649,7 +651,7 @@ namespace RockWeb.Blocks.Communication
                     {
                         string message = string.Empty;
 
-                        // Save the communication proir to checking recipients.
+                        // Save the communication prior to checking recipients.
                         communication.Status = CommunicationStatus.Draft;
                         rockContext.SaveChanges();
 
@@ -858,6 +860,11 @@ namespace RockWeb.Blocks.Communication
 
             cbBulk.Checked = communication.IsBulkCommunication;
 
+            if ( !_fullMode )
+            {
+                cbBulk.Checked = GetAttributeValue( "IsBulk" ).AsBoolean();
+            }
+
             MediumControl control = LoadMediumControl( true );
             InitializeControl( control );
 
@@ -992,10 +999,10 @@ namespace RockWeb.Blocks.Communication
             string mediumName = string.Empty;
 
             // Get the current medium type
-            CacheEntityType entityType = null;
+            EntityTypeCache entityType = null;
             if ( MediumEntityTypeId.HasValue )
             {
-                entityType = CacheEntityType.Get( MediumEntityTypeId.Value );
+                entityType = EntityTypeCache.Get( MediumEntityTypeId.Value );
             }
 
             foreach ( var serviceEntry in MediumContainer.Instance.Components )
@@ -1053,12 +1060,12 @@ namespace RockWeb.Blocks.Communication
 
                     if ( htmlControl != null )
                     {
-                        if ( GetAttributeValue( "DocumentRootFolder" ).IsNotNullOrWhitespace() )
+                        if ( GetAttributeValue( "DocumentRootFolder" ).IsNotNullOrWhiteSpace() )
                         {
                             htmlControl.DocumentFolderRoot = GetAttributeValue( "DocumentRootFolder" );
                         }
 
-                        if ( GetAttributeValue( "ImageRootFolder" ).IsNotNullOrWhitespace() )
+                        if ( GetAttributeValue( "ImageRootFolder" ).IsNotNullOrWhiteSpace() )
                         {
                             htmlControl.ImageFolderRoot = GetAttributeValue( "ImageRootFolder" );
                         }
@@ -1419,11 +1426,22 @@ namespace RockWeb.Blocks.Communication
 
             nbResult.Text = message;
 
+            var communicationDateTime = communication.FutureSendDateTime.HasValue ?
+            communication.FutureSendDateTime.Value :
+            communication.CreatedDateTime.Value;
+            DateTime? dndEndingTime = null;
+            var isCommunicationInsideDND = Rock.Model.Communication.CheckCommunicationForDND( communicationDateTime, out dndEndingTime );
+            nbWarning.Visible = isCommunicationInsideDND;
+            if ( isCommunicationInsideDND )
+            {
+                nbWarning.Text = "Do not disturb is active and it's falling inside the DND window. It will only be sent once the DND window has passed";
+            }
+
             CurrentPageReference.Parameters.AddOrReplace( "CommunicationId", communication.Id.ToString() );
             hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();
 
             // only show the Link if there is a CommunicationDetail block type on this page
-            hlViewCommunication.Visible = this.CachePage.Blocks.Any( a => a.BlockType.Guid == Rock.SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() );
+            hlViewCommunication.Visible = this.PageCache.Blocks.Any( a => a.BlockType.Guid == Rock.SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() );
 
             pnlResult.Visible = true;
 

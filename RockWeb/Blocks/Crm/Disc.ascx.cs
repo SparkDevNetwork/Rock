@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rockweb.Blocks.Crm
@@ -137,7 +137,7 @@ namespace Rockweb.Blocks.Crm
             BindRepeater();
         }
 
-       
+
         /// <summary>
         /// Scores test, and displays results.
         /// </summary>
@@ -279,7 +279,7 @@ namespace Rockweb.Blocks.Crm
                 ListItem m2 = new ListItem();
                 ListItem m3 = new ListItem();
                 ListItem m4 = new ListItem();
-                m1.Text = m2.Text = m3.Text = m4.Text = "&nbsp;";
+                m1.Text = m2.Text = m3.Text = m4.Text = "<span class='sr-only'>Most</span>";
 
                 m1.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 0, 1 );
                 m2.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 1, 1 );
@@ -295,7 +295,7 @@ namespace Rockweb.Blocks.Crm
                 ListItem l2 = new ListItem();
                 ListItem l3 = new ListItem();
                 ListItem l4 = new ListItem();
-                l1.Text = l2.Text = l3.Text = l4.Text = "&nbsp;";
+                l1.Text = l2.Text = l3.Text = l4.Text = "<span class='sr-only'>Least</span>";
 
                 l1.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 0, 1 );
                 l2.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 1, 1 );
@@ -404,7 +404,7 @@ namespace Rockweb.Blocks.Crm
 
             // Show re-take test button if MinDaysToRetake has passed...
             double days = GetAttributeValue( "MinDaysToRetake" ).AsDouble();
-            if ( (savedScores.LastSaveDate.AddDays( days ) <= RockDateTime.Now) || GetAttributeValue( "AlwaysAllowRetakes" ).AsBoolean() ) 
+            if ( (savedScores.LastSaveDate.AddDays( days ) <= RockDateTime.Now) || GetAttributeValue( "AlwaysAllowRetakes" ).AsBoolean() )
             {
                 btnRetakeTest.Visible = true;
             }
@@ -421,7 +421,7 @@ namespace Rockweb.Blocks.Crm
         /// <param name="personalityType">The one or two letter personality type.</param>
         private void ShowExplaination( string personalityType )
         {
-            var personalityValue = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid() ).DefinedValues.Where( v => v.Value == personalityType ).FirstOrDefault();
+            var personalityValue = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid() ).DefinedValues.Where( v => v.Value == personalityType ).FirstOrDefault();
             if ( personalityValue != null )
             {
                 lDescription.Text = personalityValue.Description;

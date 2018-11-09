@@ -18,12 +18,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.Routing;
 using Newtonsoft.Json;
-
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Security;
 
@@ -39,7 +40,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "Page" )]
     [DataContract]
-    public partial class Page : Model<Page>, IOrdered
+    public partial class Page : Model<Page>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -396,7 +397,7 @@ namespace Rock.Model
         {
             get
             {
-                var layout = Cache.CacheLayout.Get( this.LayoutId );
+                var layout = LayoutCache.Get( this.LayoutId );
                 return layout != null ? layout.SiteId : 0;
             }
         }
@@ -532,6 +533,63 @@ namespace Rock.Model
         public override string ToString()
         {
             return PageTitle;
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        private int? _originalParentPageId;
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry, System.Data.Entity.EntityState state )
+        {
+            if ( state == System.Data.Entity.EntityState.Modified || state == System.Data.Entity.EntityState.Deleted )
+            {
+                _originalParentPageId = entry.OriginalValues["ParentPageId"]?.ToString().AsIntegerOrNull();
+            }
+
+            base.PreSaveChanges( dbContext, entry, state );
+        }
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return PageCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            var oldPageCache = PageCache.Get( this.Id, (RockContext)dbContext );
+            if ( oldPageCache != null )
+            {
+                oldPageCache.RemoveChildPages();
+            }
+
+            PageCache.UpdateCachedEntity( this.Id, entityState );
+
+            if ( this.ParentPageId.HasValue )
+            {
+                PageCache.UpdateCachedEntity( this.ParentPageId.Value, System.Data.Entity.EntityState.Detached );
+            }
+
+            if ( _originalParentPageId.HasValue && _originalParentPageId != this.ParentPageId )
+            {
+                PageCache.UpdateCachedEntity( _originalParentPageId.Value, System.Data.Entity.EntityState.Detached );
+            }
         }
 
         #endregion

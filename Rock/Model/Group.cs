@@ -26,7 +26,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Security;
@@ -45,7 +45,7 @@ namespace Rock.Model
 
     // Support Analytics Tables, but only for GroupType Family
     [Analytics( "GroupTypeId", "10", true, true )]
-    public partial class Group : Model<Group>, IOrdered, IHasActiveFlag, IRockIndexable
+    public partial class Group : Model<Group>, IOrdered, IHasActiveFlag, IRockIndexable, ICacheable
     {
         #region Entity Properties
 
@@ -177,7 +177,8 @@ namespace Rock.Model
         /// <value>
         /// The must meet requirements to add member.
         /// </value>
-        [Obsolete( "This no longer is functional. Please use GroupRequirement.MustMeetRequirementToAddMember instead." )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "This no longer is functional. Please use GroupRequirement.MustMeetRequirementToAddMember instead.", true )]
         [NotMapped]
         public bool? MustMeetRequirementsToAddMember { get; set; }
 
@@ -250,6 +251,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ArchivedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Group Status Id.  DefinedType depends on this group's <see cref="Rock.Model.GroupType.GroupStatusDefinedType"/>
+        /// </summary>
+        /// <value>
+        /// The status value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue]
+        public int? StatusValueId { get; set; }
 
         #endregion
 
@@ -441,7 +452,7 @@ namespace Rock.Model
             {
                 if ( this.GroupTypeId > 0 )
                 {
-                    CacheGroupType groupType = CacheGroupType.Get( this.GroupTypeId );
+                    GroupTypeCache groupType = GroupTypeCache.Get( this.GroupTypeId );
                     return groupType;
                 }
                 else
@@ -495,6 +506,7 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use HistoryChangeList instead" )]
         public virtual List<string> HistoryChanges { get; set; }
 
@@ -506,6 +518,15 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         public virtual History.HistoryChangeList HistoryChangeList { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the Group's status. DefinedType depends on this group's <see cref="Rock.Model.GroupType.GroupTypePurposeValue"/>
+        /// </summary>
+        /// <value>
+        /// A <see cref="DefinedValue"/> object representing the Group's status.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue StatusValue { get; set; }
 
         #endregion
 
@@ -520,7 +541,7 @@ namespace Rock.Model
         {
             var roleLimitWarnings = new StringBuilder();
             var group = this;
-            var groupType = CacheGroupType.Get( group.GroupTypeId );
+            var groupType = GroupTypeCache.Get( group.GroupTypeId );
             if ( groupType?.Roles != null && groupType.Roles.Any() )
             {
                 var groupMemberService = new GroupMemberService( new RockContext() );
@@ -575,7 +596,7 @@ namespace Rock.Model
             if ( !authorized && person != null && ( action == Authorization.VIEW || action == Authorization.MANAGE_MEMBERS || action == Authorization.EDIT ) )
             {
                 // Get the cached group type
-                var groupType = CacheGroupType.Get( this.GroupTypeId );
+                var groupType = GroupTypeCache.Get( this.GroupTypeId );
                 if ( groupType != null )
                 {
                     // For each occurrence of this person in this group, check to see if their role is valid
@@ -632,7 +653,8 @@ namespace Rock.Model
         /// <param name="personId">The person identifier.</param>
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
-        [Obsolete( "Use PersonMeetsGroupRequirements(rockContext, personId, groupRoleId) instead " )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use PersonMeetsGroupRequirements(rockContext, personId, groupRoleId) instead", true )]
         public IEnumerable<PersonGroupRequirementStatus> PersonMeetsGroupRequirements( int personId, int? groupRoleId )
         {
             using ( var rockContext = new RockContext() )
@@ -743,12 +765,21 @@ namespace Rock.Model
 
                         // manually set any attendance search group ids to null
                         var attendanceService = new AttendanceService( rockContext );
-                        foreach ( var attendance in attendanceService.Queryable()
+                        var attendancesToNullSearchResultGroupId = attendanceService.Queryable()
                             .Where( a =>
                                 a.SearchResultGroupId.HasValue &&
-                                a.SearchResultGroupId.Value == this.Id ) )
+                                a.SearchResultGroupId.Value == this.Id );
+
+                        dbContext.BulkUpdate( attendancesToNullSearchResultGroupId, a => new Attendance { SearchResultGroupId = null } );
+
+                        // since we can't put a CascadeDelete on both Attendance.Occurrence.GroupId and Attendance.OccurrenceId, manually delete all Attendance records associated with this GroupId
+                        var attendancesToDelete = attendanceService.Queryable()
+                            .Where( a =>
+                                a.Occurrence.GroupId.HasValue &&
+                                a.Occurrence.GroupId.Value == this.Id );
+                        if ( attendancesToDelete.Any() )
                         {
-                            attendance.SearchResultGroupId = null;
+                            dbContext.BulkDelete( attendancesToDelete );
                         }
 
                         break;
@@ -766,7 +797,7 @@ namespace Rock.Model
         {
             if ( HistoryChangeList != null && HistoryChangeList.Any() )
             {
-                HistoryService.SaveChanges( (RockContext)dbContext, typeof( Group ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(), this.Id, HistoryChangeList, this.Name, null, null,  true, this.ModifiedByPersonAliasId );
+                HistoryService.SaveChanges( (RockContext)dbContext, typeof( Group ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(), this.Id, HistoryChangeList, this.Name, null, null,  true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
             }
 
             base.PostSaveChanges( dbContext );
@@ -810,8 +841,8 @@ namespace Rock.Model
         /// <summary>
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
-        /// <returns>A list of all inherited CacheAttribute objects.</returns>
-        public override List<Cache.CacheAttribute> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        /// <returns>A list of all inherited AttributeCache objects.</returns>
+        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
             var groupType = this.GroupType;
             if ( groupType == null && this.GroupTypeId > 0 )
@@ -945,6 +976,62 @@ namespace Rock.Model
             return true;
         }
         #endregion
+
+        #region ICacheable
+
+        private int? _originalGroupTypeId;
+        private bool? _originalIsSecurityRole;
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
+        {
+            if ( state == System.Data.Entity.EntityState.Modified || state == System.Data.Entity.EntityState.Deleted )
+            {
+                _originalGroupTypeId = entry.OriginalValues["GroupTypeId"]?.ToString().AsIntegerOrNull();
+                _originalIsSecurityRole = entry.OriginalValues["IsSecurityRole"]?.ToString().AsBooleanOrNull();
+            }
+
+            base.PreSaveChanges( dbContext, entry, state );
+        }
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            // doesn't apply
+            return null;
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            // If the group changed, and it was a security group, flush the security for the group
+            Guid? originalGroupTypeGuid = null;
+            Guid groupTypeScheduleRole = Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
+            if ( _originalGroupTypeId.HasValue && _originalGroupTypeId != this.GroupTypeId )
+            {
+                originalGroupTypeGuid = GroupTypeCache.Get( _originalGroupTypeId.Value, (RockContext)dbContext )?.Guid;
+            }
+
+            var groupTypeGuid = GroupTypeCache.Get( this.GroupTypeId, (RockContext)dbContext )?.Guid;
+            if ( this.IsSecurityRole || ( _originalIsSecurityRole == true ) || ( groupTypeGuid == groupTypeScheduleRole ) || ( originalGroupTypeGuid == groupTypeScheduleRole ) )
+            {
+                RoleCache.FlushItem( this.Id );
+            }
+        }
+
+        #endregion
     }
 
     #region Entity Configuration
@@ -965,6 +1052,7 @@ namespace Rock.Model
             this.HasOptional( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RequiredSignatureDocumentTemplate ).WithMany().HasForeignKey( p => p.RequiredSignatureDocumentTemplateId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ArchivedByPersonAlias ).WithMany().HasForeignKey( p => p.ArchivedByPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.StatusValue ).WithMany().HasForeignKey( p => p.StatusValueId ).WillCascadeOnDelete( false );
 
             // Tell EF that we never want archived groups. 
             // This will prevent archived members from being included in any Groupqueries.

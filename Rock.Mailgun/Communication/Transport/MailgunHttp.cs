@@ -30,7 +30,7 @@ using RestSharp;
 using RestSharp.Authenticators;
 
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
@@ -104,7 +104,7 @@ namespace Rock.Communication.Transport
                 return !errorMessages.Any();
             }
 
-            var globalAttributes = CacheGlobalAttributes.Get();
+            var globalAttributes = GlobalAttributesCache.Get();
 
             string fromAddress = emailMessage.FromEmail.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationEmail" ) : emailMessage.FromEmail;
             string fromName = emailMessage.FromName.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationName" ) : emailMessage.FromName;
@@ -135,7 +135,7 @@ namespace Rock.Communication.Transport
                     restRequest.AddParameter( "domian", GetAttributeValue("Domain"), ParameterType.UrlSegment );
 
                     // Reply To
-                    if ( emailMessage.ReplyToEmail.IsNotNullOrWhitespace() )
+                    if ( emailMessage.ReplyToEmail.IsNotNullOrWhiteSpace() )
                     {
                         // Resolve any possible merge fields in the replyTo address
                         restRequest.AddParameter( "h:Reply-To", emailMessage.ReplyToEmail.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ) );
@@ -257,7 +257,7 @@ namespace Rock.Communication.Transport
                     .Queryable().Include( a => a.CreatedByPersonAlias.Person ).Include( a => a.CommunicationTemplate )
                     .FirstOrDefault( c => c.Id == communication.Id );
 
-                // If there are no pending recipents than just exit the method
+                // If there are no pending recipients than just exit the method
                 if ( communication != null &&
                     communication.Status == Model.CommunicationStatus.Approved &&
                     ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
@@ -276,7 +276,7 @@ namespace Rock.Communication.Transport
                 }
 
                 var currentPerson = communication.CreatedByPersonAlias?.Person;
-                var globalAttributes = CacheGlobalAttributes.Get();
+                var globalAttributes = GlobalAttributesCache.Get();
                 string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
                 var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
                 var cssInliningEnabled = communication.CommunicationTemplate?.CssInliningEnabled ?? false;
@@ -290,20 +290,20 @@ namespace Rock.Communication.Transport
                 Parameter replyTo = new Parameter();
                 
                 // Reply To
-                if ( communication.ReplyToEmail.IsNotNullOrWhitespace() )
+                if ( communication.ReplyToEmail.IsNotNullOrWhiteSpace() )
                 {
                     // Resolve any possible merge fields in the replyTo address
                     replyTo.Name = "h:Reply-To";
                     replyTo.Value = communication.ReplyToEmail.ResolveMergeFields( mergeFields, currentPerson );
                 }
 
-                var personEntityTypeId = CacheEntityType.Get( "Rock.Model.Person" ).Id;
-                var communicationEntityTypeId = CacheEntityType.Get( "Rock.Model.Communication" ).Id;
+                var personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
+                var communicationEntityTypeId = EntityTypeCache.Get( "Rock.Model.Communication" ).Id;
                 var communicationCategoryGuid = Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid();
 
                 RestRequest restRequest = null;
 
-                // Loop through receipents and send the email
+                // Loop through recipients and send the email
                 bool recipientFound = true;
                 while ( recipientFound )
                 {
@@ -334,7 +334,7 @@ namespace Rock.Communication.Transport
                         restRequest.AddParameter( "domian", GetAttributeValue( "Domain" ), ParameterType.UrlSegment );
 
                         // ReplyTo
-                        if ( communication.ReplyToEmail.IsNotNullOrWhitespace() )
+                        if ( communication.ReplyToEmail.IsNotNullOrWhiteSpace() )
                         {
                             restRequest.AddParameter( replyTo );
                         }
@@ -349,7 +349,7 @@ namespace Rock.Communication.Transport
                         CheckSafeSender( restRequest, fromAddress, globalAttributes.GetValue( "OrganizationEmail" ) );
 
                         // CC
-                        if ( communication.CCEmails.IsNotNullOrWhitespace() )
+                        if ( communication.CCEmails.IsNotNullOrWhiteSpace() )
                         {
                             string ccRecipients = communication.CCEmails.ResolveMergeFields( mergeObjects, currentPerson );
                             foreach ( var ccRecipient in ccRecipients )
@@ -359,7 +359,7 @@ namespace Rock.Communication.Transport
                         }
 
                         // BCC
-                        if ( communication.BCCEmails.IsNotNullOrWhitespace() )
+                        if ( communication.BCCEmails.IsNotNullOrWhiteSpace() )
                         {
                             string bccRecipients = communication.CCEmails.ResolveMergeFields( mergeObjects, currentPerson );
                             foreach ( var bccRecipient in bccRecipients )
@@ -523,7 +523,7 @@ namespace Rock.Communication.Transport
             List<string> toEmailAddresses = restRequest.Parameters.Where( p => p.Name == "to" ).Select( p => p.Value.ToString() ).ToList();
 
             // Get the safe sender domains
-            var safeDomainValues = CacheDefinedType.Get( SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues;
+            var safeDomainValues = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues;
             var safeDomains = safeDomainValues.Select( v => v.Value ).ToList();
 
             // Check to make sure the From email domain is a safe sender, if so then we are done.
@@ -533,7 +533,7 @@ namespace Rock.Communication.Transport
                 return;
             }
 
-            // The sender domain is not considered safe so check all the recipeients to see if they have a domain that does not requrie a safe sender
+            // The sender domain is not considered safe so check all the recipients to see if they have a domain that does not requrie a safe sender
             bool unsafeToDomain = false;
 
             foreach ( var toEmailAddress in toEmailAddresses )
@@ -603,10 +603,11 @@ namespace Rock.Communication.Transport
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        [Obsolete( "Use Send( Communication communication, Dictionary<string, string> mediumAttributes ) instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use Send( Communication communication, Dictionary<string, string> mediumAttributes ) instead", true )]
         public override void Send( Rock.Model.Communication communication )
         {
-            int mediumEntityId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            int mediumEntityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
             Send( communication, mediumEntityId, null );
         }
 
@@ -617,7 +618,8 @@ namespace Rock.Communication.Transport
         /// <param name="recipients">The recipients.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public override void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot )
         {
             Send( template, recipients, appRoot, themeRoot, false );
@@ -631,7 +633,8 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot, bool createCommunicationHistory )
         {
             var message = new RockEmailMessage();
@@ -648,7 +651,7 @@ namespace Rock.Communication.Transport
             message.CreateCommunicationRecord = createCommunicationHistory;
 
             var errorMessages = new List<string>();
-            int mediumEntityId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            int mediumEntityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
             Send( message, mediumEntityId, null, out errorMessages );
         }
 
@@ -659,7 +662,8 @@ namespace Rock.Communication.Transport
         /// <param name="recipients">The recipients.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public override void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot )
         {
             Send( mediumData, recipients, appRoot, themeRoot, true );
@@ -673,7 +677,8 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot, bool createCommunicationHistory )
         {
             Send( mediumData, recipients, appRoot, themeRoot, createCommunicationHistory, null );
@@ -688,7 +693,8 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
         /// <param name="metaData">The meta data.</param>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot, bool createCommunicationHistory, Dictionary<string, string> metaData )
         {
             var message = new RockEmailMessage();
@@ -703,7 +709,7 @@ namespace Rock.Communication.Transport
             message.MessageMetaData = metaData;
 
             var errorMessages = new List<string>();
-            int mediumEntityId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            int mediumEntityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
             Send( message, mediumEntityId, null, out errorMessages );
         }
 
@@ -716,7 +722,8 @@ namespace Rock.Communication.Transport
         /// <param name="body">The body.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null )
         {
             Send( recipients, from, string.Empty, subject, body, appRoot, themeRoot, null );
@@ -732,7 +739,8 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">Attachments.</param>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
         {
             Send( recipients, from, string.Empty, subject, body, appRoot, themeRoot, attachments );
@@ -749,7 +757,8 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">Attachments.</param>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public override void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
         {
             Send( recipients, from, fromName, subject, body, appRoot, themeRoot, attachments, true );
@@ -767,7 +776,8 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">Attachments.</param>
         /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot, string themeRoot, List<Attachment> attachments, bool createCommunicationHistory )
         {
             var message = new RockEmailMessage();
@@ -789,7 +799,7 @@ namespace Rock.Communication.Transport
             }
 
             var errorMessages = new List<string>();
-            int mediumEntityId = CacheEntityType.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            int mediumEntityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
             Send( message, mediumEntityId, null, out errorMessages );
         }
 

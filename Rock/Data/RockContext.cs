@@ -28,6 +28,7 @@ namespace Rock.Data
     /// <summary>
     /// Helper class to set view cache
     /// </summary>
+    [RockObsolete( "1.8" )]
     [Obsolete( "Does nothing. No longer needed," )]
     public static class RockInteractiveViews
     {
@@ -35,6 +36,7 @@ namespace Rock.Data
         /// Sets the view factory.
         /// </summary>
         /// <param name="path">The path.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete("Does nothing. No longer needed,")]
         public static void SetViewFactory( string path )
         {
@@ -46,53 +48,6 @@ namespace Rock.Data
     /// </summary>
     public class RockContext : Rock.Data.DbContext
     {
-        //private const string APP_LOG_FILENAME = "RockContext";
-        //private static string _filePath = string.Empty;
-        //private static object _threadlock;
-
-        //private string _contextId = string.Empty;
-
-        //static RockContext()
-        //{
-        //    string directory = AppDomain.CurrentDomain.BaseDirectory;
-        //    directory = Path.Combine( directory, "App_Data", "Logs" );
-
-        //    if ( !Directory.Exists( directory ) )
-        //    {
-        //        Directory.CreateDirectory( directory );
-        //    }
-
-        //    _filePath = Path.Combine( directory, APP_LOG_FILENAME + ".csv" );
-
-        //    _threadlock = new object();
-        //}
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RockContext"/> class.
-        /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-        public RockContext() : base()
-        {
-            //try
-            //{
-            //    _contextId = DateTime.Now.Ticks.ToString();
-
-            //    var frames = new System.Diagnostics.StackTrace().GetFrames();
-
-            //    var sb = new System.Text.StringBuilder();
-            //    for ( int i = 1; i < frames.Length; i++ )
-            //    {
-            //        var method = frames[i].GetMethod();
-            //        sb.AppendFormat( "{0}:{1}", method.DeclaringType.Name, method.Name );
-            //        sb.Append( "; " );
-            //    }
-
-            //    LogMessage( _contextId, sb.ToString() );
-            //}
-            //catch { }
-        }
-
-
         /// <summary>
         /// Initializes a new instance of the <see cref="RockContext"/> class.
         /// Use this if you need to specify a connection string other than the default
@@ -100,6 +55,14 @@ namespace Rock.Data
         /// <param name="nameOrConnectionString">Either the database name or a connection string.</param>
         public RockContext( string nameOrConnectionString )
             : base( nameOrConnectionString )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockContext"/> class.
+        /// </summary>
+        public RockContext()
+            : base()
         {
         }
 
@@ -152,7 +115,7 @@ namespace Rock.Data
         /// The analytics dim family historicals.
         /// </value>
         public DbSet<AnalyticsDimFamilyHistorical> AnalyticsDimFamilyHistoricals { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the analytics dim financial accounts.
         /// </summary>
@@ -200,7 +163,7 @@ namespace Rock.Data
         /// The analytics fact financial transactions.
         /// </value>
         public DbSet<AnalyticsFactFinancialTransaction> AnalyticsFactFinancialTransactions { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the analytics source financial transactions.
         /// </summary>
@@ -242,6 +205,14 @@ namespace Rock.Data
         public DbSet<AnalyticsSourcePersonHistorical> AnalyticsSourcePersonHistoricals { get; set; }
 
         /// <summary>
+        /// Gets or sets the asset storage providers.
+        /// </summary>
+        /// <value>
+        /// The asset storage providers.
+        /// </value>
+        public DbSet<AssetStorageProvider> AssetStorageProviders { get; set; }
+
+        /// <summary>
         /// Gets or sets the attendances.
         /// </summary>
         /// <value>
@@ -256,6 +227,14 @@ namespace Rock.Data
         /// The attendance codes.
         /// </value>
         public DbSet<AttendanceCode> AttendanceCodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attendance occurrences.
+        /// </summary>
+        /// <value>
+        /// The attendance occurrences.
+        /// </value>
+        public DbSet<AttendanceOccurrence> AttendanceOccurrences { get; set; }
 
         /// <summary>
         /// Gets or sets the attribute matrices.
@@ -367,8 +346,8 @@ namespace Rock.Data
         /// <value>
         /// the Benevolence Results.
         /// </value>
-        public DbSet<BenevolenceResult> BenevolenceResults { get; set; }      
-        
+        public DbSet<BenevolenceResult> BenevolenceResults { get; set; }
+
         /// <summary>
         /// Gets or sets the Files.
         /// </summary>
@@ -560,7 +539,7 @@ namespace Rock.Data
         /// The connection workflows.
         /// </value>
         public DbSet<ConnectionWorkflow> ConnectionWorkflows { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the content channels.
         /// </summary>
@@ -584,6 +563,14 @@ namespace Rock.Data
         /// The content channel item associations.
         /// </value>
         public DbSet<ContentChannelItemAssociation> ContentChannelItemAssociations { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content channel item slugs.
+        /// </summary>
+        /// <value>
+        /// The content channel item slugs.
+        /// </value>
+        public DbSet<ContentChannelItemSlug> ContentChannelItemSlugs { get; set; }
 
         /// <summary>
         /// Gets or sets the content channel types.
@@ -882,10 +869,10 @@ namespace Rock.Data
         public DbSet<FollowingEventType> FollowingEventTypes { get; set; }
 
         /// <summary>
-        /// Gets or sets the following suggesteds.
+        /// Gets or sets the following suggestions.
         /// </summary>
         /// <value>
-        /// The following suggesteds.
+        /// The following suggestions.
         /// </value>
         public DbSet<FollowingSuggested> FollowingSuggesteds { get; set; }
 
@@ -896,7 +883,7 @@ namespace Rock.Data
         /// The following suggestion types.
         /// </value>
         public DbSet<FollowingSuggestionType> FollowingSuggestionTypes { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Groups.
         /// </summary>
@@ -984,7 +971,7 @@ namespace Rock.Data
         /// The group requirement types.
         /// </value>
         public DbSet<GroupRequirementType> GroupRequirementTypes { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the group schedule exclusions.
         /// </summary>
@@ -1218,12 +1205,28 @@ namespace Rock.Data
         public DbSet<Note> Notes { get; set; }
 
         /// <summary>
+        /// Gets or sets the note attachments.
+        /// </summary>
+        /// <value>
+        /// The note attachments.
+        /// </value>
+        public DbSet<NoteAttachment> NoteAttachments { get; set; }
+
+        /// <summary>
         /// Gets or sets the note types.
         /// </summary>
         /// <value>
         /// The note types.
         /// </value>
         public DbSet<NoteType> NoteTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the note watches.
+        /// </summary>
+        /// <value>
+        /// The note watches.
+        /// </value>
+        public DbSet<NoteWatch> NoteWatches { get; set; }
 
         /// <summary>
         /// Gets or sets the notifications.
@@ -1328,6 +1331,14 @@ namespace Rock.Data
         /// the Person Vieweds.
         /// </value>
         public DbSet<PersonViewed> PersonVieweds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person search keys.
+        /// </summary>
+        /// <value>
+        /// The person search keys.
+        /// </value>
+        public DbSet<PersonSearchKey> PersonSearchKeys { get; set; }
 
         /// <summary>
         /// Gets or sets the person tokens.
@@ -1480,6 +1491,14 @@ namespace Rock.Data
         /// The schedules.
         /// </value>
         public DbSet<Schedule> Schedules { get; set; }
+
+        /// <summary>
+        /// Gets or sets the service job histories.
+        /// </summary>
+        /// <value>
+        /// The service job histories.
+        /// </value>
+        public DbSet<ServiceJobHistory> ServiceJobHistories { get; set; }
 
         /// <summary>
         /// Gets or sets the Jobs.
@@ -1712,13 +1731,27 @@ namespace Rock.Data
 
                 foreach ( var entityType in entityTypeList )
                 {
-                    modelBuilder.RegisterEntityType( entityType );
+                    try
+                    {
+                        modelBuilder.RegisterEntityType( entityType );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( new Exception( $"Exception occurred when Registering Entity Type {entityType} to RockContext", ex ), null );
+                    }
                 }
 
                 // add configurations that might be in plugin assemblies
                 foreach ( var assembly in entityTypeList.Select( a => a.Assembly ).Distinct() )
                 {
-                    modelBuilder.Configurations.AddFromAssembly( assembly );
+                    try
+                    {
+                        modelBuilder.Configurations.AddFromAssembly( assembly );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( new Exception( $"Exception occurred when adding Plugin Entity Configurations from {assembly} to RockContext", ex ), null );
+                    }
                 }
             }
             catch ( Exception ex )
@@ -1726,38 +1759,6 @@ namespace Rock.Data
                 ExceptionLogService.LogException( new Exception( "Exception occurred when adding Plugin Entities to RockContext", ex ), null );
             }
         }
-
-        ///// <summary>
-        ///// Disposes the context. The underlying <see cref="T:System.Data.Entity.Core.Objects.ObjectContext" /> is also disposed if it was created
-        ///// is by this context or ownership was passed to this context when this context was created.
-        ///// The connection to the database (<see cref="T:System.Data.Common.DbConnection" /> object) is also disposed if it was created
-        ///// is by this context or ownership was passed to this context when this context was created.
-        ///// </summary>
-        ///// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        //protected override void Dispose( bool disposing )
-        //{
-        //    LogMessage( _contextId, "Disposed" );
-        //    base.Dispose( disposing );
-        //}
-
-        ///// <summary>
-        ///// Logs the message.
-        ///// </summary>
-        ///// <param name="contextId">The context identifier.</param>
-        ///// <param name="message">The message.</param>
-        //private static void LogMessage( string contextId, string message )
-        //{
-        //    try
-        //    {
-        //        lock ( _threadlock )
-        //        {
-        //            string when = RockDateTime.Now.ToString();
-        //            File.AppendAllText( _filePath, string.Format( "{0},{1},{2}\r\n", contextId, when, message ) );
-        //        }
-        //    }
-        //    catch { }
-        //}
-
     }
 
     /// <summary>

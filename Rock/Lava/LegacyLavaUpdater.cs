@@ -28,7 +28,7 @@ using Rock.Model;
 namespace Rock.Lava
 {
     /// <summary>
-    /// Finds and updatges legacy lava
+    /// Finds and updates legacy lava
     /// </summary>
     public class LegacyLavaUpdater
     {
@@ -59,7 +59,10 @@ namespace Rock.Lava
                 CheckHtmlContent();
                 CheckAttributeValue();
                 CheckAttribute();
-                CheckCommunicationTemplate();
+
+                // Made Obsolete in 1.7, and will be removed in 1.10
+                // CheckCommunicationTemplate();
+
                 CheckSystemEmail();
                 CheckWorkflowActionFormAttribute();
                 CheckWorkflowActionForm();
@@ -127,7 +130,7 @@ namespace Rock.Lava
         /// Outputs to text.
         /// </summary>
         /// <param name="fileName">Name of the file.</param>
-        /// <param name="fileContnets">The file contnets.</param>
+        /// <param name="fileContnets">The file contents.</param>
         public void OutputToText(string fileName, string fileContnets)
         {
             System.IO.File.WriteAllText( $"C:\\temp\\LegacyLavaUpdater_{fileName}_{DateTime.Now.ToString( "yyyyMMdd-HHmmss" )}.txt", fileContnets );
@@ -161,7 +164,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Updates all occurrances of GlobalAttribute legacy lava for the string
+        /// Updates all occurrences of GlobalAttribute legacy lava for the string
         /// </summary>
         /// <param name="lavaText">The lava text.</param>
         /// <param name="isUpdated">if set to <c>true</c> [is updated].</param>
@@ -405,6 +408,8 @@ namespace Rock.Lava
         /// Checks CommunicationTemplate model for legacy lava and outputs SQL to correct it.
         /// Fields evaluated: MediumDataJson Subject
         /// </summary>
+        [RockObsolete( "1.7" )]
+        [Obsolete( "The Communication.MediumDataJson and CommunicationTemplate.MediumDataJson fields will be removed in Rock 1.10" )]
         public void CheckCommunicationTemplate()
         {
             #pragma warning disable 0618

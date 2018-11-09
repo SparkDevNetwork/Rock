@@ -26,6 +26,7 @@ using Rock.Rest.Filters;
 using Rock.Web.UI.Controls;
 using System.Net;
 using System;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -45,7 +46,7 @@ namespace Rock.Rest.Controllers
         public Rock.Model.Workflow WorkflowEntry( int workflowTypeId )
         {
             var rockContext = new Rock.Data.RockContext();
-            var workflowType = Cache.CacheWorkflowType.Get( workflowTypeId );
+            var workflowType = WorkflowTypeCache.Get( workflowTypeId );
 
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {

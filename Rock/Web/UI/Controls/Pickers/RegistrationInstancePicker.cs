@@ -25,7 +25,7 @@ using Rock.Data;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Control that can be used to select a Registation template and then a instance of that registration instance
+    /// Control that can be used to select a Registration template and then a instance of that registration instance
     /// </summary>
     public class RegistrationInstancePicker : CompositeControl, IRockControl
     {
@@ -233,7 +233,7 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
-        /// Gets or sets the registation template id.
+        /// Gets or sets the registration template id.
         /// </summary>
         /// <value>
         /// The registration template id.

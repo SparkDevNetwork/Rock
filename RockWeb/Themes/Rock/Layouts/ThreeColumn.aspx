@@ -15,7 +15,7 @@
         var rockPage = this.Page as Rock.Web.UI.RockPage;
         if (rockPage != null)
         {
-            var pageCache = Rock.Cache.CachePage.Get( rockPage.PageId );
+            var pageCache = Rock.Web.Cache.PageCache.Get( rockPage.PageId );
             if (pageCache != null )
             {
                 if (pageCache.PageDisplayTitle == false || string.IsNullOrWhiteSpace( rockPage.PageTitle ) )
@@ -31,18 +31,18 @@
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
     <main class="container">
-                
+
         <!-- Start Content Area -->
-        
+
         <!-- Page Title -->
         <section id="secPageTitle" class="page-title" runat="server">
             <Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1>
             <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
             <Rock:PageDescription ID="PageDescription" runat="server" />
         </section>
-                    
+
         <!-- Ajax Error -->
-        <div class="alert alert-danger ajax-error" style="display:none">
+        <div class="alert alert-danger ajax-error no-index" style="display:none">
             <p><strong>Error</strong></p>
             <span class="ajax-error-message"></span>
         </div>

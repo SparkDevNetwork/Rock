@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -59,7 +59,7 @@ namespace Rock.Workflow.Action
                 Guid guid = GetAttributeValue( action, "Attribute" ).AsGuid();
                 if ( !guid.IsEmpty() )
                 {
-                    var attribute = CacheAttribute.Get( guid, rockContext );
+                    var attribute = AttributeCache.Get( guid, rockContext );
                     if ( attribute != null )
                     {
                         // If a lava template was specified, use that to set the attribute value
@@ -74,7 +74,7 @@ namespace Rock.Workflow.Action
                         else
                         {
                             // Person is handled special since it needs the person alias id
-                            if ( entity is Person && attribute.FieldTypeId == CacheFieldType.Get( SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id )
+                            if ( entity is Person && attribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id )
                             {
                                 var person = (Person)entity;
 
@@ -86,7 +86,7 @@ namespace Rock.Workflow.Action
                                 }
                                 else
                                 {
-                                    errorMessages.Add( "Could not determine person primary alias!" );
+                                    errorMessages.Add( "Person Entity: Could not determine person's primary alias. PersonId=" + person.Id );
                                 }
                             }
                             else
@@ -106,12 +106,12 @@ namespace Rock.Workflow.Action
                     }
                     else
                     {
-                        errorMessages.Add( "Invalid attribute!" );
+                        errorMessages.Add( "Unable to find the attribute from the attribute GUID=" + guid.ToStringSafe() );
                     }
                 }
                 else
                 {
-                    errorMessages.Add( "Invalid attribute!" );
+                    errorMessages.Add( "Unable to find the attribute GUID." );
                 }
             }
             else
@@ -121,7 +121,7 @@ namespace Rock.Workflow.Action
                     return true;
                 }
 
-                errorMessages.Add( "The entity is null or not a Rock IEntity." );
+                errorMessages.Add( "No entity was specified or the entity is not a Rock Entity." );
             }
 
             errorMessages.ForEach( m => action.AddLogEntry( m, true ) );

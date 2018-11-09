@@ -23,7 +23,7 @@ using Quartz;
 
 using Rock.Model;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -35,7 +35,7 @@ namespace Rock.Jobs
     public class ProcessWorkflows : IJob
     {
         /// <summary> 
-        /// Empty constructor for job initilization
+        /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
         /// scheduler can instantiate the class whenever it needs.
@@ -63,7 +63,7 @@ namespace Rock.Jobs
             int workflowsProcessed = 0;
             int workflowErrors = 0;
             int workflowExceptions = 0;
-            var ProcessingErrors = new List<string>();
+            var processingErrors = new List<string>();
             var exceptionMsgs = new List<string>();
 
             foreach ( var workflowId in new WorkflowService( new RockContext() )
@@ -79,7 +79,7 @@ namespace Rock.Jobs
                     var workflow = workflowService.Queryable().FirstOrDefault( a => a.Id == workflowId );
                     if ( workflow != null )
                     {
-                        var workflowType = workflow.CacheWorkflowType;
+                        var workflowType = workflow.WorkflowTypeCache;
                         if ( workflowType != null )
                         {
                             try
@@ -97,7 +97,7 @@ namespace Rock.Jobs
                                     else
                                     {
                                         workflowErrors++;
-                                        ProcessingErrors.Add( string.Format( "{0} [{1}] - {2} [{3}]: {4}", workflowType.Name, workflowType.Id, workflow.Name, workflow.Id, errorMessages.AsDelimited( ", " ) ) );
+                                        processingErrors.Add( string.Format( "{0} [{1}] - {2} [{3}]: {4}", workflowType.Name, workflowType.Id, workflow.Name, workflow.Id, errorMessages.AsDelimited( ", " ) ) );
                                     }
                                 }
                             }
@@ -128,9 +128,9 @@ namespace Rock.Jobs
             {
                 resultMsg.AppendFormat( ", {0} workflows caused an exception", workflowExceptions );
             }
-            if ( ProcessingErrors.Any() )
+            if ( processingErrors.Any() )
             {
-                resultMsg.Append( Environment.NewLine + ProcessingErrors.AsDelimited( Environment.NewLine ) );
+                resultMsg.Append( Environment.NewLine + processingErrors.AsDelimited( Environment.NewLine ) );
             }
 
             if ( exceptionMsgs.Any() )

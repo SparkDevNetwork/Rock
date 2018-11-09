@@ -42,7 +42,8 @@ namespace Rock.Model
         /// <param name="recipientStatus">The recipient status.</param>
         /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
         /// <returns></returns>
-        [Obsolete( "Use method without textMessage argument")]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use method without textMessage argument", true )]
         public Communication CreateEmailCommunication
         (
             List<string> recipientEmails,
@@ -72,7 +73,8 @@ namespace Rock.Model
         /// <param name="recipientStatus">The recipient status.</param>
         /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
         /// <returns></returns>
-        [Obsolete( "Use method with send date time argument" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use method with send date time argument", true )]
         public Communication CreateEmailCommunication
         (
             List<string> recipientEmails,
@@ -165,31 +167,63 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Gets the queued communications
+        /// Gets the queued communications.
         /// </summary>
         /// <param name="expirationDays">The expiration days.</param>
         /// <param name="delayMinutes">The delay minutes.</param>
         /// <param name="includeFuture">if set to <c>true</c> [include future].</param>
-        /// <param name="includePending">if set to <c>true</c> [include pending].</param>
+        /// <param name="includePendingApproval">if set to <c>true</c> communications that haven't been approved yet will be included.</param>
         /// <returns></returns>
-        public IQueryable<Communication> GetQueued( int expirationDays, int delayMinutes, bool includeFuture, bool includePending )
+        public IQueryable<Communication> GetQueued( int expirationDays, int delayMinutes, bool includeFuture, bool includePendingApproval )
         {
             var beginWindow = RockDateTime.Now.AddDays( 0 - expirationDays );
             var endWindow = RockDateTime.Now.AddMinutes( 0 - delayMinutes );
-            var nowDate = RockDateTime.Now;
+            var currentDateTime = RockDateTime.Now;
 
-            var qryPendingRecipients = new CommunicationRecipientService( (RockContext)Context )
+            // Conditions for communications that should be queued for Sending (indicated by includeFuture == false and includePending == false)
+            // -  communications that haven't been sent yet (SendDateTime is null)
+            // -  communication is approved (or includePendingApproval == false)
+            // - FutureSendDateTime is not set (not scheduled), and communication was created within a reasonable window based on expiration days (for example, no older than 3 days ago)
+            //   - OR - FutureSendDateTime IS set (scheduled), and the FutureSendDateTime is Now (or within the expiration window)
+
+            // Limit to communications that haven't been sent yet
+            var queuedQry = Queryable().Where( c => !c.SendDateTime.HasValue);
+
+            var qryPendingRecipients = new CommunicationRecipientService( ( RockContext ) Context )
                 .Queryable()
                 .Where( a => a.Status == CommunicationRecipientStatus.Pending );
 
-            return Queryable()
-                .Where( c =>
-                    ( c.Status == CommunicationStatus.Approved || ( includePending && c.Status == CommunicationStatus.PendingApproval ) ) &&
-                    (
-                        ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value.CompareTo( beginWindow ) >= 0 && c.CreatedDateTime.Value.CompareTo( endWindow ) <= 0 ) ||
-                        ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) >= 0 && ( includeFuture || c.FutureSendDateTime.Value.CompareTo( nowDate ) <= 0 ) ) 
-                    ) &&
-                    ( c.ListGroupId.HasValue || qryPendingRecipients.Any( r => r.CommunicationId == c.Id ) ) );
+            if ( includePendingApproval )
+            {
+                // Also limit to communications that are Approved or Pending Approval
+                queuedQry = queuedQry.Where( c => c.Status == CommunicationStatus.Approved || c.Status == CommunicationStatus.PendingApproval );
+            }
+            else
+            {
+                // Also limit to communications that are Approved 
+                queuedQry = queuedQry.Where( c => c.Status == CommunicationStatus.Approved );
+            }
+
+            if ( includeFuture )
+            {
+                // Also limit to communications that have either been created within a reasonable timeframe (typically no older than 3 days ago) or are Scheduled to be sent at some point
+                queuedQry = queuedQry.Where( c =>
+                    ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value >= beginWindow && c.CreatedDateTime.Value <= endWindow )
+                    || ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value >= beginWindow ) );
+            }
+            else
+            {
+                // Also limit to communications that have either been created within a reasonable timeframe (typically no older than 3 days ago)
+                // or are Scheduled to be sent (also within that reasonable timeframe. In other words, if it was scheduled to be sent, but stil hasn't been sent 3 days after it was scheduled, don't include it)
+                queuedQry = queuedQry.Where( c =>
+                    ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value >= beginWindow && c.CreatedDateTime.Value <= endWindow )
+                    || ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value >= beginWindow && c.FutureSendDateTime.Value <= currentDateTime ) );
+            }
+
+            // just in case SendDateTime is null (pre-v8 communication), also limit to communications that either have a ListGroupId or has PendingRecipients
+            queuedQry = queuedQry.Where( c => c.ListGroupId.HasValue || qryPendingRecipients.Any( r => r.CommunicationId == c.Id ) );
+
+            return queuedQry;
         }
 
     }

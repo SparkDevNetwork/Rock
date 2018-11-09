@@ -16,7 +16,7 @@
 //
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System;
 
 namespace Rock.Utility
@@ -24,9 +24,9 @@ namespace Rock.Utility
     /// <summary>
     /// Serializes only the specified fields depending on the LoadAttributes parameter of a REST call
     /// if the parameter value is 'simple' or True, only the specified fields will be specified
-    /// if the paremter value is 'expanded', the object will be serialized normally
+    /// if the parameter value is 'expanded', the object will be serialized normally
     /// </summary>
-    public class AttributeCacheJsonConverter : SimpleModeJsonConverter<CacheAttribute>
+    public class AttributeCacheJsonConverter : SimpleModeJsonConverter<AttributeCache>
     {
         /// <summary>
         /// Gets the properties to serialize in simple mode.
@@ -76,11 +76,11 @@ namespace Rock.Utility
             var target = Create( objectType, jsonObject );
             serializer.Populate( jsonObject.CreateReader(), target );
 
-            var attributeCache = target as CacheAttribute;
+            var attributeCache = target as AttributeCache;
 
             if ( deserializeInSimpleMode && attributeCache != null && attributeCache.Id > 0 )
             {
-                return CacheAttribute.Get( attributeCache.Id );
+                return AttributeCache.Get( attributeCache.Id );
             }
 
             return attributeCache;
@@ -88,7 +88,7 @@ namespace Rock.Utility
 
         private object Create( Type objectType, JObject jsonObject )
         {
-            return new CacheAttribute();
+            return new AttributeCache();
         }
     }
 }

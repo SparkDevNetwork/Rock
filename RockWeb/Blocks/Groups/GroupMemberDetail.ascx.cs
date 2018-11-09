@@ -29,7 +29,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 using Newtonsoft.Json.Linq;
@@ -92,7 +92,8 @@ namespace RockWeb.Blocks.Groups
                 {
                     groupMember.LoadAttributes();
                     phAttributes.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, false, BlockValidationGroup );
+                    var excludeForEdit = groupMember.Attributes.Where( a => !a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+                    Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, false, BlockValidationGroup, excludeForEdit );
                 }
             }
         }
@@ -123,7 +124,7 @@ namespace RockWeb.Blocks.Groups
                 GroupMember groupMember = new GroupMemberService( new RockContext() ).Get( groupMemberId.Value );
                 if ( groupMember != null )
                 {
-                    var parentPageReference = PageReference.GetParentPageReferences( this.RockPage, this.CachePage, pageReference ).LastOrDefault();
+                    var parentPageReference = PageReference.GetParentPageReferences( this.RockPage, this.PageCache, pageReference ).LastOrDefault();
 
                     if ( parentPageReference != null )
                     {
@@ -458,11 +459,6 @@ namespace RockWeb.Blocks.Groups
                 } );
 
                 groupMember.CalculateRequirements( rockContext, true );
-
-                if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-                {
-                    Rock.Cache.CacheRole.Remove( group.Id );
-                }
             }
 
             return true;
@@ -757,19 +753,28 @@ namespace RockWeb.Blocks.Groups
             }
 
             groupMember.LoadAttributes();
-            phAttributes.Controls.Clear();
 
-            Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, true, string.Empty );
-            if ( readOnly )
+            phAttributes.Controls.Clear();
+            phAttributes.Visible = false;
+
+            phAttributesReadOnly.Controls.Clear();
+            phAttributesReadOnly.Visible = false;
+
+            var editableAttributes = !readOnly ? groupMember.Attributes.Where( a => a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList() : new List<string>();
+            var viewableAttributes = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) && a.Value.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+
+            if ( editableAttributes.Any() )
             {
-                Rock.Attribute.Helper.AddDisplayControls( groupMember, phAttributesReadOnly );
-                phAttributesReadOnly.Visible = true;
-                phAttributes.Visible = false;
-            }
-            else
-            {
-                phAttributesReadOnly.Visible = false;
+                var excludeKeys = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
+                Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, true, string.Empty, excludeKeys );
                 phAttributes.Visible = true;
+            }
+
+            if ( viewableAttributes.Any() )
+            {
+                var excludeKeys = groupMember.Attributes.Where( a => !viewableAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
+                Rock.Attribute.Helper.AddDisplayControls( groupMember, phAttributesReadOnly, excludeKeys, false, false );
+                phAttributesReadOnly.Visible = true;
             }
 
             var groupHasRequirements = group.GetGroupRequirements( rockContext ).Any();
@@ -1108,12 +1113,15 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
+            var isArchive = false;
+
+            // If we can't delete, then we'll have to archive the group member.
+            // This is making this assumption since the only reason why CanDelete would return
+            // false is because the group member is tied to an group that has history tracking enabled.
             string canDeleteWarning;
             if ( !groupMemberService.CanDelete( groupMember, out canDeleteWarning ) )
             {
-                nbMoveGroupMemberWarning.Visible = true;
-                nbMoveGroupMemberWarning.Text = string.Format( "Unable to remove {0} from {1}: {2}", groupMember.Person, groupMember.Group, canDeleteWarning );
-                return;
+                isArchive = true;
             }
 
             destGroupMember = new GroupMember();
@@ -1147,7 +1155,7 @@ namespace RockWeb.Blocks.Groups
                 if ( cbMoveGroupMemberMoveNotes.Checked )
                 {
                     destGroupMember.Note = groupMember.Note;
-                    int groupMemberEntityTypeId = CacheEntityType.GetId<Rock.Model.GroupMember>().Value;
+                    int groupMemberEntityTypeId = EntityTypeCache.GetId<Rock.Model.GroupMember>().Value;
                     var noteService = new NoteService( rockContext );
                     var groupMemberNotes = noteService.Queryable().Where( a => a.NoteType.EntityTypeId == groupMemberEntityTypeId && a.EntityId == groupMember.Id );
                     foreach ( var note in groupMemberNotes )
@@ -1158,7 +1166,15 @@ namespace RockWeb.Blocks.Groups
                     rockContext.SaveChanges();
                 }
 
-                groupMemberService.Delete( groupMember );
+                if ( isArchive )
+                {
+                    groupMemberService.Archive( groupMember, this.CurrentPersonAliasId, true );
+                }
+                else
+                {
+                    groupMemberService.Delete( groupMember );
+                }
+
                 rockContext.SaveChanges();
 
                 destGroupMember.CalculateRequirements( rockContext, true );

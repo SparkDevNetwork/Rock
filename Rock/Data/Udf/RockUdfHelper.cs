@@ -107,13 +107,30 @@ namespace Rock.Data
         /// <returns></returns>
         public static string ufnCrm_GetFamilyTitle( RockContext rockContext, int? PersonId, int? GroupId, string GroupPersonIds, bool UseNickName )
         {
+            return ufnCrm_GetFamilyTitle( rockContext, PersonId, GroupId, GroupPersonIds, UseNickName, true );
+        }
+
+        /// <summary>
+        /// calls database TVF function ufnCrm_GetFamilyTitle.
+        /// Usage: string familyTitle = RockUdfHelper.ufnCrm_GetFamilyTitle( rockContext, personId, groupId, commaPersonIds, true, true );
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="PersonId">The PersonId. NULL means use GroupId parameter</param>
+        /// <param name="GroupId">The GroupId of the Family. NULL means use PersonId parameter</param>
+        /// <param name="GroupPersonIds">If GroupId is specified, set this as a comma-delimited list of PersonIds that you want to limit the family members to. NULL means don't restrict.</param>
+        /// <param name="UseNickName">if set to <c>true</c> [use nick name].</param>
+        /// <param name="IncludeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <returns></returns>
+        public static string ufnCrm_GetFamilyTitle( RockContext rockContext, int? PersonId, int? GroupId, string GroupPersonIds, bool UseNickName, bool IncludeInactive )
+        {
             var result = rockContext.Database.SqlQuery(
                 typeof( string ),
-                "SELECT TOP 1 [PersonNames] FROM dbo.ufnCrm_GetFamilyTitle(@PersonId, @GroupId, @GroupPersonIds, @UseNickName)",
+                "SELECT TOP 1 [PersonNames] FROM dbo.ufnCrm_GetFamilyTitleIncludeInactive(@PersonId, @GroupId, @GroupPersonIds, @UseNickName, @IncludeInactive)",
                 new SqlParameter( "@PersonId", PersonId.HasValue ? (object)PersonId.Value : DBNull.Value ) { SqlDbType = SqlDbType.Int, IsNullable = true },
                 new SqlParameter( "@GroupId", GroupId.HasValue ? (object)GroupId.Value : DBNull.Value ) { SqlDbType = SqlDbType.Int, IsNullable = true },
                 new SqlParameter( "@GroupPersonIds", string.IsNullOrWhiteSpace( GroupPersonIds ) ? DBNull.Value : (object)GroupPersonIds ) { SqlDbType = SqlDbType.Text, IsNullable = true },
-                new SqlParameter( "@UseNickName", UseNickName ));
+                new SqlParameter( "@UseNickName", UseNickName ),
+                new SqlParameter( "@IncludeInactive", IncludeInactive ) );
 
             // NOTE: ufnCrm_GetFamilyTitle is a Table Valued Function, but it only returns one ROW
             return result.OfType<string>().FirstOrDefault();

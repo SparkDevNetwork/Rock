@@ -56,6 +56,9 @@ namespace Rock.Client
         public int? ConnectionStatusValueId { get; set; }
 
         /// <summary />
+        public DateTime? DeceasedDate { get; set; }
+
+        /// <summary />
         public string Email { get; set; }
 
         /// <summary />
@@ -215,6 +218,7 @@ namespace Rock.Client
             this.BirthYear = source.BirthYear;
             this.CommunicationPreference = source.CommunicationPreference;
             this.ConnectionStatusValueId = source.ConnectionStatusValueId;
+            this.DeceasedDate = source.DeceasedDate;
             this.Email = source.Email;
             this.EmailNote = source.EmailNote;
             this.EmailPreference = source.EmailPreference;

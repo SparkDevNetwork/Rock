@@ -23,7 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
@@ -145,7 +145,7 @@ namespace Rock.Reporting.DataSelect.Person
                 var locationTypeValueGuid = selectionValues[1].AsGuidOrNull();
                 if (locationTypeValueGuid.HasValue)
                 {
-                    var locationTypeValue = CacheDefinedValue.Get( locationTypeValueGuid.Value );
+                    var locationTypeValue = DefinedValueCache.Get( locationTypeValueGuid.Value );
                     if ( locationTypeValue != null )
                     {
                         locationTypeValueId = locationTypeValue.Id;
@@ -198,7 +198,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             RockDropDownList locationTypeList = new RockDropDownList();
             locationTypeList.Items.Clear();
-            foreach ( var value in CacheDefinedType.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
+            foreach ( var value in DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
             {
                 locationTypeList.Items.Add( new ListItem( value.Value, value.Guid.ToString() ) );
             }

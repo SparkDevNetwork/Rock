@@ -1,0 +1,27 @@
+
+
+// Button variants
+//
+// Easily pump out default styles, as well as :hover, :focus, :active,
+// and disabled options for all buttons
+
+.button-outline-variant(@color; @background; @border) {
+  color: @background;
+  background-color: transparent;
+  border-color: @background;
+
+  &:hover {
+    color: @color;
+    background-color: @background;
+    border-color: @background;
+  }
+
+  &:focus,
+  &.focus {
+    box-shadow: 0 0 0 3px rgba(red(@background), green(@background), blue(@background), .5);
+  }
+
+  &.disabled {
+    opacity: .5;
+  }
+}

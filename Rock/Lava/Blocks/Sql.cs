@@ -29,7 +29,7 @@ namespace Rock.Lava.Blocks
 {
     /// <summary>
     /// Sql stores the result of provided SQL query into a variable.
-    /// 
+    ///
     /// {% sql results %}
     /// SELECT [FirstName], [LastName] FROM [Person]
     /// {% endsql %}
@@ -85,13 +85,20 @@ namespace Rock.Lava.Blocks
 
                 if ( parms["statement"] == "select" )
                 {
-                    var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, null, null );
+                    var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, parms.ToDictionary( i => i.Key, i => ( object ) i.Value ), null );
 
                     context.Scopes.Last()[parms["return"]] = results.Tables[0].ToDynamic();
                 }
                 else if (parms["statement"] == "command" )
                 {
-                    int numOfRowEffected = new RockContext().Database.ExecuteSqlCommand( sql.ToString() );
+                    var sqlParameters = new List<System.Data.SqlClient.SqlParameter>();
+
+                    foreach ( var p in parms )
+                    {
+                        sqlParameters.Add( new System.Data.SqlClient.SqlParameter( p.Key, p.Value ) );
+                    }
+
+                    int numOfRowEffected = new RockContext().Database.ExecuteSqlCommand( sql.ToString(), sqlParameters.ToArray() );
 
                     context.Scopes.Last()[parms["return"]] = numOfRowEffected;
                 }
@@ -104,7 +111,6 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
         private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup
@@ -132,7 +138,7 @@ namespace Rock.Lava.Blocks
             parms.Add( "return", "results" );
             parms.Add( "statement", "select" );
 
-            var markupItems = Regex.Matches( markup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( markup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

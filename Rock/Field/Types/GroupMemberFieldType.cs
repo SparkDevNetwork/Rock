@@ -24,7 +24,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -228,7 +228,7 @@ namespace Rock.Field.Types
                     var groupMemberService = new GroupMemberService( rockContext );
                     foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                     {
-                        var groupMember = groupMemberService.Get( guid );
+                        var groupMember = groupMemberService.GetNoTracking( guid );
                         if ( groupMember != null )
                         {
                             names.Add( groupMember.Person.FullName );
@@ -289,27 +289,22 @@ namespace Rock.Field.Types
 
             int? groupId = configurationValues != null && configurationValues.ContainsKey( GROUP_KEY ) ? configurationValues[GROUP_KEY].Value.AsIntegerOrNull() : null;
 
-            if ( groupId.HasValue )
+            if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean() )
             {
-                if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean() )
+                // Select multiple members
+                editControl = new GroupMembersPicker { ID = id, GroupId = groupId };
+            }
+            else
+            {
+                // Select single member
+                editControl = new GroupMemberPicker { ID = id, GroupId = groupId };
+                if ( configurationValues != null && configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) && configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean() )
                 {
-                    // Select multiple members
-                    editControl = new GroupMembersPicker { ID = id, GroupId = groupId };
+                    ( ( GroupMemberPicker ) editControl ).EnhanceForLongLists = true;
                 }
-                else
-                {
-                    // Select single member
-                    editControl = new GroupMemberPicker { ID = id, GroupId = groupId };
-                    if ( configurationValues != null && configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) && configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean() )
-                    {
-                        ( ( GroupMemberPicker ) editControl ).EnhanceForLongLists = true;
-                    }
-                }
-
-                return editControl;
             }
 
-            return null;
+            return editControl;
         }
 
         /// <summary>
@@ -327,20 +322,23 @@ namespace Rock.Field.Types
                 groupMemberIdList.AddRange( ( ( ListControl ) control ).Items.Cast<ListItem>()
                     .Where( i => i.Selected )
                     .Select( i => i.Value ).AsIntegerList() );
-            }
 
-            var guids = new List<Guid>();
+                var guids = new List<Guid>();
 
-            if ( groupMemberIdList.Any() )
-            {
-                using ( var rockContext = new RockContext() )
+                if ( groupMemberIdList.Any() )
                 {
-                    var groupMemberService = new GroupMemberService( rockContext );
-                    guids = groupMemberService.GetByIds( groupMemberIdList ).Select( a => a.Guid ).ToList();
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var groupMemberService = new GroupMemberService( rockContext );
+                        guids = groupMemberService.Queryable().AsNoTracking().Where( t => groupMemberIdList.Contains( t.Id ) ).Select( a => a.Guid ).ToList();
+                    }
                 }
+
+                return guids.AsDelimited( "," );
             }
 
-            return guids.AsDelimited( "," );
+            return null;
+
         }
 
         /// <summary>
@@ -528,7 +526,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return values.Select( v => "'" + v + "'" ).ToList().AsDelimited( " or " );
+            return AddQuotes( values.ToList().AsDelimited( "' OR '" ) );
         }
 
         /// <summary>
@@ -674,18 +672,36 @@ namespace Rock.Field.Types
                     }
                 }
 
-                return comparison;
+                if ( comparison == null )
+                {
+                    // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
+                    return new NoAttributeFilterExpression();
+                }
+                else
+                {
+                    return comparison;
+                }
             }
 
             selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-            if ( selectedValues.Any() )
+            int valueCount = selectedValues.Count();
+            MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+            if ( valueCount == 0 )
             {
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
+                return new NoAttributeFilterExpression();
+            }
+            else if ( valueCount == 1 )
+            {
+                // only one value, so do an Equal instead of Contains which might compile a little bit faster
+                ComparisonType comparisonType = ComparisonType.EqualTo;
+                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( selectedValues[0] ) );
+            }
+            else
+            {
                 ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
                 return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
             }
-
-            return null;
         }
 
         #endregion

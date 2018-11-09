@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity.Spatial;
 using System.Linq;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -58,10 +59,11 @@ namespace Rock.Model
         /// <param name="country">A <see cref="string" /> representing the Country to search by</param>
         /// <param name="group">The <see cref="Group"/> (usually a Family) that should be searched first</param>
         /// <param name="verifyLocation">if set to <c>true</c> [verify location].</param>
+        /// <param name="createNewLocation">if set to <c>true</c> a new location will be created if it does not exists.</param>
         /// <returns>
         /// The first <see cref="Rock.Model.Location" /> where an address match is found, if no match is found a new <see cref="Rock.Model.Location" /> is created and returned.
         /// </returns>
-        public Location Get( string street1, string street2, string city, string state, string postalCode, string country, Group group, bool verifyLocation = true )
+        public Location Get( string street1, string street2, string city, string state, string postalCode, string country, Group group, bool verifyLocation = true, bool createNewLocation = true)
         {
             // Make sure it's not an empty address
             if ( string.IsNullOrWhiteSpace( street1 ) )
@@ -69,10 +71,24 @@ namespace Rock.Model
                 return null;
             }
 
-            // Try to find a location that matches the values exactly as entered
+            // Try to find a location that matches the values, this is not a case sensitive match
             var foundLocation = Search( new Location { Street1 = street1, Street2 = street2, City = city, State = state, PostalCode = postalCode, Country = country }, group );
             if (foundLocation != null)
             {
+                // Check for casing 
+                if (!String.Equals(street1, foundLocation.Street1) || !String.Equals( street2, foundLocation.Street2) || !String.Equals(city, foundLocation.City) || !String.Equals( state, foundLocation.State ) || !String.Equals( postalCode , foundLocation.PostalCode) || !String.Equals( country, foundLocation.Country) )
+                {
+                    var context = new RockContext();
+                    var location = new LocationService( context ).Get( foundLocation.Id);
+                    location.Street1 = street1;
+                    location.Street2 = street2;
+                    location.City = city;
+                    location.State = state;
+                    location.PostalCode = postalCode;
+                    location.Country = country;
+                    context.SaveChanges();
+                    return Get(location.Guid);
+                }
                 return foundLocation;
             }
 
@@ -98,11 +114,14 @@ namespace Rock.Model
                 return foundLocation;
             }
 
-            // Create a new context/service so that save does not affect calling method's context
-            var rockContext = new RockContext();
-            var locationService = new LocationService( rockContext );
-            locationService.Add( newLocation );
-            rockContext.SaveChanges();
+            if ( createNewLocation )
+            {
+                // Create a new context/service so that save does not affect calling method's context
+                var rockContext = new RockContext();
+                var locationService = new LocationService( rockContext );
+                locationService.Add( newLocation );
+                rockContext.SaveChanges();
+            }
 
             // refetch it from the database to make sure we get a valid .Id
             return Get( newLocation.Guid );
@@ -370,7 +389,7 @@ namespace Rock.Model
                         logService.Add( log );
                     }
 
-                    // If location has been succesfully standardized and geocoded, break to get out, otherwise next service will be attempted
+                    // If location has been successfully standardized and geocoded, break to get out, otherwise next service will be attempted
                     if ( standardized && geocoded )
                     {
                         break;
@@ -497,7 +516,7 @@ namespace Rock.Model
             if ( !campusId.HasValue )
             {
                 var campusLocations = new Dictionary<int, int>();
-                Rock.Cache.CacheCampus.All()
+                CampusCache.All()
                     .Where( c => c.LocationId.HasValue )
                     .Select( c => new
                     {
@@ -542,7 +561,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the locations associated to a device and optionally any child locaitons
+        /// Gets the locations associated to a device and optionally any child locations
         /// </summary>
         /// <param name="deviceId">The device identifier.</param>
         /// <param name="includeChildLocations">if set to <c>true</c> [include child locations].</param>

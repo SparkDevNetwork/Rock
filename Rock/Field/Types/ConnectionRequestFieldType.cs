@@ -45,11 +45,17 @@ namespace Rock.Field.Types
         {
             string formattedValue = value;
 
-            Guid? guid = value.AsGuidOrNull();
-            if ( guid.HasValue )
+            ConnectionRequest connectionRequest = null;
+
+            using ( var rockContext = new RockContext() )
             {
-                var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( guid.Value );
-                if (connectionRequest != null &&
+                Guid? guid = value.AsGuidOrNull();
+                if ( guid.HasValue )
+                {
+                    connectionRequest = new ConnectionRequestService( rockContext ).GetNoTracking( guid.Value );
+                }
+
+                if ( connectionRequest != null &&
                     connectionRequest.PersonAlias != null &&
                     connectionRequest.PersonAlias.Person != null )
                 {
@@ -74,7 +80,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            ConnectionRequestPicker connectionRequestPicker = new ConnectionRequestPicker { ID = id }; 
+            ConnectionRequestPicker connectionRequestPicker = new ConnectionRequestPicker { ID = id };
             return connectionRequestPicker;
         }
 
@@ -90,15 +96,21 @@ namespace Rock.Field.Types
             if ( picker != null )
             {
                 int? id = picker.ItemId.AsIntegerOrNull();
+
                 if ( id.HasValue )
                 {
-                    var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( id.Value );
-
-                    if ( connectionRequest != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        return connectionRequest.Guid.ToString();
+                        var connectionRequestGuid = new ConnectionRequestService( rockContext ).GetGuid( id.Value );
+
+                        if ( connectionRequestGuid.HasValue )
+                        {
+                            return connectionRequestGuid.ToString();
+                        }
                     }
                 }
+
+                return string.Empty;
             }
 
             return null;
@@ -116,10 +128,14 @@ namespace Rock.Field.Types
 
             if ( picker != null )
             {
-                Guid guid = value.AsGuid();
+                ConnectionRequest connectionRequest = null;
 
-                // get the item (or null) and set it
-                var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( guid );
+                Guid? guid = value.AsGuidOrNull();
+                if ( guid.HasValue )
+                {
+                    connectionRequest = new ConnectionRequestService( new RockContext() ).Get( guid.Value );
+                }
+
                 picker.SetValue( connectionRequest );
             }
         }
@@ -137,8 +153,10 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new ConnectionRequestService( new RockContext() ).Get( guid );
-            return item != null ? item.Id : (int?)null;
+            using ( var rockContext = new RockContext() )
+            {
+                return new ConnectionRequestService( rockContext ).GetId( guid );
+            }
         }
 
         /// <summary>
@@ -149,9 +167,12 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new ConnectionRequestService( new RockContext() ).Get( id ?? 0 );
-            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
-            SetEditValue( control, configurationValues, guidValue );
+            using ( var rockContext = new RockContext() )
+            {
+                var itemGuid = new ConnectionRequestService( rockContext ).GetGuid( id ?? 0 );
+                string guidValue = itemGuid.HasValue ? itemGuid.ToString() : string.Empty;
+                SetEditValue( control, configurationValues, guidValue );
+            }
         }
 
         /// <summary>
@@ -172,10 +193,10 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public IEntity GetEntity( string value, RockContext rockContext )
         {
+            rockContext = rockContext ?? new RockContext();
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
                 return new ConnectionRequestService( rockContext ).Get( guid.Value );
             }
 

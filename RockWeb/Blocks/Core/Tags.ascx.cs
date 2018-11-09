@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.Web.UI;
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Core
                 tagEntityTags.Visible = contextEntity != null;
                 if ( contextEntity != null )
                 {
-                    tagEntityTags.EntityTypeId = CacheEntityType.Get( contextEntity.GetType() ).Id;
+                    tagEntityTags.EntityTypeId = EntityTypeCache.Get( contextEntity.GetType() ).Id;
                     tagEntityTags.EntityGuid = contextEntity.Guid;
                     tagEntityTags.EntityQualifierColumn = GetAttributeValue( "EntityQualifierColumn" );
                     tagEntityTags.EntityQualifierValue = GetAttributeValue( "EntityQualifierValue" );

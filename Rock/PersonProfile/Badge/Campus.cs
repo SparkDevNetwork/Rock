@@ -20,6 +20,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.PersonProfile.Badge
@@ -55,7 +56,7 @@ namespace Rock.PersonProfile.Badge
                         .Select(g => g.CampusId)
                         .Distinct()
                         .ToList())
-                        campusNames.Add(Rock.Cache.CacheCampus.Get(campusId).Name);
+                        campusNames.Add(CampusCache.Get(campusId).Name);
 
                     label.Text = campusNames.OrderBy(n => n).ToList().AsDelimited(", ");
 

@@ -2,7 +2,7 @@ IF OBJECT_ID(N'[dbo].[AnalyticsDimFamilyHistorical]', 'V') IS NOT NULL
     DROP VIEW AnalyticsDimFamilyHistorical
 GO
 
-CREATE VIEW [dbo].AnalyticsDimFamilyHistorical
+CREATE VIEW [dbo].[AnalyticsDimFamilyHistorical]
 AS
 SELECT asfh.*
 	,isnull(c.NAME, 'None') [CampusName]

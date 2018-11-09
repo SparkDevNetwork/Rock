@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Fundraising
 </p>
 ", order: 1 )]
 
-    [LinkedPage( "Participant Page", "The partipant page for a participant of this fundraising opportunity", required: false, order: 2 )]
+    [LinkedPage( "Participant Page", "The participant page for a participant of this fundraising opportunity", required: false, order: 2 )]
     [LinkedPage( "Main Page", "The main page for the fundraising opportunity", required: false, order: 3 )]
     public partial class FundraisingLeaderToolbox : RockBlock
     {
@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Fundraising
 
             groupMembersQuery = groupMembersQuery.Sort( gGroupMembers.SortProperty ?? new SortProperty { Property = "Person.LastName, Person.NickName" } );
 
-            var entityTypeIdGroupMember = CacheEntityType.GetId<Rock.Model.GroupMember>();
+            var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
 
             var groupMemberList = groupMembersQuery.ToList().Select( a =>
             {

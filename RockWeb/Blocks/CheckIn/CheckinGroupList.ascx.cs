@@ -26,7 +26,7 @@ using System.Data.Entity;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Text;
@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Checkin
             bddlCampus.Visible = _allowCampusFilter;
             if ( _allowCampusFilter )
             {
-                bddlCampus.DataSource = CacheCampus.All();
+                bddlCampus.DataSource = CampusCache.All();
                 bddlCampus.DataBind();
                 bddlCampus.Items.Insert( 0, new ListItem( "All Campuses", "0" ) );
             }
@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Checkin
             {
                 if ( _allowCampusFilter )
                 {
-                    var campus = CacheCampus.Get( GetBlockUserPreference( "Campus" ).AsInteger() );
+                    var campus = CampusCache.Get( GetBlockUserPreference( "Campus" ).AsInteger() );
                     if ( campus != null )
                     {
                         bddlCampus.Title = campus.Name;
@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Checkin
         protected void bddlCampus_SelectionChanged( object sender, EventArgs e )
         {
             SetBlockUserPreference( "Campus", bddlCampus.SelectedValue );
-            var campus = CacheCampus.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
+            var campus = CampusCache.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
             bddlCampus.Title = campus != null ? campus.Name : "All Campuses";
 
             ShowContent();

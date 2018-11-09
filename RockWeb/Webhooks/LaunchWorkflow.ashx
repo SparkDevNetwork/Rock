@@ -28,7 +28,7 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 /// <summary>
 /// A webhook for launching a workflow. Does basic decoding of FORM data
@@ -56,7 +56,7 @@ public class LaunchWorkflow : IHttpHandler
                     Guid guid = hook.GetAttributeValue( "WorkflowType" ).AsGuid();
 
 
-                    CacheWorkflowType workflowType = CacheWorkflowType.Get( guid );
+                    WorkflowTypeCache workflowType = WorkflowTypeCache.Get( guid );
                     if ( workflowType != null )
                     {
                         Workflow workflow = Workflow.Activate( workflowType, context.Request.UserHostName );
@@ -76,7 +76,7 @@ public class LaunchWorkflow : IHttpHandler
                                 List<string> errorMessages;
                                 new WorkflowService( rockContext ).Process( workflow, out errorMessages );
 
-                                // We send a response (if one is available) wether the workflow has ended
+                                // We send a response (if one is available) whether the workflow has ended
                                 // or not. This gives them a chance to send a "let me work on that for you"
                                 // type response and then continue processing in the background.
                                 SetWorkflowResponse( context, workflow );
@@ -115,21 +115,21 @@ public class LaunchWorkflow : IHttpHandler
     #region SuMethods
 
     /// <summary>
-    /// Retrieve the CacheDefinedValue for this request by matching the Method, Url
+    /// Retrieve the DefinedValueCache for this request by matching the Method, Url
     /// and any other filters defined by subclasses.
     /// </summary>
     /// <param name="requestDict">The request dictionary.</param>
     /// <returns>
     /// A DefinedValue for the webhook request that was matched or null if one was not found.
     /// </returns>
-    protected List<CacheDefinedValue> GetHooksForRequest( Dictionary<string, object> requestDict )
+    protected List<DefinedValueCache> GetHooksForRequest( Dictionary<string, object> requestDict )
     {
-        var hooks = new List<CacheDefinedValue>();
+        var hooks = new List<DefinedValueCache>();
 
-        var dt = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.WEBHOOK_TO_WORKFLOW.AsGuid() );
+        var dt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.WEBHOOK_TO_WORKFLOW.AsGuid() );
         if ( dt != null )
         {
-            foreach ( CacheDefinedValue hook in dt.DefinedValues.OrderBy( h => h.Order ) )
+            foreach ( DefinedValueCache hook in dt.DefinedValues.OrderBy( h => h.Order ) )
             {
                 if ( hook.GetAttributeValue( "ProcessRequest" ).ResolveMergeFields( requestDict ).Trim().AsBoolean() )
                 {
@@ -148,7 +148,7 @@ public class LaunchWorkflow : IHttpHandler
     /// <param name="workflow">The workflow whose attributes need to be set.</param>
     /// <param name="hook">The DefinedValue of the currently executing webhook.</param>
     /// <param name="mergeFields">The merge fields.</param>
-    protected void PopulateWorkflowAttributes( Workflow workflow, CacheDefinedValue hook, Dictionary<string, object> mergeFields )
+    protected void PopulateWorkflowAttributes( Workflow workflow, DefinedValueCache hook, Dictionary<string, object> mergeFields )
     {
         // Set workflow attributes
         string workflowAttributes = hook.GetAttributeValue( "WorkflowAttributes" );
@@ -164,7 +164,7 @@ public class LaunchWorkflow : IHttpHandler
 
         // set workflow name
         string nameTemplate = hook.GetAttributeValue( "WorkflowNameTemplate" ).ResolveMergeFields( mergeFields );
-        if ( nameTemplate.IsNotNullOrWhitespace() )
+        if ( nameTemplate.IsNotNullOrWhiteSpace() )
         {
             workflow.Name = nameTemplate.ResolveMergeFields( mergeFields );
         }
@@ -255,10 +255,10 @@ public class LaunchWorkflow : IHttpHandler
         string response = workflow.GetAttributeValue( "WebhookResponse" );
         string contentType = workflow.GetAttributeValue( "WebhookResponseContentType" );
 
-        if ( response.IsNotNullOrWhitespace() )
+        if ( response.IsNotNullOrWhiteSpace() )
         {
             httpContext.Response.Write( response );
-            httpContext.Response.ContentType = contentType.IsNotNullOrWhitespace() ? contentType : "text/plain";
+            httpContext.Response.ContentType = contentType.IsNotNullOrWhiteSpace() ? contentType : "text/plain";
         }
     }
 
@@ -290,7 +290,7 @@ public class LaunchWorkflow : IHttpHandler
             {
                 if ( retry < maxRetry - 1 )
                 {
-                    System.Threading.Thread.Sleep( 2000 );
+                    System.Threading.Tasks.Task.Delay( 2000 ).Wait();
                 }
             }
         }

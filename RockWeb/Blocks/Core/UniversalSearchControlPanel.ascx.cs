@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Data.Entity;
@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSmartSearchEdit_Click( object sender, EventArgs e )
         {
-            var entities = CacheEntityType.All();
+            var entities = EntityTypeCache.All();
             var indexableEntities = entities.Where( i => i.IsIndexingSupported == true ).ToList();
 
             cblSmartSearchEntities.DataTextField = "FriendlyName";
@@ -210,9 +210,6 @@ namespace RockWeb.Blocks.Core
                 {
                     IndexContainer.DeleteIndex( entityType.IndexModelType );
                 }
-
-                // flush item from cache
-                CacheEntityType.Remove( entityType.Id );
             }
 
             mdEditEntityType.Hide();
@@ -261,7 +258,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gEntityList_RowSelected( object sender, RowEventArgs e )
         {
-            var entityType = CacheEntityType.Get( e.RowKeyId );
+            var entityType = EntityTypeCache.Get( e.RowKeyId );
 
             hfIdValue.Value = e.RowKeyId.ToString();
 
@@ -279,7 +276,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gBulkLoad_Click( object sender, RowEventArgs e )
         {
-            var entityType = CacheEntityType.Get( e.RowKeyId );
+            var entityType = EntityTypeCache.Get( e.RowKeyId );
 
             if (entityType != null )
             {
@@ -303,7 +300,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gClearIndex_Click( object sender, RowEventArgs e )
         {
-            var entityType = CacheEntityType.Get( e.RowKeyId );
+            var entityType = EntityTypeCache.Get( e.RowKeyId );
             Type type = entityType.GetEntityType();
 
             if ( type != null )
@@ -356,9 +353,9 @@ namespace RockWeb.Blocks.Core
             {
                 List<int> entityIds = entitySetting.Split( ',' ).Select( int.Parse ).ToList();
 
-                var selected = string.Join( ", ", CacheEntityType.All().Where( e => entityIds.Contains( e.Id ) ).Select( e => e.FriendlyName ).ToList() );
+                var selected = string.Join( ", ", EntityTypeCache.All().Where( e => entityIds.Contains( e.Id ) ).Select( e => e.FriendlyName ).ToList() );
 
-                lSmartSearchEntities.Text = string.Join( ",", CacheEntityType.All().Where( e => entityIds.Contains( e.Id ) ).Select( e => e.FriendlyName ).ToList() );
+                lSmartSearchEntities.Text = string.Join( ",", EntityTypeCache.All().Where( e => entityIds.Contains( e.Id ) ).Select( e => e.FriendlyName ).ToList() );
             }
             lSmartSearchFilterCriteria.Text = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
 
@@ -408,7 +405,7 @@ namespace RockWeb.Blocks.Core
             if ( !searchEnabled )
             {
                 nbMessages.NotificationBoxType = NotificationBoxType.Warning;
-                nbMessages.Text = "No universal search index components are currently enabled. You must enable a index component under <span class='navigation-tip'>Admin Tools &gt; System Settngs &gt; Universal Search Index Components</span>.";
+                nbMessages.Text = "No universal search index components are currently enabled. You must enable a index component under <span class='navigation-tip'>Admin Tools &gt; System Settings &gt; Universal Search Index Components</span>.";
             }
         }
 

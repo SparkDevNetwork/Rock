@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DataAutomationSettings.ascx.cs" Inherits="RockWeb.Blocks.Administration.DataAutomationSettings" %>
+<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DataAutomationSettings.ascx.cs" Inherits="RockWeb.Blocks.Administration.DataAutomationSettings" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -7,31 +7,17 @@
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <i class="fa fa-tachometer"></i>
-                    Data Integrity Settings
+                    Data Automation Settings
                 </h1>
             </div>
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false" />
 
-                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <Rock:PanelWidget ID="pwGeneralSettings" runat="server" Title="General Settings">
                     <Rock:NumberBox ID="nbGenderAutoFill" runat="server" AppendText="%" CssClass="input-width-md" Label="Gender AutoFill Confidence" MinimumValue="0" MaximumValue="100" NumberType="Double" Help="The minimum confidence level required to automatically set blank genders in the Data Automation service job. If set to 0 then gender will not be automatically determined." />
-                </Rock:PanelWidget>
-
-                <Rock:PanelWidget ID="pwNcoaConfiguration" runat="server" Title="National Change of Address (NCOA)">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <Rock:NumberBox ID="nbMinMoveDistance" runat="server" AppendText="miles" CssClass="input-width-md" Label="Minimum Move Distance to Inactivate" NumberType="Double" Text="250" />
-                        </div>
-                        <div class="col-md-4">
-                            <Rock:RockCheckBox ID="cb48MonAsPrevious" runat="server" Label="Mark 48 Month Move as Previous Addresses" />
-                        </div>
-                        <div class="col-md-4">
-                            <Rock:RockCheckBox ID="cbInvalidAddressAsPrevious" runat="server" Label="Mark Invalid Addresses as Previous Addresses" />
-                        </div>
-                    </div>
                 </Rock:PanelWidget>
 
                 <fieldset>
@@ -41,7 +27,7 @@
 
                     <Rock:PanelWidget ID="pwReactivatePeople" runat="server" title="Reactivate People">
 
-                        <Rock:RockCheckBox ID="cbReactivatePeople" runat="server" 
+                        <Rock:RockCheckBox ID="cbReactivatePeople" runat="server"
                             Label="Enable" Text="Enable the automatic activating of individuals who are currently inactive and who meet any of the following selected criteria. Note: This will not include people who were inactivated for a reason that was configured to not allow automatic reactivation."
                             AutoPostBack="true" OnCheckedChanged="cbDataAutomationEnabled_CheckedChanged" />
 
@@ -57,7 +43,7 @@
                                     <Rock:NumberBox ID="nbLastContribution" runat="server" Label="Any family member has made a contribution in the last" AppendText="days" CssClass="input-width-md" Text="90" />
                                 </div>
                             </div>
-                            
+
                             <div class="clearfix margin-b-lg">
                                 <div class="pull-left" style="width: 40px">
                                     <Rock:RockCheckBox ID="cbAttendanceInServiceGroup" runat="server" />
@@ -84,7 +70,7 @@
                                 </Rock:RockControlWrapper>
                                 </div>
                             </div>
-                            
+
                             <div class="clearfix margin-b-lg">
                                 <div class="pull-left" style="width: 40px">
                                     <Rock:RockCheckBox ID="cbPrayerRequest" runat="server" />
@@ -142,7 +128,7 @@
                                     <Rock:RockCheckBox ID="cbIncludeDataView" runat="server" />
                                 </div>
                                 <div class="pull-left">
-                                    <Rock:DataViewPicker ID="dvIncludeDataView" runat="server" Label="The person is in the following data view" CssClass="input-width-xl" />
+                                    <Rock:DataViewItemPicker ID="dvIncludeDataView" runat="server" Label="The person is in the following data view" CssClass="input-width-xl" />
                                 </div>
                             </div>
 
@@ -151,7 +137,7 @@
                                     <Rock:RockCheckBox ID="cbExcludeDataView" runat="server" />
                                 </div>
                                 <div class="pull-left">
-                                    <Rock:DataViewPicker ID="dvExcludeDataView" runat="server" Label="Exclude any person in the following data view" CssClass="input-width-xl" />
+                                    <Rock:DataViewItemPicker ID="dvExcludeDataView" runat="server" Label="Exclude any person in the following data view" CssClass="input-width-xl" />
                                 </div>
                             </div>
 
@@ -166,13 +152,19 @@
                             below, will result in more people being inactivated. Each person that is inactivated will also be inactivated in most of the groups that they belong to as well. This includes the security roles they belong to.
                             Once these people have been inactivated in their groups, there is no process to revert that change."/>
 
-                        <Rock:RockCheckBox ID="cbInactivatePeople" runat="server" 
+                        <Rock:RockCheckBox ID="cbInactivatePeople" runat="server"
                             Label="Enable" Text="Enable the automatic inactivating of individuals who are currently active and who meet all of the following selected criteria."
                             AutoPostBack="true" OnCheckedChanged="cbDataAutomationEnabled_CheckedChanged" />
 
                         <hr />
 
                         <asp:Panel ID="pnlInactivatePeople" runat="server" Enabled="false" CssClas="data-integrity-options">
+
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left">
+                                    <Rock:NumberBox ID="nbRecordsOlderThan" runat="server" Label="The number of days that the records must be older to get considered for Inactivate process." AppendText="days" CssClass="input-width-md" Text="180" />
+                                </div>
+                            </div>
 
                             <div class="clearfix margin-b-lg">
                                 <div class="pull-left" style="width: 40px">
@@ -262,16 +254,16 @@
                                     <Rock:RockCheckBox ID="cbNotInDataView" runat="server" />
                                 </div>
                                 <div class="pull-left">
-                                    <Rock:DataViewPicker ID="dvNotInDataView" runat="server" Label="The person is not in the following data view" CssClass="input-width-xl" />
+                                    <Rock:DataViewItemPicker ID="dvNotInDataView" runat="server" Label="The person is not in the following data view" CssClass="input-width-xl" />
                                 </div>
                             </div>
                         </asp:Panel>
 
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="pwUpdateCampus" runat="server" Title="Upate Family Campus">
+                    <Rock:PanelWidget ID="pwUpdateCampus" runat="server" Title="Update Family Campus">
 
-                        <Rock:RockCheckBox ID="cbCampusUpdate" runat="server" 
+                        <Rock:RockCheckBox ID="cbCampusUpdate" runat="server"
                             Label="Enable" Text="Enable the automatic updating of campus for families who currently have a different campus than what is determined by the following selected criteria."
                             AutoPostBack="true" OnCheckedChanged="cbDataAutomationEnabled_CheckedChanged" />
 
@@ -313,7 +305,7 @@
                                 </div>
                                 <div class="pull-left">
                                     <Rock:RockControlWrapper ID="rcwIgnoreCampusChanges" runat="server" Label="Ignore any update that would change the campus">
-                                    <asp:Repeater ID="rIgnoreCampusChanges" runat="server" OnItemDataBound="rIgnoreCampusChanges_ItemDataBound" OnItemCommand="rIgnoreCampusChanges_ItemCommand">
+                                    <asp:Repeater ID="rptIgnoreCampusChanges" runat="server" OnItemDataBound="rptIgnoreCampusChanges_ItemDataBound" OnItemCommand="rptIgnoreCampusChanges_ItemCommand">
                                         <ItemTemplate>
                                             <asp:HiddenField ID="hfRowId" runat="server" Value='<%# Eval("Id") %>' />
                                             <div class="row margin-l-sm margin-b-sm form-inline">
@@ -324,7 +316,7 @@
                                                     <asp:ListItem Text="Giving" Value="1" />
                                                     <asp:ListItem Text="Attendance" Value="2" />
                                                 </Rock:RockDropDownList>
-                                                <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-xs btn-danger form-action-remove" CommandName="delete" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-minus-circle"></i></asp:LinkButton>
+                                                <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-xs btn-square btn-danger form-action-remove" CommandName="delete" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-times"></i></asp:LinkButton>
                                             </div>
                                         </ItemTemplate>
                                     </asp:Repeater>
@@ -340,14 +332,14 @@
 
                     <Rock:PanelWidget ID="pwAdultChildren" runat="server" Title="Move Adult Children">
 
-                        <Rock:RockCheckBox ID="cbAdultChildren" runat="server" 
+                        <Rock:RockCheckBox ID="cbAdultChildren" runat="server"
                             Label="Enable" Text="Enable the automatic moving of children in a family to their own new family when they become adults."
                             AutoPostBack="true" OnCheckedChanged="cbDataAutomationEnabled_CheckedChanged" />
 
                         <hr />
 
-                        <asp:Panel ID="pnlAdultChildren" runat="server" Enabled="false" CssClas="data-integrity-options">
-
+                        <asp:Panel ID="pnlAdultChildren" runat="server" Enabled="false" CssClass="data-integrity-options">
+                            <Rock:RockCheckBox ID="cbisMoveGraduated" runat="server" Label="Should children only be moved if they have graduated?" Text="Yes" />
                             <Rock:NumberBox ID="nbAdultAge" runat="server" Label="The age a child should be considered an adult" AppendText="years" CssClass="input-width-md" />
                             <Rock:GroupRolePicker ID="rpParentRelationship" runat="server" Label="An optional known relationship that should be added between the new adult and their parent(s)" />
                             <Rock:GroupRolePicker ID="rpSiblingRelationship" runat="server" Label="An optional known relationship that should be added between the new adult and their sibling(s)" />
@@ -355,18 +347,56 @@
                             <Rock:RockCheckBox ID="cbSamePhone" runat="server" Label="If the new adult does not have a home phone, should they use same number as their parent?" Text="Yes" />
                             <Rock:WorkflowTypePicker ID="wfWorkflows" runat="server" AllowMultiSelect="true" Label="The workflow type(s) to launch for each person that is processed."
                                 Help="The person will be passed to the workflow as the entity. If the workflow has an 'OldFamily' Group attribute it will set this to the person's primary family before processing the person. If the workflow has a 'NewFamily' Group attribute it will set to the family that the person was updated or added as an adult to." />
-                            <Rock:NumberBox ID="nbMaxRecords" runat="server" Label="The maximum number of records that should be processed at a time." AppendText="records" CssClass="input-width-lg" /> 
+                            <Rock:NumberBox ID="nbMaxRecords" runat="server" Label="The maximum number of records that should be processed at a time." AppendText="records" CssClass="input-width-lg" />
 
                         </asp:Panel>
 
                     </Rock:PanelWidget>
 
+                    <Rock:PanelWidget ID="pwUpdatePersonConnectionStatus" runat="server" Title="Update Person Connection Status">
+                        <Rock:RockCheckBox ID="cbUpdatePersonConnectionStatus" runat="server"
+                            Label="Enable" Text="Enable the automatic updating of connection status."
+                            AutoPostBack="true" OnCheckedChanged="cbDataAutomationEnabled_CheckedChanged" />
+
+                        <hr />
+
+                        <asp:Panel ID="pnlUpdatePersonConnectionStatus" runat="server" Enabled="false" CssClass="data-integrity-options">
+                            <Rock:RockControlWrapper ID="rcwPersonConnectionStatusDataView" runat="server" Label="Update Connection Status based on Data View">
+                                <asp:Repeater ID="rptPersonConnectionStatusDataView" runat="server" OnItemDataBound="rptPersonConnectionStatusDataView_ItemDataBound">
+                                    <ItemTemplate>
+                                        <asp:HiddenField ID="hfPersonConnectionStatusValueId" runat="server" />
+                                        <Rock:DataViewItemPicker ID="dvpPersonConnectionStatusDataView" runat="server" />
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                              </Rock:RockControlWrapper>
+                        </asp:Panel>
+                    </Rock:PanelWidget>
+
+                    <Rock:PanelWidget ID="pwUpdateFamilyStatus" runat="server" Title="Update Family Status">
+                        <Rock:RockCheckBox ID="cbUpdateFamilyStatus" runat="server"
+                            Label="Enable" Text="Enable the automatic updating of family status."
+                            AutoPostBack="true" OnCheckedChanged="cbDataAutomationEnabled_CheckedChanged" />
+
+                        <hr />
+
+                        <asp:Panel ID="pnlUpdateFamilyStatus" runat="server" Enabled="false" CssClass="data-integrity-options">
+                            <Rock:RockControlWrapper ID="rcwUpdateFamilyStatus" runat="server" Label="Update Family Status based on Data View">
+                                <asp:Repeater ID="rptFamilyStatusDataView" runat="server" OnItemDataBound="rptFamilyStatusDataView_ItemDataBound">
+                                    <ItemTemplate>
+                                        <asp:HiddenField ID="hfGroupStatusValueId" runat="server" />
+                                        <Rock:DataViewItemPicker ID="dvpGroupStatusDataView" runat="server" />
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                              </Rock:RockControlWrapper>
+                        </asp:Panel>
+                    </Rock:PanelWidget>
+
                 </fieldset>
-                
+
                 <div class="actions margin-t-lg">
-                    <Rock:BootstrapButton ID="bbtnSaveConfig" runat="server" CssClass="btn btn-primary" AccessKey="s" ToolTip="Alt+s" OnClick="bbtnSaveConfig_Click" Text="Save" 
-                        DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving" 
-                        CompletedText="Success" CompletedMessage="&nbsp;Changes Have Been Saved!" CompletedDuration="2"></Rock:BootstrapButton>
+                    <Rock:BootstrapButton ID="bbtnSaveConfig" runat="server" CssClass="btn btn-primary" AccessKey="s" ToolTip="Alt+s" OnClick="bbtnSaveConfig_Click" Text="Save"
+                        DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
+                        CompletedText="Success" CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>" CompletedDuration="3"></Rock:BootstrapButton>
                 </div>
 
             </div>

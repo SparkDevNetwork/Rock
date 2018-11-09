@@ -19,7 +19,7 @@
 
                 <asp:HiddenField ID="hfId" runat="server" />
 
-                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div id="pnlEditDetails" runat="server">
 

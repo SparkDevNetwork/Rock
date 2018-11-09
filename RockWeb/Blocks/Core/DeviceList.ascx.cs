@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -91,11 +91,12 @@ namespace RockWeb.Blocks.Core
         protected void fDevice_ApplyFilterClick( object sender, EventArgs e )
         {
             fDevice.SaveUserPreference( "Name", tbName.Text );
-            fDevice.SaveUserPreference( "Device Type", ddlDeviceType.SelectedValue );
+            fDevice.SaveUserPreference( "Device Type", dvpDeviceType.SelectedValue );
             fDevice.SaveUserPreference( "IP Address", tbIPAddress.Text );
             fDevice.SaveUserPreference( "Print To", ddlPrintTo.SelectedValue );
             fDevice.SaveUserPreference( "Printer", ddlPrinter.SelectedValue );
             fDevice.SaveUserPreference( "Print From", ddlPrintFrom.SelectedValue );
+            fDevice.SaveUserPreference( "Active Status", ddlActiveFilter.SelectedValue );
 
             BindGrid();
         }
@@ -129,7 +130,7 @@ namespace RockWeb.Blocks.Core
                     int definedValueId = 0;
                     if ( int.TryParse( e.Value, out definedValueId ) )
                     {
-                        var definedValue = CacheDefinedValue.Get( definedValueId );
+                        var definedValue = DefinedValueCache.Get( definedValueId );
                         if ( definedValue != null )
                         {
                             e.Value = definedValue.Value;
@@ -146,6 +147,14 @@ namespace RockWeb.Blocks.Core
                 case "Print From":
 
                     e.Value = ( (PrintFrom)System.Enum.Parse( typeof( PrintFrom ), e.Value ) ).ToString();
+                    break;
+                case "Active Status":
+
+                    if ( !string.IsNullOrEmpty( e.Value) && e.Value == "all" )
+                    {
+                        e.Value = string.Empty;
+                    }
+
                     break;
 
             }
@@ -228,7 +237,7 @@ namespace RockWeb.Blocks.Core
             }
 
             // Add attribute columns
-            int entityTypeId = CacheEntityType.Get( typeof( Rock.Model.Device ) ).Id;
+            int entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Device ) ).Id;
             foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
@@ -247,7 +256,7 @@ namespace RockWeb.Blocks.Core
                     boundField.AttributeId = attribute.Id;
                     boundField.HeaderText = attribute.Name;
 
-                    var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                     if ( attributeCache != null )
                     {
                         boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -267,8 +276,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindFilter()
         {
-            ddlDeviceType.BindToDefinedType( CacheDefinedType.Get( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ) );
-            ddlDeviceType.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+            dvpDeviceType.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ).Id;
 
             ddlPrintTo.BindToEnum<PrintTo>();
             ddlPrintTo.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
@@ -286,11 +294,16 @@ namespace RockWeb.Blocks.Core
             if ( !Page.IsPostBack )
             {
                 tbName.Text = fDevice.GetUserPreference( "Name" );
-                ddlDeviceType.SetValue( fDevice.GetUserPreference( "Device Type" ) );
+                dvpDeviceType.SetValue( fDevice.GetUserPreference( "Device Type" ) );
                 tbIPAddress.Text = fDevice.GetUserPreference( "IP Address" );
                 ddlPrintTo.SetValue( fDevice.GetUserPreference( "Print To" ) );
                 ddlPrinter.SetValue( fDevice.GetUserPreference( "Printer" ) );
                 ddlPrintFrom.SetValue( fDevice.GetUserPreference( "Print From" ) );
+                var itemActiveStatus = ddlActiveFilter.Items.FindByValue( fDevice.GetUserPreference( "Active Status" ) );
+                if ( itemActiveStatus != null )
+                {
+                    itemActiveStatus.Selected = true;
+                }
             }            
         }
 
@@ -301,7 +314,7 @@ namespace RockWeb.Blocks.Core
         {
             var deviceService = new DeviceService( new RockContext() );
             var sortProperty = gDevice.SortProperty;
-            gDevice.EntityTypeId = CacheEntityType.Get<Device>().Id;
+            gDevice.EntityTypeId = EntityTypeCache.Get<Device>().Id;
 
             var queryable = deviceService.Queryable();
 
@@ -342,6 +355,20 @@ namespace RockWeb.Blocks.Core
                 queryable = queryable.Where( d => d.PrintFrom == printFrom );
             }
 
+            string activeFilterValue = fDevice.GetUserPreference( "Active Status" );
+            if ( !string.IsNullOrWhiteSpace( activeFilterValue ) )
+            {
+                if ( activeFilterValue != "all" )
+                {
+                    var activeFilter = activeFilterValue.AsBoolean();
+                    queryable = queryable.Where( b => b.IsActive == activeFilter );
+                }
+            }
+            else
+            {
+                queryable = queryable.Where( b => b.IsActive );
+            }
+
             gDevice.ObjectList = new Dictionary<string, object>();
             queryable.ToList().ForEach( d => gDevice.ObjectList.Add( d.Id.ToString(), d ) );
 
@@ -356,7 +383,8 @@ namespace RockWeb.Blocks.Core
                     a.PrintFrom,
                     PrinterDeviceName = a.PrinterDevice.Name,
                     a.PrinterDeviceId,
-                    a.DeviceTypeValueId
+                    a.DeviceTypeValueId,
+                    a.IsActive
                 } );
 
             if ( sortProperty != null )
@@ -368,7 +396,7 @@ namespace RockWeb.Blocks.Core
                 gDevice.DataSource = gridList.OrderBy( d => d.Name ).ToList();
             }
 
-            gDevice.EntityTypeId = CacheEntityType.Get<Rock.Model.Device>().Id;
+            gDevice.EntityTypeId = EntityTypeCache.Get<Rock.Model.Device>().Id;
             gDevice.DataBind();
         }
 

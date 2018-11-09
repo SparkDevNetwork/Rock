@@ -91,8 +91,8 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    return toggleTrueFalse.Checked ? FilterExpressionType.GroupAny : FilterExpressionType.GroupAnyFalse;    
-                }                
+                    return toggleTrueFalse.Checked ? FilterExpressionType.GroupAny : FilterExpressionType.GroupAnyFalse;
+                }
             }
 
             set
@@ -196,7 +196,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( lbDelete );
             lbDelete.ID = this.ID + "_lbDelete";
             lbDelete.Click += lbDelete_Click;
-            lbDelete.AddCssClass( "btn btn-xs btn-danger" );
+            lbDelete.AddCssClass( "btn btn-sm btn-danger btn-square" );
             lbDelete.CausesValidation = false;
 
             var iDeleteGroup = new HtmlGenericControl( "i" );
@@ -305,7 +305,7 @@ namespace Rock.Web.UI.Controls
         /// Occurs when [add filter click].
         /// </summary>
         public event EventHandler AddFilterClick;
-        
+
         /// <summary>
         /// Occurs when [add group click].
         /// </summary>

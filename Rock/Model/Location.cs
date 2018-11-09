@@ -26,7 +26,8 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
+using System.Data.Entity;
 
 namespace Rock.Model
 {
@@ -38,7 +39,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Location" )]
     [DataContract]
-    public partial class Location : Model<Location>, IHasActiveFlag
+    public partial class Location : Model<Location>, IHasActiveFlag, ICacheable
     {
         #region Entity Properties
 
@@ -287,7 +288,7 @@ namespace Rock.Model
         /// Gets or sets date and time that this Location's  address has been successfully geocoded. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.DateTime"/> representing the date and time that the address of this location was successfully geocoded. If geocoding has not been attepted for this location or 
+        /// A <see cref="System.DateTime"/> representing the date and time that the address of this location was successfully geocoded. If geocoding has not been attempted for this location or 
         /// the location had not been successfully geocoded this value will be null.
         /// </value>
         [DataMember]
@@ -511,26 +512,39 @@ namespace Rock.Model
         {
             get
             {
-                var campuses = CacheCampus.All();
-
-                int? campusId = null;
-                Location loc = this;
-
-                while ( !campusId.HasValue && loc != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    var campus = campuses.Where( c => c.LocationId != null && c.LocationId == loc.Id ).FirstOrDefault();
-                    if ( campus != null )
-                    {
-                        campusId = campus.Id;
-                    }
-                    else
-                    {
-                        loc = loc.ParentLocation;
-                    }
+                    return GetCampusId( rockContext );
                 }
-
-                return campusId;
             }
+        }
+
+        /// <summary>
+        /// Gets the campus that is at this location, or one of this location's parent location
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private int? GetCampusId( RockContext rockContext )
+        {
+            var campuses = CampusCache.All( rockContext );
+
+            int? campusId = null;
+            Location loc = this;
+
+            while ( !campusId.HasValue && loc != null )
+            {
+                var campus = campuses.Where( c => c.LocationId != null && c.LocationId == loc.Id ).FirstOrDefault();
+                if ( campus != null )
+                {
+                    campusId = campus.Id;
+                }
+                else
+                {
+                    loc = loc.ParentLocation;
+                }
+            }
+
+            return campusId;
         }
 
         /// <summary>
@@ -703,11 +717,8 @@ namespace Rock.Model
 
             string result = string.Format( "{0} {1} {2}, {3} {4}",
                 this.Street1, this.Street2, this.City, this.State, this.PostalCode ).ReplaceWhileExists( "  ", " " );
+            var countryValue = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) ).GetDefinedValueFromValue( this.Country );
 
-            var countryValue = Rock.Cache.CacheDefinedType.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
-                .DefinedValues
-                .Where( v => v.Value.Equals( this.Country, StringComparison.OrdinalIgnoreCase ) )
-                .FirstOrDefault();
             if ( countryValue != null )
             {
                 string format = countryValue.GetAttributeValue( "AddressFormat" );
@@ -790,6 +801,38 @@ namespace Rock.Model
         public void SetDistance( double distance )
         {
             _distance = distance;
+        }
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            // Make sure CampusCache.All is cached using the dbContext (to avoid deadlock if snapshot isolation is disabled)
+            var campusId = this.GetCampusId( dbContext as RockContext );
+
+            // CampusCache has a CampusLocation that could get stale when Location changes, so refresh the CampusCache for this location's Campus
+            if ( this.CampusId.HasValue )
+            {
+                CampusCache.UpdateCachedEntity( this.CampusId.Value, EntityState.Detached );
+            }
+
+            // and also refresh the CampusCache for any Campus that uses this location
+            foreach ( var campus in CampusCache.All( dbContext as RockContext ).Where( c => c.LocationId == this.Id ) )
+            {
+                CampusCache.UpdateCachedEntity( campus.Id, EntityState.Detached );
+            }
         }
 
         /// <summary>

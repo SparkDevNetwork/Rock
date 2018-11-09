@@ -23,7 +23,7 @@ using System.IO;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.WorkflowAttributes
 {
@@ -33,7 +33,7 @@ namespace Rock.Workflow.Action.WorkflowAttributes
     [ActionCategory( "Workflow Attributes" )]
     [Description( "Takes a Lava template and renders it as a text file. The resulting output is placed into a provided workflow attribute of type file." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Attribute Set from Lava" )]
+    [ExportMetadata( "ComponentName", "Attribute Set File from Lava" )]
 
     [WorkflowAttribute( "Result Attribute", "The attribute to put the resulting file into.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.FileFieldType" } )]
@@ -72,7 +72,7 @@ namespace Rock.Workflow.Action.WorkflowAttributes
             Guid guid = GetAttributeValue( action, "ResultAttribute" ).AsGuid();
             if ( !guid.IsEmpty() )
             {
-                var destinationAttribute = CacheAttribute.Get( guid, rockContext );
+                var destinationAttribute = AttributeCache.Get( guid, rockContext );
                 if ( destinationAttribute != null )
                 {
                     string lavaTemplate = GetAttributeValue( action, "LavaTemplate" );

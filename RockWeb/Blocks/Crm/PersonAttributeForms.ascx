@@ -6,12 +6,43 @@
     }
 </script>
 
+<script type="text/javascript">
+    Sys.Application.add_load(function () {
+        var fixHelper = function (e, ui) {
+            ui.children().each(function () {
+                $(this).width($(this).width());
+            });
+         return ui;
+        };
+
+        $('.form-list').sortable({
+            helper: fixHelper,
+            handle: '.form-reorder',
+            containment: 'parent',
+            tolerance: 'pointer',
+            start: function (event, ui) {
+                {
+                    var start_pos = ui.item.index();
+                    ui.item.data('start_pos', start_pos);
+                }
+            },
+            update: function (event, ui) {
+                {
+                    var postbackArg = 're-order-form:' + ui.item.attr('data-key') + ';' + ui.item.index();
+                    window.location = "javascript:__doPostBack('<%=upnlContent.ClientID %>', '" + postbackArg + "')";
+                }
+            }
+        });
+    });
+
+</script>
+
 <asp:UpdatePanel ID="upnlContent" runat="server" ChildrenAsTriggers="false" UpdateMode="Conditional">
     <ContentTemplate>
 
         <asp:HiddenField ID="hfTriggerScroll" runat="server" Value="" />
 
-        <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+        <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
         <Rock:NotificationBox ID="nbMain" runat="server" Visible="false"></Rock:NotificationBox>
 
         <%-- View Panel --%>
@@ -74,9 +105,9 @@
                                         <h3 class="panel-title">Forms</h3>
                                     </div>
                                     <div class="panel-body">
-
-                                        <asp:PlaceHolder ID="phForms" runat="server" />
-
+                                        <div class="form-list ui-sortable">
+                                            <asp:PlaceHolder ID="phForms" runat="server" />
+                                        </div>
                                         <div class="pull-right">
                                             <asp:LinkButton ID="lbAddForm" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddForm_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Form</asp:LinkButton>
                                         </div>
@@ -96,7 +127,7 @@
             <Content>
                 <asp:HiddenField ID="hfFormGuid" runat="server" />
                 <asp:HiddenField ID="hfAttributeGuid" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummaryAttribute" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="Field" />
+                <asp:ValidationSummary ID="ValidationSummaryAttribute" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Field" />
                 <div class="row">
                     <div class="col-md-4">
                         <Rock:RockDropDownList ID="ddlPersonAttributes" runat="server" Label="Person Attribute" ValidationGroup="Field" />

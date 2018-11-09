@@ -22,7 +22,7 @@ using System.Text.RegularExpressions;
 using DotLiquid;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
 {
@@ -33,7 +33,7 @@ namespace Rock.Lava.Blocks
     /// activity (if one was activated). Also provides an <c>Error</c> variable if any
     /// error occurred.
     /// </summary>
-    /// 
+    ///
     /// <example>
     /// This example shows how to initiate a new Workflow instance. The <c>WorkflowType</c> can
     /// be either an integer (42), string integer ('42') or string GUID
@@ -45,7 +45,7 @@ namespace Rock.Lava.Blocks
     /// {% endworkflowactivate %}
     /// </code>
     /// </example>
-    /// 
+    ///
     /// <example>
     /// This example shows how to activate an Activity in an existing Workflow instance. The
     /// <c>WorkflowId</c> can be either an integer (122), string integer ('122') or string GUID
@@ -58,7 +58,7 @@ namespace Rock.Lava.Blocks
     /// {% endworkflowactivate %}
     /// </code>
     /// </example>
-    /// 
+    ///
     /// <example>
     /// Example of passing attribute values to a workflow. The same can be done with an Activity.
     /// Any unrecognized parameters are treated as potential attributes in the Workflow or Activity.
@@ -67,7 +67,7 @@ namespace Rock.Lava.Blocks
     /// {% endworkflowactivate %}
     /// </code>
     /// </example>
-    /// 
+    ///
     /// <example>
     /// Re-activate an existing workflow for immediate processing if it is in a suspended/waiting state.
     /// <code>
@@ -149,7 +149,7 @@ namespace Rock.Lava.Blocks
 
             /* Process inside a new stack level so our own created variables do not
              * persist throughout the rest of the workflow. */
-            context.Stack( () =>
+            context.Stack( ( System.Action)(() =>
             {
                 using ( var rockContext = new RockContext() )
                 {
@@ -162,22 +162,22 @@ namespace Rock.Lava.Blocks
                     {
                         string type = parmWorkflowType;
                         string name = parmWorkflowName ?? string.Empty;
-                        CacheWorkflowType workflowType = null;
+                        WorkflowTypeCache workflowType = null;
 
                         /* Get the type of workflow */
                         if ( type.AsGuidOrNull() != null )
                         {
-                            workflowType = CacheWorkflowType.Get( type.AsGuid() );
+                            workflowType = WorkflowTypeCache.Get( type.AsGuid() );
                         }
                         else if ( type.AsIntegerOrNull() != null )
                         {
-                            workflowType = CacheWorkflowType.Get( type.AsInteger() );
+                            workflowType = WorkflowTypeCache.Get( type.AsInteger() );
                         }
 
                         /* Try to activate the workflow */
                         if ( workflowType != null )
                         {
-                            workflow = Rock.Model.Workflow.Activate( workflowType, parmWorkflowName );
+                            workflow = Rock.Model.Workflow.Activate( ( WorkflowTypeCache ) workflowType, ( string ) parmWorkflowName );
 
                             /* Set any workflow attributes that were specified. */
                             foreach ( var attr in attributes )
@@ -245,16 +245,16 @@ namespace Rock.Lava.Blocks
                                     if ( parmActivityType != null )
                                     {
                                         string type = parmActivityType.ToString();
-                                        CacheWorkflowActivityType activityType = null;
+                                        WorkflowActivityTypeCache activityType = null;
 
                                         /* Get the type of activity */
                                         if ( type.AsGuidOrNull() != null )
                                         {
-                                            activityType = CacheWorkflowActivityType.Get( type.AsGuid() );
+                                            activityType = WorkflowActivityTypeCache.Get( type.AsGuid() );
                                         }
                                         else if ( type.AsIntegerOrNull() != null )
                                         {
-                                            activityType = CacheWorkflowActivityType.Get( type.AsInteger() );
+                                            activityType = WorkflowActivityTypeCache.Get( type.AsInteger() );
                                         }
 
                                         if ( activityType != null )
@@ -314,7 +314,7 @@ namespace Rock.Lava.Blocks
 
                     RenderAll( NodeList, context, result );
                 }
-            } );
+            }) );
         }
 
         /// <summary>
@@ -323,7 +323,6 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
         private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup
@@ -351,7 +350,7 @@ namespace Rock.Lava.Blocks
 
             var parms = new Dictionary<string, string>();
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:('[^']+'|[\\d.]+))" )
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:('[^']+'|[\\d.]+))" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();
@@ -363,11 +362,11 @@ namespace Rock.Lava.Blocks
                 {
                     if ( itemParts[1].Trim()[0] == '\'' )
                     {
-                        parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
+                        parms.AddOrReplace( itemParts[0].Trim(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
                     }
                     else
                     {
-                        parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim() );
+                        parms.AddOrReplace( itemParts[0].Trim(), itemParts[1].Trim() );
                     }
                 }
             }

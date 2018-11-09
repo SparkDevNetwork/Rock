@@ -26,14 +26,14 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// The main Person Profile block the main information about a peron 
+    /// The main Person Profile block the main information about a person 
     /// </summary>
     [DisplayName( "Person Bio" )]
     [Category( "CRM > Person Detail" )]
@@ -88,9 +88,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         {
             base.OnInit( e );
 
-            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -101,7 +101,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 pnlFollow.Visible = GetAttributeValue( "AllowFollowing" ).AsBoolean();
 
                 // Record Type - this is always "business". it will never change.
-                if ( Person.RecordTypeValueId == CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id )
+                if ( Person.RecordTypeValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id )
                 {
                     var parms = new Dictionary<string, string>();
                     parms.Add( "businessId", Person.Id.ToString() );
@@ -124,7 +124,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         Guid guid = badgeGuid.AsGuid();
                         if ( guid != Guid.Empty )
                         {
-                            var personBadge = CachePersonBadge.Get( guid );
+                            var personBadge = PersonBadgeCache.Get( guid );
                             if ( personBadge != null )
                             {
                                 blStatus.PersonBadges.Add( personBadge );
@@ -138,12 +138,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 // only show if the Impersonation button if the feature is enabled, and the current user is authorized to Administrate the person
                 bool enableImpersonation = this.GetAttributeValue( "EnableImpersonation" ).AsBoolean();
                 lbImpersonate.Visible = false;
-                if ( enableImpersonation )
+                if ( enableImpersonation && Person.Id != CurrentPersonId && Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) )
                 {
-                    if ( Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) )
-                    {
-                        lbImpersonate.Visible = true;
-                    }
+                    lbImpersonate.Visible = true;
                 }
             }
         }
@@ -211,7 +208,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     if ( Person.BirthDate.HasValue )
                     {
                         var formattedAge = Person.FormatAge();
-                        if ( formattedAge.IsNotNullOrWhitespace() )
+                        if ( formattedAge.IsNotNullOrWhiteSpace() )
                         {
                             formattedAge += " old";
                         }
@@ -255,7 +252,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     
                     var communicationLinkedPageValue = this.GetAttributeValue( "CommunicationPage" );
                     Rock.Web.PageReference communicationPageReference;
-                    if ( communicationLinkedPageValue.IsNotNullOrWhitespace() )
+                    if ( communicationLinkedPageValue.IsNotNullOrWhiteSpace() )
                     {
                         communicationPageReference = new Rock.Web.PageReference( communicationLinkedPageValue );
                     }
@@ -279,51 +276,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         taglPersonTags.Visible = false;
                     }
 
-                    StringBuilder sbActions = new StringBuilder();
-                    var workflowActions = GetAttributeValue( "WorkflowActions" );
-                    if ( !string.IsNullOrWhiteSpace( workflowActions ) )
-                    {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            var workflowTypeService = new WorkflowTypeService( rockContext );
-                            foreach ( string guidValue in workflowActions.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                            {
-                                Guid? guid = guidValue.AsGuidOrNull();
-                                if ( guid.HasValue )
-                                {
-                                    var workflowType = workflowTypeService.Get( guid.Value );
-                                    if ( workflowType != null && workflowType.IsActive && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                                    {
-                                        string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
-                                        sbActions.AppendFormat(
-                                            "<li><a href='{0}'><i class='fa-fw {1}'></i> {2}</a></li>",
-                                            ResolveRockUrl( url ),
-                                            workflowType.IconCssClass,
-                                            workflowType.Name );
-                                        sbActions.AppendLine();
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    var actions = GetAttributeValue( "Actions" );
-                    if ( !string.IsNullOrWhiteSpace( actions ) )
-                    {
-                        string appRoot = ResolveRockUrl( "~/" );
-                        string themeRoot = ResolveRockUrl( "~~/" );
-                        actions = actions.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
-
-                        if ( actions.Contains( "{0}" ) )
-                        {
-                            actions = string.Format( actions, Person.Id );
-                        }
-
-                        sbActions.Append( actions );
-                    }
-
-                    lActions.Text = sbActions.ToString();
-                    ulActions.Visible = !string.IsNullOrWhiteSpace( lActions.Text );
+                    CreateActionMenu();
 
                     string customContent = GetAttributeValue( "CustomContent" );
                     if ( !string.IsNullOrWhiteSpace( customContent ) )
@@ -340,6 +293,72 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     pnlContent.Visible = false;
                 }
             }
+        }
+
+        protected void CreateActionMenu()
+        {
+            StringBuilder sbActions = new StringBuilder();
+            
+            // First list the actions manually entered as html in the block settting
+            var actions = GetAttributeValue( "Actions" );
+            if ( !string.IsNullOrWhiteSpace( actions ) )
+            {
+                string appRoot = ResolveRockUrl( "~/" );
+                string themeRoot = ResolveRockUrl( "~~/" );
+                actions = actions.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                if ( actions.Contains( "{0}" ) )
+                {
+                    actions = string.Format( actions, Person.Id );
+                }
+
+                sbActions.Append( "<li role=\"separator\" class=\"divider\"></li>" );
+                sbActions.Append( actions );
+            }
+
+            // Next list the workflow actions selected in the picker
+            var workflowActions = GetAttributeValue( "WorkflowActions" );
+            if ( !string.IsNullOrWhiteSpace( workflowActions ) )
+            {
+                List<WorkflowType> workflowTypes = new List<WorkflowType>();
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var workflowTypeService = new WorkflowTypeService( rockContext );
+                    foreach ( string guidValue in workflowActions.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                    {
+                        Guid? guid = guidValue.AsGuidOrNull();
+                        if ( guid.HasValue )
+                        {
+                            var workflowType = workflowTypeService.Get( guid.Value );
+                            if ( workflowType != null && (workflowType.IsActive ?? true) && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                            {
+                                workflowTypes.Add( workflowType );
+                            }
+                        }
+                    }
+                }
+
+                workflowTypes = workflowTypes.OrderBy( w => w.Name ).ToList();
+
+                if ( workflowTypes.Count() > 0 )
+                {
+                    sbActions.Append( "<li role=\"separator\" class=\"divider\"></li>" );
+                }
+
+                foreach ( var workflowType in workflowTypes )
+                {
+                    string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
+                    sbActions.AppendFormat(
+                        "<li><a href='{0}'><i class='fa-fw {1}'></i> {2}</a></li>",
+                        ResolveRockUrl( url ),
+                        workflowType.IconCssClass,
+                        workflowType.Name );
+                    sbActions.AppendLine();
+                }
+            }
+
+            lActions.Text = sbActions.ToString();
         }
 
         /// <summary>
@@ -364,7 +383,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( Person.RecordTypeValueId.HasValue )
             {
-                int recordTypeValueIdBusiness = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                int recordTypeValueIdBusiness = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
                 isBusiness = ( Person.RecordTypeValueId.Value == recordTypeValueIdBusiness );
             }
@@ -390,7 +409,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 // Prefix with Title if they have a Title with IsFormal=True
                 if ( Person.TitleValueId.HasValue )
                 {
-                    var personTitleValue = CacheDefinedValue.Get( Person.TitleValueId.Value );
+                    var personTitleValue = DefinedValueCache.Get( Person.TitleValueId.Value );
                     if ( personTitleValue != null && personTitleValue.GetAttributeValue( "IsFormal" ).AsBoolean() )
                     {
                         nameText = string.Format( "<span class='title'>{0}</span> ", personTitleValue.Value ) + nameText;
@@ -409,7 +428,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 // Add Suffix.
                 if ( Person.SuffixValueId.HasValue )
                 {
-                    var suffix = CacheDefinedValue.Get( Person.SuffixValueId.Value );
+                    var suffix = DefinedValueCache.Get( Person.SuffixValueId.Value );
                     if ( suffix != null )
                     {
                         nameText += " " + suffix.Value;
@@ -520,7 +539,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
             }
 
-            var phoneType = CacheDefinedValue.Get( phoneNumberTypeId );
+            var phoneType = DefinedValueCache.Get( phoneNumberTypeId );
             if ( phoneType != null )
             {
                 string phoneMarkup = formattedNumber;

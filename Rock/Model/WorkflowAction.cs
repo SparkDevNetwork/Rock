@@ -22,7 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Workflow;
 
 namespace Rock.Model
@@ -114,17 +114,17 @@ namespace Rock.Model
         /// The action type cache.
         /// </value>
         [LavaInclude]
-        public virtual CacheWorkflowActionType ActionTypeCache
+        public virtual WorkflowActionTypeCache ActionTypeCache
         {
             get
             {
                 if ( ActionTypeId > 0 )
                 {
-                    return CacheWorkflowActionType.Get( ActionTypeId );
+                    return WorkflowActionTypeCache.Get( ActionTypeId );
                 }
                 else if ( ActionType != null )
                 {
-                    return CacheWorkflowActionType.Get( ActionType.Id );
+                    return WorkflowActionTypeCache.Get( ActionType.Id );
                 }
                 return null;
             }
@@ -294,7 +294,7 @@ namespace Rock.Model
         /// <returns></returns>
         public string GetWorklowAttributeValue( Guid guid, bool formatted = false, bool condensed = false )
         {
-            var attribute = CacheAttribute.Get( guid );
+            var attribute = AttributeCache.Get( guid );
             if ( attribute != null && Activity != null )
             {
                 string value = string.Empty;
@@ -336,7 +336,7 @@ namespace Rock.Model
             if ( guid.HasValue )
             {
                 // Check to see if attribute exists with selected guid
-                var attribute = CacheAttribute.Get( guid.Value );
+                var attribute = AttributeCache.Get( guid.Value );
 
                 // If so, check to see if the current workflow or activity contains that attribute
                 if ( attribute != null && Activity != null )
@@ -378,7 +378,7 @@ namespace Rock.Model
         {
             if ( this.Activity != null && this.Activity.Workflow != null )
             {
-                var workflowType = this.Activity.Workflow.CacheWorkflowType;
+                var workflowType = this.Activity.Workflow.WorkflowTypeCache;
                 if ( force || ( workflowType != null && workflowType.LoggingLevel == WorkflowLoggingLevel.Action ) )
                 {
                     string activityIdStr = this.Activity.Id > 0 ? "(" + this.Activity.Id.ToString() + ")" : "";
@@ -417,7 +417,7 @@ namespace Rock.Model
                 {
                     foreach ( var formAttribute in actionType.WorkflowForm.FormAttributes.OrderBy( a => a.Order ) )
                     {
-                        var attribute = CacheAttribute.Get( formAttribute.AttributeId );
+                        var attribute = AttributeCache.Get( formAttribute.AttributeId );
                         if ( attribute != null && Activity != null )
                         {
                             string value = string.Empty;
@@ -490,7 +490,8 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.WorkflowAction" />
         /// </returns>        
-        [Obsolete( "For improved performance, use the Activate method that takes a CacheWorkflowActionType parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowAction object that is returned by that method will not have the ActionType property set. If you are referencing the ActionType property on a Workflow Action returned by that method, you will get a Null Reference Exception! You should use the new ActionTypeCache property on the workflow action instead." )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowActionTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowAction object that is returned by that method will not have the ActionType property set. If you are referencing the ActionType property on a Workflow Action returned by that method, you will get a Null Reference Exception! You should use the new ActionTypeCache property on the workflow action instead.", true )]
         internal static WorkflowAction Activate( WorkflowActionType actionType, WorkflowActivity activity )
         {
             using ( var rockContext = new RockContext() )
@@ -508,12 +509,13 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.WorkflowAction" />
         /// </returns>
-        [Obsolete( "For improved performance, use the Activate method that takes a CacheWorkflowActionType parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowAction object that is returned by that method will not have the ActionType property set. If you are referencing the ActionType property on a Workflow Action returned by that method, you will get a Null Reference Exception! You should use the new ActionTypeCache property on the workflow action instead." )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowActionTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowAction object that is returned by that method will not have the ActionType property set. If you are referencing the ActionType property on a Workflow Action returned by that method, you will get a Null Reference Exception! You should use the new ActionTypeCache property on the workflow action instead.", true )]
         internal static WorkflowAction Activate( WorkflowActionType actionType, WorkflowActivity activity, RockContext rockContext )
         {
             if ( actionType != null )
             {
-                var actionTypeCache = CacheWorkflowActionType.Get( actionType.Id );
+                var actionTypeCache = WorkflowActionTypeCache.Get( actionType.Id );
                 var action = Activate( actionTypeCache, activity, rockContext );
                 if ( action != null )
                 {
@@ -533,7 +535,7 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.WorkflowAction" />
         /// </returns>
-        internal static WorkflowAction Activate( CacheWorkflowActionType actionTypeCache, WorkflowActivity activity )
+        internal static WorkflowAction Activate( WorkflowActionTypeCache actionTypeCache, WorkflowActivity activity )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -550,7 +552,7 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.WorkflowAction" />
         /// </returns>
-        internal static WorkflowAction Activate( CacheWorkflowActionType actionTypeCache, WorkflowActivity activity, RockContext rockContext )
+        internal static WorkflowAction Activate( WorkflowActionTypeCache actionTypeCache, WorkflowActivity activity, RockContext rockContext )
         {
             var action = new WorkflowAction();
             action.Activity = activity;

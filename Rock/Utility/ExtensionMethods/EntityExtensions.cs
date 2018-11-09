@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -33,6 +34,16 @@ namespace Rock
         /// <param name="listControl">The list control.</param>
         /// <param name="entity">The entity.</param>
         public static void SetValue( this ListControl listControl, IEntity entity )
+        {
+            listControl.SetValue( entity == null ? "0" : entity.Id.ToString() );
+        }
+
+        /// <summary>
+        /// Sets the value to the entity's id value. If the value does not exist, will set the first item in the list.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="entity">The entity.</param>
+        public static void SetValue( this ListControl listControl, Rock.Web.Cache.IEntityCache entity )
         {
             listControl.SetValue( entity == null ? "0" : entity.Id.ToString() );
         }
@@ -110,7 +121,7 @@ namespace Rock
 
             if ( type.Namespace.Equals( "Rock.Model" ) )
             {
-                var entityType = Rock.Cache.CacheEntityType.Get( type, false );
+                var entityType = EntityTypeCache.Get( type, false );
                 if ( entityType != null && entityType.FriendlyName != null )
                 {
                     return entityType.FriendlyName;

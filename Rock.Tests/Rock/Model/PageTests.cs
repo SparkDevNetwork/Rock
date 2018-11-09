@@ -1,5 +1,5 @@
 ﻿using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -265,10 +265,10 @@ namespace Rock.Tests.Rock.Model
             var obj = new Page
             {
                 InternalName = "Some Page",
-                Attributes = new Dictionary<string, CacheAttribute> { { "foobar", null } }
+                Attributes = new Dictionary<string, AttributeCache> { { "foobar", null } }
             };
 
-            // the AttributeCacheJsonConverter won't convert null to CacheAttribute
+            // the AttributeCacheJsonConverter won't convert null to AttributeCache
             var json = obj.ToJson().Replace( "\"foobar\":null", "\"foobar\":{}" );
 
             var page = Page.FromJson( json );
@@ -285,9 +285,9 @@ namespace Rock.Tests.Rock.Model
             var obj = new Page
             {
                 InternalName = "Some Page",
-                AttributeValues = new Dictionary<string, CacheAttributeValue>()
+                AttributeValues = new Dictionary<string, AttributeValueCache>()
                 {
-                    { "foobar",  new CacheAttributeValue( new AttributeValue { Value = "baz" } ) }
+                    { "foobar",  new AttributeValueCache( new AttributeValue { Value = "baz" } ) }
                 }
             };
 
@@ -295,7 +295,7 @@ namespace Rock.Tests.Rock.Model
             var page = Page.FromJson( json );
             Assert.NotNull( page.AttributeValues );
             Assert.NotEmpty( page.AttributeValues );
-            Assert.Equal( page.AttributeValues.First().Value.Value, "baz" );
+            Assert.Equal( "baz", page.AttributeValues.First().Value.Value );
         }
     }
 }

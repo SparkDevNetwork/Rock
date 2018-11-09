@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Security;
@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Core
                         }
                         else
                         {
-                            e.Value = CacheEntityType.Get( int.Parse( e.Value ) ).FriendlyName;
+                            e.Value = EntityTypeCache.Get( int.Parse( e.Value ) ).FriendlyName;
                         }
                     }
                     break;
@@ -226,7 +226,7 @@ namespace RockWeb.Blocks.Core
                     lEntityType.Text = "None (Global Attributes)";
 
                     int categoryId = (int)rGrid.DataKeys[e.Row.RowIndex].Value;
-                    var category = CacheCategory.Get( categoryId );
+                    var category = CategoryCache.Get( categoryId );
 
                     int entityTypeId = int.MinValue;
                     if ( category != null &&
@@ -234,7 +234,7 @@ namespace RockWeb.Blocks.Core
                         int.TryParse( category.EntityTypeQualifierValue, out entityTypeId ) &&
                         entityTypeId > 0 )
                     {
-                        var entityType = CacheEntityType.Get( entityTypeId );
+                        var entityType = EntityTypeCache.Get( entityTypeId );
                         if ( entityType != null )
                         {
                             lEntityType.Text = entityType.FriendlyName;
@@ -281,14 +281,13 @@ namespace RockWeb.Blocks.Core
 
             if ( categoryId != 0 )
             {
-                CacheCategory.Remove( categoryId );
                 category = service.Get( categoryId );
             }
 
             if ( category == null )
             {
                 category = new Category();
-                category.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Attribute ) ).Id;
+                category.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
                 category.EntityTypeQualifierColumn = "EntityTypeId";
 
                 var lastCategory = GetUnorderedCategories( category.EntityTypeId )
@@ -359,7 +358,7 @@ namespace RockWeb.Blocks.Core
             entityTypePicker.EntityTypes = entityTypes;
 
             // Load Entity Type Filter
-            var attributeEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Attribute ) ).Id;
+            var attributeEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
             var categoryEntities = new CategoryService( rockContext ).Queryable()
                 .Where( c =>
                     c.EntityTypeId == attributeEntityTypeId &&
@@ -408,7 +407,7 @@ namespace RockWeb.Blocks.Core
         {
             rockContext = rockContext ?? new RockContext();
 
-            var attributeEntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Attribute ) ).Id;
+            var attributeEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
             var queryable = new CategoryService( rockContext ).Queryable()
                 .Where( c => 
                     c.EntityTypeId == attributeEntityTypeId && 

@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Web.UI.HtmlControls;
@@ -74,9 +74,9 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
 
             size = GetAttributeValue( "PhotoSize" ).AsInteger();
@@ -126,7 +126,7 @@ namespace RockWeb.Blocks.Crm
         #region Events
 
         /// <summary>
-        /// Builds the image html for the person in the perticular row.
+        /// Builds the image html for the person in the particular row.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>

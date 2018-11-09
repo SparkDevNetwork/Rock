@@ -22,7 +22,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -57,15 +57,15 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
-            var ddl = new RockDropDownList();
-            controls.Add( ddl );
-            ddl.AutoPostBack = true;
-            ddl.SelectedIndexChanged += OnQualifierUpdated;
+            var dvp = new DefinedValuePicker();
+            controls.Add( dvp );
+            dvp.AutoPostBack = true;
+            dvp.SelectedIndexChanged += OnQualifierUpdated;
 
-            var definedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid() );
-            ddl.BindToDefinedType( definedType, true );
-            ddl.Label = "Purpose";
-            ddl.Help = "An optional setting to limit the selection of group types to those that have the selected purpose.";
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid() );
+            dvp.BindToDefinedType( definedType, true );
+            dvp.Label = "Purpose";
+            dvp.Help = "An optional setting to limit the selection of group types to those that have the selected purpose.";
 
             return controls;
         }
@@ -81,12 +81,12 @@ namespace Rock.Field.Types
             configurationValues.Add( GROUP_TYPE_PURPOSE_VALUE_GUID, new ConfigurationValue( "Purpose", "An optional setting to limit the selection of group types to those that have the selected purpose.", string.Empty ) );
 
             if ( controls != null && controls.Count == 1 &&
-                controls[0] != null && controls[0] is DropDownList )
+                controls[0] != null && controls[0] is DefinedValuePicker )
             {
-                int? definedValueId = ( (DropDownList)controls[0] ).SelectedValueAsInt();
+                int? definedValueId = ( ( DefinedValuePicker ) controls[0] ).SelectedValueAsInt();
                 if ( definedValueId.HasValue )
                 {
-                    var definedValue = CacheDefinedValue.Get( definedValueId.Value );
+                    var definedValue = DefinedValueCache.Get( definedValueId.Value );
                     if ( definedValue != null )
                     {
                         configurationValues[GROUP_TYPE_PURPOSE_VALUE_GUID].Value = definedValue.Guid.ToString();
@@ -105,15 +105,15 @@ namespace Rock.Field.Types
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( controls != null && controls.Count == 1 && configurationValues != null &&
-                controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( GROUP_TYPE_PURPOSE_VALUE_GUID ) )
+                controls[0] != null && controls[0] is DefinedValuePicker && configurationValues.ContainsKey( GROUP_TYPE_PURPOSE_VALUE_GUID ) )
             {
                 Guid? definedValueGuid = configurationValues[GROUP_TYPE_PURPOSE_VALUE_GUID].Value.AsGuidOrNull();
                 if ( definedValueGuid.HasValue )
                 {
-                    var definedValue = CacheDefinedValue.Get( definedValueGuid.Value );
+                    var definedValue = DefinedValueCache.Get( definedValueGuid.Value );
                     if ( definedValue != null )
                     {
-                        ( (DropDownList)controls[0] ).SetValue( definedValue.Id.ToString() );
+                        ( ( DefinedValuePicker ) controls[0] ).SetValue( definedValue.Id.ToString() );
                     }
                 }
             }
@@ -138,7 +138,7 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( value, out guid ) )
             {
-                var groupType = CacheGroupType.Get( guid );
+                var groupType = GroupTypeCache.Get( guid );
                 if ( groupType != null )
                 {
                     formattedValue = groupType.Name;
@@ -194,7 +194,7 @@ namespace Rock.Field.Types
             {
                 if ( groupTypePicker.SelectedGroupTypeId.HasValue )
                 {
-                    var groupType = CacheGroupType.Get( groupTypePicker.SelectedGroupTypeId.Value );
+                    var groupType = GroupTypeCache.Get( groupTypePicker.SelectedGroupTypeId.Value );
                     if ( groupType != null )
                     {
                         return groupType.Guid.ToString();
@@ -219,10 +219,10 @@ namespace Rock.Field.Types
             if ( groupTypePicker != null )
             {
                 Guid? groupTypeGuid = value.AsGuidOrNull();
-                CacheGroupType groupType = null;
+                GroupTypeCache groupType = null;
                 if ( groupTypeGuid.HasValue )
                 {
-                    groupType = CacheGroupType.Get( groupTypeGuid.Value );
+                    groupType = GroupTypeCache.Get( groupTypeGuid.Value );
                 }
 
                 groupTypePicker.SelectedGroupTypeId = groupType?.Id;

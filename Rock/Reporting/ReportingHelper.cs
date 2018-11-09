@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
 using Rock.Web.UI.Controls;
 
@@ -92,7 +92,7 @@ namespace Rock.Reporting
                     return;
                 }
 
-                Type entityType = CacheEntityType.Get( report.EntityTypeId.Value, rockContext ).GetEntityType();
+                Type entityType = EntityTypeCache.Get( report.EntityTypeId.Value, rockContext ).GetEntityType();
                 if ( entityType == null )
                 {
                     errorMessage = string.Format( "Unable to determine entityType for {0}", report.EntityType );
@@ -101,7 +101,7 @@ namespace Rock.Reporting
 
                 gReport.EntityTypeId = report.EntityTypeId;
 
-                bool isPersonDataSet = report.EntityTypeId == CacheEntityType.Get( typeof( Rock.Model.Person ), true, rockContext ).Id;
+                bool isPersonDataSet = report.EntityTypeId == EntityTypeCache.Get( typeof( Rock.Model.Person ), true, rockContext ).Id;
 
                 if ( isPersonDataSet )
                 {
@@ -115,13 +115,13 @@ namespace Rock.Reporting
 
                 if ( report.EntityTypeId.HasValue )
                 {
-                    gReport.RowItemText = CacheEntityType.Get( report.EntityTypeId.Value, rockContext ).FriendlyName;
+                    gReport.RowItemText = EntityTypeCache.Get( report.EntityTypeId.Value, rockContext ).FriendlyName;
                 }
 
                 List<EntityField> entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType, true, false );
 
                 var selectedEntityFields = new Dictionary<int, EntityField>();
-                var selectedAttributes = new Dictionary<int, CacheAttribute>();
+                var selectedAttributes = new Dictionary<int, AttributeCache>();
                 var selectedComponents = new Dictionary<int, ReportField>();
 
                 // if there is a selectField, keep it to preserve which items are checked
@@ -177,7 +177,7 @@ namespace Rock.Reporting
                         Guid? attributeGuid = reportField.Selection.AsGuidOrNull();
                         if ( attributeGuid.HasValue )
                         {
-                            var attribute = CacheAttribute.Get( attributeGuid.Value, rockContext );
+                            var attribute = AttributeCache.Get( attributeGuid.Value, rockContext );
                             if ( attribute != null )
                             {
                                 selectedAttributes.Add( columnIndex, attribute );
@@ -414,6 +414,7 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="phFilters">The ph filters.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete()]
         public static DataViewFilterOverrides GetFilterOverridesFromControls( PlaceHolder phFilters )
         {
@@ -539,7 +540,7 @@ namespace Rock.Reporting
             filter.Expanded = filterField.Expanded;
             if ( filterField.FilterEntityTypeName != null )
             {
-                filter.EntityTypeId = Rock.Cache.CacheEntityType.Get( filterField.FilterEntityTypeName ).Id;
+                filter.EntityTypeId = EntityTypeCache.Get( filterField.FilterEntityTypeName ).Id;
                 filter.Selection = filterField.GetSelection();
             }
 
@@ -771,8 +772,8 @@ namespace Rock.Reporting
         {
             var result = new Dictionary<Guid, string>();
 
-            var entityType = CacheEntityType.Get( filter.EntityTypeId ?? 0 );
-            var reportEntityTypeCache = CacheEntityType.Get( reportEntityType );
+            var entityType = EntityTypeCache.Get( filter.EntityTypeId ?? 0 );
+            var reportEntityTypeCache = EntityTypeCache.Get( reportEntityType );
             var reportEntityTypeModel = reportEntityTypeCache.GetEntityType();
 
             var filterInfo = new FilterInfo( filter );

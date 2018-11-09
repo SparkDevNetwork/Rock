@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Data.Entity;
@@ -129,7 +129,7 @@ namespace RockWeb.Blocks.Event
             gRegistrations.SelectedKeys.ToList().ForEach( r => registrationsSelected.Add( r.ToString().AsInteger() ) );
             if ( registrationsSelected.Any() )
             {
-                var appRoot = Rock.Cache.CacheGlobalAttributes.Get().GetValue( "PublicApplicationRoot" );
+                var appRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
                 
                 if ( _registrationInstance == null )
                 {
@@ -407,7 +407,7 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Dayses the since last reminder.
+        /// Days the since last reminder.
         /// </summary>
         /// <param name="lastReminderDate">The last reminder date.</param>
         /// <returns></returns>

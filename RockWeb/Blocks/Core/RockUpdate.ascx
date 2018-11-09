@@ -34,7 +34,7 @@
                     <div class="well well-message well-message-info">
                         <h1>New Pieces Available</h1>
                         <i class="fa fa-puzzle-piece"></i>
-                        <p>We've expanded the puzzle, let's get you up-to-date.</p>
+                        <p>We’ve expanded the puzzle, let’s get you up-to-date.</p>
                     </div>
 
                     <Rock:NotificationBox runat="server" Title="Remember..." NotificationBoxType="Warning" ID="nbRepoWarning" Visible="false">
@@ -42,7 +42,7 @@
 
                     <Rock:NotificationBox runat="server" Title="Note:" NotificationBoxType="Warning" ID="nbBackupMessage">
                         We <em>strongly urge</em> you to backup your database and website before updating Rock.
-                        The changes that are made during the update process can't be undone.
+                        The changes that are made during the update process can’t be undone.
                         Also, be patient when updating. It takes anywhere from a few seconds
                         to several minutes depending on the update size and your download speed.</Rock:NotificationBox>
                 </asp:Panel>
@@ -50,17 +50,17 @@
                 <!-- Early Access Messages -->
                 <div class="well">
                     <div class="row margin-b-lg">
-                        <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2">
+                        <div class="col-sm-3 col-md-2 margin-b-md">
                             <Rock:HighlightLabel runat="server" ID="hlblEarlyAccess" LabelType="Warning" Text="Early Access: Not Enabled" CssClass="padding-all-sm"></Rock:Highlightlabel>
                         </div>
-                        <div class="col-xs-8 col-sm-10 col-md-10 col-lg-10">
+                        <div class="col-sm-9 col-md-10">
                             <!-- Early Access Not Enabled -->
-                            <asp:Panel runat="server" ID="pnlEarlyAccessNotEnabled" Visible="true"> 
+                            <asp:Panel runat="server" ID="pnlEarlyAccessNotEnabled" Visible="true">
                                 <p>
                                     Community Contributors have early access to major releases of Rock. Find out
                                 <a href="http://www.rockrms.com/earlyaccess">how to get early access to releases as a Community Contributor</a>.
-                                   
-                                    If you are already a Community Contributor and are having trouble with your access, 
+
+                                    If you are already a Community Contributor and are having trouble with your access,
                                     <asp:Hyperlink ID="btnIssues" runat="server">let us know so we can resolve the problem</asp:Hyperlink>.
                                 </p>
                             </asp:Panel>
@@ -70,7 +70,7 @@
                         </div>
                     </div>
                 </div>
-                    
+
                 <asp:Panel ID="pnlUpdates" runat="server" Visible="false">
 
                     <div class="row margin-b-md">
@@ -137,13 +137,13 @@
                     <div class="well well-message well-message-danger">
                         <h1>Whoa... That Wasn't Suppose To Happen</h1>
                         <i class="fa fa-exclamation-circle"></i>
-                        <p>An error ocurred during the update process.</p>
+                        <p>An error occurred during the update process.</p>
                     </div>
-            
+
                     <asp:Literal ID="lMessage" runat="server"></asp:Literal>
-                
+
                     <Rock:NotificationBox ID="nbErrors" runat="server" NotificationBoxType="Danger" Heading="Here's what happened..." />
-                </asp:Panel>       
+                </asp:Panel>
             </div>
         </div>
 

@@ -32,7 +32,7 @@ using System.Xml.Linq;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Examples
 
                     if ( entityTypeId == null )
                     {
-                        var entityType = CacheEntityType.Get( PageParameter( "EntityType" ).AsGuid() );
+                        var entityType = EntityTypeCache.Get( PageParameter( "EntityType" ).AsGuid() );
 
                         if ( entityType != null )
                         {
@@ -236,14 +236,14 @@ namespace RockWeb.Blocks.Examples
                 }
             }
 
-            foreach ( var entity in CacheEntityType.All().Where( t => t.IsEntity ) )
+            foreach ( var entity in EntityTypeCache.All().Where( t => t.IsEntity ) )
             {
                 var type = entity.GetEntityType();
                 if ( type != null && type.InheritsOrImplements( typeof( Rock.Data.Entity<> ) ) )
                 {
                     string category = "Other";
                     var domainAttr = type.GetCustomAttribute<RockDomainAttribute>( false );
-                    if ( domainAttr != null && domainAttr.Name.IsNotNullOrWhitespace() )
+                    if ( domainAttr != null && domainAttr.Name.IsNotNullOrWhiteSpace() )
                     {
                         category = domainAttr.Name;
                     }
@@ -283,8 +283,8 @@ namespace RockWeb.Blocks.Examples
             pnlKey.Visible = false;
             lCategoryName.Text = string.Empty;
 
-            CacheEntityType entityType = null;
-            var entityTypeList = new List<CacheEntityType>();
+            EntityTypeCache entityType = null;
+            var entityTypeList = new List<EntityTypeCache>();
             if ( categoryGuid.HasValue )
             {
                 var category = EntityCategories.Where( c => c.Guid.Equals( categoryGuid ) ).FirstOrDefault();
@@ -293,7 +293,7 @@ namespace RockWeb.Blocks.Examples
                     lCategoryName.Text = category.Name + " Models";
                     pnlModels.Visible = true;
 
-                    entityTypeList = category.RockEntityIds.Select( a => CacheEntityType.Get( a ) ).Where( a => a != null ).ToList();
+                    entityTypeList = category.RockEntityIds.Select( a => EntityTypeCache.Get( a ) ).Where( a => a != null ).ToList();
                     if ( entityTypeId.HasValue )
                     {
                         entityType = entityTypeList.Where( t => t.Id == entityTypeId.Value ).FirstOrDefault();
@@ -340,6 +340,8 @@ namespace RockWeb.Blocks.Examples
                                 IsInherited = p.DeclaringType != type,
                                 IsVirtual = p.GetGetMethod() != null && p.GetGetMethod().IsVirtual && !p.GetGetMethod().IsFinal,
                                 IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ) || p.IsDefined( typeof( DataMemberAttribute ) ),
+                                IsObsolete = p.IsDefined( typeof( ObsoleteAttribute ) ),
+                                ObsoleteMessage = GetObsoleteMessage( p ),
                                 NotMapped = p.IsDefined( typeof( NotMappedAttribute ) ),
                                 Required = p.IsDefined( typeof( RequiredAttribute ) ),
                                 Id = p.MetadataToken,
@@ -361,7 +363,9 @@ namespace RockWeb.Blocks.Examples
                                 IsInherited = m.DeclaringType != type,
                                 Id = m.MetadataToken,
                                 Signature = string.Format( "{0}({1})", m.Name, param ),
-                                Comment = GetComments( m, xmlComments )
+                                Comment = GetComments( m, xmlComments ),
+                                IsObsolete = m.IsDefined( typeof( ObsoleteAttribute ) ),
+                                ObsoleteMessage = GetObsoleteMessage( m )
                             } );
                         }
 
@@ -429,18 +433,18 @@ namespace RockWeb.Blocks.Examples
                             continue;
                         }
 
-                        sb.AppendFormat( "<li data-id='p{0}' class='{6}'><strong>{9}<tt>{1}</tt></strong>{3}{4}{5}{2}{7}</li>{8}",
+                        sb.AppendFormat( "<li data-id='p{0}' class='{6}'><strong>{9}<tt>{1}</tt></strong>{3}{4}{5}{10}{2}{7}</li>{8}",
                             property.Id, // 0
                             HttpUtility.HtmlEncode( property.Name ), // 1
-                            ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " - " + property.Comment.Summary : "", // 2
+                            ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " - " + property.Comment.Summary : string.Empty, // 2
                             property.Required ? " <strong class='text-danger'>*</strong> " : string.Empty, // 3
                             property.IsLavaInclude ? " <i class='fa fa-bolt fa-fw text-warning'></i> " : string.Empty, // 4
-                            "", // 5
+                            string.Empty, // 5
                             property.IsInherited ? " js-model hidden " : " ", // 6
-                            property.IsInherited ? " (inherited)" : "", // 7
+                            property.IsInherited ? " (inherited)" : string.Empty, // 7
                             Environment.NewLine, // 8
-                            property.NotMapped || property.IsVirtual ? "<i class='fa fa-square-o fa-fw'></i> " : "<i class='fa fa-database fa-fw'></i> " // 9
-
+                            property.NotMapped || property.IsVirtual ? "<i class='fa fa-square-o fa-fw'></i> " : "<i class='fa fa-database fa-fw'></i> ", // 9
+                            property.IsObsolete ? "<i class='fa fa-ban fa-fw text-danger' title='no longer supported'></i> <i>" + property.ObsoleteMessage + " </i> " : string.Empty // 10
                             );
                     }
                     sb.AppendLine( "</ul>" );
@@ -457,13 +461,15 @@ namespace RockWeb.Blocks.Examples
 
                     foreach ( var method in aClass.Methods.OrderBy( m => m.Name ) )
                     {
-                        sb.AppendFormat( "<li data-id='m{0}' class='{3}'><strong><tt>{1}</tt></strong> {2}{4}</li>{5}",
+                        sb.AppendFormat( "<li data-id='m{0}' class='{3}'><strong><tt>{1}</tt></strong> {2}{4} {6}</li>{5}",
                             method.Id,
                             HttpUtility.HtmlEncode( method.Signature ),
                             ( method.Comment != null && !string.IsNullOrWhiteSpace( method.Comment.Summary ) ) ? " - " + method.Comment.Summary : "",
                             method.IsInherited ? " js-model hidden " : " ",
                             method.IsInherited ? " (inherited)" : "",
-                            Environment.NewLine );
+                            Environment.NewLine, // 5
+                            method.IsObsolete ? "<i class='fa fa-ban fa-fw text-danger' title='no longer supported'></i> <i>" + method.ObsoleteMessage + " </i> " : string.Empty // 6
+                            );
                     }
 
                     sb.AppendLine( "</ul>" );
@@ -549,6 +555,35 @@ namespace RockWeb.Blocks.Examples
 
         }
 
+
+        /// <summary>
+        /// Gets the comments from the data in the assembly's XML file for the 
+        /// given member object.
+        /// </summary>
+        /// <param name="p">The MemberInfo instance.</param>
+        /// <returns>an XmlComment object</returns>
+        private string GetObsoleteMessage( MemberInfo p )
+        {
+            if ( ! p.IsDefined( typeof( ObsoleteAttribute ) ) )
+            {
+                return null;
+            }
+
+            string message = string.Empty;
+
+            try
+            {
+                var msg = p.CustomAttributes.Where( a => a.AttributeType == typeof( ObsoleteAttribute ) ).Select( r => r.ConstructorArguments.FirstOrDefault() ).FirstOrDefault();
+                if ( msg != null )
+                {
+                    message = msg.Value.ToStringSafe();
+                }
+
+            }
+            catch { }
+            return message;
+
+        }
         /// <summary>
         /// Makes the summary HTML; converting any type/class cref (ex. <see cref="T:Rock.Model.Campus" />) 
         /// references to HTML links (ex <a href="#Campus">Campus</a>)
@@ -621,6 +656,8 @@ namespace RockWeb.Blocks.Examples
         public bool IsInherited { get; set; }
         public bool IsVirtual { get; set; }
         public bool IsLavaInclude { get; set; }
+        public bool IsObsolete { get; set; }
+        public string ObsoleteMessage { get; set; }
         public bool NotMapped { get; set; }
         public bool Required { get; set; }
         public XmlComment Comment { get; set; }
@@ -631,6 +668,8 @@ namespace RockWeb.Blocks.Examples
         public string Name { get; set; }
         public int Id { get; set; }
         public bool IsInherited { get; set; }
+        public bool IsObsolete { get; set; }
+        public string ObsoleteMessage { get; set; }
         public string Signature { get; set; }
         public XmlComment Comment { get; set; }
     }

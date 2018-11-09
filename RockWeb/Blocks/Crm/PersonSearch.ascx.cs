@@ -28,7 +28,7 @@ using Rock.Web.UI.Controls;
 using System.Text.RegularExpressions;
 using System.Data.Entity.SqlServer;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Diagnostics;
 using System.Data.Entity.Core.Objects;
 using System.Text;
@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Crm
 
         private List<Guid> _phoneTypeGuids = new List<Guid>();
         private bool _showSpouse = false;
-        private CacheDefinedValue _inactiveStatus = null;
+        private DefinedValueCache _inactiveStatus = null;
         private Stopwatch _sw = new Stopwatch();
         private Literal _lPerf = new Literal();
         private Dictionary<int, string> _envelopeNumbers = null;
@@ -65,10 +65,10 @@ namespace RockWeb.Blocks.Crm
         protected override void OnInit( EventArgs e )
         {
             _sw.Start();
-            
+
             base.OnInit( e );
 
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.lazyload.min.js" ) );
+            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js" );
 
             gPeople.DataKeyNames = new string[] { "Id" };
             gPeople.Actions.ShowAdd = false;
@@ -94,9 +94,9 @@ namespace RockWeb.Blocks.Crm
             base.OnPreRender( e );
             _sw.Stop();
 
-            
+
             _lPerf.Text = string.Format( "<small class='pull-left' style='margin-top: 6px;'>Search time: {0} ms.</small>", _sw.Elapsed.Milliseconds );
-            
+
         }
 
         protected override void OnLoad( EventArgs e )
@@ -135,8 +135,8 @@ namespace RockWeb.Blocks.Crm
                 var person = e.Row.DataItem as PersonSearchResult;
                 if ( person != null )
                 {
-                    if (_inactiveStatus != null && 
-                        person.RecordStatusValueId.HasValue && 
+                    if (_inactiveStatus != null &&
+                        person.RecordStatusValueId.HasValue &&
                         person.RecordStatusValueId.Value == _inactiveStatus.Id)
                     {
                         e.Row.AddCssClass( "inactive" );
@@ -153,7 +153,7 @@ namespace RockWeb.Blocks.Crm
                         var campuses = new List<string>();
                         foreach ( var campusId in person.CampusIds )
                         {
-                            var campus = CacheCampus.Get( campusId );
+                            var campus = CampusCache.Get( campusId );
                             if ( campus != null )
                             {
                                 campuses.Add( campus.Name );
@@ -175,17 +175,17 @@ namespace RockWeb.Blocks.Crm
                     if ( !person.IsBusiness )
                     {
                         StringBuilder sbPersonDetails = new StringBuilder();
-                        sbPersonDetails.Append( string.Format( "<div class=\"photo-round photo-round-sm pull-left\" data-original=\"{0}&w=100\" style=\"background-image: url('{1}');\"></div>", person.PhotoUrl, ResolveUrl("~/Assets/Images/person-no-photo-male.svg") ) );
+                        sbPersonDetails.Append( string.Format( "<div class=\"photo-round photo-round-sm pull-left\" data-original=\"{0}&w=100\" style=\"background-image: url('{1}');\"></div>", person.PhotoUrl, ResolveUrl("~/Assets/Images/person-no-photo-unknown.svg") ) );
                         sbPersonDetails.Append("<div class=\"pull-left margin-l-sm\">");
                         sbPersonDetails.Append(string.Format("<strong>{0}</strong> ", person.FullNameReversed));
                         sbPersonDetails.Append( string.Format( "{0} ", Person.GetSignalMarkup( person.TopSignalColor, person.TopSignalIconCssClass ) ) );
                         sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\"><br>{0}</br></small>", delimitedCampuses ) );
-                        sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\">{0}</small>", CacheDefinedValue.GetName( person.ConnectionStatusValueId ) ) );
+                        sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\">{0}</small>", DefinedValueCache.GetName( person.ConnectionStatusValueId ) ) );
                         sbPersonDetails.Append(string.Format(" <small class=\"hidden-md hidden-lg\">{0}</small>", person.AgeFormatted));
 
                         foreach( Guid phGuid in _phoneTypeGuids )
                         {
-                            var dv = CacheDefinedValue.Get( phGuid );
+                            var dv = DefinedValueCache.Get( phGuid );
                             if ( dv != null )
                             {
                                 var pn = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == dv.Id );
@@ -199,7 +199,7 @@ namespace RockWeb.Blocks.Crm
                         if (!string.IsNullOrWhiteSpace(person.Email)){
                             sbPersonDetails.Append(string.Format("<br/><small>{0}</small>", person.Email));
                         }
-                        
+
                         // add home addresses
                         foreach(var location in person.HomeAddresses )
                         {
@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.Crm
                             }
 
                             string format = string.Empty;
-                            var countryValue = Rock.Cache.CacheDefinedType.Get( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
+                            var countryValue = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
                                 .DefinedValues
                                 .Where( v => v.Value.Equals( location.Country, StringComparison.OrdinalIgnoreCase ) )
                                 .FirstOrDefault();
@@ -284,14 +284,14 @@ namespace RockWeb.Blocks.Crm
             var birthDateCol = gPeople.ColumnsOfType<DateField>().First( c => c.DataField == "BirthDate" );
             var ageCol = gPeople.ColumnsOfType<RockBoundField>().First( c => c.DataField == "Age" );
             var genderCol = gPeople.ColumnsOfType<RockBoundField>().First( c => c.DataField == "Gender" );
-            
+
             var envelopeNumberField = gPeople.ColumnsOfType<RockLiteralField>().First( c => c.ID == "lEnvelopeNumber" );
             var spouseCol = gPeople.ColumnsOfType<RockTemplateField>().First( c => c.HeaderText == "Spouse" );
 
-            var personGivingEnvelopeAttribute = CacheAttribute.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            var personGivingEnvelopeAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
             if ( personGivingEnvelopeAttribute != null )
             {
-                envelopeNumberField.Visible = CacheGlobalAttributes.Get().EnableGivingEnvelopeNumber && this.GetAttributeValue( "ShowEnvelopeNumber" ).AsBoolean();
+                envelopeNumberField.Visible = GlobalAttributesCache.Get().EnableGivingEnvelopeNumber && this.GetAttributeValue( "ShowEnvelopeNumber" ).AsBoolean();
             }
             else
             {
@@ -346,7 +346,7 @@ namespace RockWeb.Blocks.Crm
 
                             var searchKeyQry = new PersonSearchKeyService( rockContext ).Queryable();
                             people = personService.Queryable()
-                                .Where( p => ( term != "" && p.Email == term ) 
+                                .Where( p => ( term != "" && p.Email == term )
                                         || searchKeyQry.Any( a => a.PersonAlias.PersonId == p.Id && a.SearchValue == term ) );
                             break;
                         }
@@ -367,7 +367,7 @@ namespace RockWeb.Blocks.Crm
                             {
                                 people = personService.Queryable().Where( p => p.BirthDate.HasValue && birthDate.HasValue && p.BirthDate == birthDate.Value );
                             }
-                            
+
                             break;
                         }
                 }
@@ -381,7 +381,7 @@ namespace RockWeb.Blocks.Crm
                 }
 
                 people = personService.Queryable(true).Where( p => personIdList.Contains( p.Id ) );
-				
+
                 SortProperty sortProperty = gPeople.SortProperty;
                 if ( sortProperty != null )
                 {
@@ -392,10 +392,10 @@ namespace RockWeb.Blocks.Crm
                     people = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
                 }
 
-                var familyGroupType = CacheGroupType.GetFamilyGroupType();
+                var familyGroupType = GroupTypeCache.GetFamilyGroupType();
                 int familyGroupTypeId = familyGroupType != null ? familyGroupType.Id : 0;
 
-                var groupLocationTypeHome = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                var groupLocationTypeHome = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
                 int homeAddressTypeId = groupLocationTypeHome != null ? groupLocationTypeHome.Id : 0;
 
                 var personList = people.Select( p => new PersonSearchResult
@@ -411,6 +411,7 @@ namespace RockWeb.Blocks.Crm
                     ConnectionStatusValueId = p.ConnectionStatusValueId,
                     RecordStatusValueId = p.RecordStatusValueId,
                     RecordTypeValueId = p.RecordTypeValueId,
+                    AgeClassification = p.AgeClassification,
                     SuffixValueId = p.SuffixValueId,
                     IsDeceased = p.IsDeceased,
                     Email = p.Email,
@@ -465,7 +466,7 @@ namespace RockWeb.Blocks.Crm
                         }
                     }
 
-                    _inactiveStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+                    _inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
                     var personIds = personList.Select( a => a.Id ).ToList();
 
                     if ( envelopeNumberField != null && envelopeNumberField.Visible )
@@ -480,7 +481,7 @@ namespace RockWeb.Blocks.Crm
                                             } ).ToList().ToDictionary( k => k.PersonId, v => v.Value );
                     }
 
-                    gPeople.EntityTypeId = CacheEntityType.GetId<Person>();
+                    gPeople.EntityTypeId = EntityTypeCache.GetId<Person>();
 
                     gPeople.DataSource = personList;
                     gPeople.DataBind();
@@ -528,7 +529,7 @@ namespace RockWeb.Blocks.Crm
         {
             get
             {
-                int recordTypeValueIdBusiness = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                int recordTypeValueIdBusiness = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
                 return this.RecordTypeValueId.HasValue && this.RecordTypeValueId.Value == recordTypeValueIdBusiness;
             }
         }
@@ -553,13 +554,14 @@ namespace RockWeb.Blocks.Crm
             {
                 if ( RecordTypeValueId.HasValue )
                 {
-                    var recordType = CacheDefinedValue.Get( RecordTypeValueId.Value );
+                    var recordType = DefinedValueCache.Get( RecordTypeValueId.Value );
                     if ( recordType != null )
                     {
-                        return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, recordType.Guid, 200, 200 );
+                        return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, recordType.Guid, this.AgeClassification, 200, 200 );
                     }
                 }
-                return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, null, 200, 200 );
+
+                return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, null, this.AgeClassification, 200, 200 );
             }
             private set { }
         }
@@ -591,11 +593,11 @@ namespace RockWeb.Blocks.Crm
 
                 fullName.Append( LastName );
 
-                // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so 
+                // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so
                 // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
                 if ( SuffixValueId.HasValue )
                 {
-                    var suffix = CacheDefinedValue.GetName( SuffixValueId.Value );
+                    var suffix = DefinedValueCache.GetName( SuffixValueId.Value );
                     if ( suffix != null )
                     {
                         fullName.AppendFormat( " {0}", suffix );
@@ -750,6 +752,14 @@ namespace RockWeb.Blocks.Crm
         public int? RecordStatusValueId { get; set; }
 
         /// <summary>
+        /// Gets the age classification.
+        /// </summary>
+        /// <value>
+        /// The age classification.
+        /// </value>
+        public AgeClassification AgeClassification { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the spouse.
         /// </summary>
         /// <value>
@@ -796,10 +806,11 @@ namespace RockWeb.Blocks.Crm
         /// The top signal icon.
         /// </value>
         public string TopSignalIconCssClass { get; set; }
+        
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class PersonSearchResultPhone
     {

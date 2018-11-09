@@ -18,7 +18,7 @@
     {% assign dateRangePartsSize = dateRangeParts | Size %}
     {% if dateRangePartsSize == 2 %}
       {{ dateRangeParts[0] | Date:'MMMM dd, yyyy' }} to {{ dateRangeParts[1] | Date:'MMMM dd, yyyy' }}<br/>
-    {% elsif dateRangePartsSize == 1  %}      
+    {% elsif dateRangePartsSize == 1 %}
       {{ dateRangeParts[0] | Date:'MMMM dd, yyyy' }}
     {% endif %}
     {{ Group | Attribute:'OpportunityLocation' }}

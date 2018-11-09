@@ -84,7 +84,8 @@ namespace Rock.Transactions
         /// <value>
         /// The text message.
         /// </value>
-        [Obsolete("Text Message property is no longer supported for emails")]
+        [RockObsolete( "1.7" )]
+        [Obsolete("Text Message property is no longer supported for emails", true )]
         public string TextMessage { get; set; }
 
         /// <summary>
@@ -182,7 +183,7 @@ namespace Rock.Transactions
             using ( var rockContext = new RockContext() )
             {
                 int? senderPersonAliasId = null;
-                if ( FromAddress.IsNotNullOrWhitespace() )
+                if ( FromAddress.IsNotNullOrWhiteSpace() )
                 {
                     var sender = new PersonService( rockContext )
                         .Queryable().AsNoTracking()

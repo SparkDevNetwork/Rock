@@ -25,7 +25,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -200,17 +200,17 @@ namespace Rock.Model
                 case System.Data.Entity.EntityState.Added:
                     {
                         string locationType = History.GetDefinedValueValue( null, GroupLocationTypeValueId );
-                        locationType = locationType.IsNotNullOrWhitespace() ? locationType : "Unknown";
+                        locationType = locationType.IsNotNullOrWhiteSpace() ? locationType : "Unknown";
                         History.EvaluateChange( GroupHistoryChanges, $"{locationType} Location", (int?)null, Location, LocationId, rockContext );
                         History.EvaluateChange( GroupHistoryChanges, $"{locationType} Is Mailing", false, IsMailingLocation );
-                        History.EvaluateChange( GroupHistoryChanges, $"{locationType} Is Mapp Location", false, IsMappedLocation );
+                        History.EvaluateChange( GroupHistoryChanges, $"{locationType} Is Map Location", false, IsMappedLocation );
 
                         break;
                     }
 
                 case System.Data.Entity.EntityState.Modified:
                     {
-                        string locationTypeName = CacheDefinedValue.GetName( GroupLocationTypeValueId ) ?? "Unknown";
+                        string locationTypeName = DefinedValueCache.GetName( GroupLocationTypeValueId ) ?? "Unknown";
                         int? oldLocationTypeId = entry.OriginalValues["GroupLocationTypeValueId"].ToStringSafe().AsIntegerOrNull();
                         if ( ( oldLocationTypeId ?? 0 ) == ( GroupLocationTypeValueId ?? 0 ) )
                         {
@@ -219,12 +219,12 @@ namespace Rock.Model
                         else
                         {
                             Location newLocation = null;
-                            History.EvaluateChange( GroupHistoryChanges, $"{CacheDefinedValue.GetName( oldLocationTypeId ) ?? "Unknown"} Location", entry.OriginalValues["LocationId"].ToStringSafe().AsIntegerOrNull(), newLocation, (int?)null, rockContext );
+                            History.EvaluateChange( GroupHistoryChanges, $"{DefinedValueCache.GetName( oldLocationTypeId ) ?? "Unknown"} Location", entry.OriginalValues["LocationId"].ToStringSafe().AsIntegerOrNull(), newLocation, (int?)null, rockContext );
                             History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Location", (int?)null, Location, LocationId, rockContext );
                         }
 
                         History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Mailing", entry.OriginalValues["IsMailingLocation"].ToStringSafe().AsBoolean(), IsMailingLocation );
-                        History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Mapp Location", entry.OriginalValues["IsMappedLocation"].ToStringSafe().AsBoolean(), IsMappedLocation );
+                        History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Map Location", entry.OriginalValues["IsMappedLocation"].ToStringSafe().AsBoolean(), IsMappedLocation );
 
                         break;
                     }
@@ -232,7 +232,7 @@ namespace Rock.Model
                 case System.Data.Entity.EntityState.Deleted:
                     {
                         string locationType = History.GetDefinedValueValue( null, entry.OriginalValues["GroupLocationTypeValueId"].ToStringSafe().AsIntegerOrNull() );
-                        locationType = locationType.IsNotNullOrWhitespace() ? locationType : "Unknown";
+                        locationType = locationType.IsNotNullOrWhiteSpace() ? locationType : "Unknown";
                         Location loc = null;
                         History.EvaluateChange( GroupHistoryChanges, $"{locationType} Location", entry.OriginalValues["LocationId"].ToStringSafe().AsIntegerOrNull(), loc, (int?)null, rockContext );
                         break;

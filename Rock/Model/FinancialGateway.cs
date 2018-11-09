@@ -24,7 +24,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Financial;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -127,7 +127,7 @@ namespace Rock.Model
         {
             if ( EntityTypeId.HasValue )
             {
-                var entityType = CacheEntityType.Get( EntityTypeId.Value );
+                var entityType = EntityTypeCache.Get( EntityTypeId.Value );
                 if ( entityType != null )
                 {
                     return GatewayContainer.GetComponent( entityType.Name );

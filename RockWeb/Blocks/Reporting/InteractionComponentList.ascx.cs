@@ -234,7 +234,7 @@ namespace RockWeb.Blocks.Reporting
                         mergeFields.Add( "PreviousPageNavigateUrl", pageReferencePrev.BuildUrl() );
                     }
 
-                    lContent.Text = interactionChannel.ComponentListTemplate.IsNotNullOrWhitespace() ?
+                    lContent.Text = interactionChannel.ComponentListTemplate.IsNotNullOrWhiteSpace() ?
                         interactionChannel.ComponentListTemplate.ResolveMergeFields( mergeFields ) :
                         GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
                 }
@@ -270,7 +270,7 @@ namespace RockWeb.Blocks.Reporting
 
 
         /// <summary>
-        /// POCO class for return interation counts
+        /// POCO class for return interaction counts
         /// </summary>
         class InteractionCount : DotLiquid.Drop, Rock.Lava.ILiquidizable
         {

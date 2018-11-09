@@ -23,7 +23,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace Rock.Workflow.Action
@@ -67,7 +67,7 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            var attribute = CacheAttribute.Get( GetAttributeValue( action, "BenevolenceRequestAttribute" ).AsGuid() );
+            var attribute = AttributeCache.Get( GetAttributeValue( action, "BenevolenceRequestAttribute" ).AsGuid() );
 
             if ( attribute == null )
             {

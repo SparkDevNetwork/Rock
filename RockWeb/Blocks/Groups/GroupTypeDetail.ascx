@@ -41,7 +41,7 @@
 
                 <div id="pnlEditDetails" runat="server">
 
-                    <asp:ValidationSummary ID="valGroupTypeDetail" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="valGroupTypeDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <asp:CustomValidator ID="cvGroupType" runat="server" Display="None" />
 
                     <div class="row">
@@ -61,7 +61,7 @@
                     <Rock:PanelWidget ID="wpGeneral" runat="server" Title="General">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockDropDownList ID="ddlGroupTypePurpose" runat="server" Label="Purpose"
+                                <Rock:DefinedValuePicker ID="dvpGroupTypePurpose" runat="server" Label="Purpose"
                                     Help="An optional field used to qualify what the over-all purpose of this group type is for.  Additional values can be added by editing the 'Group Type Purpose' Defined Type." />
                                 <Rock:RockControlWrapper ID="rcGroupTypes" runat="server" Label="Child Group Types"
                                     Help="The types of child groups that can be added to groups of this type. This is used to define the group hierarchy. To allow an unlimited hierarchy add this type as an allowed child group type.">
@@ -88,6 +88,7 @@
 
                                 <Rock:RockCheckBox ID="cbGroupsRequireCampus" runat="server" Label="Groups Require a Campus" Text="Yes"
                                     Help="This setting will require that all groups of this type have a campus when adding and editing." />
+                                <Rock:RockDropDownList ID="ddlGroupStatusDefinedType" runat="server" Label="Group Status Defined Type" Help="Select the defined type to use when setting the group's status. Leave this blank if you don't want groups to prompt for group status." EnhanceForLongLists="true" />
                             </div>
                             <div class="col-md-6">
                                 <div class="row">
@@ -398,7 +399,7 @@
         <Rock:ModalDialog ID="dlgGroupTypeRoles" runat="server" OnSaveClick="gGroupTypeRoles_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Roles">
             <Content>
                 <asp:HiddenField ID="hfRoleGuid" runat="server" />
-                <asp:ValidationSummary ID="vsRoles" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="Roles" />
+                <asp:ValidationSummary ID="vsRoles" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Roles" />
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbRoleName" runat="server" SourceTypeName="Rock.Model.GroupTypeRole, Rock" PropertyName="Name" ValidationGroup="Roles" />
@@ -476,7 +477,7 @@
 
                 <Rock:NotificationBox ID="nbDuplicateGroupRequirement" runat="server" NotificationBoxType="Warning" />
 
-                <asp:ValidationSummary ID="vsGroupTypeGroupRequirement" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="vg_GroupTypeGroupRequirement" />
+                <asp:ValidationSummary ID="vsGroupTypeGroupRequirement" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vg_GroupTypeGroupRequirement" />
 
                 <Rock:RockDropDownList ID="ddlGroupRequirementType" runat="server" Label="Group Requirement Type" Required="true" ValidationGroup="vg_GroupTypeGroupRequirement" />
 
@@ -489,7 +490,7 @@
         <Rock:ModalDialog ID="dlgMemberWorkflowTriggers" runat="server" OnSaveClick="dlgMemberWorkflowTriggers_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Trigger">
             <Content>
                 <asp:HiddenField ID="hfTriggerGuid" runat="server" />
-                <asp:ValidationSummary ID="vsTrigger" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="Trigger" />
+                <asp:ValidationSummary ID="vsTrigger" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Trigger" />
                 <Rock:NotificationBox ID="nbInvalidWorkflowType" runat="server" NotificationBoxType="Danger" Visible="false"
                     Text="The Workflow Type is missing or invalid. Make sure you selected a valid Workflow Type (and not a category)." />
                 <div class="row">

@@ -65,14 +65,19 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the device by IP address.
+        /// Gets the device by IP address. If skipReverseLookup is disabled and no kiosk was found by a
+        /// simple match (given IP to the IpAddress field), a reverse lookup (IP to DNS host name)
+        /// is performed to get the DNS host name.  This is then used to find a match in either the
+        /// device's IpAddress field or the Name field. In all cases if no match is found a null
+        /// Device is returned.
         /// </summary>
         /// <param name="ipAddress">A <see cref="System.String" /> representing the ip address.</param>
         /// <param name="deviceTypeValueId">A <see cref="System.Int32"/> representing the DeviceType <see cref="Rock.Model.DefinedValue"/> of the device that you are searching for.</param>
-        /// <param name="skipReverseLookup">A <see cref="System.Boolean"/> indicating if a reverse lookup will be skipped. If <c>true</c> a DNS reverse lookup for the name of the system
-        /// that belongs to the provided IP address will not be performed, otherwise <c>false</c> and a DNS reverse lookup will be performed.</param>
+        /// <param name="skipReverseLookup">A <see cref="System.Boolean"/> indicating if a reverse lookup will be skipped. If <c>true</c> a DNS reverse 
+        /// lookup for the name of the system that belongs to the provided IP address will not be performed, otherwise <c>false</c> and a DNS reverse
+        /// lookup will be performed.</param>
         /// <returns>
-        /// A <see cref="Rock.Model.Device"/> that is associated with the provided IP address.
+        /// A <see cref="Rock.Model.Device"/> that is associated with the provided IP address or null if no match.
         /// </returns>
         public Device GetByIPAddress( string ipAddress, int deviceTypeValueId, bool skipReverseLookup = true )
         {
@@ -93,13 +98,28 @@ namespace Rock.Model
             try
             {
                 string hostValue = System.Net.Dns.GetHostEntry( ipAddress ).HostName;
-                if ( hostValue.IsNotNullOrWhitespace() )
+                if ( hostValue.IsNotNullOrWhiteSpace() )
                 {
-                    return Queryable()
+                    // Find by name in the IP address field (why are people putting the name in the IP Address field?)
+                    device =  Queryable()
                         .Where( d =>
                             d.DeviceTypeValueId == deviceTypeValueId &&
                             d.IPAddress == hostValue )
                         .FirstOrDefault();
+
+                    if ( device == null )
+                    {
+                        // Find by name by looking at the device name (original behavior)
+                        // (Note: Don't combine this query into the above. They are not 
+                        // functionally equivalent.)
+                        device = Queryable()
+                            .Where( d =>
+                                d.DeviceTypeValueId == deviceTypeValueId &&
+                                d.Name == hostValue )
+                            .FirstOrDefault();
+                    }
+
+                    return device;
                 }
                 else
                 {

@@ -18,13 +18,13 @@ using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// Control for selecting a campus where DataField is the Campus.Id
-    /// Displays Campus.Name using CacheCampus
+    /// Displays Campus.Name using CampusCache
     /// </summary>
     [ToolboxData( "<{0}:CampusField runat=server></{0}:CampusField>" )]
     public class CampusField : RockBoundField
@@ -55,14 +55,14 @@ namespace Rock.Web.UI.Controls
                 dataValueAsGuid = ( dataValue as string ).AsGuidOrNull();
             }
 
-            CacheCampus campusCache = null;
+            CampusCache campusCache = null;
             if ( dataValueAsInt.HasValue )
             {
-                campusCache = CacheCampus.Get( dataValueAsInt.Value );
+                campusCache = CampusCache.Get( dataValueAsInt.Value );
             }
             else if ( dataValueAsGuid.HasValue )
             {
-                campusCache = CacheCampus.Get( dataValueAsGuid.Value );
+                campusCache = CampusCache.Get( dataValueAsGuid.Value );
             }
 
             if ( campusCache != null )

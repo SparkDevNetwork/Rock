@@ -14,7 +14,7 @@
                 </div>
                 <div class="panel-body">
 
-                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
                     <div class="row">
@@ -39,7 +39,7 @@
                             <Rock:ScheduleBuilder ID="sbSchedule" runat="server" Label="Schedule" OnSaveSchedule="sbSchedule_SaveSchedule" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:NumberBox ID="nbEndOffset" Label="Close Check-in" AppendText="Mins After Start&nbsp;&nbsp;" runat="server" NumberType="Integer" CssClass="input-width-lg" />
+                            <Rock:NumberBox ID="nbEndOffset" Label="Close Check-in" AppendText="Mins After Start" runat="server" NumberType="Integer" CssClass="input-width-lg" />
                             <div class="attributes">
                                 <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                             </div>
@@ -87,7 +87,7 @@
                         </div>
                         <div class="actions">
                             <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
-                            
+
                             <asp:HiddenField ID="hfHasAttendanceHistory" runat="server" />
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClientClick="confirmScheduleDelete(event);" OnClick="btnDelete_Click" />
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />

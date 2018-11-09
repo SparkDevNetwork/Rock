@@ -466,7 +466,7 @@ namespace Rock.Model
         public string BatchNamePrefix { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to allow external registration updates (should a person be able to update their regisitration on-line after submitting it).
+        /// Gets or sets a value indicating whether to allow external registration updates (should a person be able to update their registration on-line after submitting it).
         /// </summary>
         /// <value>
         /// <c>true</c> if [allow external registration updates]; otherwise, <c>false</c>.
@@ -499,10 +499,10 @@ namespace Rock.Model
         public int? RequiredSignatureDocumentTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the signature documentaction.
+        /// Gets or sets the signature documentation.
         /// </summary>
         /// <value>
-        /// The signature documentaction.
+        /// The signature documentation.
         /// </value>
         [DataMember]
         public SignatureDocumentAction SignatureDocumentAction { get; set; }
@@ -515,6 +515,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool WaitListEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registrar option.
+        /// </summary>
+        /// <value>
+        /// The registrar option.
+        /// </value>
+        [DataMember]
+        public RegistrarOption RegistrarOption { get; set; }
 
         #endregion
 
@@ -756,6 +765,27 @@ namespace Rock.Model
         /// Embed document in registration
         /// </summary>
         Embed = 1,
+    }
+
+    /// <summary>
+    /// How registrar information should be collected.
+    /// </summary>
+    public enum RegistrarOption
+    {
+        /// <summary>
+        /// Prompt for registrar
+        /// </summary>
+        PromptForRegistrar = 0,
+
+        /// <summary>
+        /// Prefill first registrant
+        /// </summary>
+        PrefillFirstRegistrant = 1,
+
+        /// <summary>
+        /// Use first registrant
+        /// </summary>
+        UseFirstRegistrant = 2
     }
 
     #endregion

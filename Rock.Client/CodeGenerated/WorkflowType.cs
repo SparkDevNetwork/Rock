@@ -53,7 +53,7 @@ namespace Rock.Client
         public string IconCssClass { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
+        public bool? IsActive { get; set; }
 
         /// <summary />
         public bool IsPersisted { get; set; }

@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -207,7 +207,7 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="item">The item.</param>
         /// <param name="existingLabels">The existing labels.</param>
         /// <returns></returns>
-        public virtual List<KioskLabel> GetLabels( Data.IHasAttributes item, List<KioskLabel> existingLabels )
+        public virtual List<KioskLabel> GetLabels( Attribute.IHasAttributes item, List<KioskLabel> existingLabels )
         {
             var labels = new List<KioskLabel>( existingLabels );
 

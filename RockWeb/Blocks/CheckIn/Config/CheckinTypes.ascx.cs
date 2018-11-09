@@ -28,7 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn.Config
 {
@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.CheckIn.Config
         {
             base.OnInit( e );
 
-            var templatePurpose = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
+            var templatePurpose = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
             if ( templatePurpose != null )
             {
                 _templatePurposeId = templatePurpose.Id;

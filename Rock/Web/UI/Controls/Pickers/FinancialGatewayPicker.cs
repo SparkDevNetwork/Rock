@@ -18,7 +18,7 @@ using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -61,7 +61,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            LoadItems( false );
+            LoadItems( ShowAll );
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace Rock.Web.UI.Controls
                     .OrderBy( g => g.Name )
                     .ToList() )
                 {
-                    var entityType = CacheEntityType.Get( gateway.EntityTypeId.Value );
+                    var entityType = EntityTypeCache.Get( gateway.EntityTypeId.Value );
                     GatewayComponent component = GatewayContainer.GetComponent( entityType.Name );
                     if ( showAll || ( gateway.IsActive && component != null && component.IsActive && component.SupportsRockInitiatedTransactions ) )
                     {

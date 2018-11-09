@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,8 +27,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Rock.Data;
-using Rock.Cache;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -69,7 +69,7 @@ namespace Rock.Model
         /// <value>
         /// The first name.
         /// </value>
-        [MaxLength(50)]
+        [MaxLength( 50 )]
         [DataMember]
         public string FirstName { get; set; }
 
@@ -197,7 +197,7 @@ namespace Rock.Model
         [NotMapped]
         public virtual int? PersonId
         {
-            get { return PersonAlias != null ? PersonAlias.PersonId : (int?)null; }
+            get { return PersonAlias != null ? PersonAlias.PersonId : ( int? ) null; }
         }
 
         /// <summary>
@@ -318,7 +318,7 @@ namespace Rock.Model
         public string GetSummary( RegistrationInstance registrationInstance = null )
         {
             var result = new StringBuilder();
-            result.Append("Event registration payment");
+            result.Append( "Event registration payment" );
 
             var instance = registrationInstance ?? RegistrationInstance;
             if ( instance != null )
@@ -331,7 +331,7 @@ namespace Rock.Model
             }
 
             string registrationPerson = PersonAlias != null && PersonAlias.Person != null ?
-                PersonAlias.Person.FullName : 
+                PersonAlias.Person.FullName :
                 string.Format( "{0} {1}", FirstName, LastName );
             result.AppendFormat( @".
 Registration By: {0} Total Cost/Fees:{1}
@@ -340,9 +340,9 @@ Registration By: {0} Total Cost/Fees:{1}
             var registrantPersons = new List<string>();
             if ( Registrants != null )
             {
-                foreach( var registrant in Registrants.Where( r => r.PersonAlias != null && r.PersonAlias.Person != null ) )
+                foreach ( var registrant in Registrants.Where( r => r.PersonAlias != null && r.PersonAlias.Person != null ) )
                 {
-                    registrantPersons.Add( string.Format( "{0} Cost/Fees:{1}", 
+                    registrantPersons.Add( string.Format( "{0} Cost/Fees:{1}",
                         registrant.PersonAlias.Person.FullName,
                         registrant.DiscountedCost( DiscountPercentage, DiscountAmount ).FormatAsCurrency() ) );
                 }
@@ -360,9 +360,21 @@ Registration By: {0} Total Cost/Fees:{1}
         /// <param name="previousRegistrantPersonIds">The person ids that have already registered prior to this registration</param>
         public void SavePersonNotesAndHistory( Person registrationPerson, int? currentPersonAliasId, List<int> previousRegistrantPersonIds )
         {
+            SavePersonNotesAndHistory( registrationPerson.FirstName, registrationPerson.LastName, currentPersonAliasId, previousRegistrantPersonIds );
+        }
+
+        /// <summary>
+        /// Saves the person notes and history.
+        /// </summary>
+        /// <param name="registrationPersonFirstName">First name of the registration person.</param>
+        /// <param name="registrationPersonLastName">Last name of the registration person.</param>
+        /// <param name="currentPersonAliasId">The current person alias identifier.</param>
+        /// <param name="previousRegistrantPersonIds">The previous registrant person ids.</param>
+        public void SavePersonNotesAndHistory( string registrationPersonFirstName, string registrationPersonLastName, int? currentPersonAliasId, List<int> previousRegistrantPersonIds )
+        {
             // Setup Note settings
             Registration registration = this;
-            CacheNoteType noteType = null;
+            NoteTypeCache noteType = null;
             using ( RockContext rockContext = new RockContext() )
             {
                 RegistrationInstance registrationInstance = registration.RegistrationInstance ?? new RegistrationInstanceService( rockContext ).Get( registration.RegistrationInstanceId );
@@ -370,7 +382,7 @@ Registration By: {0} Total Cost/Fees:{1}
 
                 if ( registrationTemplate != null && registrationTemplate.AddPersonNote )
                 {
-                    noteType = CacheNoteType.Get( Rock.SystemGuid.NoteType.PERSON_EVENT_REGISTRATION.AsGuid() );
+                    noteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.PERSON_EVENT_REGISTRATION.AsGuid() );
                     if ( noteType != null )
                     {
                         var noteService = new NoteService( rockContext );
@@ -404,9 +416,9 @@ Registration By: {0} Total Cost/Fees:{1}
                                     registrantNames.Add( registrantPerson.FullName );
                                 }
 
-                                if ( registrar != null && ( registrationPerson.FirstName != registrar.NickName || registrationPerson.LastName != registrar.LastName ) )
+                                if ( registrar != null && ( registrationPersonFirstName != registrar.NickName || registrationPersonLastName != registrar.LastName ) )
                                 {
-                                    registrarFullName = string.Format( " by {0}", registrationPerson.FirstName + " " + registrationPerson.LastName );
+                                    registrarFullName = string.Format( " by {0}", registrationPersonFirstName + " " + registrationPersonLastName );
                                 }
 
                                 noteText.Append( registrarFullName );
@@ -421,6 +433,14 @@ Registration By: {0} Total Cost/Fees:{1}
                                     note.EntityId = registrantPerson.Id;
                                     note.Caption = string.Empty;
                                     note.Text = noteText.ToString();
+                                    if ( registrar == null )
+                                    {
+                                        note.CreatedByPersonAliasId = currentPersonAliasId;
+                                    }
+                                    else
+                                    {
+                                        note.CreatedByPersonAliasId = registrar.PrimaryAliasId;
+                                    }
                                     noteService.Add( note );
                                 }
 
@@ -436,7 +456,8 @@ Registration By: {0} Total Cost/Fees:{1}
                                     typeof( Registration ),
                                     registration.Id,
                                     false,
-                                    currentPersonAliasId );
+                                    currentPersonAliasId,
+                                    rockContext.SourceOfChange );
                             }
                         }
 
@@ -478,7 +499,8 @@ Registration By: {0} Total Cost/Fees:{1}
                                 typeof( Registration ),
                                 registration.Id,
                                 false,
-                                currentPersonAliasId );
+                                currentPersonAliasId,
+                                rockContext.SourceOfChange );
                         }
 
                         rockContext.SaveChanges();
@@ -1002,7 +1024,7 @@ Registration By: {0} Total Cost/Fees:{1}
         public DateTime? SignatureDocumentLastSent { get; set; }
 
         /// <summary>
-        /// Discounteds the cost.
+        /// Discounts the cost.
         /// </summary>
         /// <param name="discountPercent">The discount percent.</param>
         /// <param name="discountAmount">The discount amount.</param>
@@ -1021,7 +1043,7 @@ Registration By: {0} Total Cost/Fees:{1}
         }
 
         /// <summary>
-        /// Discounteds the cost.
+        /// Discounts the cost.
         /// </summary>
         /// <param name="discountPercent">The discount percent.</param>
         /// <param name="discountAmount">The discount amount.</param>
@@ -1170,21 +1192,22 @@ Registration By: {0} Total Cost/Fees:{1}
         /// <param name="registrant">The registrant.</param>
         /// <param name="person">The person.</param>
         /// <param name="family">The family.</param>
-        /// <param name="Field">The field.</param>
+        /// <param name="field">The field.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public object GetRegistrantValue( RegistrationRegistrant registrant, Person person, Group family,
-            RegistrationTemplateFormField Field, RockContext rockContext )
+            RegistrationTemplateFormField field, RockContext rockContext )
         {
-            if ( Field.FieldSource == RegistrationFieldSource.PersonField )
+            if ( field.FieldSource == RegistrationFieldSource.PersonField )
             {
                 if ( person != null )
                 {
-                    CacheDefinedValue dvPhone = null;
+                    DefinedValueCache dvPhone = null;
 
-                    switch ( Field.PersonFieldType )
+                    switch ( field.PersonFieldType )
                     {
                         case RegistrationPersonFieldType.FirstName: return person.NickName;
+                        case RegistrationPersonFieldType.MiddleName: return person.MiddleName;
                         case RegistrationPersonFieldType.LastName: return person.LastName;
                         case RegistrationPersonFieldType.Campus:
                             {
@@ -1208,19 +1231,20 @@ Registration By: {0} Total Cost/Fees:{1}
                         case RegistrationPersonFieldType.Grade: return person.GraduationYear;
                         case RegistrationPersonFieldType.Gender: return person.Gender;
                         case RegistrationPersonFieldType.MaritalStatus: return person.MaritalStatusValueId;
+                        case RegistrationPersonFieldType.AnniversaryDate: return person.AnniversaryDate;
                         case RegistrationPersonFieldType.MobilePhone:
                             {
-                                dvPhone = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                                dvPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
                                 break;
                             }
                         case RegistrationPersonFieldType.HomePhone:
                             {
-                                dvPhone = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+                                dvPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
                                 break;
                             }
                         case RegistrationPersonFieldType.WorkPhone:
                             {
-                                dvPhone = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK );
+                                dvPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK );
                                 break;
                             }
                         case RegistrationPersonFieldType.ConnectionStatus: return person.ConnectionStatusValueId;
@@ -1238,10 +1262,10 @@ Registration By: {0} Total Cost/Fees:{1}
             }
             else
             {
-                var attribute = CacheAttribute.Get( Field.AttributeId ?? 0 );
+                var attribute = AttributeCache.Get( field.AttributeId ?? 0 );
                 if ( attribute != null )
                 {
-                    switch ( Field.FieldSource )
+                    switch ( field.FieldSource )
                     {
                         case RegistrationFieldSource.PersonAttribute:
                             {
@@ -1498,7 +1522,7 @@ Registration By: {0} Total Cost/Fees:{1}
         public decimal PreviousCost { get; set; }
 
         /// <summary>
-        /// Discounteds the cost.
+        /// Discounts the cost.
         /// </summary>
         /// <param name="discountPercent">The discount percent.</param>
         /// <returns></returns>

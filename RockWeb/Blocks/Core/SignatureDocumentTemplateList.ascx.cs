@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Core
             gSignatureDocumentTemplate.GridRebind += gSignatureDocumentTemplate_GridRebind;
 
             SecurityField securityField = gSignatureDocumentTemplate.ColumnsOfType<SecurityField>().First();
-            securityField.EntityTypeId = CacheEntityType.GetId<Rock.Model.SignatureDocumentTemplate>().Value;
+            securityField.EntityTypeId = EntityTypeCache.GetId<Rock.Model.SignatureDocumentTemplate>().Value;
 
             bool editAllowed = this.UserCanEdit;
             gSignatureDocumentTemplate.Actions.ShowAdd = editAllowed;

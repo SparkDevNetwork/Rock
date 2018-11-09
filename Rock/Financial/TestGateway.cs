@@ -24,7 +24,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Financial;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Financial
 {
@@ -47,16 +47,16 @@ namespace Rock.Financial
         /// <value>
         /// The supported payment schedules.
         /// </value>
-        public override List<CacheDefinedValue> SupportedPaymentSchedules
+        public override List<DefinedValueCache> SupportedPaymentSchedules
         {
             get
             {
-                var values = new List<CacheDefinedValue>();
-                values.Add( CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
-                values.Add( CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY ) );
-                values.Add( CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY ) );
-                values.Add( CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY ) );
-                values.Add( CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY ) );
+                var values = new List<DefinedValueCache>();
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY ) );
                 return values;
             }
         }
@@ -240,6 +240,17 @@ namespace Rock.Financial
         {
             errorMessage = string.Empty;
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the next payment date.
+        /// </summary>
+        /// <param name="scheduledTransaction">The transaction.</param>
+        /// <param name="lastTransactionDate">The last transaction date.</param>
+        /// <returns></returns>
+        public override DateTime? GetNextPaymentDate( FinancialScheduledTransaction scheduledTransaction, DateTime? lastTransactionDate )
+        {
+            return CalculateNextPaymentDate( scheduledTransaction, lastTransactionDate );
         }
 
         #endregion

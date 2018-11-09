@@ -24,7 +24,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Workflow;
 
 namespace Rock.Model
@@ -35,7 +35,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowActionForm" )]
     [DataContract]
-    public partial class WorkflowActionForm : Model<WorkflowActionForm>
+    public partial class WorkflowActionForm : Model<WorkflowActionForm>, ICacheable
     {
 
         #region Entity Properties
@@ -161,6 +161,29 @@ namespace Rock.Model
 
         #endregion
 
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return WorkflowActionFormCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            WorkflowActionFormCache.UpdateCachedEntity( this.Id, entityState );
+        }
+
+        #endregion
+
         /// <summary>
         /// Special class for adding a button field to liquid properties
         /// </summary>
@@ -211,7 +234,7 @@ namespace Rock.Model
 
                     if ( details.Length > 1 )
                     {
-                        var definedValue = CacheDefinedValue.Get( details[1].AsGuid() );
+                        var definedValue = DefinedValueCache.Get( details[1].AsGuid() );
                         if ( definedValue != null )
                         {
                             button.Html = definedValue.GetAttributeValue( "ButtonHTML" );

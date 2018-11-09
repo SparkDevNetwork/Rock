@@ -23,7 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
 
 namespace Rock.Workflow.Action
@@ -124,7 +124,7 @@ namespace Rock.Workflow.Action
                 Guid? campusGuid = action.GetWorklowAttributeValue( campusAttributeGuid.Value ).AsGuidOrNull();
                 if ( campusGuid.HasValue )
                 {
-                    var campus = CacheCampus.Get( campusGuid.Value );
+                    var campus = CampusCache.Get( campusGuid.Value );
                     if ( campus != null )
                     {
                         campusId = campus.Id;

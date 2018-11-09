@@ -16,12 +16,17 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
-
+using Rock.Web.Cache;
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -101,7 +106,90 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Text { get; set; }
-    
+
+        /// <summary>
+        /// Gets or sets the parent note identifier.
+        /// </summary>
+        /// <value>
+        /// The parent note identifier.
+        /// </value>
+        [DataMember]
+        [IgnoreCanDelete]
+        public int? ParentNoteId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the approval status.
+        /// </summary>
+        /// <value>
+        /// The approval status.
+        /// </value>
+        [DataMember]
+        public NoteApprovalStatus ApprovalStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PersonAliasId of the <see cref="Rock.Model.Person"/> who either approved or declined the Note. If no approval action has been performed on this Note, this value will be null.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the PersonAliasId of hte <see cref="Rock.Model.Person"/> who either approved or declined the ContentItem. This value will be null if no approval action has been
+        /// performed on this add.
+        /// </value>
+        [DataMember]
+        public int? ApprovedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the approved date.
+        /// </summary>
+        /// <value>
+        /// The approved date.
+        /// </value>
+        [DataMember]
+        public DateTime? ApprovedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [notifications sent].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [notifications sent]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool NotificationsSent { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [approvals sent].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [approvals sent]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ApprovalsSent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL where the Note was created. Use NoteUrl with a hash anchor of the Note.NoteAnchorId so that Notifications and Approvals can know where to view the note
+        /// </summary>
+        /// <value>
+        /// The note URL.
+        /// </value>
+        [DataMember]
+        public string NoteUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last time the note text was edited. Use this instead of ModifiedDateTime to determine the last time a person edited a note 
+        /// </summary>
+        /// <value>
+        /// The edited date time.
+        /// </value>
+        [DataMember]
+        public DateTime? EditedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person alias that last edited the note text. Use this instead of ModifiedByPersonAliasId to determine the last person to edit the note text
+        /// </summary>
+        /// <value>
+        /// The edited by person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? EditedByPersonAliasId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -116,6 +204,212 @@ namespace Rock.Model
         public virtual NoteType NoteType { get; set; }
 
         /// <summary>
+        /// Gets or sets the parent note.
+        /// </summary>
+        /// <value>
+        /// The parent note.
+        /// </value>
+        [DataMember]
+        public virtual Note ParentNote { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person alias that last edited the note text. Use this instead of ModifiedByPersonAlias to determine the last person to edit the note text
+        /// </summary>
+        /// <value>
+        /// The edited by person alias.
+        /// </value>
+        [DataMember]
+        public virtual PersonAlias EditedByPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the child notes.
+        /// </summary>
+        /// <value>
+        /// The child notes.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<Note> ChildNotes { get; set; } = new Collection<Note>();
+
+        /// <summary>
+        /// Gets the childs note that the current person is allowed to view
+        /// </summary>
+        /// <value>
+        /// The viewable child notes.
+        /// </value>
+        [LavaInclude]
+        [NotMapped]
+        public virtual List<Note> ViewableChildNotes
+        {
+            get
+            {
+                // only get notes they have auth to VIEW ( note that VIEW has special rules based on approval status, etc. See Note.IsAuthorized for details )
+                var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
+
+                var viewableChildNotes = ChildNotes.ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) ).ToList();
+
+                return viewableChildNotes;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the note attachments.
+        /// </summary>
+        /// <value>
+        /// The note attachments.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<NoteAttachment> Attachments { get; set; } = new Collection<NoteAttachment>();
+
+        /// <summary>
+        /// Gets the created by person photo URL.
+        /// </summary>
+        /// <value>
+        /// The created by person photo URL.
+        /// </value>
+        [LavaInclude]
+        public virtual string CreatedByPersonPhotoUrl
+        {
+            get
+            {
+                return Person.GetPersonPhotoUrl( this.CreatedByPersonAlias.Person );
+            }
+        }
+
+        /// <summary>
+        /// Gets the id to use in the note's anchor tag
+        /// </summary>
+        /// <value>
+        /// The note anchor identifier.
+        /// </value>
+        [LavaInclude]
+        public virtual string NoteAnchorId => $"NoteRef-{this.Guid.ToString( "N" )}";
+
+        /// <summary>
+        /// Gets the name of the person that last edited the note text. Use this instead of ModifiedByPersonName to determine the last person to edit the note text
+        /// </summary>
+        /// <value>
+        /// The edited by person alias.
+        /// </value>
+        [LavaInclude]
+        public virtual string EditedByPersonName
+        {
+            get
+            {
+                var editedByPerson = EditedByPersonAlias?.Person ?? CreatedByPersonAlias?.Person;
+                return editedByPerson?.FullName;
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the entity (If it is a Note on a Person, it would be the person's name, etc)
+        /// </summary>
+        /// <value>
+        /// The name of the entity.
+        /// </value>
+        [LavaInclude]
+        public virtual string EntityName
+        {
+            get
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var noteTypeEntityTypeId = NoteTypeCache.Get( this.NoteTypeId )?.EntityTypeId;
+                    if ( noteTypeEntityTypeId.HasValue && this.EntityId.HasValue )
+                    {
+                        var entity = new EntityTypeService( rockContext ).GetEntity( this.NoteType.EntityTypeId, this.EntityId.Value );
+                        return entity?.ToString();
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the approval URL.
+        /// </summary>
+        /// <value>
+        /// The approval URL.
+        /// </value>
+        [LavaInclude]
+        public virtual string ApprovalUrl
+        {
+            get
+            {
+                string approvalUrlTemplate = NoteTypeCache.Get( this.NoteTypeId )?.ApprovalUrlTemplate;
+                if ( string.IsNullOrWhiteSpace( approvalUrlTemplate ) )
+                {
+                    approvalUrlTemplate = "{{ 'Global' | Attribute:'InternalApplicationRoot' }}{{ Note.NoteUrl }}#{{ Note.NoteAnchorId }}";
+                }
+
+                var mergeFields = new Dictionary<string, object> { { "Note", this } };
+
+                string approvalUrl = approvalUrlTemplate.ResolveMergeFields( mergeFields );
+
+                return approvalUrl;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the currently logged in person is watching this specific note
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is current person watching; otherwise, <c>false</c>.
+        /// </value>
+        [LavaInclude]
+        public virtual bool IsCurrentPersonWatching
+        {
+            get
+            {
+                var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
+                var currentPersonId = currentPerson?.Id;
+                if ( currentPersonId.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        bool isWatching = new NoteWatchService( rockContext ).Queryable()
+                                .Where( a => a.NoteId == this.Id 
+                                    && a.WatcherPersonAlias.PersonId == currentPersonId.Value 
+                                    && a.IsWatching == true ).Any();
+
+                        return isWatching;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets the count of that are descendants (replies) of this note.
+        /// </summary>
+        /// <value>
+        /// The viewable descendents count.
+        /// </value>
+        [LavaInclude]
+        public virtual int ViewableDescendentsCount
+        {
+            get
+            {
+                if ( !_viewableDescendentsCount.HasValue )
+                {
+                    var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
+
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var noteDescendents = new NoteService( rockContext ).GetAllDescendents( this.Id ).ToList();
+                        var viewableDescendents = noteDescendents.ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) ).ToList();
+                        _viewableDescendentsCount = viewableDescendents.Count();
+                    }
+                }
+
+                return _viewableDescendentsCount.Value;
+            }
+        }
+
+        private int? _viewableDescendentsCount = null;
+
+        /// <summary>
         /// Gets the parent security authority of this Note. Where security is inherited from.
         /// </summary>
         /// <value>
@@ -125,30 +419,111 @@ namespace Rock.Model
         {
             get
             {
-                return this.NoteType != null ? this.NoteType : base.ParentAuthority;
+                var noteType = NoteTypeCache.Get( this.NoteTypeId );
+                return noteType ?? base.ParentAuthority;
             }
         }
 
         /// <summary>
-        /// Determines whether the specified action is authorized.
+        /// An optional additional parent authority.  (i.e for Notes, the NoteType is main parent
+        /// authority, but parent note is an additional parent authority )
+        /// </summary>
+        public override ISecured ParentAuthorityPre
+        {
+            get
+            {
+                return this.ParentNote ?? base.ParentAuthorityPre;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified action is authorized on this note.
+        /// Special note on the VIEW action: a person can view a note if they have normal VIEW access, but also have any of the following is true of the note:
+        ///  - Approved,
+        ///  - The current person is the one who created the note,
+        ///  - The current person is the one who last edited the note,
+        ///  - No Approval is required,
+        ///  - The current person is an approver
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
         public override bool IsAuthorized( string action, Person person )
         {
-            if ( CreatedByPersonAlias != null && person != null &&
-                CreatedByPersonAlias.PersonId == person.Id )
+            if ( this.IsPrivateNote )
             {
-                return true;
+                // If this is a private note, the creator has FULL access to it. Everybody else has NO access (including admins)
+                if ( this.CreatedByPersonAlias?.PersonId == person?.Id )
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
 
-            if ( IsPrivateNote )
+            if ( action.Equals( Rock.Security.Authorization.APPROVE, StringComparison.OrdinalIgnoreCase ) )
             {
+                // If checking the APPROVE action, let people Approve private notes that they created (see above), otherwise just use the normal IsAuthorized
+                return base.IsAuthorized( action, person );
+            }
+            else if ( action.Equals( Rock.Security.Authorization.VIEW, StringComparison.OrdinalIgnoreCase ) )
+            {
+                // View has special rules depending on the approval status and APPROVE verb
+
+                // first check if have normal VIEW access on the base
+                if ( !base.IsAuthorized( Authorization.VIEW, person ) )
+                {
+                    return false;
+                }
+
+                if ( this.ApprovalStatus == NoteApprovalStatus.Approved )
+                {
+                    return true;
+                }
+                else if ( this.CreatedByPersonAliasId == person?.PrimaryAliasId )
+                {
+                    return true;
+                }
+                else if ( this.EditedByPersonAliasId == person?.PrimaryAliasId )
+                {
+                    return true;
+                }
+                else if ( NoteTypeCache.Get( this.NoteTypeId )?.RequiresApprovals == false )
+                {
+                    return true;
+                }
+                else if ( this.IsAuthorized( Authorization.APPROVE, person ) )
+                {
+                    return true;
+                }
+
                 return false;
             }
+            else if ( action.Equals( Rock.Security.Authorization.EDIT, StringComparison.OrdinalIgnoreCase ) )
+            {
+                // If this note was created by the logged person, they should be be able to EDIT their own note,
+                // otherwise EDIT (and DELETE) of other people's notes require ADMINISTRATE
+                if ( CreatedByPersonAlias?.PersonId == person?.Id )
+                {
+                    return true;
+                }
+                else 
+                {
+                    return base.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, person );
+                }
+            }
+            else
+            {
+                // If this note was created by the logged person, they should be be able to do any action (except for APPROVE)
+                if ( CreatedByPersonAlias?.PersonId == person?.Id )
+                {
+                    return true;
+                }
 
-            return base.IsAuthorized( action, person );
+                return base.IsAuthorized( action, person );
+            }
         }
 
         /// <summary>
@@ -170,6 +545,47 @@ namespace Rock.Model
         }
 
         #endregion
+
+
+        #region overrides
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
+        {
+            if ( state == EntityState.Added )
+            {
+                var noteType = NoteTypeCache.Get( this.NoteTypeId );
+                if ( noteType?.AutoWatchAuthors == true )
+                {
+                    // if this is a new note, and AutoWatchAuthors, then add a NoteWatch so the author will get notified when there are any replies
+                    var rockContext = dbContext as RockContext;
+                    if ( rockContext != null && this.CreatedByPersonAliasId.HasValue )
+                    {
+                        var noteWatchService = new NoteWatchService( rockContext );
+
+                        // we don't know the Note.Id yet, so just assign the NoteWatch.Note and EF will populate the NoteWatch.NoteId automatically
+                        var noteWatch = new NoteWatch
+                        {
+                            IsWatching = true,
+                            WatcherPersonAliasId = this.CreatedByPersonAliasId.Value,
+                            Note = this
+                        };
+
+                        noteWatchService.Add( noteWatch );
+                    }
+                }
+            }
+
+            base.PreSaveChanges( dbContext, entry, state );
+        }
+
+        #endregion
+
 
         #region Public Methods
 
@@ -201,7 +617,34 @@ namespace Rock.Model
         public NoteConfiguration()
         {
             this.HasRequired( p => p.NoteType ).WithMany().HasForeignKey( p => p.NoteTypeId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.ParentNote ).WithMany( p => p.ChildNotes ).HasForeignKey( p => p.ParentNoteId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.EditedByPersonAlias ).WithMany().HasForeignKey( p => p.EditedByPersonAliasId ).WillCascadeOnDelete( false );
         }
+    }
+
+    #endregion
+
+    #region Enumerations
+
+    /// <summary>
+    /// Represents the approval status of a note
+    /// </summary>
+    public enum NoteApprovalStatus
+    {
+        /// <summary>
+        /// The <see cref="Note"/> is pending approval.
+        /// </summary>
+        PendingApproval = 0,
+
+        /// <summary>
+        /// The <see cref="Note"/> has been approved.
+        /// </summary>
+        Approved = 1,
+
+        /// <summary>
+        /// The <see cref="Note"/> was denied.
+        /// </summary>
+        Denied = 2
     }
 
     #endregion

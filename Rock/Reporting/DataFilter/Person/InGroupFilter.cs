@@ -782,7 +782,11 @@ namespace Rock.Reporting.DataFilter.Person
                         attendanceGroupIds = groupIds;
                     }
 
-                    var groupAttendanceQuery = new AttendanceService( rockContext ).Queryable().Where( a => a.DidAttend == true && a.GroupId.HasValue && attendanceGroupIds.Contains( a.GroupId.Value ) );
+                    var groupAttendanceQuery = new AttendanceService( rockContext ).Queryable()
+                        .Where( a => 
+                            a.DidAttend == true && 
+                            a.Occurrence.GroupId.HasValue && 
+                            attendanceGroupIds.Contains( a.Occurrence.GroupId.Value ) );
 
                     string firstAttendanceSlidingDelimitedValues = selectionValues[8].Replace( ',', '|' );
                     DateRange firstAttendanceDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( firstAttendanceSlidingDelimitedValues );
@@ -794,7 +798,7 @@ namespace Rock.Reporting.DataFilter.Person
                             .Select( ss => new PersonIdFirstAttendance
                             {
                                 PersonId = ss.Key,
-                                FirstAttendanceSundayDate = ss.Min( a => a.SundayDate )
+                                FirstAttendanceSundayDate = ss.Min( a => a.Occurrence.SundayDate )
                             } );
 
                         if ( firstAttendanceDateRange.Start.HasValue )
@@ -818,7 +822,7 @@ namespace Rock.Reporting.DataFilter.Person
                             .Select( ss => new PersonIdLastAttendance
                             {
                                 PersonId = ss.Key,
-                                LastAttendanceSundayDate = ss.Max( a => a.SundayDate )
+                                LastAttendanceSundayDate = ss.Max( a => a.Occurrence.SundayDate )
                             } );
 
                         if ( lastAttendanceDateRange.Start.HasValue )

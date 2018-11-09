@@ -21,7 +21,7 @@ using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -129,7 +129,7 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( value, out guid ) )
             {
-                var entityType = CacheEntityType.Get( guid );
+                var entityType = EntityTypeCache.Get( guid );
                 if ( entityType != null )
                 {
                     formattedValue = entityType.FriendlyName;
@@ -188,7 +188,7 @@ namespace Rock.Field.Types
                 }
                 else
                 {
-                    var entityType = CacheEntityType.Get( entityTypePicker.SelectedEntityTypeId.Value );
+                    var entityType = EntityTypeCache.Get( entityTypePicker.SelectedEntityTypeId.Value );
                     if ( entityType != null )
                     {
                         return entityType.Guid.ToString();
@@ -210,14 +210,22 @@ namespace Rock.Field.Types
             EntityTypePicker entityTypePicker = control as EntityTypePicker;
             if ( entityTypePicker != null )
             {
-                CacheEntityType entityType = null;
+                EntityTypeCache entityType = null;
                 Guid? guid = value.AsGuidOrNull();
                 if ( guid.HasValue )
                 {
-                    entityType = CacheEntityType.Get( guid.Value );
-                }
+                    entityType = EntityTypeCache.Get( guid.Value );
 
-                entityTypePicker.SelectedEntityTypeId = entityType?.Id;
+                    // If the guid had a value, but the EntityType is null, it's probably the "None (Global Attributes)" entity.
+                    if ( entityType == null && entityTypePicker.IncludeGlobalOption )
+                    {
+                        entityTypePicker.SelectedEntityTypeId = 0;
+                    }
+                    else
+                    {
+                        entityTypePicker.SelectedEntityTypeId = entityType?.Id;
+                    }
+                }
             }
         }
 

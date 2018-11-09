@@ -30,14 +30,14 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Services.NuGet;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Shortened Links" )]
     [Category( "Administration" )]
@@ -75,8 +75,8 @@ namespace RockWeb.Blocks.Administration
 
     $('#{1}').on('input', function() {{ updateClipboardText(); }});
 
-    new Clipboard('#btnSave');
-    new Clipboard('.js-copy-to-clipboard');
+    new ClipboardJS('#btnSave');
+    new ClipboardJS('.js-copy-to-clipboard');
     $('.js-copy-to-clipboard').tooltip();
 
     updateClipboardText();
@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.Administration
                 SetSiteUrl();
 
                 string url = PageParameter( "url" );
-                if ( url.IsNotNullOrWhitespace() )
+                if ( url.IsNotNullOrWhiteSpace() )
                 {
                     tbUrl.Text = url;
                 }
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Administration
 
                     if ( errors.Any() )
                     {
-                        nbError.Text = "Please Correct the Following<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
+                        nbError.Text = "Please correct the following:<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
                         nbError.Visible = true;
                         return;
                     }
@@ -214,13 +214,13 @@ namespace RockWeb.Blocks.Administration
         private void LoadSites( RockContext rockContext )
         {
             ddlSite.Items.Clear();
-            foreach ( CacheSite site in new SiteService( rockContext )
+            foreach ( SiteCache site in new SiteService( rockContext )
                 .Queryable().AsNoTracking()
                 .Where( s => s.EnabledForShortening )
                 .OrderBy( s => s.Name )
                 .Select( a => a.Id )
                 .ToList()
-                .Select( a => CacheSite.Get( a ) ) )
+                .Select( a => SiteCache.Get( a ) ) )
             {
                 ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
             }

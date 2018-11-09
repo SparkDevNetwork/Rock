@@ -370,7 +370,7 @@ namespace RockWeb.Blocks.Core
                 string errorMessage = string.Empty;
                 btnDelete.Visible = scheduleService.CanDelete( schedule, out errorMessage );
 
-                var hasAttendances = schedule.Id > 0 && new AttendanceService( new RockContext() ).Queryable().Where( a => a.ScheduleId.HasValue && a.ScheduleId == schedule.Id ).Any();
+                var hasAttendances = schedule.Id > 0 && new AttendanceService( new RockContext() ).Queryable().Where( a => a.Occurrence.ScheduleId.HasValue && a.Occurrence.ScheduleId == schedule.Id ).Any();
                 hfHasAttendanceHistory.Value = hasAttendances.Bit().ToString();
 
                 if ( schedule.Id > 0 )
@@ -468,7 +468,7 @@ namespace RockWeb.Blocks.Core
             DescriptionList descriptionList = new DescriptionList()
                 .Add( "Description", schedule.Description ?? string.Empty )
                 .Add( "Schedule", friendlyText )
-                .Add( "Next Occurrence", schedule.NextStartDateTime )
+                .Add( "Next Occurrence", schedule.GetNextStartDateTime( RockDateTime.Now ) )
                 .Add( "Category", schedule.Category != null ? schedule.Category.Name : string.Empty );
 
             if ( schedule.CheckInStartOffsetMinutes.HasValue )

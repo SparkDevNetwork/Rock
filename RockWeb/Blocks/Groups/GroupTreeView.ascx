@@ -92,7 +92,7 @@
                 var scrollContainer = scrollbCategory.find('.viewport');
                 var scrollIndicator = scrollbCategory.find('.track');
                 <%=hfSelectedGroupId.ClientID%>IScroll = new IScroll(scrollContainer[0], {
-                    mouseWheel: true,
+                    mouseWheel: false,
                     eventPassthrough: true,
                     preventDefault: false,
                     scrollX: true,
@@ -148,7 +148,7 @@
                             window.location = locationUrl;
                         }
                     })
-                    .on('rockTree:rendered', function () {
+                    .on('rockTree:rendered rockTree:expand rockTree:collapse rockTree:itemClicked', function () {
 
                         // update viewport height
                         resizeScrollbar(scrollbCategory);

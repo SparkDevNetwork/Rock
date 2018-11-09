@@ -18,7 +18,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Security
 {
@@ -27,7 +27,8 @@ namespace Rock.Security
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    [Obsolete( "Use Rock.Cache.CacheRole Instead")]
+    [RockObsolete( "1.8" )]
+    [Obsolete( "Use RoleCache Instead")]
     public class Role
     {
         /// <summary>
@@ -35,7 +36,7 @@ namespace Rock.Security
         /// </summary>
         private Role() { }
 
-        private Role( CacheRole role )
+        private Role( RoleCache role )
         {
             Id = role.Id;
             Name = role.Name;
@@ -93,6 +94,18 @@ namespace Rock.Security
         #region Static Methods
 
         /// <summary>
+        /// Performs an implicit conversion from <see cref="Role"/> to <see cref="RoleCache"/>.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator RoleCache( Role c )
+        {
+            return RoleCache.Get( c.Id );
+        }
+
+        /// <summary>
         /// Returns Role object from cache.  If role does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
@@ -100,7 +113,7 @@ namespace Rock.Security
         /// <returns></returns>
         public static Role Read( int id )
         {
-            return new Role( CacheRole.Get( id ) );
+            return new Role( RoleCache.Get( id ) );
         }
 
         /// <summary>
@@ -112,7 +125,7 @@ namespace Rock.Security
         public static Role GetOrAddExisting( string key, Func<Role> valueFactory )
         {
             // This mehod should not have been public, but it was, so leaving it with just a get.
-            return new Role( CacheRole.Get( key.AsInteger() ) );
+            return new Role( RoleCache.Get( key.AsInteger() ) );
         }
 
         /// <summary>
@@ -122,7 +135,7 @@ namespace Rock.Security
         /// <returns></returns>
         public static Role LoadById( int id )
         {
-            return new Role( CacheRole.LoadById( id ) );
+            return new Role( RoleCache.LoadById( id ) );
         }
 
         /// <summary>
@@ -133,7 +146,7 @@ namespace Rock.Security
         {
             var roles = new List<Role>();
 
-            var cacheRoles = CacheRole.AllRoles();
+            var cacheRoles = RoleCache.AllRoles();
             if ( cacheRoles == null ) return roles;
 
             foreach ( var cacheRole in cacheRoles )
@@ -150,7 +163,7 @@ namespace Rock.Security
         /// <param name="id">The id.</param>
         public static void Flush( int id )
         {
-            CacheRole.Remove( id );
+            RoleCache.Remove( id );
         }
 
         #endregion

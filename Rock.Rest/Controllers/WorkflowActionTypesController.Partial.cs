@@ -23,7 +23,7 @@ using System.Reflection;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
 using Rock.Web.UI.Controls;
 using Rock.Workflow;
@@ -94,9 +94,9 @@ namespace Rock.Rest.Controllers
         /// Gets the categorized actions.
         /// </summary>
         /// <returns></returns>
-        private Dictionary<string, List<CacheEntityType>> GetCategorizedActions()
+        private Dictionary<string, List<EntityTypeCache>> GetCategorizedActions()
         {
-            var categorizedActions = new Dictionary<string, List<CacheEntityType>>();
+            var categorizedActions = new Dictionary<string, List<EntityTypeCache>>();
 
             foreach ( var action in ActionContainer.Instance.Dictionary.Select( d => d.Value.Value ) )
             {
@@ -113,7 +113,7 @@ namespace Rock.Rest.Controllers
                     }
                 }
 
-                categorizedActions.AddOrIgnore( categoryName, new List<CacheEntityType>() );
+                categorizedActions.AddOrIgnore( categoryName, new List<EntityTypeCache>() );
                 categorizedActions[categoryName].Add( action.EntityType );
 
             }

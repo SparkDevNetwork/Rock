@@ -58,17 +58,8 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
+        [IncludeAsEntityProperty]
         public int AccountId { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this is a non-cash detail.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if non-cash; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        [Obsolete("Field is not used. Non Cash transactions can be designated by the currency (tender) type.")]
-        public bool IsNonCash { get; set; }
 
         /// <summary>
         /// Gets or sets the amount of the transaction detail.
@@ -78,6 +69,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [BoundFieldTypeAttribute(typeof(Rock.Web.UI.Controls.CurrencyField))]
+        [IncludeAsEntityProperty]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -88,6 +80,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 500 )]
         [DataMember]
+        [IncludeAsEntityProperty]
         public string Summary { get; set; }
 
         /// <summary>
@@ -146,6 +139,7 @@ namespace Rock.Model
         /// <value>
         /// The history changes.
         /// </value>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use HistoryChangeList instead" )]
         public virtual List<string> HistoryChanges { get; set; }
 
@@ -233,7 +227,7 @@ namespace Rock.Model
                 {
                     var batchHistory = new History.HistoryChangeList();
                     batchHistory.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, $"Transaction ID:{txn.Id}" );
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), this.TransactionId, true, this.ModifiedByPersonAliasId );
+                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), this.TransactionId, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                 }
             }
 

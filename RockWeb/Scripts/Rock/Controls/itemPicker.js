@@ -57,7 +57,7 @@
                     preventDefaultException: { tagName: /.*/ }
                 });
 
-                // Since some hanlers are "live" events, they need to be bound before tree is initialized
+                // Since some handlers are "live" events, they need to be bound before tree is initialized
                 this.initializeEventHandlers();
 
                 if ($hfItemIds.val() && $hfItemIds !== '0') {
@@ -99,15 +99,18 @@
 
                 $control.find('a.picker-label').click(function (e) {
                     e.preventDefault();
-                    $control.find('.picker-menu').first().toggle(function () {
+                    $(this).toggleClass("active");
+                    $control.find('.picker-menu').first().toggle(0, function () {
                         self.scrollToSelectedItem();
                     });
                 });
 
                 $control.find('.picker-cancel').click(function () {
-                    $(this).closest('.picker-menu').slideUp(function () {
+                    $(this).toggleClass("active");
+                    $(this).closest('.picker-menu').toggle(0, function () {
                         self.updateScrollbar();
                     });
+                    $(this).closest('a.picker-label').toggleClass("active");
                 });
 
                 // have the X appear on hover if something is selected
@@ -123,9 +126,10 @@
                             selectedIds = [],
                             selectedNames = [];
 
-                    $.each(selectedNodes, function (index, node) {
-                        selectedIds.push(node.id);
-                        selectedNames.push(node.name);
+                  $.each(selectedNodes, function (index, node) {
+                    var nodeName = $("<textarea/>").html(node.name).text();
+                    selectedNames.push(nodeName);
+                    selectedIds.push(node.id);
                     });
 
                     $hfItemIds.val(selectedIds.join(','));
@@ -137,8 +141,9 @@
 
                     $spanNames.text(selectedNames.join(', '));
                     $spanNames.attr('title', $spanNames.text());
-
-                    $(this).closest('.picker-menu').slideUp(function () {
+                    
+                    $(this).closest('a.picker-label').toggleClass("active");
+                    $(this).closest('.picker-menu').toggle(0, function () {
                         self.updateScrollbar();
                     });
                     

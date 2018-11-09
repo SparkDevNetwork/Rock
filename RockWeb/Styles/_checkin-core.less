@@ -1,5 +1,6 @@
 @import "_rock-variables";
 
+@import "rock-components/picker-date.less";
 /*
   Used to style the check-in screens
 
@@ -17,6 +18,8 @@
 // -------------------------
 @checkin-scrollbar-bg: fade(@text-color, 50%);
 
+@font-size-base: 18px;
+@font-size-h1: 28px;
 
 // 2. Bootstrap Overrides
 // -------------------------
@@ -34,7 +37,6 @@ h3 {
 }
 
 h1 {
-  font-size: 28px;
   color: @header-text-color;
 }
 
@@ -44,7 +46,6 @@ h1 {
 
 .form-group label {
   margin-bottom: 6px;
-  font-size: 18px;
 }
 
 .btn-checkin-select {
@@ -56,8 +57,40 @@ h1 {
   white-space: normal;
 }
 
+// unlike Bootstrap's original .table-responsive, this is applied for all widths. (i.e. NOT only applied <768px)
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
 // 3. Global Styles
 // -------------------------
+
+a.help {
+  margin-left: 6px;
+  color: @help-color;
+  outline: 0;
+}
+
+// Validation Alert
+.alert-validation {
+  .alert-variant(@alert-validation-bg; @alert-validation-border; @alert-validation-heading);
+  font-weight: 700;
+
+  ul,
+  span {
+    font-weight: 400;
+    color: #484848;
+  }
+
+  ul {
+    padding: 5px 25px 0;
+    line-height: 1.5;
+  }
+}
 
 // turn off configuration items
 #cms-admin-footer {
@@ -135,6 +168,10 @@ body {
   }
 }
 
+.checkin-body-container > label {
+  padding: 0 0 @padding-base-vertical 0;
+}
+
 .checkin-search-actions a {
   padding: 20px 48px;
   font-size: 48px;
@@ -158,19 +195,23 @@ body {
   padding-left: 15px;
   margin-top: 6px;
   margin-bottom: 12px;
+
+  .btn-primary {
+    float: right;
+  }
 }
 
 .checkin-actions {
-  a {
+  .btn {
     padding: 12px 24px;
     font-size: 22px;
     font-weight: @checkin-button-text-weight;
+  }
 
-    &.btn-primary {
+  .btn-primary {
       padding: 14px 26px;
       font-size: 28px;
     }
-  }
 }
 
 // time select checkbox
@@ -202,7 +243,7 @@ body {
 
 /* Ten Key Keypad */
 .tenkey {
-  width: 320px;
+  width: 265px;
 
   a {
     &:focus, &:active {
@@ -233,11 +274,12 @@ body {
   z-index: @zindex-popover;
 
   .modal-content {
-    background-color: @bg-color;
+    background-color: @modal-body-bg;
+    color: @modal-body-text-color;
   }
 
   .modal-footer {
-    border-top-color: lighten(@bg-color, 20%);
+    border-top-color: @modal-footer-border-color;
   }
 }
 
@@ -275,40 +317,47 @@ img[src*="no-photo"] {
 
 // search page
 .checkin-search-body {
-  width: 260px;
-  margin-right: auto !important;
-  margin-left: auto !important;
+  width: 360px;
+  margin: 0 auto;
+}
+
+.search-phone-form-group {
+  width: 260px; // keypad is 320 - padding (24px x 2)
+  margin: 0 auto;
 }
 
 input.checkin-phone-entry {
-  float: left;
   width: 260px; // keypad is 320 - padding (24px x 2)
   height: 60px;
   padding: 6px 20px;
-  margin-bottom: 10px;
+  margin: 0 auto 10px auto;
   font-size: 36px;
   font-weight: @checkin-button-text-weight;
 }
 
 input.namesearch {
-  float: left;
   width: 360px;
   height: 60px;
   padding: 6px 20px;
-  margin-bottom: 10px;
+  margin: 0 auto 10px auto;
   font-size: 36px;
-  font-weight: 700;
+  font-weight: @checkin-button-text-weight;
 }
 
 .checkin-phone-keypad {
-  float: left;
-  margin-bottom: 12px;
+  margin: 0 auto 24px auto;
 }
 
 // time select
 .checkin-time-select {
   display: table;
   margin: 0 auto;
+
+  .control-label {
+    display: block;
+    font-size: @font-size-h1;
+    font-weight: @headings-font-weight;
+  }
 }
 
 .checkin-timelist {
@@ -318,6 +367,7 @@ input.namesearch {
 // checkin summary page
 .checkin-summary {
   list-style-type: none;
+  padding: 0;
 
   li {
     margin-bottom: 18px;
@@ -355,10 +405,106 @@ input.namesearch {
 }
 
 // family select - select person
+
 .family-personselect {
   padding-top: 20px;
 }
 
+// Family Registration
+
+.btn-action {
+  .button-variant(@btn-action-color; @btn-action-bg; @btn-action-border);
+}
+
+
+
+.value-list-rows .controls-row {
+  margin-bottom: 6px;
+
+  .input-width-lg {
+    width: 100%;
+    max-width: ~"calc(100% - 50px)";
+  }
+}
+
+.form-control-group .form-control {
+  float: left;
+  margin-right: 6px;
+}
+
+.datepicker {
+  color: @modal-body-text-color;
+}
+
+.toggle-container {
+  margin-top: @line-height-computed + 6px;
+  margin-bottom:  @form-group-margin-bottom;
+
+  &.form-group {
+    margin-top: 0;
+  }
+
+  .btn-group {
+    display: -ms-flexbox;
+    display: flex;
+    border-radius: 50px;
+    height: @input-height-base;
+
+    > .btn {
+      width: 100%;
+      border-radius: 50px;
+      margin-bottom: 0;
+
+      &:active {
+        -webkit-box-shadow: none;
+        box-shadow: none;
+
+        &:focus {
+          background-color: fade(#76c24e, 75%);
+          color: #ffffff;
+        }
+      }
+    }
+
+    > .btn-default {
+      color: #a09fa0;
+      border-color: #dad8d6;
+      background-color: #ffffff;
+    }
+
+    > .active,
+    > .active:hover,
+    &:active {
+      color: #fff;
+      background-color: #76c24e;
+      border-color: #76c24e;
+      -webkit-box-shadow: none;
+      box-shadow: none;
+    }
+  }
+}
+
+.table > tbody > tr > td {
+  vertical-align: middle;
+}
+
+.table > tbody > tr:last-child > td {
+  border-bottom: 1px solid @table-border-color;
+}
+
+
+// highlight required fields
+.form-group.required {
+  .control-label::after {
+    margin-left: 4px;
+    font-family: @fa-font-face;
+    font-size: 6px;
+    font-weight: @fa-theme-weight;
+    color: @required-field-color;
+    vertical-align: super;
+    content: @fa-var-circle;
+  }
+}
 
 //
 // 6. Scroll Container
@@ -377,7 +523,7 @@ input.namesearch {
   position: absolute;
   z-index: 1;
   width: 100%;
-  padding-right: 40px;
+  padding: 0 40px 0 40px;
   -webkit-text-size-adjust: none;
   -ms-text-size-adjust: none;
   -webkit-user-select: none;
@@ -432,6 +578,7 @@ input.namesearch {
   position: absolute;
   right: 12px;
   bottom: 8px;
+  z-index: @zindex-navbar;
   color: @text-color;
   opacity: .5;
 

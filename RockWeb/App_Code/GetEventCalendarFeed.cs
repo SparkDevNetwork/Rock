@@ -28,7 +28,7 @@ using DDay.iCal;
 using DDay.iCal.Serialization.iCalendar;
 
 using System.Globalization;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -129,7 +129,7 @@ namespace RockWeb
                         ievent.DTStart.SetTimeZone( icalendar.TimeZones[0] );
                         ievent.DTEnd.SetTimeZone( icalendar.TimeZones[0] );
 
-                        // Rock has more descriptions than iCal so lets concantenate them
+                        // Rock has more descriptions than iCal so lets concatenate them
                         string description = CreateEventDescription( eventItem, occurrence );
 
                         // Don't set the description prop for outlook to force it to use the X-ALT-DESC property which can have markup.
@@ -149,7 +149,7 @@ namespace RockWeb
                             ievent.Url = new Uri( eventItem.DetailsUrl );
                         }
 
-                        // add contact infor if it exists
+                        // add contact info if it exists
                         if ( occurrence.ContactPersonAlias != null )
                         {
                             ievent.Organizer = new Organizer( string.Format( "MAILTO:{0}", occurrence.ContactPersonAlias.Person.Email ) );
@@ -165,7 +165,7 @@ namespace RockWeb
                             ievent.Comments.Add( contactInfo );
                         }
 
-                        // TODO: categories - comma delmited list of whatever, might use audience
+                        // TODO: categories - comma delimited list of whatever, might use audience
                         foreach ( var a in eventItem.EventItemAudiences )
                         {
                             ievent.Categories.Add( a.DefinedValue.Value );
@@ -196,14 +196,14 @@ namespace RockWeb
         {
             // get the lava template
             int templateDefinedValueId = 0;
-            var iCalTemplateDefinedValue = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.DEFAULT_ICAL_DESCRIPTION );
+            var iCalTemplateDefinedValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEFAULT_ICAL_DESCRIPTION );
 
             if ( request.QueryString["templateid"] != null )
             {
                 int.TryParse( request.QueryString["templateid"], out templateDefinedValueId );
                 if ( templateDefinedValueId > 0 )
                 {
-                    iCalTemplateDefinedValue = CacheDefinedValue.Get( templateDefinedValueId );
+                    iCalTemplateDefinedValue = DefinedValueCache.Get( templateDefinedValueId );
                 }
             }
 
@@ -272,7 +272,7 @@ namespace RockWeb
         private void SendBadRequest( HttpContext httpContext, string addlInfo = "" )
         {
             httpContext.Response.StatusCode = HttpStatusCode.BadRequest.ConvertToInt();
-            httpContext.Response.StatusDescription = "Request is inavalid or malformed. " + addlInfo;
+            httpContext.Response.StatusDescription = "Request is invalid or malformed. " + addlInfo;
             httpContext.ApplicationInstance.CompleteRequest();
         }
 
@@ -360,7 +360,7 @@ namespace RockWeb
             List<string> stringIdList = new List<string>();
             List<int> intIdList = new List<int>();
 
-            if ( queryParamemter.IsNotNullOrWhitespace() )
+            if ( queryParamemter.IsNotNullOrWhiteSpace() )
             {
                 stringIdList = queryParamemter.Split( ',' ).ToList();
 
@@ -411,7 +411,7 @@ namespace RockWeb
             public List<int> AudienceIds { get; set; }
 
             /// <summary>
-            /// Gets or sets the start date. if not explictly set returns current date
+            /// Gets or sets the start date. if not explicitly set returns current date
             /// </summary>
             /// <value>
             /// The start date.
@@ -430,7 +430,7 @@ namespace RockWeb
             }
 
             /// <summary>
-            /// Gets or sets the end date. If not explictly set returns two months from current date.
+            /// Gets or sets the end date. If not explicitly set returns two months from current date.
             /// </summary>
             /// <value>
             /// The end date.

@@ -73,7 +73,7 @@ namespace Rock.Data
         ///     Obtain the namespace name from existing model defined types.
         /// </summary>
         /// <param name="layerModel">An EdmModel instance representing conceptual or store model.</param>
-        /// <returns>A string contining the name of the namespace.</returns>
+        /// <returns>A string containing the name of the namespace.</returns>
         /// <remarks>
         ///     Only one namespace is allowed. Throws if there are multiple namespaces or if there aren't any types defined in the
         ///     model.

@@ -20,7 +20,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -44,8 +44,8 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             ItemRestUrlExtraParams = "?getCategorizedItems=true&showUnnamedEntityItems=true&showCategoriesThatHaveNoChildren=false";
-            ItemRestUrlExtraParams += "&entityTypeId=" + CacheEntityType.Get( Rock.SystemGuid.EntityType.WORKFLOW_TYPE.AsGuid() ).Id;
-            ItemRestUrlExtraParams += "&includeInactiveItems=" + ShowInactive;
+            ItemRestUrlExtraParams += "&entityTypeId=" + EntityTypeCache.Get( Rock.SystemGuid.EntityType.WORKFLOW_TYPE.AsGuid() ).Id;
+            ItemRestUrlExtraParams += "&includeInactiveItems=" + ShowInactive + "&lazyLoad=false";
             this.IconCssClass = "fa fa-cogs";
             base.OnInit( e );
         }
@@ -61,7 +61,7 @@ namespace Rock.Web.UI.Controls
                 ItemId = workflowType.Id.ToString();
 
                 string parentCategoryIds = string.Empty;
-                var parentCategory = workflowType.CategoryId.HasValue ? CacheCategory.Get( workflowType.CategoryId.Value ) : null;
+                var parentCategory = workflowType.CategoryId.HasValue ? CategoryCache.Get( workflowType.CategoryId.Value ) : null;
                 while ( parentCategory != null )
                 {
                     parentCategoryIds = parentCategory.Id + "," + parentCategoryIds;
@@ -98,16 +98,16 @@ namespace Rock.Web.UI.Controls
                     {
                         ids.Add( workflowType.Id.ToString() );
                         names.Add( workflowType.Name );
-                        CacheCategory parentCategory = null;
+                        CategoryCache parentCategory = null;
                         if ( workflowType.CategoryId.HasValue )
                         {
-                            parentCategory = CacheCategory.Get( workflowType.CategoryId.Value );
+                            parentCategory = CategoryCache.Get( workflowType.CategoryId.Value );
                         }
 
-                        while ( parentCategory != null )
+                        if ( parentCategory != null )
                         {
-                            parentCategoryIds += parentCategory.Id.ToString() + ",";
-                            parentCategory = parentCategory.ParentCategory;
+                            // We need to get all of the categories the selected workflowtype is nested in order to expand them
+                            parentCategoryIds += string.Join( ",", GetWorkflowTypeCategoryAncestorIdList( parentCategory.Id ) ) + ",";
                         }
                     }
                 }
@@ -150,6 +150,21 @@ namespace Rock.Web.UI.Controls
         public override string ItemRestUrl
         {
             get { return "~/api/Categories/GetChildren/"; }
+        }
+
+        /// <summary>
+        /// Gets the workflow type category ancestor identifier list.
+        /// </summary>
+        /// <param name="childCategoryId">The child category identifier.</param>
+        /// <returns></returns>
+        private List<int> GetWorkflowTypeCategoryAncestorIdList( int childCategoryId )
+        {
+            CategoryService categoryService = new CategoryService( new RockContext() );
+            var parentCategories = categoryService.GetAllAncestors( childCategoryId );
+
+            List<int> parentCategoryIds = parentCategories.Select( p => p.Id ).ToList();
+
+            return parentCategoryIds;
         }
     }
 }

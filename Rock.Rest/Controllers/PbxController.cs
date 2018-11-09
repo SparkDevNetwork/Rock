@@ -18,7 +18,7 @@ using System;
 using System.Web.Http;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Rest.Filters;
 

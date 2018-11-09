@@ -32,7 +32,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -94,11 +94,11 @@ namespace RockWeb.Blocks.Groups
 
         private List<GroupMemberWorkflowTrigger> MemberWorkflowTriggersState { get; set; }
 
-        private CacheGroupType CurrentGroupTypeCache
+        private GroupTypeCache CurrentGroupTypeCache
         {
             get
             {
-                return CacheGroupType.Get( CurrentGroupTypeId );
+                return GroupTypeCache.Get( CurrentGroupTypeId );
             }
 
             set
@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.Groups
             gGroupMemberAttributes.GridReorder += gGroupMemberAttributes_GridReorder;
 
             SecurityField groupMemberAttributeSecurityField = gGroupMemberAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
-            groupMemberAttributeSecurityField.EntityTypeId = CacheEntityType.GetId<Attribute>() ?? 0;
+            groupMemberAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
 
             gGroupRequirements.DataKeyNames = new string[] { "Guid" };
             gGroupRequirements.Actions.ShowAdd = true;
@@ -245,7 +245,7 @@ namespace RockWeb.Blocks.Groups
             gMemberWorkflowTriggers.GridReorder += gMemberWorkflowTriggers_GridReorder;
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Group.FriendlyTypeName );
-            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Group ) ).Id;
+            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Group ) ).Id;
 
             rblScheduleSelect.BindToEnum<ScheduleType>();
 
@@ -262,12 +262,17 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnLoad( e );
 
+            int? groupId = 0;
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupId" ) ) )
+            {
+                groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
+            }
+
             if ( !Page.IsPostBack )
             {
-                string groupId = PageParameter( "GroupId" );
-                if ( !string.IsNullOrWhiteSpace( groupId ) )
+                if ( groupId.HasValue )
                 {
-                    ShowDetail( groupId.AsInteger(), PageParameter( "ParentGroupId" ).AsIntegerOrNull() );
+                    ShowDetail( groupId.Value, PageParameter( "ParentGroupId" ).AsIntegerOrNull() );
                 }
                 else
                 {
@@ -293,6 +298,15 @@ namespace RockWeb.Blocks.Groups
                     ShowGroupTypeEditDetails( CurrentGroupTypeCache, group, false );
                 }
             }
+
+            RockContext rockContext = new RockContext();
+
+            if ( groupId.HasValue && groupId.Value != 0 )
+            {
+                var group = GetGroup( groupId.Value, rockContext );
+                FollowingsHelper.SetFollowing( group, pnlFollowing, this.CurrentPerson );
+            }
+
         }
 
         /// <summary>
@@ -374,7 +388,7 @@ namespace RockWeb.Blocks.Groups
         /// Handles the Click event of the btnArchive control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing thmuch the samee event data.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing thmuch the same event data.</param>
         protected void btnArchive_Click( object sender, EventArgs e )
         {
             int? parentGroupId = null;
@@ -434,7 +448,6 @@ namespace RockWeb.Blocks.Groups
                 bool isSecurityRoleGroup = group.IsActive && ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) );
                 if ( isSecurityRoleGroup )
                 {
-                    Rock.Cache.CacheRole.Remove( group.Id );
                     foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
                     {
                         authService.Delete( auth );
@@ -518,7 +531,7 @@ namespace RockWeb.Blocks.Groups
             CategoryService categoryService = new CategoryService( rockContext );
             GroupSyncService groupSyncService = new GroupSyncService( rockContext );
 
-            var roleGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+            var roleGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
             int roleGroupTypeId = roleGroupType != null ? roleGroupType.Id : int.MinValue;
 
             if ( CurrentGroupTypeId == 0 )
@@ -660,6 +673,7 @@ namespace RockWeb.Blocks.Groups
             group.CampusId = cpCampus.SelectedCampusId;
             group.GroupTypeId = CurrentGroupTypeId;
             group.ParentGroupId = gpParentGroup.SelectedValueAsInt();
+            group.StatusValueId = dvpGroupStatus.SelectedValueAsId();
             group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
             group.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
             group.IsSecurityRole = cbIsSecurityRole.Checked;
@@ -694,6 +708,9 @@ namespace RockWeb.Blocks.Groups
                 if ( !oldScheduleId.HasValue || group.Schedule == null )
                 {
                     group.Schedule = new Schedule();
+
+                    // NOTE: Schedule Name should be set to string.Empty to indicate that it is a Custom or Weekly schedule and not a "Named" schedule
+                    group.Schedule.Name = string.Empty;
                 }
 
                 if ( scheduleType == ScheduleType.Custom )
@@ -708,8 +725,6 @@ namespace RockWeb.Blocks.Groups
                     group.Schedule.WeeklyDayOfWeek = dowWeekly.SelectedDayOfWeek;
                     group.Schedule.WeeklyTimeOfDay = timeWeekly.SelectedTime;
                 }
-
-                group.Schedule.Name = group.Schedule.ToString();
             }
             else
             {
@@ -815,7 +830,7 @@ namespace RockWeb.Blocks.Groups
                 group.SaveAttributeValues( rockContext );
 
                 /* Take care of Group Member Attributes */
-                var entityTypeId = CacheEntityType.Get( typeof( GroupMember ) ).Id;
+                var entityTypeId = EntityTypeCache.Get( typeof( GroupMember ) ).Id;
                 string qualifierColumn = "GroupId";
                 string qualifierValue = group.Id.ToString();
 
@@ -826,8 +841,6 @@ namespace RockWeb.Blocks.Groups
                 var selectedAttributeGuids = GroupMemberAttributesState.Select( a => a.Guid );
                 foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
                 {
-                    Rock.Cache.CacheAttribute.Remove( attr.Id );
-
                     attributeService.Delete( attr );
                 }
 
@@ -862,7 +875,6 @@ namespace RockWeb.Blocks.Groups
                 if ( !isNowSecurityRole )
                 {
                     // if this group was a SecurityRole, but no longer is, flush
-                    Rock.Cache.CacheRole.Remove( group.Id );
                     Rock.Security.Authorization.Clear();
                 }
             }
@@ -874,8 +886,6 @@ namespace RockWeb.Blocks.Groups
                     Rock.Security.Authorization.Clear();
                 }
             }
-
-            CacheAttribute.RemoveEntityAttributes();
 
             if ( triggersUpdated )
             {
@@ -965,6 +975,17 @@ namespace RockWeb.Blocks.Groups
                 newGroup.IsSystem = false;
                 newGroup.Name = group.Name + " - Copy";
 
+                if ( group.ScheduleId.HasValue && group.Schedule.ScheduleType != ScheduleType.Named )
+                {
+                    newGroup.Schedule = new Schedule();
+                    // NOTE: Schedule Name should be set to string.Empty to indicate that it is a Custom or Weekly schedule and not a "Named" schedule
+                    newGroup.Schedule.Name = string.Empty;
+                    newGroup.Schedule.iCalendarContent = group.Schedule.iCalendarContent;
+                    newGroup.Schedule.WeeklyDayOfWeek = group.Schedule.WeeklyDayOfWeek;
+                    newGroup.Schedule.WeeklyTimeOfDay = group.Schedule.WeeklyTimeOfDay;
+              
+                }
+
                 var auths = authService.GetByGroup( group.Id );
                 rockContext.WrapTransaction( () =>
                 {
@@ -984,7 +1005,7 @@ namespace RockWeb.Blocks.Groups
                     newGroup.SaveAttributeValues( rockContext );
 
                     /* Take care of Group Member Attributes */
-                    var entityTypeId = CacheEntityType.Get( typeof( GroupMember ) ).Id;
+                    var entityTypeId = EntityTypeCache.Get( typeof( GroupMember ) ).Id;
                     string qualifierColumn = "GroupId";
                     string qualifierValue = group.Id.ToString();
                     
@@ -1201,6 +1222,12 @@ namespace RockWeb.Blocks.Groups
             if ( !groupId.Equals( 0 ) )
             {
                 group = GetGroup( groupId, rockContext );
+                if ( group == null )
+                {
+                    pnlDetails.Visible = false;
+                    nbNotFoundOrArchived.Visible = true;
+                    return;
+                }
             }
 
             if ( group == null )
@@ -1278,9 +1305,7 @@ namespace RockWeb.Blocks.Groups
             string roleLimitWarnings;
             nbRoleLimitWarning.Visible = group.GetGroupTypeRoleLimitWarnings( out roleLimitWarnings );
             nbRoleLimitWarning.Text = roleLimitWarnings;
-
-            FollowingsHelper.SetFollowing( group, pnlFollowing, this.CurrentPerson );
-
+            
             if ( readOnly )
             {
                 btnEdit.Visible = false;
@@ -1375,6 +1400,7 @@ namespace RockWeb.Blocks.Groups
 
             ddlSignatureDocumentTemplate.SetValue( group.RequiredSignatureDocumentTemplateId );
             gpParentGroup.SetValue( group.ParentGroup ?? groupService.Get( group.ParentGroupId ?? 0 ) );
+            
 
             // hide sync and requirements panel if no admin access
             bool canAdministrate = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
@@ -1385,7 +1411,14 @@ namespace RockWeb.Blocks.Groups
             GroupSyncState = new List<GroupSync>();
             foreach ( var sync in group.GroupSyncs )
             {
-                GroupSyncState.Add( sync );
+                // clone it first so that we don't end up with a giant JSON object in viewstate (that includes the Group and GroupMembers)
+                var syncClone = sync.Clone( false );
+
+                // add the stuff that the grid needs
+                syncClone.GroupTypeRole = new GroupTypeRoleService( rockContext ).Get( syncClone.GroupTypeRoleId );
+                syncClone.SyncDataView = new DataViewService( rockContext ).Get( syncClone.SyncDataViewId );
+
+                GroupSyncState.Add( syncClone );
             }
 
             BindGroupSyncGrid();
@@ -1402,7 +1435,7 @@ namespace RockWeb.Blocks.Groups
                 if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean() )
                 {
                     // default GroupType for new Group to "Security Roles"  if LimittoSecurityRoleGroups
-                    var securityRoleGroupType = CacheGroupType.GetSecurityRoleGroupType();
+                    var securityRoleGroupType = GroupTypeCache.GetSecurityRoleGroupType();
                     if ( securityRoleGroupType != null )
                     {
                         CurrentGroupTypeId = securityRoleGroupType.Id;
@@ -1415,7 +1448,7 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    // if this is a new group (and not "LimitToSecurityRoleGroups", and there is more than one choice for GroupType, default to no selection so they are forced to choose (vs unintentionallly choosing the default one)
+                    // if this is a new group (and not "LimitToSecurityRoleGroups", and there is more than one choice for GroupType, default to no selection so they are forced to choose (vs unintentionally choosing the default one)
                     ddlGroupType.SelectedIndex = 0;
                 }
             }
@@ -1427,7 +1460,7 @@ namespace RockWeb.Blocks.Groups
                     CurrentGroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0;
                 }
 
-                var groupType = CacheGroupType.Get( CurrentGroupTypeId, rockContext );
+                var groupType = GroupTypeCache.Get( CurrentGroupTypeId, rockContext );
                 lGroupType.Text = groupType != null ? groupType.Name : string.Empty;
                 ddlGroupType.SetValue( CurrentGroupTypeId );
             }
@@ -1442,7 +1475,7 @@ namespace RockWeb.Blocks.Groups
             nbGroupCapacity.Visible = groupTypeCache != null && groupTypeCache.GroupCapacityRule != GroupCapacityRule.None;
             SetScheduleControls( groupTypeCache, group );
             ShowGroupTypeEditDetails( groupTypeCache, group, true );
-
+            
             // if this block's attribute limit group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
             if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean() )
             {
@@ -1479,7 +1512,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="groupType">Type of the group.</param>
         /// <param name="group">The group.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void ShowGroupTypeEditDetails( CacheGroupType groupType, Group group, bool setValues )
+        private void ShowGroupTypeEditDetails( GroupTypeCache groupType, Group group, bool setValues )
         {
             if ( group != null )
             {
@@ -1498,6 +1531,22 @@ namespace RockWeb.Blocks.Groups
                             wpMemberWorkflowTriggers.Visible = selectedGroupType.AllowSpecificGroupMemberWorkflows || group.GroupMemberWorkflowTriggers.Any();
                         }
                     }
+                }
+
+                if ( groupType != null )
+                {
+                    dvpGroupStatus.DefinedTypeId = groupType.GroupStatusDefinedTypeId;
+                    if ( groupType.GroupStatusDefinedType != null )
+                    {
+                        dvpGroupStatus.Label = groupType.GroupStatusDefinedType.ToString();
+                    }
+
+                    dvpGroupStatus.Visible = groupType.GroupStatusDefinedTypeId.HasValue;
+                    dvpGroupStatus.SetValue( group.StatusValueId );
+                }
+                else
+                {
+                    dvpGroupStatus.Visible = false;
                 }
 
                 if ( groupType != null && groupType.LocationSelectionMode != GroupLocationPickerMode.None )
@@ -1537,7 +1586,7 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-        private void SetScheduleControls( CacheGroupType groupType, Group group )
+        private void SetScheduleControls( GroupTypeCache groupType, Group group )
         {
             if ( group != null )
             {
@@ -1610,7 +1659,7 @@ namespace RockWeb.Blocks.Groups
             btnArchive.Visible = false;
 
             var rockContext = new RockContext();
-            CacheGroupType groupType = CacheGroupType.Get( group.GroupTypeId );
+            GroupTypeCache groupType = GroupTypeCache.Get( group.GroupTypeId );
 
             // if History is enabled (and this isn't an IsSystem group), additional logic for if the Archive or Delete button is visible
             if ( !group.IsSystem )
@@ -1642,7 +1691,17 @@ namespace RockWeb.Blocks.Groups
             {
                 groupIconHtml = !string.IsNullOrWhiteSpace( groupType.IconCssClass ) ?
                     string.Format( "<i class='{0}' ></i>", groupType.IconCssClass ) : string.Empty;
-                hlType.Text = groupType.Name;
+
+                if ( groupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+                {
+                    var groupTypeDetailPage = new PageReference( Rock.SystemGuid.Page.GROUP_TYPE_DETAIL ).BuildUrl();
+                    hlType.Text = string.Format( "<a href='{0}?groupTypeId={1}'>{2}</a>", groupTypeDetailPage, groupType.Id, groupType.Name );
+                }
+                else
+                {
+                    hlType.Text = groupType.Name;
+                }
+                hlType.ToolTip = groupType.Description;
             }
 
             hfGroupId.SetValue( group.Id );
@@ -1674,10 +1733,10 @@ namespace RockWeb.Blocks.Groups
             mergeFields.Add( "ContentItemPage", LinkedPageRoute( "ContentItemPage" ) );
             mergeFields.Add( "ShowLocationAddresses", GetAttributeValue( "ShowLocationAddresses" ).AsBoolean() );
 
-            var mapStyleValue = CacheDefinedValue.Get( GetAttributeValue( "MapStyle" ) );
+            var mapStyleValue = DefinedValueCache.Get( GetAttributeValue( "MapStyle" ) );
             if ( mapStyleValue == null )
             {
-                mapStyleValue = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK );
+                mapStyleValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK );
             }
 
             mergeFields.Add( "MapStyle", mapStyleValue );
@@ -1685,7 +1744,7 @@ namespace RockWeb.Blocks.Groups
             string groupMapUrl = LinkedPageUrl( "GroupMapPage", pageParams );
             mergeFields.Add( "GroupMapUrl", groupMapUrl );
 
-            if ( groupMapUrl.IsNotNullOrWhitespace() )
+            if ( groupMapUrl.IsNotNullOrWhiteSpace() )
             {
                 hlMap.Visible = true;
                 hlMap.NavigateUrl = groupMapUrl;
@@ -1697,7 +1756,7 @@ namespace RockWeb.Blocks.Groups
 
             string groupHistoryUrl = LinkedPageUrl( "GroupHistoryPage", pageParams );
             mergeFields.Add( "GroupHistoryUrl", groupHistoryUrl );
-            if ( groupHistoryUrl.IsNotNullOrWhitespace() )
+            if ( groupHistoryUrl.IsNotNullOrWhiteSpace() )
             {
                 hlGroupHistory.Visible = groupType != null && groupType.EnableGroupHistory;
                 hlGroupHistory.NavigateUrl = groupHistoryUrl;
@@ -1714,10 +1773,10 @@ namespace RockWeb.Blocks.Groups
             }
 
             string fundraisingProgressUrl = LinkedPageUrl( "FundraisingProgressPage", pageParams );
-            var groupTypeIdFundraising = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
+            var groupTypeIdFundraising = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
             var fundraisingGroupTypeIdList = new GroupTypeService( rockContext ).Queryable().Where( a => a.Id == groupTypeIdFundraising || a.InheritedGroupTypeId == groupTypeIdFundraising ).Select( a => a.Id ).ToList();
 
-            if ( fundraisingProgressUrl.IsNotNullOrWhitespace() && fundraisingGroupTypeIdList.Contains( group.GroupTypeId ) )
+            if ( fundraisingProgressUrl.IsNotNullOrWhiteSpace() && fundraisingGroupTypeIdList.Contains( group.GroupTypeId ) )
             {
                 hlFundraisingProgress.NavigateUrl = fundraisingProgressUrl;
                 hlFundraisingProgress.Visible = true;
@@ -1968,7 +2027,7 @@ namespace RockWeb.Blocks.Groups
 
             while ( inheritedGroupTypeId.HasValue )
             {
-                var inheritedGroupType = CacheGroupType.Get( inheritedGroupTypeId.Value );
+                var inheritedGroupType = GroupTypeCache.Get( inheritedGroupTypeId.Value );
                 if ( inheritedGroupType != null )
                 {
                     string qualifierValue = inheritedGroupType.Id.ToString();
@@ -2120,7 +2179,7 @@ namespace RockWeb.Blocks.Groups
             int? groupTypeId = this.CurrentGroupTypeId;
             if ( groupTypeId.HasValue )
             {
-                var groupType = CacheGroupType.Get( groupTypeId.Value );
+                var groupType = GroupTypeCache.Get( groupTypeId.Value );
                 if ( groupType != null )
                 {
                     GroupLocationPickerMode groupTypeModes = groupType.LocationSelectionMode;
@@ -2514,7 +2573,7 @@ namespace RockWeb.Blocks.Groups
 
         /// <summary>
         /// Handles the Add event of the gGroupSyncs control.
-        /// Shows the GroupSync modal and populates the conrols without explicitly assigning
+        /// Shows the GroupSync modal and populates the controls without explicitly assigning
         /// a value
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -2525,16 +2584,18 @@ namespace RockWeb.Blocks.Groups
 
             RockContext rockContext = new RockContext();
 
-            CreateDataViewDropDownList( rockContext );
             CreateRoleDropDownList( rockContext );
             CreateGroupSyncEmailDropDownLists( rockContext );
+
+            dvipSyncDataView.EntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
+
             ShowDialog( "GROUPSYNCSETTINGS", true );
         }
 
         /// <summary>
         /// Handles the Edit event of the gGroupSyncs control.
-        /// Shows the GroupSync modal, popluates the controls, and selects
-        /// the data for the selected group syc.
+        /// Shows the GroupSync modal, populates the controls, and selects
+        /// the data for the selected group sync.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
@@ -2548,8 +2609,8 @@ namespace RockWeb.Blocks.Groups
 
             hfGroupSyncGuid.Value = syncGuid.ToString();
 
-            CreateDataViewDropDownList( rockContext );
-            ddlSyncDataView.SetValue( groupSync.SyncDataViewId );
+            dvipSyncDataView.EntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
+            dvipSyncDataView.SetValue( groupSync.SyncDataViewId );
 
             CreateRoleDropDownList( rockContext, groupSync.GroupTypeRoleId );
             ddlGroupRoles.SetValue( groupSync.GroupTypeRoleId );
@@ -2613,7 +2674,7 @@ namespace RockWeb.Blocks.Groups
             groupSync.GroupId = hfGroupId.ValueAsInt();
             groupSync.GroupTypeRoleId = ddlGroupRoles.SelectedValue.AsInteger();
             groupSync.GroupTypeRole = new GroupTypeRoleService( rockContext ).Get( groupSync.GroupTypeRoleId );
-            groupSync.SyncDataViewId = ddlSyncDataView.SelectedValue.AsInteger();
+            groupSync.SyncDataViewId = dvipSyncDataView.SelectedValueAsInt() ?? 0;
             groupSync.SyncDataView = new DataViewService( rockContext ).Get( groupSync.SyncDataViewId );
             groupSync.ExitSystemEmailId = ddlExitEmail.SelectedValue.AsIntegerOrNull();
             groupSync.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedValue.AsIntegerOrNull();
@@ -2622,6 +2683,7 @@ namespace RockWeb.Blocks.Groups
             hfGroupSyncGuid.Value = string.Empty;
 
             BindGroupSyncGrid();
+
             HideDialog();
         }
 
@@ -2699,30 +2761,11 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
-        /// Creates the data view drop down list without an filters.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        private void CreateDataViewDropDownList( RockContext rockContext )
-        {
-            var dataViews = new DataViewService( rockContext )
-                .Queryable()
-                .ToList();
-
-            // Give a blank for the first selection
-            ddlSyncDataView.Items.Add( new ListItem() );
-
-            foreach ( var dataView in dataViews )
-            {
-                ddlSyncDataView.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
-            }
-        }
-
-        /// <summary>
         /// Clears the values from the group sync modal controls.
         /// </summary>
         private void ClearGroupSyncModal()
         {
-            ddlSyncDataView.Items.Clear();
+            //ddlSyncDataView.Items.Clear();
             ddlGroupRoles.Items.Clear();
             ddlWelcomeEmail.Items.Clear();
             ddlExitEmail.Items.Clear();
@@ -2764,7 +2807,7 @@ namespace RockWeb.Blocks.Groups
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtGroupMemberAttributes.ActionTitle = ActionTitle.Add( "attribute for group members of " + tbName.Text );
             }
             else

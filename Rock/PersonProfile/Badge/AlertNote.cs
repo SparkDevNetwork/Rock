@@ -28,7 +28,7 @@ using System.Collections.Generic;
 using System.Data;
 using System;
 using System.Diagnostics;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.PersonProfile.AlertNote
 {
@@ -42,7 +42,7 @@ namespace Rock.PersonProfile.AlertNote
 
     [NoteTypeField( "Note Types", "The note types you want to look for alerts on.", true, "Rock.Model.Person", "", "", true, Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE, order: 0 )]
     [CodeEditorField( "Badge Content", "", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, "<span class='label label-danger'>Alert Note Exists</span>", order: 1 )]
-    public class AlertNote : BadgeComponentModern
+    public class AlertNote : BadgeComponent
     {
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace Rock.PersonProfile.AlertNote
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
             List<Guid> noteTypes = new List<Guid>();
 

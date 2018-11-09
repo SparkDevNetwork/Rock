@@ -27,7 +27,7 @@ using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
 using Rock.Utility;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -59,7 +59,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
                 var attributeService = new AttributeService( rockContext );
                 var groupTypeService = new GroupTypeService( rockContext );
 
-                var groupEntityTypeId = CacheEntityType.GetId( typeof( Model.Group ) );
+                var groupEntityTypeId = EntityTypeCache.GetId( typeof( Model.Group ) );
 
                 var groupAttributes = attributeService
                     .Queryable().AsNoTracking()
@@ -83,7 +83,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
                 {
                     if ( !_GroupAttributes.Any( e => e.AttributeGuid == attribute.Guid ) )
                     {
-                        var attributeCache = CacheAttribute.Get( attribute.Guid );
+                        var attributeCache = AttributeCache.Get( attribute.Guid );
                         var entityField = EntityHelper.GetEntityFieldForAttribute( attributeCache, false );
                         if ( entityField != null )
                         {

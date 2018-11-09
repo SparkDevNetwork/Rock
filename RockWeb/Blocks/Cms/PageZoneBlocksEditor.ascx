@@ -59,7 +59,7 @@
 
                 <div class="actions ">
                     <div class="pull-right">
-                        <asp:LinkButton ID="btnAddBlock" runat="server" ToolTip="Add Block" Text="<i class='fa fa-plus-circle'></i>" CssClass="btn btn-default btn-sm" OnClick="btnAddBlock_Click" />
+                        <asp:LinkButton ID="btnAddBlock" runat="server" Text="<i class='fa fa-plus-circle'></i> Add Block to Zone" CssClass="btn btn-default btn-sm" OnClick="btnAddBlock_Click" />
                     </div>
 
                 </div>
@@ -84,7 +84,7 @@
 
         <Rock:ModalDialog ID="mdAddBlock" runat="server" ValidationGroup="vgAddBlock" OnSaveClick="mdAddBlock_SaveClick" Title="Add Block">
             <Content>
-                <asp:ValidationSummary ID="vsAddBlock" runat="server" ValidationGroup="vgAddBlock" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="vsAddBlock" runat="server" ValidationGroup="vgAddBlock" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <Rock:RockTextBox ID="tbNewBlockName" runat="server" Label="Name" Required="true" ValidationGroup="vgAddBlock" />
                 
                 <div class="row">

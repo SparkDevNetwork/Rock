@@ -26,13 +26,12 @@ using System.Xml.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Security.BackgroundCheck
 {
     /// <summary>
     /// Protect My Ministry Background Check 
-    /// Note: This component requires 
     /// </summary>
     [Description( "Protect My Ministry Background Check" )]
     [Export( typeof( BackgroundCheckComponent ) )]
@@ -44,7 +43,9 @@ namespace Rock.Security.BackgroundCheck
     [UrlLinkField( "Return URL", "The Web Hook URL for Protect My Ministry to send results to (e.g. 'http://www.mysite.com/Webhooks/ProtectMyMinistry.ashx').", true, "", "", 4 )]
     public class ProtectMyMinistry : BackgroundCheckComponent
     {
-        private HttpStatusCode _HTTPStatusCode;
+        private HttpStatusCode _httpStatusCode;
+
+        #region BackgroundCheckComponent Implementation
 
         /// <summary>
         /// Sends a background request to Protect My Ministry
@@ -68,12 +69,12 @@ namespace Rock.Security.BackgroundCheck
         ///     RequestMessage:         Any error messages returned by PMM request
         ///     ReportStatus:           The report status returned by PMM
         ///     ReportLink:             The location of the background report on PMM server
-        ///     ReportRecommendation:   PMM's recomendataion
+        ///     ReportRecommendation:   PMM's recommendation
         ///     Report (BinaryFile):    The downloaded background report
         /// </remarks>
         public override bool SendRequest( RockContext rockContext, Model.Workflow workflow,
-            CacheAttribute personAttribute, CacheAttribute ssnAttribute, CacheAttribute requestTypeAttribute,
-            CacheAttribute billingCodeAttribute, out List<string> errorMessages )
+            AttributeCache personAttribute, AttributeCache ssnAttribute, AttributeCache requestTypeAttribute,
+            AttributeCache billingCodeAttribute, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -128,7 +129,7 @@ namespace Rock.Security.BackgroundCheck
                     Guid? campusGuid = billingCode.AsGuidOrNull();
                     if ( campusGuid.HasValue )
                     {
-                        var campus = CacheCampus.Get( campusGuid.Value );
+                        var campus = CampusCache.Get( campusGuid.Value );
                         if ( campus != null )
                         {
                             billingCode = campus.Name;
@@ -183,7 +184,7 @@ namespace Rock.Security.BackgroundCheck
                 }
 
                 var homelocation = person.GetHomeLocation();
-                if ( homelocation != null)
+                if ( homelocation != null )
                 {
                     subjectElement.Add( new XElement( "CurrentAddress",
                         new XElement( "StreetAddress", homelocation.Street1 ),
@@ -199,7 +200,7 @@ namespace Rock.Security.BackgroundCheck
                     aliasesElement.Add( new XElement( "Alias", new XElement( "FirstName", person.NickName ) ) );
                 }
 
-                foreach ( var previousName in person.GetPreviousNames() ) 
+                foreach ( var previousName in person.GetPreviousNames() )
                 {
                     aliasesElement.Add( new XElement( "Alias", new XElement( "LastName", previousName.LastName ) ) );
                 }
@@ -209,7 +210,7 @@ namespace Rock.Security.BackgroundCheck
                     subjectElement.Add( aliasesElement );
                 }
 
-                CacheDefinedValue pkgTypeDefinedValue = null;
+                DefinedValueCache pkgTypeDefinedValue = null;
                 string packageName = "BASIC";
                 string county = string.Empty;
                 string state = string.Empty;
@@ -218,21 +219,22 @@ namespace Rock.Security.BackgroundCheck
 
                 if ( requestTypeAttribute != null )
                 {
-                    pkgTypeDefinedValue = CacheDefinedValue.Get( workflow.GetAttributeValue( requestTypeAttribute.Key ).AsGuid() );
+                    pkgTypeDefinedValue = DefinedValueCache.Get( workflow.GetAttributeValue( requestTypeAttribute.Key ).AsGuid() );
                     if ( pkgTypeDefinedValue != null )
                     {
                         if ( pkgTypeDefinedValue.Attributes == null )
                         {
-                            pkgTypeDefinedValue.LoadAttributes( rockContext );
+                            // shouldn't happen since pkgTypeDefinedValue is a ModelCache<,> type
+                            return false;
                         }
 
-                        packageName = pkgTypeDefinedValue.GetAttributeValue("PMMPackageName");
+                        packageName = pkgTypeDefinedValue.GetAttributeValue( "PMMPackageName" );
                         county = pkgTypeDefinedValue.GetAttributeValue( "DefaultCounty" );
                         state = pkgTypeDefinedValue.GetAttributeValue( "DefaultState" );
                         Guid? mvrJurisdictionGuid = pkgTypeDefinedValue.GetAttributeValue( "MVRJurisdiction" ).AsGuidOrNull();
                         if ( mvrJurisdictionGuid.HasValue )
                         {
-                            var mvrJurisdictionDv = CacheDefinedValue.Get( mvrJurisdictionGuid.Value );
+                            var mvrJurisdictionDv = DefinedValueCache.Get( mvrJurisdictionGuid.Value );
                             if ( mvrJurisdictionDv != null )
                             {
                                 mvrJurisdiction = mvrJurisdictionDv.Value;
@@ -246,7 +248,7 @@ namespace Rock.Security.BackgroundCheck
                         if ( homelocation != null )
                         {
                             if ( !string.IsNullOrWhiteSpace( homelocation.County ) &&
-                                pkgTypeDefinedValue.GetAttributeValue("SendHomeCounty").AsBoolean() )
+                                pkgTypeDefinedValue.GetAttributeValue( "SendHomeCounty" ).AsBoolean() )
                             {
                                 county = homelocation.County;
                             }
@@ -285,7 +287,7 @@ namespace Rock.Security.BackgroundCheck
                 {
                     orderElement.Add( new XElement( "OrderDetail",
                         new XAttribute( "OrderId", workflow.Id.ToString() ),
-                        new XAttribute( "ServiceCode", string.IsNullOrWhiteSpace(county) ? "StateCriminal" : "CountyCrim" ),
+                        new XAttribute( "ServiceCode", string.IsNullOrWhiteSpace( county ) ? "StateCriminal" : "CountyCrim" ),
                         new XElement( "County", county ),
                         new XElement( "State", state ),
                         new XElement( "YearsToSearch", 7 ),
@@ -308,7 +310,7 @@ namespace Rock.Security.BackgroundCheck
                 XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
                 var requestDateTime = RockDateTime.Now;
 
-                XDocument xResult = PostToWebService( xdoc, GetAttributeValue("RequestURL") );
+                XDocument xResult = PostToWebService( xdoc, GetAttributeValue( "RequestURL" ) );
                 var responseDateTime = RockDateTime.Now;
 
                 int? personAliasId = person.PrimaryAliasId;
@@ -329,6 +331,7 @@ namespace Rock.Security.BackgroundCheck
                             backgroundCheck = new Rock.Model.BackgroundCheck();
                             backgroundCheck.PersonAliasId = personAliasId.Value;
                             backgroundCheck.WorkflowId = workflow.Id;
+                            backgroundCheck.ForeignId = 1;
                             backgroundCheckService.Add( backgroundCheck );
                         }
 
@@ -362,8 +365,7 @@ Response XML ({2}):
                 {
                     var handledErrorMessages = new List<string>();
 
-                    bool createdNewAttribute = false;
-                    if ( _HTTPStatusCode == HttpStatusCode.OK )
+                    if ( _httpStatusCode == HttpStatusCode.OK )
                     {
                         var xOrderXML = xResult.Elements( "OrderXML" ).FirstOrDefault();
                         if ( xOrderXML != null )
@@ -372,9 +374,8 @@ Response XML ({2}):
                             if ( xStatus != null )
                             {
                                 if ( SaveAttributeValue( workflow, "RequestStatus", xStatus.Value,
-                                    CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null ) )
+                                    FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null ) )
                                 {
-                                    createdNewAttribute = true;
                                 }
                             }
 
@@ -393,24 +394,18 @@ Response XML ({2}):
                     }
                     else
                     {
-                        handledErrorMessages.Add( "Invalid HttpStatusCode: " + _HTTPStatusCode.ToString() );
+                        handledErrorMessages.Add( "Invalid HttpStatusCode: " + _httpStatusCode.ToString() );
                     }
 
                     if ( handledErrorMessages.Any() )
                     {
                         if ( SaveAttributeValue( workflow, "RequestMessage", handledErrorMessages.AsDelimited( Environment.NewLine ),
-                            CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null ) )
+                            FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null ) )
                         {
-                            createdNewAttribute = true;
                         }
                     }
 
                     newRockContext.SaveChanges();
-
-                    if ( createdNewAttribute )
-                    {
-                        CacheAttribute.RemoveEntityAttributes();
-                    }
 
                     return true;
                 }
@@ -423,6 +418,37 @@ Response XML ({2}):
                 return false;
             }
         }
+
+        private Person GetCurrentPerson()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
+                return currentUser != null ? currentUser.Person : null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the URL to the background check report. 
+        /// Note: Also used by GetBackgroundCheck.ashx.cs, ProcessRequest( HttpContext context )
+        /// </summary>
+        /// <param name="reportKey">The report key.</param>
+        /// <returns></returns>
+        public override string GetReportUrl( string reportKey )
+        {
+            var isAuthorized = this.IsAuthorized( Authorization.VIEW, this.GetCurrentPerson() );
+
+            if ( isAuthorized )
+            {
+                var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                return string.Format( "{0}?guid={1}", filePath, reportKey );
+            }
+            else
+            {
+                return "Unauthorized";
+            }
+        }
+        #endregion
 
         /// <summary>
         /// Posts to web service.
@@ -446,13 +472,13 @@ Response XML ({2}):
 
             try
             {
-                HttpWebResponse response = ( HttpWebResponse )request.GetResponse();
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
                 return GetResponse( response.GetResponseStream(), response.ContentType, response.StatusCode );
             }
-            catch (WebException webException)
+            catch ( WebException webException )
             {
-                string message = GetResponseMessage(webException.Response.GetResponseStream());
-                throw new Exception(webException.Message + " - " + message);
+                string message = GetResponseMessage( webException.Response.GetResponseStream() );
+                throw new Exception( webException.Message + " - " + message );
             }
         }
 
@@ -463,29 +489,29 @@ Response XML ({2}):
         /// <param name="contentType">Type of the content.</param>
         /// <param name="statusCode">The status code.</param>
         /// <returns></returns>
-        private XDocument GetResponse(Stream responseStream, string contentType, HttpStatusCode statusCode)
+        private XDocument GetResponse( Stream responseStream, string contentType, HttpStatusCode statusCode )
         {
-            _HTTPStatusCode = statusCode;
+            _httpStatusCode = statusCode;
 
             Stream receiveStream = responseStream;
-            Encoding encode = System.Text.Encoding.GetEncoding("utf-8");
-            StreamReader readStream = new StreamReader(receiveStream, encode);
+            Encoding encode = System.Text.Encoding.GetEncoding( "utf-8" );
+            StreamReader readStream = new StreamReader( receiveStream, encode );
 
             StringBuilder sb = new StringBuilder();
             Char[] read = new Char[8192];
             int count = 0;
             do
             {
-                count = readStream.Read(read, 0, 8192);
-                String str = new String(read, 0, count);
-                sb.Append(str);
+                count = readStream.Read( read, 0, 8192 );
+                String str = new String( read, 0, count );
+                sb.Append( str );
             }
-            while (count > 0);
+            while ( count > 0 );
 
             string HTMLResponse = sb.ToString();
 
-            if (HTMLResponse.Trim().Length > 0 && HTMLResponse.Contains("<?xml"))
-                return XDocument.Parse(HTMLResponse);
+            if ( HTMLResponse.Trim().Length > 0 && HTMLResponse.Contains( "<?xml" ) )
+                return XDocument.Parse( HTMLResponse );
             else
                 return null;
         }
@@ -524,8 +550,6 @@ Response XML ({2}):
         /// <param name="saveResponse">if set to <c>true</c> [save response].</param>
         public static void SaveResults( XDocument xResult, Rock.Model.Workflow workflow, RockContext rockContext, bool saveResponse = true )
         {
-            bool createdNewAttribute = false;
-
             var newRockContext = new RockContext();
             var service = new BackgroundCheckService( newRockContext );
             var backgroundCheck = service.Queryable()
@@ -594,10 +618,9 @@ Response XML ({0}):
                         if ( !string.IsNullOrWhiteSpace( recommendation ) )
                         {
                             if ( SaveAttributeValue( workflow, "ReportRecommendation", recommendation,
-                                CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
+                                FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
                                 new Dictionary<string, string> { { "ispassword", "false" } } ) )
                             {
-                                createdNewAttribute = true;
                             }
 
                         }
@@ -608,30 +631,27 @@ Response XML ({0}):
                         if ( !string.IsNullOrWhiteSpace( reportLink ) )
                         {
                             if ( SaveAttributeValue( workflow, "ReportLink", reportLink,
-                                CacheFieldType.Get( Rock.SystemGuid.FieldType.URL_LINK.AsGuid() ), rockContext ) )
+                                FieldTypeCache.Get( Rock.SystemGuid.FieldType.URL_LINK.AsGuid() ), rockContext ) )
                             {
-                                createdNewAttribute = true;
                             }
-                            
+
                             // Save the report
                             binaryFileGuid = SaveFile( workflow.Attributes["Report"], reportLink, workflow.Id.ToString() + ".pdf" );
                             if ( binaryFileGuid.HasValue )
                             {
                                 if ( SaveAttributeValue( workflow, "Report", binaryFileGuid.Value.ToString(),
-                                    CacheFieldType.Get( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ), rockContext,
+                                    FieldTypeCache.Get( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ), rockContext,
                                     new Dictionary<string, string> { { "binaryFileType", "" } } ) )
                                 {
-                                    createdNewAttribute = true;
                                 }
                             }
                         }
 
                         // Save the status
                         if ( SaveAttributeValue( workflow, "ReportStatus", reportStatus,
-                            CacheFieldType.Get( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ), rockContext,
+                            FieldTypeCache.Get( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ), rockContext,
                             new Dictionary<string, string> { { "fieldtype", "ddl" }, { "values", "Pass,Fail,Review" } } ) )
                         {
-                            createdNewAttribute = true;
                         }
 
                         // Update the background check file
@@ -654,12 +674,6 @@ Response XML ({0}):
             }
 
             newRockContext.SaveChanges();
-
-            if ( createdNewAttribute )
-            {
-                CacheAttribute.RemoveEntityAttributes();
-            }
-
         }
 
         /// <summary>
@@ -672,12 +686,12 @@ Response XML ({0}):
         /// <param name="rockContext">The rock context.</param>
         /// <param name="qualifiers">The qualifiers.</param>
         /// <returns></returns>
-        private static bool SaveAttributeValue( Rock.Model.Workflow workflow, string key, string value, 
-            CacheFieldType fieldType, RockContext rockContext, Dictionary<string, string> qualifiers = null )
+        private static bool SaveAttributeValue( Rock.Model.Workflow workflow, string key, string value,
+            FieldTypeCache fieldType, RockContext rockContext, Dictionary<string, string> qualifiers = null )
         {
             bool createdNewAttribute = false;
 
-            if (workflow.Attributes.ContainsKey(key))
+            if ( workflow.Attributes.ContainsKey( key ) )
             {
                 workflow.SetAttributeValue( key, value );
             }
@@ -735,7 +749,7 @@ Response XML ({0}):
         /// <param name="url">The URL.</param>
         /// <param name="fileName">Name of the file.</param>
         /// <returns></returns>
-        private static Guid? SaveFile( CacheAttribute binaryFileAttribute, string url, string fileName )
+        private static Guid? SaveFile( AttributeCache binaryFileAttribute, string url, string fileName )
         {
             // get BinaryFileType info
             if ( binaryFileAttribute != null &&

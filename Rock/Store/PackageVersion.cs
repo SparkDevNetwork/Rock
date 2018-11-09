@@ -48,7 +48,7 @@ namespace Rock.Store
         /// Gets or sets the version's label. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the versions lable.
+        /// A <see cref="System.String"/> representing the versions label.
         /// </value>
         public string VersionLabel { get; set; }
 

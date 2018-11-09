@@ -109,7 +109,7 @@ namespace Rock.Model
         /// <summary>
         /// This is the GroupId of the family of the Authorized Person that did this transaction
         /// Note that this is the current family that the person is in. 
-        /// To see what GivingGroup they were part of when the Transaction occured, see GivingUnitId
+        /// To see what GivingGroup they were part of when the Transaction occurred, see GivingUnitId
         /// </summary>
         /// <value>
         /// The authorized family identifier.

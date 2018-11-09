@@ -25,7 +25,7 @@
 
     $('.js-filter-compare').change(function () {
         updateFilterControls(this);
-    })
+    });
 
     // handle property selection changes from the EntityFieldFilter
     $('select.entity-property-selection').change(function () {
@@ -134,11 +134,17 @@ $(document).ready(function () {
                     var selectedItems = '';
                     $('input:checked', $selectedContent).each(
                         function () {
-                            selectedItems += selectedItems == '' ? '' : ' or ';
+                            selectedItems += selectedItems == '' ? '' : ' OR ';
                             selectedItems += ' \'' + $(this).parent().text() + '\'';
                         });
 
                     return title + ' is ' + selectedItems
+                },
+
+                // NOTE: this is specifically for the Rock.Reporting.DataFilter.OtherDataViewFilter (and similar) components
+                formatFilterForOtherDataViewFilter: function (title, $selectedContent) {
+                    var dataViewName = $('.js-dataview .js-item-name-value', $selectedContent).val();
+                    return title + ' ' + dataViewName;
                 },
 
                 //
@@ -146,7 +152,7 @@ $(document).ready(function () {
                     var selectedItems = '';
                     $('input:checked', $selectedContent).each(
                         function () {
-                            selectedItems += selectedItems == '' ? '' : ' or ';
+                            selectedItems += selectedItems == '' ? '' : ' OR ';
                             selectedItems += ' \'' + $(this).parent().text() + ' \''
                         });
 
@@ -165,9 +171,9 @@ $(document).ready(function () {
                         var includeSelectedGroups = $('.js-include-selected-groups', $selectedContent).is(':checked');
                         var includeInactiveGroups = $('.js-include-inactive-groups', $selectedContent).is(':checked');
                         if (includeDescendantGroups) {
-                            result = result + ' or descendant groups';
+                            result = result + ' OR descendant groups';
                         } else {
-                            result = result + ' or child groups';
+                            result = result + ' OR child groups';
                         }
 
                         if (includeInactiveGroups) {
@@ -175,7 +181,7 @@ $(document).ready(function () {
                         }
 
                         if (!includeSelectedGroups) {
-                            result = result + ', not including selected groups';
+                            result = result + ', NOT including selected groups';
                         }
                     }
 
@@ -221,10 +227,10 @@ $(document).ready(function () {
                     var sms = $('.js-hassms', $content).find(':selected').text();
 
                     if (sms == 'Yes') {
-                        sms = ' and Has SMS Enabled';
+                        sms = ' AND has SMS Enabled';
                     }
                     else if (sms == 'No') {
-                        sms = " and Doesn't have SMS Enabled";
+                        sms = " AND doesn't have SMS Enabled";
                     }
 
                     var result = has + phoneType + sms;
@@ -235,7 +241,11 @@ $(document).ready(function () {
                 //
                 formatFilterDefault: function (title, $selectedContent) {
                     var compareTypeText = $('.js-filter-compare', $selectedContent).find(':selected').text();
-                    var compareValueText = $('.js-filter-control', $selectedContent).val();
+                    var compareValueText = $('.js-filter-control', $selectedContent).find(':selected').map(function () { return this.text; }).get().join("', '");
+                  if (compareValueText == "") {
+                    var compareValueText = $('.js-filter-control', $selectedContent).find(':checked').next().map(function () { return $(this).text(); }).get().join("', '");
+                    }
+
                     var result = title;
                     if ($('.js-filter-control', $selectedContent).is(':visible')) {
                         result = title + ' ' + compareTypeText + " '" + compareValueText + "'";
@@ -245,7 +255,7 @@ $(document).ready(function () {
 
                     return result;
                 }
-            }
+            };
 
         return exports;
     }());

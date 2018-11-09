@@ -27,7 +27,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Store;
@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Connection
     [LinkedPage( "Detail Page", "The page used to view a connection opportunity.", order: 7 )]
     [IntegerField( "Connection Type Id", "The Id of the connection type whose opportunities are displayed.", true, 1, order:8 )]
     [BooleanField( "Show Search", "Determines if the search fields should be displayed. Sometimes listing all the options is enough.", true, order: 9 )]
+    [TextField( "Campus Label", "", true, "Campuses",  order:10 )]
 
     public partial class OpportunitySearch : Rock.Web.UI.RockBlock
     {
@@ -61,7 +62,7 @@ namespace RockWeb.Blocks.Connection
         /// <value>
         /// The available attributes.
         /// </value>
-        public List<CacheAttribute> AvailableAttributes { get; set; }
+        public List<AttributeCache> AvailableAttributes { get; set; }
 
         #endregion
 
@@ -75,7 +76,7 @@ namespace RockWeb.Blocks.Connection
         {
             base.LoadViewState( savedState );
 
-            AvailableAttributes = ViewState["AvailableAttributes"] as List<CacheAttribute>;
+            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
 
             SetFilters( false );
         }
@@ -164,7 +165,7 @@ namespace RockWeb.Blocks.Connection
                 var connectionType = new ConnectionTypeService( rockContext ).Get( connectionTypeId );
                 var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
 
-                var qrySearch = connectionOpportunityService.Queryable().Where( a => a.ConnectionTypeId == connectionTypeId && a.IsActive == true ).ToList();
+                var qrySearch = connectionOpportunityService.Queryable().Where( a => a.ConnectionTypeId == connectionTypeId && a.IsActive == true );
 
                 if ( GetAttributeValue( "DisplayNameFilter" ).AsBoolean() )
                 {
@@ -172,17 +173,18 @@ namespace RockWeb.Blocks.Connection
                     {
                         searchSelections.Add( "tbSearchName", tbSearchName.Text );
                         var searchTerms = tbSearchName.Text.ToLower().SplitDelimitedValues( true );
-                        qrySearch = qrySearch.Where( o => searchTerms.Any( t => t.Contains( o.Name.ToLower() ) || o.Name.ToLower().Contains( t ) ) ).ToList();
+                        qrySearch = qrySearch.Where( o => searchTerms.Any( t => t.Contains( o.Name.ToLower() ) || o.Name.ToLower().Contains( t ) ) );
                     }
                 }
 
                 if ( GetAttributeValue( "DisplayCampusFilter" ).AsBoolean() )
                 {
+                    cblCampus.Label = GetAttributeValue( "CampusLabel" );
                     var searchCampuses = cblCampus.SelectedValuesAsInt;
                     if ( searchCampuses.Count > 0 )
                     {
                         searchSelections.Add( "cblCampus", searchCampuses.AsDelimited("|") );
-                        qrySearch = qrySearch.Where( o => o.ConnectionOpportunityCampuses.Any( c => searchCampuses.Contains( c.CampusId ) ) ).ToList();
+                        qrySearch = qrySearch.Where( o => o.ConnectionOpportunityCampuses.Any( c => searchCampuses.Contains( c.CampusId ) ) );
                     }
                 }
 
@@ -191,39 +193,11 @@ namespace RockWeb.Blocks.Connection
                     // Filter query by any configured attribute filters
                     if ( AvailableAttributes != null && AvailableAttributes.Any() )
                     {
-                        var attributeValueService = new AttributeValueService( rockContext );
-                        var parameterExpression = attributeValueService.ParameterExpression;
-
                         foreach ( var attribute in AvailableAttributes )
                         {
                             string filterControlId = "filter_" + attribute.Id.ToString();
                             var filterControl = phAttributeFilters.FindControl( filterControlId );
-                            if ( filterControl == null ) continue;
-
-                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                            var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                            var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                            if ( expression == null ) continue;
-
-                            searchSelections.Add( filterControlId, filterValues.ToJson() );
-                            var attributeValues = attributeValueService
-                                .Queryable()
-                                .Where( v => v.Attribute.Id == attribute.Id );
-
-                            var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                            if ( filterIsDefault )
-                            {
-                                qrySearch = qrySearch.Where( w =>
-                                     !attributeValues.Any( v => v.EntityId == w.Id ) ||
-                                     filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) ).ToList();
-                            }
-                            else
-                            {
-                                qrySearch = qrySearch.Where( w =>
-                                    filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) ).ToList();
-                            }
-                            
+                            qrySearch = attribute.FieldType.Field.ApplyAttributeQueryFilter( qrySearch, filterControl, attribute, connectionOpportunityService, Rock.Reporting.FilterMode.SimpleFilter );
                         }
                     }
                 }
@@ -235,7 +209,7 @@ namespace RockWeb.Blocks.Connection
 
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
-                mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( CacheEntityType.Get( "Rock.Model.Campus" ) ) as Campus );
+                mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Get( "Rock.Model.Campus" ) ) as Campus );
                 var pageReference = new PageReference( GetAttributeValue( "DetailPage" ), null );
                 mergeFields.Add( "DetailPage", BuildDetailPageUrl(pageReference.BuildUrl()) );
 
@@ -261,7 +235,7 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
-        /// Builds the detail page URL. This is needed so that it can pass along any url paramters that are in the
+        /// Builds the detail page URL. This is needed so that it can pass along any url parameters that are in the
         /// query string.
         /// </summary>
         /// <param name="detailPage">The detail page.</param>
@@ -308,7 +282,7 @@ namespace RockWeb.Blocks.Connection
                 if ( GetAttributeValue( "DisplayCampusFilter" ).AsBoolean() )
                 {
                     cblCampus.Visible = true;
-                    cblCampus.DataSource = CacheCampus.All( GetAttributeValue( "DisplayInactiveCampuses" ).AsBoolean() );
+                    cblCampus.DataSource = CampusCache.All( GetAttributeValue( "DisplayInactiveCampuses" ).AsBoolean() );
                     cblCampus.DataBind();
                 }
                 else
@@ -330,7 +304,7 @@ namespace RockWeb.Blocks.Connection
                 }
                 else if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
                 {
-                    var campusEntityType = CacheEntityType.Get( "Rock.Model.Campus" );
+                    var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
                     var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
                     if ( contextCampus != null )
@@ -342,7 +316,7 @@ namespace RockWeb.Blocks.Connection
                 if ( GetAttributeValue( "DisplayAttributeFilters" ).AsBoolean() )
                 {
                     // Parse the attribute filters 
-                    AvailableAttributes = new List<CacheAttribute>();
+                    AvailableAttributes = new List<AttributeCache>();
                     if ( connectionType != null )
                     {
                         int entityTypeId = new ConnectionOpportunity().TypeId;
@@ -355,7 +329,7 @@ namespace RockWeb.Blocks.Connection
                             .OrderBy( a => a.Order )
                             .ThenBy( a => a.Name ) )
                         {
-                            AvailableAttributes.Add( CacheAttribute.Get( attributeModel ) );
+                            AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
                         }
                     }
 

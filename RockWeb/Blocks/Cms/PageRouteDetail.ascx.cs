@@ -27,8 +27,9 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Attribute;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -61,9 +62,25 @@ namespace RockWeb.Blocks.Cms
 
             nbErrorMessage.Visible = false;
 
+            var pageRouteId = PageParameter( "pageRouteId" ).AsInteger();
+
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "pageRouteId" ).AsInteger() );
+                ShowDetail( pageRouteId );
+            }
+
+            // Add any attribute controls. 
+            // This must be done here regardless of whether it is a postback so that the attribute values will get saved.
+            var pageRoute = new PageRouteService( new RockContext() ).Get( pageRouteId );
+            if ( pageRoute == null )
+            {
+                pageRoute = new PageRoute();
+            }
+            if ( !pageRoute.IsSystem )
+            {
+                pageRoute.LoadAttributes();
+                phAttributes.Controls.Clear();
+                Helper.AddEditControls( pageRoute, phAttributes, true, BlockValidationGroup );
             }
         }
 
@@ -105,7 +122,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             int? siteId = null;
-            var pageCache = CachePage.Get( selectedPageId );
+            var pageCache = PageCache.Get( selectedPageId );
             if ( pageCache != null && pageCache.Layout != null )
             {
                 siteId = pageCache.Layout.SiteId;
@@ -134,8 +151,17 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                rockContext.SaveChanges();
+                pageRoute.LoadAttributes( rockContext );
 
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+                    if ( !pageRoute.IsSystem )
+                    {
+                        Rock.Attribute.Helper.GetEditValues( phAttributes, pageRoute );
+                        pageRoute.SaveAttributeValues( rockContext );
+                    }
+                } );
                 // Remove previous route
                 var oldRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteIds().Contains( pageRoute.Id ) );
                 if ( oldRoute != null )
@@ -271,7 +297,7 @@ namespace RockWeb.Blocks.Cms
             int? pageId = ppPage.SelectedValueAsInt();
             if ( pageId.HasValue )
             {
-                var page = CachePage.Get( pageId.Value );
+                var page = PageCache.Get( pageId.Value );
                 if ( page != null && page.Layout != null && page.Layout.Site != null )
                 {
                     lSite.Text = page.Layout.Site.Name;

@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Groups
@@ -228,7 +228,7 @@ namespace RockWeb.Blocks.Groups
                 BlockSetup();
             }
 
-            // add a navigate event to cature when someone presses the back button
+            // add a navigate event to capture when someone presses the back button
             var sm = ScriptManager.GetCurrent( Page );
             sm.EnableSecureHistoryState = false;
             sm.Navigate += sm_Navigate;
@@ -394,7 +394,7 @@ namespace RockWeb.Blocks.Groups
                 groupMember = new GroupMember { Id = 0 };
                 groupMember.GroupId = _groupId;
 
-                // check to see if the person is alread a member of the gorup/role
+                // check to see if the person is already a member of the group/role
                 var existingGroupMember = groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId(
                     _groupId, ppGroupMemberPerson.SelectedValue ?? 0, ddlGroupRole.SelectedValueAsId() ?? 0 );
 
@@ -465,12 +465,6 @@ namespace RockWeb.Blocks.Groups
                 rockContext.SaveChanges();
                 groupMember.SaveAttributeValues( rockContext );
             } );
-
-            Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
-            if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-            {
-                Rock.Cache.CacheRole.Remove( group.Id );
-            }
 
             pnlEditGroupMember.Visible = false;
             pnlGroupView.Visible = true;
@@ -781,7 +775,7 @@ namespace RockWeb.Blocks.Groups
             var rockContext = new RockContext();
             ddlMember.Items.Clear();
 
-            var groupType = CacheGroupType.Get( group.GroupTypeId );
+            var groupType = GroupTypeCache.Get( group.GroupTypeId );
             if ( groupType != null )
             {
                 // only allow editing groups with single locations

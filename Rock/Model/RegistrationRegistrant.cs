@@ -27,7 +27,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
 
 namespace Rock.Model
@@ -291,7 +291,7 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Discounteds the cost.
+        /// Discounts the cost.
         /// </summary>
         /// <param name="discountPercent">The discount percent.</param>
         /// <param name="discountAmount">The discount amount.</param>
@@ -319,10 +319,10 @@ namespace Rock.Model
         /// <summary>
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
-        /// <returns>A list of all inherited CacheAttribute objects.</returns>
-        public override List<Cache.CacheAttribute> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        /// <returns>A list of all inherited AttributeCache objects.</returns>
+        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
-            var entityTypeCache = CacheEntityType.Get( TypeId );
+            var entityTypeCache = EntityTypeCache.Get( TypeId );
 
             // Get the registration
             var registration = this.Registration;
@@ -351,15 +351,15 @@ namespace Rock.Model
             }
 
             // Get all attributes there were defined for instance's template.
-            var attributes = new List<Cache.CacheAttribute>();
-            foreach( var entityAttributes in CacheAttribute.GetByEntity( entityTypeCache.Id )
+            var attributes = new List<AttributeCache>();
+            foreach( var entityAttributes in AttributeCache.GetByEntity( entityTypeCache.Id )
                 .Where( e => 
                     e.EntityTypeQualifierColumn == "RegistrationTemplateId" &&
                     e.EntityTypeQualifierValue.AsInteger() == registrationInstance.RegistrationTemplateId ) )
             {
                 foreach ( int attributeId in entityAttributes.AttributeIds )
                 {
-                    attributes.Add( Cache.CacheAttribute.Get( attributeId ) );
+                    attributes.Add( AttributeCache.Get( attributeId ) );
                 }
             }
 

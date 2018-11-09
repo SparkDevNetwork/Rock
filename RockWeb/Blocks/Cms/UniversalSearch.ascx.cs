@@ -31,7 +31,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch;
 using Rock.Web.UI;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Newtonsoft.Json.Linq;
 using Rock.UniversalSearch.IndexModels;
 using System.Reflection;
@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.lazyload.min.js" ) );
+            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js" );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -110,7 +110,7 @@ namespace RockWeb.Blocks.Cms
             if ( !Page.IsPostBack )
             {
                 // check if this is a redirect from the smart search of a document
-                if(PageParameter( "DocumentType" ).IsNotNullOrWhitespace() && PageParameter( "DocumentId" ).IsNotNullOrWhitespace() )
+                if(PageParameter( "DocumentType" ).IsNotNullOrWhiteSpace() && PageParameter( "DocumentId" ).IsNotNullOrWhiteSpace() )
                 {
                     RedirectToDocument( PageParameter( "DocumentType" ), PageParameter( "DocumentId" ) );
                 }
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Cms
                 var preHtml = GetAttributeValue( "PreHtml" );
                 var postHtml = GetAttributeValue( "PostHtml" );
 
-                if (preHtml.IsNotNullOrWhitespace() || postHtml.IsNotNullOrWhitespace() )
+                if (preHtml.IsNotNullOrWhiteSpace() || postHtml.IsNotNullOrWhiteSpace() )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                     lPreHtml.Text = preHtml.ResolveMergeFields( mergeFields );
@@ -236,7 +236,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="documentId">The document identifier.</param>
         private void RedirectToDocument( string documentType, string documentId )
         {
-            var indexDocumentEntityType = CacheEntityType.Get( documentType );
+            var indexDocumentEntityType = EntityTypeCache.Get( documentType );
 
             var indexDocumentType = indexDocumentEntityType.GetEntityType();
 
@@ -309,7 +309,7 @@ namespace RockWeb.Blocks.Cms
 
                     var showScores = GetAttributeValue( "ShowScores" ).AsBoolean();
 
-                    // for speed we will get the common merge fields and pass them to the formatter so it does not have to be done repeattedly in the loop (it's a bit expensive)
+                    // for speed we will get the common merge fields and pass them to the formatter so it does not have to be done repeatedly in the loop (it's a bit expensive)
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, CurrentPerson );
 
                     foreach ( var result in results )
@@ -335,7 +335,7 @@ namespace RockWeb.Blocks.Cms
                     lResults.Text = formattedResults.ToString();
                 }
 
-                // pageination
+                // pagination
                 if ( totalResultsAvailable > 0 )
                 {
                     StringBuilder pagination = new StringBuilder();
@@ -407,7 +407,7 @@ namespace RockWeb.Blocks.Cms
         {
             List<int> selectedEntities = new List<int>();
 
-            if ( PageParameter( "SmartSearch" ).IsNotNullOrWhitespace() )
+            if ( PageParameter( "SmartSearch" ).IsNotNullOrWhiteSpace() )
             {
                 // get entities from smart search config
                 var searchEntitiesSetting = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchEntities" );
@@ -422,7 +422,7 @@ namespace RockWeb.Blocks.Cms
                 selectedEntities = cblModelFilter.SelectedValuesAsInt;
                 
                 // if no entities from the UI get from the block config
-                if ( selectedEntities.Count == 0 && GetAttributeValue( "EnabledModels" ).IsNotNullOrWhitespace() )
+                if ( selectedEntities.Count == 0 && GetAttributeValue( "EnabledModels" ).IsNotNullOrWhiteSpace() )
                 {
                     selectedEntities = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
                 }
@@ -439,9 +439,9 @@ namespace RockWeb.Blocks.Cms
         {
             List<FieldValue> fieldValues = new List<FieldValue>();
 
-            if ( PageParameter( "SmartSearch" ).IsNotNullOrWhitespace() )
+            if ( PageParameter( "SmartSearch" ).IsNotNullOrWhiteSpace() )
             {
-                // get the field critiera
+                // get the field criteria
                 var fieldCriteriaSetting = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
                 
                 if ( !string.IsNullOrWhiteSpace( fieldCriteriaSetting ) )
@@ -530,7 +530,7 @@ namespace RockWeb.Blocks.Cms
                 pageReference.Parameters.AddOrReplace("Q", tbSearch.Text);
             }
 
-            if ( PageParameter("SmartSearch").IsNotNullOrWhitespace() && respectSmartSearch )
+            if ( PageParameter("SmartSearch").IsNotNullOrWhiteSpace() && respectSmartSearch )
             {
                 pageReference.Parameters.AddOrReplace( "SmartSearch", "true" );
             }
@@ -544,7 +544,7 @@ namespace RockWeb.Blocks.Cms
             var selectedEntities = cblModelFilter.SelectedValuesAsInt;
 
             // if no entities from the UI get from the block config
-            if ( selectedEntities.Count == 0 && GetAttributeValue( "EnabledModels" ).IsNotNullOrWhitespace() )
+            if ( selectedEntities.Count == 0 && GetAttributeValue( "EnabledModels" ).IsNotNullOrWhiteSpace() )
             {
                 selectedEntities = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
             }
@@ -616,7 +616,7 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Supportses the index field filtering.
+        /// Supports the index field filtering.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <returns></returns>
@@ -646,12 +646,12 @@ namespace RockWeb.Blocks.Cms
 
             // model selector
             var enabledModelIds = new List<int>();
-            if ( GetAttributeValue( "EnabledModels" ).IsNotNullOrWhitespace() )
+            if ( GetAttributeValue( "EnabledModels" ).IsNotNullOrWhiteSpace() )
             {
                 enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
             }
 
-            var entities = CacheEntityType.All();
+            var entities = EntityTypeCache.All();
             var indexableEntities = entities.Where( i => i.IsIndexingEnabled == true ).ToList();
 
             // if enabled entities setting is set further filter by those
@@ -731,12 +731,12 @@ namespace RockWeb.Blocks.Cms
         private void LoadCustomFilters()
         {
             var enabledModelIds = new List<int>();
-            if ( GetAttributeValue( "EnabledModels" ).IsNotNullOrWhitespace() )
+            if ( GetAttributeValue( "EnabledModels" ).IsNotNullOrWhiteSpace() )
             {
                 enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
             }
 
-            var entities = CacheEntityType.All();
+            var entities = EntityTypeCache.All();
             var indexableEntities = entities.Where( i => i.IsIndexingEnabled == true ).ToList();
 
             // if select entities are configured further filter by them
@@ -825,12 +825,12 @@ namespace RockWeb.Blocks.Cms
                  
             var enabledModelIds = new List<int>();
 
-            if ( GetAttributeValue( "EnabledModels" ).IsNotNullOrWhitespace() )
+            if ( GetAttributeValue( "EnabledModels" ).IsNotNullOrWhiteSpace() )
             {
                 enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
             }
 
-            var entities = CacheEntityType.All();
+            var entities = EntityTypeCache.All();
             var indexableEntities = entities.Where( i => i.IsIndexingSupported == true && enabledModelIds.Contains( i.Id ) ).ToList();
             cblEnabledModels.DataValueField = "Id";
             cblEnabledModels.DataTextField = "FriendlyName";

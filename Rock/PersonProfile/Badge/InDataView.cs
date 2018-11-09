@@ -28,7 +28,7 @@ using System.Collections.Generic;
 using System.Data;
 using System;
 using System.Diagnostics;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.PersonProfile.Badge
 {
@@ -42,7 +42,7 @@ namespace Rock.PersonProfile.Badge
 
     [DataViewField( "Data View", "The dataview to use as the source for the query. Only those people in the DataView will be given the badge.", true, entityTypeName: "Rock.Model.Person", order: 0 )]
     [CodeEditorField( "Badge Content", "The text or HTML of the badge to display. <span class='tip tip-lava'></span>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, "<div class='badge badge-icon'><i class='fa fa-smile-o'></i></div>", order: 1 )]
-    public class InDataView : BadgeComponentModern
+    public class InDataView : BadgeComponent
     {
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
             RockContext rockContext = new RockContext();
             var dataViewAttributeGuid = GetAttributeValue( badge, "DataView" ).AsGuid();

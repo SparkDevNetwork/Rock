@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -65,6 +66,9 @@ namespace Rock.Field.Types
             ddl.Label = "Workflow Type";
             ddl.Help = "The Workflow Type to select activities from.";
             var originalValue = ddl.SelectedValue;
+
+            // Add empty field because the default value dropdown list will only be populated after the workflow type index have been changed.
+            ddl.Items.Add( new ListItem( string.Empty, string.Empty ) );
 
             Rock.Model.WorkflowTypeService workflowTypeService = new Model.WorkflowTypeService( new RockContext() );
             foreach ( var workflowType in workflowTypeService.Queryable().OrderBy( w => w.Name ) )
@@ -144,10 +148,15 @@ namespace Rock.Field.Types
 
                 if ( string.IsNullOrWhiteSpace( formattedValue ) )
                 {
-                    formattedValue = new WorkflowActivityTypeService( new RockContext() ).Queryable()
-                        .Where( a => a.Guid.Equals( guid ) )
-                        .Select( a => a.Name )
-                        .FirstOrDefault();
+                    using ( var rockContext = new RockContext() )
+                    {
+                        formattedValue = new WorkflowActivityTypeService( rockContext )
+                            .Queryable()
+                            .AsNoTracking()
+                            .Where( a => a.Guid.Equals( guid ) )
+                            .Select( a => a.Name )
+                            .FirstOrDefault();
+                    }
                 }
             }
 
@@ -202,13 +211,9 @@ namespace Rock.Field.Types
                         editControl.Items.Add( new ListItem( activityType.Name ?? "[New Activity]", activityType.Guid.ToString().ToUpper() ) );
                     }
                 }
-
-                return editControl;
             }
 
-            return null;
-
-
+            return editControl;
         }
 
         /// <summary>
@@ -225,7 +230,7 @@ namespace Rock.Field.Types
                 return picker.SelectedValue;
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>

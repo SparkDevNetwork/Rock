@@ -30,7 +30,7 @@ using Rock.Workflow;
 
 using Audit = Rock.Model.Audit;
 using System.Linq.Expressions;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Data
 {
@@ -59,6 +59,14 @@ namespace Rock.Data
         /// The save error messages.
         /// </value>
         public virtual List<string> SaveErrorMessages { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the source of change. If the source of change is set then changes made to entities with this context will have History records marked with this Source of Change.
+        /// </summary>
+        /// <value>
+        /// The source of change.
+        /// </value>
+        public string SourceOfChange { get; set; }
 
         /// <summary>
         /// Wraps code in a BeginTransaction and CommitTransaction
@@ -130,7 +138,7 @@ namespace Rock.Data
             // Try to get the current person alias and id
             PersonAlias personAlias = GetCurrentPersonAlias();
 
-            bool enableAuditing = Rock.Cache.CacheGlobalAttributes.Value( "EnableAuditing" ).AsBoolean();
+            bool enableAuditing = GlobalAttributesCache.Value( "EnableAuditing" ).AsBoolean();
 
             // Evaluate the current context for items that have changes
             var updatedItems = RockPreSave( this, personAlias, enableAuditing );
@@ -231,7 +239,7 @@ namespace Rock.Data
                 var entity = entry.Entity as IEntity;
 
                 // Get the context item to track audits
-                var contextItem = new ContextItem( entity, entry );
+                var contextItem = new ContextItem( entity, entry, enableAuditing );
 
                 // If entity was added or modified, update the Created/Modified fields
                 if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
@@ -349,7 +357,7 @@ namespace Rock.Data
                 }
                 else
                 {
-                    if ( item.Audit.AuditType == AuditType.Add )
+                    if ( item.PreSaveState == EntityState.Added )
                     {
                         TriggerWorkflows( item, WorkflowTriggerType.PostAdd, personAlias );
                     }
@@ -383,6 +391,11 @@ namespace Rock.Data
 
                         indexTransactions.Add( transaction );
                     }
+                }
+
+                if ( item.Entity is ICacheable )
+                {
+                    ( item.Entity as ICacheable ).UpdateCache( item.PreSaveState, this );
                 }
             }
 
@@ -496,7 +509,7 @@ namespace Rock.Data
 
             // Look at each trigger for this entity and for the given trigger type
             // and see if it's a match.
-            foreach ( var trigger in CacheWorkflowTriggers.Triggers( entity.TypeName, triggerType ).Where( t => t.IsActive == true ) )
+            foreach ( var trigger in WorkflowTriggersCache.Triggers( entity.TypeName, triggerType ).Where( t => t.IsActive == true ) )
             {
                 bool match = true;
 
@@ -525,7 +538,7 @@ namespace Rock.Data
                     // If it's one of the pre or immediate triggers, fire it immediately; otherwise queue it.
                     if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete || triggerType == WorkflowTriggerType.ImmediatePostSave )
                     {
-                        var workflowType = Cache.CacheWorkflowType.Get( trigger.WorkflowTypeId );
+                        var workflowType = WorkflowTypeCache.Get( trigger.WorkflowTypeId );
                         if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                         {
                             var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
@@ -595,7 +608,7 @@ namespace Rock.Data
                         var dbPropertyEntry = dbEntity.Property( propertyInfo.Name );
                         if ( dbPropertyEntry != null )
                         {
-                            previousValue = item.Audit.AuditType == AuditType.Add ? string.Empty : dbPropertyEntry.OriginalValue.ToStringSafe();
+                            previousValue = item.PreSaveState == EntityState.Added ? string.Empty : dbPropertyEntry.OriginalValue.ToStringSafe();
                         }
                     }
 
@@ -614,26 +627,33 @@ namespace Rock.Data
                         trigger.WorkflowTriggerType == WorkflowTriggerType.PostSave ||
                         trigger.WorkflowTriggerType == WorkflowTriggerType.PreSave )
                     {
-                        if ( hasCurrent && !hasPrevious )
+                        if ( trigger.WorkflowTriggerValueChangeType == WorkflowTriggerValueChangeType.ValueEqual )
                         {
-                            // ...and previous cannot be the same as the current (must be a change)
-                            match = ( currentValue == trigger.EntityTypeQualifierValue &&
-                                currentValue != previousValue );
+                            match = trigger.EntityTypeQualifierValue == currentValue;
                         }
-                        else if ( !hasCurrent && hasPrevious )
+                        else
                         {
-                            // ...and previous cannot be the same as the current (must be a change)
-                            match = ( previousValue == trigger.EntityTypeQualifierValuePrevious &&
-                                previousValue != currentValue );
-                        }
-                        else if ( hasCurrent && hasPrevious )
-                        {
-                            match = ( currentValue == trigger.EntityTypeQualifierValue &&
-                                previousValue == trigger.EntityTypeQualifierValuePrevious );
-                        }
-                        else if ( !hasCurrent && !hasPrevious )
-                        {
-                            match = previousValue != currentValue;
+                            if ( hasCurrent && !hasPrevious )
+                            {
+                                // ...and previous cannot be the same as the current (must be a change)
+                                match = ( currentValue == trigger.EntityTypeQualifierValue &&
+                                    currentValue != previousValue );
+                            }
+                            else if ( !hasCurrent && hasPrevious )
+                            {
+                                // ...and previous cannot be the same as the current (must be a change)
+                                match = ( previousValue == trigger.EntityTypeQualifierValuePrevious &&
+                                    previousValue != currentValue );
+                            }
+                            else if ( hasCurrent && hasPrevious )
+                            {
+                                match = ( currentValue == trigger.EntityTypeQualifierValue &&
+                                    previousValue == trigger.EntityTypeQualifierValuePrevious );
+                            }
+                            else if ( !hasCurrent && !hasPrevious )
+                            {
+                                match = previousValue != currentValue;
+                            }
                         }
                     }
                 }
@@ -692,7 +712,7 @@ namespace Rock.Data
 
                 if ( audit.Details.Any() )
                 {
-                    var entityType = Rock.Cache.CacheEntityType.Get( rockEntityType );
+                    var entityType = EntityTypeCache.Get( rockEntityType );
                     if ( entityType != null )
                     {
                         string title;
@@ -729,7 +749,11 @@ namespace Rock.Data
         private static bool AuditProperty( PropertyInfo propertyInfo )
         {
             if ( propertyInfo.GetCustomAttribute( typeof( NotAuditedAttribute ) ) == null &&
-                ( !propertyInfo.GetGetMethod().IsVirtual || propertyInfo.Name == "Id" || propertyInfo.Name == "Guid" || propertyInfo.Name == "Order" || propertyInfo.Name == "IsActive" ) )
+                ( ( propertyInfo.GetGetMethod() != null && !propertyInfo.GetGetMethod().IsVirtual ) ||
+                propertyInfo.Name == "Id" ||
+                propertyInfo.Name == "Guid" ||
+                propertyInfo.Name == "Order" ||
+                propertyInfo.Name == "IsActive" ) )
             {
                 return true;
             }
@@ -739,6 +763,7 @@ namespace Rock.Data
         /// <summary>
         /// State of entity being changed during a context save
         /// </summary>
+        [System.Diagnostics.DebuggerDisplay( "{Entity.GetType()}:{Entity}, State:{State}" )]
         protected class ContextItem
         {
             /// <summary>
@@ -750,7 +775,7 @@ namespace Rock.Data
             public IEntity Entity { get; set; }
 
             /// <summary>
-            /// Gets or sets the state.
+            /// Gets or sets the current state of the item in the ChangeTracker. Note: Use PreSaveState to see the state of the item before SaveChanges was called.
             /// </summary>
             /// <value>
             /// The state.
@@ -762,6 +787,14 @@ namespace Rock.Data
                     return this.DbEntityEntry.State;
                 }
             }
+
+            /// <summary>
+            /// Gets the EntityState of the item (before it was saved the to database)
+            /// </summary>
+            /// <value>
+            /// The state of the pre save.
+            /// </value>
+            public EntityState PreSaveState { get; private set; }
 
             /// <summary>
             /// Gets or sets the database entity entry.
@@ -793,43 +826,53 @@ namespace Rock.Data
             /// </summary>
             /// <param name="entity">The entity.</param>
             /// <param name="dbEntityEntry">The database entity entry.</param>
-            public ContextItem( IEntity entity, DbEntityEntry dbEntityEntry )
+            /// <param name="enableAuditing">if set to <c>true</c> [enable auditing].</param>
+            public ContextItem( IEntity entity, DbEntityEntry dbEntityEntry, bool enableAuditing )
             {
                 Entity = entity;
                 DbEntityEntry = dbEntityEntry;
-                Audit = new Audit();
-
-                switch ( dbEntityEntry.State )
+                if ( enableAuditing )
                 {
-                    case EntityState.Added:
-                        {
-                            Audit.AuditType = AuditType.Add;
-                            break;
-                        }
-                    case EntityState.Deleted:
-                        {
-                            Audit.AuditType = AuditType.Delete;
-                            break;
-                        }
-                    case EntityState.Modified:
-                        {
-                            Audit.AuditType = AuditType.Modify;
+                    Audit = new Audit();
 
-                            var triggers = CacheWorkflowTriggers.Triggers( entity.TypeName )
-                                .Where( t => t.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave || t.WorkflowTriggerType == WorkflowTriggerType.PostSave );
-
-                            if ( triggers.Any() )
+                    switch ( dbEntityEntry.State )
+                    {
+                        case EntityState.Added:
                             {
-                                OriginalValues = new Dictionary<string, object>();
-                                foreach ( var p in DbEntityEntry.OriginalValues.PropertyNames )
-                                {
-                                    OriginalValues.Add( p, DbEntityEntry.OriginalValues[p] );
-                                }
+                                Audit.AuditType = AuditType.Add;
+                                break;
                             }
-
-                            break;
-                        }
+                        case EntityState.Deleted:
+                            {
+                                Audit.AuditType = AuditType.Delete;
+                                break;
+                            }
+                        case EntityState.Modified:
+                            {
+                                Audit.AuditType = AuditType.Modify;
+                                break;
+                            }
+                    }
                 }
+
+                PreSaveState = dbEntityEntry.State;
+
+                if ( dbEntityEntry.State == EntityState.Modified )
+
+                {
+                    var triggers = WorkflowTriggersCache.Triggers( entity.TypeName )
+                        .Where( t => t.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave || t.WorkflowTriggerType == WorkflowTriggerType.PostSave );
+
+                    if ( triggers.Any() )
+                    {
+                        OriginalValues = new Dictionary<string, object>();
+                        foreach ( var p in DbEntityEntry.OriginalValues.PropertyNames )
+                        {
+                            OriginalValues.Add( p, DbEntityEntry.OriginalValues[p] );
+                        }
+                    }
+                }
+
             }
         }
     }

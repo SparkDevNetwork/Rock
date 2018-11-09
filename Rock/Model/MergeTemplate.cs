@@ -21,7 +21,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.MergeTemplates;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -210,7 +210,7 @@ namespace Rock.Model
         /// <returns></returns>
         public MergeTemplateType GetMergeTemplateType()
         {
-            var mergeTemplateTypeEntityType = CacheEntityType.Get( this.MergeTemplateTypeEntityTypeId );
+            var mergeTemplateTypeEntityType = EntityTypeCache.Get( this.MergeTemplateTypeEntityTypeId );
             if ( mergeTemplateTypeEntityType == null )
             {
                 return null;

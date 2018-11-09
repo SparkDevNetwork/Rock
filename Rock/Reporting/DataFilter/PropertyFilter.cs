@@ -26,7 +26,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter
@@ -88,7 +88,7 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public override string GetTitle( Type entityType )
         {
-            return CacheEntityType.Get( entityType ).FriendlyName + " Fields";
+            return EntityTypeCache.Get( entityType ).FriendlyName + " Fields";
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Rock.Reporting.DataFilter
             {
                 values = JsonConvert.DeserializeObject<List<string>>( selection );
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, null );
                 return "Error";
@@ -132,9 +132,8 @@ namespace Rock.Reporting.DataFilter
                 // First value in array is always the name of the entity field being filtered
                 string fieldSelection = values[0];
 
-                var entityFields = EntityHelper.GetEntityFields( entityType );
+                var entityField = EntityHelper.FindFromFilterSelection( entityType, fieldSelection );
 
-                var entityField = entityFields.FindFromFilterSelection( fieldSelection );
                 if ( entityField != null )
                 {
                     result = entityField.FormattedFilterDescription( FixDelimination( values.Skip( 1 ).ToList() ) );
@@ -170,9 +169,7 @@ namespace Rock.Reporting.DataFilter
                 // First value in array is always the name of the entity field being filtered
                 string fieldSelection = values[0];
 
-                var entityFields = EntityHelper.GetEntityFields( entityType );
-
-                var entityField = entityFields.FindFromFilterSelection( fieldSelection );
+                var entityField = EntityHelper.FindFromFilterSelection( entityType, fieldSelection );
                 if ( entityField != null )
                 {
                     return entityField.TitleWithoutQualifier;
@@ -202,29 +199,29 @@ namespace Rock.Reporting.DataFilter
             // add Empty option first
             ddlEntityField.Items.Add( new ListItem() );
             var rockBlock = filterControl.RockBlock();
-            var entityTypeCache = CacheEntityType.Get( entityType, true );
+            var entityTypeCache = EntityTypeCache.Get( entityType, true );
 
-            this.entityFields = EntityHelper.GetEntityFields( entityType );
-            foreach ( var entityField in this.entityFields.OrderBy(a => !a.IsPreviewable).ThenBy(a => a.FieldKind != FieldKind.Property ).ThenBy(a => a.Title) )
+            this.entityFields = this.GetEntityFields( entityType );
+            foreach ( var entityField in this.entityFields.OrderBy( a => !a.IsPreviewable ).ThenBy( a => a.FieldKind != FieldKind.Property ).ThenBy( a => a.Title ) )
             {
                 bool isAuthorized = true;
                 bool includeField = true;
-                if ( entityField.FieldKind == FieldKind.Attribute && entityField.AttributeGuid.HasValue)
+                if ( entityField.FieldKind == FieldKind.Attribute && entityField.AttributeGuid.HasValue )
                 {
-                    if ( entityType == typeof( Rock.Model.Workflow ) && !string.IsNullOrWhiteSpace(entityField.AttributeEntityTypeQualifierName) )
+                    if ( entityType == typeof( Rock.Model.Workflow ) && !string.IsNullOrWhiteSpace( entityField.AttributeEntityTypeQualifierName ) )
                     {
                         // Workflows can contain tons of Qualified Attributes, so let the WorkflowAttributeFilter take care of those
                         includeField = false;
                     }
 
-                    var attribute = CacheAttribute.Get( entityField.AttributeGuid.Value );
+                    var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
 
                     // Don't include the attribute if it isn't active
                     if ( attribute.IsActive == false )
                     {
                         includeField = false;
                     }
-                    
+
                     if ( includeField && attribute != null && rockBlock != null )
                     {
                         // only show the Attribute field in the drop down if they have VIEW Auth to it
@@ -240,7 +237,7 @@ namespace Rock.Reporting.DataFilter
                     {
                         listItem.Attributes["optiongroup"] = "Common";
                     }
-                    else if (entityField.FieldKind == FieldKind.Attribute)
+                    else if ( entityField.FieldKind == FieldKind.Attribute )
                     {
                         listItem.Attributes["optiongroup"] = string.Format( "{0} Attributes", entityType.Name );
                     }
@@ -249,10 +246,10 @@ namespace Rock.Reporting.DataFilter
                         listItem.Attributes["optiongroup"] = string.Format( "{0} Fields", entityType.Name );
                     }
 
-                    ddlEntityField.Items.Add( listItem  );
+                    ddlEntityField.Items.Add( listItem );
                 }
             }
-            
+
             ddlEntityField.AutoPostBack = true;
 
             // grab the currently selected value off of the request params since we are creating the controls after the Page Init
@@ -278,7 +275,7 @@ namespace Rock.Reporting.DataFilter
             var ddlEntityField = sender as RockDropDownList;
             var containerControl = ddlEntityField.FirstParentControlOfType<DynamicControlsPanel>();
             FilterField filterControl = ddlEntityField.FirstParentControlOfType<FilterField>();
-            
+
             var entityField = this.entityFields.FirstOrDefault( a => a.UniqueName == ddlEntityField.SelectedValue );
             if ( entityField != null )
             {
@@ -310,9 +307,9 @@ namespace Rock.Reporting.DataFilter
             if ( controls.Length > 0 )
             {
                 var containerControl = controls[0] as DynamicControlsPanel;
-                
+
                 var ddlEntityField = containerControl.Controls[0] as DropDownList;
-                var entityFields = EntityHelper.GetEntityFields( entityType );
+                var entityFields = this.GetEntityFields( entityType );
                 RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlEntityField, containerControl.Controls.OfType<Control>().ToList(), containerControl.ID, filterMode );
             }
         }
@@ -331,12 +328,12 @@ namespace Rock.Reporting.DataFilter
             if ( controls.Length > 0 )
             {
                 var containerControl = controls[0] as DynamicControlsPanel;
-                
+
                 DropDownList ddlProperty = containerControl.Controls[0] as DropDownList;
                 ddlEntityField_SelectedIndexChanged( ddlProperty, new EventArgs() );
 
-                var entityFields = EntityHelper.GetEntityFields( entityType );
-                var entityField = entityFields.FirstOrDefault( f => f.UniqueName == ddlProperty.SelectedValue );
+                var uniqueName = ddlProperty.SelectedValue;
+                var entityField = EntityHelper.GetEntityField( entityType, uniqueName );
                 if ( entityField != null )
                 {
                     var control = containerControl.Controls.OfType<Control>().ToList().FirstOrDefault( c => c.ID.EndsWith( "_" + entityField.UniqueName ) );
@@ -353,6 +350,31 @@ namespace Rock.Reporting.DataFilter
         }
 
         /// <summary>
+        /// Optional: The Entity that should be used when determining which PropertyFields and Attributes to show (instead of just basing it off of EntityType)
+        /// </summary>
+        /// <value>
+        /// The entity.
+        /// </value>
+        public IEntity Entity { get; set; }
+
+        /// <summary>
+        /// Gets the entity fields.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        internal List<EntityField> GetEntityFields( Type entityType )
+        {
+            if ( Entity != null )
+            {
+                return EntityHelper.GetEntityFields( this.Entity );
+            }
+            else
+            {
+                return EntityHelper.GetEntityFields( entityType );
+            }
+        }
+
+        /// <summary>
         /// Sets the selection.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
@@ -366,13 +388,13 @@ namespace Rock.Reporting.DataFilter
                 var values = JsonConvert.DeserializeObject<List<string>>( selection );
                 var containerControl = controls[0] as DynamicControlsPanel;
                 var ddlEntityField = containerControl.Controls[0] as DropDownList;
-                
-                var entityFields = EntityHelper.GetEntityFields( entityType );
+
+                var entityFields = this.GetEntityFields( entityType );
 
                 // set the selected Field, but not the filter values yet
                 var entityFieldControls = containerControl.Controls.OfType<Control>().ToList();
                 SetEntityFieldSelection( entityFields, ddlEntityField, values, entityFieldControls, false );
-                
+
                 // build the Field specific filter controls
                 ddlEntityField_SelectedIndexChanged( ddlEntityField, new EventArgs() );
 
@@ -401,8 +423,7 @@ namespace Rock.Reporting.DataFilter
                 if ( values.Count >= 2 )
                 {
                     string selectedProperty = values[0];
-                    var entityFields = EntityHelper.GetEntityFields( entityType );
-                    var entityField = entityFields.FindFromFilterSelection( selectedProperty );
+                    var entityField = EntityHelper.FindFromFilterSelection( entityType, selectedProperty );
                     if ( entityField != null )
                     {
                         if ( entityField.FieldKind == FieldKind.Property )

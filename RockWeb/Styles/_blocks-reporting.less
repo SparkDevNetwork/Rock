@@ -1,23 +1,13 @@
 /*
     Used to manage styles for specific blocks.
 
-    1. SQL Command - block to query database directly
-    2. Data Views - block for creating data views
-    3. Dynamic Report - block for making reports dynamically updated
+    1. Data Views - block for creating data views
+    2. Dynamic Report - block for making reports dynamically updated
+    3. Interactions
 */
 
 
-
-// 1. SQL Command
-// -------------------------
-
-.sql-comand {
-  .panel {
-    margin-bottom: 24px;
-  }
-}
-
-// 2. Data Views
+// 1. Data Views
 // -------------------------
 
 /* data views */
@@ -50,6 +40,19 @@
   .checkbox-inline {
     margin-top: 8px;
   }
+
+  @media @md {
+    // Vertically align criteria fields to the top
+    > div {
+      display: table-cell;
+      float: none;
+      vertical-align: top;
+    }
+
+    .vertical-align-bottom {
+      vertical-align: bottom;
+    }
+  }
 }
 
 .filter-item div[class*="col"] {
@@ -59,7 +62,7 @@
   }
 }
 
-// 3. Dynamic Report
+// 2. Dynamic Report
 // -------------------------
 
 .filterfield {
@@ -70,4 +73,27 @@
   display: block;
   margin-top: 8px;
   font-weight: @font-weight-semibold;
+}
+
+// 3. Interactions
+// -------------------------
+
+.list-panel {
+  > .grid-filter {
+    padding: 6px 12px;
+    margin: -15px -15px 15px -15px;
+
+    > header {
+      position: relative;
+    }
+
+    .grid-filter-entry {
+      padding-top: inherit;
+    }
+
+    .btn-link {
+      position: relative;
+      margin: 0;
+    }
+  }
 }

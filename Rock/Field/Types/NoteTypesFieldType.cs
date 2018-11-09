@@ -23,7 +23,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -57,7 +57,7 @@ namespace Rock.Field.Types
                     Guid? guid = guidString.AsGuidOrNull();
                     if ( guid.HasValue )
                     {
-                        var noteType = CacheNoteType.Get( guid.Value );
+                        var noteType = NoteTypeCache.Get( guid.Value );
                         if ( noteType != null )
                         {
                             names.Add( noteType.Name );
@@ -68,7 +68,8 @@ namespace Rock.Field.Types
                 formattedValue = names.AsDelimited( ", " );
             }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            // The parent is CategoryFieldType. CategoryFieldType's FormatValue expects a list of category guids, so we should not call the base FormatValue.
+            return formattedValue;
         }
 
         #endregion
@@ -97,7 +98,7 @@ namespace Rock.Field.Types
                     entityTypeName = configurationValues[ENTITY_TYPE_NAME_KEY].Value;
                     if ( !string.IsNullOrWhiteSpace( entityTypeName ) && entityTypeName != None.IdValue )
                     {
-                        var entityType = CacheEntityType.Get( entityTypeName );
+                        var entityType = EntityTypeCache.Get( entityTypeName );
                         if ( entityType != null )
                         {
                             entityTypeId = entityType.Id;

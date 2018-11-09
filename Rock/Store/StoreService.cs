@@ -40,7 +40,7 @@ namespace Rock.Store
         {}
 
         /// <summary>
-        /// Authenicates the user.
+        /// Authenticates the user.
         /// </summary>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
@@ -52,7 +52,7 @@ namespace Rock.Store
         }
 
         /// <summary>
-        /// Authenicates the user.
+        /// Authenticates the user.
         /// </summary>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>

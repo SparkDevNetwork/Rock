@@ -23,7 +23,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Reporting
                     
                     mergeFields.Add( "Interaction", interaction );
 
-                    lContent.Text = interaction.InteractionComponent.Channel.InteractionDetailTemplate.IsNotNullOrWhitespace() ?
+                    lContent.Text = interaction.InteractionComponent.Channel.InteractionDetailTemplate.IsNotNullOrWhiteSpace() ?
                         interaction.InteractionComponent.Channel.InteractionDetailTemplate.ResolveMergeFields( mergeFields ) :
                         GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
                 }
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Reporting
         private IEntity GetInteractionEntity( RockContext rockContext, Interaction interaction )
         {
             IEntity interactionEntity = null;
-            var interactionEntityType = CacheEntityType.Get( interaction.InteractionComponent.Channel.InteractionEntityTypeId.Value ).GetEntityType();
+            var interactionEntityType = EntityTypeCache.Get( interaction.InteractionComponent.Channel.InteractionEntityTypeId.Value ).GetEntityType();
             IService serviceInstance = Reflection.GetServiceForEntityType( interactionEntityType, rockContext );
             if ( serviceInstance != null )
             {

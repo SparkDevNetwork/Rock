@@ -34,7 +34,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Workflow Persist" )]
 
-    [BooleanField( "Persist Immediately", "This action will normally cause the workflow to be persisted (saved) once all the current activites/actions have completed processing. Set this flag to true, if the workflow should be persisted immediately. This is only required if a subsequent action needs a persisted workflow with a valid id.",  false )]
+    [BooleanField( "Persist Immediately", "This action will normally cause the workflow to be persisted (saved) once all the current activities/actions have completed processing. Set this flag to true, if the workflow should be persisted immediately. This is only required if a subsequent action needs a persisted workflow with a valid id.",  false )]
     public class PersistWorkflow : ActionComponent
     {
         /// <summary>
@@ -49,14 +49,15 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
+            action.Activity.Workflow.IsPersisted = true;
+            action.AddLogEntry( "Updated workflow to be persisted!" );
+
             if ( GetAttributeValue( action, "PersistImmediately" ).AsBoolean( false ) )
             {
                 var service = new WorkflowService( rockContext );
                 service.PersistImmediately( action );
             }
-
-            action.AddLogEntry( "Updated workflow to be persisted!" );
-
+            
             return true;
         }
     }

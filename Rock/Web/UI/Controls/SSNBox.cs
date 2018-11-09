@@ -30,7 +30,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Control for entering a Social Security Number (SSN). Note: This control should only be used on a page that is using SSL as the SSN number is passed from client
     /// to server in a hidden field in plain text. If the SSN is being persisted, make sure to use the TextEncrypted property instead of the Text property so that an 
-    /// encyrpted version of the SSN number is stored.
+    /// encrypted version of the SSN number is stored.
     /// </summary>
     public class SSNBox : CompositeControl, IRockControl
     {
@@ -174,8 +174,14 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ValidationGroup
         {
-            get { return ViewState["ValidationGroup"] as string; }
-            set { ViewState["ValidationGroup"] = value; }
+            get
+            {
+                return RequiredFieldValidator.ValidationGroup;
+            }
+            set
+            {
+                RequiredFieldValidator.ValidationGroup = value;
+            }
         }
 
         /// <summary>
@@ -281,7 +287,7 @@ namespace Rock.Web.UI.Controls
                 ssnGroup.Attributes["value"] = ssnGroup.Text;
             }
 
-            base.OnLoad( e );  
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -303,16 +309,13 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 hfSSN.Value = value;
 
-                string ssn = string.Empty;
                 if ( !string.IsNullOrEmpty( value ) )
                 {
-                    Regex digitsOnly = new Regex( @"[^\d]" );
-                    ssn = digitsOnly.Replace( value, string.Empty );
+                    string ssn = value.AsNumeric();
+                    ssnArea.Attributes["value"] = ssn.SafeSubstring( 0, 3 );
+                    ssnGroup.Attributes["value"] = ssn.SafeSubstring( 3, 2 );
+                    ssnSerial.Text = ssn.SafeSubstring( 5, 4 );
                 }
-
-                ssnArea.Attributes["value"] = ssn.Left( 3 );
-                ssnGroup.Attributes["value"] = ssn.Length > 3 ? ssn.Substring( 3, 2 ) : string.Empty;
-                ssnSerial.Text = ssn.Length > 5 ? ssn.Substring( 5, 4 ) : string.Empty;
             }
         }
 
@@ -334,13 +337,14 @@ namespace Rock.Web.UI.Controls
                 Text = Encryption.DecryptString( value );
             }
         }
-    
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BirthdayPicker"/> class.
         /// </summary>
         public SSNBox()
             : base()
         {
+            RequiredFieldValidator = new HiddenFieldValidator();
             HelpBlock = new HelpBlock();
             WarningBlock = new WarningBlock();
         }
@@ -356,8 +360,11 @@ namespace Rock.Web.UI.Controls
             RockControlHelper.CreateChildControls( this, Controls );
 
             hfSSN = new HiddenFieldWithClass();
-            hfSSN.ID = this.ID;
+            hfSSN.ID = string.Format( "hfSSN_{0}", this.ID );
             hfSSN.CssClass = "js-ssn";
+
+            this.RequiredFieldValidator.InitialValue = string.Empty;
+            this.RequiredFieldValidator.ControlToValidate = hfSSN.ID;
 
             ssnArea =  new TextBox();
             ssnArea.CssClass = "form-control ssn-part ssn-area";

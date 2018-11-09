@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Cms
         #region Fields
 
         bool _canEdit = false;
-        CacheDefinedType _definedType = null;
+        DefinedTypeCache _definedType = null;
 
         #endregion
 
@@ -110,10 +110,10 @@ namespace RockWeb.Blocks.Cms
 
             foreach ( var securityField in gLinks.Columns.OfType<SecurityField>() )
             {
-                securityField.EntityTypeId = CacheEntityType.Get( typeof( DefinedValue ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( DefinedValue ) ).Id;
             }
 
-            _definedType = CacheDefinedType.Get( GetAttributeValue( "DefinedType" ).AsGuid() );
+            _definedType = DefinedTypeCache.Get( GetAttributeValue( "DefinedType" ).AsGuid() );
         }
 
         /// <summary>
@@ -219,9 +219,6 @@ namespace RockWeb.Blocks.Cms
 
                     service.Delete( definedValue );
                     rockContext.SaveChanges();
-
-                    CacheDefinedType.Remove( definedValue.DefinedTypeId );
-                    CacheDefinedValue.Remove( definedValue.Id );
                 }
             }
 
@@ -241,14 +238,7 @@ namespace RockWeb.Blocks.Cms
                 var definedValues = service.Queryable().Where( a => a.DefinedTypeId == _definedType.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Value );
                 var changedIds = service.Reorder( definedValues.ToList(), e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
-
-                foreach ( int id in changedIds )
-                {
-                    Rock.Cache.CacheDefinedValue.Remove( id );
-                }
             }
-
-            CacheDefinedType.Remove( _definedType.Id );
 
             BindGrid();
         }
@@ -351,9 +341,6 @@ namespace RockWeb.Blocks.Cms
                     definedValue.SaveAttributeValues( rockContext );
 
                 } );
-
-                Rock.Cache.CacheDefinedType.Remove( definedValue.DefinedTypeId );
-                Rock.Cache.CacheDefinedValue.Remove( definedValue.Id );
             }
 
             HideDialog();
@@ -420,7 +407,7 @@ namespace RockWeb.Blocks.Cms
             
             if ( _definedType != null  )
             {
-                var definedValues = new List<CacheDefinedValue>();
+                var definedValues = new List<DefinedValueCache>();
                 foreach ( var definedValue in _definedType.DefinedValues )
                 {
                     if ( _canEdit || definedValue.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
@@ -454,7 +441,7 @@ namespace RockWeb.Blocks.Cms
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var entityType = CacheEntityType.Get( "Rock.Model.DefinedValue");
+                    var entityType = EntityTypeCache.Get( "Rock.Model.DefinedValue");
                     var definedType = new DefinedTypeService( rockContext ).Get( _definedType.Id );
                     if ( definedType != null && entityType != null )
                     {
@@ -463,10 +450,10 @@ namespace RockWeb.Blocks.Cms
                             .GetByEntityTypeQualifier( entityType.Id, "DefinedTypeId", definedType.Id.ToString(), false )
                             .ToList();
 
-                        // Verify (and create if neccessary) the "Is Link" attribute
+                        // Verify (and create if necessary) the "Is Link" attribute
                         if ( !attributes.Any( a => a.Key == "IsLink" ) )
                         {
-                            var fieldType = CacheFieldType.Get( Rock.SystemGuid.FieldType.BOOLEAN );
+                            var fieldType = FieldTypeCache.Get( Rock.SystemGuid.FieldType.BOOLEAN );
                             if ( entityType != null && fieldType != null )
                             {
                                 var attribute = new Rock.Model.Attribute();
@@ -492,12 +479,6 @@ namespace RockWeb.Blocks.Cms
                                 attribute.AttributeQualifiers.Add( qualifier2 );
 
                                 rockContext.SaveChanges();
-
-                                CacheDefinedType.Remove( definedType.Id );
-                                foreach( var dv in definedType.DefinedValues )
-                                {
-                                    CacheDefinedValue.Remove( dv.Id );
-                                }
                             }
                         }
 

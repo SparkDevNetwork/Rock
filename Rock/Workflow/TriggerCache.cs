@@ -17,16 +17,17 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Workflow
 {
     /// <summary>
-    /// MEF Container class for WorkflowAction Componenets
+    /// MEF Container class for WorkflowAction Components
     /// </summary>
-    [Obsolete( "Use Rock.Cache.CacheWorkflowTriggers instead" )]
+    [RockObsolete( "1.8" )]
+    [Obsolete( "Use WorkflowTriggersCache instead" )]
     public class TriggerCache
     {
 
@@ -46,10 +47,11 @@ namespace Rock.Workflow
         /// <summary>
         /// Refreshes this instance.
         /// </summary>
-        [Obsolete( "Use Rock.Cache.CacheWorkflowTriggers.Refresh() method instead" )]
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use WorkflowTriggersCache.Refresh() method instead" )]
         public static void Refresh()
         {
-            CacheWorkflowTriggers.Refresh();
+            WorkflowTriggersCache.Refresh();
         }
 
         /// <summary>
@@ -57,10 +59,11 @@ namespace Rock.Workflow
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <returns></returns>
-        [Obsolete( "Use Rock.Cache.CacheWorkflowTriggers.Triggers() method instead" )]
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use WorkflowTriggersCache.Triggers() method instead" )]
         public static List<WorkflowTrigger> Triggers( string entityTypeName )
         {
-            return CacheWorkflowTriggers.Triggers( entityTypeName );
+            return WorkflowTriggersCache.Triggers( entityTypeName );
         }
 
         /// <summary>
@@ -69,10 +72,11 @@ namespace Rock.Workflow
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="triggerType">Type of the trigger.</param>
         /// <returns></returns>
-        [Obsolete( "Use Rock.Cache.CacheWorkflowTriggers.Triggers() method instead" )]
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use WorkflowTriggersCache.Triggers() method instead" )]
         public static List<WorkflowTrigger> Triggers( string entityTypeName, WorkflowTriggerType triggerType )
         {
-            return CacheWorkflowTriggers.Triggers( entityTypeName, triggerType );
+            return WorkflowTriggersCache.Triggers( entityTypeName, triggerType );
         }
 
         #endregion

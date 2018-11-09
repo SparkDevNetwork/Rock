@@ -23,7 +23,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -139,8 +139,8 @@ namespace RockWeb.Blocks.Crm
         {
             RockContext rockContext = new RockContext();
             var personDuplicateService = new PersonDuplicateService( rockContext );
-            int recordStatusInactiveId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
-            int recordTypeBusinessId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+            int recordStatusInactiveId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
+            int recordTypeBusinessId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
             // list duplicates that:
             // - aren't confirmed as NotDuplicate and aren't IgnoreUntilScoreChanges,
@@ -184,6 +184,8 @@ namespace RockWeb.Blocks.Crm
                 new
                 {
                     PersonId = person.Id,
+                    person.SuffixValueId,
+                    person.SuffixValue,
                     person.LastName,
                     person.FirstName,
                     PersonModifiedDateTime = person.ModifiedDateTime,

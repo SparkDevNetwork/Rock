@@ -21,9 +21,9 @@
                             <b class="caret"></b>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-right">
-                            <asp:Literal ID="lActions" runat="server" />
                             <li><asp:LinkButton ID="lbImpersonate" runat="server" Visible="false" OnClick="lbImpersonate_Click"><i class='fa-fw fa fa-unlock'></i>&nbsp;Impersonate</asp:LinkButton></li>
                             <li><asp:HyperLink ID="hlVCard" runat="server"><i class='fa fa-address-card'></i>&nbsp;Download vCard</asp:HyperLink></li>
+                            <asp:Literal ID="lActions" runat="server" />
                         </ul>
                     </li>
                 </ul>
@@ -37,13 +37,13 @@
                         <asp:Literal ID="lImage" runat="server" />  
                         <asp:Panel ID="pnlFollow" runat="server" CssClass="following-status"><i class="fa fa-star"></i></asp:Panel>
                     </div>
-                    <ul class="social-icons list-unstyled margin-t-sm">
+                    <div class="social-icons margin-t-sm">
                         <asp:Repeater ID="rptSocial" runat="server">
                             <ItemTemplate>
-                                <li class='icon icon-<%# Eval("name").ToString().ToLower() %>' <%# !string.IsNullOrEmpty( Eval("color").ToString())? "style='background-color:"+Eval("color").ToString()+"'":"" %> ><a href='<%# Eval("url") %>' target="_blank"><i class='<%# Eval("icon") %>'></i></a></li>
+                                <a href='<%# Eval("url") %>' class='btn btn-<%# Eval("name").ToString().ToLower() %> btn-sm btn-square' <%# !string.IsNullOrEmpty( Eval("color").ToString())? "style='background-color:"+Eval("color").ToString()+"'":"" %> target="_blank"><i class='<%# Eval("icon") %>'></i></a>
                             </ItemTemplate>
                         </asp:Repeater>
-                    </ul>
+                    </div>
 
                 
                 </div>

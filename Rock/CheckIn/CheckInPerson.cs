@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -329,7 +329,7 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Gets the available keys (for debuging info).
+        /// Gets the available keys (for debugging info).
         /// </summary>
         /// <value>
         /// The available keys.
@@ -507,7 +507,8 @@ namespace Rock.CheckIn
             {
                 if ( groupType.GroupType.Attributes == null )
                 {
-                    groupType.GroupType.LoadAttributes();
+                    // shouldn't happen since GroupType is a ModelCache<,> type
+                    return;
                 }
 
                 foreach ( var attribute in groupType.GroupType.Attributes.OrderBy( a => a.Value.Order ) )

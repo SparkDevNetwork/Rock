@@ -20,7 +20,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels.Attributes;
@@ -118,12 +118,12 @@ namespace Rock.UniversalSearch.IndexModels
             string result = string.Empty;
 
             // get template from entity type
-            var sourceModelEntity = CacheEntityType.All().Where( e => e.Name == this.SourceIndexModel ).FirstOrDefault();
+            var sourceModelEntity = EntityTypeCache.All().Where( e => e.Name == this.SourceIndexModel ).FirstOrDefault();
 
             if ( sourceModelEntity != null ) {
                 var template = sourceModelEntity.IndexResultTemplate;
 
-                if ( template.IsNotNullOrWhitespace() )
+                if ( template.IsNotNullOrWhiteSpace() )
                 {
                     if ( mergeFields == null)
                     {
@@ -148,13 +148,13 @@ namespace Rock.UniversalSearch.IndexModels
         public virtual string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
         {
             // get template from entity type
-            var sourceModelEntity = CacheEntityType.All().Where( e => e.Name == this.SourceIndexModel ).FirstOrDefault();
+            var sourceModelEntity = EntityTypeCache.All().Where( e => e.Name == this.SourceIndexModel ).FirstOrDefault();
 
             if ( sourceModelEntity != null )
             {
                 var template = sourceModelEntity.IndexDocumentUrl;
 
-                if ( template.IsNotNullOrWhitespace() )
+                if ( template.IsNotNullOrWhiteSpace() )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
                     mergeFields.Add( "IndexDocument", this );
@@ -217,14 +217,14 @@ namespace Rock.UniversalSearch.IndexModels
         /// </summary>
         /// <param name="indexModel">The index model.</param>
         /// <param name="sourceModel">The source model.</param>
-        protected static void AddIndexableAttributes( IndexModelBase indexModel, Data.IHasAttributes sourceModel )
+        protected static void AddIndexableAttributes( IndexModelBase indexModel, Attribute.IHasAttributes sourceModel )
         {
             sourceModel.LoadAttributes();
 
             foreach ( var attributeValue in sourceModel.AttributeValues )
             {
                 // check that the attribute is marked as IsIndexEnabled
-                var attribute = CacheAttribute.Get(attributeValue.Value.AttributeId);
+                var attribute = AttributeCache.Get(attributeValue.Value.AttributeId);
 
                 if ( attribute.IsIndexEnabled )
                 {
@@ -460,7 +460,7 @@ namespace Rock.UniversalSearch.IndexModels
 
         #region ILiquid Implementation
         /// <summary>
-        /// Gets the available keys (for debuging info).
+        /// Gets the available keys (for debugging info).
         /// </summary>
         /// <value>
         /// The available keys.

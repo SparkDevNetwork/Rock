@@ -76,7 +76,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the parsed fee options with name and value string. Key is the option name 
+        /// Gets the parsed fee options with name and value string. Key is the option name
         /// and value is the option name with cost formatted as currency in parens "Large","Large ($10.00)"
         /// </summary>
         /// <param name="registrationTemplateFeeId">The registration template fee identifier.</param>
@@ -118,7 +118,7 @@ namespace Rock.Model
 				, rr.Id AS RegistrantId
 				, tf.[Name] AS FeeName
 				, f.[Option] AS [Option]
-				, f.Quantity AS Quanity
+				, f.Quantity AS Quantity
 				, f.Cost AS Cost
 				, f.Quantity* f.Cost AS FeeTotal
 			FROM RegistrationInstance i
@@ -214,12 +214,12 @@ namespace Rock.Model
         public string Option { get; set; }
 
         /// <summary>
-        /// Gets or sets the quanity.
+        /// Gets or sets the quantity.
         /// </summary>
         /// <value>
-        /// The quanity.
+        /// The quantity.
         /// </value>
-        public int Quanity { get; set; }
+        public int Quantity { get; set; }
 
         /// <summary>
         /// Gets or sets the cost.

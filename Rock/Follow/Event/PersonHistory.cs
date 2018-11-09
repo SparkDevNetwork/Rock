@@ -25,7 +25,7 @@ using Rock.Data;
 using Rock.Follow;
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Collections.Generic;
 
 namespace Rock.Follow.Event
@@ -38,7 +38,7 @@ namespace Rock.Follow.Event
     [Export( typeof( EventComponent ) )]
     [ExportMetadata( "ComponentName", "PersonHistory" )]
 
-    [TextField( "Fields", "Field name(s) to monitor in history data. Seperate multiple items by a comma. If you look at a person's history data it would be in the format of 'Modified FIELD value from OLD to NEW'.", true, order: 0 )]
+    [TextField( "Fields", "Field name(s) to monitor in history data. Separate multiple items by a comma. If you look at a person's history data it would be in the format of 'Modified FIELD value from OLD to NEW'.", true, order: 0 )]
     [IntegerField( "Max Days Back", "Maximum number of days back to look at a person's history.", true, 30, "", order: 1 )]
 
     [BooleanField( "Match Both", "Require a match on both the Old Value and the New Value. This equates to an AND comparison, otherwise it equates to an OR comparison on the values.", true, category: "Values", order: 0 )]
@@ -95,8 +95,8 @@ namespace Rock.Follow.Event
                     PersonAlias targetPersonAlias = new PersonAliasService( new RockContext() ).Get( targetPersonGuid.AsGuid() );
                     DateTime daysBackDate = RockDateTime.Now.AddDays( -daysBack );
                     var person = personAlias.Person;
-                    int personEntityTypeId = CacheEntityType.Get( typeof( Person ) ).Id;
-                    int categoryId = CacheCategory.Get( Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid() ).Id;
+                    int personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
+                    int categoryId = CategoryCache.Get( Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid() ).Id;
 
                     //
                     // Start building the basic query. We want all History items that are for

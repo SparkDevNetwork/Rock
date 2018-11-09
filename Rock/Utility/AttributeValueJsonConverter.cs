@@ -21,7 +21,7 @@ namespace Rock.Utility
     /// <summary>
     /// Serializes only the specified fields depending on the LoadAttributes parameter of a REST call
     /// if the parameter value is 'simple' or True, only the specified fields will be specified
-    /// if the paremter value is 'expanded', the object will be serialized normally
+    /// if the parameter value is 'expanded', the object will be serialized normally
     /// </summary>
     public class AttributeValueJsonConverter : SimpleModeJsonConverter<AttributeValue>
     {

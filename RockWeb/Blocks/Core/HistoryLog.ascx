@@ -27,7 +27,7 @@
                             <Rock:RockBoundField DataField="Category.Name" SortExpression="Category.Name" HeaderText="Category" />
                             <asp:HyperLinkField DataTextField="CreatedByPersonName" DataNavigateUrlFields="CreatedByPersonId" SortExpression="CreatedByPersonName" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="Who" />
                             <Rock:ListDelimitedField DataField="HistoryList" Delimiter="<br />" HeaderText="Did" HtmlEncode="false" SortExpression="Verb,ValueName" />
-                            <Rock:RockBoundField DataField="FormattedCaption" HeaderText="What" SortExpression="Caption" />
+                            <Rock:RockBoundField DataField="FormattedCaption" HeaderText="What" SortExpression="Caption" HtmlEncode="false" />
                             <Rock:DateTimeField DataField="CreatedDateTime" SortExpression="CreatedDateTime" HeaderText="When" FormatAsElapsedTime="true" />
                         </Columns>
                     </Rock:Grid>

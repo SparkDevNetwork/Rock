@@ -72,9 +72,10 @@ BEGIN
 				SELECT 
 					A.[PersonAliasId],
 					A.[CampusId],
-					A.[ScheduleId]
+					O.[ScheduleId]
  				FROM [Attendance] A
-				INNER JOIN @GroupTbl G ON G.[Id] = A.[GroupId]
+				INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
+				INNER JOIN @GroupTbl G ON G.[Id] = O.[GroupId]
 				WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
 				AND [DidAttend] = 1
 			) A
@@ -98,7 +99,7 @@ BEGIN
         DECLARE @ChildRoleId INT = ( SELECT TOP 1 [Id] FROM [GroupTypeRole] WHERE [Guid] = 'C8B1814F-6AA7-4055-B2D7-48FE20429CB9' )
 
         IF @IncludeParentsWithChild = 1 
-        BEGIN
+   BEGIN
 
             -- Child attended, also include their parents
 	        SELECT	
@@ -122,9 +123,10 @@ BEGIN
 					SELECT 
 						A.[PersonAliasId],
 						A.[CampusId],
-						A.[ScheduleId]
+						O.[ScheduleId]
  					FROM [Attendance] A
-					INNER JOIN @GroupTbl G ON G.[Id] = A.[GroupId]
+					INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
+					INNER JOIN @GroupTbl G ON G.[Id] = O.[GroupId]
 					WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
 					AND [DidAttend] = 1
 				) A
@@ -175,9 +177,10 @@ BEGIN
 					SELECT 
 						A.[PersonAliasId],
 						A.[CampusId],
-						A.[ScheduleId]
+						O.[ScheduleId]
  					FROM [Attendance] A
-					INNER JOIN @GroupTbl G ON G.[Id] = A.[GroupId]
+					INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
+					INNER JOIN @GroupTbl G ON G.[Id] = O.[GroupId]
 					WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
 					AND [DidAttend] = 1
 				) A

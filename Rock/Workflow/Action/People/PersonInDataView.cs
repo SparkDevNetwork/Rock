@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -62,7 +62,7 @@ namespace Rock.Workflow.Action
                 Guid booleanGuid = GetAttributeValue( action, "Boolean" ).AsGuid();
                 if ( !booleanGuid.IsEmpty() )
                 {
-                    var attribute = CacheAttribute.Get( booleanGuid, rockContext );
+                    var attribute = AttributeCache.Get( booleanGuid, rockContext );
                     if ( attribute != null )
                     {
                         var dataViewAttributeGuid = GetAttributeValue( action, "DataView" ).AsGuid();
@@ -107,7 +107,7 @@ namespace Rock.Workflow.Action
             Guid guidPersonAttribute = value.AsGuid();
             if ( !guidPersonAttribute.IsEmpty() )
             {
-                var attributePerson = CacheAttribute.Get( guidPersonAttribute, rockContext );
+                var attributePerson = AttributeCache.Get( guidPersonAttribute, rockContext );
                 if ( attributePerson != null )
                 {
                     string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute );

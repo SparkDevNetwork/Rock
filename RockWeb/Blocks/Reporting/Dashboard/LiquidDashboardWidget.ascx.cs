@@ -19,7 +19,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
                 string[] entityValues = ( GetAttributeValue( "Entity" ) ?? string.Empty ).Split( '|' );
                 if ( entityValues.Length == 2 && !string.IsNullOrEmpty( entityValues[1] ) )
                 {
-                    var entityType = CacheEntityType.Get( entityValues[0].AsGuid() );
+                    var entityType = EntityTypeCache.Get( entityValues[0].AsGuid() );
                     if ( entityType != null )
                     {
                         result += string.Format( "?entityTypeId={0}", entityType.Id );
@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
                 {
                     if ( this.ContextEntity() != null )
                     {
-                        var entityType = CacheEntityType.Get( this.ContextEntity().GetType(), false );
+                        var entityType = EntityTypeCache.Get( this.ContextEntity().GetType(), false );
                         if ( entityType != null )
                         {
                             result += string.Format( "?entityTypeId={0}&entityId={1}", entityType.Id, this.ContextEntity().Id );

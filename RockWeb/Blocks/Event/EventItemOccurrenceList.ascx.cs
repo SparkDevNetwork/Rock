@@ -30,7 +30,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -294,7 +294,7 @@ namespace RockWeb.Blocks.Event
         {
             drpDate.DelimitedValues = rFilter.GetUserPreference( "DateRange" );
 
-            cblCampus.DataSource = CacheCampus.All();
+            cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
             string campusValue = rFilter.GetUserPreference( "Campus" );
             if ( !string.IsNullOrWhiteSpace( campusValue ) )

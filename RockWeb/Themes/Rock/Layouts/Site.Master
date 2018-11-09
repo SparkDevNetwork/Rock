@@ -35,9 +35,8 @@
     <title></title>
 
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest") %>"></script>
-    <script src="<%# ResolveRockUrl("~/Scripts/jquery.jquery-dotimeout.js" ) %>"></script>
 
-    
+
 
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -50,60 +49,59 @@
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
 
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
+    <script src="<%# ResolveRockUrl("~~/Assets/Scripts/theme.js" ) %>"></script>
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
 </head>
 <body runat="server" id="body">
-
     <form id="form1" runat="server">
 
-    <div class="page-wrapper">
+        <div class="page-wrapper">
 
-        <nav class="navbar navbar-fixed-top rock-top-header">
-            <div class="navbar-toggle navbar-toggle-side-left collapsed" data-toggle="collapse" data-target=".navbar-static-side">
-                <i class="fa fa-bars"></i>
-            </div>
-            <asp:HyperLink ID="hlHomeCorner" runat="server" NavigateUrl="~" ToolTip="Rock RMS" CssClass="navbar-brand-corner" />
+            <nav class="navbar navbar-fixed-top rock-top-header">
+                <div class="navbar-toggle navbar-toggle-side-left collapsed" data-toggle="collapse" data-target=".navbar-static-side">
+                    <i class="fa fa-bars"></i>
+                </div>
+                <Rock:Lava ID="hlHomeCorner" runat="server">
+                    {%- if CurrentPage.Layout.Site.SiteLogoBinaryFileId != null -%}
+                        <a href="{{ '~' | ResolveRockUrl }}" title="Rock RMS" class="navbar-brand-corner has-logo">
+                            <img src="{{ '~' | ResolveRockUrl }}GetImage.ashx?id={{ CurrentPage.Layout.Site.SiteLogoBinaryFileId }}&w=42&h=42" alt="{{ 'Global' | Attribute:'OrganizationName' }}" class="logo">
+                        </a>
+                    {%- else -%}
+                        <a href="{{ '~' | ResolveRockUrl }}" title="Rock RMS" class="navbar-brand-corner no-logo"></a>
+                    {%- endif -%}
+                </Rock:Lava>
 
-            <div id="fixed-header" class="header-content" role="navigation">
-                <div class="clearfix">
-                    <!-- bookmark markup goes here -->
+                <div id="fixed-header" class="header-content" role="navigation">
+                    <div class="clearfix">
+                        <!-- bookmark markup goes here -->
+                        <div class="navbar-zone-login"><Rock:Zone Name="Login" runat="server" /></div>
+                        <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
+                    </div>
+                </div>
+            </nav>
 
-                    <div class="navbar-zone-login"><Rock:Zone Name="Login" runat="server" /></div>
-                    <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
+            <nav class="navbar-default navbar-static-side" role="navigation">
+                <div class="navbar-toggle-side-left" data-toggle="collapse" data-target=".navbar-static-side">
+                    <i class="fa fa-bars"></i>
+                </div>
+                <Rock:Zone Name="Navigation" runat="server" />
+            </nav>
+
+            <div id="content-wrapper">
+                <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+                <div class="main-content">
+                    <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+                    <div class="main-footer">
+                        <Rock:Zone Name="Footer" runat="server" />
+                    </div>
                 </div>
             </div>
 
-        </nav>
-
-       <nav class="navbar-default navbar-static-side" role="navigation">
-           <div class="navbar-toggle-side-left" data-toggle="collapse" data-target=".navbar-static-side">
-               <i class="fa fa-bars"></i>
-           </div>
-           <Rock:Zone Name="Navigation" runat="server" />
-        </nav>
-
-        <div id="content-wrapper">
-            
-
-            <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
-
-            <div class="main-content">
-                <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
-
-                <div class="main-footer">
-                    <Rock:Zone Name="Footer" runat="server" />
-                </div>
-            </div>
-
-            
         </div>
-
-        
-    </div>
-
-        
 
         <%-- controls for scriptmanager and update panel --%>
         <asp:ScriptManager ID="sManager" runat="server"/>
@@ -111,51 +109,18 @@
 		        <ProgressTemplate>
 		            <div class="updateprogress-status">
                         <div class="spinner">
-                          <div class="rect1"></div>
-                          <div class="rect2"></div>
-                          <div class="rect3"></div>
-                          <div class="rect4"></div>
-                          <div class="rect5"></div>
+                          <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
                         </div>
                     </div>
                     <div class="updateprogress-bg modal-backdrop"></div>
 		        </ProgressTemplate>
         </asp:UpdateProgress>
-
     </form>
 
     <script>
-        Sys.Application.add_load( function () {
-            $('.navbar-side > li').hover(function () {
-                if (!$('body').hasClass('zone-highlight')) {
-                    $(this).doTimeout('hover', 50, 'addClass', 'open');
-                }
-            }, function () {
-                $(this).doTimeout('hover', 50, 'removeClass', 'open');
-            });
-
-
-            // enable sidbar sub menus
-            $('.navbar-side li').click(function () {
-                $('.navbar-side li').removeClass('open');
-                $(this).addClass('open');
-            });
-
-            $('#content-wrapper').click(function () {
-                $('.navbar-side li').removeClass('open');
-            });
-
-            // show/hide sidebar nav
-            $('.navbar-toggle-side-left').click(function () {
-                if ($('.navbar-static-side').is(":visible")) {
-                    $('body').addClass('navbar-side-close').removeClass('navbar-side-open');
-                } else {
-                    $('body').addClass('navbar-side-open').removeClass('navbar-side-close');
-                }
-            });
-        });
+        Sys.Application.add_load(BindNavEvents);
+        Sys.Application.add_load(PreventNumberScroll);
     </script>
 
 </body>
-
 </html>

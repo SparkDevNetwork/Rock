@@ -29,7 +29,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -170,7 +170,7 @@ namespace Rock.Jobs
             // "Refresh Power BI Account Tokens"
             if ( dataMap.GetString( "RefreshPowerBIAccountTokens" ).AsBoolean() )
             {
-                var powerBiAccountsDefinedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() );
+                var powerBiAccountsDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() );
                 if ( powerBiAccountsDefinedType?.DefinedValues?.Any() == true )
                 {
                     foreach ( var powerBiAccount in powerBiAccountsDefinedType.DefinedValues )
@@ -224,7 +224,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="attribute">The attribute.</param>
         /// <returns></returns>
-        private static bool UseFormatValueForUpdate( CacheAttribute attribute )
+        private static bool UseFormatValueForUpdate( AttributeCache attribute )
         {
             if ( attribute.FieldType.Field.AttributeValueFieldName == "Value" )
             {
@@ -260,7 +260,7 @@ namespace Rock.Jobs
         /// <param name="modelAnalyticAttributes">The model analytic attributes.</param>
         /// <param name="analyticsTableName">Name of the analytics table.</param>
         /// <param name="modelJobStats">The model job stats.</param>
-        private void UpdateAnalyticsSchemaForModel( List<EntityField> analyticsSourceFields, List<CacheAttribute> modelAnalyticAttributes, string analyticsTableName, JobStats modelJobStats )
+        private void UpdateAnalyticsSchemaForModel( List<EntityField> analyticsSourceFields, List<AttributeCache> modelAnalyticAttributes, string analyticsTableName, JobStats modelJobStats )
         {
             var dataSet = DbService.GetDataSetSchema( $"SELECT * FROM [{analyticsTableName}] where 1=0", System.Data.CommandType.Text, null );
             var dataTable = dataSet.Tables[0];
@@ -370,7 +370,7 @@ namespace Rock.Jobs
         /// <param name="analyticsTableModelIdColumnName">Name of the analytics table model identifier column.</param>
         /// <param name="modelJobStats">The model job stats.</param>
         /// <param name="hasCurrentRowIndicator">if set to <c>true</c> [has current row indicator].</param>
-        private void UpdateModelAttributeValues( List<CacheAttribute> modelAnalyticAttributes, string analyticsTableName, string analyticsTableModelIdColumnName, JobStats modelJobStats, bool hasCurrentRowIndicator )
+        private void UpdateModelAttributeValues( List<AttributeCache> modelAnalyticAttributes, string analyticsTableName, string analyticsTableModelIdColumnName, JobStats modelJobStats, bool hasCurrentRowIndicator )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -438,9 +438,9 @@ UPDATE [{analyticsTableName}]
         {
             List<EntityField> analyticsSourcePersonHistoricalFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourcePersonHistorical ), false, false );
 
-            List<CacheAttribute> personAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Person ) )
+            List<AttributeCache> personAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Person ) )
                 .Where( a => a.FieldKind == FieldKind.Attribute && a.AttributeGuid.HasValue )
-                .Select( a => CacheAttribute.Get( a.AttributeGuid.Value ) )
+                .Select( a => AttributeCache.Get( a.AttributeGuid.Value ) )
                 .Where( a => a != null )
                 .Where( a => a.IsAnalytic )
                 .ToList();
@@ -483,7 +483,7 @@ UPDATE [{analyticsTableName}]
         /// Marks Person Analytic rows as history if the formatted value of the attribute has changed
         /// </summary>
         /// <param name="personAnalyticAttributes">The person analytic attributes.</param>
-        private void MarkPersonAsHistoryUsingFormattedValue( List<CacheAttribute> personAnalyticAttributes )
+        private void MarkPersonAsHistoryUsingFormattedValue( List<AttributeCache> personAnalyticAttributes )
         {
             List<SqlCommand> markAsHistoryUsingFormattedValueScripts = new List<SqlCommand>();
 
@@ -542,7 +542,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
         /// </summary>
         /// <param name="personAnalyticAttributes">The person analytic attributes.</param>
         /// <returns></returns>
-        private void UpdatePersonAttributeValueUsingFormattedValue( List<CacheAttribute> personAnalyticAttributes )
+        private void UpdatePersonAttributeValueUsingFormattedValue( List<AttributeCache> personAnalyticAttributes )
         {
             // Update Attributes using GetFormattedValue...
             using ( var rockContext = new RockContext() )
@@ -593,7 +593,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
         /// </summary>
         /// <param name="analyticsSourcePersonHistoricalFields">The analytics source person historical fields.</param>
         /// <param name="personAnalyticAttributes">The person analytic attributes.</param>
-        private void DoPersonMainPopulateETLs( List<EntityField> analyticsSourcePersonHistoricalFields, List<CacheAttribute> personAnalyticAttributes )
+        private void DoPersonMainPopulateETLs( List<EntityField> analyticsSourcePersonHistoricalFields, List<AttributeCache> personAnalyticAttributes )
         {
             // columns that should be considered when determining if a new History record is needed
             List<ColumnInfo> historyColumns = new List<ColumnInfo>();
@@ -886,12 +886,12 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
         private void ProcessFamilyBIAnalytics( IJobExecutionContext context, JobDataMap dataMap )
         {
             List<EntityField> analyticsSourceFamilyHistoricalFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourceFamilyHistorical ), false, false );
-            int groupTypeIdFamily = CacheGroupType.GetFamilyGroupType().Id;
+            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
             string groupTypeIdFamilyQualifier = groupTypeIdFamily.ToString();
 
-            List<CacheAttribute> familyAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Group ), false, false )
+            List<AttributeCache> familyAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Group ), false, false )
                 .Where( a => a.FieldKind == FieldKind.Attribute && a.AttributeGuid.HasValue )
-                .Select( a => CacheAttribute.Get( a.AttributeGuid.Value ) )
+                .Select( a => AttributeCache.Get( a.AttributeGuid.Value ) )
                 .Where( a => a != null )
                 .Where( a => a.EntityTypeQualifierColumn == "GroupTypeId" && a.EntityTypeQualifierValue == groupTypeIdFamilyQualifier )
                 .Where( a => a.IsAnalytic )
@@ -938,7 +938,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
         /// Marks Family Analytic rows as history if the value of the attribute has changed
         /// </summary>
         /// <param name="familyAnalyticAttributes">The family analytic attributes.</param>
-        private void MarkFamilyAsHistoryUsingAttributeValues( List<CacheAttribute> familyAnalyticAttributes )
+        private void MarkFamilyAsHistoryUsingAttributeValues( List<AttributeCache> familyAnalyticAttributes )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1005,9 +1005,9 @@ UPDATE [AnalyticsSourceFamilyHistorical]
         {
             List<EntityField> analyticsSourceCampusFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourceCampus ), false, false );
 
-            List<CacheAttribute> campusAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Campus ), false, false )
+            List<AttributeCache> campusAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Campus ), false, false )
                 .Where( a => a.FieldKind == FieldKind.Attribute && a.AttributeGuid.HasValue )
-                .Select( a => CacheAttribute.Get( a.AttributeGuid.Value ) )
+                .Select( a => AttributeCache.Get( a.AttributeGuid.Value ) )
                 .Where( a => a != null )
                 .Where( a => a.IsAnalytic )
                 .ToList();
