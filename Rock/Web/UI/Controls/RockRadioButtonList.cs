@@ -259,9 +259,9 @@ namespace Rock.Web.UI.Controls
             base.OnLoad( e );
 
             // If a radiobutton list has no items selected, then there is not anything included in
-            // the control state for this control, so on postback a value is not set, and the 
+            // the control state for this control, so on postback a value is not set, and the
             // creation of child controls will not be called.  this presents a problem when using
-            // validation since it is during the CreateChildControls that the validator is rewired 
+            // validation since it is during the CreateChildControls that the validator is rewired
             // to the control.  Because of this, always ensure child controls on a postback
             if (Page.IsPostBack)
             {
@@ -306,9 +306,33 @@ namespace Rock.Web.UI.Controls
                 cssClassBuilder.Append( " rockradiobuttonlist-vertical" );
             }
 
-            if ( this.RepeatColumns > 0 )
+            if ( this.RepeatColumns == 1 )
             {
-                cssClassBuilder.Append( " in-columns" );
+                cssClassBuilder.Append( " in-columns in-columns-1" );
+            }
+            else if( this.RepeatColumns == 2 )
+            {
+                cssClassBuilder.Append( " in-columns in-columns-2" );
+            }
+            else if( this.RepeatColumns == 3 )
+            {
+                cssClassBuilder.Append( " in-columns in-columns-3" );
+            }
+            else if( this.RepeatColumns == 4 )
+            {
+                cssClassBuilder.Append( " in-columns in-columns-4" );
+            }
+            else if( this.RepeatColumns == 5 )
+            {
+                cssClassBuilder.Append( " in-columns in-columns-5" );
+            }
+            else if( this.RepeatColumns == 6 )
+            {
+                cssClassBuilder.Append( " in-columns in-columns-6" );
+            }
+            else if( this.RepeatColumns > 6 )
+            {
+                cssClassBuilder.Append( " in-columns in-columns-6" );
             }
 
             writer.AddAttribute( "class", cssClassBuilder.ToString() );
