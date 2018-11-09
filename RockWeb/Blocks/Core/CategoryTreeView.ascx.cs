@@ -26,7 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Core
 {
@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 hfPageRouteTemplate.Value = string.Empty;
-                var pageCache = CachePage.Get( detailPageReference.PageId );
+                var pageCache = PageCache.Get( detailPageReference.PageId );
                 if ( pageCache != null )
                 {
                     var route = pageCache.PageRoutes.FirstOrDefault( a => a.Id == detailPageReference.RouteId );
@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.Core
             nbWarning.Visible = !entityTypeGuid.HasValue;
             if ( entityTypeGuid.HasValue )
             {
-                var cachedEntityType = Rock.Cache.CacheEntityType.Get( entityTypeGuid.Value );
+                var cachedEntityType = EntityTypeCache.Get( entityTypeGuid.Value );
                 if ( cachedEntityType != null )
                 {
                     Type entityType = cachedEntityType.GetEntityType();
@@ -182,7 +182,13 @@ namespace RockWeb.Blocks.Core
                     parms += string.Format( "&entityTypeId={0}", cachedEntityType.Id );
                     parms += string.Format( "&includeInactiveItems={0}", ( !tglHideInactiveItems.Checked ).ToTrueFalse() );
 
-                    var rootCategory = CacheCategory.Get( this.GetAttributeValue( "RootCategory" ).AsGuid() );
+                    Guid? rootCategoryGuid = this.GetAttributeValue( "RootCategory" ).AsGuidOrNull();
+
+                    CategoryCache rootCategory = null;
+                    if ( rootCategoryGuid.HasValue )
+                    {
+                        rootCategory = CategoryCache.Get( rootCategoryGuid.Value );
+                    }
 
                     // make sure the rootCategory matches the EntityTypeId (just in case they changed the EntityType after setting RootCategory
                     if ( rootCategory != null && rootCategory.EntityTypeId == cachedEntityType.Id )
@@ -206,7 +212,7 @@ namespace RockWeb.Blocks.Core
                     {
                         foreach ( var excludeCategoryGuid in excludeCategoriesGuids )
                         {
-                            var excludedCategory = CacheCategory.Get( excludeCategoryGuid );
+                            var excludedCategory = CategoryCache.Get( excludeCategoryGuid );
                             if ( excludedCategory != null )
                             {
                                 excludedCategoriesIds.Add( excludedCategory.Id );
@@ -249,7 +255,7 @@ namespace RockWeb.Blocks.Core
                     lbAddCategoryChild.Enabled = false;
                     lbAddItem.Enabled = false;
 
-                    CacheCategory selectedCategory = null;
+                    CategoryCache selectedCategory = null;
 
                     if ( !string.IsNullOrEmpty( selectedNodeId ) )
                     {
@@ -258,7 +264,7 @@ namespace RockWeb.Blocks.Core
 
                         if ( selectedEntityType.Equals( "category" ) )
                         {
-                            selectedCategory = CacheCategory.Get( itemId.GetValueOrDefault() );
+                            selectedCategory = CategoryCache.Get( itemId.GetValueOrDefault() );
                             if ( selectedCategory != null && !canEditBlock && selectedCategory.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                             {
                                 // Show the action buttons if user has edit rights to category
@@ -281,7 +287,7 @@ namespace RockWeb.Blocks.Core
                                     lbAddCategoryChild.Enabled = false;
                                     if ( entity.CategoryId.HasValue )
                                     {
-                                        selectedCategory = CacheCategory.Get( entity.CategoryId.Value );
+                                        selectedCategory = CategoryCache.Get( entity.CategoryId.Value );
                                         if ( selectedCategory != null )
                                         {
                                             string categoryExpandedID = CategoryNodePrefix + selectedCategory.Id.ToString();
@@ -421,7 +427,7 @@ namespace RockWeb.Blocks.Core
         protected override void ShowSettings()
         {
             mdCategoryTreeConfig.Visible = true;
-            var entityType = CacheEntityType.Get( this.GetAttributeValue( "EntityType" ).AsGuid() );
+            var entityType = EntityTypeCache.Get( this.GetAttributeValue( "EntityType" ).AsGuid() );
             var rootCategory = new CategoryService( new RockContext() ).Get( this.GetAttributeValue( "RootCategory" ).AsGuid() );
             
 
@@ -464,14 +470,14 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdCategoryTreeConfig_SaveClick( object sender, EventArgs e )
         {
-            var selectedCategory = CacheCategory.Get( cpRootCategory.SelectedValue.AsInteger() );
+            var selectedCategory = CategoryCache.Get( cpRootCategory.SelectedValue.AsInteger() );
             this.SetAttributeValue( "RootCategory", selectedCategory != null ? selectedCategory.Guid.ToString() : string.Empty );
 
             var excludedCategoryIds = cpExcludeCategories.SelectedValuesAsInt();
             var excludedCategoryGuids = new List<Guid>();
             foreach (int excludedCategoryId in excludedCategoryIds)
             {
-                var excludedCategory = CacheCategory.Get( excludedCategoryId );
+                var excludedCategory = CategoryCache.Get( excludedCategoryId );
                 if (excludedCategory != null)
                 {
                     excludedCategoryGuids.Add( excludedCategory.Guid );

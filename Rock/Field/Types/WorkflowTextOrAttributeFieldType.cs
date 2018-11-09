@@ -20,7 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -87,6 +87,7 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( ATTRIBUTE_FIELD_TYPES_KEY, new ConfigurationValue( "Limit Attributes by Field Type", "Optional list of field type classes for limiting selection to attributes using those field types (e.g. 'Rock.Field.Types.PersonFieldType|Rock.Field.Types.GroupFieldType').", "" ) );
+            configurationValues.Add( TEXTBOX_ROWS_KEY, new ConfigurationValue( "Rows", "The number of rows to display (default is 1).", "" ) );
 
             if ( controls != null )
             {
@@ -101,7 +102,7 @@ namespace Rock.Field.Types
                 {
                     if ( controls[1] != null && controls[1] is NumberBox )
                     {
-                        configurationValues[TEXTBOX_ROWS_KEY].Value = ( (NumberBox)controls[0] ).Text;
+                        configurationValues[TEXTBOX_ROWS_KEY].Value = ( (NumberBox)controls[1] ).Text;
                     }
                 }
             }
@@ -156,7 +157,7 @@ namespace Rock.Field.Types
 
                 if ( string.IsNullOrWhiteSpace( formattedValue ) )
                 {
-                    var attributeCache = CacheAttribute.Get( guid );
+                    var attributeCache = AttributeCache.Get( guid );
                     if ( attributeCache != null )
                     {
                         formattedValue = attributeCache.Name;
@@ -207,7 +208,7 @@ namespace Rock.Field.Types
             {
                 foreach ( var attribute in attributes )
                 {
-                    var fieldType = CacheFieldType.Get( attribute.Value.FieldTypeId );
+                    var fieldType = FieldTypeCache.Get( attribute.Value.FieldTypeId );
                     if ( !filteredFieldTypes.Any() || filteredFieldTypes.Contains( fieldType.Class, StringComparer.OrdinalIgnoreCase ) )
                     {
                         editControl.DropDownList.Items.Add( new ListItem( attribute.Value.Name, attribute.Key.ToString() ) );
@@ -232,7 +233,7 @@ namespace Rock.Field.Types
                 return editControl.SelectedValue;
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>

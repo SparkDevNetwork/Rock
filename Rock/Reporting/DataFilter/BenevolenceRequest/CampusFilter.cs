@@ -22,7 +22,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.BenevolenceRequest
@@ -132,7 +132,7 @@ function() {{
             if (selectionValues.Length >= 1)
             {
                 Guid campusGuid = selectionValues[0].AsGuid();
-                var campus = CacheCampus.Get(campusGuid);
+                var campus = CampusCache.Get(campusGuid);
                 if (campus != null)
                 {
                     result = "Campus: " + campus.Name;
@@ -152,7 +152,7 @@ function() {{
             campusPicker.ID = filterControl.ID + "_0";
             campusPicker.Label = string.Empty;
             campusPicker.CssClass = $"{ControlClassName}";
-            campusPicker.Campuses = CacheCampus.All(IncludeInactive);
+            campusPicker.Campuses = CampusCache.All(IncludeInactive);
 
             filterControl.Controls.Add(campusPicker);
 
@@ -182,7 +182,7 @@ function() {{
             var campusId = (controls[0] as CampusPicker).SelectedCampusId;
             if (campusId.HasValue)
             {
-                var campus = CacheCampus.Get(campusId.Value);
+                var campus = CampusCache.Get(campusId.Value);
                 if (campus != null)
                 {
                     return campus.Guid.ToString();
@@ -204,7 +204,7 @@ function() {{
             if (selectionValues.Length >= 1)
             {
                 var campusPicker = controls[0] as CampusPicker;
-                var selectedCampus = CacheCampus.Get(selectionValues[0].AsGuid());
+                var selectedCampus = CampusCache.Get(selectionValues[0].AsGuid());
                 if (selectedCampus != null)
                 {
                     campusPicker.SelectedCampusId = selectedCampus.Id;
@@ -239,7 +239,7 @@ function() {{
 
                 if (campusId.HasValue)
                 {
-                    var selectedCampus = CacheCampus.Get(campusId.Value);
+                    var selectedCampus = CampusCache.Get(campusId.Value);
                     if (selectedCampus != null)
                     {
                         selectionValues[0] = selectedCampus.Guid.ToString();
@@ -266,7 +266,7 @@ function() {{
             string[] selectionValues = selection.Split('|');
             if (selectionValues.Length >= 1)
             {
-                var campus = CacheCampus.Get(selectionValues[0].AsGuid());
+                var campus = CampusCache.Get(selectionValues[0].AsGuid());
                 if (campus == null)
                 {
                     return null;

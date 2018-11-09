@@ -17,6 +17,7 @@
 namespace Rock.Migrations
 {
     using System;
+    using System.Collections.Generic;
     using System.Data.Entity;
     using System.Data.Entity.Migrations;
     using System.Linq;
@@ -31,14 +32,8 @@ namespace Rock.Migrations
             CommandTimeout = 300;
         }
 
-        protected override void Seed(Rock.Data.RockContext context)
+        protected override void Seed( Rock.Data.RockContext context )
         {
-            // In V7, the Communication and CommunicationTemplate models were updated to move data stored as JSON in a varchar(max) 
-            // column (MediumDataJson) to specific columns. This method will update all of the communication templates, and the most 
-            // recent 50 communications. A job will runto convert the remaining communications. This can be removed after every 
-            // customer has migrated past v7
-            Jobs.MigrateCommunicationMediumData.UpdateCommunicationRecords( true, 50, null );
-
             // MP: Populate AnalyticsSourceDate (if it isn't already)
             if ( !context.AnalyticsSourceDates.AsQueryable().Any() )
             {

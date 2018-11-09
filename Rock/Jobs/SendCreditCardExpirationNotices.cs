@@ -27,8 +27,9 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
+using System.Web;
 
 namespace Rock.Jobs
 {
@@ -70,14 +71,19 @@ namespace Rock.Jobs
                 systemEmail = emailService.Get( systemEmailGuid.Value );
             }
 
+            if (systemEmail == null)
+            {
+                throw new Exception( "Expiring credit card email is missing." );
+            }
+
             // Fetch the configured Workflow once if one was set, we'll use it later.
             Guid? workflowGuid = dataMap.GetString( "Workflow" ).AsGuidOrNull();
-            CacheWorkflowType workflowType = null;
+            WorkflowTypeCache workflowType = null;
             var workflowService = new WorkflowService( rockContext );
 
             if ( workflowGuid != null )
             {
-                workflowType = CacheWorkflowType.Get( workflowGuid.Value );
+                workflowType = WorkflowTypeCache.Get( workflowGuid.Value );
             }
 
             var qry = new FinancialScheduledTransactionService( rockContext )
@@ -91,6 +97,8 @@ namespace Rock.Jobs
             int month = now.Month;
             int year = now.Year;
             int counter = 0;
+            var errors = new List<string>();
+
             foreach ( var transaction in qry )
             {
                 int? expirationMonthDecrypted = Encryption.DecryptString( transaction.FinancialPaymentDetail.ExpirationMonthEncrypted ).AsIntegerOrNull();
@@ -123,6 +131,12 @@ namespace Rock.Jobs
                         var recipients = new List<RecipientData>();
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                         var person = transaction.AuthorizedPersonAlias.Person;
+
+                        if ( !person.IsEmailActive || person.Email.IsNullOrWhiteSpace() || person.EmailPreference == EmailPreference.DoNotEmail )
+                        {
+                            continue;
+                        }
+
                         mergeFields.Add( "Person", person );
                         mergeFields.Add( "Card", acctNum );
                         mergeFields.Add( "Expiring", expirationDate );
@@ -130,7 +144,10 @@ namespace Rock.Jobs
 
                         var emailMessage = new RockEmailMessage( systemEmail.Guid );
                         emailMessage.SetRecipients( recipients );
-                        emailMessage.Send();
+
+                        var emailErrors = new List<string>();
+                        emailMessage.Send(out emailErrors);
+                        errors.AddRange( emailErrors );
 
                         // Start workflow for this person
                         if ( workflowType != null )
@@ -148,6 +165,20 @@ namespace Rock.Jobs
             }
 
             context.Result = string.Format( "{0} scheduled credit card transactions were examined with {1} notice(s) sent.", qry.Count(), counter );
+
+            if ( errors.Any() )
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine();
+                sb.Append( string.Format( "{0} Errors: ", errors.Count() ) );
+                errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
+                string errorMessage = sb.ToString();
+                context.Result += errorMessage;
+                var exception = new Exception( errorMessage );
+                HttpContext context2 = HttpContext.Current;
+                ExceptionLogService.LogException( exception, context2 );
+                throw exception;
+            }
         }
 
         /// <summary>
@@ -157,7 +188,7 @@ namespace Rock.Jobs
         /// <param name="workflowType">Type of the workflow.</param>
         /// <param name="attributes">The attributes.</param>
         /// <param name="workflowNameSuffix">The workflow instance name suffix (the part that is tacked onto the end fo the name to distinguish one instance from another).</param>
-        protected void StartWorkflow( WorkflowService workflowService, CacheWorkflowType workflowType, Dictionary<string, string> attributes, string workflowNameSuffix )
+        protected void StartWorkflow( WorkflowService workflowService, WorkflowTypeCache workflowType, Dictionary<string, string> attributes, string workflowNameSuffix )
         {
             // launch workflow if configured
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
@@ -170,7 +201,7 @@ namespace Rock.Jobs
                     workflow.SetAttributeValue( attribute.Key, attribute.Value );
                 }
 
-                // lauch workflow
+                // launch workflow
                 List<string> workflowErrors;
                 workflowService.Process( workflow, out workflowErrors );
             }

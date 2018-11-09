@@ -59,7 +59,7 @@
                             <Rock:RockLiteralField ID="lPersonName" HeaderText="Name" />
                             <Rock:RockLiteralField ID="lAddress" HeaderText="Address" />
                             <Rock:DateTimeField DataField="TransactionDateTime" HeaderText="Date" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
-                            <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
+                            <Rock:RockLiteralField ID="lTransactionDetailAmount" HeaderText="Amount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                         </Columns>
                     </Rock:Grid>
                 </asp:Panel>

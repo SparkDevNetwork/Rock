@@ -22,7 +22,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.PersonProfile.Badge
@@ -57,14 +57,14 @@ namespace Rock.PersonProfile.Badge
   <i class='badge-icon fa fa-heartbeat' style='color: {{ iconColor }}'></i>
 </div>
 " )]
-    public class Giving : BadgeComponentModern
+    public class Giving : BadgeComponent
     {
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
             var accountGuids = this.GetAttributeValue( badge, "Accounts" )?.SplitDelimitedValues().AsGuidList();
             var minimumAmount = this.GetAttributeValue( badge, "MinimumAmount" )?.AsDecimalOrNull();
@@ -84,7 +84,7 @@ namespace Rock.PersonProfile.Badge
                 // fetch all the possible PersonAliasIds that have this GivingID to help optimize the SQL
                 var personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == this.Person.GivingId ).Select( a => a.Id ).ToList();
 
-                var transactionTypeContributionValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+                var transactionTypeContributionValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
                 var qry = new FinancialTransactionService( rockContext ).Queryable().Where( a => a.TransactionTypeValueId == transactionTypeContributionValueId );
 
                 // get the transactions for the person or all the members in the person's giving group (Family)

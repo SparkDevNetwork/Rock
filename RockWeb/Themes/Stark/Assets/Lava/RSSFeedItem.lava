@@ -9,13 +9,13 @@
 			{{ SelectedItem.updated }}
 		{% else -%}
 			{{ SelectedItem.pubDate }}
-		{% endif -%}		
+		{% endif -%}
 	</div>
 	<br />
 	<div class="rss-item-content">
 		{{ SelectedItem.content_encoded }}
 	</div>
-	
+
 	<ul class="rss-item-pager">
 		{% if PreviousItem -%}
 			<li class="previous">
@@ -25,7 +25,7 @@
 		{% if NextItem -%}
 			<li class="next">
 				<a href="{{ NextItem.detailPageUrl }}" class="btn btn-default">Next <i class="fa fa-angle-double-right"></i> </a>
-			</li>		
+			</li>
 		{% endif -%}
 	</ul>
 </div>

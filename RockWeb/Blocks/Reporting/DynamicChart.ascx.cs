@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
@@ -92,7 +92,7 @@ order by YValue desc
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            var pageReference = new Rock.Web.PageReference( this.CachePage.Id );
+            var pageReference = new Rock.Web.PageReference( this.PageCache.Id );
             pageReference.QueryString = new System.Collections.Specialized.NameValueCollection();
             pageReference.QueryString.Add( this.Request.QueryString );
             pageReference.QueryString.Add( "GetChartData", "true" );
@@ -214,16 +214,6 @@ function labelFormatter(label, series) {
             /// The y value.
             /// </value>
             public decimal? YValueTotal { get; set; }
-
-            /// <summary>
-            /// Gets the series identifier (obsolete)
-            /// NOTE: Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name
-            /// </summary>
-            /// <value>
-            /// The series identifier.
-            /// </value>
-            [Obsolete( "Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name" )]
-            public string SeriesId { get; set; }
 
             /// <summary>
             /// Gets or sets the name of the series. This will be the default name of the series if MetricValuePartitionEntityIds can't be resolved
@@ -405,7 +395,7 @@ function labelFormatter(label, series) {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-            mergeFields.AddOrReplace( "CurrentPage", this.CachePage );
+            mergeFields.AddOrReplace( "CurrentPage", this.PageCache );
 
             return mergeFields;
         }

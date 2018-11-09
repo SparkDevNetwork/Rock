@@ -99,6 +99,9 @@ namespace Rock.Client
         /// <summary />
         public int? ScheduleId { get; set; }
 
+        /// <summary />
+        public int? StatusValueId { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -153,6 +156,7 @@ namespace Rock.Client
             this.ParentGroupId = source.ParentGroupId;
             this.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             this.ScheduleId = source.ScheduleId;
+            this.StatusValueId = source.StatusValueId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -194,6 +198,9 @@ namespace Rock.Client
 
         /// <summary />
         public Schedule Schedule { get; set; }
+
+        /// <summary />
+        public DefinedValue StatusValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

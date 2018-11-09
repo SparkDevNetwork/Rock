@@ -1,76 +1,107 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContentChannelItemView.ascx.cs" Inherits="RockWeb.Blocks.Cms.ContentChannelItemView" %>
 
+<script type="text/javascript">
+    function clearDialog() {
+        $('#rock-config-cancel-trigger').click();
+    }
+</script>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <div class="panel panel-block list-as-blocks">
-            <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-bullhorn"></i> My Content</h1>
+        <%-- View Panel --%>
+        <asp:Panel ID="pnlView" runat="server">
+            <Rock:NotificationBox ID="nbAlert" runat="server" NotificationBoxType="Danger" />
+            <asp:Literal ID="lContentOutput" runat="server" />
+        </asp:Panel>
 
-                <div class="pull-right">
-                    <Rock:Toggle ID="tglStatus" runat="server" OnText="Pending" ActiveButtonCssClass="btn-success" ButtonSizeCssClass="btn-xs" OffText="All Items" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
-                </div>
+        <%-- Custom Block Settings --%>
+        <asp:Panel ID="pnlSettings" runat="server" Visible="false">
+            <Rock:ModalDialog ID="mdSettings" runat="server" OnSaveClick="mdSettings_SaveClick" Title="Channel Item Configuration" OnCancelScript="clearDialog();">
+                <Content>
 
-            </div>
-            <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:RockDropDownList ID="ddlContentChannel" runat="server" Label="Content Channel" Help="Limits content channel items to a specific channel and enables Social Media Settings to be configurable, or leave blank to leave unrestricted." AutoPostBack="true" OnSelectedIndexChanged="ddlContentChannel_SelectedIndexChanged" />
+                            <Rock:RockCheckBoxList ID="cblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" Help="Include items with the following status." />
+                            <Rock:CodeEditor ID="ceLavaTemplate" runat="server" Label="Lava Template" Help="The template to use when formatting the content channel item." EditorMode="Lava" EditorTheme="Rock" EditorHeight="200" />
+                        </div>
+                    </div>
 
-                <ul>
-                    <asp:Repeater ID="rptChannels" runat="server">
-                        <ItemTemplate>
-                            <li class='<%# Eval("Class") %>'>
-                                <asp:LinkButton ID="lbChannel" runat="server" CommandArgument='<%# Eval("Channel.Id") %>' CommandName="Display">
-                                    <i class='<%# Eval("Channel.IconCssClass") %>'></i>
-                                    <h3><%# Eval("Channel.Name") %> </h3>
-                                    <div class="notification">
-                                        <span class="label label-danger"><%# ((int)Eval("Count")).ToString("#,###,###") %></span>
-                                    </div>
-                                </asp:LinkButton>
-                            </li>
-                        </ItemTemplate>
-                    </asp:Repeater>
-                </ul>
+                    <Rock:PanelWidget ID="pwVisitorSettings" runat="server" Title="Visitor Settings">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <fieldset>
+                                    <legend>Interactions</legend>
+                                    <Rock:RockCheckBox ID="cbLogInteractions" runat="server" Label="Log Item Interaction" Help="Create an interaction for the current content channel item" OnCheckedChanged="cbLogInteractions_CheckedChanged" AutoPostBack="true" />
+                                    <Rock:RockCheckBox ID="cbWriteInteractionOnlyIfIndividualLoggedIn" runat="server" Label="Write Interaction Only If Individual Logged In" Help="Set to true to only launch a workflow for logged in users, or set to false to launch for both logged in and anonymous users." />
+                                </fieldset>
+                            </div>
+                            <div class="col-md-6">
+                                <fieldset>
+                                    <legend>Workflows</legend>
+                                    <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Workflow Type" Help="The workflow type to launch when the content is viewed." OnSelectItem="wtpWorkflowType_SelectItem" />
+                                    <Rock:RockCheckBox ID="cbLaunchWorkflowOnlyIfIndividualLoggedIn" runat="server" Label="Launch Workflow Only If Individual Logged In" Help="Set to true to only launch a workflow for logged in users, or set to false to launch for both logged in and anonymous users." />
+                                    <Rock:RockDropDownList ID="ddlLaunchWorkflowCondition" runat="server" Label="Launch Workflow" />
+                                </fieldset>
+                            </div>
+                        </div>
+                    </Rock:PanelWidget>
 
-            </div>
-        </div>
+                    <Rock:PanelWidget ID="pwSocialMediaSettings" runat="server" Title="Social Media Settings">
+                        <Rock:RockDropDownList ID="ddlMetaDescriptionAttribute" Label="Meta Description Attribute" Help="Attribute to use for the page's meta description." runat="server" />
 
-        <div class="panel panel-block js-grid-header" id="divItemPanel" runat="server" visible="false">
-            <div class="panel-heading">
-                <div class="panel-title">
-                    <i class="fa fa-bullhorn"></i> <asp:Literal ID="lContentChannelItems" runat="server"></asp:Literal></h1>
-                </div>
-            </div>
-            <div class="panel-body">
-                <div class="grid grid-panel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockDropDownList ID="ddlOpenGraphTitleAttribute" Label="Facebook Title Attribute" Help="If you don't want to use the post title for sharing the post on Facebook but instead want another title. [og:title]" runat="server" />
+                                <Rock:RockDropDownList ID="ddlOpenGraphDescriptionAttribute" Label="Facebook Description Attribute" Help="If you don't want to use the meta description for sharing the post on Facebook but instead want another title. [og:description]" runat="server" />
+                                <Rock:RockDropDownList ID="ddlOpenGraphImageAttribute" Label="Facebook Image Attribute" Help="If you want to override the image used on Facebook for this post. [og:image]" runat="server" />
+                                <Rock:RockDropDownList ID="ddlOpenGraphType" Label="Open Graph Object Type" runat="server">
+                                    <asp:ListItem />
+                                    <asp:ListItem Text="article" />
+                                    <asp:ListItem Text="website" />
+                                    <asp:ListItem Text="book" />
+                                    <asp:ListItem Text="place" />
+                                    <asp:ListItem Text="product" />
+                                    <asp:ListItem Text="profile" />
+                                    <asp:ListItem Text="video.episode" />
+                                    <asp:ListItem Text="video.movie" />
+                                    <asp:ListItem Text="video.other" />
+                                    <asp:ListItem Text="video.tv_show" />
+                                </Rock:RockDropDownList>
+                            </div>
 
-                    <Rock:GridFilter ID="gfFilter" runat="server">
-                        <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
-                        <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
-                        <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title" />
-                        <Rock:PersonPicker ID="ppCreatedBy" runat="server" Label="Created By" />
-                        <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
-                    </Rock:GridFilter>               
+                            <div class="col-md-6">
+                                <Rock:RockDropDownList ID="ddlTwitterTitleAttribute" Label="Twitter Title Attribute" Help="If you don't want to use the post title for sharing the post on Twitter but instead want another title." runat="server" />
+                                <Rock:RockDropDownList ID="ddlTwitterDescriptionAttribute" Label="Twitter Description Attribute" Help="If you don't want to use the meta description for sharing the post on Twitter but instead want another title." runat="server" />
+                                <Rock:RockDropDownList ID="ddlTwitterImageAttribute" Label="Twitter Image Attribute" Help="If you want to override the image used on Facebook for this post." runat="server" />
+                                <Rock:RockDropDownList ID="ddlTwitterCard" Label="Twitter Card Type" runat="server">
+                                    <asp:ListItem Text="" Value="none" />
+                                    <asp:ListItem Text="Summary" Value="summary" />
+                                    <asp:ListItem Text="Summary with large image" Value="summary_large_image" />
+                                </Rock:RockDropDownList>
+                            </div>
+                        </div>
+                    </Rock:PanelWidget>
 
-                    <Rock:ModalAlert ID="mdGridWarning" runat="server" />
+                    <Rock:PanelWidget ID="pwAdvancedSettings" runat="server" Title="Advanced Settings">
+                        <Rock:RockTextBox ID="tbContentChannelQueryParameter" runat="server" Label="Custom Query Parameter" Help="Specify the URL parameter to use to determine which Content Channel Item to show, or leave blank to use whatever the first parameter is.
+The type of the value will determine how the content channel item will be determined as follows:
 
-                    <Rock:Grid ID="gContentChannelItems" runat="server" AllowSorting="true" OnRowSelected="gContentChannelItems_Edit" />
+Integer - ContentChannelItem Id
+String - ContentChannelItem Slug
+Guid - ContentChannelItem Guid" />
 
-                </div>
-            </div>
-        </div>
+                        <Rock:NumberBox ID="nbDetailPage" runat="server" Label="Detail Page ID" CssClass="input-width-sm" Help="Page ID used to view a content item." />
+                        <Rock:NumberBox ID="nbOutputCacheDuration" runat="server" Label="Output Cache Duration" MinimumValue="0" CssClass="input-width-sm" Help="Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value." />
+                        <Rock:NumberBox ID="nbItemCacheDuration" runat="server" Label="Item Cache Duration" MinimumValue="0" CssClass="input-width-sm" Help="Number of seconds to cache the content item specified by the parameter." />
+                        <Rock:RockCheckBoxList ID="cblCacheTags" runat="server" Label="Cache Tags" Help="Cached tags are used to link cached content so that it can be expired as a group" RepeatDirection="Horizontal" />
+                        <Rock:RockCheckBox ID="cbSetPageTitle" runat="server" Label="Set Page Title" Help="Determines if the block should set the page title with the channel name or content item." />
+                    </Rock:PanelWidget>
+                </Content>
 
-        <script>
-            $(".my-contentItems .list-as-blocks li").on("click", function () {
-                $(".my-contentItems .list-as-blocks li").removeClass('active');
-                $(this).addClass('active');
-            });
+            </Rock:ModalDialog>
+        </asp:Panel>
 
-            function scrollToGrid() {
-                if (!$('.js-grid-header').visible(true)) {
-                    $('html, body').animate({
-                        scrollTop: $('.js-grid-header').offset().top + 'px'
-                    }, 'fast');
-                }
-            }
-        </script>
     </ContentTemplate>
 </asp:UpdatePanel>

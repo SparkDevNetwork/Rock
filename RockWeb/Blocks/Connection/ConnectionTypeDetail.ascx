@@ -9,7 +9,7 @@
 <asp:UpdatePanel ID="upConnectionType" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDeleteConfirm" runat="server" CssClass="panel panel-body" Visible="false">
-            <Rock:NotificationBox ID="nbDeleteConfirm" runat="server" NotificationBoxType="Warning" Text="Deleting a site will delete all the layouts and pages associated with the site. Are you sure you want to delete the site?" />
+            <Rock:NotificationBox ID="nbDeleteConfirm" runat="server" NotificationBoxType="Warning" Text="Deleting a Connection Type will delete all the Connection Opportunities associated with the Connection Type. Are you sure you want to delete the Connection Type?" />
             <asp:LinkButton ID="btnDeleteConfirm" runat="server" Text="Confirm Delete" CssClass="btn btn-danger" OnClick="btnDeleteConfirm_Click" />
             <asp:LinkButton ID="btnDeleteCancel" runat="server" Text="Cancel" CssClass="btn btn-primary" OnClick="btnDeleteCancel_Click" />
         </asp:Panel>
@@ -26,7 +26,7 @@
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 <Rock:NotificationBox ID="nbRequired" runat="server" NotificationBoxType="Danger" Text="A default connection status and at least one activity are required." Visible="false" />
-                <asp:ValidationSummary ID="valConnectionTypeDetail" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="valConnectionTypeDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div id="pnlViewDetails" runat="server">
                     <p class="description">
@@ -38,6 +38,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
+                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="btnCopy_Click" ToolTip="Copy Connection Type" />
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                         </span>
                     </div>
@@ -75,7 +76,7 @@
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
                                     <Rock:RockBoundField DataField="FieldType" HeaderText="Field Type" />
-                                    <Rock:BoolField DataField="AllowSearch" HeaderText="Allow Search" HeaderStyle-HorizontalAlign="Center" />
+                                    <Rock:BoolField DataField="AllowSearch" HeaderText="Allow Search" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                                     <Rock:EditField OnClick="gAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gAttributes_Delete" />
                                 </Columns>
@@ -129,7 +130,7 @@
             </div>
         </asp:Panel>
 
-        <Rock:ModalAlert ID="modalAlert" runat="server" />
+       <Rock:ModalAlert ID="mdCopy" runat="server" />
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
@@ -174,7 +175,7 @@
 
                 <asp:HiddenField ID="hfAddConnectionWorkflowGuid" runat="server" />
 
-                <asp:ValidationSummary ID="valConnectionWorkflowSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="ConnectionWorkflow" />
+                <asp:ValidationSummary ID="valConnectionWorkflowSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="ConnectionWorkflow" />
 
                 <div class="row">
                     <div class="col-md-6">

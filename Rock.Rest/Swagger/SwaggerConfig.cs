@@ -39,12 +39,32 @@ namespace Rock.Rest.Swagger
 
             var swaggerRoute = "api/doc/{apiVersion}";
             var swaggerUiRoute = "api/docs/{*assetPath}";
-            
+
             var apiControllerTypes = Rock.Reflection.FindTypes( typeof( ApiController ) );
-            var restAssemblies = apiControllerTypes.Select( a => a.Value.Assembly?.ManifestModule?.Name ).Distinct().Where(a => a != null).ToList();
+            var restAssemblyNames = apiControllerTypes.Select( a =>
+            {
+                if ( a.Value.Assembly?.ManifestModule?.Name == "<Unknown>" )
+                {
+                    return a.Value.Assembly?.ManifestModule?.ScopeName;
+                }
+                else
+                {
+                    return a.Value.Assembly?.ManifestModule?.Name;
+                }
+
+            } ).Distinct().Where(a => a != null).ToList();
             var rockWebBinPath = Path.Combine( System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath, "bin" );
 
-            List<string> xmlDocs = restAssemblies.Select( a => Path.Combine( rockWebBinPath, Path.ChangeExtension( a, "xml" ) ) ).Where( a => File.Exists( a ) ).ToList();
+            List<string> xmlDocs;
+            try
+            {
+                xmlDocs = restAssemblyNames.Select( a => Path.Combine( rockWebBinPath, Path.ChangeExtension( a, "xml" ) ) ).Where( a => File.Exists( a ) ).ToList();
+            }
+            catch (Exception ex)
+            {
+                Rock.Model.ExceptionLogService.LogException( new Exception("Error loading XML Docs for REST Api plugins", ex ) );
+                xmlDocs = new List<string>();
+            }
 
             config
                 .EnableSwagger( swaggerRoute, c =>

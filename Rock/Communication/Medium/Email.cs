@@ -32,7 +32,7 @@ namespace Rock.Communication.Medium
     [Export( typeof( MediumComponent ) )]
     [ExportMetadata( "ComponentName", "Email" )]
 
-    [CodeEditorField( "Unsubscribe HTML", "The HTML to inject into email contents when the communication is a Bulk Communication.  Contents will be placed wherever the 'Unsubcribe HTML' merge field is used, or if not used, at the end of the email in email contents.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
+    [CodeEditorField( "Unsubscribe HTML", "The HTML to inject into email contents when the communication is a Bulk Communication.  Contents will be placed wherever the 'Unsubscribe HTML' merge field is used, or if not used, at the end of the email in email contents.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
 <a href='{{ 'Global' | Attribute:'PublicApplicationRoot' }}Unsubscribe/{{ Person.UrlEncodedKey }}'>Unsubscribe</a>", "", 2 )]
     [CodeEditorField( "Non-HTML Content", "The text to display for email clients that do not support html content.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
 Unfortunately, you cannot view the contents of this email as it contains formatting that is not supported 
@@ -69,7 +69,8 @@ You can view an online version of this email here:
         /// <param name="communication">The communication.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        [Obsolete( "The GetCommunication now creates the HTML Preview directly" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "The GetCommunication now creates the HTML Preview directly", true )]
         public override string GetHtmlPreview( Model.Communication communication, Person person )
         {
             throw new NotSupportedException();
@@ -80,7 +81,8 @@ You can view an online version of this email here:
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <returns></returns>
-        [Obsolete( "The CommunicationDetail block now creates the details" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "The CommunicationDetail block now creates the details", true )]
         public override string GetMessageDetails( Model.Communication communication )
         {
             throw new NotSupportedException();
@@ -93,7 +95,8 @@ You can view an online version of this email here:
         /// <value>
         /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete( "All mediums now support bulk communications" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "All mediums now support bulk communications", true )]
         public override bool SupportsBulkCommunication
         {
             get

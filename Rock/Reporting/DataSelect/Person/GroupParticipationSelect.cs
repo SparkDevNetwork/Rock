@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -247,7 +247,7 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         private const string _CtlFormat = "ddlFormat";
-        private const string _CtlDataView = "ddlDataView";
+        private const string _CtlDataView = "dvpDataView";
         private const string _CtlRoleType = "ddlRoleType";
         private const string _CtlGroupStatus = "ddlGroupStatus";
 
@@ -270,11 +270,11 @@ namespace Rock.Reporting.DataSelect.Person
             parentControl.Controls.Add( ddlFormat );
 
             // Define Control: Group Data View Picker
-            var ddlDataView = new DataViewPicker();
-            ddlDataView.ID = parentControl.GetChildControlInstanceName( _CtlDataView );
-            ddlDataView.Label = "Participates in Groups";
-            ddlDataView.Help = "A Data View that filters the Groups included in the result. If no value is selected, any Groups that would be visible in a Group List will be included.";
-            parentControl.Controls.Add( ddlDataView );
+            var dvpDataView = new DataViewItemPicker();
+            dvpDataView.ID = parentControl.GetChildControlInstanceName( _CtlDataView );
+            dvpDataView.Label = "Participates in Groups";
+            dvpDataView.Help = "A Data View that filters the Groups included in the result. If no value is selected, any Groups that would be visible in a Group List will be included.";
+            parentControl.Controls.Add( dvpDataView );
 
             // Define Control: Role Type DropDown List
             var ddlRoleType = new RockDropDownList();
@@ -297,10 +297,10 @@ namespace Rock.Reporting.DataSelect.Person
             parentControl.Controls.Add( ddlGroupMemberStatus );
 
             // Populate the Data View Picker
-            int entityTypeId = CacheEntityType.Get( typeof( Model.Group ) ).Id;
-            ddlDataView.EntityTypeId = entityTypeId;
+            int entityTypeId = EntityTypeCache.Get( typeof( Model.Group ) ).Id;
+            dvpDataView.EntityTypeId = entityTypeId;
 
-            return new Control[] { ddlDataView, ddlRoleType, ddlFormat, ddlGroupMemberStatus };
+            return new Control[] { dvpDataView, ddlRoleType, ddlFormat, ddlGroupMemberStatus };
         }
 
         /// <summary>
@@ -311,7 +311,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override string GetSelection( Control[] controls )
         {
-            var ddlDataView = controls.GetByName<DataViewPicker>( _CtlDataView );
+            var dvpDataView = controls.GetByName<DataViewItemPicker>( _CtlDataView );
             var ddlRoleType = controls.GetByName<RockDropDownList>( _CtlRoleType );
             var ddlFormat = controls.GetByName<RockDropDownList>( _CtlFormat );
             var ddlGroupMemberStatus = controls.GetByName<RockDropDownList>( _CtlGroupStatus );
@@ -320,7 +320,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             settings.MemberStatus = ddlGroupMemberStatus.SelectedValue.ConvertToEnumOrNull<GroupMemberStatus>();
             settings.RoleType = ddlRoleType.SelectedValue.ConvertToEnumOrNull<RoleTypeSpecifier>();
-            settings.DataViewGuid = DataComponentSettingsHelper.GetDataViewGuid( ddlDataView.SelectedValue );
+            settings.DataViewGuid = DataComponentSettingsHelper.GetDataViewGuid( dvpDataView.SelectedValue );
             settings.ListFormat = ddlFormat.SelectedValue.ConvertToEnum<ListFormatSpecifier>( ListFormatSpecifier.GroupAndRole );
 
             return settings.ToSelectionString();
@@ -333,7 +333,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Control[] controls, string selection )
         {
-            var ddlDataView = controls.GetByName<DataViewPicker>( _CtlDataView );
+            var dvpDataView = controls.GetByName<DataViewItemPicker>( _CtlDataView );
             var ddlRoleType = controls.GetByName<RockDropDownList>( _CtlRoleType );
             var ddlFormat = controls.GetByName<RockDropDownList>( _CtlFormat );
             var ddlGroupMemberStatus = controls.GetByName<RockDropDownList>( _CtlGroupStatus );
@@ -352,11 +352,7 @@ namespace Rock.Reporting.DataSelect.Person
                 var dsService = new DataViewService( new RockContext() );
 
                 var dataView = dsService.Get( settings.DataViewGuid.Value );
-
-                if ( dataView != null )
-                {
-                    ddlDataView.SelectedValue = dataView.Id.ToString();
-                }
+                dvpDataView.SetValue( dataView );
             }
 
             ddlRoleType.SelectedValue = settings.RoleType.ToStringSafe();

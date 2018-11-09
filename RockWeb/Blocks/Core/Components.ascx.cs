@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Core
                 {
                     aSecure.Visible = true;
 
-                    var entityType = CacheEntityType.Get( componentDescription.Type );
+                    var entityType = EntityTypeCache.Get( componentDescription.Type );
                     string url = Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done", entityType.Id, 0, componentDescription.Name + " Security" ) );
                     aSecure.HRef = "javascript: Rock.controls.modal.show($(this), '" + url + "')";
                 }
@@ -343,7 +343,7 @@ namespace RockWeb.Blocks.Core
             foreach ( var component in components )
             {
                 Type type = component.Value.Value.GetType();
-                if ( Rock.Attribute.Helper.UpdateAttributes( type, Rock.Cache.CacheEntityType.GetId( type.FullName ), string.Empty, string.Empty, rockContext ) )
+                if ( Rock.Attribute.Helper.UpdateAttributes( type, EntityTypeCache.GetId( type.FullName ), string.Empty, string.Empty, rockContext ) )
                 {
                     component.Value.Value.LoadAttributes( rockContext );
                 }

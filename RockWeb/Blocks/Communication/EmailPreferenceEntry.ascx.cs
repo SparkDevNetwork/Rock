@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -46,20 +46,23 @@ namespace RockWeb.Blocks.Communication
     [MemoField( "No Emails Text", "Text to display for the 'No Emails' option.", false, "I am still involved with {{ 'Global' | Attribute:'OrganizationName' }}, but do not want to receive emails of ANY kind.", "", 4, null, 3, true )]
     [MemoField( "Not Involved Text", "Text to display for the 'Not Involved' option.", false, " I am no longer involved with {{ 'Global' | Attribute:'OrganizationName' }}.", "", 5, null, 3, true )]
     [MemoField( "Success Text", "Text to display after user submits selection.", false, "<h4>Thank You</h4>We have saved your email preference.", "", 6, null, 3, true )]
-    [CodeEditorField( "Unsubscribe Success Text", "Text to display after user unsubscribes from communication lists.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false,
-        @"<h4>Thank You</h4>
-We have saved your unsubscribed you from the following lists:
-<ul>
-{% for unsubscribedGroup in UnsubscribedGroups %}
-  <li>{{ unsubscribedGroup | Attribute:'PublicName' | Default:unsubscribedGroup.Name }}</li>
-{% endfor %}
-</ul>",
-        order: 7 )]
+    [CodeEditorField( "Unsubscribe Success Text", "Text to display after user unsubscribes from communication lists.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, UNSUBSCRIBE_SUCCESS_TEXT_DEFAULT_VALUE, order: 7 )]
     [TextField( "Reasons to Exclude", "A delimited list of the Inactive Reasons to exclude from Reason list", false, "No Activity,Deceased", "", 8 )]
     [GroupCategoryField( "Communication List Categories", "Select the categories of the communication lists to display for unsubscribe, or select none to show all that the user is authorized to view.", true, Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST, defaultValue: Rock.SystemGuid.Category.GROUPTYPE_COMMUNICATIONLIST_PUBLIC, required: false, order: 9 )]
     [CustomCheckboxListField( "Available Options", "Select the options that should be available to a user when they are updating their email preference.", "Unsubscribe,Update Email Address,Emails Allowed,No Mass Emails,No Emails,Not Involved", true, "Unsubscribe,Update Email Address,Emails Allowed,No Mass Emails,No Emails,Not Involved", Order = 10 )]
     public partial class EmailPreferenceEntry : RockBlock
     {
+        #region Attribute Field Constants
+        private const string UNSUBSCRIBE_SUCCESS_TEXT_DEFAULT_VALUE = @"<h4>Thank You</h4>
+We have unsubscribed you from the following lists:
+<ul>
+{% for unsubscribedGroup in UnsubscribedGroups %}
+  <li>{{ unsubscribedGroup | Attribute:'PublicName' | Default:unsubscribedGroup.Name }}</li>
+{% endfor %}
+</ul>";
+
+        #endregion Attribute Field Constants
+
         #region Fields
 
         private const string UNSUBSCRIBE = "Unsubscribe";
@@ -168,7 +171,7 @@ We have saved your unsubscribed you from the following lists:
                                 }
                             case EmailPreference.DoNotEmail:
                                 {
-                                    if ( _person.RecordStatusValueId != CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id )
+                                    if ( _person.RecordStatusValueId != DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id )
                                     {
                                         if ( rbEmailPreferenceDoNotEmail.Visible )
                                         {
@@ -265,19 +268,19 @@ We have saved your unsubscribed you from the following lists:
 
                     if ( rbNotInvolved.Checked )
                     {
-                        var newRecordStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+                        var newRecordStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
                         if ( newRecordStatus != null )
                         {
                             person.RecordStatusValueId = newRecordStatus.Id;
                         }
 
-                        var newInactiveReason = CacheDefinedValue.Get( ddlInactiveReason.SelectedValue.AsInteger() );
+                        var newInactiveReason = DefinedValueCache.Get( ddlInactiveReason.SelectedValue.AsInteger() );
                         if ( newInactiveReason != null )
                         {
                             person.RecordStatusReasonValueId = newInactiveReason.Id;
                         }
 
-                        var newReviewReason = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_REVIEW_REASON_SELF_INACTIVATED );
+                        var newReviewReason = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_REVIEW_REASON_SELF_INACTIVATED );
                         if ( newReviewReason != null )
                         {
                             person.ReviewReasonValueId = newReviewReason.Id;
@@ -293,7 +296,7 @@ We have saved your unsubscribed you from the following lists:
                     }
                     else
                     {
-                        var newRecordStatus = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
+                        var newRecordStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
                         if ( newRecordStatus != null )
                         {
                             person.RecordStatusValueId = newRecordStatus.Id;
@@ -434,7 +437,7 @@ We have saved your unsubscribed you from the following lists:
                 var groupMemberService = new GroupMemberService( rockContext );
                 var categoryService = new CategoryService( rockContext );
 
-                int communicationListGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
+                int communicationListGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
 
                 // Get a list of all the Active CommunicationLists that the person is an active member of
                 var communicationListQry = groupService.Queryable()
@@ -511,7 +514,7 @@ We have saved your unsubscribed you from the following lists:
             // NOTE: OnLoad will set the default selection based the communication.ListGroup and/or the person's current email preference
 
             var excludeReasons = GetAttributeValue( "ReasonstoExclude" ).SplitDelimitedValues( false ).ToList();
-            var ds = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() ).DefinedValues
+            var ds = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() ).DefinedValues
                 .Where( v => !excludeReasons.Contains( v.Value, StringComparer.OrdinalIgnoreCase ) )
                 .Select( v => new
                 {

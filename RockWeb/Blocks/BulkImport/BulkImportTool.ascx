@@ -53,7 +53,7 @@
                 <h1 class="panel-title"><i class="fa fa-upload"></i>&nbsp;Bulk Import Tool</h1>
             </div>
             <div class="panel-body">
-                <asp:ValidationSummary ID="vsBulkImport" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation"/>
+                <asp:ValidationSummary ID="vsBulkImport" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation"/>
                 <Rock:RockTextBox ID="tbForeignSystemKey" runat="server" Required="true" Label="Foreign System Key" Help="The Key used to uniquely identify the source system. For example, use the domain of the source system's website: 'somechurch.ccbchurch.com'. Click 'Check Foreign System Key' to see what keys have already been used or to see if the key has already been used." />
                 <asp:LinkButton ID="btnCheckForeignSystemKey" runat="server" CssClass="btn btn-xs btn-action margin-b-md" Text="Check Foreign System Key" CausesValidation="false" OnClick="btnCheckForeignSystemKey_Click" />
                 <Rock:NotificationBox ID="nbCheckForeignSystemKey" runat="server" CssClass="margin-b-md" NotificationBoxType="Warning" Visible="false" Dismissable="true" />
@@ -83,7 +83,7 @@
                             <%-- TODO. Set Visible to True once this is implemented --%>
                             <div style="display:none">
                                 <Rock:RockRadioButton ID="rbMostRecentWins" runat="server" Text="Most Recent Wins" GroupName="ImportOptions" />
-                                <Rock:HelpBlock ID="hbMostRecentWins" runat="server" Visible="true">The lastest record will be used. Note, when determining the last update date from Rock the date will reflect the latest date any information about a  was updated. The import is not able to update each data point (phone number, email,  attribute) separately.</Rock:HelpBlock>
+                                <Rock:HelpBlock ID="hbMostRecentWins" runat="server" Visible="true">The latest record will be used. Note, when determining the last update date from Rock the date will reflect the latest date any information about a  was updated. The import is not able to update each data point (phone number, email,  attribute) separately.</Rock:HelpBlock>
                             </div>
 
                         </asp:Panel>

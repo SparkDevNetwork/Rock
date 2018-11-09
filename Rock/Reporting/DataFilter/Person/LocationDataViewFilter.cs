@@ -26,7 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -200,7 +200,7 @@ function() {
 
                 if (settings.LocationTypeGuid.HasValue)
                 {
-                    locationTypeName = CacheDefinedValue.Get( settings.LocationTypeGuid.Value, context ).Value;
+                    locationTypeName = DefinedValueCache.Get( settings.LocationTypeGuid.Value, context ).Value;
                 }
 
                 result = string.Format( "Location {0} is in filter: {1}",
@@ -211,7 +211,7 @@ function() {
             return result;
         }
 
-        private const string _CtlDataView = "ddlDataView";
+        private const string _CtlDataView = "dvpDataView";
         private const string _CtlLocationType = "ddlLocationType";
 
         /// <summary>
@@ -223,12 +223,12 @@ function() {
         public override Control[] CreateChildControls( Type entityType, FilterField parentControl )
         {
             // Define Control: Location Data View Picker
-            var ddlDataView = new DataViewPicker();
-            ddlDataView.ID = parentControl.GetChildControlInstanceName( _CtlDataView );
-            ddlDataView.Label = "Connected to Locations";
-            ddlDataView.Help = "A Data View that provides the list of Locations to which the Person may be connected.";
+            var dvpDataView = new DataViewItemPicker();
+            dvpDataView.ID = parentControl.GetChildControlInstanceName( _CtlDataView );
+            dvpDataView.Label = "Connected to Locations";
+            dvpDataView.Help = "A Data View that provides the list of Locations to which the Person may be connected.";
 
-            parentControl.Controls.Add( ddlDataView );
+            parentControl.Controls.Add( dvpDataView );
 
             // Define Control: Location Type DropDown List
             var ddlLocationType = new RockDropDownList();
@@ -236,7 +236,7 @@ function() {
             ddlLocationType.Label = "Address Type";
             ddlLocationType.Help = "Specifies the type of Address the filter will be applied to. If no value is selected, all of the Person's Addresses will be considered.";
 
-            var familyLocations = CacheGroupType.GetFamilyGroupType().LocationTypeValues.OrderBy( a => a.Order ).ThenBy( a => a.Value );
+            var familyLocations = GroupTypeCache.GetFamilyGroupType().LocationTypeValues.OrderBy( a => a.Order ).ThenBy( a => a.Value );
 
             foreach (var value in familyLocations)
             {
@@ -248,10 +248,10 @@ function() {
             parentControl.Controls.Add( ddlLocationType );
 
             // Populate the Data View Picker
-            int entityTypeId = CacheEntityType.Get( typeof(Location) ).Id;
-            ddlDataView.EntityTypeId = entityTypeId;
+            int entityTypeId = EntityTypeCache.Get( typeof(Location) ).Id;
+            dvpDataView.EntityTypeId = entityTypeId;
 
-            return new Control[] {ddlDataView, ddlLocationType};
+            return new Control[] {dvpDataView, ddlLocationType};
         }
 
         /// <summary>
@@ -265,13 +265,13 @@ function() {
         /// </returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            var ddlDataView = controls.GetByName<DataViewPicker>( _CtlDataView );
+            var dvpDataView = controls.GetByName<DataViewItemPicker>( _CtlDataView );
             var ddlLocationType = controls.GetByName<RockDropDownList>( _CtlLocationType );
 
             var settings = new FilterSettings();
 
             settings.LocationTypeGuid = ddlLocationType.SelectedValue.AsGuidOrNull();
-            settings.DataViewGuid = DataComponentSettingsHelper.GetDataViewGuid( ddlDataView.SelectedValue );
+            settings.DataViewGuid = DataComponentSettingsHelper.GetDataViewGuid( dvpDataView.SelectedValue );
 
             return settings.ToSelectionString();
         }
@@ -285,7 +285,7 @@ function() {
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            var ddlDataView = controls.GetByName<DataViewPicker>( _CtlDataView );
+            var dvpDataView = controls.GetByName<DataViewItemPicker>( _CtlDataView );
             var ddlLocationType = controls.GetByName<RockDropDownList>( _CtlLocationType );
 
             var settings = new FilterSettings( selection );
@@ -295,7 +295,7 @@ function() {
                 return;
             }
 
-            ddlDataView.SelectedValue = DataComponentSettingsHelper.GetDataViewId( settings.DataViewGuid ).ToStringSafe();
+            dvpDataView.SetValue( DataComponentSettingsHelper.GetDataViewId( settings.DataViewGuid ) );
             ddlLocationType.SelectedValue = settings.LocationTypeGuid.ToStringSafe();
         }
 
@@ -330,7 +330,7 @@ function() {
             }
 
             // Get all the Family Groups that have a Location matching one of the candidate Locations.
-            int familyGroupTypeId = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
+            int familyGroupTypeId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
 
             var groupLocationsQuery = new GroupLocationService( context ).Queryable()
                                                                          .Where( gl => gl.Group.GroupTypeId == familyGroupTypeId && locationQuery.Any( l => l.Id == gl.LocationId ) );
@@ -338,7 +338,7 @@ function() {
             // If a Location Type is specified, apply the filter condition.
             if (settings.LocationTypeGuid.HasValue)
             {
-                int groupLocationTypeId = CacheDefinedValue.Get( settings.LocationTypeGuid.Value ).Id;
+                int groupLocationTypeId = DefinedValueCache.Get( settings.LocationTypeGuid.Value ).Id;
 
                 groupLocationsQuery = groupLocationsQuery.Where( x => x.GroupLocationTypeValue.Id == groupLocationTypeId );
             }

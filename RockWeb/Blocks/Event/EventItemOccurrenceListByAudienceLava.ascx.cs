@@ -26,7 +26,7 @@ using System.Data.Entity;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Security;
@@ -131,7 +131,7 @@ namespace RockWeb.Blocks.Event
                 // filter occurrences for campus (always include the "All Campuses" events)
                 if ( GetAttributeValue( "UseCampusContext" ).AsBoolean() )
                 {
-                    var campusEntityType = CacheEntityType.Get( "Rock.Model.Campus" );
+                    var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
                     var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
                     if ( contextCampus != null )
@@ -145,7 +145,7 @@ namespace RockWeb.Blocks.Event
                     if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "Campuses" ) ) )
                     {
                         var selectedCampusGuids = GetAttributeValue( "Campuses" ).Split( ',' ).AsGuidList();
-                        var selectedCampusIds = selectedCampusGuids.Select( a => CacheCampus.Get( a ) ).Where( a => a != null ).Select( a => a.Id );
+                        var selectedCampusIds = selectedCampusGuids.Select( a => CampusCache.Get( a ) ).Where( a => a != null ).Select( a => a.Id );
 
                         // If an EventItemOccurrence's CampusId is null, then the occurrence is an 'All Campuses' event occurrence, so include those
                         qry = qry.Where( e => e.CampusId == null || selectedCampusIds.Contains( e.CampusId.Value ) );
@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     // default show all future
-                    itemOccurrences.RemoveAll( o => o.GetStartTimes( RockDateTime.Now, DateTime.Now.AddDays( 365 ) ).Count() == 0 );
+                    itemOccurrences.RemoveAll( o => o.GetStartTimes( RockDateTime.Now, RockDateTime.Now.AddDays( 365 ) ).Count() == 0 );
                 }
 
                 // limit results

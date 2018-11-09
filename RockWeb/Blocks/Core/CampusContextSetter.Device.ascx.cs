@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Core
                     // set the context
                     if ( campus != null )
                     {
-                        var campusEntityType = CacheEntityType.Get( "Rock.Model.Campus" );
+                        var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
                         var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
                         if ( currentCampus == null || currentCampus.Id != campus.Id )

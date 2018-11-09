@@ -76,6 +76,7 @@ namespace Rock
         {
             Route route = new Route( routeName, new Rock.Web.RockRouteHandler() );
             route.DataTokens = new RouteValueDictionary();
+            route.DataTokens.Add( "RouteName", routeName );
             route.DataTokens.Add( "PageRoutes", pageAndRouteIds );
             routes.Add( route );
         }

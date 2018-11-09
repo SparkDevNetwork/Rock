@@ -21,7 +21,7 @@ using System.Linq;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Transactions
 {
@@ -110,7 +110,7 @@ namespace Rock.Transactions
                         var transactionEntityList = new List<IEntity>();
                         foreach ( var transactionDetailEntity in transactionDetailEntityList)
                         {
-                            var transactionEntityType = CacheEntityType.Get( transactionDetailEntity.EntityTypeId.Value );
+                            var transactionEntityType = EntityTypeCache.Get( transactionDetailEntity.EntityTypeId.Value );
                             if ( transactionEntityType != null )
                             {
                                 var dbContext = Reflection.GetDbContextForEntityType( transactionEntityType.GetEntityType() );
@@ -132,7 +132,9 @@ namespace Rock.Transactions
 
                         var emailMessage = new RockEmailMessage( SystemEmailGuid );
                         emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
-                        emailMessage.Send();
+                        var errors = new List<string>();
+                        // errors will be logged by send
+                        emailMessage.Send(out errors);
                     }
                 }
             }

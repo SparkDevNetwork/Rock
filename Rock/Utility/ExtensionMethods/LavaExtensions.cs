@@ -24,10 +24,10 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using DotLiquid;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -78,7 +78,7 @@ namespace Rock
                 var globalAttributes = new Dictionary<string, object>();
 
                 // Lava Help Text does special stuff for GlobalAttribute, but it still needs the list of possible Global Attribute MergeFields to generate the help text
-                globalAttributes.Add( "GlobalAttribute", CacheGlobalAttributes.GetLegacyMergeFields( null ) );
+                globalAttributes.Add( "GlobalAttribute", GlobalAttributesCache.GetLegacyMergeFields( null ) );
                 lavaDebugPanel.Append( formatLavaDebugInfo( globalAttributes.LiquidizeChildren( 0, rockContext ) ) );
             }
 
@@ -138,11 +138,11 @@ namespace Rock
                 entityType = entityType.BaseType;
             }
 
-            // If this is an IEntity, check to see if it's already been liquidized in prev heirarchy. If so, just return string indicating "--See Previous Entry--"
+            // If this is an IEntity, check to see if it's already been liquidized in prev hierarchy. If so, just return string indicating "--See Previous Entry--"
             if ( myObject is IEntity )
             {
                 var entity = myObject as IEntity;
-                var entityTypeCache = CacheEntityType.Get( entityType, false, rockContext );
+                var entityTypeCache = EntityTypeCache.Get( entityType, false, rockContext );
                 if ( entity != null && entityTypeCache != null )
                 {
                     if ( entityHistory == null )
@@ -541,7 +541,7 @@ namespace Rock
         /// <returns></returns>
         public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride )
         {
-            var enabledCommands = CacheGlobalAttributes.Get().GetValue( "DefaultEnabledLavaCommands" );
+            var enabledCommands = GlobalAttributesCache.Get().GetValue( "DefaultEnabledLavaCommands" );
             return content.ResolveMergeFields( mergeObjects, currentPersonOverride, enabledCommands );
         }
 
@@ -562,10 +562,10 @@ namespace Rock
                     return content ?? string.Empty;
                 }
 
-                // If there have not been any EnabledLavaCommands explicitely set, then use the global defaults.
+                // If there have not been any EnabledLavaCommands explicitly set, then use the global defaults.
                 if ( enabledLavaCommands == null )
                 {
-                    enabledLavaCommands = CacheGlobalAttributes.Value( "DefaultEnabledLavaCommands" );
+                    enabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" );
                 }
 
                 Template template = GetTemplate( content );
@@ -575,6 +575,7 @@ namespace Rock
             }
             catch ( Exception ex )
             {
+                ExceptionLogService.LogException( ex );
                 return "Error resolving Lava merge fields: " + ex.Message;
             }
         }
@@ -589,7 +590,7 @@ namespace Rock
             string val = ( s as string );
             if ( !string.IsNullOrEmpty( val ) )
             {
-                // we techically want to XML encode, but Html Encode does the trick
+                // we technically want to XML encode, but Html Encode does the trick
                 return val.EncodeHtml();
             }
             else
@@ -609,7 +610,7 @@ namespace Rock
         /// <returns></returns>
         public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, bool encodeStrings = false, bool throwExceptionOnErrors = false )
         {
-            var enabledCommands = CacheGlobalAttributes.Get().GetValue( "DefaultEnabledLavaCommands" );
+            var enabledCommands = GlobalAttributesCache.Get().GetValue( "DefaultEnabledLavaCommands" );
             return content.ResolveMergeFields( mergeObjects, enabledCommands, encodeStrings, throwExceptionOnErrors );
         }
 
@@ -631,7 +632,7 @@ namespace Rock
                     return content ?? string.Empty;
                 }
 
-                if ( CacheGlobalAttributes.Get().LavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning && mergeObjects.ContainsKey( "GlobalAttribute" ) )
+                if ( GlobalAttributesCache.Get().LavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning && mergeObjects.ContainsKey( "GlobalAttribute" ) )
                 {
                     if ( hasLegacyGlobalAttributeLavaMergeFields.IsMatch( content ) )
                     {
@@ -680,6 +681,7 @@ namespace Rock
                 }
                 else
                 {
+                    ExceptionLogService.LogException( ex );
                     return "Error resolving Lava merge fields: " + ex.Message;
                 }
             }
@@ -699,7 +701,7 @@ namespace Rock
             }
 
             // Get template from cache
-            var template = CacheLavaTemplate.Get( content ).Template;
+            var template = LavaTemplateCache.Get( content ).Template;
 
             // Clear any previous errors
             template.Errors.Clear();

@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Fundraising
                 // Setup for being able to copy text to clipboard
                 RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
                 string script = string.Format( @"
-    new Clipboard('#{0}');
+    new ClipboardJS('#{0}');
     $('#{0}').tooltip();
 ", btnCopyToClipboard.ClientID );
                 ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
@@ -193,7 +193,7 @@ namespace RockWeb.Blocks.Fundraising
 
                 groupMember.LoadAttributes( rockContext );
                 groupMember.Group.LoadAttributes( rockContext );
-                var opportunityType = CacheDefinedValue.Get( groupMember.Group.GetAttributeValue( "OpportunityType" ).AsGuid() );
+                var opportunityType = DefinedValueCache.Get( groupMember.Group.GetAttributeValue( "OpportunityType" ).AsGuid() );
 
                 lProfileTitle.Text = string.Format(
                     "{0} Profile for {1}",
@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Fundraising
             // Person Attributes (the ones they picked in the Block Settings)
             phPersonAttributes.Controls.Clear();
 
-            var personAttributes = this.GetAttributeValue( "PersonAttributes" ).SplitDelimitedValues().AsGuidList().Select( a => CacheAttribute.Get( a ) );
+            var personAttributes = this.GetAttributeValue( "PersonAttributes" ).SplitDelimitedValues().AsGuidList().Select( a => AttributeCache.Get( a ) );
             if ( personAttributes.Any() )
             {
                 var person = groupMember.Person;
@@ -290,7 +290,7 @@ namespace RockWeb.Blocks.Fundraising
             Rock.Attribute.Helper.GetEditValues( phGroupMemberAttributes, groupMember );
 
             // Save selected Person Attributes (The ones picked in Block Settings)
-            var personAttributes = this.GetAttributeValue( "PersonAttributes" ).SplitDelimitedValues().AsGuidList().Select( a => CacheAttribute.Get( a ) );
+            var personAttributes = this.GetAttributeValue( "PersonAttributes" ).SplitDelimitedValues().AsGuidList().Select( a => AttributeCache.Get( a ) );
             if ( personAttributes.Any() )
             {
                 person.LoadAttributes( rockContext );
@@ -440,7 +440,7 @@ namespace RockWeb.Blocks.Fundraising
             btnContributionsTab.Visible = showContributions;
 
             // Progress
-            var entityTypeIdGroupMember = CacheEntityType.GetId<Rock.Model.GroupMember>();
+            var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
 
             var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
                         .Where( d => d.EntityTypeId == entityTypeIdGroupMember
@@ -458,13 +458,13 @@ namespace RockWeb.Blocks.Fundraising
 
             mergeFields.Add( "AmountLeft", amountLeft );
             mergeFields.Add( "PercentMet", percentMet );
-         
+
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "GroupId", hfGroupId.Value );
             queryParams.Add( "GroupMemberId", hfGroupMemberId.Value );
             mergeFields.Add( "MakeDonationUrl", LinkedPageUrl( "DonationPage", queryParams ));
 
-            var opportunityType = CacheDefinedValue.Get( group.GetAttributeValue( "OpportunityType" ).AsGuid() );
+            var opportunityType = DefinedValueCache.Get( group.GetAttributeValue( "OpportunityType" ).AsGuid() );
 
             string makeDonationButtonText = null;
             if ( groupMember.PersonId == this.CurrentPersonId )
@@ -524,18 +524,16 @@ namespace RockWeb.Blocks.Fundraising
             BindContributionsGrid();
 
             // Tab:Comments
-            var noteType = CacheNoteType.Get( this.GetAttributeValue( "NoteType" ).AsGuid() );
+            var noteType = NoteTypeCache.Get( this.GetAttributeValue( "NoteType" ).AsGuid() );
             if ( noteType != null )
             {
-                notesCommentsTimeline.NoteTypes = new List<CacheNoteType> { noteType };
+                notesCommentsTimeline.NoteOptions.SetNoteTypes( new List<NoteTypeCache> { noteType } );
             }
 
-            notesCommentsTimeline.EntityId = groupMember.Id;
+            notesCommentsTimeline.NoteOptions.EntityId = groupMember.Id;
 
             // show the Add button on comments for any logged in person
             notesCommentsTimeline.AddAllowed = true;
-
-            notesCommentsTimeline.RebuildNotes( true );
 
             var enableCommenting = group.GetAttributeValue( "EnableCommenting" ).AsBoolean();
 
@@ -568,7 +566,7 @@ namespace RockWeb.Blocks.Fundraising
         protected void BindContributionsGrid()
         {
             var rockContext = new RockContext();
-            var entityTypeIdGroupMember = CacheEntityType.GetId<Rock.Model.GroupMember>();
+            var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
             int groupMemberId = hfGroupMemberId.Value.AsInteger();
 
             var financialTransactionQry = new FinancialTransactionService( rockContext ).Queryable();
@@ -589,9 +587,12 @@ namespace RockWeb.Blocks.Fundraising
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gContributions_RowDataBound( object sender, GridViewRowEventArgs e )
         {
+			var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
+            int groupMemberId = hfGroupMemberId.Value.AsInteger();
+			
             FinancialTransaction financialTransaction = e.Row.DataItem as FinancialTransaction;
-            if ( financialTransaction != null && 
-                financialTransaction.AuthorizedPersonAlias != null && 
+            if ( financialTransaction != null &&
+                financialTransaction.AuthorizedPersonAlias != null &&
                 financialTransaction.AuthorizedPersonAlias.Person != null )
             {
 	            Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;
@@ -607,6 +608,16 @@ namespace RockWeb.Blocks.Fundraising
 	            {
 	                lPersonName.Text = financialTransaction.ShowAsAnonymous ? "Anonymous" : financialTransaction.AuthorizedPersonAlias.Person.FullName;
 	            }
+				
+				Literal lTransactionDetailAmount = e.Row.FindControl( "lTransactionDetailAmount" ) as Literal;
+                if ( lTransactionDetailAmount != null )
+                {
+					var amount = financialTransaction.TransactionDetails
+                        .Where( d => d.EntityTypeId.HasValue && d.EntityTypeId == entityTypeIdGroupMember && d.EntityId == groupMemberId )
+                        .Sum( d => ( decimal? ) d.Amount )
+                        .ToString();
+                    lTransactionDetailAmount.Text = string.Format( "${0}", amount );
+                }
 	        }
         }
 

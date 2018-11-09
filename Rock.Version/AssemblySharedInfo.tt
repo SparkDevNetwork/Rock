@@ -3,7 +3,7 @@
 <#@ output extension=".cs" #>
 <#
      int major = 1; 
-     int minor = 8; 
+     int minor = 9; 
      int build = 0; 
      int revision = 0; 
   

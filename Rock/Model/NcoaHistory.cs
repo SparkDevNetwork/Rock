@@ -15,14 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using Rock.Data;
 
 namespace Rock.Model
@@ -76,10 +72,10 @@ namespace Rock.Model
         public MoveType MoveType { get; set; }
 
         /// <summary>
-        /// Gets or sets the ncoa type.
+        /// Gets or sets the NCOA type.
         /// </summary>
         /// <value>
-        /// The Ncoa type.
+        /// The NCOA type.
         /// </value>
         [DataMember]
         public NcoaType NcoaType { get; set; }
@@ -268,19 +264,19 @@ namespace Rock.Model
         public Processed Processed { get; set; }
 
         /// <summary>
-        /// Gets or sets the date and time for Ncoa Run.
+        /// Gets or sets the date and time for NCOA Run.
         /// </summary>
         /// <value>
-        /// The date and time for Ncoa Run.
+        /// The date and time for NCOA Run.
         /// </value>
         [DataMember]
         public DateTime NcoaRunDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the note for Ncoa.
+        /// Gets or sets the note for NCOA.
         /// </summary>
         /// <value>
-        /// The note for Ncoa.
+        /// The note for NCOA.
         /// </value>
         [DataMember]
         public string NcoaNote { get; set; }
@@ -289,7 +285,7 @@ namespace Rock.Model
 
         #region Virtual Properties
 
-        // removed this to elminate a hard link between the ncoa and the person alias, since this data leaves the system and comes
+        // removed this to eliminate a hard link between the NCOA and the person alias, since this data leaves the system and comes
         // back at a later date it's best not to rely on the person alias being there
 
         /*/// <summary>
@@ -333,7 +329,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// Represents the ncoa type.
+    /// Represents the NCOA type.
     /// </summary>
     public enum NcoaType
     {
@@ -466,7 +462,17 @@ namespace Rock.Model
         /// <summary>
         /// Manual Update Required
         /// </summary>
-        ManualUpdateRequired = 2
+        ManualUpdateRequired = 2,
+
+        /// <summary>
+        /// Manual update required or not processed
+        /// </summary>
+        ManualUpdateRequiredOrNotProcessed = 3,
+
+        /// <summary>
+        /// All records
+        /// </summary>
+        All = 4
     }
 
     #endregion
@@ -483,7 +489,7 @@ namespace Rock.Model
         /// </summary>
         public NcoaHistoryConfiguration()
         {
-            // removed this to elminate a hard link between the ncoa and the person alias, since this data leaves the system and comes
+            // removed this to eliminate a hard link between the NCOA and the person alias, since this data leaves the system and comes
             // back at a later date it's best not to rely on the person alias being there
             // this.HasRequired( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( false );
             this.Property( p => p.MoveDistance ).HasPrecision( 6, 2 );

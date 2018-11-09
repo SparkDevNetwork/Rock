@@ -12,7 +12,7 @@
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="gfSettings" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
                         <Rock:GroupTypePicker ID="gtpGroupType" runat="server" Label="Group Type" />
-                        <Rock:RockDropDownList ID="ddlGroupTypePurpose" runat="server" Label="Group Type Purpose"/>
+                        <Rock:DefinedValuePicker ID="dvpGroupTypePurpose" runat="server" Label="Group Type Purpose"/>
                         <Rock:RockDropDownList ID="ddlActiveFilter" runat="server" Label="Active Status">
                             <asp:ListItem Text="[All]" Value="all"></asp:ListItem>
                             <asp:ListItem Text="Active" Value="active"></asp:ListItem>
@@ -45,10 +45,14 @@
         </div>
           <Rock:ModalDialog ID="modalDetails" runat="server" Title="Add to Group" ValidationGroup="GroupName">
             <Content>
+                <div>
+                    <Rock:NotificationBox ID="nbModalDetailsMessage" runat="server" NotificationBoxType="Danger" Title="Error" Visible="false" />
+                    <Rock:NotificationBox ID="nbModalDetailSyncMessage" runat="server" NotificationBoxType="Info" Title="Synced Group! " Visible="false" Text="The selected group uses Group Sync. Only roles that are not being synced are listed. Please make sure this person needs to be added manually instead of meeting the sync conditions."></Rock:NotificationBox>
+                </div>
                 <div class="row">
                     <div class="col-md-4">
-                        <Rock:NotificationBox ID="nbModalDetailsMessage" runat="server" NotificationBoxType="Danger" Title="Error" Visible="false" />
-                        <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Group" DataTextField="Name" DataValueField="Id" ValidationGroup="GroupName" EnhanceForLongLists="true" />
+                        <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Group" DataTextField="Name" DataValueField="Id" ValidationGroup="GroupName" EnhanceForLongLists="true" OnSelectedIndexChanged="ddlGroup_SelectedIndexChanged" AutoPostBack="true" />
+                        <Rock:RockDropDownList ID="ddlGroupRole" runat="server" Label="Role" DataTextField="Name" DataValueField="Id" ValidationGroup="GroupName" EnhanceForLongLists="false" AutoPostBack="false" />
                     </div>
                 </div>
 

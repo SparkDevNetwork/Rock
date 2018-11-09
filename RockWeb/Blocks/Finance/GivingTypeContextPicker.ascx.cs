@@ -22,7 +22,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Finance
 
                 personAndBusinesses.Insert( 0, this.CurrentPerson );
 
-                var currentPersonOrBusiness = RockPage.GetCurrentContext( CacheEntityType.Get<Rock.Model.Person>() );
+                var currentPersonOrBusiness = RockPage.GetCurrentContext( EntityTypeCache.Get<Rock.Model.Person>() );
 
                 if ( currentPersonOrBusiness != null )
                 {

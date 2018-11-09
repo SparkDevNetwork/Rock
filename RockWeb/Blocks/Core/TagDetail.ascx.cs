@@ -24,7 +24,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Core
             _canConfigure = IsUserAuthorized( Authorization.EDIT );
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Group.FriendlyTypeName );
-            btnSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.Tag ) ).Id;
+            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Tag ) ).Id;
         }
 
         /// <summary>

@@ -42,6 +42,8 @@ namespace Rock.Utility.Settings.DataAutomation
             NoPersonAttributesDays = 500;
 
             IsNoInteractionsEnabled = true;
+
+            RecordsOlderThan = 180;
         }
 
         /// <summary>
@@ -163,6 +165,14 @@ namespace Rock.Utility.Settings.DataAutomation
         /// The no interactions.
         /// </value>
         public List<InteractionItem> NoInteractions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the records older than.
+        /// </summary>
+        /// <value>
+        /// The records older than.
+        /// </value>
+        public int RecordsOlderThan { get; set; }
     }
 
 }

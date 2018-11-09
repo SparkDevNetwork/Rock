@@ -24,7 +24,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -64,7 +64,7 @@ namespace Rock.Workflow.Action
             Guid? fromGuid = GetAttributeValue( action, "From" ).AsGuidOrNull();
             if ( fromGuid.HasValue )
             {
-                var fromValue = CacheDefinedValue.Get( fromGuid.Value, rockContext );
+                var fromValue = DefinedValueCache.Get( fromGuid.Value, rockContext );
                 if ( fromValue != null )
                 {
                     fromId = fromValue.Id;
@@ -77,7 +77,7 @@ namespace Rock.Workflow.Action
             Guid guid = toValue.AsGuid();
             if ( !guid.IsEmpty() )
             {
-                var attribute = CacheAttribute.Get( guid, rockContext );
+                var attribute = AttributeCache.Get( guid, rockContext );
                 if ( attribute != null )
                 {
                     string toAttributeValue = action.GetWorklowAttributeValue( guid );
@@ -192,7 +192,7 @@ namespace Rock.Workflow.Action
             Guid? messageGuid = message.AsGuidOrNull();
             if ( messageGuid.HasValue )
             {
-                var attribute = CacheAttribute.Get( messageGuid.Value, rockContext );
+                var attribute = AttributeCache.Get( messageGuid.Value, rockContext );
                 if ( attribute != null )
                 {
                     string messageAttributeValue = action.GetWorklowAttributeValue( messageGuid.Value );
@@ -215,7 +215,7 @@ namespace Rock.Workflow.Action
             {
                 var smsMessage = new RockSMSMessage();
                 smsMessage.SetRecipients( recipients );
-                smsMessage.FromNumber = CacheDefinedValue.Get( fromId.Value );
+                smsMessage.FromNumber = DefinedValueCache.Get( fromId.Value );
                 smsMessage.Message = message;
                 if ( binaryFile != null )
                 {

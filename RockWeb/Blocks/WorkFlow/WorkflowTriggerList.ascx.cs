@@ -217,15 +217,19 @@ namespace RockWeb.Blocks.WorkFlow
                     value = "<i>Any value</i>";
                 }
 
-                value += " <i class='fa fa-angle-double-right'></i> ";
+                if ( workflowTrigger.WorkflowTriggerValueChangeType == WorkflowTriggerValueChangeType.ChangeFromTo )
+                {
 
-                if ( !string.IsNullOrWhiteSpace( workflowTrigger.EntityTypeQualifierValue ) )
-                {
-                    value += workflowTrigger.EntityTypeQualifierValue.EncodeHtml();
-                }
-                else
-                {
-                    value += "<i>Any value</i>";
+                    value += " <i class='fa fa-angle-double-right'></i> ";
+
+                    if ( !string.IsNullOrWhiteSpace( workflowTrigger.EntityTypeQualifierValue ) )
+                    {
+                        value += workflowTrigger.EntityTypeQualifierValue.EncodeHtml();
+                    }
+                    else
+                    {
+                        value += "<i>Any value</i>";
+                    }
                 }
             }
             else

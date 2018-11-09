@@ -39,7 +39,7 @@
                 <Content>
 
                 <asp:HiddenField ID="hfDefinedValueId" runat="server" />
-                <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="Value" />
+                <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Value" />
                 <legend>
                     <asp:Literal ID="lActionTitleDefinedValue" runat="server" />
                 </legend>

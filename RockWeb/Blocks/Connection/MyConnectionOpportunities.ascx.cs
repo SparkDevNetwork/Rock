@@ -28,7 +28,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Connection
@@ -48,10 +48,10 @@ namespace RockWeb.Blocks.Connection
 
     [CodeEditorField( "Status Template", "Lava Template that can be used to customize what is displayed in the status bar. Includes common merge fields plus ConnectionOpportunities, ConnectionTypes and the default IdleTooltip.", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
 @"<div class='pull-left badge-legend padding-r-md'>
-    <span class='pull-left badge badge-info js-legend-badge' data-toggle='tooltip' data-original-title='Assigned To You'>&nbsp;</span>
-    <span class='pull-left badge badge-warning js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned Item'>&nbsp;</span>
-    <span class='pull-left badge badge-critical js-legend-badge' data-toggle='tooltip' data-original-title='Critical Status'>&nbsp;</span>
-    <span class='pull-left badge badge-danger js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'>&nbsp;</span> 
+    <span class='pull-left badge badge-info badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Assigned To You'><span class='sr-only'>Assigned To You</span></span>
+    <span class='pull-left badge badge-warning badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned Item'><span class='sr-only'>Unassigned Item</span></span>
+    <span class='pull-left badge badge-critical badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Critical Status'><span class='sr-only'>Critical Status</span></span>
+    <span class='pull-left badge badge-danger badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'><span class='sr-only'>{{ IdleTooltip }}</span></span>
 </div>", order:5
 )]
 
@@ -71,16 +71,16 @@ namespace RockWeb.Blocks.Connection
 @"
 <div class='status-list'>
     {% if ConnectionRequestStatusIcons.IsAssignedToYou %}
-    <span class='badge badge-info js-legend-badge' data-toggle='tooltip' data-original-title='Assigned To You'>&nbsp;</span>
+    <span class='badge badge-info js-legend-badge' data-toggle='tooltip' data-original-title='Assigned To You'><span class='sr-only'>Assigned To You</span></span>
     {% endif %}
     {% if ConnectionRequestStatusIcons.IsUnassigned %}
-    <span class='badge badge-warning js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned'>&nbsp;</span>
+    <span class='badge badge-warning js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned'><span class='sr-only'>Unassigned</span></span>
     {% endif %}
     {% if ConnectionRequestStatusIcons.IsCritical %}
-    <span class='badge badge-critical js-legend-badge' data-toggle='tooltip' data-original-title='Critical'>&nbsp;</span>
+    <span class='badge badge-critical js-legend-badge' data-toggle='tooltip' data-original-title='Critical'><span class='sr-only'>Critical</span></span>
     {% endif %}
     {% if ConnectionRequestStatusIcons.IsIdle %}
-    <span class='badge badge-danger js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'>&nbsp;</span> 
+    <span class='badge badge-danger js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'><span class='sr-only'>{{ IdleTooltip }}</span></span>
     {% endif %}
 </div>
 ", key: "ConnectionRequestStatusIconsTemplate", order:7
@@ -94,6 +94,7 @@ namespace RockWeb.Blocks.Connection
         private const string TOGGLE_SETTING = "MyConnectionOpportunities_Toggle";
         private const string SELECTED_OPPORTUNITY_SETTING = "MyConnectionOpportunities_SelectedOpportunity";
         private const string CAMPUS_SETTING = "MyConnectionOpportunities_SelectedCampus";
+        private const string LAST_ACTIVITY = "LastActivity";
         DateTime _midnightToday = RockDateTime.Today.AddDays( 1 );
         #endregion
 
@@ -149,7 +150,7 @@ namespace RockWeb.Blocks.Connection
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to delete this connection request? All of the activities for this request will also be deleted, and any existing workflow associations will be lost!', function (result) {
             if (result) {
-                window.location = e.target.href ? e.target.href : e.target.parentElement.href; 
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
             }
         });
     });
@@ -175,14 +176,14 @@ namespace RockWeb.Blocks.Connection
                 rFilter.SaveUserPreference( "State", "State", "0;-2" );
 
                 // NOTE: Don't include Inactive Campuses for the "Campus Filter for Page"
-                cpCampusFilterForPage.Campuses = CacheCampus.All( false );
+                cpCampusFilterForPage.Campuses = CampusCache.All( false );
                 cpCampusFilterForPage.Items[0].Text = "All";
 
                 cpCampusFilterForPage.SelectedCampusId = GetUserPreference( CAMPUS_SETTING ).AsIntegerOrNull();
 
                 GetSummaryData();
 
-                RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.visible.min.js" ) );
+                RockPage.AddScriptLink( "~/Scripts/jquery.visible.min.js" );
             }
         }
 
@@ -576,7 +577,7 @@ namespace RockWeb.Blocks.Connection
                                 g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId.Value ) );
                     }
 
-                    // If user is not yet authorized to edit the opportunity, check to see if they are a member of one of the 
+                    // If user is not yet authorized to edit the opportunity, check to see if they are a member of one of the
                     // campus-specific connector groups for the opportunity, and note the campus
                     if ( !canEdit )
                     {
@@ -628,12 +629,12 @@ namespace RockWeb.Blocks.Connection
                         )
                         .Count();
 
-                    // only show if the oppportunity is active and there are active requests
+                    // only show if the opportunity is active and there are active requests
                     if ( opportunity.IsActive || ( !opportunity.IsActive && activeRequestCount > 0 ) )
                     {
-                        // idle count is: 
-                        //  (the request is active OR future follow-up who's time has come) 
-                        //  AND 
+                        // idle count is:
+                        //  (the request is active OR future follow-up who's time has come)
+                        //  AND
                         //  (where the activity is more than DaysUntilRequestIdle days old OR no activity but created more than DaysUntilRequestIdle days ago)
                         List<int> idleConnectionRequests = connectionRequestsQry
                                             .Where( cr =>
@@ -849,14 +850,14 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 cblCampusGridFilter.Visible = !cpCampusFilterForPage.SelectedCampusId.HasValue;
-                cblCampusGridFilter.DataSource = CacheCampus.All();
+                cblCampusGridFilter.DataSource = CampusCache.All();
                 cblCampusGridFilter.DataBind();
                 cblCampusGridFilter.SetValues( rFilter.GetUserPreference( "Campus" ).SplitDelimitedValues().AsIntegerList() );
 
                 cblStatus.Items.Clear();
                 if ( SelectedOpportunityId.HasValue )
                 {
-                    cblStatus.DataSource = new ConnectionOpportunityService( rockContext ).Get( SelectedOpportunityId.Value ).ConnectionType.ConnectionStatuses.ToList();
+                    cblStatus.DataSource = new ConnectionOpportunityService( rockContext ).Get( SelectedOpportunityId.Value ).ConnectionType.ConnectionStatuses.OrderBy( a => a.Name ).ToList();
                     cblStatus.DataBind();
                     cblStatus.SetValues( rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "Status" ) ).SplitDelimitedValues().AsIntegerList() );
                 }
@@ -864,7 +865,7 @@ namespace RockWeb.Blocks.Connection
                 cblLastActivity.Items.Clear();
                 if ( SelectedOpportunityId.HasValue )
                 {
-                    cblLastActivity.DataSource = new ConnectionOpportunityService( rockContext ).Get( SelectedOpportunityId.Value ).ConnectionType.ConnectionActivityTypes.ToList();
+                    cblLastActivity.DataSource = new ConnectionOpportunityService( rockContext ).Get( SelectedOpportunityId.Value ).ConnectionType.ConnectionActivityTypes.OrderBy( a => a.Name ).ToList();
                     cblLastActivity.DataBind();
                     cblLastActivity.SetValues( rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "LastActivity" ) ).SplitDelimitedValues().AsIntegerList() );
                 }
@@ -1009,7 +1010,7 @@ namespace RockWeb.Blocks.Connection
 
 
                     SortProperty sortProperty = gRequests.SortProperty;
-                    if ( sortProperty != null )
+                    if ( sortProperty != null && sortProperty.Property != LAST_ACTIVITY )
                     {
                         requests = requests.Sort( sortProperty );
                     }
@@ -1030,7 +1031,7 @@ namespace RockWeb.Blocks.Connection
 
                     var lastActivityNoteBoundField = gRequests.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "LastActivityNote" );
 
-                    gRequests.DataSource = requests.ToList()
+                    var connectionRequests = requests.ToList()
                     .Select( r => new
                     {
                         r.Id,
@@ -1051,6 +1052,19 @@ namespace RockWeb.Blocks.Connection
                         StateLabel = FormatStateLabel( r.ConnectionState, r.FollowupDate )
                     } )
                    .ToList();
+
+                    if ( sortProperty != null && sortProperty.Property == LAST_ACTIVITY )
+                    {
+                        if ( sortProperty.Direction == SortDirection.Descending )
+                        {
+                            connectionRequests = connectionRequests.OrderByDescending( a => a.LastActivity ).ToList();
+                        }
+                        else
+                        {
+                            connectionRequests = connectionRequests.OrderBy( a => a.LastActivity ).ToList();
+                        }
+                    }
+                    gRequests.DataSource = connectionRequests;
                     gRequests.DataBind();
 
                     lOpportunityIcon.Text = string.Format( "<i class='{0}'></i>", opportunitySummary.IconCssClass );

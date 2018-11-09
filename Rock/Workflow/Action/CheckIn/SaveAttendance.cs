@@ -51,7 +51,6 @@ namespace Rock.Workflow.Action.CheckIn
             if ( checkInState != null )
             {
                 AttendanceCode attendanceCode = null;
-                DateTime startDateTime = RockDateTime.Now;
 
                 bool reuseCodeForFamily = checkInState.CheckInType != null && checkInState.CheckInType.ReuseSameCode;
                 int securityCodeAlphaNumericLength = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeAlphaNumericLength : 3;
@@ -100,6 +99,8 @@ namespace Rock.Workflow.Action.CheckIn
                                 {
                                     foreach ( var schedule in location.GetSchedules( true ) )
                                     {
+                                        var startDateTime = schedule.CampusCurrentDateTime;
+
                                         // Only create one attendance record per day for each person/schedule/group/location
                                         var attendance = attendanceService.Get( startDateTime, location.Location.Id, schedule.Schedule.Id, group.Group.Id, person.Person.Id );
                                         if ( attendance == null )
@@ -107,25 +108,25 @@ namespace Rock.Workflow.Action.CheckIn
                                             var primaryAlias = personAliasService.GetPrimaryAlias( person.Person.Id );
                                             if ( primaryAlias != null )
                                             {
-                                                attendance = rockContext.Attendances.Create();
-                                                attendance.LocationId = location.Location.Id;
-                                                attendance.CampusId = location.CampusId;
-                                                attendance.ScheduleId = schedule.Schedule.Id;
-                                                attendance.GroupId = group.Group.Id;
+                                                attendance = attendanceService.AddOrUpdate( primaryAlias.Id, startDateTime.Date, group.Group.Id,
+                                                    location.Location.Id, schedule.Schedule.Id, location.CampusId,
+                                                    checkInState.Kiosk.Device.Id, checkInState.CheckIn.SearchType.Id, 
+                                                    checkInState.CheckIn.SearchValue, family.Group.Id, attendanceCode.Id );
+
                                                 attendance.PersonAlias = primaryAlias;
-                                                attendance.PersonAliasId = primaryAlias.Id;
-                                                attendance.DeviceId = checkInState.Kiosk.Device.Id;
-                                                attendance.SearchTypeValueId = checkInState.CheckIn.SearchType.Id;
-                                                attendance.SearchValue = checkInState.CheckIn.SearchValue;
-                                                attendance.SearchResultGroupId = family.Group.Id;
-                                                attendanceService.Add( attendance );
                                             }
                                         }
 
+                                        attendance.DeviceId = checkInState.Kiosk.Device.Id;
+                                        attendance.SearchTypeValueId = checkInState.CheckIn.SearchType.Id;
+                                        attendance.SearchValue = checkInState.CheckIn.SearchValue;
+                                        attendance.CheckedInByPersonAliasId = checkInState.CheckIn.CheckedInByPersonAliasId;
+                                        attendance.SearchResultGroupId = family.Group.Id;
                                         attendance.AttendanceCodeId = attendanceCode.Id;
                                         attendance.StartDateTime = startDateTime;
                                         attendance.EndDateTime = null;
                                         attendance.DidAttend = true;
+                                        attendance.Note = group.Notes;
 
                                         KioskLocationAttendance.AddAttendance( attendance );
                                     }

@@ -26,7 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         Guid guid = badgeGuid.AsGuid();
                         if ( guid != Guid.Empty )
                         {
-                            var personBadge = CachePersonBadge.Get( guid );
+                            var personBadge = PersonBadgeCache.Get( guid );
                             if ( personBadge != null )
                             {
                                 blBadges.PersonBadges.Add( personBadge );

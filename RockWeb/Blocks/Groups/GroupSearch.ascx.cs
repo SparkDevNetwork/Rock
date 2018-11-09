@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                gGroups.EntityTypeId = CacheEntityType.Get<Group>().Id;
+                gGroups.EntityTypeId = EntityTypeCache.Get<Group>().Id;
                 gGroups.DataSource = groups
                     .Select( g => new
                     {

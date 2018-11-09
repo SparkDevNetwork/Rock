@@ -16,13 +16,10 @@ ul.rocktree ul {
 .rocktree {
   .rocktree-item {
     white-space: nowrap;
+    color: @text-color;
+
     &.is-inactive {
       color: lighten(@text-color, 20%);
-      opacity: 1;
-    }
-
-    &:not(.is-inactive) {
-      color: @text-color;
     }
 
     & > i {
@@ -69,6 +66,7 @@ ul.rocktree ul {
     padding: 2px 6px;
     cursor: pointer;
     border-radius: 3px;
+    border-radius: var(--border-radius-base);
   }
 
   .rocktree-loading {

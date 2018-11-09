@@ -113,9 +113,6 @@
     <Compile Include="..\..\..\..\Rock\Utility\ExtensionMethods\EnumExtensions.cs">
       <Link>RockExtensions\EnumExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\..\..\..\Rock\Utility\ExtensionMethods\StringExtensions.cs">
-      <Link>RockExtensions\StringExtensions.cs</Link>
-    </Compile>
     <Compile Include="BatchItemDetailPage.xaml.cs">
       <DependentUpon>BatchItemDetailPage.xaml</DependentUpon>
     </Compile>
@@ -133,6 +130,7 @@
       <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
     </Compile>
     <Compile Include="RockConfig.cs" />
+    <Compile Include="RockExtensions\StringExtensions.cs" />
     <Compile Include="ScannedDocInfo.cs" />
     <Compile Include="ScanningPage.xaml.cs">
       <DependentUpon>ScanningPage.xaml</DependentUpon>
@@ -282,8 +280,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>call "$(DevEnvDir)..\tools\VsDevCmd.bat"
-editbin.exe /NXCOMPAT:NO "$(TargetPath)"</PostBuildEvent>
+    <PostBuildEvent>call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\Tools\VsDevCmd.bat"
+"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.14.26428\bin\Hostx86\x86\editbin.exe" /NXCOMPAT:NO "$(TargetPath)"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

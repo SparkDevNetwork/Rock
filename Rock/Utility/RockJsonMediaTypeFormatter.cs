@@ -21,7 +21,7 @@ using System.Linq;
 using System.Net.Http.Formatting;
 using System.Text;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Utility
 {
@@ -92,20 +92,20 @@ namespace Rock.Utility
         /// <param name="effectiveEncoding">The encoding to use when writing.</param>
         public override void WriteToStream( Type type, object value, System.IO.Stream writeStream, Encoding effectiveEncoding )
         {
-            IEnumerable<Data.IHasAttributes> items = null;
+            IEnumerable<Attribute.IHasAttributes> items = null;
 
             // query should be filtered by now, so iterate thru items and load attributes before the response is serialized
             if ( LoadAttributes )
             {
-                if ( value is IEnumerable<Data.IHasAttributes> )
+                if ( value is IEnumerable<Attribute.IHasAttributes> )
                 {
                     // if the REST call specified that Attributes should be loaded and we are returning a list of IHasAttributes..
-                    items = value as IEnumerable<Data.IHasAttributes>;
+                    items = value as IEnumerable<Attribute.IHasAttributes>;
                 }
-                else if ( value is Data.IHasAttributes )
+                else if ( value is Attribute.IHasAttributes )
                 {
                     // if the REST call specified that Attributes should be loaded and we are returning a single IHasAttributes..
-                    items = new List<Data.IHasAttributes>( new Data.IHasAttributes[] { value as Data.IHasAttributes } );
+                    items = new List<Attribute.IHasAttributes>( new Attribute.IHasAttributes[] { value as Attribute.IHasAttributes } );
                 }
                 else if ( value is IQueryable )
                 {
@@ -115,11 +115,11 @@ namespace Rock.Utility
                         // 'SelectAndExpand' buries the Entity in a private field called 'Instance', 
                         // so use reflection to get that and load the attributes for each
                         var selectExpandQry = value as IQueryable;
-                        var itemsList = new List<Data.IHasAttributes>();
+                        var itemsList = new List<Attribute.IHasAttributes>();
                         foreach ( var selectExpandItem in selectExpandQry )
                         {
                             var entityProperty = selectExpandItem.GetType().GetProperty( "Instance" );
-                            var entity = entityProperty.GetValue( selectExpandItem ) as Data.IHasAttributes;
+                            var entity = entityProperty.GetValue( selectExpandItem ) as Attribute.IHasAttributes;
                             if ( entity != null )
                             {
                                 itemsList.Add( entity );
@@ -147,7 +147,7 @@ namespace Rock.Utility
 
             // Special Code if an $expand clause is specified and a $select clause is NOT specified
             // This fixes a couple of issues:
-            //  1) our special loadAttributes stuff did't work if $expand is specified
+            //  1) our special loadAttributes stuff didn't work if $expand is specified
             //  2) Only non-virtual,non-inherited fields were included (for example: Person.PrimaryAliasId, etc, wasn't getting included) if $expand was specified
             if ( value is IQueryable && typeof( IQueryable<Rock.Data.IEntity> ).IsAssignableFrom( type ) )
             {
@@ -219,11 +219,11 @@ namespace Rock.Utility
                         }
 
                         // if LoadAttributes was specified, add those last
-                        if ( LoadAttributes && ( entity is Data.IHasAttributes ) )
+                        if ( LoadAttributes && ( entity is Attribute.IHasAttributes ) )
                         {
                             // Add Attributes and AttributeValues
-                            valueDictionary.Add( "Attributes", ( entity as Data.IHasAttributes ).Attributes );
-                            valueDictionary.Add( "AttributeValues", ( entity as Data.IHasAttributes ).AttributeValues );
+                            valueDictionary.Add( "Attributes", ( entity as Attribute.IHasAttributes ).Attributes );
+                            valueDictionary.Add( "AttributeValues", ( entity as Attribute.IHasAttributes ).AttributeValues );
                         }
 
                         valueAsDictionary.Add( valueDictionary );
@@ -243,7 +243,7 @@ namespace Rock.Utility
         /// <param name="rockContext">The rock context.</param>
         /// <param name="items">The items.</param>
         /// <param name="person">The person.</param>
-        private static void FilterAttributes( Data.RockContext rockContext, IEnumerable<Data.IHasAttributes> items, Rock.Model.Person person )
+        private static void FilterAttributes( Data.RockContext rockContext, IEnumerable<Attribute.IHasAttributes> items, Rock.Model.Person person )
         {
             if ( !items.Any() )
             {
@@ -252,21 +252,21 @@ namespace Rock.Utility
 
             var itemType = items.First().GetType();
 
-            var entityType = CacheEntityType.Get( itemType );
+            var entityType = EntityTypeCache.Get( itemType );
             if ( entityType == null )
             {
                 // shouldn't happen
                 return;
             }
 
-            var entityAttributes = CacheAttribute.GetByEntity( entityType.Id );
+            var entityAttributes = AttributeCache.GetByEntity( entityType.Id );
 
             // only return attributes that the person has VIEW auth to
             foreach ( var entityAttribute in entityAttributes )
             {
                 foreach ( var attributeId in entityAttribute.AttributeIds )
                 {
-                    var attribute = CacheAttribute.Get( attributeId );
+                    var attribute = AttributeCache.Get( attributeId );
                     if ( !attribute.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                     {
                         foreach ( var item in items )

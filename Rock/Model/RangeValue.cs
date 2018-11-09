@@ -35,7 +35,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the From/mininimum value of the range.
+        /// Gets or sets the From/minimum value of the range.
         /// </summary>
         /// <value>
         /// The from/minimum value of the range.

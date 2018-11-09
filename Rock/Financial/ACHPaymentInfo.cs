@@ -16,7 +16,7 @@
 //
 using System;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Financial
 {
@@ -25,12 +25,6 @@ namespace Rock.Financial
     /// </summary>
     public class ACHPaymentInfo : PaymentInfo
     {
-        /// <summary>
-        /// Gets or sets the name of the bank.
-        /// </summary>
-        [Obsolete( "BankName is not needed")]
-        public string BankName { get; set; }
-
         /// <summary>
         /// The account number
         /// </summary>
@@ -80,9 +74,9 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the currency type value.
         /// </summary>
-        public override CacheDefinedValue CurrencyTypeValue
+        public override DefinedValueCache CurrencyTypeValue
         {
-            get { return CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ); }
+            get { return DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ); }
         }
 
     }

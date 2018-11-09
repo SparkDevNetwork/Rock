@@ -21,7 +21,7 @@ using System.Web.UI.WebControls.Adapters;
 namespace Rock.Web.UI.Adapters
 {
     /// <summary>
-    /// Abstract adapter for checkboxlist and radiobuttonlist adaptors
+    /// Abstract adapter for checkboxlist and radiobuttonlist adapters
     /// </summary>
     public abstract class ListControlAdaptor : WebControlAdapter
     {
@@ -84,6 +84,35 @@ namespace Rock.Web.UI.Adapters
         public abstract string GetInputName( ListControl listControl, int itemIndex );
 
         /// <summary>
+        /// Gets the label class.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="listItem">The list item.</param>
+        /// <returns></returns>
+        public virtual string GetLabelClass( ListControl listControl, ListItem listItem )
+        {
+            string labelClass;
+
+            if ( GetRepeatDirection( listControl ) == RepeatDirection.Horizontal )
+            {
+                // if Horizontal, put checkbox/radio-inline on the label tag, and don't create a <div class="checkbox/radio"> wrapper
+                labelClass = $"{GetInputTagType( listControl )}-inline";
+            }
+            else
+            {
+                // if Vertical, leave the label class empty, and create a <div class="checkbox/radio"> wrapper
+                labelClass = string.Empty;
+            }
+
+            if ( !listControl.Enabled )
+            {
+                labelClass += " text-muted";
+            }
+
+            return labelClass;
+        }
+
+        /// <summary>
         /// Generates the target-specific inner markup for the Web control to which the control adapter is attached.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> containing methods to render the target-specific output.</param>
@@ -111,26 +140,19 @@ namespace Rock.Web.UI.Adapters
                     postBackEventReference = Page.ClientScript.GetPostBackEventReference( postBackOption, true );
                 }
 
-                string labelClass;
+                
                 bool createInputDivClass;
                 string inputTagType = GetInputTagType( listControl );
 
                 if ( GetRepeatDirection(listControl) == RepeatDirection.Horizontal )
                 {
-                    // if Horizontal, put checkbox/radio-inline on the label tag, and don't create a <div class="checkbox/radio"> wrapper
-                    labelClass = $"{inputTagType}-inline";
+                    // if Horizontal, don't create a <div class="checkbox/radio"> wrapper
                     createInputDivClass = false;
                 }
                 else
                 {
-                    // if Vertical, leave the label class empty, and create a <div class="checkbox/radio"> wrapper
-                    labelClass = string.Empty;
+                    // if Vertical, reate a <div class="checkbox/radio"> wrapper
                     createInputDivClass = true;
-                }
-
-                if ( !listControl.Enabled )
-                {
-                    labelClass += " text-muted";
                 }
 
                 int repeatColumns = GetRepeatColumns( listControl );
@@ -192,6 +214,7 @@ namespace Rock.Web.UI.Adapters
                     // render checkbox/radio label tag which will contain the input and label text
                     writer.WriteLine();
                     writer.Indent++;
+                    string labelClass = GetLabelClass( listControl, li );
                     writer.AddAttribute( "class", labelClass );
                     writer.RenderBeginTag( HtmlTextWriterTag.Label );
 

@@ -191,7 +191,17 @@
     </ul>
 {%- endif -%}
 
-<a href="{{ GroupHistoryGridPage }}?GroupId={{ PageParameter.GroupId }}" class="btn btn-xs btn-default pull-right">View Grid</a>
+{%- if GroupHistoryGridPage contains '{GroupId}' -%}
+    {%- assign GroupHistoryGridPage = GroupHistoryGridPage | Replace:'{GroupId}', PageParameter.GroupId | Prepend:'/' -%}
+{%- else -%}
+    {%- assign GroupHistoryGridPage = GroupHistoryGridPage | Append:'?GroupId=' | Append:PageParameter.GroupId -%}
+{%- endif -%}
+{%- if GroupMemberHistoryPage contains '{GroupId}' -%}
+    {%- assign GroupMemberHistoryPage  = GroupMemberHistoryPage  | Replace:'{GroupId}', PageParameter.GroupId | Prepend:'/' -%}
+{%- else -%}
+    {%- comment -%}If the GroupMemberHistoryPage route doesn't have a GroupMemberId add the tag to be replaced{%- endcomment -%}
+    {%- assign GroupMemberHistoryPage  = GroupMemberHistoryPage  | Append:'?GroupId=' | Append:PageParameter.GroupId | Append:'&={GroupMemberId}' -%}
+{%- endif -%}
 
 <section class="rock-timeline">
     <div class="timeline-container">
@@ -306,8 +316,8 @@
                             {%- for historySummary in historySummaryListByEntityTypeAndVerb.HistorySummaryList -%}
                                 {%- comment -%} Shows a list of added/removed group members {%- endcomment -%}
                                 {%- if showSummaryEntity -%}
-                                    {%- if historySummary.EntityTypeName == 'Group Member' -%}
-                                        <span class='historysummary-entity' title='{{ historySummary.CreatedDateTime }}'><a href="{{ GroupMemberHistoryPage }}?GroupId={{ PageParameter.GroupId }}&GroupMemberId={{ historySummary.EntityId }}">{{ historySummary.Entity | Default:historySummary.ValueName | ToString }}</a></span>
+                                    {%- if historySummary.EntityTypeName == 'Group Member' -%}{%- assign parsedGroupMemberHistoryPage = GroupMemberHistoryPage | Replace:'{GroupMemberId}',historySummary.EntityId -%}
+                                        <span class='historysummary-entity' title='{{ historySummary.CreatedDateTime }}'><a href="{{ parsedGroupMemberHistoryPage }}">{{ historySummary.Entity | Default:historySummary.ValueName | ToString }}</a></span>
                                     {%- endif -%}
                                 {%- endif -%}
                                 {%- comment -%} showHistoryDetails for complex sets of changes {%- endcomment -%}
@@ -338,7 +348,8 @@
                                                                     changed
                                                                     {%- if historySummary.Entity.Guid != PrimaryEntity.Guid -%}
                                                                         {%- assign timelineOtherEntity = historySummary.Entity | ToString -%}
-                                                                        <a href='{{ GroupMemberHistoryPage }}?GroupId={{ PageParameter.GroupId }}&GroupMemberId={{ historySummary.EntityId }}' class='history-otherentity'>{{ timelineOtherEntity | Possessive }}</a>
+                                                                        {%- assign parsedGroupMemberHistoryPage = GroupMemberHistoryPage | Replace:'{GroupMemberId}',historySummary.EntityId -%}
+                                                                        <a href='{{ parsedGroupMemberHistoryPage }}' class='history-otherentity'>{{ timelineOtherEntity | Possessive }}</a>
                                                                     {%- else -%}
                                                                         the
                                                                     {%- endif -%}
@@ -372,7 +383,7 @@
                                                     {%- endif -%}
                                                     {%- if history.NewValue -%}
                                                             {%- assign historyNewValueSize = history.NewValue | Size -%}
-                                                        <span class='history-oldvalue'><a {% if historyNewValueSize > 80 -%}tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="Full {{ historyValueName }}" data-content="{{ history.NewValue | StripNewlines  }}"{%- endif -%}>{{ history.NewValue | Trim | Truncate:80,'...' }}</a></span>{%- endif -%}{%- unless forloop.last -%}{%- if forloop.rindex != 2 -%},{%- else -%},&nbsp;and{%- endif -%}{%- else -%}{%- endunless -%}
+                                                        <span class='history-oldvalue'><a {% if historyNewValueSize > 80 -%}tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="Full {{ historyValueName }}" data-content="{{ history.NewValue | StripNewlines }}"{%- endif -%}>{{ history.NewValue | Trim | Truncate:80,'...' }}</a></span>{%- endif -%}{%- unless forloop.last -%}{%- if forloop.rindex != 2 -%},{%- else -%},&nbsp;and{%- endif -%}{%- else -%}{%- endunless -%}
                                                     {%- assign prevHistoryValueName = historyValueName -%}
                                                 {%- endcapture -%}
                                                 {%- assign prevTimelineAction = timelineAction -%}

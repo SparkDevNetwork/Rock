@@ -39,7 +39,7 @@ namespace Rock.Model
 
         //// ** NOTE:  We need [DataMember] on Content so that REST can GET and POST BinaryFileData. 
         //// ** However, we don't have to worry about Liquid serializing this since BinaryFile.Data is not marked with [DataMember]
-        //// ** So the only way you would get serialized Content if you intentionally requested to serialise BinaryFileData
+        //// ** So the only way you would get serialized Content if you intentionally requested to serialize BinaryFileData
         
         /// <summary>
         /// Gets or sets the data/content of a <see cref="Rock.Model.BinaryFile"/>

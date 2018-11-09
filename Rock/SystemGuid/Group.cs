@@ -90,5 +90,10 @@ namespace Rock.SystemGuid
         /// The group of communication approvers
         /// </summary>
         public const string GROUP_COMMUNICATION_APPROVERS = "74B1B26E-1955-49A7-4C59-ABCD7543FF71";
+
+        /// <summary>
+        /// Group of people who are responsible for the safety and security of staff and members
+        /// </summary>
+        public const string GROUP_SAFETY_SECURITY = "32E80B6C-A1EB-40FD-BEC3-E11DE8FF75AB";
     }
 }

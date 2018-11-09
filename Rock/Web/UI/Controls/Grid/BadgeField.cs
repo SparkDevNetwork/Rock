@@ -31,32 +31,6 @@ namespace Rock.Web.UI.Controls
     public class BadgeField : RockBoundField
     {
         /// <summary>
-        /// Gets or sets the important minimum value rule.
-        /// </summary>
-        /// <value>
-        /// The minimum value to be considered Important.
-        /// </value>
-        [Obsolete( "Use DangerMin instead." )]
-        public int ImportantMin
-        {
-            get { return DangerMin; }
-            set { DangerMin = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the important max.
-        /// </summary>
-        /// <value>
-        /// The maximum value to be considered Important.
-        /// </value>
-        [Obsolete( "Use DangerMax instead." )]
-        public int ImportantMax
-        {
-            get { return DangerMax; }
-            set { DangerMax = value; }
-        }
-
-        /// <summary>
         /// Gets or sets the danger minimum value rule.
         /// </summary>
         /// <value>
@@ -253,6 +227,7 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            this.HeaderStyle.HorizontalAlign = HorizontalAlign.Center;
             this.HeaderStyle.CssClass = "span1";
         }
 

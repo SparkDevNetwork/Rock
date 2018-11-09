@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.MergeTemplates;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -129,8 +129,8 @@ namespace RockWeb.Blocks.Core
 
             if ( entitySet.EntityTypeId.HasValue )
             {
-                bool isPersonEntitySet = entitySet.EntityTypeId.Value == CacheEntityType.GetId<Rock.Model.Person>();
-                bool isGroupMemberEntitySet = entitySet.EntityTypeId.Value == CacheEntityType.GetId<Rock.Model.GroupMember>();
+                bool isPersonEntitySet = entitySet.EntityTypeId.Value == EntityTypeCache.GetId<Rock.Model.Person>();
+                bool isGroupMemberEntitySet = entitySet.EntityTypeId.Value == EntityTypeCache.GetId<Rock.Model.GroupMember>();
                 cbCombineFamilyMembers.Visible = isPersonEntitySet || isGroupMemberEntitySet;
             }
             else
@@ -263,7 +263,7 @@ namespace RockWeb.Blocks.Core
                     qryEntity = qryEntity.Take( fetchCount.Value );
                 }
 
-                var entityTypeCache = CacheEntityType.Get( entitySet.EntityTypeId.Value );
+                var entityTypeCache = EntityTypeCache.Get( entitySet.EntityTypeId.Value );
                 bool isPersonEntityType = entityTypeCache != null && entityTypeCache.Guid == Rock.SystemGuid.EntityType.PERSON.AsGuid();
                 bool isGroupMemberEntityType = entityTypeCache != null && entityTypeCache.Guid == Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid();
                 bool combineFamilyMembers = cbCombineFamilyMembers.Visible && cbCombineFamilyMembers.Checked;
@@ -365,16 +365,21 @@ namespace RockWeb.Blocks.Core
                 }
                 else if ( isGroupMemberEntityType )
                 {
+                    List<int> personIds = new List<int>();
+
                     foreach ( var groupMember in qryEntity.AsNoTracking().OfType<GroupMember>() )
                     {
                         var person = groupMember.Person;
-
-                        // Attach the person record to rockContext so that navigation properties can be still lazy-loaded if needed (if the lava template needs it)
-                        rockContext.People.Attach( person );
-
+                        if ( !personIds.Contains( person.Id ) )
+                        {
+                            // Attach the person record to rockContext so that navigation properties can be still lazy-loaded if needed (if the lava template needs it)
+                            rockContext.People.Attach( person );
+                        }
+                        
                         person.AdditionalLavaFields = new Dictionary<string, object>();
                         person.AdditionalLavaFields.Add( "GroupMember", groupMember );
                         mergeObjectsDictionary.AddOrIgnore( groupMember.PersonId, person );
+                        personIds.Add( person.Id );
                     }
                 }
                 else
@@ -500,7 +505,7 @@ namespace RockWeb.Blocks.Core
             {
                 var qry = entitySetService.GetEntityQuery( entitySetId ).Take( 15 );
 
-                CacheEntityType itemEntityType = CacheEntityType.Get( entitySet.EntityTypeId ?? 0 );
+                EntityTypeCache itemEntityType = EntityTypeCache.Get( entitySet.EntityTypeId ?? 0 );
                 gPreview.CreatePreviewColumns( itemEntityType.GetEntityType() );
 
                 gPreview.DataSource = qry.ToList();
@@ -594,7 +599,7 @@ namespace RockWeb.Blocks.Core
         public class MergeTemplateCombinedPerson : Person
         {
             /// <summary>
-            /// Overide of FullName that should be set to whatever the FamilyTitle should be
+            /// Override of FullName that should be set to whatever the FamilyTitle should be
             /// </summary>
             /// <value>
             /// A <see cref="System.String" /> representing the Family Title of a combined person

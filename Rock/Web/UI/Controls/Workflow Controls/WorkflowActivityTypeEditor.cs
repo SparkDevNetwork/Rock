@@ -20,7 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -309,7 +309,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
                     a.Guid,
                     a.Name,
                     a.Description,
-                    FieldType = CacheFieldType.GetName( a.FieldTypeId ),
+                    FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
                     a.IsRequired
                 } )
                 .ToList();
@@ -354,7 +354,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             Controls.Add( _lbDeleteActivityType );
             _lbDeleteActivityType.CausesValidation = false;
             _lbDeleteActivityType.ID = this.ID + "_lbDeleteActivityType";
-            _lbDeleteActivityType.CssClass = "btn btn-xs btn-danger js-activity-delete";
+            _lbDeleteActivityType.CssClass = "btn btn-xs btn-square btn-danger js-activity-delete";
             _lbDeleteActivityType.Click += lbDeleteActivityType_Click;
             _lbDeleteActivityType.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
 
@@ -362,7 +362,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             Controls.Add( _sbSecurity );
             _sbSecurity.ID = this.ID + "_sbSecurity";
             _sbSecurity.Attributes["class"] = "btn btn-security btn-xs security pull-right";
-            _sbSecurity.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.WorkflowActivityType ) ).Id;
+            _sbSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.WorkflowActivityType ) ).Id;
 
             _cbActivityTypeIsActive = new RockCheckBox { Text = "Active" };
             Controls.Add( _cbActivityTypeIsActive );

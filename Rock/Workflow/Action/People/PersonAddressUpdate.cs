@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -68,7 +68,7 @@ namespace Rock.Workflow.Action
             Guid? guidPersonAttribute = personAttributeValue.AsGuidOrNull();
             if ( guidPersonAttribute.HasValue )
             {
-                var attributePerson = CacheAttribute.Get( guidPersonAttribute.Value, rockContext );
+                var attributePerson = AttributeCache.Get( guidPersonAttribute.Value, rockContext );
                 if ( attributePerson != null || attributePerson.FieldType.Class != "Rock.Field.Types.PersonFieldType" )
                 {
                     string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute.Value );
@@ -98,15 +98,15 @@ namespace Rock.Workflow.Action
             }
 
             // determine the location type to edit
-            CacheDefinedValue locationType = null;
+            DefinedValueCache locationType = null;
             var locationTypeAttributeValue = action.GetWorklowAttributeValue( GetAttributeValue( action, "LocationTypeAttribute" ).AsGuid() );
             if ( locationTypeAttributeValue != null )
             {
-                locationType = CacheDefinedValue.Get( locationTypeAttributeValue.AsGuid() );
+                locationType = DefinedValueCache.Get( locationTypeAttributeValue.AsGuid() );
             }
             if ( locationType == null )
             {
-                locationType = CacheDefinedValue.Get( GetAttributeValue( action, "LocationType" ).AsGuid() );
+                locationType = DefinedValueCache.Get( GetAttributeValue( action, "LocationType" ).AsGuid() );
             }
             if ( locationType == null )
             {
@@ -243,7 +243,9 @@ namespace Rock.Workflow.Action
                             family.Name,
                             typeof( Group ),
                             family.Id,
-                            false );
+                            false,
+                            null,
+                            rockContext.SourceOfChange );
                     }
                 }
 

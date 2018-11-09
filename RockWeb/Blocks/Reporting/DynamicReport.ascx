@@ -56,7 +56,7 @@
                     <Rock:RockTextBox ID="txtFilterIconCssClass" runat="server" Label="Filter Icon CSS Class" />
                     <Rock:RockTextBox ID="txtFilterTitle" runat="server" Label="Filter Title" />
 
-                    <Rock:RockDropDownList ID="ddlReport" runat="server" Label="Report" Help="Select the report to present to the user. Then set which of the report's dataview's filters to show." Required="false" ValidationGroup="vgConfigure" OnSelectedIndexChanged="ddlReport_SelectedIndexChanged" AutoPostBack="true" EnhanceForLongLists="true" />
+                    <Rock:ReportPicker ID="rpReport" runat="server" Label="Report" Help="Select the report to present to the user. Then set which of the report's dataview's filters to show." Required="false" ValidationGroup="vgConfigure" OnSelectItem="rpReport_SelectItem" />
                     <Rock:RockDropDownList ID="ddlPersonIdField" runat="server" Label="PersonID Field" Help="If this report has a field for the PersonId, what is the name of that field" />
 
                     <Rock:RockControlWrapper ID="rcwDataFilters" runat="server" Label="Filters" Help="<p>Select which filters that will be visible to the user.</p><p>If Configurable is selected for a visible filter, the user will be able to change the filter, otherwise, the filter will presented as checkbox where user can choose to use the filter or not. Select 'Toggle Filter' to present a checkbox with the configurable filter.</p>" >

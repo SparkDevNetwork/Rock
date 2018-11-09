@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -154,7 +155,7 @@ namespace Rock.Model
         {
             return this.Context.Database.SqlQuery<GroupTypePath>(
                 @"
-                -- Get GroupType association heirarchy with GroupType ancestor path information
+                -- Get GroupType association hierarchy with GroupType ancestor path information
                 WITH CTE (ChildGroupTypeId,GroupTypeId, HierarchyPath) AS
                 (
                       SELECT [ChildGroupTypeId], [GroupTypeId], CONVERT(nvarchar(500),'')
@@ -189,7 +190,7 @@ namespace Rock.Model
             var qry = groupTypeService.Queryable();
 
             // limit to show only GroupTypes that have a group type purpose of Checkin Template
-            int groupTypePurposeCheckInTemplateId = Rock.Cache.CacheDefinedValue.Get( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
+            int groupTypePurposeCheckInTemplateId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
             qry = qry.Where( a => a.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId );
 
             foreach ( var groupTypeId in qry.Select( a => a.Id ) )
@@ -250,7 +251,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override Guid? GetGuid( int id )
         {
-            var cacheItem = Rock.Cache.CacheGroupType.Get( id );
+            var cacheItem = GroupTypeCache.Get( id );
             if ( cacheItem != null )
             {
                 return cacheItem.Guid;

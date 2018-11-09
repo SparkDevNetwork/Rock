@@ -28,7 +28,7 @@ using Rock.Data;
 using Rock.Field;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.Dashboard
@@ -296,7 +296,7 @@ namespace Rock.Reporting.Dashboard
                 int position = 0;
                 foreach ( var metricPartition in metricCategory.Metric.MetricPartitions.OrderBy( a => a.Order ) )
                 {
-                    var metricPartitionEntityType = CacheEntityType.Get( metricPartition.EntityTypeId ?? 0 );
+                    var metricPartitionEntityType = EntityTypeCache.Get( metricPartition.EntityTypeId ?? 0 );
                     var controlId = string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id );
                     Control entityTypeEditControl = phMetricValuePartitions.FindControl( controlId );
 
@@ -344,7 +344,7 @@ namespace Rock.Reporting.Dashboard
             {
                 foreach ( var metricPartition in metricCategory.Metric.MetricPartitions.OrderBy( a => a.Order ) )
                 {
-                    var metricPartitionEntityType = CacheEntityType.Get( metricPartition.EntityTypeId ?? 0 );
+                    var metricPartitionEntityType = EntityTypeCache.Get( metricPartition.EntityTypeId ?? 0 );
                     var controlId = string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id );
                     Control entityTypeEditControl = phMetricValuePartitions.FindControl( controlId );
 
@@ -385,7 +385,7 @@ namespace Rock.Reporting.Dashboard
                 {
                     if ( metricPartition.EntityTypeId.HasValue )
                     {
-                        var entityTypeCache = CacheEntityType.Get( metricPartition.EntityTypeId.Value );
+                        var entityTypeCache = EntityTypeCache.Get( metricPartition.EntityTypeId.Value );
                         if ( entityTypeCache != null && entityTypeCache.SingleValueFieldType != null )
                         {
                             var fieldType = entityTypeCache.SingleValueFieldType;
@@ -543,7 +543,7 @@ namespace Rock.Reporting.Dashboard
                     var result = new MetricPartitionEntityId();
 
                     result.MetricPartition = mp;
-                    var entityTypeCache = CacheEntityType.Get( result.MetricPartition.EntityTypeId ?? 0 );
+                    var entityTypeCache = EntityTypeCache.Get( result.MetricPartition.EntityTypeId ?? 0 );
 
                     if ( entityTypeCache != null && this.ContextEntity( entityTypeCache.Name ) != null )
                     {

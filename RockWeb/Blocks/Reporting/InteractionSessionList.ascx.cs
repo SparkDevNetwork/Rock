@@ -305,7 +305,7 @@ namespace RockWeb.Blocks.Reporting
                     mergeFields.Add( "InteractionChannel", interactionChannel );
                     mergeFields.Add( "WebSessions", webSessions.Take( sessionCount ) );
 
-                    lContent.Text = interactionChannel.SessionListTemplate.IsNotNullOrWhitespace() ?
+                    lContent.Text = interactionChannel.SessionListTemplate.IsNotNullOrWhiteSpace() ?
                         interactionChannel.SessionListTemplate.ResolveMergeFields( mergeFields ) :
                         GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
 

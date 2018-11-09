@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 
 <script runat="server">
-    
+
     // keep code below to call base class init method
 
     /// <summary>
@@ -13,8 +13,8 @@
     protected override void OnInit( EventArgs e )
     {
         base.OnInit( e );
-    }    
-    
+    }
+
 </script>
 
 <html class="no-js">
@@ -22,7 +22,7 @@
 
     <meta charset="utf-8">
     <title></title>
-    
+
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
 

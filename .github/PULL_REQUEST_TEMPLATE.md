@@ -1,34 +1,39 @@
-# Rock PR Policy
-The Rock Community loves Pull Requests! In an effort to 'row in the same direction' and minimize wasted development time
-on your part and review time on ours, we have implemented the following guidelines for PRs:
-1. If you are submitting a PR for a logged Issue / Enhancement request please reference it in your commit
-2. If your PR is for an enhancement that has not been discussed and approved by the core team please get that approval BEFORE submitting
-the request. In fact, this approval should be received before writing the code to limit rework on your part. This will ensure that all code is working into the same vision and direction of the core project.
+## Proposed Changes
 
+<!--
+Describe the big picture of your changes here to communicate to the maintainers why we should accept this pull request. If it fixes a bug or resolves a feature request, be sure to link to that issue.
 
-## Contributor Agreement
-_By contributing your code, you agree to license your contribution under the [Rock Community License Agreement](https://www.rockrms.com/license)._
+Include screenshots if your pull request either alters existing UI or provides new UI. Arrows and labels are helpful.
+-->
 
-## Context
-_What is the problem you encountered that lead to you creating this pull request?_
+Fixes: #
 
-## Goal
-_What will this pull request achieve and how will this fix the problem?_
+## Types of changes
 
-## Strategy
-_How have you implemented your solution?_
+What types of changes does your code introduce to Rock?
+_Put an `x` in the boxes that apply_
 
-## Tests
-_If your code is a new method or function (that doesn't need a mock database or SqlServerTypes library) and can be Xunit tested [see example](https://github.com/SparkDevNetwork/Rock/blob/develop/Rock.Tests/Rock/Lava/RockFiltersTests.cs) be sure your pull request includes the corresponding unit tests in the Rock.Tests project. In all cases *you* MUST test your code before submitting a pull request._
+- [ ] Bugfix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality, which has been approved by the core team)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 
-## Possible Implications
-_What could this change potentially impact? Are there any security considerations? Where could this potentially affect backwards compatibility?_
+## Checklist
 
-## Screenshots
-_Provide us some screenshots if your pull request either alters existing UI or provides new UI. Arrows and labels are helpful._
+_Put an `x` in the boxes that apply. You can also fill these out after creating the PR. If you're unsure about any of them, don't hesitate to ask. We're here to help! This is simply a reminder of what we are going to look for before merging your code._
+
+- [ ] I verified my PR does not include whitespace/formatting changes -- because if it does it will be closed without merging.	
+- [ ] I have read the [Contributing to Rock](https://github.com/SparkDevNetwork/Rock/blob/master/.github/CONTRIBUTING.md) doc
+- [ ] By contributing code, I agree to license my contribution under the [Rock Community License Agreement](https://www.rockrms.com/license)
+- [ ] Unit tests pass locally with my changes
+- [ ] I have added [required tests](https://github.com/SparkDevNetwork/Rock/blob/develop/Rock.Tests/README.md) that prove my fix is effective or that my feature works
+- [ ] I have included updated language for the [Rock Documentation](https://www.rockrms.com/Learn/Documentation) (if appropriate)
+
+## Further comments
+<!--
+If this is a relatively large or complex change, kick off the discussion by explaining why you chose the solution you did and what alternatives you considered, etc...
+-->
 
 ## Documentation
-_If your change effects the UI or needs to be documented in one of the existing [user guides](http://www.rockrms.com/Learn/Documentation), please provide the brief write-up here:_
-
-## Migrations
-Should your pull request require a migration, please exclude the migration from the Rock.Migration project, but submit it in your pull request. Please add a note to your pull request that provides a heads up that a migration file is present.
+<!--
+If your change effects the UI or needs to be documented in one of the existing docs http://www.rockrms.com/Learn/Documentation, please provide the brief write-up here
+-->

@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
-
+using System.Linq;
 using Rock.Data;
 using Rock.Model;
 
@@ -75,6 +75,10 @@ namespace Rock.Transactions
                             {
                                 string statusMsgs = string.Empty;
                                 gatewayComponent.GetScheduledPaymentStatus( scheduledTxn, out statusMsgs );
+
+                                var lastTransactionDate = scheduledTxn.Transactions.Max( t => t.TransactionDateTime );
+                                scheduledTxn.NextPaymentDate = gatewayComponent.GetNextPaymentDate( scheduledTxn, lastTransactionDate );
+
                                 rockContext.SaveChanges();
                             }
                         }

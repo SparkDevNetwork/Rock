@@ -23,7 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.PersonProfile.Badge
@@ -63,14 +63,14 @@ namespace Rock.PersonProfile.Badge
   <i class='badge-icon {{ groupIcon }}' style='color: {{ iconColor }}'></i>
 </div>
 " )]
-    public class GroupTypeAttendance : BadgeComponentModern
+    public class GroupTypeAttendance : BadgeComponent
     {
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
             Guid? groupTypeGuid = GetAttributeValue( badge, "GroupType" ).AsGuidOrNull();
             if ( groupTypeGuid.HasValue )
@@ -84,7 +84,7 @@ namespace Rock.PersonProfile.Badge
                 mergeFields.Add( "Person", this.Person );
                 using ( var rockContext = new RockContext() )
                 {
-                    var groupType = CacheGroupType.Get( groupTypeGuid.Value );
+                    var groupType = GroupTypeCache.Get( groupTypeGuid.Value );
                     int groupTypeId = groupType?.Id ?? 0;
                     mergeFields.Add( "GroupType", groupType );
                     mergeFields.Add( "Badge", badge );
@@ -92,9 +92,13 @@ namespace Rock.PersonProfile.Badge
 
                     var personAliasIds = Person.Aliases.Select( a => a.Id ).ToList();
 
-                    var attendanceQuery = new AttendanceService( rockContext ).Queryable().Where( a =>
-                        a.Group.GroupTypeId == groupTypeId && a.DidAttend == true
-                        && personAliasIds.Contains( a.PersonAliasId.Value ) );
+                    var attendanceQuery = new AttendanceService( rockContext )
+                        .Queryable()
+                        .Where( a =>
+                            a.Occurrence.Group != null &&
+                            a.Occurrence.Group.GroupTypeId == groupTypeId && 
+                            a.DidAttend == true && 
+                            personAliasIds.Contains( a.PersonAliasId.Value ) );
 
                     if ( dateRange.Start.HasValue )
                     {

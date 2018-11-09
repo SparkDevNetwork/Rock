@@ -4,7 +4,7 @@
 		<strong>
       {{ FirstNames }}, thank you for your contribution.
 
-      {% if {{ ReceiptEmailed == 'True' }} %}
+      {% if ReceiptEmailed == 'True' %}
       A receipt has been emailed to {{ ReceiptEmail | ObfuscateEmail }}.
       {% endif %}
 
@@ -17,7 +17,7 @@
 <div class="panel panel-default">
 	<div class="panel-body">
 		<h4>Gift Details</h4>
-    
+
     <p>
       <strong>Confirmation Number:</strong> {{ TransactionCode }}
     </p>

@@ -28,7 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Collections.Generic;
 using Rock.Security;
 
@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.Finance
         protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
             gfSettings.SaveUserPreference( "Amount", nreAmount.DelimitedValues );
-            gfSettings.SaveUserPreference( "Frequency", ddlFrequency.SelectedValue != All.Id.ToString() ? ddlFrequency.SelectedValue : string.Empty );
+            gfSettings.SaveUserPreference( "Frequency", dvpFrequency.SelectedValue != All.Id.ToString() ? dvpFrequency.SelectedValue : string.Empty );
             gfSettings.SaveUserPreference( "Created", drpDates.DelimitedValues );
             gfSettings.SaveUserPreference( "Account", ddlAccount.SelectedValue != All.Id.ToString() ? ddlAccount.SelectedValue : string.Empty );
             gfSettings.SaveUserPreference( "Include Inactive", cbIncludeInactive.Checked ? "Yes" : string.Empty );
@@ -144,7 +144,7 @@ namespace RockWeb.Blocks.Finance
                     int definedValueId = 0;
                     if ( int.TryParse( e.Value, out definedValueId ) )
                     {
-                        var definedValue = CacheDefinedValue.Get( definedValueId );
+                        var definedValue = DefinedValueCache.Get( definedValueId );
                         if ( definedValue != null )
                         {
                             e.Value = definedValue.Value;
@@ -240,12 +240,12 @@ namespace RockWeb.Blocks.Finance
         {
             nreAmount.DelimitedValues = gfSettings.GetUserPreference( "Amount" );
 
-            ddlFrequency.BindToDefinedType( CacheDefinedType.Get( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ) );
-            ddlFrequency.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+            dvpFrequency.DefinedTypeId =DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ).Id;
+            dvpFrequency.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
             string freqPreference = gfSettings.GetUserPreference( "Frequency" );
             if ( !string.IsNullOrWhiteSpace( freqPreference ))
             {
-                ddlFrequency.SetValue( freqPreference );
+                dvpFrequency.SetValue( freqPreference );
             }
 
             drpDates.DelimitedValues = gfSettings.GetUserPreference( "Created" );
@@ -285,7 +285,7 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                int personEntityTypeId = CacheEntityType.Get( "Rock.Model.Person" ).Id;
+                int personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
                 if ( !ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) )
                 {
                     validRequest = true;

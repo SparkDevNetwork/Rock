@@ -26,7 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.CheckIn
@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Provides a way to manually enter attendance for a large group of people in an efficient manner." )]
 
-    [GroupField( "Parent Group", "Select the parent group whose immediate childeren will be displayed as options to take attendance for.", required: true, order: 0 )]
+    [GroupField( "Parent Group", "Select the parent group whose immediate children will be displayed as options to take attendance for.", required: true, order: 0 )]
     [BooleanField( "Include Parent Group", "If true then the parent group will be included as an option in addition to its children.", false, order: 1 )]
     [BooleanField( "Default Show Current Attendees", "Should the Current Attendees grid be visible by default. When the grid is enabled performance will be reduced.", false, order: 1 )]
     public partial class RapidAttendanceEntry : RockBlock
@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.CheckIn
                 }
 
                 //
-                // If ther is only one schedule then select it, otherwise show the picker and let the user select.
+                // If there is only one schedule then select it, otherwise show the picker and let the user select.
                 //
                 if ( schedules.Count == 1 )
                 {
@@ -251,7 +251,12 @@ namespace RockWeb.Blocks.CheckIn
                 // Check for existing attendance records.
                 //
                 attendance = attendanceService.Queryable()
-                    .Where( a => a.DidAttend == true && a.GroupId == group.Id && a.StartDateTime == dateTime.Value && a.LocationId == groupLocation.LocationId && a.ScheduleId == scheduleId )
+                    .Where( a => 
+                        a.DidAttend == true && 
+                        a.Occurrence.GroupId == group.Id && 
+                        a.Occurrence.OccurrenceDate == dateTime.Value && 
+                        a.Occurrence.LocationId == groupLocation.LocationId && 
+                        a.Occurrence.ScheduleId == scheduleId )
                     .OrderBy( a => a.PersonAlias.Person.LastName )
                     .ThenBy( a => a.PersonAlias.Person.FirstName );
 
@@ -299,12 +304,7 @@ namespace RockWeb.Blocks.CheckIn
             var dateTime = dpAttendanceDate.SelectedDate.Value;
             var groupLocation = new GroupLocationService( rockContext ).Get( ddlLocation.SelectedValue.AsInteger() );
 
-            //
-            // Check for existing attendance record.
-            //
-            var attendance = attendanceService.Queryable()
-                .Where( a => a.GroupId == group.Id && a.PersonAlias.PersonId == person.Id && a.StartDateTime == dateTime && a.LocationId == groupLocation.LocationId && a.ScheduleId == scheduleId )
-                .FirstOrDefault();
+            attendanceService.AddOrUpdate( person.PrimaryAliasId.Value, dateTime, group.Id, groupLocation.LocationId, scheduleId, group.CampusId );
 
             //
             // If the user is using the activate and save button then mark the
@@ -315,33 +315,12 @@ namespace RockWeb.Blocks.CheckIn
                 person.RecordStatusValueId = new DefinedValueService( rockContext ).Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
             }
 
-            //
-            // If not found then create a new one.
-            //
-            if ( attendance == null )
-            {
-                attendance = new Attendance();
-
-                attendance.GroupId = group.Id;
-                attendance.PersonAliasId = person.PrimaryAliasId;
-                attendance.StartDateTime = dateTime;
-                attendance.CampusId = group.CampusId;
-                attendance.LocationId = groupLocation.LocationId;
-                attendance.ScheduleId = scheduleId;
-
-                attendanceService.Add( attendance );
-            }
-
-            attendance.DidAttend = true;
             rockContext.SaveChanges();
 
             //
             // Flush the attendance cache.
             //
-            if ( attendance.LocationId.HasValue )
-            {
-                Rock.CheckIn.KioskLocationAttendance.Remove( attendance.LocationId.Value );
-            }
+            Rock.CheckIn.KioskLocationAttendance.Remove( groupLocation.LocationId );
 
             nbAttended.Text = string.Format( "{0} has been marked attended.", person.FullName );
 
@@ -412,9 +391,9 @@ namespace RockWeb.Blocks.CheckIn
             attendance.DidAttend = false;
             rockContext.SaveChanges();
 
-            if ( attendance.LocationId != null )
+            if ( attendance.Occurrence.LocationId != null )
             {
-                Rock.CheckIn.KioskLocationAttendance.Remove( attendance.LocationId.Value );
+                Rock.CheckIn.KioskLocationAttendance.Remove( attendance.Occurrence.LocationId.Value );
             }
 
             nbAttended.Text = string.Format( "{0} has been removed from attendance.", attendance.PersonAlias.Person.FullName );
@@ -463,7 +442,7 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Handles the user changign the selected person in the ppAttendee control.
+        /// Handles the user changing the selected person in the ppAttendee control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>

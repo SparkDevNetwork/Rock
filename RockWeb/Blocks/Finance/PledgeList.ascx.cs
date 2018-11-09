@@ -460,8 +460,8 @@ namespace RockWeb.Blocks.Finance
                                 {
                                     AccountId = a.Key.Value,
                                     TotalAmount = a.Sum( x => x.TotalAmount ),
-                                    Name = a.Select( p => p.Account.Name ).FirstOrDefault(),
-                                    Order = a.Select( p => p.Account.Order ).FirstOrDefault()
+                                    Name = a.Where( p => p.Account != null ).Select( p => p.Account.Name ).FirstOrDefault(),
+                                    Order = a.Where( p => p.Account != null ).Select( p => p.Account.Order ).FirstOrDefault()
                                 } ).ToList();
 
                 var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ) : 0;
@@ -504,7 +504,7 @@ namespace RockWeb.Blocks.Finance
                     boundField.AttributeId = attribute.Id;
                     boundField.HeaderText = attribute.Name;
 
-                    var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                     if ( attributeCache != null )
                     {
                         boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;

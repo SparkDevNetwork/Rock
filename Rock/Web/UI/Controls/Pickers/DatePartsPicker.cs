@@ -542,7 +542,7 @@ namespace Rock.Web.UI.Controls
                 if ( selectedMonth.HasValue && selectedDay.HasValue )
                 {
                     // if they picked a day of the month that is invalid, just round it to last day that month;
-                    int correctedDayOfMonth = Math.Min( DateTime.DaysInMonth( DateTime.MinValue.Year, selectedMonth.Value ), selectedDay.Value );
+                    int correctedDayOfMonth = Math.Min( DateTime.DaysInMonth( selectedYear ?? DateTime.MinValue.Year, selectedMonth.Value ), selectedDay.Value );
 
                     var date = new DateTime( ( selectedYear.HasValue ? selectedYear.Value : DateTime.MinValue.Year ), selectedMonth.Value, correctedDayOfMonth );
                     if ( !this.AllowFutureDates && date > RockDateTime.Today )

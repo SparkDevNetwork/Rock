@@ -38,8 +38,8 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
         {
-            LavaFieldTemplate LavaFieldTemplate = new LavaFieldTemplate();
-            this.ItemTemplate = LavaFieldTemplate;
+            LavaFieldTemplate lavaFieldTemplate = new LavaFieldTemplate();
+            this.ItemTemplate = lavaFieldTemplate;
             this.ParentGrid = control as Grid;
             return base.Initialize( sortingEnabled, control );
         }
@@ -243,7 +243,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="dataItem">The data item.</param>
         private void PopulateDataItemPropertiesDictionary( object dataItem )
         {
-            var dataItemProperties = dataItem.GetType().GetProperties().Where( a => !a.GetGetMethod().IsVirtual ).ToArray();
+            var dataItemProperties = dataItem.GetType().GetProperties().Where( a => a.GetGetMethod() != null && !a.GetGetMethod().IsVirtual ).ToArray();
             this.DataItemPropertiesDictionary = new Dictionary<string, DataFieldInfo>();
 
             // add MergeFields based on the associated ColumnHeaderText of each property of the dataitem (without spaces or special chars)
@@ -266,7 +266,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            // add additional MergeFields for Properties of the dataitem that aren't already already a MergeField created from the ColumnHeaderText
+            // add additional MergeFields for Properties of the dataitem that aren't already a MergeField created from the ColumnHeaderText
             foreach ( var itemPropInfo in dataItemProperties )
             {
                 var mergeFieldName = itemPropInfo.Name;

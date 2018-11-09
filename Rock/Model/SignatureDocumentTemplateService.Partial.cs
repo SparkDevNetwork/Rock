@@ -136,14 +136,13 @@ namespace Rock.Model
                                 .FirstOrDefault();
                         }
 
-                        string documentKey = string.Empty;
+                        string documentKey = document?.DocumentKey;
                         if ( document == null || string.IsNullOrWhiteSpace( documentKey ) )
                         {
                             documentKey = provider.CreateDocument( signatureDocumentTemplate, appliesToPerson, assignedToPerson, documentName, out sendErrors, true );
                         }
                         else
                         {
-                            documentKey = document.DocumentKey;
                             provider.ResendDocument( document, out sendErrors );
                         }
 

@@ -1,8 +1,8 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
-<!DOCTYPE html> 
+<!DOCTYPE html>
 
 <script runat="server">
-    
+
     // keep code below to call base class init method
 
     /// <summary>
@@ -14,8 +14,8 @@
         base.OnInit( e );
 
         lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath("~/Assets/Images/rock-logo-circle.svg") );
-    }    
-    
+    }
+
 </script>
 
 <html>
@@ -45,7 +45,7 @@
             <div id="logo">
                 <asp:Literal ID="lLogoSvg" runat="server" />
             </div>
-                
+
             <div id="content-box" class="clearfix">
                 <Rock:Zone Name="Main" runat="server" />
             </div>

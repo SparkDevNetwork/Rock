@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.UI.WebControls;
-
-using Rock.Cache;
+using Rock.Attribute;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Field.Types;
 
@@ -114,7 +114,7 @@ namespace Rock.Web.UI.Controls
                     dataItem.LoadAttributes();
                 }
 
-                CacheAttribute attrib = null;
+                AttributeCache attrib = null;
                 string rawValue = string.Empty;
 
                 bool exists = dataItem.Attributes.ContainsKey( this.DataField );
@@ -138,19 +138,20 @@ namespace Rock.Web.UI.Controls
 
                 if ( exists )
                 {
-                    if ( attrib?.FieldType?.Field is BooleanFieldType )
-                    {
-                        if ( this.ItemStyle.HorizontalAlign != HorizontalAlign.Center )
-                        {
-                            this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-                        }
-
-                        var boolValue = rawValue.AsBoolean();
-                        return boolValue ? "<i class=\"fa fa-check\"></i>" : string.Empty;
-                    }
-
                     if ( formatAsHtml )
                     {
+                        if ( attrib?.FieldType?.Field is BooleanFieldType )
+                        {
+                            if ( this.ItemStyle.HorizontalAlign != HorizontalAlign.Center )
+                            {
+                                this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+                                this.HeaderStyle.HorizontalAlign = HorizontalAlign.Center;
+                            }
+
+                            var boolValue = rawValue.AsBoolean();
+                            return boolValue ? "<i class=\"fa fa-check\"></i>" : string.Empty;
+                        }
+
                         string resultHtml = attrib.FieldType.Field.FormatValueAsHtml( null, attrib.EntityTypeId, dataItem.Id, rawValue, attrib.QualifierValues, condensed );
                         return new HtmlString( resultHtml ?? string.Empty );
                     }
@@ -223,7 +224,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The attributes.
         /// </value>
-        public Dictionary<string, CacheAttribute> Attributes { get; set; }
+        public Dictionary<string, AttributeCache> Attributes { get; set; }
 
         /// <summary>
         /// Dictionary of all attributes and their value.  Key is the attribute key, and value is the associated attribute value
@@ -231,7 +232,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The attribute values.
         /// </value>
-        public Dictionary<string, CacheAttributeValue> AttributeValues { get; set; }
+        public Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the attribute value defaults.  This property can be used by a subclass to override the parent class's default
@@ -304,8 +305,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public AttributeFieldObject()
         {
-            Attributes = new Dictionary<string, CacheAttribute>();
-            AttributeValues = new Dictionary<string, CacheAttributeValue>();
+            Attributes = new Dictionary<string, AttributeCache>();
+            AttributeValues = new Dictionary<string, AttributeValueCache>();
         }
     }
 }

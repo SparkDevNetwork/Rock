@@ -22,7 +22,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Routing;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Model;
 
@@ -119,7 +119,7 @@ namespace Rock.Web
                 {
                     if ( Guid.TryParse( items[0], out pageGuid ) )
                     {
-                        var pageCache = CachePage.Get( pageGuid );
+                        var pageCache = PageCache.Get( pageGuid );
                         if ( pageCache != null )
                         {
                             // Set the page
@@ -232,12 +232,12 @@ namespace Rock.Web
                         }
                         else
                         {
-                            CacheSite site = CacheSite.GetSiteByDomain( uri.Host );
+                            SiteCache site = SiteCache.GetSiteByDomain( uri.Host );
                             if ( site != null )
                             {
                                 foreach( var pageAndRouteId in pages )
                                 {
-                                    var pageCache = CachePage.Get( pageAndRouteId.PageId );
+                                    var pageCache = PageCache.Get( pageAndRouteId.PageId );
                                     if ( pageCache != null && pageCache.Layout != null && pageCache.Layout.SiteId == site.Id )
                                     {
                                         PageId = pageAndRouteId.PageId;
@@ -356,7 +356,7 @@ namespace Rock.Web
         /// <returns></returns>
         private int? GetRouteIdFromPageAndParms()
         {
-            var pageCache = CachePage.Get( PageId );
+            var pageCache = PageCache.Get( PageId );
             if ( pageCache != null && pageCache.PageRoutes.Any() )
             {
                 var r = new Regex( @"(?<={)[A-Za-z0-9\-]+(?=})" );
@@ -472,7 +472,7 @@ namespace Rock.Web
         {
             if ( PageId <= 0 ) return base.ToString();
 
-            var pageCache = CachePage.Get( this.PageId );
+            var pageCache = PageCache.Get( this.PageId );
             if (pageCache == null) return base.ToString();
 
             var pageRoute = pageCache.PageRoutes.FirstOrDefault( a=> a.Id == this.RouteId);
@@ -491,7 +491,7 @@ namespace Rock.Web
             {
                 if (PageId <= 0) return null;
 
-                var pageCache = CachePage.Get( PageId);
+                var pageCache = PageCache.Get( PageId);
                 if (pageCache == null) return null;
 
                 var pageRoute = pageCache.PageRoutes.FirstOrDefault(a => a.Id == RouteId);
@@ -507,27 +507,12 @@ namespace Rock.Web
         /// Gets the parent page references.
         /// </summary>
         /// <returns></returns>
-        [Obsolete]
-        public static List<PageReference> GetParentPageReferences( RockPage rockPage, Web.Cache.PageCache currentPage, PageReference currentPageReference )
-        {
-            if ( currentPage != null )
-            {
-                return GetParentPageReferences( rockPage, CachePage.Get( currentPage.Id ), currentPageReference );
-            }
-
-            return new List<PageReference>();
-        }
-
-        /// <summary>
-        /// Gets the parent page references.
-        /// </summary>
-        /// <returns></returns>
-        public static List<PageReference> GetParentPageReferences(RockPage rockPage, CachePage currentPage, PageReference currentPageReference)
+        public static List<PageReference> GetParentPageReferences(RockPage rockPage, PageCache currentPage, PageReference currentPageReference)
         {
             // Get previous page references in nav history
             var pageReferenceHistory = HttpContext.Current.Session["RockPageReferenceHistory"] as List<PageReference>;
                         
-            // Current page heirarchy references
+            // Current page hierarchy references
             var pageReferences = new List<PageReference>();
 
             if (currentPage != null)
@@ -539,7 +524,7 @@ namespace Rock.Web
                     if ( currentParentPages != null && currentParentPages.Count > 0 )
                     {
                         currentParentPages.Reverse();
-                        foreach ( CachePage page in currentParentPages )
+                        foreach ( PageCache page in currentParentPages )
                         {
                             PageReference parentPageReference = null;
                             if ( pageReferenceHistory != null )

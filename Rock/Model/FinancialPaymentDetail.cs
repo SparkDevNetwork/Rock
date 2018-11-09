@@ -28,7 +28,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Rock.Data;
 using Rock.Financial;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
 
 namespace Rock.Model
@@ -248,6 +248,7 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use HistoryChangeList" )]
         public virtual List<string> HistoryChanges { get; set; }
 
@@ -282,7 +283,8 @@ namespace Rock.Model
         /// <param name="paymentGateway">The payment gateway.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="changes">The changes.</param>
-        [Obsolete( "Use other SetFromPaymentInfo" )]
+        [RockObsolete( "1.7.1" )]
+        [Obsolete( "Use other SetFromPaymentInfo", true )]
         public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext, List<string> changes )
         {
             this.SetFromPaymentInfo( paymentInfo, paymentGateway, rockContext );
@@ -296,7 +298,7 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext ) 
         {
-            if ( AccountNumberMasked.IsNullOrWhiteSpace() && paymentInfo.MaskedNumber.IsNotNullOrWhitespace() )
+            if ( AccountNumberMasked.IsNullOrWhiteSpace() && paymentInfo.MaskedNumber.IsNotNullOrWhiteSpace() )
             {
                 AccountNumberMasked = paymentInfo.MaskedNumber;
             }
@@ -319,7 +321,7 @@ namespace Rock.Model
                 var newLocation = new LocationService( rockContext ).Get(
                     ccPaymentInfo.BillingStreet1, ccPaymentInfo.BillingStreet2, ccPaymentInfo.BillingCity, ccPaymentInfo.BillingState, ccPaymentInfo.BillingPostalCode, ccPaymentInfo.BillingCountry );
 
-                if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhitespace() )
+                if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhiteSpace() )
                 {
                     NameOnCardEncrypted = Encryption.EncryptString( nameOnCard );
                 }
@@ -343,7 +345,7 @@ namespace Rock.Model
             {
                 var swipePaymentInfo = (SwipePaymentInfo)paymentInfo;
 
-                if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhitespace() )
+                if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhiteSpace() )
                 {
                     NameOnCardEncrypted = Encryption.EncryptString( swipePaymentInfo.NameOnCard );
                 }
@@ -397,6 +399,15 @@ namespace Rock.Model
                     }
             }
 
+            if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
+            {
+                // Ensure that CurrencyTypeValueId is set. The UI tries to prevent it, but just in case, if it isn't, set it to Unknown
+                if ( !this.CurrencyTypeValueId.HasValue )
+                {
+                    this.CurrencyTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid() )?.Id;
+                }
+            }
+
             base.PreSaveChanges( dbContext, entry );
         }
 
@@ -414,10 +425,10 @@ namespace Rock.Model
                     .Select( t => new { t.Id, t.BatchId } )
                     .ToList() )
                 {
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId );
+                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                     var batchHistory = new History.HistoryChangeList();
                     batchHistory.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Property, "Transaction" );
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), txn.Id, true, this.ModifiedByPersonAliasId );
+                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), txn.Id, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                 }
             }
 

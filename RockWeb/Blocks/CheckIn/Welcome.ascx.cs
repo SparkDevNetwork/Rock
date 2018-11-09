@@ -28,7 +28,7 @@ using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -45,11 +45,14 @@ namespace RockWeb.Blocks.CheckIn
     [TextField( "Not Active Yet Caption", "Caption displayed when there are active options today, but none are active now. Use {0} for a countdown timer.", false, "This kiosk is not active yet.  Countdown until active: {0}.", "Text", 10 )]
     [TextField( "Closed Title", "", false, "Closed", "Text", 11 )]
     [TextField( "Closed Caption", "", false, "This location is currently closed.", "Text", 12 )]
-    [TextField( "Check-in Button Text", "The text to display on the check-in button. If left blank, 'Check-in' (or 'Start' when check-out is enabled) will be used.", false, "", "Text", 13, "CheckinButtonText" )]
+    [TextField( "Check-in Button Text", "The text to display on the check-in button. Defaults to 'Start' if left blank.", false, "", "Text", 13, "CheckinButtonText" )]
     [TextField( "No Option Caption", "The text to display when there are not any families found matching a scanned identifier (barcode, etc).", false, "Sorry, there were not any families found with the selected identifier.", "Text", 14 )]
-
     public partial class Welcome : CheckInBlock
     {
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -74,6 +77,10 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -108,12 +115,19 @@ namespace RockWeb.Blocks.CheckIn
                     lClosedTitle.Text = GetAttributeValue( "ClosedTitle" );
                     lClosedCaption.Text = GetAttributeValue( "ClosedCaption" );
 
-                    string btnText = GetAttributeValue( "CheckinButtonText" );
-                    if ( string.IsNullOrWhiteSpace( btnText ) )
+                    string checkinButtonText = GetAttributeValue( "CheckinButtonText" ).IfEmpty( "Start" );
+
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    mergeFields.Add( "CheckinButtonText", checkinButtonText );
+                    mergeFields.Add( "Kiosk", CurrentCheckInState.Kiosk );
+                    mergeFields.Add( "RegistrationModeEnabled", CurrentCheckInState.Kiosk.RegistrationModeEnabled );
+                    if ( CurrentGroupTypeIds != null )
                     {
-                        btnText = CurrentCheckInState.CheckInType.AllowCheckout ? "Start" : "Check In";
+                        var checkInAreas = CurrentGroupTypeIds.Select( a => GroupTypeCache.Get( a ) );
+                        mergeFields.Add( "CheckinAreas", checkInAreas );
                     }
-                    lbSearch.Text = string.Format( "<span>{0}</span>", btnText );
+
+                    lStartButtonHtml.Text = CurrentCheckInState.CheckInType.StartLavaTemplate.ResolveMergeFields( mergeFields );
                 }
             }
             else
@@ -122,13 +136,17 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     if ( Request.Form["__EVENTARGUMENT"] == "Wedge_Entry" )
                     {
-                        var dv = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_SCANNED_ID );
+                        var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_SCANNED_ID );
                         DoFamilySearch( dv, hfSearchEntry.Value );
                     }
                     else if ( Request.Form["__EVENTARGUMENT"] == "Family_Id_Search" )
                     {
-                        var dv = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_FAMILY_ID );
+                        var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_FAMILY_ID );
                         DoFamilySearch( dv, hfSearchEntry.Value );
+                    }
+                    else if ( Request.Form["__EVENTARGUMENT"] == "StartClick" )
+                    {
+                        HandleStartClick();
                     }
                 }
 
@@ -158,11 +176,9 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Handles the Click event of the lbSearch control.
+        /// Handles the start click.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbSearch_Click( object sender, EventArgs e )
+        protected void HandleStartClick()
         {
             NavigateToNextPage();
         }
@@ -183,6 +199,9 @@ namespace RockWeb.Blocks.CheckIn
             ScriptManager.RegisterStartupScript( lbRefresh, lbRefresh.GetType(), "refresh-postback", script.ToString(), true );
         }
 
+        /// <summary>
+        /// Clears the selection.
+        /// </summary>
         private void ClearSelection()
         {
             CurrentCheckInState.CheckIn.Families = new List<CheckInFamily>();
@@ -194,7 +213,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         /// <param name="searchType">Type of the search.</param>
         /// <param name="searchValue">The search value.</param>
-        private void DoFamilySearch( CacheDefinedValue searchType, string searchValue )
+        private void DoFamilySearch( DefinedValueCache searchType, string searchValue )
         {
             CurrentCheckInState.CheckIn.UserEnteredSearch = false;
             CurrentCheckInState.CheckIn.ConfirmSingleFamily = false;
@@ -206,7 +225,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !CurrentCheckInState.CheckIn.Families.Any() )
                 {
-                    maWarning.Show( string.Format( "<p>{0}</p>", GetAttributeValue( "NoMatchText" ) ), Rock.Web.UI.Controls.ModalAlertType.Warning );
+                    maWarning.Show( string.Format( "<p>{0}</p>", GetAttributeValue( "NoOptionCaption" ) ), Rock.Web.UI.Controls.ModalAlertType.Warning );
                 }
                 else
                 {
@@ -258,8 +277,15 @@ namespace RockWeb.Blocks.CheckIn
             else if ( !CurrentCheckInState.Kiosk.HasLocations( CurrentCheckInState.ConfiguredGroupTypes ) )
             {
                 DateTime activeAt = CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentCheckInState.ConfiguredGroupTypes ).Select( g => g.NextActiveTime ).Min();
-                lblActiveWhen.Text = activeAt.ToString( "o" );
-                pnlNotActiveYet.Visible = true;
+                if ( activeAt == DateTime.MaxValue )
+                {
+                    pnlClosed.Visible = true;
+                }
+                else
+                {
+                    lblActiveWhen.Text = activeAt.ToString( "o" ).Left( 27 );   // strip the timezone offset off of the string, so that countdown is displayed relative to kiosk's local time.
+                    pnlNotActiveYet.Visible = true;
+                }
             }
             else if ( !CurrentCheckInState.Kiosk.HasActiveLocations( CurrentCheckInState.ConfiguredGroupTypes ) )
             {
@@ -313,6 +339,7 @@ namespace RockWeb.Blocks.CheckIn
             pnlClosed.Visible = false;
             pnlActive.Visible = false;
             pnlManager.Visible = false;
+            btnManager.Visible = false;
 
             tbPIN.Text = string.Empty;
 
@@ -406,7 +433,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( userLogin != null && userLogin.EntityTypeId.HasValue )
             {
                 // make sure this is a PIN auth user login
-                var userLoginEntityType = CacheEntityType.Get( userLogin.EntityTypeId.Value );
+                var userLoginEntityType = EntityTypeCache.Get( userLogin.EntityTypeId.Value );
                 if ( userLoginEntityType != null && userLoginEntityType.Id == pinAuth.EntityType.Id )
                 {
                     if ( pinAuth != null && pinAuth.IsActive )
@@ -515,7 +542,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 var lbOpen = e.Item.FindControl( "lbOpen" ) as LinkButton;
                 var lbClose = e.Item.FindControl( "lbClose" ) as LinkButton;
-                var isActive = (bool)locationDataItem.GetPropertyValue( "IsActive" );
+                var isActive = ( bool ) locationDataItem.GetPropertyValue( "IsActive" );
 
                 if ( isActive )
                 {
@@ -536,7 +563,7 @@ namespace RockWeb.Blocks.CheckIn
                 lLocationName.Text = locationDataItem.GetPropertyValue( "Name" ) as string;
 
                 var lLocationCount = e.Item.FindControl( "lLocationCount" ) as Literal;
-                lLocationCount.Text = KioskLocationAttendance.Get( (int)locationDataItem.GetPropertyValue( "LocationId" ) ).CurrentCount.ToString();
+                lLocationCount.Text = KioskLocationAttendance.Get( ( int ) locationDataItem.GetPropertyValue( "LocationId" ) ).CurrentCount.ToString();
             }
         }
 

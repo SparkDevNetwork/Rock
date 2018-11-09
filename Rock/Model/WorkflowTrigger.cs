@@ -95,6 +95,29 @@ namespace Rock.Model
         public string EntityTypeQualifierValuePrevious { get; set; }
 
         /// <summary>
+        /// Indicates if this WorkflowTrigger is looking for a Value that is Changed From one value To another, or just if the Value Equals something
+        /// This is determined by the values for EntityTypeQualifierValue and EntityTypeQualifierValuePrevious. If EntityTypeQualifierValue and EntityTypeQualifierValuePrevious are the same value,
+        /// this is a trigger that only fires if the ValueEquals on save. Otherwise, it'll only fire if the previous value was Changed From EntityTypeQualifierValuePrevious To EntityTypeQualifierValue
+        /// </summary>
+        /// <value>
+        /// The type of the value change.
+        /// </value>
+        public virtual WorkflowTriggerValueChangeType WorkflowTriggerValueChangeType
+        {
+            get
+            {
+                if ( this.EntityTypeQualifierValuePrevious == this.EntityTypeQualifierValue )
+                {
+                    return WorkflowTriggerValueChangeType.ValueEqual;
+                }
+                else
+                {
+                    return WorkflowTriggerValueChangeType.ChangeFromTo;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the WorkflowTypeId of the <see cref="Rock.Model.WorkflowType"/> that is executed by this WorkflowTrigger. This property is required.
         /// </summary>
         /// <value>
@@ -190,6 +213,22 @@ namespace Rock.Model
     #endregion
 
     #region Enumerations
+
+    /// <summary>
+    /// This is determined by the values for EntityTypeQualifierValue and EntityTypeQualifierValuePrevious
+    /// </summary>
+    public enum WorkflowTriggerValueChangeType
+    {
+        /// <summary>
+        /// EntityTypeQualifierValue and EntityTypeQualifierValuePrevious are different, so we are looking to see if the value Changed From/To
+        /// </summary>
+        ChangeFromTo = 0,
+
+        /// <summary>
+        /// EntityTypeQualifierValue and EntityTypeQualifierValuePrevious are the same value, so the trigger is simply looking to see if the value is equal to the specified value
+        /// </summary>
+        ValueEqual = 1
+    }
 
     /// <summary>
     /// Type of workflow trigger

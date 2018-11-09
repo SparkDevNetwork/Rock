@@ -10,10 +10,12 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-        
+
             <div class="panel-heading text-right">
                 <h1 class="panel-title"><i class="fa fa-camera"></i> Verify Photo List</h1>
-                <Rock:RockCheckBox runat="server" ID="cbShowAll" Text="show verified photos" OnCheckedChanged="cbShowAll_CheckedChanged" AutoPostBack="true" />
+                <div class="pull-right">
+                    <Rock:RockCheckBox runat="server" ID="cbShowAll" Text="Show verified photos" OnCheckedChanged="cbShowAll_CheckedChanged" AutoPostBack="true" />
+                </div>
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox  runat="server" ID="nbConfigError" NotificationBoxType="Danger" Text="Block must be configured for a particular group."
@@ -30,7 +32,7 @@
                                     </div>
                                 </itemtemplate>
                             </Rock:RockTemplateFieldUnselected>
-                            <Rock:RockBoundField DataField="CreatedDateTime" HeaderText="Created" SortExpression="CreatedDateTime" />
+                            <Rock:DateTimeField DataField="Person.Photo.CreatedDateTime" HeaderText="Created" SortExpression="CreatedDateTime"   />
                             <Rock:RockBoundField DataField="Person.FullName" HeaderText="Name" SortExpression="Person.FullName" />
                             <Rock:RockBoundField DataField="Person.Gender" HeaderText="Gender" SortExpression="Person.Gender" />
                             <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" SortExpression="Person.Email" />

@@ -18,9 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -177,9 +178,9 @@ namespace Rock
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public static Dictionary<string, CacheAttribute> GetAuthorizedAttributes ( this IHasAttributes entity, string action, Person person)
+        public static Dictionary<string, AttributeCache> GetAuthorizedAttributes ( this IHasAttributes entity, string action, Person person)
         {
-            var authorizedAttributes = new Dictionary<string, CacheAttribute>();
+            var authorizedAttributes = new Dictionary<string, AttributeCache>();
 
             if (entity == null) return authorizedAttributes;
 
@@ -195,13 +196,13 @@ namespace Rock
         }
 
         /// <summary>
-        /// Selects just the Id from the Attribute Query and reads the Ids into a list of CacheAttribute
+        /// Selects just the Id from the Attribute Query and reads the Ids into a list of AttributeCache
         /// </summary>
         /// <param name="attributeQuery">The attribute query.</param>
         /// <returns></returns>
-        public static List<CacheAttribute> ToCacheAttributeList( this IQueryable<Rock.Model.Attribute> attributeQuery )
+        public static List<AttributeCache> ToCacheAttributeList( this IQueryable<Rock.Model.Attribute> attributeQuery )
         {
-            return attributeQuery.AsNoTracking().Select( a => a.Id ).ToList().Select( a => CacheAttribute.Get( a ) ).ToList().Where( a => a != null ).ToList();
+            return attributeQuery.AsNoTracking().Select( a => a.Id ).ToList().Select( a => AttributeCache.Get( a ) ).ToList().Where( a => a != null ).ToList();
         }
 
         #endregion IHasAttributes extensions

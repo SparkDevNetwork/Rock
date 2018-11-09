@@ -59,7 +59,7 @@
             <Content>
 
                 <asp:HiddenField ID="hfIdValue" runat="server" />
-                <asp:ValidationSummary ID="valUserLoginSummary" runat="server" ValidationGroup="Login"  CssClass="alert alert-validation" HeaderText="Please correct the following"/>
+                <asp:ValidationSummary ID="valUserLoginSummary" runat="server" ValidationGroup="Login"  CssClass="alert alert-validation" HeaderText="Please correct the following:"/>
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
                 <div class="row">
                     <div class="col-md-6">

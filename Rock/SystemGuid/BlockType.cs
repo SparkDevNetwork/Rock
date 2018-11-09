@@ -59,6 +59,21 @@ namespace Rock.SystemGuid
         public const string CONTENT_CHANNEL_VIEW = "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F";
 
         /// <summary>
+        /// Content Channel Item View Block Type Guid
+        /// </summary>
+        public const string CONTENT_CHANNEL_ITEM_VIEW = "63659EBE-C5AF-4157-804A-55C7D565110E";
+
+        /// <summary>
+        /// Content Channel Navigation Block Type Guid
+        /// </summary>
+        public const string CONTENT_CHANNEL_NAVIGATION = "0E023AE3-BF08-48E0-93F8-08C32EB5CAFA";
+
+        /// <summary>
+        /// Content Component Block Type Guid
+        /// </summary>
+        public const string CONTENT_COMPONENT = "AD802CA1-842C-47F0-B5E9-739FE2B4A2BD";
+
+        /// <summary>
         /// The PowerBI Account Registration Block Type Guid
         /// </summary>
         public const string POWERBI_ACCOUNT_REGISTRATION = "EA20D87E-ED46-3DAA-4C4D-4156C399B1C2";
@@ -71,5 +86,10 @@ namespace Rock.SystemGuid
         public const string CONVERT_BUSINESS = "115A7725-6760-4E86-8171-57F4A3CF6909";
 
         #endregion
+
+        /// <summary>
+        /// The bulk update block type guid
+        /// </summary>
+        public const string BULK_UPDATE = "A844886D-ED6F-4367-9C6F-667401201ED0";
     }
 }

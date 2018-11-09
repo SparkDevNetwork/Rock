@@ -21,7 +21,7 @@ using System.Linq;
 using System.Web;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Communication
 {
@@ -84,10 +84,10 @@ namespace Rock.Communication
         public Dictionary<string, object> AdditionalMergeFields { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// Gets or sets a value indicating whether the message should be sent seperately to each recipient. If merge fields are used, this is required.
+        /// Gets or sets a value indicating whether the message should be sent separately to each recipient. If merge fields are used, this is required.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [send seperately to each recipient]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [send separately to each recipient]; otherwise, <c>false</c>.
         /// </value>
         public bool SendSeperatelyToEachRecipient { get; set; } = true;
 
@@ -121,7 +121,7 @@ namespace Rock.Communication
         /// <param name="to">To.</param>
         public void AddRecipient( string to )
         {
-            if ( to.IsNotNullOrWhitespace() )
+            if ( to.IsNotNullOrWhiteSpace() )
             {
                 _recipients.Add( new RecipientData( to ) );
             }
@@ -243,7 +243,7 @@ namespace Rock.Communication
         }
 
         /// <summary>
-        /// Sends the specified error message.
+        /// Sends the specified error message. Ensure you check for error messages and the boolean value to handle error causes where a communication may not be sent.
         /// </summary>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
@@ -255,7 +255,7 @@ namespace Rock.Communication
             {
                 if ( this._recipients.Any() )
                 {
-                    var mediumEntity = CacheEntityType.Get( MediumEntityTypeId );
+                    var mediumEntity = EntityTypeCache.Get( MediumEntityTypeId );
                     if ( mediumEntity != null )
                     {
                         var medium = MediumContainer.GetComponent( mediumEntity.Name );

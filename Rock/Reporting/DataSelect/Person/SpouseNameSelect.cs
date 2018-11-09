@@ -22,7 +22,7 @@ using System.Linq.Expressions;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
@@ -141,7 +141,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
             Guid marriedGuid = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
-            int marriedDefinedValueId = CacheDefinedValue.Get( marriedGuid ).Id;
+            int marriedDefinedValueId = DefinedValueCache.Get( marriedGuid ).Id;
             Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
 
             var familyGroupMembers = new GroupMemberService( context ).Queryable()
@@ -259,7 +259,7 @@ namespace Rock.Reporting.DataSelect.Person
             {
                 Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
                 Guid marriedGuid = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
-                int marriedDefinedValueId = CacheDefinedValue.Get( marriedGuid ).Id;
+                int marriedDefinedValueId = DefinedValueCache.Get( marriedGuid ).Id;
                 Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
 
                 var familyGroupMembers = new GroupMemberService( rockContext ).Queryable()

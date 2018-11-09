@@ -20,7 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using System.Web.UI.WebControls;
-
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -30,6 +30,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
+    [RockObsolete( "1.8" )]
+    [Obsolete("Use DataViewItemPicker instead")]
     public class DataViewPicker : RockDropDownList
     {
 
@@ -123,12 +125,11 @@ namespace Rock.Web.UI.Controls
                         
                     foreach ( var dataView in new DataViewService( rockContext )
                         .GetByEntityTypeId( EntityTypeId.Value )
-                        .Include( "EntityType" )
-                        .Include( "Category" )
                         .Include( "DataViewFilter" )
                         .AsNoTracking() )
                     {
-                        if ( !categoryGuids.Any() || ( dataView.Category != null && categoryGuids.Contains( dataView.Category.Guid ) ) )
+                        var category = dataView.CategoryId.HasValue ? CategoryCache.Get( dataView.CategoryId.Value ) : null;
+                        if ( !categoryGuids.Any() || ( category != null && categoryGuids.Contains( category.Guid ) ) )
                         { 
                             var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
                             if ( dataView.IsAuthorized( Authorization.VIEW, currentPerson ) &&

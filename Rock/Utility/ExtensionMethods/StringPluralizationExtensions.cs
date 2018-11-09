@@ -77,7 +77,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Convert string to possessive ('s)
+        /// Convert string to possessive (’s)
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
@@ -90,13 +90,13 @@ namespace Rock
 
             if ( str.ToLower().EndsWith( "s" ) )
             {
-                return $"{str}'";
+                return $"{str}’";
             }
 
             if ( str.Length > 0 )
             {
                 string poss = char.IsUpper( str[str.Length - 1] ) ? "S" : "s";
-                return $"{str}'{poss}";
+                return $"{str}’{poss}";
             }
 
             return str;

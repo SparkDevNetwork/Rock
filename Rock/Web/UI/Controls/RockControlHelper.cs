@@ -21,7 +21,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Helper class to intialize and render rock controls with Bootstrap html elements
+    /// Helper class to initialize and render rock controls with Bootstrap html elements
     /// </summary>
     public static class RockControlHelper
     {
@@ -181,7 +181,7 @@ namespace Rock.Web.UI.Controls
                     rockControl.RequiredFieldValidator.Enabled = true;
                     if ( string.IsNullOrWhiteSpace( rockControl.RequiredFieldValidator.ErrorMessage ) )
                     {
-                        rockControl.RequiredFieldValidator.ErrorMessage = rockControl.Label + " is Required.";
+                        rockControl.RequiredFieldValidator.ErrorMessage = rockControl.Label + " is required.";
                     }
                     rockControl.RequiredFieldValidator.RenderControl( writer );
                 }

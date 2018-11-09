@@ -25,12 +25,13 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Data.Entity;
 using System.Text;
 using DotLiquid;
+using System.Runtime.Serialization;
 
 namespace RockWeb.Blocks.Utility
 {
@@ -47,12 +48,21 @@ namespace RockWeb.Blocks.Utility
     [IntegerField( "Metric Value Count", "The number of metric values to return per metric. You will always get the lastest value, but if you would like to return additional values (i.e. to create a chart) you can specify that here.", false, 0, order: 4 )]
     [CodeEditorField( "Body Template", "The Lava template for rendering the body of the block.", CodeEditorMode.Less, CodeEditorTheme.Rock, 600, true, "d", order: 5 )]
     [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be made available to the block.", false, order: 6 )]
+    [IntegerField( "Cache Duration", "The time, in seconds, to cache the data for this block. The Lava template will still be run to enable personalization. Only the data for the block will be cached.", false, 3600, order: 7 )]
+    [CustomCheckboxListField( "Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", CACHE_TAG_LIST, false, key: "CacheTags", order: 10 )]
+
     public partial class InternalCommunicationView : Rock.Web.UI.RockBlock
     {
         #region Fields
 
         // used for private variables
         private int _currentPage = 0;
+
+        private const string CACHE_TAG_LIST = @"
+            SELECT CAST([DefinedValue].[Value] AS VARCHAR) AS [Value], [DefinedValue].[Value] AS [Text]
+            FROM[DefinedType]
+            JOIN[DefinedValue] ON[DefinedType].[Id] = [DefinedValue].[DefinedTypeId]
+            WHERE[DefinedType].[Guid] = 'BDF73089-9154-40C1-90E4-74518E9937DC'";
         #endregion
 
         #region Properties
@@ -188,63 +198,101 @@ namespace RockWeb.Blocks.Utility
             var enabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
             var blockTitleIconCssClass = GetAttributeValue( "BlockTitleIconCssClass" );
             var metricValueCount = GetAttributeValue( "MetricValueCount" ).AsInteger();
-
-            
-            // Get latest content channel items, get two so we know if a previous one exists for paging
-            var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable().AsNoTracking()
-                                        .Where( i => i.ContentChannel.Guid == contentChannelGuid
-                                                        && i.Status == ContentChannelItemStatus.Approved )
-                                        .OrderByDescending( i => i.StartDateTime )
-                                        .Take( 2 )
-                                        .Skip( _currentPage )
-                                        .ToList();
-
-            if ( contentChannelItems.IsNull() || contentChannelItems.Count == 0 )
-            {
-                nbMessages.Text = "It appears that there are no active communications to display for this content channel.";
-                nbMessages.NotificationBoxType = NotificationBoxType.Info;
-                return;
-            }
-
-            var currentChannelItem = contentChannelItems.First();
+            var cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
+            string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
-            mergeFields.Add( "Item", currentChannelItem );
 
-            // Get metrics
-            var metricCategories = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( GetAttributeValue( "Metrics" ) );
+            var cacheKey = "internal-commmunication-view-" + this.BlockId.ToString();
 
-            var metricGuids = metricCategories.Select( a => a.MetricGuid ).ToList();
-            var metrics = new MetricService( rockContext ).GetByGuids( metricGuids )
-                            .Select( m => new MetricResult {
-                                Id = m.Id,
-                                Title = m.Title,
-                                Description = m.Description,
-                                IconCssClass = m.IconCssClass,
-                                UnitsLabel = m.YAxisLabel,
-                                LastRunDateTime = m.MetricValues.OrderByDescending( v => v.MetricValueDateTime ).Select( v => v.MetricValueDateTime ).FirstOrDefault(),
-                                LastValue = m.MetricValues.OrderByDescending( v => v.MetricValueDateTime ).Select( v => v.YValue ).FirstOrDefault()
-                            } ).ToList();
+            ContentChannelItem contentChannelItem = null;
+            List<MetricResult> metrics = null;
+            var showPrev = false;
 
-            // Get metric values for each metric if requested 
-            if ( metricValueCount > 0 )
+            CachedBlockData cachedItem = null;
+
+            if ( cacheDuration > 0 && _currentPage == 0 )
             {
-                foreach( var metric in metrics )
+                cachedItem = RockCache.Get( cacheKey ) as CachedBlockData;
+            }
+
+            if ( cachedItem != null )
+            {
+                contentChannelItem = cachedItem.ContentChannelItem;
+                metrics = cachedItem.Metrics;
+                showPrev = cachedItem.ShowPrev;
+            }
+            else
+            {
+
+                // Get latest content channel items, get two so we know if a previous one exists for paging
+                var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable().AsNoTracking()
+                                            .Where( i => i.ContentChannel.Guid == contentChannelGuid
+                                                            && i.Status == ContentChannelItemStatus.Approved )
+                                            .OrderByDescending( i => i.StartDateTime )
+                                            .Take( 2 )
+                                            .Skip( _currentPage )
+                                            .ToList();
+
+                if ( contentChannelItems.IsNull() || contentChannelItems.Count == 0 )
                 {
-                    metric.MetricValues = new MetricValueService( rockContext ).Queryable()
-                                            .Where( v => v.MetricId == metric.Id )
-                                            .OrderByDescending( v => v.MetricValueDateTime )
-                                            .Select( v => new MetricValue
+                    nbMessages.Text = "It appears that there are no active communications to display for this content channel.";
+                    nbMessages.NotificationBoxType = NotificationBoxType.Info;
+                    return;
+                }
+
+                contentChannelItem = contentChannelItems.First();
+                showPrev = ( contentChannelItems.Count > 1 );
+
+                // Get metrics
+                var metricCategories = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( GetAttributeValue( "Metrics" ) );
+
+                var metricGuids = metricCategories.Select( a => a.MetricGuid ).ToList();
+                metrics = new MetricService( rockContext ).GetByGuids( metricGuids )
+                                .Select( m => new MetricResult
+                                {
+                                    Id = m.Id,
+                                    Title = m.Title,
+                                    Description = m.Description,
+                                    IconCssClass = m.IconCssClass,
+                                    UnitsLabel = m.YAxisLabel,
+                                    LastRunDateTime = m.MetricValues.OrderByDescending( v => v.MetricValueDateTime ).Select( v => v.MetricValueDateTime ).FirstOrDefault(),
+                                    LastValue = m.MetricValues.OrderByDescending( v => v.MetricValueDateTime ).Select( v => v.YValue ).FirstOrDefault()
+                                } ).ToList();
+
+                // Get metric values for each metric if requested 
+                if ( metricValueCount > 0 )
+                {
+                    foreach ( var metric in metrics )
+                    {
+                        metric.MetricValues = new MetricValueService( rockContext ).Queryable()
+                                                .Where( v => v.MetricId == metric.Id )
+                                                .OrderByDescending( v => v.MetricValueDateTime )
+                                                .Select( v => new MetricValue
                                                 {
                                                     DateTime = v.MetricValueDateTime,
                                                     Value = v.YValue,
                                                     Note = v.Note
                                                 } )
-                                            .Take( metricValueCount )
-                                            .ToList();
+                                                .Take( metricValueCount )
+                                                .ToList();
+                    }
+                }
+
+                // Set Cache
+                if ( cacheDuration > 0 && _currentPage == 0 )
+                {
+                    var cachedData = new CachedBlockData();
+                    cachedData.ContentChannelItem = contentChannelItem.Clone( false );
+                    cachedData.ShowPrev = showPrev;
+                    cachedData.Metrics = metrics;
+
+                    var expiration = RockDateTime.Now.AddSeconds( cacheDuration );
+                    RockCache.AddOrUpdate( cacheKey, string.Empty, cachedData, expiration, cacheTags );
                 }
             }
 
+            mergeFields.Add( "Item", contentChannelItem );
             mergeFields.Add( "Metrics", metrics );
 
             lBlockTitleIcon.Text = string.Format( "<i class='{0}'></i>", blockTitleIconCssClass );
@@ -252,10 +300,8 @@ namespace RockWeb.Blocks.Utility
 
             lBlockBody.Text = bodyTemplate.ResolveMergeFields( mergeFields, enabledLavaCommands );
 
-
-
             // Determine if we can page backwards
-            btnPrevious.Visible = ( contentChannelItems.Count > 1 );
+            btnPrevious.Visible = showPrev;
 
             // Determine if we can page forwards
             btnNext.Visible = ( _currentPage > 0 );
@@ -267,16 +313,54 @@ namespace RockWeb.Blocks.Utility
         #endregion
 
         #region POCO
+
+        /// <summary>
+        /// Class to hold data for caching
+        /// </summary>
+		[Serializable]
+        [DataContract]
+        protected class CachedBlockData
+        {
+            /// <summary>
+            /// Gets or sets the metrics.
+            /// </summary>
+            /// <value>
+            /// The metrics.
+            /// </value>
+            [DataMember]
+            public List<MetricResult> Metrics { get; set; }
+            /// <summary>
+            /// Gets or sets the content channel item.
+            /// </summary>
+            /// <value>
+            /// The content channel item.
+            /// </value>
+            [DataMember]
+            public ContentChannelItem ContentChannelItem { get; set; }
+            /// <summary>
+            /// Gets or sets a value indicating whether [show previous].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [show previous]; otherwise, <c>false</c>.
+            /// </value>
+            [DataMember]
+            public bool ShowPrev { get; set; }
+        }
+
         /// <summary>
         /// Result class for metrics
         /// </summary>
-        protected class MetricResult : Drop {
+		[Serializable]
+        [DataContract]
+        protected class MetricResult : Drop
+        {
             /// <summary>
             /// Gets or sets the identifier.
             /// </summary>
             /// <value>
             /// The identifier.
             /// </value>
+            [DataMember]
             public int Id { get; set; }
             /// <summary>
             /// Gets or sets the title.
@@ -284,6 +368,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The title.
             /// </value>
+            [DataMember]
             public string Title { get; set; }
             /// <summary>
             /// Gets or sets the description.
@@ -291,6 +376,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The description.
             /// </value>
+            [DataMember]
             public string Description { get; set; }
             /// <summary>
             /// Gets or sets the units label.
@@ -298,6 +384,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The units label.
             /// </value>
+            [DataMember]
             public string UnitsLabel { get; set; }
             /// <summary>
             /// Gets or sets the icon CSS class.
@@ -305,6 +392,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The icon CSS class.
             /// </value>
+            [DataMember]
             public string IconCssClass { get; set; }
             /// <summary>
             /// Gets or sets the last run date time.
@@ -312,6 +400,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The last run date time.
             /// </value>
+            [DataMember]
             public DateTime? LastRunDateTime { get; set; }
             /// <summary>
             /// Gets or sets the last value.
@@ -319,6 +408,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The last value.
             /// </value>
+            [DataMember]
             public decimal? LastValue { get; set; }
             /// <summary>
             /// Gets or sets the metric values.
@@ -326,12 +416,15 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The metric values.
             /// </value>
+            [DataMember]
             public List<MetricValue> MetricValues { get; set; }
         }
 
         /// <summary>
         /// Result class for metric values
         /// </summary>
+		[Serializable]
+        [DataContract]
         protected class MetricValue : Drop
         {
             /// <summary>
@@ -340,6 +433,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The date time.
             /// </value>
+            [DataMember]
             public DateTime? DateTime { get; set; }
             /// <summary>
             /// Gets or sets the value.
@@ -347,6 +441,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The value.
             /// </value>
+            [DataMember]
             public decimal? Value { get; set; }
             /// <summary>
             /// Gets or sets the note.
@@ -354,6 +449,7 @@ namespace RockWeb.Blocks.Utility
             /// <value>
             /// The note.
             /// </value>
+            [DataMember]
             public string Note { get; set; }
         }
         #endregion

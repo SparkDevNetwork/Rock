@@ -116,6 +116,37 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show select current page].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show select current page]; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "true" ),
+        Description( "Should the option to select the current page be displayed?" )
+        ]
+        public bool ShowSelectCurrentPage
+        {
+            get
+            {
+                if ( ViewState["ShowSelectCurrentPage"] != null )
+                {
+                    return ( bool ) ViewState["ShowSelectCurrentPage"];
+                }
+
+                // default to true
+                return true;
+            }
+
+            set
+            {
+                ViewState["ShowSelectCurrentPage"] = value;
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -143,7 +174,7 @@ namespace Rock.Web.UI.Controls
             string scriptFormat = @"
 
                 $('#{0}').click(function () {{
-                    $('#page-route-picker_{3}').find('.js-page-route-picker-menu').toggle(function () {{
+                    $('#page-route-picker_{3}').find('.js-page-route-picker-menu').toggle(0, function () {{
                         Rock.dialogs.updateModalScrollBar('page-route-picker_{3}');
                     }});
                 }});
@@ -420,14 +451,17 @@ namespace Rock.Web.UI.Controls
             _btnCancelPageRoute.ID = string.Format( "btnCancelPageRoute_{0}", this.ID );
             _btnCancelPageRoute.Text = "Cancel";
 
-            _btnSelectCurrentPage = new LinkButton();
-            _btnSelectCurrentPage.ID = this.ID + "_btnSelectCurrentPage";
-            _btnSelectCurrentPage.CssClass = "btn btn-xs btn-link pull-right";
-            _btnSelectCurrentPage.Text = "<i class='fa fa-file-o'></i>";
-            _btnSelectCurrentPage.ToolTip = "Select Current Page";
-            _btnSelectCurrentPage.CausesValidation = false;
-            _btnSelectCurrentPage.Click += _btnSelectCurrentPage_Click;
-            Controls.Add( _btnSelectCurrentPage );
+            if ( ShowSelectCurrentPage )
+            {
+                _btnSelectCurrentPage = new LinkButton();
+                _btnSelectCurrentPage.ID = this.ID + "_btnSelectCurrentPage";
+                _btnSelectCurrentPage.CssClass = "btn btn-xs btn-link pull-right";
+                _btnSelectCurrentPage.Text = "<i class='fa fa-file-o'></i>";
+                _btnSelectCurrentPage.ToolTip = "Select Current Page";
+                _btnSelectCurrentPage.CausesValidation = false;
+                _btnSelectCurrentPage.Click += _btnSelectCurrentPage_Click;
+                Controls.Add( _btnSelectCurrentPage );
+            }
 
             Controls.Add( _hfPageRouteId );
             Controls.Add( _rblSelectPageRoute );
@@ -445,7 +479,7 @@ namespace Rock.Web.UI.Controls
         {
             int? pageId = null;
             var rockBlock = this.RockBlock();
-            if ( rockBlock.CachePage.Guid == Rock.SystemGuid.Page.BLOCK_PROPERTIES.AsGuid() )
+            if ( rockBlock.PageCache.Guid == Rock.SystemGuid.Page.BLOCK_PROPERTIES.AsGuid() )
             {
                 // if the BlockProperties block is the current block, we'll treat the page that this block properties is for as the current page
                 int blockId = rockBlock.PageParameter( "BlockId" ).AsInteger();
@@ -457,7 +491,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                pageId = rockBlock.CachePage.Id;
+                pageId = rockBlock.PageCache.Id;
             }
 
             if ( pageId.HasValue )
@@ -477,7 +511,10 @@ namespace Rock.Web.UI.Controls
         {
             base.RenderCustomPickerActions( writer );
 
-            _btnSelectCurrentPage.RenderControl( writer );
+            if ( ShowSelectCurrentPage )
+            {
+                _btnSelectCurrentPage.RenderControl( writer );
+            }
         }
 
         /// <summary>
@@ -496,7 +533,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// This is where you implement the simple aspects of rendering your control.  The rest
         /// will be handled by calling RenderControlHelper's RenderControl() method.
         /// </summary>
         /// <param name="writer">The writer.</param>

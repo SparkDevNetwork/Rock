@@ -84,6 +84,9 @@
     <Compile Include="..\..\..\Rock.StatementGenerator\StatementGeneratorRecipient.cs">
       <Link>StatementGeneratorRecipient.cs</Link>
     </Compile>
+    <Compile Include="..\..\..\Rock.Version\AssemblySharedInfo.cs">
+      <Link>Properties\AssemblySharedInfo.cs</Link>
+    </Compile>
     <Compile Include="LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
     </Compile>

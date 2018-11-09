@@ -26,7 +26,7 @@ using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -71,7 +71,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         private string GetGlobalGradeLabel()
         {
-            var value = CacheGlobalAttributes.Get().GetValue( "core.GradeLabel" );
+            var value = GlobalAttributesCache.Get().GetValue( "core.GradeLabel" );
             return string.IsNullOrWhiteSpace( value ) ? "Grade" : value;
         }
 
@@ -128,7 +128,7 @@ function() {{
             }
             else if ( values.Length >= 2 )
             {
-                var gradeNameValue = CacheDefinedValue.Get( values[1].AsGuid() );
+                var gradeNameValue = DefinedValueCache.Get( values[1].AsGuid() );
                 string gradeDescription = gradeNameValue != null ? gradeNameValue.Description : "??";
                 ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
                 if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank )
@@ -169,7 +169,7 @@ function() {{
             // add blank item as first item
             ddlGradeDefinedValue.Items.Add( new ListItem() );
 
-            var schoolGrades = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
             if ( schoolGrades != null )
             {
                 foreach ( var schoolGrade in schoolGrades.DefinedValues.OrderByDescending( a => a.Value.AsInteger() ) )
@@ -261,13 +261,13 @@ function() {{
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
             // see if they have a grade transition date
-            bool hasGradeTransitionDate = CacheGlobalAttributes.Get().GetValue( "GradeTransitionDate" ).MonthDayStringAsDateTime().HasValue;
+            bool hasGradeTransitionDate = GlobalAttributesCache.Get().GetValue( "GradeTransitionDate" ).MonthDayStringAsDateTime().HasValue;
 
             var values = selection.Split( '|' );
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
             Guid? gradeDefinedValueGuid = values[1].AsGuidOrNull();
-            CacheDefinedType gradeDefinedType = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
-            CacheDefinedValue gradeDefinedValue = gradeDefinedType.DefinedValues.FirstOrDefault( a => a.Guid == gradeDefinedValueGuid );
+            DefinedTypeCache gradeDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            DefinedValueCache gradeDefinedValue = gradeDefinedType.DefinedValues.FirstOrDefault( a => a.Guid == gradeDefinedValueGuid );
             int? gradeOffset = gradeDefinedValue != null ? gradeDefinedValue.Value.AsIntegerOrNull() : null;
 
             var personGradeQuery = new PersonService( (RockContext)serviceInstance.Context ).Queryable();
@@ -337,7 +337,7 @@ function() {{
                  *          Grade offset must be LessThanOrEqualTo 5
                  */
 
-                CacheDefinedValue nextGradeDefinedValue = gradeDefinedType.DefinedValues
+                DefinedValueCache nextGradeDefinedValue = gradeDefinedType.DefinedValues
                         .OrderByDescending( a => a.Value.AsInteger() ).Where( a => a.Value.AsInteger() < gradeOffset ).FirstOrDefault();
                 int nextGradeOffset = nextGradeDefinedValue != null ? nextGradeDefinedValue.Value.AsInteger() : -1;
 

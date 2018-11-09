@@ -65,7 +65,10 @@ namespace Rock.Field.Types
             clbSlidingDateRangeTypes.Label = "Enabled Sliding Date Range Types";
             clbSlidingDateRangeTypes.Help = "Select specific types or leave all blank to use all of them";
             controls.Add( clbSlidingDateRangeTypes );
-            var typesList = Enum.GetValues( typeof( SlidingDateRangePicker.SlidingDateRangeType ) ).Cast<SlidingDateRangePicker.SlidingDateRangeType>();
+            var typesList = Enum.GetValues( typeof( SlidingDateRangePicker.SlidingDateRangeType ) )
+                .Cast<SlidingDateRangePicker.SlidingDateRangeType>()
+                .Where( a => a != SlidingDateRangePicker.SlidingDateRangeType.All);
+
             foreach ( var type in typesList )
             {
                 clbSlidingDateRangeTypes.Items.Add( new ListItem( type.ConvertToString(), type.ConvertToInt().ToString() ) );
@@ -128,7 +131,7 @@ namespace Rock.Field.Types
                 if ( controls.Count >= 1 )
                 {
                     var clbSlidingDateRangeTypes = controls[0] as RockCheckBoxList;
-                    if ( clbSlidingDateRangeTypes != null )
+                    if ( clbSlidingDateRangeTypes != null && configurationValues.ContainsKey(ENABLED_SLIDING_DATE_RANGE_TYPES) )
                     {
                         var selectedDateRangeTypes = configurationValues[ENABLED_SLIDING_DATE_RANGE_TYPES].Value.SplitDelimitedValues().AsIntegerList().Select( a => (SlidingDateRangePicker.SlidingDateRangeType)a );
                         foreach ( var item in clbSlidingDateRangeTypes.Items.OfType<ListItem>() )
@@ -141,7 +144,7 @@ namespace Rock.Field.Types
                 if ( controls.Count >= 2 )
                 {
                     var clbSlidingDateRangeUnits = controls[1] as RockCheckBoxList;
-                    if ( clbSlidingDateRangeUnits != null )
+                    if ( clbSlidingDateRangeUnits != null && configurationValues.ContainsKey(ENABLED_SLIDING_DATE_RANGE_UNITS) )
                     {
                         var selectedDateRangeUnits = configurationValues[ENABLED_SLIDING_DATE_RANGE_UNITS].Value.SplitDelimitedValues().AsIntegerList().Select( a => (SlidingDateRangePicker.TimeUnitType)a );
                         foreach ( var item in clbSlidingDateRangeUnits.Items.OfType<ListItem>() )
@@ -187,7 +190,11 @@ namespace Rock.Field.Types
             var picker = new SlidingDateRangePicker { ID = id };
             if ( configurationValues != null && configurationValues.ContainsKey( ENABLED_SLIDING_DATE_RANGE_TYPES ) )
             {
-                var selectedDateRangeTypes = configurationValues[ENABLED_SLIDING_DATE_RANGE_TYPES].Value.SplitDelimitedValues().Select( a => a.ConvertToEnum<SlidingDateRangePicker.SlidingDateRangeType>() );
+                var selectedDateRangeTypes = configurationValues[ENABLED_SLIDING_DATE_RANGE_TYPES]
+                    .Value
+                    .SplitDelimitedValues()
+                    .Select( a => a.ConvertToEnum<SlidingDateRangePicker.SlidingDateRangeType>() )
+                    .Where( a => a != SlidingDateRangePicker.SlidingDateRangeType.All);
                 picker.EnabledSlidingDateRangeTypes = selectedDateRangeTypes.ToArray();
             }
 

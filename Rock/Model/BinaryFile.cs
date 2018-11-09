@@ -24,7 +24,9 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Storage;
-using Rock.Cache;
+using Rock.Web.Cache;
+using System.Drawing;
+using ImageResizer;
 
 namespace Rock.Model
 {
@@ -128,7 +130,7 @@ namespace Rock.Model
                 StorageProvider = null;
                 if ( value.HasValue )
                 {
-                    var entityType = CacheEntityType.Get( value.Value );
+                    var entityType = EntityTypeCache.Get( value.Value );
                     if ( entityType != null )
                     {
                         StorageProvider = ProviderContainer.GetComponent( entityType.Name );
@@ -360,7 +362,72 @@ namespace Rock.Model
             {
                 if ( BinaryFileType == null && BinaryFileTypeId.HasValue )
                 {
-                    BinaryFileType = new BinaryFileTypeService( (RockContext)dbContext ).Get( BinaryFileTypeId.Value );
+                    BinaryFileType = new BinaryFileTypeService( ( RockContext ) dbContext ).Get( BinaryFileTypeId.Value );
+                }
+
+                if ( this.MimeType.StartsWith( "image/" ) )
+                {
+                    try
+                    {
+                        using ( Bitmap bm = new Bitmap( this.ContentStream ) )
+                        {
+                            if ( bm != null )
+                            {
+                                this.Width = bm.Width;
+                                this.Height = bm.Height;
+                            }
+                        }
+                        ContentStream.Seek( 0, SeekOrigin.Begin );
+
+                        if ( !IsTemporary )
+                        {
+                            if ( BinaryFileType.MaxHeight.HasValue &&
+                                BinaryFileType.MaxHeight != 0 &&
+                                BinaryFileType.MaxWidth.HasValue && 
+                                BinaryFileType.MaxWidth != 0 )
+                            {
+                                ResizeSettings settings = new ResizeSettings();
+                                MemoryStream resizedStream = new MemoryStream();
+                                if ( BinaryFileType.MaxWidth.Value < Width || BinaryFileType.MaxHeight < Height )
+                                {
+                                    settings.Add( "mode", "max" );
+                                    if ( BinaryFileType.MaxHeight < Height && BinaryFileType.MaxWidth < Width )
+                                    {
+                                        if ( BinaryFileType.MaxHeight >= BinaryFileType.MaxWidth )
+                                        {
+                                            settings.Add( "height", BinaryFileType.MaxHeight.Value.ToString() );
+                                        }
+                                        if ( BinaryFileType.MaxHeight <= BinaryFileType.MaxWidth )
+                                        {
+                                            settings.Add( "width", BinaryFileType.MaxWidth.Value.ToString() );
+                                        }
+                                    }
+                                    else if ( BinaryFileType.MaxHeight < Height )
+                                    {
+
+                                        settings.Add( "height", BinaryFileType.MaxHeight.Value.ToString() );
+                                    }
+                                    else
+                                    {
+                                        settings.Add( "width", BinaryFileType.MaxWidth.Value.ToString() );
+
+                                    }
+                                    ImageBuilder.Current.Build( this.ContentStream, resizedStream, settings );
+                                    ContentStream = resizedStream;
+
+                                    using ( Bitmap bm = new Bitmap( this.ContentStream ) )
+                                    {
+                                        if ( bm != null )
+                                        {
+                                            this.Width = bm.Width;
+                                            this.Height = bm.Height;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch ( Exception ) { } // if the file is an invalid photo keep moving
                 }
 
                 if ( entry.State == System.Data.Entity.EntityState.Added )
@@ -418,32 +485,30 @@ namespace Rock.Model
                             {
                                 settings.Add( attributeValue.Key, attributeValue.Value.Value );
                             }
-                            string newSettingsJson = settings.ToJson();
-                            string oldSettingsJson = ( StorageSettings ?? new Dictionary<string, string>() ).ToJson();
+                            string settingsJson = settings.ToJson();
 
                             if ( StorageProvider != null && (
                                 StorageEntityTypeId.Value != BinaryFileType.StorageEntityTypeId.Value ||
-                                oldSettingsJson != newSettingsJson ) )
+                                StorageEntitySettings != settingsJson ) )
                             {
-                                try
-                                {
-                                    // Save the file contents before deleting
-                                    var contentStream = ContentStream;
 
-                                    // Delete the current provider's storage
-                                    StorageProvider.DeleteContent( this );
+                                var ms = new MemoryStream();
+                                ContentStream.Position = 0;
+                                ContentStream.CopyTo( ms );
+                                ContentStream.Dispose();
 
-                                    // Reset the content stream
-                                    ContentStream = contentStream;
-                                }
-                                catch ( Exception ex )
-                                {
-                                    ExceptionLogService.LogException( ex );
-                                }
+                                // Delete the current provider's storage
+                                StorageProvider.DeleteContent( this );
 
                                 // Set the new storage provider with its settings
                                 StorageEntityTypeId = BinaryFileType.StorageEntityTypeId;
-                                StorageEntitySettings = newSettingsJson;
+                                StorageEntitySettings = settingsJson;
+
+                                ContentStream = new MemoryStream();
+                                ms.Position = 0;
+                                ms.CopyTo( ContentStream );
+                                ContentStream.Position = 0;
+                                FileSize = ContentStream.Length;
                             }
                         }
                     }

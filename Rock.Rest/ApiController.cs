@@ -27,6 +27,7 @@ using System.Web.Http;
 using System.Web.Http.OData;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -495,7 +496,7 @@ namespace Rock.Rest
                 using ( var rockContext = new RockContext() )
                 {
                     modelWithAttributes.LoadAttributes( rockContext );
-                    Rock.Cache.CacheAttribute attributeCache = modelWithAttributes.Attributes.ContainsKey( attributeKey ) ? modelWithAttributes.Attributes[attributeKey] : null;
+                    Rock.Web.Cache.AttributeCache attributeCache = modelWithAttributes.Attributes.ContainsKey( attributeKey ) ? modelWithAttributes.Attributes[attributeKey] : null;
 
                     if ( attributeCache != null )
                     {

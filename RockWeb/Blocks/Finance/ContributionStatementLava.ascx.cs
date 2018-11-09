@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Data.Entity;
@@ -233,9 +233,9 @@ namespace RockWeb.Blocks.Finance
 
             var statementYear = RockDateTime.Now.Year;
 
-            if ( Request["StatementYear"] != null )
+            if ( PageParameter( "StatementYear" ).IsNotNullOrWhiteSpace() )
             {
-                Int32.TryParse( Request["StatementYear"].ToString(), out statementYear );
+                Int32.TryParse( PageParameter( "StatementYear" ), out statementYear );
             }
 
             FinancialTransactionDetailService financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
@@ -244,13 +244,13 @@ namespace RockWeb.Blocks.Finance
 
             // get excluded currency types setting
             List<Guid> excludedCurrencyTypes = new List<Guid>();
-            if ( GetAttributeValue( "ExcludedCurrencyTypes" ).IsNotNullOrWhitespace() )
+            if ( GetAttributeValue( "ExcludedCurrencyTypes" ).IsNotNullOrWhiteSpace() )
             {
                 excludedCurrencyTypes = GetAttributeValue( "ExcludedCurrencyTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
             }
 
-            var personGuid = Request["PersonGuid"].AsGuidOrNull();
-            
+            var personGuid = PageParameter( "PersonGuid" ).AsGuidOrNull();
+
             if ( personGuid.HasValue )
             {
                 // if "AllowPersonQueryString is False", only use the PersonGuid if it is a Guid of one of the current person's businesses
@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.Finance
                 mergeFields.Add( "StatementEndDate", "12/31/" + statementYear.ToString() );
             }
 
-            var familyGroupTypeId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
             var groupMemberQry = new GroupMemberService( rockContext ).Queryable().Where( m => m.Group.GroupTypeId == familyGroupTypeId );
 
             // get giving group members in order by family role (adult -> child) and then gender (male -> female)

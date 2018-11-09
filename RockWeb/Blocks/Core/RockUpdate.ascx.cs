@@ -37,7 +37,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Services.NuGet;
 using Rock.VersionInfo;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Core
 {
@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( nuGetService == null )
                 {
-                    var globalAttributesCache = CacheGlobalAttributes.Get();
+                    var globalAttributesCache = GlobalAttributesCache.Get();
                     string packageSource = globalAttributesCache.GetValue( "UpdateServerUrl" );
                     if ( packageSource.ToLowerInvariant().Contains( "rockalpha" ) || packageSource.ToLowerInvariant().Contains( "rockbeta" ) )
                     {
@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Core
                 {
                     pnlNoUpdates.Visible = false;
                     pnlError.Visible = true;
-                    nbErrors.Text = string.Format( "Your UpdateServerUrl is not valid. It is currently set to: {0}", CacheGlobalAttributes.Get().GetValue( "UpdateServerUrl" ) );
+                    nbErrors.Text = string.Format( "Your UpdateServerUrl is not valid. It is currently set to: {0}", GlobalAttributesCache.Get().GetValue( "UpdateServerUrl" ) );
                 }
                 else
                 {
@@ -338,7 +338,7 @@ namespace RockWeb.Blocks.Core
             List<Release> releases = new List<Release>();
 
             var releaseProgram = ReleaseProgram.PRODUCTION;
-            var updateUrl = CacheGlobalAttributes.Get().GetValue( "UpdateServerUrl" );
+            var updateUrl = GlobalAttributesCache.Get().GetValue( "UpdateServerUrl" );
             if ( updateUrl.Contains( ReleaseProgram.ALPHA ) )
             {
                 releaseProgram = ReleaseProgram.ALPHA;
@@ -401,7 +401,7 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Suggested approach to check which version of the .Net framework is intalled when using version 4.5 or later
+        /// Suggested approach to check which version of the .Net framework is installed when using version 4.5 or later
         /// as per https://msdn.microsoft.com/en-us/library/hh925568(v=vs.110).aspx.
         /// </summary>
         /// <returns>a string containing the human readable version of the .Net framework</returns>
@@ -842,7 +842,7 @@ namespace RockWeb.Blocks.Core
 
                     if ( cbIncludeStats.Checked )
                     {
-                        var globalAttributes = CacheGlobalAttributes.Get();
+                        var globalAttributes = GlobalAttributesCache.Get();
                         organizationName = globalAttributes.GetValue( "OrganizationName" );
                         publicUrl = globalAttributes.GetValue( "PublicApplicationRoot" );
 
@@ -924,11 +924,11 @@ namespace RockWeb.Blocks.Core
 
             if ( ex.Message.Contains( "404" ) )
             {
-                nbErrors.Text = string.Format( "It appears that someone configured your <code>UpdateServerUrl</code> setting incorrectly: {0}", CacheGlobalAttributes.Get().GetValue( "UpdateServerUrl" ) );
+                nbErrors.Text = string.Format( "It appears that someone configured your <code>UpdateServerUrl</code> setting incorrectly: {0}", GlobalAttributesCache.Get().GetValue( "UpdateServerUrl" ) );
             }
             else if ( ex.Message.Contains( "could not be resolved" ) )
             {
-                nbErrors.Text = string.Format( "I think either the update server is down or your <code>UpdateServerUrl</code> setting is incorrect: {0}", CacheGlobalAttributes.Get().GetValue( "UpdateServerUrl" ) );
+                nbErrors.Text = string.Format( "I think either the update server is down or your <code>UpdateServerUrl</code> setting is incorrect: {0}", GlobalAttributesCache.Get().GetValue( "UpdateServerUrl" ) );
             }
             else if ( ex.Message.Contains( "Unable to connect" ) )
             {

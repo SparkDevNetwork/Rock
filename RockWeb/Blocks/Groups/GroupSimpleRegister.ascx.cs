@@ -24,7 +24,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Groups
@@ -206,8 +206,8 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                CacheDefinedValue dvcConnectionStatus = CacheDefinedValue.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-                CacheDefinedValue dvcRecordStatus = CacheDefinedValue.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
+                DefinedValueCache dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+                DefinedValueCache dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
 
                 Person person = new Person();
                 person.FirstName = txtFirstName.Text;
@@ -215,7 +215,7 @@ namespace RockWeb.Blocks.Groups
                 person.Email = txtEmail.Text;
                 person.IsEmailActive = true;
                 person.EmailPreference = EmailPreference.EmailAllowed;
-                person.RecordTypeValueId = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                 if ( dvcConnectionStatus != null )
                 {
                     person.ConnectionStatusValueId = dvcConnectionStatus.Id;

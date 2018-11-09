@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -347,10 +347,8 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
 
-                string defaultState = GetDefaultState();
-                string state = value ?? defaultState;
-                _tbState.Text = state;
-                _ddlState.SetValue( value, defaultState );
+                _tbState.Text = value;
+                _ddlState.SetValue( value );
             }
         }
 
@@ -393,7 +391,7 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
 
-                string country = value ?? GetDefaultCountry();
+                string country = value;
                 _ddlCountry.SetValue( country );
                 BindStates( country );
             }
@@ -589,7 +587,6 @@ namespace Rock.Web.UI.Controls
             string defaultState = GetDefaultState();
 
             BindCountries();
-            _ddlCountry.SetValue( defaultCountry );
 
             BindStates( defaultCountry );
             _ddlState.SetValue( defaultState );
@@ -622,7 +619,7 @@ namespace Rock.Web.UI.Controls
                 string stateLabel = "Region";
                 string postalCodeLabel = "Postal Code";
 
-                var countryValue = CacheDefinedType.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
+                var countryValue = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                     .DefinedValues
                     .Where( v => v.Value.Equals( _ddlCountry.SelectedValue, StringComparison.OrdinalIgnoreCase ) )
                     .FirstOrDefault();
@@ -732,7 +729,7 @@ namespace Rock.Web.UI.Controls
         {
             EnsureChildControls();
 
-            if ( string.IsNullOrWhiteSpace( _ddlCountry.SelectedValue ) )
+            if ( _ddlCountry.SelectedValue == "------------------------" )
             {
                 _ddlCountry.SelectedIndex = 0;
             }
@@ -822,7 +819,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void SetOrganizationAddressDefaults()
         {
-            var globalAttributesCache = CacheGlobalAttributes.Get();
+            var globalAttributesCache = GlobalAttributesCache.Get();
             _orgState = globalAttributesCache.OrganizationState;
             _orgCountry = globalAttributesCache.OrganizationCountry;
         }
@@ -839,8 +836,8 @@ namespace Rock.Web.UI.Controls
             _ddlCountry.SelectedValue = null;
             _ddlCountry.ClearSelection();
 
-            var definedType = CacheDefinedType.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) );
-            var countryValues = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
+            var definedType = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) );
+            var countryValues = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
                 .DefinedValues
                 .OrderBy( v => v.Order )
                 .ThenBy( v => v.Value )
@@ -855,8 +852,9 @@ namespace Rock.Web.UI.Controls
                     .FirstOrDefault();
                 if ( defaultCountry != null )
                 {
+                    _ddlCountry.Items.Add( new ListItem( "Countries", string.Empty ) );
                     _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? defaultCountry.Value : defaultCountry.Description, defaultCountry.Value ) );
-                    _ddlCountry.Items.Add( new ListItem( "------------------------", string.Empty ) );
+                    _ddlCountry.Items.Add( new ListItem( "------------------------", "------------------------" ) );
                 }
             }
 
@@ -865,12 +863,16 @@ namespace Rock.Web.UI.Controls
                 _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? country.Value : country.Description, country.Value ) );
             }
 
-            bool? showCountry = CacheGlobalAttributes.Get().GetValue( "SupportInternationalAddresses" ).AsBooleanOrNull();
+            bool? showCountry = GlobalAttributesCache.Get().GetValue( "SupportInternationalAddresses" ).AsBooleanOrNull();
             _ddlCountry.Visible = showCountry.HasValue && showCountry.Value;
 
             if ( !string.IsNullOrWhiteSpace( currentValue ) )
             {
                 _ddlCountry.SetValue( currentValue );
+            }
+            else
+            {
+                _ddlCountry.SetValue( string.Empty );
             }
         }
 
@@ -880,14 +882,19 @@ namespace Rock.Web.UI.Controls
         /// <param name="country">The country.</param>
         private void BindStates( string country )
         {
-            string countryGuid = CacheDefinedType.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
+            if (country.IsNullOrWhiteSpace())
+            {
+                country = GetDefaultCountry();
+            }
+
+            string countryGuid = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                 .DefinedValues
                 .Where( v => v.Value.Equals( country, StringComparison.OrdinalIgnoreCase ) )
                 .Select( v => v.Guid )
                 .FirstOrDefault()
                 .ToString();
 
-            var definedType = CacheDefinedType.Get( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
+            var definedType = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
             var stateList = definedType
                 .DefinedValues
                 .Where( v =>

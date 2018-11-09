@@ -106,12 +106,15 @@ END
             RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.BOOLEAN, "E919E722-F895-44A4-B86D-38DB8FBA1844", 
                 "Do Not Send Giving Statement", "DoNotSendGivingStatement", "", "Set this to true if the person does not want a giving statement", 0, "false", Rock.StatementGenerator.SystemGuid.Attribute.PERSON_DO_NOT_SEND_GIVING_STATEMENT );
 
+            /*
+            Moved to 201806222017201_V8Installers now that StatementGenerator is part of core again
             // update new location of statementgenerator installer
             Sql( @"
     UPDATE [AttributeValue] 
     SET [Value] = 'http://storage.rockrms.com/externalapplications/sparkdevnetwork/statementgenerator/1.7.0/statementgenerator.exe' 
     WHERE [Guid] = '10BE2E03-7827-41B5-8CB2-DEB473EA107A'
 " );
+            */
         }
 
         /// <summary>

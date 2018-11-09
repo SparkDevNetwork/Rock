@@ -23,7 +23,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -142,7 +142,6 @@ namespace RockWeb.Blocks.Core
 
                 blockTypeService.Delete( blockType );
                 rockContext.SaveChanges();
-                Rock.Cache.CacheBlockType.Remove( blockType.Id );
             }
 
             BindGrid();
@@ -280,7 +279,7 @@ namespace RockWeb.Blocks.Core
                 gBlockTypes.DataSource = selectQry.OrderBy( b => b.Name ).ToList();
             }
 
-            gBlockTypes.EntityTypeId = CacheEntityType.Get<Rock.Model.BlockType>().Id;
+            gBlockTypes.EntityTypeId = EntityTypeCache.Get<Rock.Model.BlockType>().Id;
             gBlockTypes.DataBind();
         }
 

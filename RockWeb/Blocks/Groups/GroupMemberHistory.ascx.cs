@@ -22,7 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
@@ -31,16 +31,17 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Groups
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Group Member History" )]
     [Category( "Groups" )]
-    [Description( "Displays a timeline of history for a group member" )]
+    [Description( "Displays a timeline of history for a group member. If only GroupId is specified, a list of group members that have been in the group will be shown first." )]
 
     [CodeEditorField( "Timeline Lava Template", "The Lava Template to use when rendering the timeline view of the history.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, @"{% include '~~/Assets/Lava/GroupHistoryTimeline.lava' %}", order: 1 )]
-    [LinkedPage( "Group History Grid Page", required: true, order: 2 )]
-    [LinkedPage( "Group Member History Page", required: true, order: 3 )]
-    public partial class GroupMemberHistory : RockBlock, ICustomGridColumns
+    [LinkedPage( "Group History Grid Page", defaultValue: Rock.SystemGuid.Page.GROUP_HISTORY_GRID, required: true, order: 2 )]
+    [LinkedPage( "Group Member History Page", defaultValue: Rock.SystemGuid.Page.GROUP_MEMBER_HISTORY, required: true, order: 3 )]
+    [BooleanField( "Show Members Grid", "Show Members Grid if GroupMemberId is not specified in the URL", true, order: 4 )]
+    public partial class GroupMemberHistory : RockBlock, ICustomGridColumns, ISecondaryBlock
     {
         #region Base Control Methods
 
@@ -58,7 +59,7 @@ namespace RockWeb.Blocks.Groups
             gGroupMembers.GridRebind += ( sender, ge ) => { BindMembersGrid(); };
 
             /// add lazyload js so that person-link-popover javascript works (see GroupMemberList.ascx)
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.lazyload.min.js" ) );
+            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js" );
         }
 
         /// <summary>
@@ -77,11 +78,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     if ( groupMemberId.HasValue )
                     {
-                        var groupMember = new GroupMemberService( new RockContext() ).Get( groupMemberId.Value );
-                        if ( groupMember != null )
-                        {
-                            groupId = groupMember.GroupId;
-                        }
+                        groupId = new GroupMemberService( new RockContext() ).GetSelect( groupMemberId.Value, a => a.GroupId );
                     }
                 }
 
@@ -91,7 +88,7 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    pnlMembers.Visible = false;
+                    this.Visible = false;
                 }
             }
         }
@@ -130,12 +127,13 @@ namespace RockWeb.Blocks.Groups
         {
             int groupId = hfGroupId.Value.AsInteger();
 
-            gfGroupMembers.SaveUserPreference( MakeKeyUniqueToGroup( groupId, "First Name" ), "First Name", tbFirstName.Text );
-            gfGroupMembers.SaveUserPreference( MakeKeyUniqueToGroup( groupId, "Last Name" ), "Last Name", tbLastName.Text );
-            gfGroupMembers.SaveUserPreference( MakeKeyUniqueToGroup( groupId, "Group Role" ), "Last Role", cblRole.SelectedValues.AsIntegerList().ToJson() );
-            gfGroupMembers.SaveUserPreference( MakeKeyUniqueToGroup( groupId, "Group Member Status" ), "Last Status", cblGroupMemberStatus.SelectedValues.AsIntegerList().ToJson() );
-            gfGroupMembers.SaveUserPreference( MakeKeyUniqueToGroup( groupId, "Date Added" ), "Date Added", sdrDateAdded.DelimitedValues );
-            gfGroupMembers.SaveUserPreference( MakeKeyUniqueToGroup( groupId, "Date Removed" ), "Date Removed", sdrDateRemoved.DelimitedValues );
+            gfGroupMembers.UserPreferenceKeyPrefix = string.Format( "{0}-", groupId );
+            gfGroupMembers.SaveUserPreference( "First Name", tbFirstName.Text );
+            gfGroupMembers.SaveUserPreference( "Last Name", tbLastName.Text );
+            gfGroupMembers.SaveUserPreference( "Last Role", cblRole.SelectedValues.AsIntegerList().ToJson() );
+            gfGroupMembers.SaveUserPreference( "Status", "Last Status", cblGroupMemberStatus.SelectedValues.AsIntegerList().ToJson() );
+            gfGroupMembers.SaveUserPreference( "Date Added", sdrDateAdded.DelimitedValues );
+            gfGroupMembers.SaveUserPreference( "Date Removed", sdrDateRemoved.DelimitedValues );
 
             BindMembersGrid();
         }
@@ -148,21 +146,21 @@ namespace RockWeb.Blocks.Groups
         protected void gfGroupMembers_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
             int groupId = hfGroupId.Value.AsInteger();
-            if ( e.Key == MakeKeyUniqueToGroup( groupId, "Group Role" ) )
+            if ( e.Key == "Group Role" )
             {
                 List<int> selectedGroupRoleIds = e.Value.FromJsonOrNull<List<int>>() ?? new List<int>();
                 e.Value = cblRole.Items.OfType<ListItem>().Where( a => selectedGroupRoleIds.Contains( a.Value.AsInteger() ) ).Select( a => a.Text ).ToList().AsDelimited( ", ", " or " );
             }
-            else if ( e.Key == MakeKeyUniqueToGroup( groupId, "Group Member Status" ) )
+            else if ( e.Key == "Group Member Status" )
             {
                 List<int> selectedGroupMemberStatuses = e.Value.FromJsonOrNull<List<int>>() ?? new List<int>();
                 e.Value = cblGroupMemberStatus.Items.OfType<ListItem>().Where( a => selectedGroupMemberStatuses.Contains( a.Value.AsInteger() ) ).Select( a => a.Text ).ToList().AsDelimited( ", ", " or " );
             }
-            else if ( e.Key == MakeKeyUniqueToGroup( groupId, "Date Added" ) || e.Key == MakeKeyUniqueToGroup( groupId, "Date Removed" ) )
+            else if ( e.Key == "Date Added" || e.Key == "Date Removed" )
             {
                 e.Value = SlidingDateRangePicker.FormatDelimitedValues( e.Value );
             }
-            else if ( e.Key == MakeKeyUniqueToGroup( groupId, "First Name" ) || e.Key == MakeKeyUniqueToGroup( groupId, "Last Name" ) )
+            else if ( e.Key == "First Name" || e.Key == "Last Name" )
             {
                 // let the value go thru unchanged
             }
@@ -197,7 +195,7 @@ namespace RockWeb.Blocks.Groups
             Literal lPersonProfileLink = e.Row.FindControl( "lPersonProfileLink" ) as Literal;
             if ( groupMember != null )
             {
-                lPersonNameHtml.Text = string.Format( photoFormat, groupMember.PersonId, groupMember.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) )
+                lPersonNameHtml.Text = string.Format( photoFormat, groupMember.PersonId, groupMember.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) )
                     + groupMember.ToString();
 
                 string personUrl = this.ResolveUrl( string.Format( "~/Person/{0}", groupMember.PersonId ) );
@@ -219,12 +217,29 @@ namespace RockWeb.Blocks.Groups
             hfGroupId.Value = groupId.ToString();
             hfGroupMemberId.Value = groupMemberId.ToString();
             pnlMembers.Visible = !groupMemberId.HasValue;
+            int groupTypeId = new GroupService( new RockContext() ).GetSelect( groupId, a => a.GroupTypeId );
+            bool showMembersGrid = this.GetAttributeValue( "ShowMembersGrid" ).AsBoolean();
+
+            // only show this block if GroupHistory is enabled
+            var groupType = GroupTypeCache.Get( groupTypeId );
+            if ( groupType != null && groupType.EnableGroupHistory == false )
+            {
+                this.Visible = false;
+                return;
+            }
 
             if ( groupMemberId.HasValue )
             {
+                // if groupMemberId is 0, we are adding a new group member, so don't show group member history (and don't show the member's grid either)
+                if ( groupMemberId == 0 )
+                {
+                    this.Visible = false;
+                    return;
+                }
+
                 ShowGroupMemberHistory( groupMemberId.Value );
             }
-            else
+            else if ( showMembersGrid )
             {
                 BindFilter();
                 BindMembersGrid();
@@ -239,13 +254,14 @@ namespace RockWeb.Blocks.Groups
             var rockContext = new RockContext();
             int groupId = hfGroupId.Value.AsInteger();
             var group = new GroupService( rockContext ).Get( groupId );
-            var groupTypeCache = CacheGroupType.Get( group.GroupTypeId );
+            var groupTypeCache = GroupTypeCache.Get( group.GroupTypeId );
+            gfGroupMembers.UserPreferenceKeyPrefix = string.Format( "{0}-", groupId );
 
-            tbFirstName.Text = gfGroupMembers.GetUserPreference( MakeKeyUniqueToGroup( groupId, "First Name" ) );
-            tbLastName.Text = gfGroupMembers.GetUserPreference( MakeKeyUniqueToGroup( groupId, "Last Name" ) );
+            tbFirstName.Text = gfGroupMembers.GetUserPreference( "First Name" );
+            tbLastName.Text = gfGroupMembers.GetUserPreference( "Last Name" );
 
-            sdrDateAdded.DelimitedValues = gfGroupMembers.GetUserPreference( MakeKeyUniqueToGroup( groupId, "Date Added" ) );
-            sdrDateRemoved.DelimitedValues = gfGroupMembers.GetUserPreference( MakeKeyUniqueToGroup( groupId, "Date Removed" ) );
+            sdrDateAdded.DelimitedValues = gfGroupMembers.GetUserPreference( "Date Added" );
+            sdrDateRemoved.DelimitedValues = gfGroupMembers.GetUserPreference( "Date Removed" );
             cblRole.Items.Clear();
 
             if ( groupTypeCache != null )
@@ -256,24 +272,14 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            List<int> selectedGroupRoleIds = gfGroupMembers.GetUserPreference( MakeKeyUniqueToGroup( groupId, "Group Role" ) ).FromJsonOrNull<List<int>>() ?? new List<int>();
+            List<int> selectedGroupRoleIds = gfGroupMembers.GetUserPreference( "Group Role" ).FromJsonOrNull<List<int>>() ?? new List<int>();
             cblRole.SetValues( selectedGroupRoleIds );
 
             cblGroupMemberStatus.BindToEnum<GroupMemberStatus>();
-            List<GroupMemberStatus> selectedGroupMemberStatuses = gfGroupMembers.GetUserPreference( MakeKeyUniqueToGroup( groupId, "Group Member Status" ) ).FromJsonOrNull<List<GroupMemberStatus>>() ?? new List<GroupMemberStatus>();
+            List<GroupMemberStatus> selectedGroupMemberStatuses = gfGroupMembers.GetUserPreference( "Group Member Status" ).FromJsonOrNull<List<GroupMemberStatus>>() ?? new List<GroupMemberStatus>();
             cblGroupMemberStatus.SetValues( selectedGroupMemberStatuses.Select( a => a.ConvertToInt() ) );
         }
 
-        /// <summary>
-        /// Makes the key unique to group.
-        /// </summary>
-        /// <param name="groupId">The group identifier.</param>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        private string MakeKeyUniqueToGroup( int groupId, string key )
-        {
-            return string.Format( "{0}-{1}", groupId, key );
-        }
 
         /// <summary>
         /// Binds the members grid.
@@ -290,6 +296,7 @@ namespace RockWeb.Blocks.Groups
                 lGroupTitle.Text = group.Name.FormatAsHtmlTitle();
             }
 
+            lGroupGridTitle.Visible = true;
             lGroupMemberPreHtml.Visible = false;
             lGroupMemberTitle.Visible = false;
 
@@ -374,20 +381,18 @@ namespace RockWeb.Blocks.Groups
         /// <param name="groupMemberId">The group member identifier.</param>
         private void ShowGroupMemberHistory( int groupMemberId )
         {
-            int entityId;
-            CacheEntityType primaryEntityType;
-
-            primaryEntityType = CacheEntityType.Get<Rock.Model.GroupMember>();
-            entityId = groupMemberId;
-
             var groupMember = new GroupMemberService( new RockContext() ).Get( groupMemberId );
-            if ( groupMember != null )
+            if ( groupMember == null )
             {
-                lGroupTitle.Text = groupMember.Group.Name.FormatAsHtmlTitle();
-                lGroupMemberTitle.Text = groupMember.ToString().FormatAsHtmlTitle();
-                lGroupMemberPreHtml.Visible = true;
-                lGroupMemberTitle.Visible = true;
+                this.Visible = false;
+                return;
             }
+
+            lGroupTitle.Text = groupMember.Group.Name.FormatAsHtmlTitle();
+            lGroupMemberTitle.Text = groupMember.ToString().FormatAsHtmlTitle();
+            lGroupMemberPreHtml.Visible = true;
+            lGroupMemberTitle.Visible = true;
+            lGroupGridTitle.Visible = false;
 
             var rockContext = new RockContext();
             var historyService = new HistoryService( rockContext );
@@ -397,9 +402,23 @@ namespace RockWeb.Blocks.Groups
             additionalMergeFields.Add( "GroupMemberHistoryPage", LinkedPageRoute( "GroupMemberHistoryPage" ) );
 
             string timelineLavaTemplate = this.GetAttributeValue( "TimelineLavaTemplate" );
-            string timelineHtml = historyService.GetTimelineHtml( timelineLavaTemplate, primaryEntityType, entityId, null, additionalMergeFields );
-            lTimelineHtml.Text = timelineHtml;
+
+            string timelineHtml = historyService.GetTimelineHtml( timelineLavaTemplate, EntityTypeCache.Get<Rock.Model.GroupMember>(), groupMemberId, null, additionalMergeFields );
+            lTimelineHtml.Text = "<div class='panel-body'>" + timelineHtml + "</div>";
         }
+
+        #region ISecondaryBlock
+
+        /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            this.Visible = visible;
+        }
+
+        #endregion ISecondaryBlock
 
         #endregion
     }

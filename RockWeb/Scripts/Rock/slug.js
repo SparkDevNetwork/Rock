@@ -6,7 +6,7 @@
         btnSlugSave: '.js-slug-save',
         inputSlug: '.js-slug-input',
         slugId: '.js-slug-id',
-        inputGroup: '.input-slug-group',
+        inputGroup: '.js-input-slug-group',
         slugLiteral: '.js-slug-literal',
         btnEdit: '.js-slug-edit',
         btnDelete: '.js-slug-remove'
@@ -38,7 +38,7 @@
             var inputSlug = $(this).val();
             var rowLength = $(_selectors.slugRow).length;
             if (rowLength === 0 && inputSlug !== '') {
-                var html = '<div class="row margin-l-sm margin-b-sm rollover-container js-slug-row clearfix">' +
+                var html = '<div class="form-group rollover-container js-slug-row">' +
                     '<input id="slugId" class="js-slug-id" type="hidden" value="" />' +
                     '</div >';
                 $(_selectors.btnAdd).before(html);
@@ -57,9 +57,9 @@
         $(_selectors.btnAdd).click(function (e) {
             e.preventDefault();
             e.stopPropagation();
-            var html = '<div class="row margin-l-sm margin-b-sm rollover-container js-slug-row clearfix">' +
+            var html = '<div class="form-group rollover-container js-slug-row">' +
                 '<input id="slugId" class="js-slug-id" type="hidden" value="" />' +
-                '<div class="input-group input-slug-group">' +
+                '<div class="input-group js-input-slug-group input-group-edit">' +
                 '<input class="form-control js-slug-input" />' +
                 '<span class="input-group-addon">' +
                 '<a class="js-slug-save" href="#"><i class="fa fa-check"></i></a>' +
@@ -140,7 +140,7 @@
 
         $(row).children().not(_selectors.slugId).remove();
         var html =
-            '<div class="input-group input-slug-group">' +
+            '<div class="input-group js-input-slug-group input-group-edit">' +
             '<input class="form-control js-slug-input" Value="' + slug + '" />' +
             '<span class="input-group-addon">' +
             '<a class="js-slug-save" href="#"><i class="fa fa-check"></i></a>' +
@@ -155,9 +155,9 @@
             $(_contentSlugSelector).val(slug);
         }
         $(row).find(_selectors.inputGroup).remove();
-        var html = '<literal class="js-slug-literal">' + slug + '</literal>' +
+        var html = '<span class="js-slug-literal">' + slug + '</span>' +
             '<div class="rollover-item actions pull-right">' +
-            '<a class="js-slug-edit" href="#"><i class="fa fa-pencil"></i></a>' +
+            '<a class="js-slug-edit margin-r-md" href="#"><i class="fa fa-pencil"></i></a>' +
             '<a class="js-slug-remove" href="#"><i class="fa fa-close"></i></a>' +
             '</div >';
         $(row).find(_selectors.slugId).after(html);
@@ -179,8 +179,9 @@
             });
     }
     function uniqueSlug(slug, row) {
+        var encodedSlug = encodeURIComponent(slug.replace('&', '').replace('|',''));
         $.ajax({
-            url: _uniqueSlug.restUrl + _uniqueSlug.restParams.replace('{slug}', slug),
+            url: _uniqueSlug.restUrl + _uniqueSlug.restParams.replace('{slug}', encodedSlug),
             dataType: 'json',
             contentType: 'application/json'
         })

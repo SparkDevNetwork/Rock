@@ -3,6 +3,9 @@
 <script type="text/javascript">
     Sys.Application.add_load(function () {
         $('.js-group-member-note').tooltip();
+
+        // data view sync list popover
+        $('.js-sync-popover').popover()
     });
 </script>
 
@@ -22,7 +25,7 @@
                         </h1>
 
                         <div class="panel-labels">
-                            <Rock:HighlightLabel ID="hlSyncStatus" runat="server" LabelType="Info" Visible="false" Text="<i class='fa fa-exchange'></i>" /> &nbsp;
+                            <span runat="server" ID="spanSyncLink" Visible="false" data-toggle="popover" class="label label-info js-sync-popover" data-trigger="hover click focus" data-html="true" data-placement="left" data-delay="{&quot;hide&quot;: 1500}" ><i class='fa fa-exchange'></i></span> &nbsp;
                         </div>
                     </div>
 
@@ -48,25 +51,48 @@
                                     <asp:ListItem Text="Yes" Value="Yes" />
                                     <asp:ListItem Text="No" Value="No" />
                                 </Rock:RockDropDownList>
+                                <Rock:DateRangePicker ID="drpDateAdded" runat="server" Label="Date Added" />
                                 <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gGroupMembers_Edit" CssClass="js-grid-group-members" >
+                            <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gGroupMembers_Edit" CssClass="js-grid-group-members" OnRowDataBound="gGroupMembers_RowDataBound" ExportSource="ColumnOutput" OnRowCreated="gGroupMembers_RowCreated" >
                                 <Columns>
                                     <Rock:SelectField></Rock:SelectField>
-                                    <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Person.LastName,Person.NickName" HtmlEncode="false" />
-                                    <Rock:DefinedValueField DataField="MaritalStatusValueId" HeaderText="Marital Status" SortExpression="Person.MaritalStatusValue.Value"/>
-                                    <Rock:DefinedValueField DataField="ConnectionStatusValueId" HeaderText="Connection Status" SortExpression="Person.ConnectionStatusValue.Value"/>
-                                    <Rock:RockTemplateFieldUnselected HeaderText="Registration">
-                                        <ItemTemplate>
-                                            <asp:Literal ID="lRegistration" runat="server"></asp:Literal>
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateFieldUnselected>
-                                    <Rock:RockBoundField DataField="GroupRole" HeaderText="Role" SortExpression="GroupRole.Name" />
+                                    <Rock:RockLiteralField ID="lExportFullName" HeaderText="Name" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                    <Rock:RockLiteralField ID="lNameWithHtml" HeaderText="Name" SortExpression="Person.LastName,Person.NickName" ExcelExportBehavior="NeverInclude" />
+
+                                    <%-- Fields that are shown based on GroupType settings --%>
+                                    <Rock:RockLiteralField ID="lMaritalStatusValue" HeaderText="Marital Status" SortExpression="Person.MaritalStatusValue.Value" ExcelExportBehavior="AlwaysInclude"/>
+                                    <Rock:RockLiteralField ID="lConnectionStatusValue" HeaderText="Connection Status" SortExpression="Person.ConnectionStatusValue.Value" ExcelExportBehavior="AlwaysInclude"/>
+
+                                    <%-- Only shown if a registration is associated --%>
+                                    <Rock:RockLiteralField ID="lRegistration" HeaderText="Registration" OnRowSelectedEnabled="false" ExcelExportBehavior="NeverInclude" />
+
+                                    <Rock:RockBoundField DataField="GroupRole.Name" HeaderText="Role" SortExpression="GroupRole.Name" />
                                     <Rock:RockBoundField DataField="GroupMemberStatus" HeaderText="Member Status" SortExpression="GroupMemberStatus" />
                                     <Rock:DateField DataField="DateTimeAdded" HeaderText="Date Added" SortExpression="DateTimeAdded" />
-                                    <Rock:DateField DataField="FirstAttended" HeaderText="First Attended" SortExpression="FirstAttended" />
-                                    <Rock:DateField DataField="LastAttended" HeaderText="Last Attended" SortExpression="LastAttended" />
+
+                                    <%-- Fields that are only shown when ShowAttendance is enabled: NOTE: This used to support Sorting, but that can cause performance issues with large groups. --%>
+                                    <Rock:RockLiteralField ID="lFirstAttended" HeaderText="First Attended" />
+                                    <Rock:RockLiteralField ID="lLastAttended" HeaderText="Last Attended" />
+
                                     <Rock:RockBoundField DataField="Note" HeaderText="Note" SortExpression="Note" ItemStyle-CssClass="small" />
+
+                                    <%-- Fields that are only shown when exporting --%>
+                                    <Rock:RockBoundField DataField="Person.NickName" HeaderText="Nick Name" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                    <Rock:RockBoundField DataField="Person.LastName" HeaderText="Last Name" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                    <Rock:RockBoundField DataField="Person.BirthDate" HeaderText="Birth Date" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                    <Rock:RockBoundField DataField="Person.Age" HeaderText="Age" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                    <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                    <Rock:RockBoundField DataField="Person.RecordStatusValueId" HeaderText="RecordStatusValueId" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                    <Rock:DefinedValueField DataField="Person.RecordStatusValueId" HeaderText="Record Status" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                    <Rock:RockBoundField DataField="Person.Gender" HeaderText="Gender" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                    <Rock:RockBoundField DataField="Person.IsDeceased" HeaderText="Is Deceased" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+
+                                    <Rock:RockLiteralField ID="lExportHomePhone" HeaderText="Home Phone" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                    <Rock:RockLiteralField ID="lExportCellPhone" HeaderText="Cell Phone" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                    <Rock:RockLiteralField ID="lExportHomeAddress" HeaderText="Home Address" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                    <Rock:RockLiteralField ID="lExportLatitude" HeaderText="Latitude" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                    <Rock:RockLiteralField ID="lExportLongitude" HeaderText="Longitude" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
@@ -154,7 +180,7 @@
                 Title="<i class='fa fa-share'></i> Place Elsewhere" OnSaveClick="mdPlaceElsewhere_SaveClick"
                 SaveButtonText="Place">
                 <Content>
-                    <asp:ValidationSummary ID="vsPlaceElsewhere" runat="server" ValidationGroup="vgPlaceElsewhere" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="vsPlaceElsewhere" runat="server" ValidationGroup="vgPlaceElsewhere" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <Rock:RockLiteral ID="lWorkflowTriggerName" runat="server" Label="Workflow Trigger" />
                     <Rock:RockControlWrapper ID="rcwSelectMemberTrigger" runat="server" Label="Select Workflow Trigger">
                         <Rock:HiddenFieldWithClass ID="hfPlaceElsewhereTriggerId" CssClass="js-hidden-selected" runat="server" />

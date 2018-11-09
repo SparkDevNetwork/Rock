@@ -25,7 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -160,10 +160,10 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindFilter()
         {
-            cpCampusPicker.Campuses = CacheCampus.All();
+            cpCampusPicker.Campuses = CampusCache.All();
             cpCampusPicker.Items[0].Text = "All";
 
-            var campusEntityType = CacheEntityType.Get( typeof( Campus ) );
+            var campusEntityType = EntityTypeCache.Get( typeof( Campus ) );
 
             if ( this.GetAttributeValue( "UseCampusContext" ).AsBoolean() )
             {

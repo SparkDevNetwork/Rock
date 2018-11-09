@@ -36,8 +36,9 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     public class GetScheduledPayments : IJob
     {
-        /// <summary>
-        /// Empty constructor for job initilization
+
+        /// <summary> 
+        /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
         /// scheduler can instantiate the class whenever it needs.
@@ -82,7 +83,10 @@ namespace Rock.Jobs
                         financialGateway.LoadAttributes( rockContext );
 
                         var gateway = financialGateway.GetGatewayComponent();
-                        if (gateway == null) continue;
+                        if ( gateway == null )
+                        {
+                            continue;
+                        }
 
                         int daysBack = dataMap.GetString( "DaysBack" ).AsIntegerOrNull() ?? 1;
 

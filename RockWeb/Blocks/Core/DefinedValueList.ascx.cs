@@ -23,7 +23,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Core
             // A configured defined type takes precedence over any definedTypeId param value that is passed in.
             if ( Guid.TryParse( GetAttributeValue( "DefinedType" ), out definedTypeGuid ) )
             {
-                definedTypeId = CacheDefinedType.Get( definedTypeGuid ).Id;
+                definedTypeId = DefinedTypeCache.Get( definedTypeGuid ).Id;
             }
             else
             {
@@ -206,9 +206,6 @@ namespace RockWeb.Blocks.Core
 
                 definedValueService.Delete( value );
                 rockContext.SaveChanges();
-
-                CacheDefinedType.Remove( value.DefinedTypeId );
-                CacheDefinedValue.Remove( value.Id );
             }
 
             BindDefinedValuesGrid();
@@ -262,9 +259,6 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            Rock.Cache.CacheDefinedType.Remove( definedValue.DefinedTypeId );
-            Rock.Cache.CacheDefinedValue.Remove( definedValue.Id );
-
             rockContext.WrapTransaction( () =>
             {
                 if ( definedValue.Id.Equals( 0 ) )
@@ -317,20 +311,12 @@ namespace RockWeb.Blocks.Core
         private void gDefinedValues_GridReorder( object sender, GridReorderEventArgs e )
         {
             int definedTypeId = hfDefinedTypeId.ValueAsInt();
-            CacheDefinedType.Remove( definedTypeId );
 
             var rockContext = new RockContext();
             var definedValueService = new DefinedValueService( rockContext );
             var definedValues = definedValueService.Queryable().Where( a => a.DefinedTypeId == definedTypeId ).OrderBy( a => a.Order ).ThenBy( a => a.Value);
             var changedIds = definedValueService.Reorder( definedValues.ToList(), e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
-
-            Rock.Cache.CacheDefinedType.Remove( definedTypeId );
-            foreach(int id in changedIds)
-            {
-                Rock.Cache.CacheDefinedValue.Remove( id );
-            }
-
             BindDefinedValuesGrid();
         }
 
@@ -368,7 +354,7 @@ namespace RockWeb.Blocks.Core
                         boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
 
-                        var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                         if ( attributeCache != null )
                         {
                             boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
@@ -406,7 +392,7 @@ namespace RockWeb.Blocks.Core
 
         private void ShowDefinedValueEdit( int valueId, bool setValues )
         {
-            var definedType = CacheDefinedType.Get( hfDefinedTypeId.ValueAsInt() );
+            var definedType = DefinedTypeCache.Get( hfDefinedTypeId.ValueAsInt() );
             DefinedValue definedValue;
 
             modalValue.SubTitle = String.Format( "Id: {0}", valueId );

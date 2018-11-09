@@ -16,15 +16,15 @@
                     </asp:Panel>
                     <asp:Panel ID="pnlInternalAuthLogin" runat="server" CssClass="col-md-6">
 
-                        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                         <asp:Literal ID="lPromptMessage" runat="server" />
                         <asp:Literal ID="lInvalidPersonTokenText" runat="server" />
                         <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" DisplayRequiredIndicator="false"></Rock:RockTextBox>
                         <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" autocomplete="off" Required="true" DisplayRequiredIndicator="false" ValidateRequestMode="Disabled" TextMode="Password"></Rock:RockTextBox>
-                        <Rock:RockCheckBox ID="cbRememberMe" runat="server" Text="Remember me on this computer" />
+                        <Rock:RockCheckBox ID="cbRememberMe" runat="server" Text="Keep me logged in" />
 
-                        <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="btn btn-primary" OnClick="btnLogin_Click" />
+                        <Rock:BootstrapButton ID="btnLogin" runat="server" Text="Log In" CssClass="btn btn-primary" OnClick="btnLogin_Click" DataLoadingText="Logging In..." />
                         <asp:Button ID="btnNewAccount" runat="server" Text="Register" CssClass="btn btn-action" OnClick="btnNewAccount_Click" CausesValidation="false" />
                         <asp:Button ID="btnHelp" runat="server" Text="Forgot Account" CssClass="btn btn-link" OnClick="btnHelp_Click" CausesValidation="false" />
 

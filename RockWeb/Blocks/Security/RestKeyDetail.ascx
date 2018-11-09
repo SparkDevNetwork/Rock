@@ -10,7 +10,7 @@
             <div class="panel-body">
 
                 <div id="pnlEditDetails" runat="server">
-                    <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <asp:HiddenField ID="hfRestUserId" runat="server" />
                     <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
                     <div class="row">

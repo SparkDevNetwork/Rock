@@ -51,12 +51,12 @@ namespace Rock.Model
         public bool CanDelete( ContentChannelItem item, out string errorMessage )
         {
             errorMessage = string.Empty;
-
+            
             // ignoring ContentChannelItemAssociation,ChildContentChannelItemId 
-
+            
             // ignoring ContentChannelItemAssociation,ContentChannelItemId 
-
-            // ignoring ContentChannelItemSlug, ContentChannelItemId
+            
+            // ignoring ContentChannelItemSlug,ContentChannelItemId 
             return true;
         }
     }

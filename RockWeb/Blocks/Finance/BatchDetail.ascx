@@ -25,12 +25,12 @@
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
                 <div id="pnlEditDetails" runat="server">
-                    <asp:ValidationSummary ID="valSummaryBatch" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="valSummaryBatch" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <asp:CustomValidator ID="cvBatch" runat="server" />
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockDropDownList ID="ddlBatchName" runat="server" Label="Name" Visible="false" Required="true"/>
+                            <Rock:DefinedValuePicker ID="dvpBatchName" runat="server" Label="Name" Visible="false" Required="true"/>
                             <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true" />
                             <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlStatus_SelectedIndexChanged"></Rock:RockDropDownList>
                             <Rock:DateTimePicker ID="dtpStart" runat="server" Label="Batch Start" Required="true" RequiredErrorMessage="A Batch Start Date is required" />
@@ -86,7 +86,7 @@
                         </div>
                     </div>
                     <div class="actions">
-                        <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
+                        <asp:LinkButton ID="lbEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
                         <div class="pull-right">
                             <asp:LinkButton ID="lbMatch" runat="server" CssClass="btn btn-default" CausesValidation="false" OnClick="lbMatch_Click"><i class="fa fa-money"></i> Match Transactions</asp:LinkButton>
                             <asp:LinkButton ID="lbHistory" runat="server" CssClass="btn btn-default" CausesValidation="false" OnClick="lbHistory_Click"><i class="fa fa-file-text-o"></i> Audit Log</asp:LinkButton>

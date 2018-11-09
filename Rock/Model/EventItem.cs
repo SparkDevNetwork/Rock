@@ -25,7 +25,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -238,8 +238,8 @@ namespace Rock.Model
         /// <summary>
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
-        /// <returns>A list of all inherited CacheAttribute objects.</returns>
-        public override List<CacheAttribute> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        /// <returns>A list of all inherited AttributeCache objects.</returns>
+        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
             var calendarIds = this.EventCalendarItems.Select( c => c.EventCalendarId ).ToList();
             if ( !calendarIds.Any() )
@@ -247,16 +247,16 @@ namespace Rock.Model
                 return null;
             }
 
-            var inheritedAttributes = new Dictionary<int, List<Cache.CacheAttribute>>();
-            calendarIds.ForEach( c => inheritedAttributes.Add( c, new List<Cache.CacheAttribute>() ) );
+            var inheritedAttributes = new Dictionary<int, List<AttributeCache>>();
+            calendarIds.ForEach( c => inheritedAttributes.Add( c, new List<AttributeCache>() ) );
 
             //
             // Check for any calendar item attributes that the event item inherits.
             //
-            var calendarItemEntityType = CacheEntityType.Get( typeof( EventCalendarItem ) );
+            var calendarItemEntityType = EntityTypeCache.Get( typeof( EventCalendarItem ) );
             if ( calendarItemEntityType != null )
             {
-                foreach ( var calendarItemEntityAttributes in CacheAttribute
+                foreach ( var calendarItemEntityAttributes in AttributeCache
                     .GetByEntity( calendarItemEntityType.Id )
                     .Where( a =>
                         a.EntityTypeQualifierColumn == "EventCalendarId" &&
@@ -265,7 +265,7 @@ namespace Rock.Model
                     foreach ( var attributeId in calendarItemEntityAttributes.AttributeIds )
                     {
                         inheritedAttributes[calendarItemEntityAttributes.EntityTypeQualifierValue.AsInteger()].Add(
-                            CacheAttribute.Get( attributeId ) );
+                            AttributeCache.Get( attributeId ) );
                     }
                 }
             }
@@ -274,7 +274,7 @@ namespace Rock.Model
             // Walk the generated list of attribute groups and put them, ordered, into a list
             // of inherited attributes.
             //
-            var attributes = new List<Cache.CacheAttribute>();
+            var attributes = new List<AttributeCache>();
             foreach ( var attributeGroup in inheritedAttributes )
             {
                 foreach ( var attribute in attributeGroup.Value.OrderBy( a => a.Order ) )

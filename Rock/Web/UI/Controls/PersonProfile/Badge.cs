@@ -19,7 +19,6 @@ using System.Web.UI;
 using Rock;
 using Rock.Model;
 using Rock.PersonProfile;
-using Rock.Cache;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -35,7 +34,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The name of the badge entity type.
         /// </value>
-        public CachePersonBadge PersonBadge { get; set; }
+        public PersonBadgeCache PersonBadge { get; set; }
 
         /// <summary>
         /// Restores view-state information from a previous page request that was saved by the <see cref="M:System.Web.UI.Control.SaveViewState" /> method.
@@ -48,7 +47,7 @@ namespace Rock.Web.UI.Controls
             string json = ViewState["PersonBadge"] as string;
             if ( !string.IsNullOrWhiteSpace( json ) )
             {
-                PersonBadge = CachePersonBadge.FromJson( json );
+                PersonBadge = PersonBadgeCache.FromJson( json );
             }
         }
 
@@ -118,27 +117,12 @@ namespace Rock.Web.UI.Controls
                 {
                     badgeComponent.ParentPersonBlock = personBlock;
                     badgeComponent.Person = personBlock.Person;
-
-                    var badgeComponentModern = badgeComponent as BadgeComponentModern;
-                    if (badgeComponentModern != null)
-                    {
-                        badgeComponentModern.Render( PersonBadge, writer);
-                    }
-                    else
-                    {
-                        // NOTE: this call to the obsolete Render() method is needed due to custom plugin badges that may still be 
-                        // using the obsolete Render() method. This is needed in V8 so that it is not a breaking change.
-                        // it can be removed after V8.
-                        #pragma warning disable 0618
-                        badgeComponent.Render( PersonBadgeCache.Read( PersonBadge.Id ), writer );
-                        #pragma warning restore 0618
-                    }
+                    badgeComponent.Render( PersonBadge, writer );
                 }
             }
 
             const string script = "$('.badge[data-toggle=\"tooltip\"]').tooltip({html: true}); $('.badge[data-toggle=\"popover\"]').popover();";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "badge-popover", script, true );
-
         }
     }
 }

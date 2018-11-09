@@ -28,9 +28,10 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using OfficeOpenXml;
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Utility;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -213,7 +214,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the filename to use when exporting the grid contents. 
+        /// Gets or sets the filename to use when exporting the grid contents.
         /// The .xlsx extension will be appended if not given. Special characters are removed
         /// automatically to prevent problems saving the file. Default filename is RockExport.xlsx.
         /// </summary>
@@ -257,7 +258,7 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the worksheet and title name on the excel file.
-        /// If this property is null then the grid will use it's 
+        /// If this property is null then the grid will use it's
         /// caption or the page tile in that order.
         /// </summary>
         /// <value>
@@ -351,10 +352,10 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a list of datasource field/properties that can optionally be included as additional 
-        /// merge fields when a new communication is created from the grid.  NOTE: A side affect of using 
-        /// additional merge fields is that user will not be able to add additional recipients to the 
-        /// communication after it is created from the grid. If the data element name is different than 
+        /// Gets or sets a list of datasource field/properties that can optionally be included as additional
+        /// merge fields when a new communication is created from the grid.  NOTE: A side affect of using
+        /// additional merge fields is that user will not be able to add additional recipients to the
+        /// communication after it is created from the grid. If the data element name is different than
         /// the name of the merge field, seperate the two with a pipe (ex: "Data_NickName_3|NickName" )
         /// </summary>
         /// <value>
@@ -438,7 +439,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the description field.  If specified, the description will be 
+        /// Gets or sets the description field.  If specified, the description will be
         /// added as a tooltip (title) attribute on the row
         /// </summary>
         /// <value>
@@ -693,7 +694,7 @@ namespace Rock.Web.UI.Controls
             var rockBlock = this.RockBlock();
             if ( rockBlock != null )
             {
-                string preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.CacheBlock.Id );
+                string preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.BlockCache?.Id );
                 pageSize = rockBlock.GetUserPreference( preferenceKey ).AsInteger();
                 if ( pageSize != 50 && pageSize != 500 && pageSize != 5000 )
                 {
@@ -716,7 +717,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( this.DataKeys != null && this.DataKeys.Count > 0 )
                 {
-                    // For each SelectField evaluate the checkbox/radiobutton to see if the cell was selected.  
+                    // For each SelectField evaluate the checkbox/radiobutton to see if the cell was selected.
                     foreach ( var col in this.Columns.OfType<SelectField>() )
                     {
                         var colIndex = this.GetColumnIndex( col ).ToString();
@@ -745,7 +746,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
-            
+
             base.OnLoad( e );
         }
 
@@ -1028,8 +1029,8 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             if ( !dataBinding && AllowCustomPaging && PreDataBound && CurrentPageRows < PageSize )
             {
                 // When using a LinqDataSource (custom paging) and doing a postback from the last page of a grid that
-                // has fewer rows, the default dummy data source used by Asp.Net to rebuild controls does not reflect the 
-                // correct number of rows. Because we add custom paging and action rows to the end of the table, this results in 
+                // has fewer rows, the default dummy data source used by Asp.Net to rebuild controls does not reflect the
+                // correct number of rows. Because we add custom paging and action rows to the end of the table, this results in
                 // header/body/footer ordering errors and/or viewstate errors. As a work-around a custom dummy data source
                 // is used instead that has the correct number of rows.
                 dataSource = new RockDummyDataSource( CurrentPageRows );
@@ -1057,7 +1058,8 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 _table.Rows.Add( _actionFooterRow );
 
                 TableCell actionFooterCell = new TableCell();
-                actionFooterCell.ColumnSpan = this.Columns.Count + (this.CustomColumns?.Count ?? 0);
+                int visibleColumnCount = this.Columns.OfType<DataControlField>().Where( a => a.Visible ).Count() + ( this.CustomColumns?.Count ?? 0);
+                actionFooterCell.ColumnSpan = visibleColumnCount;
                 actionFooterCell.CssClass = "grid-actions";
                 _actionFooterRow.Cells.Add( actionFooterCell );
 
@@ -1075,17 +1077,18 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 _table.Rows.AddAt( 0, _actionHeaderRow );
 
                 TableCell actionHeaderCell = new TableCell();
-                actionHeaderCell.ColumnSpan = this.Columns.Count + ( this.CustomColumns?.Count ?? 0 );
+                actionHeaderCell.ColumnSpan = visibleColumnCount;
                 actionHeaderCell.CssClass = "grid-actions";
                 _actionHeaderRow.Cells.Add( actionHeaderCell );
 
                 actionHeaderCell.Controls.Add( _headerGridActionsMirror );
-                
-                if ( !this.ShowActionsInHeader )
+
+                if ( !this.ShowActionsInHeader || !this.ShowActionRow )
                 {
+                    _actionHeaderRow.Visible = false;
                     _headerGridActionsMirror.Visible = false;
                 }
-                
+
             }
 
             return result;
@@ -1110,9 +1113,22 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             for ( int i = 0; i < this.Columns.Count; i++ )
             {
                 var column = this.Columns[i];
-                if ( !( column is INotRowSelectedField ) && !( column is HyperLinkField ) )
+                if ( !( column is INotRowSelectedField ) )
                 {
-                    RowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
+                    if ( !( column is HyperLinkField ) )
+                    {
+                        if ( column is RockTemplateField )
+                        {
+                            if ( ( column as RockTemplateField ).OnRowSelectedEnabled )
+                            {
+                                RowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
+                            }
+                        }
+                        else
+                        {
+                            RowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
+                        }
+                    }
                 }
 
                 // get data priority from column
@@ -1138,7 +1154,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
         public string DatasourceSQL { get; private set; }
 
         /// <summary>
-        /// Sets the linq data source 
+        /// Sets the linq data source
         /// The grid will use it to load only the records it needs based on the current page and page size
         /// NOTE: Make sure that your query is sorted/ordered
         /// </summary>
@@ -1389,8 +1405,12 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 int? rowIndex = e.CommandArgument?.ToString().AsIntegerOrNull();
                 if ( rowIndex.HasValue )
                 {
-                    RowEventArgs a = new RowEventArgs( this.Rows[rowIndex.Value] );
-                    OnRowSelected( a );
+                    // The rows can have changed (the filter or data has changed) since the UI have been updated. This avoid an exception if there are now less rows than the selected row index.
+                    if ( this.Rows.Count > rowIndex.Value )
+                    {
+                        RowEventArgs a = new RowEventArgs( this.Rows[rowIndex.Value] );
+                        OnRowSelected( a );
+                    }
                 }
             }
         }
@@ -1409,7 +1429,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             var rockBlock = this.RockBlock();
             if ( rockBlock != null )
             {
-                string preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.CacheBlock.Id );
+                string preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.BlockCache.Id );
                 rockBlock.SetUserPreference( preferenceKey, e.Number.ToString() );
             }
 
@@ -1499,7 +1519,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 bool selectAll = !SelectedKeys.Any();
                 RebindGrid( e, selectAll, false, true );
 
-                // Create a dictionary of the additional merge fields that were created for the communicatoin
+                // Create a dictionary of the additional merge fields that were created for the communication
                 var communicationMergeFields = new Dictionary<string, string>();
                 foreach ( string mergeField in this.CommunicateMergeFields )
                 {
@@ -1515,7 +1535,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
                 if ( recipients.Any() )
                 {
-                    // Create communication 
+                    // Create communication
                     var communicationRockContext = new RockContext();
                     var communicationService = new Rock.Model.CommunicationService( communicationRockContext );
                     var communication = new Rock.Model.Communication();
@@ -1683,13 +1703,13 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             if ( !string.IsNullOrEmpty( this.ExportTitleName ) )
             {
                 // If we have a Export Title Name then use it
-                workSheetName = this.ExportTitleName;
+                workSheetName = this.ExportTitleName.ReplaceSpecialCharacters( "_" ).TrimEnd( '_' );
                 title = this.ExportTitleName;
             }
             else if ( !string.IsNullOrEmpty( this.Caption ) )
             {
                 // Then try the caption
-                workSheetName = this.Caption;
+                workSheetName = this.Caption.ReplaceSpecialCharacters( "_" ).TrimEnd( '_' );
                 title = this.Caption;
             }
             else
@@ -1699,7 +1719,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
                 if ( !string.IsNullOrEmpty( pageTitle ) )
                 {
-                    workSheetName = pageTitle;
+                    workSheetName = pageTitle.ReplaceSpecialCharacters( "_" ).TrimEnd( '_' );
                     title = pageTitle;
                 }
             }
@@ -1733,11 +1753,10 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             {
                 // Columns to export with their column index as the key
                 var gridColumns = new Dictionary<int, DataControlField>();
-
-                for ( int i = 0; i < this.Columns.Count; i++ )
+                for ( int i = 0; i < this.CreatedColumns.Count; i++ )
                 {
-                    var dataField = this.Columns[i];
-                    var rockField = this.Columns[i] as IRockGridField;
+                    var dataField = this.CreatedColumns[i];
+                    var rockField = this.CreatedColumns[i] as IRockGridField;
                     if ( rockField != null &&
                         (
                             rockField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude ||
@@ -1796,11 +1815,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                         else if ( col.Value is RockTemplateField )
                         {
                             var fieldCell = gridViewRowCellLookup[col.Value];
-                            var textControls = fieldCell.ControlsOfTypeRecursive<Control>().OfType<ITextControl>();
-                            if ( textControls.Any() )
-                            {
-                                exportValue = textControls.Select( a => a.Text ).Where( t => !string.IsNullOrWhiteSpace( t ) ).ToList().AsDelimited( string.Empty ).ReverseCurrencyFormatting();
-                            }
+                            exportValue = ( col.Value as RockTemplateField ).GetExportValue( gridViewRow, fieldCell );
                         }
 
                         ExcelHelper.SetExcelValue( worksheet.Cells[rowCounter, columnCounter], exportValue );
@@ -1842,8 +1857,22 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 }
 
                 // print data
+                int gridRowCounter = 0;
+                var selectedKeys = SelectedKeys.ToList();
                 foreach ( DataRowView rowView in data.DefaultView )
                 {
+                    if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
+                    {
+                        var dataKeyValue = this.DataKeys[gridRowCounter].Value;
+                        gridRowCounter++;
+
+                        if ( !selectedKeys.Contains( dataKeyValue ) )
+                        {
+                            // if there are specific rows selected, skip over rows that aren't selected
+                            continue;
+                        }
+                    }
+
                     rowCounter++;
 
                     for ( int i = 0; i < data.Columns.Count; i++ )
@@ -1866,6 +1895,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 Dictionary<BoundField, PropertyInfo> boundFieldPropLookup = new Dictionary<BoundField, PropertyInfo>();
                 var attributeFields = this.Columns.OfType<AttributeField>().ToList();
                 var lavaFields = new List<LavaField>();
+                var rockTemplateFields = new List<RockTemplateField>();
                 var visibleFields = new Dictionary<int, DataControlField>();
 
                 int fieldOrder = 0;
@@ -1877,17 +1907,52 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                         lavaFields.Add( lavaField );
                         visibleFields.Add( fieldOrder++, lavaField );
                     }
+
                     if ( dataField is BoundField )
                     {
                         var boundField = dataField as BoundField;
                         visibleFields.Add( fieldOrder++, boundField );
+                    }
+
+                    if ( dataField is RockTemplateField )
+                    {
+                        var rockTemplateField = dataField as RockTemplateField;
+                        rockTemplateFields.Add( rockTemplateField );
+                        if ( rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude || ( rockTemplateField.Visible == true && rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.IncludeIfVisible ) )
+                        {
+                            visibleFields.Add( fieldOrder++, rockTemplateField );
+                        }
+                    }
+                }
+
+                
+
+                if ( CustomColumns != null && CustomColumns.Any() )
+                {
+                    foreach ( var columnConfig in CustomColumns )
+                    {
+                        var column = columnConfig.GetGridColumn();
+                        lavaFields.Add( column );
+                        visibleFields.Add( fieldOrder++, column );
+                    }
+                }
+
+                
+
+                if ( CustomColumns != null && CustomColumns.Any() )
+                {
+                    foreach ( var columnConfig in CustomColumns )
+                    {
+                        var column = columnConfig.GetGridColumn();
+                        lavaFields.Add( column );
+                        visibleFields.Add( fieldOrder++, column );
                     }
                 }
 
                 var oType = GetDataSourceObjectType();
 
                 // get all properties of the objects in the grid
-                IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
+                List<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
 
                 // If this is a DotLiquid.Drop class, don't include any of the properties that are inherited from DotLiquid.Drop
                 if ( typeof( DotLiquid.Drop ).IsAssignableFrom( oType ) )
@@ -1903,7 +1968,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 {
                     // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
                     var getMethod = prop.GetGetMethod();
-                    if ( getMethod.IsVirtual && !getMethod.IsFinal && prop.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() == 0 )
+                    if ( getMethod == null || ( getMethod.IsVirtual && !getMethod.IsFinal && prop.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() == 0 ) )
                     {
                         continue;
                     }
@@ -1921,9 +1986,20 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
                 // Grid column headings
                 var boundPropNames = new List<string>();
-                foreach ( DataControlField dataField in visibleFields.OrderBy( f => f.Key ).Select( f => f.Value ) )
+
+                // Array provides slight performance improvement here over a list
+                var orderedVisibleFields = visibleFields.OrderBy( f => f.Key ).Select( f => f.Value ).ToArray();
+                for (int i = 0; i < orderedVisibleFields.Count(); i++ )
                 {
-                    worksheet.Cells[rowCounter, columnCounter].Value = dataField.HeaderText;
+                    DataControlField dataField = orderedVisibleFields[i];
+                    if (dataField.HeaderText.IsNullOrWhiteSpace())
+                    {
+                        dataField.HeaderText = string.Format( "Column {0}", i );
+                    }
+                    else
+                    {
+                        worksheet.Cells[rowCounter, columnCounter].Value = dataField.HeaderText;
+                    }
 
                     var boundField = dataField as BoundField;
                     if ( boundField != null )
@@ -2070,7 +2146,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                                     exportValue = GetExportValue( prop, propValue, IsDefinedValue( definedValueFields, propIsDefinedValueLookup, prop ), cell ).ReverseCurrencyFormatting();
                                 }
                             }
-                            else if ( boundField is PersonField )
+                            else if ( boundField.DataField?.Contains(".") == true )
                             {
                                 exportValue = item.GetPropertyValue( boundField.DataField );
                             }
@@ -2100,6 +2176,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                                 }
                                 mergeValues.Add( dataFieldItem.Key, dataFieldValue );
                             }
+                            mergeValues.Add( "Row", item );
 
                             string resolvedValue = lavaField.LavaTemplate.ResolveMergeFields( mergeValues );
                             resolvedValue = resolvedValue.Replace( "~~/", themeRoot ).Replace( "~/", appRoot ).ReverseCurrencyFormatting().ToString();
@@ -2114,9 +2191,30 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
                             continue;
                         }
+
+                        var rockTemplateField = dataField as RockTemplateField;
+                        if ( rockTemplateField != null )
+                        {
+                            var row = this.Rows[dataIndex];
+                            var cell = row?.Cells.OfType<DataControlFieldCell>().Where( a => a.ContainingField == rockTemplateField ).FirstOrDefault();
+                            if ( cell != null )
+                            {
+                                var exportValue = rockTemplateField.GetExportValue( row, cell );
+
+                                if ( exportValue != null )
+                                {
+                                    worksheet.Cells[rowCounter, columnCounter].Value = exportValue;
+
+                                    // Update column formatting based on data
+                                    ExcelHelper.FinalizeColumnFormat( worksheet, columnCounter, exportValue );
+                                }
+
+                                continue;
+                            }
+                        }
                     }
 
-                    foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
+                foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
                     {
                         columnCounter++;
                         object propValue = prop.GetValue( item, null );
@@ -2243,7 +2341,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
                         if ( definedValueId > 0 )
                         {
-                            var definedValue = CacheDefinedValue.Get( definedValueId );
+                            var definedValue = DefinedValueCache.Get( definedValueId );
                             if ( definedValue != null )
                             {
                                 return definedValue.Value;
@@ -2268,7 +2366,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
                             if ( isGuid )
                             {
-                                var definedValue = CacheDefinedValue.Get( definedValueGuid );
+                                var definedValue = DefinedValueCache.Get( definedValueGuid );
 
                                 if ( definedValue != null )
                                 {
@@ -2394,7 +2492,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             var allColumns = new List<DataControlField>();
 
             // If displaying people, add select field (for merging & communication)
-            if ( CommunicationRecipientPersonIdFields.Any() || PersonIdField.IsNotNullOrWhitespace() )
+            if ( CommunicationRecipientPersonIdFields.Any() || PersonIdField.IsNotNullOrWhiteSpace() )
             {
                 var selectField = new SelectField();
                 displayColumns.Add( selectField );
@@ -2407,7 +2505,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 {
                     // limit to non-virtual methods to prevent lazy loading issues
                     var getMethod = property.GetGetMethod();
-                    if ( !getMethod.IsVirtual || getMethod.IsFinal || ( property.GetCustomAttribute<PreviewableAttribute>() != null ) )
+                    if ( ( getMethod != null && ( !getMethod.IsVirtual || getMethod.IsFinal ) ) || ( property.GetCustomAttribute<PreviewableAttribute>() != null ) )
                     {
                         if ( property.Name != "Id" )
                         {
@@ -2458,7 +2556,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
             if ( isForCommunication )
             {
-                // If the data is being queried for a communication, the person id fields can be configured to come from a different column or even 
+                // If the data is being queried for a communication, the person id fields can be configured to come from a different column or even
                 // multiple columns rather than the primary id column
                 if ( this.CommunicationRecipientPersonIdFields.Any() )
                 {
@@ -2467,7 +2565,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 else
                 {
                     // If there were not any special columns for the communication, just use the column that was configured for the person id
-                    if ( this.PersonIdField.IsNotNullOrWhitespace() )
+                    if ( this.PersonIdField.IsNotNullOrWhiteSpace() )
                     {
                         personIdFields.Add( this.PersonIdField );
                     }
@@ -2475,7 +2573,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             }
             else
             {
-                if ( this.PersonIdField.IsNotNullOrWhitespace() )
+                if ( this.PersonIdField.IsNotNullOrWhiteSpace() )
                 {
                     personIdFields.Add( this.PersonIdField );
                 }
@@ -2529,7 +2627,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                                 if ( isForCommunication )
                                 {
                                     var mergeField = communicationMergeFields.Where( f => f.Key.Equals( data.Columns[i].ColumnName, StringComparison.OrdinalIgnoreCase ) ).Select( f => f.Value ).FirstOrDefault();
-                                    if ( mergeField.IsNotNullOrWhitespace() )
+                                    if ( mergeField.IsNotNullOrWhiteSpace() )
                                     {
                                         var boundField = this.ColumnsOfType<RockBoundField>().Where( c => c.DataField == mergeField ).FirstOrDefault();
                                         if ( boundField != null )
@@ -2676,7 +2774,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                                     }
 
                                     foreach( int personId in personIds )
-                                    { 
+                                    {
                                         int id = (int)idProp.GetValue( item, null );
 
                                         // Add the personId if none are selected or if it's one of the selected items.
@@ -2764,7 +2862,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             if ( keys.Any() )
             {
                 var entitySet = new Rock.Model.EntitySet();
-                entitySet.EntityTypeId = Rock.Cache.CacheEntityType.Get<Rock.Model.Person>().Id;
+                entitySet.EntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
                 entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
                 List<Rock.Model.EntitySetItem> entitySetItems = new List<Rock.Model.EntitySetItem>();
 
@@ -2883,7 +2981,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 entitySet.EntityTypeId = null;
             }
 
-            bool isPersonEntitySet = this.EntityTypeId == CacheEntityType.GetId<Rock.Model.Person>();
+            bool isPersonEntitySet = this.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Person>();
             string dataKeyField = this.DataKeyNames.FirstOrDefault() ?? "Id";
             if ( isPersonEntitySet && !string.IsNullOrEmpty( this.PersonIdField ) )
             {
@@ -2896,10 +2994,24 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             List<Rock.Model.EntitySetItem> entitySetItems = new List<Rock.Model.EntitySetItem>();
 
             int itemOrder = 0;
+            int gridRowCounter = 0;
+            var selectedKeys = SelectedKeys.ToList();
             foreach ( DataRowView row in this.DataSourceAsDataTable.DefaultView )
             {
                 try
                 {
+                    if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
+                    {
+                        var dataKeyValue = this.DataKeys[gridRowCounter].Value;
+                        gridRowCounter++;
+
+                        if ( !selectedKeys.Contains( dataKeyValue ) )
+                        {
+                            // if there are specific rows selected, skip over rows that aren't selected
+                            continue;
+                        }
+                    }
+
                     var item = new Rock.Model.EntitySetItem();
 
                     if ( entitySet.EntityTypeId.HasValue && dataKeyColumn != null )
@@ -2982,7 +3094,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                         entityType = dataSourceObjectType;
                     }
 
-                    var entityTypeCache = Rock.Cache.CacheEntityType.Get( entityType, false );
+                    var entityTypeCache = EntityTypeCache.Get( entityType, false );
                     if ( entityTypeCache != null )
                     {
                         entityTypeId = entityTypeCache.Id;
@@ -2991,7 +3103,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             }
 
             string entityIdColumn;
-            if ( entityTypeId.HasValue && entityTypeId.Value == CacheEntityType.GetId<Model.Person>() )
+            if ( entityTypeId.HasValue && entityTypeId.Value == EntityTypeCache.GetId<Model.Person>() )
             {
                 entityIdColumn = this.PersonIdField ?? "Id";
             }
@@ -3036,15 +3148,15 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
             if ( entityTypeId.HasValue )
             {
-                var dataSourceObjectTypeEntityType = CacheEntityType.Get( dataSourceObjectType, false );
+                var dataSourceObjectTypeEntityType = EntityTypeCache.Get( dataSourceObjectType, false );
                 if ( dataSourceObjectTypeEntityType != null && dataSourceObjectTypeEntityType.Id == entityTypeId )
                 {
-                    // the entityType and the Datasource type are the same, so no additional merge fields 
+                    // the entityType and the Datasource type are the same, so no additional merge fields
                 }
                 else
                 {
                     // the entityType and the Datasource type are different, so figure out the extra properties and put them into AdditionalMergeFields
-                    var entityType = CacheEntityType.Get( entityTypeId.Value ).GetEntityType();
+                    var entityType = EntityTypeCache.Get( entityTypeId.Value ).GetEntityType();
                     var entityTypePropertyNames = entityType.GetProperties().Select( a => a.Name ).ToList();
 
                     additionalMergeProperties = new List<PropertyInfo>();
@@ -3058,6 +3170,13 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             {
                 // we don't know the EntityType, so throw all the data into the AdditionalMergeFields
                 additionalMergeProperties = dataSourceObjectType.GetProperties().ToList();
+            }
+
+            // If this is a DotLiquid.Drop class, don't include any of the properties that are inherited from DotLiquid.Drop
+            if ( typeof( DotLiquid.Drop ).IsAssignableFrom( dataSourceObjectType ) )
+            {
+                var dropProperties = typeof( DotLiquid.Drop ).GetProperties().Select( a => a.Name );
+                additionalMergeProperties = additionalMergeProperties.Where( a => !dropProperties.Contains( a.Name ) ).ToList();
             }
 
             var gridDataFields = this.Columns.OfType<BoundField>().ToList();
@@ -3110,7 +3229,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             }
             else
             {
-                // unable to determine EntityTypeId, create the EntitySet has a list of "Anonymous" objects, putting everything in AdditionalMergeFieldsJson    
+                // unable to determine EntityTypeId, create the EntitySet has a list of "Anonymous" objects, putting everything in AdditionalMergeFieldsJson
                 entitySet.EntityTypeId = null;
             }
 
@@ -3145,9 +3264,9 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 service.Add( entitySet );
                 rockContext.SaveChanges();
                 entitySetItems.ForEach( a =>
-                 {
-                     a.EntitySetId = entitySet.Id;
-                 } );
+                {
+                    a.EntitySetId = entitySet.Id;
+                } );
 
                 rockContext.BulkInsert( entitySetItems );
 
@@ -3186,7 +3305,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                         if ( pageRef.IsValid )
                         {
                             // if a valid pageref was found, check the security of the page
-                            var page = CachePage.Get( pageRef.PageId );
+                            var page = PageCache.Get( pageRef.PageId );
                             if ( page != null )
                             {
                                 return page.IsAuthorized( Rock.Security.Authorization.VIEW, rockPage.CurrentPerson );
@@ -3499,7 +3618,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="System.Web.UI.WebControls.GridViewRowEventArgs" />
     public class RockGridViewRowEventArgs : GridViewRowEventArgs
@@ -3554,7 +3673,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
         public int NewIndex { get; private set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private bool _cancel = false;
 
@@ -3638,7 +3757,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
     #region Helper Classes
 
     /// <summary>
-    /// JSON Result  
+    /// JSON Result
     /// </summary>
     internal class JsonResult
     {
@@ -4118,7 +4237,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum GridDisplayType
     {
@@ -4144,13 +4263,13 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
         DataSource,
 
         /// <summary>
-        /// The the columns and formatting that is displayed in output 
+        /// The the columns and formatting that is displayed in output
         /// </summary>
         ColumnOutput
     }
 
     /// <summary>
-    /// Column Prioritiy Values
+    /// Column Priority Values
     /// </summary>
     public enum ColumnPriority
     {
@@ -4186,7 +4305,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     internal class RockDummyDataSource : ICollection, IEnumerable
     {
@@ -4263,7 +4382,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class RockDummyDataSourceEnumerator : IEnumerator
         {

@@ -20,6 +20,8 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -219,14 +221,16 @@ namespace Rock.Web.UI.Controls
 
                 writer.Write( "<header>" );
 
-                writer.RenderBeginTag( HtmlTextWriterTag.H3 );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, visible ? "btn btn-link btn-xs is-open" : "btn btn-link btn-xs" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Button );
                 writer.Write( "Filter Options" );
-                writer.RenderEndTag();
 
                 _hfVisible.RenderControl( writer );
 
-                writer.AddAttribute( "class", visible ? "fa fa-chevron-up toggle-filter" : "fa fa-chevron-down toggle-filter" );
+                writer.AddAttribute( "class", visible ? "btn-icon fa fa-chevron-up toggle-filter" : "btn-icon fa fa-chevron-down toggle-filter" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
+                writer.RenderEndTag();
+
                 writer.RenderEndTag();
 
                 writer.Write( "</header>" );
@@ -244,7 +248,7 @@ namespace Rock.Web.UI.Controls
                 AdditionalFilterDisplay.ToList().ForEach( d => filterDisplay.Add( d.Key, d.Value ) );
 
                 List<UserPreference> userPreferencesForFilter;
-                if ( this.UserPreferenceKeyPrefix.IsNotNullOrWhitespace() )
+                if ( this.UserPreferenceKeyPrefix.IsNotNullOrWhiteSpace() )
                 {
                     userPreferencesForFilter = _userPreferences.Where( a => a.Key.StartsWith( this.UserPreferenceKeyPrefix ) ).ToList();
                 }
@@ -462,7 +466,33 @@ namespace Rock.Web.UI.Controls
 
                 foreach ( var userPreference in _userPreferences )
                 {
-                    rockBlock.SetUserPreference( string.Format( "{0}{1}|{2}", keyPrefix, userPreference.Key, userPreference.Name ), userPreference.Value );
+                    string keyPrefixUserPreferenceKey = string.Format( "{0}{1}|", keyPrefix, userPreference.Key );
+                    string key = string.Format( "{0}{1}", keyPrefixUserPreferenceKey, userPreference.Name);
+
+                    // No duplicate user preference key values before the '|' are allowed.
+                    // This search for any keys that match before the '|' but mismatch after '|' and delete it before writing the user preference.
+                    int? personEntityTypeId = EntityTypeCache.Get( Person.USER_VALUE_ENTITY ).Id;
+
+                    using ( var rockContext = new Rock.Data.RockContext() )
+                    {
+                        var attributeService = new Model.AttributeService( rockContext );
+                        var attributes = attributeService
+                            .Queryable()
+                            .Where( a => a.EntityTypeId == personEntityTypeId )
+                            .Where( a => a.Key.StartsWith( keyPrefixUserPreferenceKey ) )
+                            .Where( a => a.Key != key );
+
+                        if ( attributes.Count() != 0 )
+                        {
+                            foreach ( var attribute in attributes )
+                            {
+                                rockBlock.DeleteUserPreference( attribute.Key );
+                            }
+                        }
+                        rockContext.SaveChanges();
+                    }
+
+                    rockBlock.SetUserPreference( key, userPreference.Value );
                 }
             }
         }
@@ -539,7 +569,8 @@ namespace Rock.Web.UI.Controls
             /// <param name="key">The key.</param>
             /// <param name="name">The name.</param>
             /// <param name="value">The value.</param>
-            [Obsolete( "DisplayFilterValueArgs(userPreference, prefix) instead" )]
+            [RockObsolete( "1.7.4" )]
+            [Obsolete( "DisplayFilterValueArgs(userPreference, prefix) instead", true )]
             public DisplayFilterValueArgs( string key, string name, string value )
             {
                 Key = key;
@@ -551,7 +582,8 @@ namespace Rock.Web.UI.Controls
             /// Initializes a new instance of the <see cref="DisplayFilterValueArgs"/> class.
             /// </summary>
             /// <param name="userPreference">The user preference.</param>
-            [Obsolete( "DisplayFilterValueArgs(userPreference, prefix) instead" )]
+            [RockObsolete( "1.7.4" )]
+            [Obsolete( "DisplayFilterValueArgs(userPreference, prefix) instead", true )]
             public DisplayFilterValueArgs( UserPreference userPreference ) :
                 this( userPreference, null )
             {

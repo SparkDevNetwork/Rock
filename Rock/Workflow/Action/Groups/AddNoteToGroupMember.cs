@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -104,7 +104,7 @@ namespace Rock.Workflow.Action
             Guid guid = personAttribute.AsGuid();
             if ( !guid.IsEmpty() )
             {
-                var attribute = CacheAttribute.Get( guid, rockContext );
+                var attribute = AttributeCache.Get( guid, rockContext );
                 if ( attribute != null )
                 {
                     string value = action.GetWorklowAttributeValue( guid );
@@ -176,12 +176,12 @@ namespace Rock.Workflow.Action
             }
 
             // get note type
-            CacheNoteType noteType = null;
+            NoteTypeCache noteType = null;
             Guid noteTypeGuid = GetAttributeValue( action, "NoteType" ).AsGuid();
             
             if ( !noteTypeGuid.IsEmpty() )
             {
-                noteType = CacheNoteType.Get( noteTypeGuid, rockContext );
+                noteType = NoteTypeCache.Get( noteTypeGuid, rockContext );
 
                 if (noteType == null )
                 {

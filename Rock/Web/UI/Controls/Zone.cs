@@ -50,6 +50,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the CSS class for the zone.
+        /// </summary>
+        /// <value>
+        /// The CSS class for the zone.
+        /// </value>
+        public string CssClass
+        {
+            get
+            {
+                return ViewState["CssClass"] as string;
+            }
+            set
+            {
+                ViewState["CssClass"] = value;
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init"/> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>

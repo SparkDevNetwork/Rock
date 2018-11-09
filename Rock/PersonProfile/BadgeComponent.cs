@@ -20,7 +20,7 @@ using System.Web.UI;
 
 using Rock.Extension;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace Rock.PersonProfile
@@ -138,19 +138,7 @@ namespace Rock.PersonProfile
         /// <param name="badge">The badge.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [Obsolete( "Use GetAttributeValue() method that uses new CachePersonBadge parameter instead.", false )]
-        protected string GetAttributeValue( Web.Cache.PersonBadgeCache badge, string key )
-        {
-            return GetAttributeValue( CachePersonBadge.Get( badge.Id ), key );
-        }
-        
-        /// <summary>
-        /// Gets the attribute value for the badge
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        protected string GetAttributeValue( CachePersonBadge badge, string key )
+        protected string GetAttributeValue( PersonBadgeCache badge, string key )
         {
             return badge.GetAttributeValue( key );
         }
@@ -160,8 +148,6 @@ namespace Rock.PersonProfile
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        [Obsolete( "Badge Components should inherit from BadgeComponentModern instead and implement its Render method that uses a new CachePersonBadge parameter.", false ) ]
         public abstract void Render( Web.Cache.PersonBadgeCache badge, HtmlTextWriter writer );
-
     }
 }

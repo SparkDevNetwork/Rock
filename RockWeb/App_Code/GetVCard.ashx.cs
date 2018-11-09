@@ -24,7 +24,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -81,7 +81,7 @@ namespace RockWeb
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
             mergeFields.Add( "Person", person );
-            string vCard = CacheGlobalAttributes.Value( "VCardFormat" ).ResolveMergeFields( mergeFields ).Trim();
+            string vCard = GlobalAttributesCache.Value( "VCardFormat" ).ResolveMergeFields( mergeFields ).Trim();
 
             // remove empty lines (the vcard spec is very picky)
             vCard = Regex.Replace( vCard, @"^\s+$[\r\n]*", "", RegexOptions.Multiline );

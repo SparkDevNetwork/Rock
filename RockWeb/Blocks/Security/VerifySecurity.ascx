@@ -10,7 +10,7 @@
             <div class="panel-body">
                 <div class="grid grid-panel">
 
-                    <div class="grid-filter padding-b-md">
+                    <div class="grid-filter padding-all-md">
                         <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" Dismissable="true" />
                         <Rock:NotificationBox ID="nbCacheCleared" runat="server" NotificationBoxType="Success" Visible="false" Dismissable="true">
                             The authorization cache has been successfully cleared.
@@ -40,7 +40,7 @@
                                 <Rock:RockBoundField DataField="EntityName" HeaderText="Source Name"></Rock:RockBoundField>
                                 <Rock:RockBoundField DataField="Role" HeaderText="User / Role"></Rock:RockBoundField>
                                 <Rock:RockBoundField DataField="Access" HeaderText="Access" HtmlEncode="false"></Rock:RockBoundField>
-                                <Rock:LinkButtonField HeaderText="" CssClass="btn btn-default btn-sm fa fa-unlock" OnClick="gUnlock_Click"></Rock:LinkButtonField>
+                                <Rock:LinkButtonField HeaderText="" CssClass="btn btn-default btn-sm" Text="<i class='fa fa-unlock'></i>" OnClick="gUnlock_Click" />
                             </Columns>
                         </Rock:Grid>
                     </asp:Panel>

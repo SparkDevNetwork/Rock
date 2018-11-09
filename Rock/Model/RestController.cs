@@ -20,7 +20,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
+using Rock.Web.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -31,7 +31,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "RestController" )]
     [DataContract]
-    public partial class RestController : Model<RestController>
+    public partial class RestController : Model<RestController>, ICacheable
     {
 
         #region Entity Properties
@@ -98,6 +98,28 @@ namespace Rock.Model
 
         #endregion
 
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return RestControllerCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            RestControllerCache.UpdateCachedEntity( this.Id, entityState );
+        }
+
+        #endregion
     }
 
     #region Entity Configuration

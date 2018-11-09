@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -46,6 +47,25 @@ namespace Rock.Field.Types
         {
             var fileType = new ConfigurationValue( "File Type", "The type of files to list", Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL );
             return new Dictionary<string, ConfigurationValue>() { { "binaryFileType", fileType } };
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var picker = base.EditControl( configurationValues, id );
+            if ( picker is BinaryFilePicker )
+            {
+                ( picker as BinaryFilePicker ).BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid();
+            }
+
+            return picker;
         }
 
         /// <summary>

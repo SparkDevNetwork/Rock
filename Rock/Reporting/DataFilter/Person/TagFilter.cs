@@ -23,7 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -173,7 +173,7 @@ function() {
         /// </summary>
         private void PopulateTagList()
         {
-            int entityTypePersonId = CacheEntityType.GetId( typeof( Rock.Model.Person ) ) ?? 0;
+            int entityTypePersonId = EntityTypeCache.GetId( typeof( Rock.Model.Person ) ) ?? 0;
             var tagQry = new TagService( new RockContext() ).Queryable( "OwnerPersonAlias" ).Where( a => a.EntityTypeId == entityTypePersonId );
             RockPage rockPage = _rblTagType.Page as RockPage;
 

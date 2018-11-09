@@ -17,9 +17,10 @@
 using System;
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Primitives;
-using System.IO;
 using System.Linq;
 using System.Reflection;
+
+using Rock;
 
 /// <summary>
 /// MEF Directory Catalog that will handle outdated MEF Components
@@ -33,41 +34,37 @@ public class SafeDirectoryCatalog : ComposablePartCatalog
     /// </summary>
     /// <param name="directory">The directory.</param>
     /// <param name="baseType">Type of the base.</param>
+    [RockObsolete( "1.8" )]
+    [Obsolete( "Use SafeDirectoryCatalog(baseType) instead" )]
     public SafeDirectoryCatalog( string directory, Type baseType )
+    : this( baseType )
     {
-        // get all *.dll in the current and subdirectories, except for *.resources.dll and the sql server type library files 
-        var files = Directory.EnumerateFiles( directory, "*.dll", SearchOption.AllDirectories )
-                        .Where( a => !a.EndsWith( ".resources.dll", StringComparison.OrdinalIgnoreCase )
-                                    && !a.EndsWith( "msvcr100.dll", StringComparison.OrdinalIgnoreCase )
-                                    && !a.EndsWith( "SqlServerSpatial110.dll", StringComparison.OrdinalIgnoreCase ) );
+    }
 
-        _catalog = new AggregateCatalog();
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SafeDirectoryCatalog"/> class.
+    /// </summary>
+    /// <param name="baseType">Type of the base.</param>
+    public SafeDirectoryCatalog( Type baseType )
+    {
+        var assemblies = Reflection.GetPluginAssemblies();
+
+        // Add Rock.dll
+        assemblies.Add( typeof( SafeDirectoryCatalog ).Assembly );
+
         string baseTypeAssemblyName = baseType.Assembly.GetName().Name;
 
-        var loadedAssembliesDictionary = AppDomain.CurrentDomain.GetAssemblies().Where( a => !a.IsDynamic && !a.GlobalAssemblyCache && !string.IsNullOrWhiteSpace( a.Location ) )
-            .ToDictionary( k => new Uri( k.CodeBase ).LocalPath, v => v );
+        _catalog = new AggregateCatalog();
 
-        foreach ( var file in files )
+        foreach ( var assembly in assemblies.ToList() )
         {
             try
             {
-                Assembly loadedAssembly = loadedAssembliesDictionary.Where( a => a.Key.Equals( file, StringComparison.OrdinalIgnoreCase ) ).Select( a => a.Value ).FirstOrDefault();
-                AssemblyCatalog assemblyCatalog = null;
+                // only attempt to load the catalog if the assembly is or references the basetype assembly
+                if ( assembly == baseType.Assembly || assembly.GetReferencedAssemblies().Any( a => a.Name.Equals( baseTypeAssemblyName, StringComparison.OrdinalIgnoreCase ) ) )
+                {
+                    AssemblyCatalog assemblyCatalog = new AssemblyCatalog( assembly );
 
-                if ( loadedAssembly != null )
-                {
-                    if ( loadedAssembly == baseType.Assembly || loadedAssembly.GetReferencedAssemblies().Any( a => a.Name.Equals( baseTypeAssemblyName, StringComparison.OrdinalIgnoreCase ) ) )
-                    {
-                        assemblyCatalog = new AssemblyCatalog( loadedAssembly );
-                    }
-                }
-                else
-                {
-                    assemblyCatalog = new AssemblyCatalog( file );
-                }
-
-                if ( assemblyCatalog != null )
-                {
                     // Force MEF to load the plugin and figure out if there are any exports
                     // good assemblies will not throw the RTLE exception and can be added to the catalog
                     if ( assemblyCatalog.Parts.ToList().Count > 0 )
@@ -78,7 +75,11 @@ public class SafeDirectoryCatalog : ComposablePartCatalog
             }
             catch ( ReflectionTypeLoadException e )
             {
-                // TODO: Add error logging
+                foreach ( var loaderException in e.LoaderExceptions )
+                {
+                    Rock.Model.ExceptionLogService.LogException( new Exception( "Unable to load MEF from " + assembly.FullName, loaderException ) );
+                }
+
                 string msg = e.Message;
             }
         }

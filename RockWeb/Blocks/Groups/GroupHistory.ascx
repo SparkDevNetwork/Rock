@@ -9,7 +9,10 @@
                     <i class="fa fa-history"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
                 </h1>
-                <a class="btn btn-xs btn-default pull-right margin-l-sm" onclick="javascript: toggleOptions()"><i title="Options" class="fa fa-gear"></i></a>
+                <div class="pull-right">
+                    <asp:HyperLink ID="hlMemberHistory" runat="server" CssClass="btn btn-xs btn-default">Member History</asp:HyperLink>
+                    <a class="btn btn-xs btn-default margin-l-sm" onclick="javascript: toggleOptions()"><i title="Options" class="fa fa-gear"></i></a>
+                </div>
             </div>
 
             <div class="panel-body js-options" style="display: none;">

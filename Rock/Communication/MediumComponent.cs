@@ -21,7 +21,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Extension;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls.Communication;
 
 namespace Rock.Communication
@@ -48,7 +48,7 @@ namespace Rock.Communication
                     foreach ( var serviceEntry in TransportContainer.Instance.Components )
                     {
                         var component = serviceEntry.Value.Value;
-                        var entityType = CacheEntityType.Get( component.GetType() );
+                        var entityType = EntityTypeCache.Get( component.GetType() );
                         if ( entityType != null && entityType.Guid.Equals( entityTypeGuid ) )
                         {
                             return component;
@@ -92,23 +92,23 @@ namespace Rock.Communication
             if ( this.IsActive )
             {
                 // Get the Medium's Entity Type Id
-                int mediumEntityTypeId = CacheEntityType.Get( this.GetType() ).Id;
+                int mediumEntityTypeId = EntityTypeCache.Get( this.GetType() ).Id;
 
                 // Add the Medium's settings as attributes for the Transport to use.
                 var mediumAttributes = new Dictionary<string, string>();
                 foreach ( var attr in this.Attributes.Select( a => a.Value ) )
                 {
                     string value = this.GetAttributeValue( attr.Key );
-                    if ( value.IsNotNullOrWhitespace() )
+                    if ( value.IsNotNullOrWhiteSpace() )
                     {
                         mediumAttributes.Add( attr.Key, GetAttributeValue( attr.Key ) );
                     }
                 }
 
-                // If there have not been any EnabledLavaCommands explicitely set, then use the global defaults.
+                // If there have not been any EnabledLavaCommands explicitly set, then use the global defaults.
                 if ( rockMessage.EnabledLavaCommands == null )
                 {
-                    rockMessage.EnabledLavaCommands = CacheGlobalAttributes.Get().GetValue( "DefaultEnabledLavaCommands" );
+                    rockMessage.EnabledLavaCommands = GlobalAttributesCache.Get().GetValue( "DefaultEnabledLavaCommands" );
                 }
 
                 // Use the transport to send communication
@@ -137,14 +137,14 @@ namespace Rock.Communication
             if ( this.IsActive )
             {
                 // Get the Medium's Entity Type Id
-                int mediumEntityTypeId = CacheEntityType.Get( this.GetType() ).Id;
+                int mediumEntityTypeId = EntityTypeCache.Get( this.GetType() ).Id;
 
                 // Add the Medium's settings as attributes for the Transport to use.
                 var mediumAttributes = new Dictionary<string, string>();
                 foreach ( var attr in this.Attributes.Select( a => a.Value ) )
                 {
                     string value = this.GetAttributeValue( attr.Key );
-                    if ( value.IsNotNullOrWhitespace() )
+                    if ( value.IsNotNullOrWhiteSpace() )
                     {
                         mediumAttributes.Add( attr.Key, GetAttributeValue( attr.Key ) );
                     }
@@ -167,7 +167,8 @@ namespace Rock.Communication
         /// <param name="communication">The communication.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        [Obsolete("The GetCommunication now creates the HTML Preview directly")]
+        [RockObsolete( "1.7" )]
+        [Obsolete("The GetCommunication now creates the HTML Preview directly", true )]
         public abstract string GetHtmlPreview( Model.Communication communication, Person person );
 
         /// <summary>
@@ -175,7 +176,8 @@ namespace Rock.Communication
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <returns></returns>
-        [Obsolete( "The CommunicationDetail block now creates the details" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "The CommunicationDetail block now creates the details", true )]
         public abstract string GetMessageDetails( Model.Communication communication );
 
         /// <summary>
@@ -184,7 +186,8 @@ namespace Rock.Communication
         /// <value>
         /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete( "All mediums now support bulk communications")]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "All mediums now support bulk communications", true )]
         public abstract bool SupportsBulkCommunication
         {
             get;

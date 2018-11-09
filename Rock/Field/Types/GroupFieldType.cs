@@ -49,10 +49,13 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var group = new GroupService( new RockContext() ).Get( guid.Value );
-                if (group != null)
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = group.Name;
+                    var groupName = new GroupService( rockContext ).GetSelect( guid.Value, a => a.Name );
+                    if ( groupName != null )
+                    {
+                        formattedValue = groupName;
+                    }
                 }
             }
 
@@ -90,15 +93,16 @@ namespace Rock.Field.Types
             {
                 int? itemId = picker.SelectedValue.AsIntegerOrNull();
                 Guid? itemGuid = null;
-                if ( itemId.HasValue )
+                if ( itemId.HasValue && itemId > 0 )
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        itemGuid = new GroupService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        itemGuid = new GroupService( rockContext ).GetNoTracking( itemId.Value ).Guid;
+                        return itemGuid?.ToString() ?? string.Empty;
                     }
                 }
 
-                return itemGuid?.ToString();
+                return string.Empty;
             }
 
             return null;

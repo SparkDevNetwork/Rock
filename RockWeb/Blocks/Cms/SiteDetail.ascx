@@ -24,7 +24,7 @@
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
-                <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div id="pnlEditDetails" runat="server">
 
@@ -61,7 +61,16 @@
                             <Rock:DataTextBox ID="tbGoogleAnalytics" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="GoogleAnalyticsCode" Help="Optional Google Analytics Code.  If specified, the Google Analytics script with this code will be added to every page rendered for this site." />
                             <Rock:RockCheckBox ID="cbRequireEncryption" runat="server" Label="Require Encryption" Help="Ensures that the site is loaded over SSL by redirecting to https." />
                             <Rock:RockCheckBox ID="cbEnableForShortening" runat="server" Label="Enabled for Shortening" Help="Should this site (and its first domain) be an available option when creating shortlinks?" />
-                            <Rock:ImageUploader ID="imgSiteIcon" runat="server" Help="Commonly called a 'favicon', this image is used as a browser and app icon for your site. Recommended image size is 192x192. Rock will automatically create all the sizes required by various devices." Label="Site Icon" />
+                            <div class="row">
+                                <div class="col-md-4 col-lg-3">
+                                    <Rock:ImageUploader ID="imgSiteIcon" runat="server" Help="Commonly called a 'favicon', this image is used as a browser and app icon for your site. Recommended image size is 192x192. Rock will automatically create all the sizes required by various devices." Label="Site Icon" />
+                                </div>
+                                <div class="col-md-4 col-lg-3">
+                                    <Rock:ImageUploader ID="imgSiteLogo" runat="server" Help="The site logo is used by certain themes to apply to the changes on the site. See the theme's documentation for information on sizing" 
+                                        Label="Site Logo" />
+                                </div>
+                            </div>
+                            
                         </div>
                     </div>
 
@@ -91,7 +100,8 @@
                                 <Rock:RockCheckBox ID="cbRedirectTablets" runat="server" Label="Redirect Tablets" />
                                 <Rock:RockCheckBox ID="cbEnablePageViews" runat="server" Label="Log Page Views" AutoPostBack="true" OnCheckedChanged="cbEnablePageViews_CheckedChanged" CausesValidation="false" />
                                 <Rock:NumberBox ID="nbPageViewRetentionPeriodDays" runat="server" Label="Page View Retention Period" Help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
-                                <Rock:DataTextBox ID="tbAllowedFrameDomains" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="AllowedFrameDomains" TextMode="MultiLine" LabelTextFromPropertyName="false" Label="Allowed Frame Domain(s)" Help="A whitespace delimited list of domain values that are allowed to embed this site (such as an IFRAME). If left blank, Rock will inject properties into the HTTP Header which modern web browsers will use to prevent site embedding. Only trusted domains should be listed since it could open the site to Clickjacking attempts (see https://www.owasp.org/index.php/Clickjacking)" />
+                                <Rock:DataTextBox ID="tbAllowedFrameDomains" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="AllowedFrameDomains" TextMode="MultiLine" LabelTextFromPropertyName="false" Label="Allowed Frame Domain(s)"
+                                    Help="A space delimited list of domain values that are allowed to embed this site (via an iframe). The value you enter here will be used for the &lt;source&gt; as described in [Content-Security-Policy frame-ancestors directive](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors#Syntax). Be sure to include your own server domain(s) in the list to prevent locking yourself out from modal use.  If left blank, Rock will inject properties into the HTTP Header which modern web browsers will use to prevent site embedding and it will use a frame-ancestors value of 'self'." />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbAllowIndexing" runat="server" Label="Allow Indexing" Help="This setting will enable or disable the pages of the site from being indexed." />

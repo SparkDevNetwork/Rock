@@ -26,7 +26,7 @@ using DotLiquid.Exceptions;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
 {
@@ -156,7 +156,7 @@ namespace Rock.Lava.Blocks
 
                 foreach(var entity in entities )
                 {
-                    foreach(var entityType in CacheEntityType.All() )
+                    foreach(var entityType in EntityTypeCache.All() )
                     {
                         if (entityType.FriendlyName?.ToLower() == entity )
                         {
@@ -180,7 +180,6 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
         private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup
@@ -209,7 +208,7 @@ namespace Rock.Lava.Blocks
             parms.Add( "iterator", "results" );
             parms.Add( "searchtype", "wildcard" );
 
-            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

@@ -1,0 +1,118 @@
+# EditorConfig is awesome: http://EditorConfig.org
+
+# EditorConfig plugin for Visual Studio 2010-2015 : https://marketplace.visualstudio.com/items?itemName=EditorConfigTeam.EditorConfig
+# EditorConfig plugin for Visual Studio 2017+ : https://marketplace.visualstudio.com/items?itemName=MadsKristensen.EditorConfig
+# Rock Coding Standards: https://github.com/SparkDevNetwork/Rock/wiki/Coding-standards
+
+# top-most EditorConfig file
+root = true
+
+[*]
+indent_style = space
+trim_trailing_whitespace = true
+
+[*.{json,csproj,less}]
+indent_size = 2
+
+# JS
+[*.js]
+indent_size = 4
+insert_final_newline = true
+
+# LESS files that compile to CSS
+[*.less]
+insert_final_newline = true
+
+# Code files
+[*.{cs,ashx}]
+indent_size = 4
+charset = utf-8-bom
+
+[*.sql]
+trim_trailing_whitespace = false
+
+# Whitespace override for all Rock.Migrations
+[Rock.Migrations/**.cs]
+trim_trailing_whitespace = false
+
+# Style: https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference
+
+# Sort using and Import directives with System.* appearing first
+dotnet_sort_system_directives_first = true
+
+csharp_prefer_braces = true
+
+# Newline settings
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+
+# Prefer identing in switch statements
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+
+# Spacing
+csharp_space_between_method_declaration_parameter_list_parentheses = true
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_space_between_method_call_parameter_list_parentheses = true
+
+# Naming: https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-naming-conventions
+
+# Classes (classes)
+dotnet_naming_rule.classes.symbols = classes_symbols
+dotnet_naming_symbols.classes_symbols.applicable_kinds = class
+dotnet_naming_symbols.classes_symbols.applicable_accessibilities = *
+
+dotnet_naming_rule.classes.style = classes_style
+dotnet_naming_style.classes_style.capitalization = pascal_case
+
+dotnet_naming_rule.classes.severity = warning
+
+
+# Local Variables and Method Parameters (local_var_method_param)
+dotnet_naming_rule.local_var_method_param.symbols = local_var_method_param_symbols
+# Suppress: EC114
+dotnet_naming_symbols.local_var_method_param_symbols.applicable_kinds = parameter, local
+
+dotnet_naming_rule.local_var_method_param.style = local_var_method_param_style
+dotnet_naming_style.local_var_method_param_style.capitalization = camel_case
+
+dotnet_naming_rule.local_var_method_param.severity = warning
+
+
+# Interfaces Start with I (interfaces_start_with_i)
+dotnet_naming_rule.interfaces_start_with_i.symbols = interfaces_start_with_i_symbols
+dotnet_naming_symbols.interfaces_start_with_i_symbols.applicable_kinds = interface
+dotnet_naming_symbols.interfaces_start_with_i_symbols.applicable_accessibilities = *
+
+dotnet_naming_rule.interfaces_start_with_i.style = interfaces_start_with_i_symbols_style
+dotnet_naming_style.interfaces_start_with_i_symbols_style.capitalization = pascal_case
+dotnet_naming_style.interfaces_start_with_i_symbols_style.required_prefix = I
+
+dotnet_naming_rule.interfaces_start_with_i.severity = warning
+
+
+# These rules should be renenabled when https://github.com/dotnet/roslyn/issues/24209 is closed, until then enums have enforced caps with these rules which is not corrct
+
+## Member Variables Start with an Underscore (member_variables_start_with_underscore)
+#dotnet_naming_rule.member_variables_start_with_underscore.symbols = member_variables_start_with_underscore_symbols
+#dotnet_naming_symbols.member_variables_start_with_underscore_symbols.applicable_kinds = field
+#dotnet_naming_symbols.member_variables_start_with_underscore_symbols.applicable_accessibilities = private, internal, protected
+
+#dotnet_naming_rule.member_variables_start_with_underscore.style = member_variables_start_with_underscore_style
+#dotnet_naming_style.member_variables_start_with_underscore_style.capitalization = camel_case
+#dotnet_naming_style.member_variables_start_with_underscore_style.required_prefix = _
+
+#dotnet_naming_rule.member_variables_start_with_underscore.severity = warning
+
+## Const Member Variables are Upper Case (const-member_variables_are_caps)
+#dotnet_naming_rule.member_variables_are_caps.symbols = member_variables_are_caps_symbols
+#dotnet_naming_symbols.member_variables_are_caps_symbols.applicable_kinds = field
+#dotnet_naming_symbols.member_variables_are_caps_symbols.applicable_accessibilities = *
+#dotnet_naming_symbols.member_variables_are_caps_symbols.required_modifiers = const
+
+#dotnet_naming_rule.member_variables_are_caps.style = member_variables_are_caps_style
+#dotnet_naming_style.member_variables_are_caps_style.capitalization = all_upper
+
+#dotnet_naming_rule.member_variables_are_caps.severity = warning

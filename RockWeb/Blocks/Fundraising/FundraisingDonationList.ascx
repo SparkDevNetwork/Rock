@@ -16,8 +16,8 @@
                             <Rock:RockBoundField DataField="Address" HeaderText="Donor Address" HtmlEncode="false" ExcelExportBehavior="IncludeIfVisible" />
                             <Rock:RockBoundField DataField="Donor.Email" HeaderText="Donor Email" SortExpression="Donor.Email" ExcelExportBehavior="IncludeIfVisible" />
                             <Rock:RockLiteralField HeaderText="Participant" SortExpression="Participant.Person.LastName, Participant.Person.NickName" ExcelExportBehavior="IncludeIfVisible" />
-                            <Rock:DateField DataField="Date" HeaderText="Date" HeaderStyle-HorizontalAlign="Right" SortExpression="Date" ExcelExportBehavior="AlwaysInclude" />
-                            <Rock:CurrencyField DataField="Amount" HeaderText="Amount" HeaderStyle-HorizontalAlign="Right" SortExpression="Amount" ExcelExportBehavior="IncludeIfVisible" />
+                            <Rock:DateField DataField="Date" HeaderText="Date" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="Date" ExcelExportBehavior="AlwaysInclude" />
+                            <Rock:CurrencyField DataField="Amount" HeaderText="Amount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="Amount" ExcelExportBehavior="IncludeIfVisible" />
                         </Columns>
                     </Rock:Grid>
                 </div>

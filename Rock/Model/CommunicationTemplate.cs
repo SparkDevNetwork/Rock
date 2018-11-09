@@ -139,7 +139,8 @@ namespace Rock.Model
         /// <value>
         /// A Json formatted <see cref="System.String"/> that contains any Medium specific data.
         /// </value>
-        [Obsolete( "MediumDataJson is no longer used." )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "MediumDataJson is no longer used.", true )]
         public string MediumDataJson { get; set; }
 
         #region Email Fields
@@ -396,7 +397,8 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [NotMapped]
-        [Obsolete( "MediumData is no longer used. Communication Template now has specific properties for medium data." )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "MediumData is no longer used. Communication Template now has specific properties for medium data.", true )]
         public virtual Dictionary<string, string> MediumData
         {
             get
@@ -409,7 +411,7 @@ namespace Rock.Model
                     mediumData.AddIfNotBlank( "Subject", Subject );
                     mediumData.AddIfNotBlank( "Message", SMSMessage );
                 }
-                else if ( PushMessage.IsNotNullOrWhitespace() )
+                else if ( PushMessage.IsNotNullOrWhiteSpace() )
                 {
                     mediumData.AddIfNotBlank( "Title", PushTitle );
                     mediumData.AddIfNotBlank( "Message", PushMessage );
@@ -449,7 +451,8 @@ namespace Rock.Model
         /// The attachment binary file ids
         /// </value>
         [NotMapped]
-        [Obsolete( "Use EmailAttachmentBinaryFileIds or SMSAttachmentBinaryFileIds" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use EmailAttachmentBinaryFileIds or SMSAttachmentBinaryFileIds", true )]
         public virtual IEnumerable<int> AttachmentBinaryFileIds
         {
             get
@@ -520,7 +523,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> containing the key associated with the value to retrieve. </param>
         /// <returns>A <see cref="System.String"/> representing the value that is linked with the specified key.</returns>
-        [Obsolete( "MediumData is no longer used" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "MediumData is no longer used", true )]
         public string GetMediumDataValue( string key )
         {
             if ( MediumData.ContainsKey( key ) )
@@ -538,7 +542,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the key.</param>
         /// <param name="value">A <see cref="System.String"/> representing the value.</param>
-        [Obsolete( "MediumData is no longer used" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "MediumData is no longer used", true )]
         public void SetMediumDataValue( string key, string value )
         {
             if ( MediumData.ContainsKey( key ) )
@@ -595,7 +600,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// When checking for security, if a template does not have specific rules, first check the category it belongs to, but then check the default entity securit for templates.
+        /// When checking for security, if a template does not have specific rules, first check the category it belongs to, but then check the default entity security for templates.
         /// </summary>
         public override ISecured ParentAuthorityPre => this.Category ?? base.ParentAuthority;
 

@@ -33,7 +33,7 @@
                     <asp:HiddenField ID="hfSelectedColumn" runat="server" />
 
                     <div class="grid">
-                        <Rock:Grid ID="gValues" runat="server" EnableResponsiveTable="false" AllowSorting="false" EmptyDataText="No Results" />
+                        <Rock:Grid ID="gValues" CssClass="sticky-headers js-sticky-headers" runat="server" EnableResponsiveTable="false" AllowSorting="false" EmptyDataText="No Results" />
                     </div>
 
                     <Rock:NotificationBox ID="nbSecurityNotice" runat="server" NotificationBoxType="danger" Visible="false" Heading="Security Alert, Account Hijack Possible:" />

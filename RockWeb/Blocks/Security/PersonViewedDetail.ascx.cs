@@ -21,7 +21,7 @@ using System.Web.UI;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -129,7 +129,7 @@ namespace RockWeb.Blocks.Security
                 personViewedList = personViewedList.OrderByDescending( p => p.ViewDateTime ).ToList();
             }
 
-            gViewDetails.EntityTypeId = CacheEntityType.Get<PersonViewed>().Id;
+            gViewDetails.EntityTypeId = EntityTypeCache.Get<PersonViewed>().Id;
             gViewDetails.DataSource = personViewedList;
             gViewDetails.DataBind();
         }

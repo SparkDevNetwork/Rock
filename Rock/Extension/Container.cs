@@ -34,7 +34,7 @@ namespace Rock.Extension
         private bool IsDisposed;
 
         /// <summary>
-        /// Gets the componentss.
+        /// Gets the components.
         /// </summary>
         public Dictionary<int, Lazy<T, TData>> Components { get; private set; }
 
@@ -139,22 +139,7 @@ namespace Rock.Extension
             // Create the MEF Catalog
             var catalog = new AggregateCatalog();
 
-            // Add executing assembly's directory
-            string codeBase = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
-            UriBuilder uri = new UriBuilder( codeBase );
-            string path = Uri.UnescapeDataString( uri.Path );
-            string dir = Path.GetDirectoryName( path );
-            if ( Directory.Exists( dir ) )
-            {
-                catalog.Catalogs.Add( new SafeDirectoryCatalog( dir, typeof( T ) ) );
-            }
-
-            // Add all the assemblies in the 'Plugins' subdirectory
-            string pluginsFolder = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Plugins" );
-            if ( Directory.Exists( pluginsFolder ) )
-            {
-                catalog.Catalogs.Add( new SafeDirectoryCatalog( pluginsFolder, typeof( T ) ) );
-            }
+            catalog.Catalogs.Add( new SafeDirectoryCatalog( typeof( T ) ) );
 
             // Create the container from the catalog
             container = new CompositionContainer( catalog );

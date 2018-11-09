@@ -21,7 +21,6 @@ namespace Rock.Attribute
     /// <summary>
     /// Represents any class that supports having attributes
     /// </summary>
-    [Obsolete( "Use Rock.Data.IHasAttributesWrapper instead" )]
     public interface IHasAttributesWrapper
     {
         /// <summary>

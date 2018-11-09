@@ -1,9 +1,45 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BulkUpdate.ascx.cs" Inherits="RockWeb.Blocks.Crm.BulkUpdate" %>
 
+<script src="/SignalR/hubs"></script>
+<script type="text/javascript">
+    $(function () {
+        var proxy = $.connection.rockMessageHub;
+
+        proxy.client.bulkUpdateProgress = function (completed, total) {
+            var $bar = $('#<%= pnlProcessing.ClientID %> .js-progress-bar');
+
+            $bar.prop('aria-valuenow', completed);
+            $bar.prop('aria-valuemax', total);
+            $bar.css('width', (completed.replace(',','') / total.replace(',','') * 100) + '%');
+            $bar.text(completed + '/' + total);
+
+            $('#<%= pnlProcessing.ClientID %> .js-progress-div').slideDown();
+            $('#<%= pnlProcessing.ClientID %> .js-processing-spinner').slideUp();
+        };
+
+        proxy.client.bulkUpdateStatus = function (status, success) {
+            if (success) {
+                $('#<%= pnlProcessing.ClientID %> .js-results').addClass('alert-success').removeClass('alert-danger');
+            }
+            else {
+                $('#<%= pnlProcessing.ClientID %> .js-results').addClass('alert-danger').removeClass('alert-success');
+            }
+
+            $('#<%= pnlProcessing.ClientID %> .js-results').html(status).slideDown();
+            $('#<%= pnlProcessing.ClientID %> .js-progress-div').slideUp();
+        };
+
+        $.connection.hub.start().done(function () {
+            $('#<%= hfConnectionId.ClientID %>').val($.connection.hub.id);
+        });
+    });
+</script>
+
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
         <asp:HiddenField ID="hfSelectedItems" runat="server"  />
+        <asp:HiddenField ID="hfConnectionId" runat="server" />
 
         <div class="panel panel-block">
 
@@ -15,7 +51,7 @@
 
                 <asp:Panel ID="pnlEntry" runat="server">
 
-                    <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                     <div class="panel panel-widget individuals">
                         <div class="panel-heading clearfix">
@@ -63,14 +99,14 @@
 
                         <div class="row">
                             <div class="col-sm-6">
-                                <Rock:RockDropDownList ID="ddlTitle" runat="server" />
-                                <Rock:RockDropDownList ID="ddlStatus" runat="server" />
+                                <Rock:DefinedValuePicker ID="dvpTitle" runat="server" />
+                                <Rock:DefinedValuePicker ID="dvpConnectionStatus" runat="server" />
                                 <Rock:RockDropDownList ID="ddlGender" runat="server" >
                                     <asp:ListItem Text="Male" Value="Male" />
                                     <asp:ListItem Text="Female" Value="Female" />
                                     <asp:ListItem Text="Unknown" Value="Unknown" />
                                 </Rock:RockDropDownList>
-                                <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" />
+                                <Rock:DefinedValuePicker ID="dvpMaritalStatus" runat="server" />
                                 <div class="row">
                                     <div class="col-xs-5">
                                         <Rock:GradePicker ID="ddlGradePicker" runat="server" UseAbbreviation="true" UseGradeOffsetAsValue="true" Label="" />
@@ -86,10 +122,10 @@
                                 </Rock:RockDropDownList>
                             </div>
                             <div class="col-sm-6">
-                                <Rock:RockDropDownList ID="ddlSuffix" runat="server" />
-                                <Rock:RockDropDownList ID="ddlRecordStatus" runat="server"  
-                                    AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
-                                <Rock:RockDropDownList ID="ddlInactiveReason" runat="server" Visible="false" Label="Inactive Reason"></Rock:RockDropDownList>
+                                <Rock:DefinedValuePicker ID="dvpSuffix" runat="server" />
+
+                                <Rock:DefinedValuePicker ID="dvpRecordStatus" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
+                                <Rock:DefinedValuePicker ID="dvpInactiveReason" runat="server" Visible="false" Label="Inactive Reason"></Rock:DefinedValuePicker>
                                 <Rock:RockTextBox ID="tbInactiveReasonNote" runat="server" TextMode="MultiLine" Rows="2" Visible="false" Label="Inactive Reason Note"></Rock:RockTextBox>
                             </div>
                         </div>
@@ -125,7 +161,7 @@
                                 <Rock:RockTextBox ID="tbSystemNote" runat="server" TextMode="MultiLine" Rows="2"></Rock:RockTextBox>
                             </div>
                             <div class="col-sm-6">
-                                <Rock:RockDropDownList ID="ddlReviewReason" runat="server" Enabled="false" 
+                                <Rock:DefinedValuePicker ID="dvpReviewReason" runat="server" Enabled="false" 
                                     Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Review Reason" />
                                 <Rock:RockTextBox ID="tbReviewReasonNote" runat="server" Enabled="false" 
                                     Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Review Reason Note" TextMode="MultiLine" Rows="2"></Rock:RockTextBox>
@@ -198,7 +234,7 @@
 
                 </asp:Panel>
 
-                <asp:Panel ID="pnlConfirm" runat="server" Visible="false">
+                <asp:Panel ID="pnlConfirm" runat="server" Visible="false" CssClass="js-panel-confirm">
 
                     <asp:PlaceHolder id="phConfirmation" runat="server" />
 
@@ -208,8 +244,22 @@
                     </div>
 
                 </asp:Panel>
-                <asp:Panel ID="pnlResult" runat="server" Visible="false">
-                    <Rock:NotificationBox ID="nbResult" runat="server" NotificationBoxType="Success" />
+
+                <asp:Panel ID="pnlProcessing" runat="server" Visible="false">
+
+                    <div class="js-processing-spinner">
+                        <i class="fa fa-spinner fa-spin"></i>
+                        Preparing...
+                    </div>
+
+                    <div class="js-progress-div margin-t-lg" style="display: none;">
+                        <strong>Progress</strong><br />
+                        <div class="progress">
+                            <div class="progress-bar js-progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemax="0">0/0</div>
+                        </div>
+                    </div>
+
+                    <div class="js-results alert alert-success" style="display: none;"></div>
                 </asp:Panel>
 
             </div>

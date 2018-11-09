@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -33,7 +35,6 @@ namespace Rock.Model
     [DataContract]
     public partial class ServiceJob : Model<ServiceJob>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -45,7 +46,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a flag indicating if the Job is active.
         /// </summary>
@@ -54,7 +55,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool? IsActive { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the friendly Name of the Job. This property is required.
         /// </summary>
@@ -65,7 +66,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a user defined description of the Job.
         /// </summary>
@@ -74,7 +75,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Description { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Assembly name of the .dll file that contains the job class.
         /// Set this to null to have Rock figure out the Assembly automatically.
@@ -85,7 +86,7 @@ namespace Rock.Model
         [MaxLength( 260 )]
         [DataMember]
         public string Assembly { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the fully qualified class name with Namespace of the Job class. This property is required.
         /// </summary>
@@ -96,7 +97,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         public string Class { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Cron Expression that is used to schedule the Job. This property is required.
         /// </summary>
@@ -110,7 +111,7 @@ namespace Rock.Model
         [MaxLength( 120 )]
         [DataMember( IsRequired = true )]
         public string CronExpression { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the date and time that the Job last completed successfully.
         /// </summary>
@@ -119,7 +120,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? LastSuccessfulRunDateTime { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the date and time that the job last ran.
         /// </summary>
@@ -128,7 +129,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? LastRunDateTime { get; set; }
-        
+
         /// <summary>
         /// Gets or set the amount of time, in seconds, that it took the job to run the last time that it ran.
         /// </summary>
@@ -137,7 +138,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? LastRunDurationSeconds { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the completion status that was returned by the Job the last time that it ran.
         /// </summary>
@@ -147,7 +148,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         public string LastStatus { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the status message that was returned the last time that the job was run. In most cases this will be used
         /// in the event of an exception to return the exception message.
@@ -157,7 +158,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string LastStatusMessage { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name of the scheduler that the job ran under the last time that it ran. In most cases this 
         /// is used to determine if the was run by the IIS or Windows service.
@@ -168,7 +169,7 @@ namespace Rock.Model
         [MaxLength( 40 )]
         [DataMember]
         public string LastRunSchedulerName { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a comma delimited list of email address that should receive notification emails for this job. Notification
         /// emails are sent to these email addresses based on the completion status of the Job and the <see cref="NotificationStatus"/>
@@ -180,7 +181,7 @@ namespace Rock.Model
         [MaxLength( 1000 )]
         [DataMember]
         public string NotificationEmails { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the NotificationStatus for this job, this property determines when notification emails should be sent to the <see cref="NotificationEmails"/>
         /// that are associated with this Job
@@ -195,6 +196,25 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public JobNotificationStatus NotificationStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether jobs should be logged in ServiceJobHistory
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable history]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableHistory { get; set; } = false;
+
+
+        /// <summary>
+        /// Gets or sets the history count per job.
+        /// </summary>
+        /// <value>
+        /// The history count per job.
+        /// </value>
+        [DataMember]
+        public int HistoryCount { get; set; } = 100;
 
         #endregion
 
@@ -229,6 +249,16 @@ namespace Rock.Model
                 return ExpressionDescriptor.GetDescription( this.CronExpression, new Options { ThrowExceptionOnParseError = false } );
             }
         }
+
+        /// <summary>
+        /// Gets or sets the a list of previous values that this attribute value had (If ServiceJob.EnableHistory is enabled)
+        /// </summary>
+        /// <value>
+        /// The history of service jobs.
+        /// </value>
+        [DataMember]
+        [LavaIgnore]
+        public virtual ICollection<ServiceJobHistory> ServiceJobHistory { get; set; } = new Collection<ServiceJobHistory>();
 
         #endregion
 

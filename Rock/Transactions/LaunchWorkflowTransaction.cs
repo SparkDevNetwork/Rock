@@ -22,7 +22,7 @@ using System.IO;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Reflection;
 
 namespace Rock.Transactions
@@ -56,6 +56,14 @@ namespace Rock.Transactions
         /// The name of the workflow.
         /// </value>
         public string WorkflowName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the initiator person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The initiator person alias identifier.
+        /// </value>
+        public int? InitiatorPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the workflow attribute values.
@@ -112,22 +120,23 @@ namespace Rock.Transactions
         {
             using ( var rockContext = new RockContext() )
             {
-                CacheWorkflowType workflowType = null;
+                WorkflowTypeCache workflowType = null;
                 if ( WorkflowTypeGuid.HasValue )
                 {
-                    workflowType = CacheWorkflowType.Get( WorkflowTypeGuid.Value );
+                    workflowType = WorkflowTypeCache.Get( WorkflowTypeGuid.Value );
                 }
 
                 if ( workflowType == null && WorkflowTypeId.HasValue )
                 {
-                    workflowType = CacheWorkflowType.Get( WorkflowTypeId.Value );
+                    workflowType = WorkflowTypeCache.Get( WorkflowTypeId.Value );
                 }
 
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
                     var workflow = Rock.Model.Workflow.Activate( workflowType, WorkflowName );
+                    workflow.InitiatorPersonAliasId = InitiatorPersonAliasId;
 
-                    foreach( var keyVal in WorkflowAttributeValues )
+                    foreach ( var keyVal in WorkflowAttributeValues )
                     {
                         workflow.SetAttributeValue( keyVal.Key, keyVal.Value );
                     }

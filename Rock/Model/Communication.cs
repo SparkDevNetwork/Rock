@@ -27,8 +27,10 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Communication;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Data.Entity;
+using System.Linq.Expressions;
+using Rock.Web;
 
 namespace Rock.Model
 {
@@ -131,7 +133,7 @@ namespace Rock.Model
         public bool IsBulkCommunication { get; set; }
 
         /// <summary>
-        /// Gets or sets the datetime that communication was sent.
+        /// Gets or sets the datetime that communication was sent. This also indicates that communication shouldn't attempt to send again.
         /// </summary>
         /// <value>
         /// The send date time.
@@ -192,7 +194,8 @@ namespace Rock.Model
         /// A Json formatted <see cref="System.String"/> that contains any Medium specific data.
         /// </value>
         [DataMember]
-        [Obsolete( "MediumDataJson is no longer used." )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "MediumDataJson is no longer used.", true )]
         public string MediumDataJson { get; set; }
 
         /// <summary>
@@ -426,7 +429,8 @@ namespace Rock.Model
         /// A <see cref="System.Collections.Generic.Dictionary{String,String}"/> of key value pairs that contain medium specific data.
         /// </value>
         [DataMember]
-        [Obsolete( "MediumData is no longer used. Communication now has specific properties for medium data." )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "MediumData is no longer used. Communication now has specific properties for medium data.", true )]
         public virtual Dictionary<string, string> MediumData
         {
             get
@@ -622,7 +626,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> containing the key associated with the value to retrieve. </param>
         /// <returns>A <see cref="System.String"/> representing the value that is linked with the specified key.</returns>
-        [Obsolete( "MediumData is no longer used" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "MediumData is no longer used", true )]
         public string GetMediumDataValue( string key )
         {
             if ( MediumData.ContainsKey( key ) )
@@ -640,7 +645,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the key.</param>
         /// <param name="value">A <see cref="System.String"/> representing the value.</param>
-        [Obsolete( "MediumData is no longer used" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "MediumData is no longer used", true )]
         public void SetMediumDataValue( string key, string value )
         {
             if ( MediumData.ContainsKey( key ) )
@@ -658,7 +664,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        [Obsolete( "This can return incorrect results if Recipients has been modified and not saved to the database. So don't use this." )]
+        [RockObsolete( "1.7.4" )]
+        [Obsolete( "This can return incorrect results if Recipients has been modified and not saved to the database. So don't use this.", true )]
         public int GetRecipientCount( RockContext rockContext )
         {
             var count = new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == this.Id ).Count();
@@ -687,6 +694,63 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the communication list members.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="listGroupId">The list group identifier.</param>
+        /// <param name="segmentCriteria">The segment criteria.</param>
+        /// <param name="segmentDataViewIds">The segment data view ids.</param>
+        /// <returns></returns>
+        public static IQueryable<GroupMember> GetCommunicationListMembers( RockContext rockContext, int? listGroupId, SegmentCriteria segmentCriteria, List<int> segmentDataViewIds)
+        {
+            IQueryable<GroupMember> groupMemberQuery = null;
+            if ( listGroupId.HasValue )
+            {
+                var groupMemberService = new GroupMemberService( rockContext );
+                var personService = new PersonService( rockContext );
+                var dataViewService = new DataViewService( rockContext );
+
+                groupMemberQuery = groupMemberService.Queryable().Where( a => a.GroupId == listGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active );
+
+                Expression segmentExpression = null;
+                ParameterExpression paramExpression = personService.ParameterExpression;
+                var segmentDataViewList = dataViewService.GetByIds( segmentDataViewIds ).AsNoTracking().ToList();
+                foreach ( var segmentDataView in segmentDataViewList )
+                {
+                    List<string> errorMessages;
+
+                    var exp = segmentDataView.GetExpression( personService, paramExpression, out errorMessages );
+                    if ( exp != null )
+                    {
+                        if ( segmentExpression == null )
+                        {
+                            segmentExpression = exp;
+                        }
+                        else
+                        {
+                            if ( segmentCriteria == SegmentCriteria.All )
+                            {
+                                segmentExpression = Expression.AndAlso( segmentExpression, exp );
+                            }
+                            else
+                            {
+                                segmentExpression = Expression.OrElse( segmentExpression, exp );
+                            }
+                        }
+                    }
+                }
+
+                if ( segmentExpression != null )
+                {
+                    var personQry = personService.Get( paramExpression, segmentExpression );
+                    groupMemberQuery = groupMemberQuery.Where( a => personQry.Any( p => p.Id == a.PersonId ) );
+                }
+            }
+
+            return groupMemberQuery;
+        }
+
+        /// <summary>
         /// Refresh the recipients list.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -698,34 +762,41 @@ namespace Rock.Model
                 return;
             }
 
-            var emailMediumEntityType = CacheEntityType.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
-            var smsMediumEntityType = CacheEntityType.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+            var emailMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
+            var smsMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+            var preferredCommunicationTypeAttribute = AttributeCache.Get( SystemGuid.Attribute.GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM.AsGuid() );
+            var segmentDataViewGuids = this.Segments.SplitDelimitedValues().AsGuidList();
+            var segmentDataViewIds =  new DataViewService( rockContext ).GetByGuids( segmentDataViewGuids ).Select( a => a.Id ).ToList();
 
-            var personInCommunicationList = new GroupMemberService( rockContext )
-                .Queryable()
-                .Where( a => a.GroupId == ListGroupId.Value )
-                .ToList();
+            var qryCommunicationListMembers = GetCommunicationListMembers( rockContext, ListGroupId, this.SegmentCriteria, segmentDataViewIds );
+
+            // NOTE: If this is scheduled communication, don't include Members that were added after the scheduled FutureSendDateTime
+            if ( this.FutureSendDateTime.HasValue )
+            {
+                var memberAddedCutoffDate = this.FutureSendDateTime;
+                qryCommunicationListMembers = qryCommunicationListMembers.Where( a => ( a.DateTimeAdded.HasValue && a.DateTimeAdded.Value < memberAddedCutoffDate ) || ( a.CreatedDateTime.HasValue && a.CreatedDateTime.Value < memberAddedCutoffDate ) );
+            }
 
             var communicationRecipientService = new CommunicationRecipientService( rockContext );
 
-            var existingRecipients = GetRecipientsQry( rockContext ).ToList();
+            var recipientsQry = GetRecipientsQry( rockContext );
 
-            //Get all the List member which is not part of communiation recipents 
-            var newMemberInList = personInCommunicationList
-                .Where( a => 
-                    a.Person?.PrimaryAliasId != null && 
-                    existingRecipients.All( b => b.PersonAliasId != a.Person.PrimaryAliasId ) );
+            // Get all the List member which is not part of communication recipients yet
+            var newMemberInList = qryCommunicationListMembers
+                .Where( a => !recipientsQry.Any( r => r.PersonAlias.PersonId == a.PersonId ) )
+                .AsNoTracking()
+                .ToList();
 
             foreach ( var newMember in newMemberInList )
             {
                 var communicationRecipient = new CommunicationRecipient
-                    {
-                        PersonAliasId = newMember.Person.PrimaryAliasId.Value,
-                        Status = CommunicationRecipientStatus.Pending,
-                        CommunicationId = Id
-                    };
+                {
+                    PersonAliasId = newMember.Person.PrimaryAliasId.Value,
+                    Status = CommunicationRecipientStatus.Pending,
+                    CommunicationId = Id
+                };
 
-                switch (CommunicationType)
+                switch ( CommunicationType )
                 {
                     case CommunicationType.Email:
                         communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
@@ -736,13 +807,12 @@ namespace Rock.Model
                     case CommunicationType.RecipientPreference:
                         newMember.LoadAttributes();
 
-                        var preferredCommunicationTypeAttribute = CacheAttribute.Get( SystemGuid.Attribute.GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM.AsGuid() );
-                        if (preferredCommunicationTypeAttribute != null)
+                        if ( preferredCommunicationTypeAttribute != null )
                         {
-                            var recipientPreference = (CommunicationType?) newMember
-                                .GetAttributeValue(preferredCommunicationTypeAttribute.Key).AsIntegerOrNull();
+                            var recipientPreference = ( CommunicationType? ) newMember
+                                .GetAttributeValue( preferredCommunicationTypeAttribute.Key ).AsIntegerOrNull();
 
-                            switch (recipientPreference)
+                            switch ( recipientPreference )
                             {
                                 case CommunicationType.SMS:
                                     communicationRecipient.MediumEntityTypeId = smsMediumEntityType.Id;
@@ -765,10 +835,11 @@ namespace Rock.Model
                 communicationRecipientService.Add( communicationRecipient );
             }
 
-            //Get all pending communiation recipents that is no longer part of the group list member
-            var missingMemberInList = existingRecipients
-                .Where( a => 
-                    personInCommunicationList.All(b => b.Person.PrimaryAliasId != a.PersonAliasId) );
+            // Get all pending communication recipents that are no longer part of the group list member, then delete them from the Recipients
+            var missingMemberInList = recipientsQry.Where( a => a.Status == CommunicationRecipientStatus.Pending )
+                .Where( a => !qryCommunicationListMembers.Any( r => r.PersonId == a.PersonAlias.PersonId ) )
+                .ToList();
+
             foreach ( var missingMember in missingMemberInList )
             {
                 communicationRecipientService.Delete( missingMember );
@@ -829,36 +900,100 @@ namespace Rock.Model
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        public static void Send(Rock.Model.Communication communication)
+        public static void Send( Rock.Model.Communication communication )
         {
-            if (communication == null || communication.Status != CommunicationStatus.Approved) return;
-
-            if (communication.ListGroupId.HasValue)
+            if ( communication == null || communication.Status != CommunicationStatus.Approved )
             {
-                using (var rockContext = new RockContext())
+                return;
+            }
+
+            
+            DateTime? endDateTime = null;
+            bool isCommunicationInsideDND = CheckCommunicationForDND( RockDateTime.Now, out endDateTime );
+
+            if ( isCommunicationInsideDND )
+            {
+                MarkCommunicationAfterDND( communication, endDateTime.Value );
+                return;
+            }
+
+
+            if ( communication.ListGroupId.HasValue && !communication.SendDateTime.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
                 {
-                    communication.RefreshCommunicationRecipientList(rockContext);
+                    communication.RefreshCommunicationRecipientList( rockContext );
                 }
             }
 
-            foreach (var medium in communication.GetMediums())
+            foreach ( var medium in communication.GetMediums() )
             {
-                medium.Send(communication);
+                medium.Send( communication );
             }
 
-            using (var rockContext = new RockContext())
+            using ( var rockContext = new RockContext() )
             {
-                var dbCommunication = new CommunicationService(rockContext).Get(communication.Id);
+                var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
 
-                var maxSendDateTime = dbCommunication.Recipients
-                    .Where(a => a.CommunicationId == communication.Id && a.SendDateTime.HasValue)
-                    .OrderByDescending(a => a.SendDateTime)
-                    .Select(a => a.SendDateTime)
-                    .FirstOrDefault();
+                // Set the SendDateTime of the Communication
+                dbCommunication.SendDateTime = RockDateTime.Now;
+                rockContext.SaveChanges();
+            }
+        }
 
-                if (!maxSendDateTime.HasValue) return;
+        /// <summary>
+        /// Check the specified communication if falling inside DND window.
+        /// </summary>
+        /// <param name="communicationDateTime">The communication date and time.</param>
+        /// <param name="endDateTime">The end date time.</param>
+        /// <returns></returns>
+        public static bool CheckCommunicationForDND( DateTime communicationDateTime, out DateTime? endDateTime )
+        {
+            endDateTime = null;
+            bool isCommunicationForDND = false;
+            var isDNDActive = SystemSettings.GetValue( SystemKey.SystemSetting.DO_NOT_DISTURB_ACTIVE ).AsBoolean();
+            var startTime = SystemSettings.GetValue( SystemKey.SystemSetting.DO_NOT_DISTURB_START ).AsTimeSpan();
+            var endTime = SystemSettings.GetValue( SystemKey.SystemSetting.DO_NOT_DISTURB_END ).AsTimeSpan();
 
-                dbCommunication.SendDateTime = maxSendDateTime;
+            if ( isDNDActive && startTime.HasValue && endTime.HasValue )
+            {
+                endDateTime = communicationDateTime.Date.Add( endTime.Value );
+                if ( startTime <= endTime )
+                {
+                    if ( communicationDateTime.TimeOfDay >= startTime && communicationDateTime.TimeOfDay <= endTime )
+                    {
+                        isCommunicationForDND = true;
+                    }
+                }
+                else
+                {
+                    if ( communicationDateTime.TimeOfDay >= startTime || communicationDateTime.TimeOfDay <= endTime )
+                    {
+                        if ( communicationDateTime.TimeOfDay < TimeSpan.Parse( "00:00" ) && communicationDateTime.TimeOfDay >= startTime )
+                        {
+                            endDateTime = endDateTime.Value.AddDays( 1 );
+                        }
+                        isCommunicationForDND = true;
+
+                    }
+                }
+            }
+
+            return isCommunicationForDND;
+        }
+
+        /// <summary>
+        /// Update Communication FutureSendDateTime after DND Window
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <param name="endDateTime">The end date and time.</param>
+        /// <returns></returns>
+        private static void MarkCommunicationAfterDND( Communication communication, DateTime endDateTime )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
+                dbCommunication.FutureSendDateTime = endDateTime.AddMinutes( 5 );
                 rockContext.SaveChanges();
             }
         }
@@ -904,7 +1039,8 @@ namespace Rock.Model
         /// <param name="communicationId">The communication identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        [Obsolete( "Use GetNextPending( int communicationId, int mediumEntityId, Rock.Data.RockContext rockContext ) instead." )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use GetNextPending( int communicationId, int mediumEntityId, Rock.Data.RockContext rockContext ) instead.", true )]
         public static Rock.Model.CommunicationRecipient GetNextPending( int communicationId, Rock.Data.RockContext rockContext )
         {
             CommunicationRecipient recipient = null;
@@ -1024,6 +1160,7 @@ namespace Rock.Model
         /// <summary>
         /// Some other communication type
         /// </summary>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Not Supported" )]
         Other = 4
     }

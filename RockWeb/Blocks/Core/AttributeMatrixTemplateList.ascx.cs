@@ -25,7 +25,7 @@ using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Core
             AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( rockContext );
             AttributeMatrixService attributeMatrixService = new AttributeMatrixService( rockContext );
 
-            var matrixFieldTypeId = CacheFieldType.Get<MatrixFieldType>().Id;
+            var matrixFieldTypeId = FieldTypeCache.Get<MatrixFieldType>().Id;
 
             var qry = attributeMatrixTemplateService.Queryable()
                 .Select( a => new

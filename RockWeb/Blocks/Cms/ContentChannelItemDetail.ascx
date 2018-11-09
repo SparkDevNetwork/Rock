@@ -55,18 +55,39 @@
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                 <asp:Panel ID="pnlEditDetails" runat="server" CssClass="js-item-details">
 
                     <div class="row">
-                        <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.ContentChannelItem, Rock" PropertyName="Title" />
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group" id="divStatus" runat="server">
+                        <div class="col-md-7">
+                            <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.ContentChannelItem, Rock" PropertyName="Title" Placeholder="Enter a title..." />
+                            <asp:HiddenField ID="hfContentChannelItemUrl" runat="server" />
+                            <Rock:RockControlWrapper ID="rcwSlugs" runat="server" Label="URL Slug" Help="While Rock generates URLs for your content channel items automatically, you can optionally create custom URLs for this post.">
+                                <div class="js-slugs">
+                                    <asp:Repeater ID="rSlugs" runat="server" OnItemDataBound="rSlugs_ItemDataBound">
+                                        <ItemTemplate>
+                                            <div class="form-group rollover-container js-slug-row">
+                                                <asp:Literal ID="lChannelUrl" runat="server" />
+                                                <input id="slugId" class="js-slug-id" type="hidden" value="<%# Eval("Id") %>" />
+                                                <span class="js-slug-literal"><%# Eval("Slug") %></span>
+                                                <div class="rollover-item actions pull-right">
+                                                    <a class="js-slug-edit margin-r-md" href="#"><i class="fa fa-pencil"></i></a>
+                                                    <a class="js-slug-remove" href="#"><i class="fa fa-close"></i></a>
+                                                </div>
+                                            </div>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                    <a id="lbAdd" title="Add Slug" class="btn btn-xs btn-action btn-square">
+                                        <i class="fa fa-plus-circle"></i>
+                                    </a>
+                                </div>
+                            </Rock:RockControlWrapper>
 
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-group" id="divStatus" runat="server">
                                 <div class="form-control-static">
                                     <asp:HiddenField ID="hfStatus" runat="server" />
                                     <asp:Panel ID="pnlStatus" runat="server">
@@ -82,45 +103,23 @@
                                     </asp:Panel>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-md-3">
+
                             <Rock:NumberBox ID="nbPriority" runat="server" Label="Priority" />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-3">
-                            <Rock:RockControlWrapper ID="rcwSlugs" runat="server" Label="Slugs">
-                                <div class="js-slugs">
-                                    <asp:Repeater ID="rSlugs" runat="server">
-                                        <ItemTemplate>
-                                            <div class="row margin-l-sm margin-b-sm rollover-container js-slug-row clearfix">
-                                                <input id="slugId" class="js-slug-id" type="hidden" value="<%# Eval("Id") %>" />
-                                                <literal class="js-slug-literal"> <%# Eval("Slug") %> </literal>
-                                                <div class="rollover-item actions pull-right">
-                                                    <a class="js-slug-edit" href="#"><i class="fa fa-pencil"></i></a>
-                                                    <a class="js-slug-remove" href="#"><i class="fa fa-close"></i></a>
-                                                </div>
-                                            </div>
-                                        </ItemTemplate>
-                                    </asp:Repeater>
-                                    <a id="lbAdd" class="btn btn-xs btn-action margin-l-sm">
-                                        <i class="fa fa-plus-circle"></i>
-                                    </a>
+
+                            <div class="form-row">
+                                <div class="col-sm-6">
+                                <Rock:DatePicker ID="dpStart" runat="server" Label="Start" Required="true" Visible="false" />
+                                <Rock:DateTimePicker ID="dtpStart" runat="server" Label="Start" Required="true" />
                                 </div>
-                            </Rock:RockControlWrapper>
+                                <div class="col-sm-6">
+                                <Rock:DatePicker ID="dpExpire" runat="server" Label="Expire" Required="false" Visible="false" />
+                                <Rock:DateTimePicker ID="dtpExpire" runat="server" Label="Expire" />
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <Rock:DatePicker ID="dpStart" runat="server" Label="Start" Required="true" Visible="false" />
-                            <Rock:DateTimePicker ID="dtpStart" runat="server" Label="Start" Required="true" />
-                        </div>
-                        <div class="col-md-6">
-                            <Rock:DatePicker ID="dpExpire" runat="server" Label="Expire" Required="true" Visible="false" />
-                            <Rock:DateTimePicker ID="dtpExpire" runat="server" Label="Expire" />
-                        </div>
-                    </div>
 
                     <Rock:RockControlWrapper ID="rcwTags" runat="server" Label="Tags">
                         <Rock:TagList ID="taglTags" runat="server" CssClass="clearfix" />
@@ -205,12 +204,12 @@
             <Content>
                 <div class="row">
                     <div class="col-md-6">
-                        <asp:ValidationSummary ID="valSummaryAddChildNew" runat="server" ValidationGroup="AddChildNew" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                        <asp:ValidationSummary ID="valSummaryAddChildNew" runat="server" ValidationGroup="AddChildNew" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                         <Rock:RockDropDownList ID="ddlAddNewItemChannel" runat="server" Label="Add New Item" ValidationGroup="AddChildNew" Required="true"></Rock:RockDropDownList>
                         <asp:LinkButton ID="lbAddNewChildItem" runat="server" CssClass="btn btn-primary" Text="Add" ValidationGroup="AddChildNew" OnClick="lbAddNewChildItem_Click" />
                     </div>
                     <div class="col-md-6">
-                        <asp:ValidationSummary ID="valSummaryAddChildExisting" runat="server" ValidationGroup="AddChildExisting" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                        <asp:ValidationSummary ID="valSummaryAddChildExisting" runat="server" ValidationGroup="AddChildExisting" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                         <Rock:RockDropDownList ID="ddlAddExistingItemChannel" runat="server" Label="Add Existing Item" ValidationGroup="AddChildExisting" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlAddExistingItemChannel_SelectedIndexChanged" CausesValidation="false"></Rock:RockDropDownList>
                         <Rock:RockDropDownList ID="ddlAddExistingItem" runat="server" Label="Item" ValidationGroup="AddChildExisting" Required="true"></Rock:RockDropDownList>
                         <asp:LinkButton ID="lbAddExistingChildItem" runat="server" CssClass="btn btn-primary" Text="Add" ValidationGroup="AddChildExisting" OnClick="lbAddExistingChildItem_Click" />

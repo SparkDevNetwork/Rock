@@ -19,9 +19,8 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
-using Rock.Cache;
-using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -41,7 +40,7 @@ namespace Rock.Model
         /// <param name="secondaryEntityType">Type of the secondary entity.</param>
         /// <param name="additionalMergeFields">The additional merge fields.</param>
         /// <returns></returns>
-        public string GetTimelineHtml( string timelineLavaTemplate, CacheEntityType primaryEntityType, int entityId, CacheEntityType secondaryEntityType, Dictionary<string, object> additionalMergeFields )
+        public string GetTimelineHtml( string timelineLavaTemplate, EntityTypeCache primaryEntityType, int entityId, EntityTypeCache secondaryEntityType, Dictionary<string, object> additionalMergeFields )
         {
             RockContext rockContext = this.Context as RockContext;
             HistoryService historyService = new HistoryService( rockContext );
@@ -106,7 +105,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<IEntity> GetEntityQuery( int entityTypeId )
         {
-            CacheEntityType entityTypeCache = CacheEntityType.Get( entityTypeId );
+            EntityTypeCache entityTypeCache = EntityTypeCache.Get( entityTypeId );
 
             var rockContext = this.Context as RockContext;
 
@@ -192,7 +191,7 @@ namespace Rock.Model
         public List<HistorySummary> GetHistorySummary( IQueryable<History> historyQry )
         {
             // group the history into into summaries of records that were saved at the same time (for the same Entity, Category, etc)
-            var historySummaryQry = historyQry
+            var historySummaryQry = historyQry.Where( a => a.CreatedDateTime.HasValue )
                 .GroupBy( a => new
                 {
                     CreatedDateTime = a.CreatedDateTime.Value,
@@ -339,7 +338,7 @@ namespace Rock.Model
             {
                 get
                 {
-                    return CacheEntityType.Get( this.EntityTypeId )?.FriendlyName;
+                    return EntityTypeCache.Get( this.EntityTypeId )?.FriendlyName;
                 }
             }
 
@@ -515,7 +514,7 @@ namespace Rock.Model
             {
                 get
                 {
-                    return CacheEntityType.Get( this.EntityTypeId )?.FriendlyName;
+                    return EntityTypeCache.Get( this.EntityTypeId )?.FriendlyName;
                 }
             }
 
@@ -549,11 +548,11 @@ namespace Rock.Model
             /// <value>
             /// The category.
             /// </value>
-            public CacheCategory Category
+            public CategoryCache Category
             {
                 get
                 {
-                    return CacheCategory.Get( this.CategoryId );
+                    return CategoryCache.Get( this.CategoryId );
                 }
             }
 
@@ -577,7 +576,7 @@ namespace Rock.Model
                 {
                     if ( RelatedEntityTypeId.HasValue )
                     {
-                        return CacheEntityType.Get( this.RelatedEntityTypeId.Value )?.FriendlyName;
+                        return EntityTypeCache.Get( this.RelatedEntityTypeId.Value )?.FriendlyName;
                     }
 
                     return null;
@@ -666,6 +665,7 @@ namespace Rock.Model
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="changes">The changes.</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, int? modifiedByPersonAliasId = null )
         {
@@ -698,6 +698,7 @@ namespace Rock.Model
         /// <param name="relatedModelType">Type of the related model.</param>
         /// <param name="relatedEntityId">The related entity identifier.</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, int? modifiedByPersonAliasId = null )
         {
@@ -721,14 +722,14 @@ namespace Rock.Model
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
         public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, string caption, Type relatedModelType, int? relatedEntityId, int? modifiedByPersonAliasId = null )
         {
-            var entityType = CacheEntityType.Get( modelType );
-            var category = CacheCategory.Get( categoryGuid );
+            var entityType = EntityTypeCache.Get( modelType );
+            var category = CategoryCache.Get( categoryGuid );
             var creationDate = RockDateTime.Now;
 
             int? relatedEntityTypeId = null;
             if ( relatedModelType != null )
             {
-                var relatedEntityType = CacheEntityType.Get( relatedModelType );
+                var relatedEntityType = EntityTypeCache.Get( relatedModelType );
                 if ( relatedModelType != null )
                 {
                     relatedEntityTypeId = relatedEntityType.Id;
@@ -774,6 +775,7 @@ namespace Rock.Model
         /// <param name="changes">The changes.</param>
         /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, bool commitSave = true, int? modifiedByPersonAliasId = null )
         {
@@ -790,9 +792,10 @@ namespace Rock.Model
         /// <param name="changes">The changes.</param>
         /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
-        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, bool commitSave = true, int? modifiedByPersonAliasId = null )
+        /// <param name="sourceOfChange">The source of change.</param>
+        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, bool commitSave = true, int? modifiedByPersonAliasId = null, string sourceOfChange = null )
         {
-            SaveChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null, commitSave, modifiedByPersonAliasId );
+            SaveChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null, commitSave, modifiedByPersonAliasId, sourceOfChange );
         }
 
         /// <summary>
@@ -808,6 +811,7 @@ namespace Rock.Model
         /// <param name="relatedEntityId">The related entity identifier.</param>
         /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, bool commitSave = true, int? modifiedByPersonAliasId = null )
         {
@@ -834,10 +838,12 @@ namespace Rock.Model
         /// <param name="relatedEntityId">The related entity identifier.</param>
         /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
-        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, string caption, Type relatedModelType, int? relatedEntityId, bool commitSave = true, int? modifiedByPersonAliasId = null )
+        /// <param name="sourceOfChange">The source of change to be recorded on the history record. If this is not provided the RockContext source of change will be used instead.</param>
+        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, string caption, Type relatedModelType, int? relatedEntityId, bool commitSave = true, int? modifiedByPersonAliasId = null, string sourceOfChange = null )
         {
             if ( changes.Any() )
             {
+                changes.ForEach( a => a.SourceOfChange = sourceOfChange ?? rockContext.SourceOfChange );
                 AddChanges( rockContext, modelType, categoryGuid, entityId, changes, caption, relatedModelType, relatedEntityId, modifiedByPersonAliasId );
                 if ( commitSave )
                 {
@@ -854,7 +860,7 @@ namespace Rock.Model
         /// <param name="entityId">The entity identifier.</param>
         public static void DeleteChanges( RockContext rockContext, Type modelType, int entityId )
         {
-            var entityType = CacheEntityType.Get( modelType );
+            var entityType = EntityTypeCache.Get( modelType );
             if ( entityType != null )
             {
                 var historyService = new HistoryService( rockContext );

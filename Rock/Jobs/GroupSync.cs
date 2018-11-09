@@ -27,7 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Communication;
 
 namespace Rock.Jobs
@@ -68,6 +68,7 @@ namespace Rock.Jobs
             int groupsChanged = 0;
             string groupName = string.Empty;
             string dataViewName = string.Empty;
+            var errors = new List<string>();
 
             try
             {
@@ -90,6 +91,7 @@ namespace Rock.Jobs
                     {
                         // increase the timeout just in case the dataview source is slow
                         rockContext.Database.CommandTimeout = 180;
+                        rockContext.SourceOfChange = "Group Sync";
 
                         // Get the Sync
                         var sync = new GroupSyncService( rockContext )
@@ -97,9 +99,9 @@ namespace Rock.Jobs
                             .FirstOrDefault( s => s.Id == syncId );
 
                         // Ensure that the group's Sync Data View is a person dataview
-                        if ( sync.SyncDataView.EntityTypeId == CacheEntityType.Get( typeof( Person ) ).Id )
+                        if ( sync != null && sync.SyncDataView.EntityTypeId == EntityTypeCache.Get( typeof( Person ) ).Id )
                         {
-                            List<string> errorMessages = new List<string>();
+                            List<string> syncErrors = new List<string>();
 
                             dataViewName = sync.SyncDataView.Name;
                             groupName = sync.Group.Name;
@@ -107,16 +109,17 @@ namespace Rock.Jobs
                             // Get the person id's from the dataview (source)
                             var personService = new PersonService( rockContext );
                             var parameterExpression = personService.ParameterExpression;
-                            var whereExpression = sync.SyncDataView.GetExpression( personService, parameterExpression, out errorMessages );
+                            var whereExpression = sync.SyncDataView.GetExpression( personService, parameterExpression, out syncErrors );
                             var sourcePersonIds = new PersonService( rockContext )
                                 .Get( parameterExpression, whereExpression )
                                 .Select( q => q.Id )
                                 .ToList();
                             
                             // If any error occurred, just skip this sync for now.
-                            if ( errorMessages.Count > 0 )
+                            if ( syncErrors.Count > 0 )
                             {
-                                ExceptionLogService.LogException( new Exception( string.Format( "An error occurred while trying to GroupSync group '{0}' and data view '{1}' so the sync was skipped. Error: {2}", groupName, dataViewName, String.Join( ",", errorMessages ) ) ) );
+                                errors.AddRange( syncErrors );
+                                ExceptionLogService.LogException( new Exception( string.Format( "An error occurred while trying to GroupSync group '{0}' and data view '{1}' so the sync was skipped. Error: {2}", groupName, dataViewName, String.Join( ",", syncErrors ) ) ) );
                                 continue;
                             }
 
@@ -152,7 +155,7 @@ namespace Rock.Jobs
                                     if ( sync.ExitSystemEmail != null )
                                     {
                                         var person = new PersonService( groupMemberContext ).Get( personId );
-                                        if ( person.Email.IsNotNullOrWhitespace() )
+                                        if ( person.Email.IsNotNullOrWhiteSpace() )
                                         {
                                             // Send the exit email
                                             var mergeFields = new Dictionary<string, object>();
@@ -160,7 +163,9 @@ namespace Rock.Jobs
                                             mergeFields.Add( "Person", person );
                                             var emailMessage = new RockEmailMessage( sync.ExitSystemEmail );
                                             emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
-                                            emailMessage.Send();
+                                            var emailErrors = new List<string>();
+                                            emailMessage.Send( out emailErrors );
+                                            errors.AddRange( emailErrors);
                                         }
                                     }
                                 }
@@ -187,7 +192,7 @@ namespace Rock.Jobs
                                     if ( sync.WelcomeSystemEmail != null )
                                     {
                                         var person = new PersonService( groupMemberContext ).Get( personId );
-                                        if ( person.Email.IsNotNullOrWhitespace() )
+                                        if ( person.Email.IsNotNullOrWhiteSpace() )
                                         {
                                             // If the group is configured to add a user account for anyone added to the group, and person does not yet have an
                                             // account, add one for them.
@@ -204,7 +209,7 @@ namespace Rock.Jobs
                                                     groupMemberContext,
                                                     person,
                                                     AuthenticationServiceType.Internal,
-                                                    CacheEntityType.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                                                    EntityTypeCache.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
                                                     username,
                                                     newPassword,
                                                     true,
@@ -219,7 +224,9 @@ namespace Rock.Jobs
                                             mergeFields.Add( "CreateLogin", createLogin );
                                             var emailMessage = new RockEmailMessage( sync.WelcomeSystemEmail );
                                             emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
-                                            emailMessage.Send();
+                                            var emailErrors = new List<string>();
+                                            emailMessage.Send( out emailErrors );
+                                            errors.AddRange( emailErrors );
                                         }
                                     }
                                 }
@@ -235,12 +242,6 @@ namespace Rock.Jobs
 
                             // Increment the Groups Synced Counter
                             groupsSynced++;
-
-                            // If the group changed, and it was a security group, flush the security for the group
-                            if ( hasSyncChanged && ( sync.Group.IsSecurityRole || sync.Group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) ) )
-                            {
-                                Rock.Cache.CacheRole.Remove( sync.GroupId );
-                            }
                         }
                     }
                 }
@@ -261,6 +262,18 @@ namespace Rock.Jobs
                 }
 
                 resultMessage += string.Format( " and {0} groups were changed", groupsChanged );
+
+                if ( errors.Any() )
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine();
+                    sb.Append( "Errors: " );
+                    errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
+                    string errorMessage = sb.ToString();
+                    resultMessage += errorMessage;
+                    throw new Exception( errorMessage );
+                }
+
                 context.Result = resultMessage;
             }
             catch ( System.Exception ex )

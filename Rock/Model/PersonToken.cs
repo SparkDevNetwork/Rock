@@ -22,7 +22,7 @@ using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using System.Web;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -174,7 +174,7 @@ namespace Rock.Model
                 }
                 else
                 {
-                    int? tokenExpireMinutes = CacheGlobalAttributes.Get().GetValue( "core.PersonTokenExpireMinutes" ).AsIntegerOrNull();
+                    int? tokenExpireMinutes = GlobalAttributesCache.Get().GetValue( "core.PersonTokenExpireMinutes" ).AsIntegerOrNull();
                     if ( tokenExpireMinutes.HasValue )
                     {
                         personToken.ExpireDateTime = RockDateTime.Now.AddMinutes( tokenExpireMinutes.Value );
@@ -186,7 +186,7 @@ namespace Rock.Model
                 }
 
                 personToken.TimesUsed = 0;
-                personToken.UsageLimit = usageLimit ?? CacheGlobalAttributes.Get().GetValue( "core.PersonTokenUsageLimit" ).AsIntegerOrNull();
+                personToken.UsageLimit = usageLimit ?? GlobalAttributesCache.Get().GetValue( "core.PersonTokenUsageLimit" ).AsIntegerOrNull();
 
                 personToken.PageId = pageId;
 

@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( NoteType item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<NoteWatch>( Context ).Queryable().Any( a => a.NoteTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", NoteType.FriendlyTypeName, NoteWatch.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -88,16 +94,27 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this NoteType target, NoteType source )
         {
             target.Id = source.Id;
-            target.CssClass = source.CssClass;
+            target.AllowsAttachments = source.AllowsAttachments;
+            target.AllowsReplies = source.AllowsReplies;
+            target.AllowsWatching = source.AllowsWatching;
+            target.ApprovalUrlTemplate = source.ApprovalUrlTemplate;
+            target.AutoWatchAuthors = source.AutoWatchAuthors;
+            target.BackgroundColor = source.BackgroundColor;
+            target.BinaryFileTypeId = source.BinaryFileTypeId;
+            target.BorderColor = source.BorderColor;
             target.EntityTypeId = source.EntityTypeId;
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            target.FontColor = source.FontColor;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
             target.IsSystem = source.IsSystem;
+            target.MaxReplyDepth = source.MaxReplyDepth;
             target.Name = source.Name;
             target.Order = source.Order;
+            target.RequiresApprovals = source.RequiresApprovals;
+            target.SendApprovalNotifications = source.SendApprovalNotifications;
             target.UserSelectable = source.UserSelectable;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

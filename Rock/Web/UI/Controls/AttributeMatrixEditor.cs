@@ -27,7 +27,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class AttributeMatrixEditor : CompositeControl, INamingContainer, IHasValidationGroup
+    public class AttributeMatrixEditor : CompositeControl, INamingContainer, IHasRequired, IHasValidationGroup
     {
         #region Controls
 
@@ -41,10 +41,20 @@ namespace Rock.Web.UI.Controls
         private Panel _pnlActions;
         private LinkButton _btnSaveMatrixItem;
         private LinkButton _btnCancelMatrixItem;
+        private HiddenFieldWithValidationProperty _hfRowCount;
+        private HiddenFieldRangeValidator _requiredRowCountRangeValidator;
 
         #endregion Controls
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="IHasRequired" /> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool Required { get; set; }
 
         /// <summary>
         /// Gets or sets the validation group.
@@ -56,12 +66,14 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["ValidationGroup"] as string;
+                EnsureChildControls();
+                return _requiredRowCountRangeValidator.ValidationGroup;
             }
 
             set
             {
-                ViewState["ValidationGroup"] = value;
+                EnsureChildControls();
+                _requiredRowCountRangeValidator.ValidationGroup = value;
             }
         }
 
@@ -165,6 +177,19 @@ namespace Rock.Web.UI.Controls
             _gMatrixItems.GridReorder += gMatrixItems_GridReorder;
             _gMatrixItems.GridRebind += _gMatrixItems_GridRebind;
 
+            _hfRowCount = new HiddenFieldWithValidationProperty { ID = "_hfRowCount" };
+            this.Controls.Add( _hfRowCount );
+
+            _requiredRowCountRangeValidator = new HiddenFieldRangeValidator();
+            _requiredRowCountRangeValidator.ID = _hfRowCount.ID + "_rfv";
+            _requiredRowCountRangeValidator.ControlToValidate = _hfRowCount.ID;
+            _requiredRowCountRangeValidator.Display = ValidatorDisplay.Dynamic;
+            _requiredRowCountRangeValidator.Type = ValidationDataType.Integer;
+            _requiredRowCountRangeValidator.CssClass = "validation-error help-inline";
+            _requiredRowCountRangeValidator.Enabled = false;
+
+            this.Controls.Add( _requiredRowCountRangeValidator );
+
             _gMatrixItems.Columns.Add( new ReorderField() );
 
             AttributeMatrixItem tempAttributeMatrixItem = null;
@@ -178,6 +203,19 @@ namespace Rock.Web.UI.Controls
                 foreach ( var attribute in tempAttributeMatrixItem.Attributes.Select( a => a.Value ) )
                 {
                     _gMatrixItems.Columns.Add( new AttributeField { DataField = attribute.Key, HeaderText = attribute.Name } );
+                }
+
+                AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( new RockContext() );
+                var attributeMatrixTemplateRanges = attributeMatrixTemplateService.GetSelect( this.AttributeMatrixTemplateId.Value, s => new { s.MinimumRows, s.MaximumRows } );
+                _requiredRowCountRangeValidator.MinimumValue = ( attributeMatrixTemplateRanges.MinimumRows ?? 0 ).ToString();
+                _requiredRowCountRangeValidator.Enabled = this.Required && attributeMatrixTemplateRanges.MinimumRows.HasValue;
+                if ( attributeMatrixTemplateRanges.MinimumRows == 1 )
+                {
+                    _requiredRowCountRangeValidator.ErrorMessage = $"At least {attributeMatrixTemplateRanges.MinimumRows} row is required";
+                }
+                else
+                {
+                    _requiredRowCountRangeValidator.ErrorMessage = $"At least {attributeMatrixTemplateRanges.MinimumRows} rows are required";
                 }
             }
 
@@ -382,6 +420,7 @@ namespace Rock.Web.UI.Controls
                 _gMatrixItems.DataBind();
 
                 _gMatrixItems.Actions.ShowAdd = true;
+                _hfRowCount.Value = attributeMatrixItemList.Count.ToString();
 
                 if ( attributeMatrix.AttributeMatrixTemplate.MinimumRows.HasValue && attributeMatrixItemList.Count < attributeMatrix.AttributeMatrixTemplate.MinimumRows.Value )
                 {
@@ -395,7 +434,7 @@ namespace Rock.Web.UI.Controls
                     _nbWarning.Text = $"No more than {attributeMatrix.AttributeMatrixTemplate.MaximumRows.Value} {itemPhrase} allowed.";
 
                     // only show the warning if they are actually over the limit
-                    _nbWarning.Visible = ( attributeMatrix.AttributeMatrixTemplate.MaximumRows.HasValue && attributeMatrixItemList.Count > attributeMatrix.AttributeMatrixTemplate.MaximumRows.Value );
+                    _nbWarning.Visible = attributeMatrix.AttributeMatrixTemplate.MaximumRows.HasValue && ( attributeMatrixItemList.Count > attributeMatrix.AttributeMatrixTemplate.MaximumRows.Value );
 
                     // if they are at or over the limit, don't show the Add button
                     _gMatrixItems.Actions.ShowAdd = true;

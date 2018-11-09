@@ -23,7 +23,7 @@ using System.Web;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.PersonProfile.Badge
@@ -40,14 +40,14 @@ namespace Rock.PersonProfile.Badge
     [LinkedPage( "Detail Page", "Select the page to navigate when the badge is clicked.", false, order: 2 )]
     [TextField( "Badge Icon CSS", "The CSS icon to use for the badge.", true, "fa-random", key: "BadgeIconCss", order:3 )]
     [TextField( "Badge Color", "The color of the badge (#ffffff).", true, "#0ab4dd", order: 4 )]
-    public class InteractionsInRange : BadgeComponentModern
+    public class InteractionsInRange : BadgeComponent
     {
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
             Guid? interactionChannelGuid = GetAttributeValue( badge, "InteractionChannel" ).AsGuid();
             string badgeColor = GetAttributeValue( badge, "BadgeColor" );
@@ -57,13 +57,13 @@ namespace Rock.PersonProfile.Badge
                 string dateRange = GetAttributeValue( badge, "DateRange" );
                 string badgeIcon = GetAttributeValue( badge, "BadgeIconCss" );
 
-                var interactionChannel = CacheInteractionChannel.Get( interactionChannelGuid.Value );
+                var interactionChannel = InteractionChannelCache.Get( interactionChannelGuid.Value );
 
                 string detailPageUrl = string.Empty;
 
                 if ( !String.IsNullOrEmpty( GetAttributeValue( badge, "DetailPage" ) ) )
                 {
-                    int pageId = CachePage.Get( Guid.Parse( GetAttributeValue( badge, "DetailPage" ) ) ).Id;
+                    int pageId = PageCache.Get( Guid.Parse( GetAttributeValue( badge, "DetailPage" ) ) ).Id;
 
                     detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?ChannelId={interactionChannel.Id}" );
                 }

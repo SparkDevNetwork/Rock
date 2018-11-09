@@ -25,7 +25,7 @@ using Rock;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -86,10 +86,10 @@ namespace RockWeb.Blocks.CheckIn
             ScheduleService scheduleService = new ScheduleService( new RockContext() );
 
             // limit Schedules to ones that have a CheckInStartOffsetMinutes
-            var scheduleQry = scheduleService.Queryable().Where( a => a.CheckInStartOffsetMinutes != null );
+            var scheduleQry = scheduleService.Queryable().Where( a => a.CheckInStartOffsetMinutes != null && a.IsActive );
 
             // limit Schedules to the Category from the Filter
-            int scheduleCategoryId = CacheCategory.Get( Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid() ).Id;
+            int scheduleCategoryId = CategoryCache.Get( Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid() ).Id;
 
             scheduleQry = scheduleQry.Where( a => a.CategoryId == scheduleCategoryId );
 
@@ -106,8 +106,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 string dataFieldName = string.Format( "scheduleField_{0}", item.Id );
 
-                CheckBoxEditableField field = new CheckBoxEditableField { HeaderText = item.FriendlyScheduleText.Replace( " at ", "<br/>" ), DataField = dataFieldName };
-
+                CheckBoxEditableField field = new CheckBoxEditableField { HeaderText = item.Name.Replace( " ", "<br/>" ), DataField = dataFieldName };
                 gGroupLocationSchedule.Columns.Add( field );
             }
         }
@@ -244,7 +243,7 @@ namespace RockWeb.Blocks.CheckIn
                 dataTable.Rows.Add( dataRow );
             }
 
-            gGroupLocationSchedule.EntityTypeId = CacheEntityType.Get<GroupLocation>().Id;
+            gGroupLocationSchedule.EntityTypeId = EntityTypeCache.Get<GroupLocation>().Id;
             gGroupLocationSchedule.DataSource = dataTable;
             gGroupLocationSchedule.DataBind();
         }

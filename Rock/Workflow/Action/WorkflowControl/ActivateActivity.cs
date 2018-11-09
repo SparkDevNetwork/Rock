@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -60,7 +60,7 @@ namespace Rock.Workflow.Action
 
             var workflow = action.Activity.Workflow;
 
-            var activityType = CacheWorkflowActivityType.Get( guid );
+            var activityType = WorkflowActivityTypeCache.Get( guid );
             if ( activityType == null )
             {
                 action.AddLogEntry( "Invalid Activity Property", true );

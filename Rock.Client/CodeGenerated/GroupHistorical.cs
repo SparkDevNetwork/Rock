@@ -99,6 +99,9 @@ namespace Rock.Client
         /// <summary />
         public string ScheduleName { get; set; }
 
+        /// <summary />
+        public int? StatusValueId { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -153,6 +156,7 @@ namespace Rock.Client
             this.ScheduleId = source.ScheduleId;
             this.ScheduleModifiedDateTime = source.ScheduleModifiedDateTime;
             this.ScheduleName = source.ScheduleName;
+            this.StatusValueId = source.StatusValueId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

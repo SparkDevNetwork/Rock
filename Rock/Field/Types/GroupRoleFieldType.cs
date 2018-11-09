@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -132,10 +133,13 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( value, out guid ) )
             {
-                var groupRole = new GroupTypeRoleService( new RockContext() ).Get( guid );
-                if ( groupRole != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = groupRole.Name;
+                    var groupRole = new GroupTypeRoleService( rockContext ).GetNoTracking( guid );
+                    if ( groupRole != null )
+                    {
+                        formattedValue = groupRole.Name;
+                    }
                 }
             }
 
@@ -187,11 +191,11 @@ namespace Rock.Field.Types
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        itemGuid = new GroupTypeRoleService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        itemGuid = new GroupTypeRoleService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
 
-                return itemGuid?.ToString();
+                return itemGuid?.ToString() ?? string.Empty;
             }
 
             return null;

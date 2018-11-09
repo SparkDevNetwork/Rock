@@ -118,6 +118,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<NoteAttachment>( Context ).Queryable().Any( a => a.BinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, NoteAttachment.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Person>( Context ).Queryable().Any( a => a.PhotoId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Person.FriendlyTypeName );
@@ -131,6 +137,12 @@ namespace Rock.Model
             }  
  
             if ( new Service<Site>( Context ).Queryable().Any( a => a.FavIconBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.SiteLogoBinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Site.FriendlyTypeName );
                 return false;

@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Model;
 using Rock.Web;
 
@@ -33,14 +33,14 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata( "ComponentName", "Personal Device" )]
 
     [LinkedPage( "Personal Devices Detail", "Page to show the details of the personal devices added.", false, order: 1 )]
-    public class PersonalDevice : BadgeComponentModern
+    public class PersonalDevice : BadgeComponent
     {
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
             if ( Person != null )
             {

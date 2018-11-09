@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,19 +29,21 @@ using Rock.Model;
 namespace RockWeb.Blocks.Security
 {
     /// <summary>
-    /// Displays currently logged in user's name along with options to Login, Logout, or manage account.
+    /// Displays currently logged in user's name along with options to log in, log out, or manage account.
     /// </summary>
     [DisplayName( "Login Status" )]
     [Category( "Security" )]
-    [Description( "Displays the currently logged in user's name along with options to Login, Logout, or manage account." )]
+    [Description( "Displays the currently logged in user's name along with options to log in, log out, or manage account." )]
 
     [LinkedPage( "My Account Page", "Page for user to manage their account (if blank will use 'MyAccount' page route)", false )]
     [LinkedPage( "My Profile Page", "Page for user to view their person profile (if blank option will not be displayed)", false )]
     [LinkedPage( "My Settings Page", "Page for user to view their settings (if blank option will not be displayed)", false )]
     [KeyValueListField( "Logged In Page List", "List of pages to show in the dropdown when the user is logged in. The link field takes Lava with the CurrentPerson merge fields. Place the text 'divider' in the title field to add a divider.", false, "", "Title", "Link" )]
-    
+
     public partial class LoginStatus : Rock.Web.UI.RockBlock
     {
+        private const string LOG_OUT = "Log Out";
+        private const string LOG_IN = "Log In";
         #region Base Control Methods
 
         /// <summary>
@@ -53,7 +55,7 @@ namespace RockWeb.Blocks.Security
             base.OnInit( e );
 
             var myAccountUrl = LinkedPageUrl( "MyAccountPage" );
-            
+
             if ( !string.IsNullOrWhiteSpace( myAccountUrl ) )
             {
                 hlMyAccount.NavigateUrl = myAccountUrl;
@@ -84,10 +86,10 @@ namespace RockWeb.Blocks.Security
                     phMyAccount.Visible = false;
                     phMySettings.Visible = false;
                 }
-                
+
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "PersonId", currentPerson.Id.ToString() );
-                
+
                 var myProfileUrl = LinkedPageUrl( "MyProfilePage", queryParams );
                 if ( !string.IsNullOrWhiteSpace( myProfileUrl ) )
                 {
@@ -108,8 +110,8 @@ namespace RockWeb.Blocks.Security
                     phMySettings.Visible = false;
                 }
 
-                lbLoginLogout.Text = "Logout";
-                
+                lbLoginLogout.Text = LOG_OUT;
+
                 divProfilePhoto.Attributes.Add( "style", String.Format( "background-image: url('{0}');", Rock.Model.Person.GetPersonPhotoUrl( currentPerson, 200, 200 )));
 
                 var navPagesString = GetAttributeValue( "LoggedInPageList" );
@@ -139,7 +141,7 @@ namespace RockWeb.Blocks.Security
 
                     lDropdownItems.Text = sbPageMarkup.ToString();
                 }
-            
+
             }
             else
             {
@@ -147,7 +149,7 @@ namespace RockWeb.Blocks.Security
                 phMyAccount.Visible = false;
                 phMyProfile.Visible = false;
                 phMySettings.Visible = false;
-                lbLoginLogout.Text = "Login";
+                lbLoginLogout.Text = LOG_IN;
 
                 liDropdown.Visible = false;
                 liLogin.Visible = true;
@@ -168,7 +170,7 @@ namespace RockWeb.Blocks.Security
         protected void lbLoginLogout_Click( object sender, EventArgs e )
         {
             string action = hfActionType.Value;
-            if ( action == "Login" )
+            if ( action == LOG_IN )
             {
                 var site = RockPage.Layout.Site;
                 if ( site.LoginPageId.HasValue )
@@ -195,7 +197,7 @@ namespace RockWeb.Blocks.Security
 
                 // After logging out check to see if an anonymous user is allowed to view the current page.  If so
                 // redirect back to the current page, otherwise redirect to the site's default page
-                var currentPage = Rock.Cache.CachePage.Get( RockPage.PageId );
+                var currentPage = Rock.Web.Cache.PageCache.Get( RockPage.PageId );
                 if ( currentPage != null && currentPage.IsAuthorized(Authorization.VIEW, null))
                 {
                     string url = CurrentPageReference.BuildUrl( true );

@@ -21,7 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 
@@ -51,6 +51,7 @@ namespace Rock.CheckIn
             : base()
         {
             Device = device.Clone( false );
+            Device.LoadAttributes();
             KioskGroupTypes = new List<KioskGroupType>();
         }
 
@@ -62,6 +63,15 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public Device Device { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether Registration Mode is enabled for the device
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [registration mode enabled]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RegistrationModeEnabled => Device.GetAttributeValue( "core_device_RegistrationMode" ).AsBoolean();
 
         /// <summary>
         /// The group types associated with this kiosk
@@ -173,6 +183,7 @@ namespace Rock.CheckIn
         /// <param name="id">The id.</param>
         /// <param name="configuredGroupTypes">The configured group types.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Get( int id, List<int> configuredGroupTypes ) instead." )]
         public static KioskDevice Read( int id, List<int> configuredGroupTypes )
         {
@@ -197,7 +208,7 @@ namespace Rock.CheckIn
             using ( var rockContext = new RockContext() )
             {
                 var campusLocations = new Dictionary<int, int>();
-                CacheCampus.All()
+                CampusCache.All()
                     .Where( c => c.LocationId.HasValue )
                     .Select( c => new
                     {
@@ -231,6 +242,7 @@ namespace Rock.CheckIn
         /// Flushes the specified id.
         /// </summary>
         /// <param name="id">The id.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Remove( int id ) instead.")]
         public static void Flush( int id )
         {
@@ -240,6 +252,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// Flushes all.
         /// </summary>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Clear() instead." )]
         public static void FlushAll()
         {
@@ -294,6 +307,12 @@ namespace Rock.CheckIn
             var allLocations = new LocationService( rockContext ).GetAllDescendentIds( location.Id ).ToList();
             allLocations.Add( location.Id );
 
+            DateTime currentDateTime = RockDateTime.Now;
+            if ( campusId.HasValue )
+            {
+                currentDateTime = CampusCache.Get( campusId.Value )?.CurrentDateTime ?? RockDateTime.Now;
+            }
+
             var activeSchedules = new Dictionary<int, KioskSchedule>();
 
             foreach ( var groupLocation in new GroupLocationService( rockContext ).GetActiveByLocations( allLocations ).OrderBy( l => l.Order ).AsNoTracking() )
@@ -312,7 +331,8 @@ namespace Rock.CheckIn
                     else
                     {
                         var kioskSchedule = new KioskSchedule( schedule );
-                        kioskSchedule.CheckInTimes = schedule.GetCheckInTimes( RockDateTime.Now );
+                        kioskSchedule.CampusId = kioskLocation.CampusId;
+                        kioskSchedule.CheckInTimes = schedule.GetCheckInTimes( currentDateTime );
                         if ( kioskSchedule.IsCheckInActive || kioskSchedule.NextActiveDateTime.HasValue )
                         {
                             kioskLocation.KioskSchedules.Add( kioskSchedule );

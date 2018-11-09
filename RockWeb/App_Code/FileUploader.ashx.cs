@@ -29,7 +29,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -104,7 +104,14 @@ namespace RockWeb
                     }
                     else
                     {
-                        ProcessContentFile( context, uploadedFile );
+                        if ( context.Request.Form["IsAssetStorageProviderAsset"].AsBoolean() )
+                        {
+                            ProcessAssetStorageProviderAsset( context, uploadedFile );
+                        }
+                        else
+                        {
+                            ProcessContentFile( context, uploadedFile );
+                        }
                     }
                 }
             }
@@ -120,6 +127,36 @@ namespace RockWeb
                 ExceptionLogService.LogException( ex, context );
                 context.Response.StatusCode = ( int ) System.Net.HttpStatusCode.InternalServerError;
                 context.Response.Write( "error: " + ex.Message );
+            }
+        }
+
+        private void ProcessAssetStorageProviderAsset( HttpContext context, HttpPostedFile uploadedFile )
+        {
+            int? assetStorageId = context.Request.Form["StorageId"].AsIntegerOrNull();
+            string assetKey = context.Request.Form["Key"] + uploadedFile.FileName;
+
+            if ( assetStorageId == null || assetKey.IsNullOrWhiteSpace() )
+            {
+                throw new Rock.Web.FileUploadException( "Insufficient info to upload a file of this type.", System.Net.HttpStatusCode.Forbidden );
+            }
+
+            var assetStorageService = new AssetStorageProviderService( new RockContext() );
+            AssetStorageProvider assetStorageProvider = assetStorageService.Get( (int)assetStorageId );
+            assetStorageProvider.LoadAttributes();
+            var component = assetStorageProvider.GetAssetStorageComponent();
+
+            var asset = new Rock.Storage.AssetStorage.Asset();
+            asset.Key = assetKey;
+            asset.Type = Rock.Storage.AssetStorage.AssetType.File;
+            asset.AssetStream = uploadedFile.InputStream;
+
+            if ( component.UploadObject( assetStorageProvider, asset ) )
+            {
+                context.Response.Write( new { Id = string.Empty, FileName = assetKey }.ToJson() );
+            }
+            else
+            {
+                throw new Rock.Web.FileUploadException( "Unable to upload file", System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -259,24 +296,6 @@ namespace RockWeb
                 binaryFile.MimeType = _mimeTypeRemap[binaryFile.MimeType];
             }
 
-
-
-            if ( binaryFile.MimeType.StartsWith( "image/" ) )
-            {
-                try
-                {
-                    using ( Bitmap bm = new Bitmap( uploadedFile.InputStream ) )
-                    {
-                        if ( bm != null )
-                        {
-                            binaryFile.Width = bm.Width;
-                            binaryFile.Height = bm.Height;
-                        }
-                    }
-                }
-                catch ( Exception ) { } // if the file is an invalid photo keep moving
-            }
-
             binaryFile.ContentStream = GetFileContentStream( context, uploadedFile );
             rockContext.SaveChanges();
 
@@ -310,7 +329,7 @@ namespace RockWeb
         public virtual void ValidateFileType( HttpContext context, HttpPostedFile uploadedFile )
         {
             // validate file type (applies to all uploaded files)
-            var globalAttributesCache = CacheGlobalAttributes.Get();
+            var globalAttributesCache = GlobalAttributesCache.Get();
             IEnumerable<string> contentFileTypeBlackList = ( globalAttributesCache.GetValue( "ContentFiletypeBlacklist" ) ?? string.Empty ).Split( new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries );
 
             // clean up list

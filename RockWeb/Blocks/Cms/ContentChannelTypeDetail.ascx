@@ -22,7 +22,7 @@
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div class="row">
                     <div class="col-md-6">
@@ -60,7 +60,8 @@
                                     Help="Should channels of this type disable the use of the status and all be treated as 'Approved'?" Text="Yes" />
                             </div>
                             <div class="col-sm-6">
-
+                                <Rock:RockCheckBox ID="cbShowInChannelList" runat="server" Label="Show in Channel Lists" Text="Yes"
+                                    Help="Unchecking this option means any channel block's 'Channel Types Include' settings MUST specifically include the type in order to show it." />
                             </div>
                         </div>
                     </div>

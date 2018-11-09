@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -79,7 +79,7 @@ namespace Rock.Field.Types
             configurationValues.Add( "keyprompt", new ConfigurationValue( "Key Prompt", "The text to display as a prompt in the key textbox.", "" ) );
             configurationValues.Add( "valueprompt", new ConfigurationValue( "Label Prompt", "The text to display as a prompt in the label textbox.", "" ) );
             configurationValues.Add( "definedtype", new ConfigurationValue( "Defined Type", "Optional Defined Type to select values from, otherwise values will be free-form text fields", "" ) );
-            configurationValues.Add( "customvalues", new ConfigurationValue( "Custom Values", "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1:text1,value2:text2,value3:text3,...'.", "" ) );
+            configurationValues.Add( "customvalues", new ConfigurationValue( "Custom Values", "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1^text1,value2^text2,value3^text3,...'.", "" ) );
             configurationValues.Add( "allowhtml", new ConfigurationValue( "Allow Html", "Allow Html content in values", "" ) );
             configurationValues.Add( "displayvaluefirst", new ConfigurationValue( "Display Value First", "Reverses the display order of the key and the value.", "" ) );
 
@@ -181,7 +181,7 @@ namespace Rock.Field.Types
                 {
                     if ( isDefinedType )
                     {
-                        var definedValue = CacheDefinedValue.Get( nameAndValue[1].AsInteger() );
+                        var definedValue = DefinedValueCache.Get( nameAndValue[1].AsInteger() );
                         if ( definedValue != null )
                         {
                             nameAndValue[1] = definedValue.Value;
@@ -327,7 +327,7 @@ namespace Rock.Field.Types
                 {
                     if ( isDefinedType )
                     {
-                        var definedValue = CacheDefinedValue.Get( nameAndValue[1].AsInteger() );
+                        var definedValue = DefinedValueCache.Get( nameAndValue[1].AsInteger() );
                         if ( definedValue != null )
                         {
                             values.Add( new KeyValuePair<string, object>( nameAndValue[0], definedValue ) );

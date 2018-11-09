@@ -126,6 +126,8 @@
                             </Rock:RockControlWrapper>
 
                             <%-- note: using disabled instead of readonly so that we can set the postback value in javascript --%>
+                            <Rock:RockTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code" />
+
                             <Rock:CurrencyBox ID="cbUnallocatedAmount" runat="server" Label="Unallocated Amount" FormGroupCssClass="js-unallocated-amount has-error" Help="The unallocated amount based on the original total amount." disabled="disabled" />
                             <Rock:CurrencyBox ID="cbTotalAmount" runat="server" Label="Total Amount" CssClass="js-total-amount" Help="Allocates amounts to the above account(s) until the total amount matches what is shown on the transaction image." disabled="disabled" Text="0.00"></Rock:CurrencyBox>
                             <Rock:HiddenFieldWithClass ID="hfOriginalTotalAmount" runat="server" CssClass="js-original-total-amount" />

@@ -28,7 +28,7 @@
 
                             <div class="row">
                                 <div class="col-md-5">
-                                    <Rock:RockDropDownList ID="ddlChannel" runat="server" Required="true" Label="Channel"
+                                    <Rock:RockDropDownList ID="ddlChannel" runat="server" Required="true" Label="Channel" EnhanceForLongLists="true"
                                         DataTextField="Name" DataValueField="Guid" AutoPostBack="true" OnSelectedIndexChanged="ddlChannel_SelectedIndexChanged"
                                         Help="The channel to display items from." />
                                 </div>
@@ -47,12 +47,13 @@
 
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:NumberBox ID="nbCount" runat="server" CssClass="input-width-sm" Label="Items Per Page"
+                                    <Rock:NumberBox ID="nbCount" runat="server" MinimumValue="0" CssClass="input-width-sm" Label="Items Per Page"
                                         Help="The maximum number of items to display per page (0 means unlimited)." />
-                                    <Rock:NumberBox ID="nbItemCacheDuration" runat="server" CssClass="input-width-sm" Label="Item Cache Duration"
-                                        Help="Number of seconds to cache the content items returned by the selected filter (use '0' for no caching)." />
-                                    <Rock:NumberBox ID="nbOutputCacheDuration" runat="server" CssClass="input-width-sm" Label="Output Cache Duration"
+                                    <Rock:NumberBox ID="nbItemCacheDuration" runat="server" MinimumValue="0" CssClass="input-width-sm" Label="Item Cache Duration"
+                                        Help="Number of seconds to cache the content items returned by the selected filter. Only cache the items if they are NOT secured, otherwise you will have unexpected results. (use '0' for no caching)." />
+                                    <Rock:NumberBox ID="nbOutputCacheDuration" runat="server" MinimumValue="0" CssClass="input-width-sm" Label="Output Cache Duration"
                                         Help="Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value. (use '0' for no caching)." />
+                                    <Rock:RockCheckBoxList ID="cblCacheTags" runat="server" Label="Cache Tags" Help="Cached tags are used to link cached content so that it can be expired as a group" RepeatDirection="Horizontal" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="cbSetPageTitle" runat="server" Label="Set Page Title" Text="Yes"

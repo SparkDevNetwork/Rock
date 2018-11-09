@@ -27,7 +27,7 @@ using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -219,13 +219,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 if ( ViewMode == VIEW_MODE_EDIT )
                 {
-                    int personEntityTypeId = CacheEntityType.Get( typeof( Person ) ).Id;
+                    int personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
 
                     var rockContext = new RockContext();
 
                     foreach ( int attributeId in AttributeList )
                     {
-                        var attribute = CacheAttribute.Get( attributeId );
+                        var attribute = AttributeCache.Get( attributeId );
 
                         if ( Person != null &&
                             attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
                 else if ( ViewMode == VIEW_MODE_ORDER && _canAdministrate )
                 {
-                    // Split and deliminate again to remove trailing delimiter
+                    // Split and delineate again to remove trailing delimiter
                     var attributeOrder = hfAttributeOrder.Value.SplitDelimitedValues().ToList().AsDelimited( "|" );
 
                     SetAttributeValue( "AttributeOrder", attributeOrder );
@@ -276,7 +276,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             Guid? categoryGuid = GetAttributeValue( "Category" ).AsGuidOrNull();
             if ( categoryGuid.HasValue )
             {
-                var category = CacheCategory.Get( categoryGuid.Value );
+                var category = CategoryCache.Get( categoryGuid.Value );
                 if ( category != null )
                 {
                     if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
@@ -332,7 +332,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 foreach ( int attributeId in AttributeList )
                 {
-                    var attribute = CacheAttribute.Get( attributeId );
+                    var attribute = AttributeCache.Get( attributeId );
                     string attributeValue = Person.GetAttributeValue( attribute.Key );
                     string formattedValue = string.Empty;
 

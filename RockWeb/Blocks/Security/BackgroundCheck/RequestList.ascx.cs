@@ -232,7 +232,9 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     .Queryable( "PersonAlias.Person" ).AsNoTracking()
                     .Where( g =>
                         g.PersonAlias != null &&
-                        g.PersonAlias.Person != null );
+                        g.PersonAlias.Person != null )
+                    .Where( g =>
+                        g.ForeignId == 1);
 
                 // FirstName
                 string firstName = fRequest.GetUserPreference( "First Name" );

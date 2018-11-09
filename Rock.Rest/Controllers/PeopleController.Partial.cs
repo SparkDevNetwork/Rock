@@ -27,7 +27,7 @@ using System.Web.Http.OData;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -399,7 +399,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/People/Search" )]
         public IQueryable<PersonSearchResult> Search( string name, bool includeHtml, bool includeDetails, bool includeBusinesses = false, bool includeDeceased = false )
         {
-            int count = CacheGlobalAttributes.Value( "core.PersonPickerFetchCount" ).AsIntegerOrNull() ?? 60;
+            int count = GlobalAttributesCache.Value( "core.PersonPickerFetchCount" ).AsIntegerOrNull() ?? 60;
             bool showFullNameReversed;
             bool allowFirstNameOnly = false;
 
@@ -409,7 +409,7 @@ namespace Rock.Rest.Controllers
                 allowFirstNameOnly = searchComponent.GetAttributeValue( "FirstNameSearch" ).AsBoolean();
             }
 
-            var activeRecordStatusValue = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+            var activeRecordStatusValue = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
             int activeRecordStatusValueId = activeRecordStatusValue != null ? activeRecordStatusValue.Id : 0;
 
             IQueryable<Person> sortedPersonQry = ( this.Service as PersonService )
@@ -426,7 +426,7 @@ namespace Rock.Rest.Controllers
                     ? Person.FormatFullNameReversed( a.LastName, a.NickName, a.SuffixValueId, a.RecordTypeValueId )
                     : Person.FormatFullName( a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId ),
                     IsActive = a.RecordStatusValueId.HasValue && a.RecordStatusValueId == activeRecordStatusValueId,
-                    RecordStatus = a.RecordStatusValueId.HasValue ? CacheDefinedValue.Get( a.RecordStatusValueId.Value ).Value : string.Empty,
+                    RecordStatus = a.RecordStatusValueId.HasValue ? DefinedValueCache.Get( a.RecordStatusValueId.Value ).Value : string.Empty,
                     Age = Person.GetAge( a.BirthDate ) ?? -1,
                     FormattedAge = a.FormatAge(),
                     SpouseName = personService.GetSpouse( a, x => x.Person.NickName )
@@ -444,15 +444,15 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Gets the search details (for the person picker)
         /// </summary>
-        /// <param name="Id">The identifier.</param>
+        /// <param name="id">The identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetSearchDetails" )]
-        public string GetSearchDetails( int Id )
+        public string GetSearchDetails( int id )
         {
             PersonSearchResult personSearchResult = new PersonSearchResult();
-            var person = this.Get().Include( a => a.PhoneNumbers ).Where( a => a.Id == Id ).FirstOrDefault();
+            var person = this.Get().Include( a => a.PhoneNumbers ).Where( a => a.Id == id ).FirstOrDefault();
             if ( person != null )
             {
                 GetPersonSearchDetails( personSearchResult, person );
@@ -489,7 +489,7 @@ namespace Rock.Rest.Controllers
                 personSearchResult.Name = showFullNameReversed ? person.FullNameReversed : person.FullName;
                 if ( person.RecordStatusValueId.HasValue )
                 {
-                    var recordStatus = CacheDefinedValue.Get( person.RecordStatusValueId.Value );
+                    var recordStatus = DefinedValueCache.Get( person.RecordStatusValueId.Value );
                     personSearchResult.RecordStatus = recordStatus.Value;
                     personSearchResult.IsActive = recordStatus.Guid.Equals( activeRecord );
                 }
@@ -526,10 +526,10 @@ namespace Rock.Rest.Controllers
 </div>
 ";
 
-            var familyGroupType = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             int adultRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
 
-            int groupTypeFamilyId = CacheGroupType.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
+            int groupTypeFamilyId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
 
             // figure out Family, Address, Spouse
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
@@ -537,12 +537,12 @@ namespace Rock.Rest.Controllers
             Guid? recordTypeValueGuid = null;
             if ( person.RecordTypeValueId.HasValue )
             {
-                recordTypeValueGuid = CacheDefinedValue.Get( person.RecordTypeValueId.Value ).Guid;
+                recordTypeValueGuid = DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid;
             }
 
             personSearchResult.ImageHtmlTag = Person.GetPersonPhotoImageTag( person, 50, 50 );
             personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
-            personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? CacheDefinedValue.Get( person.ConnectionStatusValueId.Value ).Value : string.Empty;
+            personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Get( person.ConnectionStatusValueId.Value ).Value : string.Empty;
             personSearchResult.Gender = person.Gender.ConvertToString();
             personSearchResult.Email = person.Email;
 
@@ -638,7 +638,7 @@ namespace Rock.Rest.Controllers
                 string phoneNumberList = "<div class='phones'>";
                 foreach ( var phoneNumber in person.PhoneNumbers )
                 {
-                    var phoneType = CacheDefinedValue.Get( phoneNumber.NumberTypeValueId ?? 0 );
+                    var phoneType = DefinedValueCache.Get( phoneNumber.NumberTypeValueId ?? 0 );
                     phoneNumberList += string.Format(
                         "<br>{0} <small>{1}</small>",
                         phoneNumber.IsUnlisted ? "Unlisted" : phoneNumber.NumberFormatted,
@@ -666,24 +666,11 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetSearchDetails/{personId}" )]
-        [Obsolete( "Returns incorrect results, will be removed in a future version" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Returns incorrect results, will be removed in a future version", true )]
         public string GetImpersonationParameterObsolete( int personId )
         {
-            // NOTE: This route is called GetSearchDetails but really returns an ImpersonationParameter due to a copy/paste bug. 
-            // Marked obsolete but kept around in case anybody was taking advantage of this bug 
-
-            string result = string.Empty;
-
-            var rockContext = this.Service.Context as Rock.Data.RockContext;
-
-            var person = new PersonService( rockContext ).Queryable().Include( a => a.Aliases ).AsNoTracking().FirstOrDefault( a => a.Id == personId );
-
-            if ( person != null )
-            {
-                result = person.ImpersonationParameter;
-            }
-
-            return result;
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -757,7 +744,7 @@ namespace Rock.Rest.Controllers
                 Guid? recordTypeValueGuid = null;
                 if ( person.RecordTypeValueId.HasValue )
                 {
-                    recordTypeValueGuid = CacheDefinedValue.Get( person.RecordTypeValueId.Value ).Guid;
+                    recordTypeValueGuid = DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid;
                 }
 
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );

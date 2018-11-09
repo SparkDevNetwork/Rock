@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -125,7 +125,7 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var campus = CacheCampus.Get( value.AsGuid() );
+                var campus = CampusCache.Get( value.AsGuid() );
                 if ( campus != null )
                 {
                     formattedValue = campus.Name;
@@ -170,15 +170,17 @@ namespace Rock.Field.Types
                 int? campusId = campusPicker.SelectedCampusId;
                 if ( campusId.HasValue )
                 {
-                    var campus = CacheCampus.Get( campusId.Value );
+                    var campus = CampusCache.Get( campusId.Value );
                     if ( campus != null )
                     {
                         return campus.Guid.ToString();
                     }
                 }
+
+                return string.Empty;
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>
@@ -200,7 +202,7 @@ namespace Rock.Field.Types
                 // get the item (or null) and set it
                 if ( guid.HasValue )
                 {
-                    campusId = CacheCampus.Get( guid.Value )?.Id;
+                    campusId = CampusCache.Get( guid.Value )?.Id;
                 }
 
                 campusPicker.SelectedCampusId = campusId;
@@ -249,7 +251,7 @@ namespace Rock.Field.Types
 
             bool includeInactive = ( configurationValues != null && configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean() );
 
-            var campusList = CacheCampus.All( includeInactive );
+            var campusList = CampusCache.All( includeInactive );
             if ( campusList.Any() )
             {
                 foreach ( var campus in campusList )
@@ -274,8 +276,8 @@ namespace Rock.Field.Types
         {
             var campusGuids = value.SplitDelimitedValues().AsGuidList();
 
-            var campuses = campusGuids.Select( a => CacheCampus.Get( a ) ).Where( c => c != null );
-            return campuses.Select( a => a.Name ).ToList().AsDelimited( ", ", " or " );
+            var campuses = campusGuids.Select( a => CampusCache.Get( a ) ).Where( c => c != null );
+            return AddQuotes( campuses.Select( a => a.Name ).ToList().AsDelimited( "' OR '" ) );
         }
 
         /// <summary>
@@ -364,9 +366,21 @@ namespace Rock.Field.Types
             if ( filterValues.Count == 1 )
             {
                 List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                if ( selectedValues.Any() )
+                int valueCount = selectedValues.Count();
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                if ( valueCount == 0 )
                 {
-                    MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                    // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
+                    return new NoAttributeFilterExpression();
+                }
+                else if ( valueCount == 1 )
+                {
+                    // only one value, so do an Equal instead of Contains which might compile a little bit faster
+                    ComparisonType comparisonType = ComparisonType.EqualTo;
+                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( selectedValues[0] ) );
+                }
+                else
+                {
                     ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
                     return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
                 }
@@ -388,7 +402,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = CacheCampus.Get( guid );
+            var item = CampusCache.Get( guid );
             return item != null ? item.Id : (int?)null;
         }
 
@@ -400,10 +414,10 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            CacheCampus item = null;
+            CampusCache item = null;
             if ( id.HasValue )
             {
-                item = CacheCampus.Get( id.Value );
+                item = CampusCache.Get( id.Value );
             }
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );

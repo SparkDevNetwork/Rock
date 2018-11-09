@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -90,7 +91,7 @@ namespace RockWeb.Blocks.Prayer
             this.EnablePublicDisplayFlag = GetAttributeValue( "EnablePublicDisplayFlag" ).AsBoolean();
             nbMessage.Text = GetAttributeValue( "SaveSuccessText" );
 
-            RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/bootstrap-limit.js" ) );
+            RockPage.AddScriptLink( Page, "~/Scripts/bootstrap-limit.js" );
             var categoryGuid = GetAttributeValue( "GroupCategoryId" );
             if ( ! string.IsNullOrEmpty( categoryGuid ) )
             {
@@ -102,7 +103,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             Type type = new PrayerRequest().GetType();
-            this.PrayerRequestEntityTypeId = Rock.Cache.CacheEntityType.GetId( type.FullName );
+            this.PrayerRequestEntityTypeId = EntityTypeCache.GetId( type.FullName );
 
             int charLimit = GetAttributeValue( "CharacterLimit" ).AsInteger();
             if ( charLimit > 0 )

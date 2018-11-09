@@ -45,7 +45,7 @@
         <Rock:ModalDialog ID="mdEdit" runat="server" Title="Entity" OnCancelScript="clearActiveDialog();">
             <Content>
                 <asp:HiddenField ID="hfEntityTypeId" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.EntityType, Rock" PropertyName="Name" Label="Entity Type Name" />
                 <Rock:DataTextBox ID="tbFriendlyName" runat="server" SourceTypeName="Rock.Model.EntityType, Rock" PropertyName="FriendlyName" Label="Friendly Name" />
                 <Rock:RockCheckBox ID="cbCommon" runat="server" Label="Common" Text="Yes" Help="There are various places that a user is prompted for an entity type.  'Common' entities will be listed first for the user to easily find them" />

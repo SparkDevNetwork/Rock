@@ -24,7 +24,8 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -34,7 +35,7 @@ namespace RockWeb.Blocks.Prayer
     [Category( "Prayer" )]
     [Description( "Allows a user to start a session to pray for active, approved prayer requests." )]
 
-    [CodeEditorField( "Welcome Introduction Text", "Some text (or HTML) to display on the first step.", CodeEditorMode.Html, height: 100, required: false, defaultValue: "<h2>Let's get ready to pray...</h2>", order: 1 )]
+    [CodeEditorField( "Welcome Introduction Text", "Some text (or HTML) to display on the first step.", CodeEditorMode.Html, height: 100, required: false, defaultValue: "<h2>Let’s get ready to pray...</h2>", order: 1 )]
     [CategoryField( "Category", "A top level category. This controls which categories are shown when starting a prayer session.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Filtering", 2, "CategoryGuid" )]
     [BooleanField( "Enable Prayer Team Flagging", "If enabled, members of the prayer team can flag a prayer request if they feel the request is inappropriate and needs review by an administrator.", false, "Flagging", 3, "EnableCommunityFlagging" )]
     [IntegerField( "Flag Limit", "The number of flags a prayer request has to get from the prayer team before it is automatically unapproved.", false, 1, "Flagging", 4 )]
@@ -54,17 +55,17 @@ namespace RockWeb.Blocks.Prayer
     </div>
     <div class='col-md-6 text-right'>
       {% if PrayerRequest.EnteredDateTime  %}
-          Date Entered: {{  PrayerRequest.EnteredDateTime | Date:'M/d/yyyy'  }}          
+          Date Entered: {{  PrayerRequest.EnteredDateTime | Date:'M/d/yyyy'  }}
       {% endif %}
     </div>
 </div>
-                                                
+
 {{ PrayerRequest.Text | NewlineToBr }}
 
 <div class='attributes margin-t-md'>
 {% for prayerRequestAttribute in PrayerRequest.AttributeValues %}
     {% if prayerRequestAttribute.Value != '' %}
-    <strong>{{ prayerRequestAttribute.AttributeName }}</strong> 
+    <strong>{{ prayerRequestAttribute.AttributeName }}</strong>
     <p>{{ prayerRequestAttribute.ValueFormatted }}</p>
     {% endif %}
 {% endfor %}
@@ -72,7 +73,7 @@ namespace RockWeb.Blocks.Prayer
 
 {% if PrayerRequest.Answer %}
 <div class='margin-t-lg'>
-    <strong>Update</strong> 
+    <strong>Update</strong>
     <br />
     {{ PrayerRequest.Answer | Escape | NewlineToBr }}
 </div>
@@ -169,14 +170,14 @@ namespace RockWeb.Blocks.Prayer
 
             if ( NoteTypeId.HasValue )
             {
-                var noteType = CacheNoteType.Get( NoteTypeId.Value );
+                var noteType = NoteTypeCache.Get( NoteTypeId.Value );
                 if ( noteType != null )
                 {
-                    notesComments.NoteTypes = new List<CacheNoteType> { noteType };
+                    notesComments.NoteOptions.NoteTypes = new NoteTypeCache[] { noteType };
                 }
             }
 
-            notesComments.EntityId = CurrentPrayerRequestId;
+            notesComments.NoteOptions.EntityId = CurrentPrayerRequestId;
 
             if ( lbNext.Visible )
             {
@@ -329,6 +330,8 @@ namespace RockWeb.Blocks.Prayer
         protected void lbFlag_Click( object sender, EventArgs e )
         {
             mdFlag.SaveButtonText = "Yes, Flag This Request";
+            var index = hfPrayerIndex.ValueAsInt();
+            hfIdValue.SetValue( this.PrayerRequestIds[index] );
             mdFlag.Show();
         }
 
@@ -377,7 +380,7 @@ namespace RockWeb.Blocks.Prayer
         }
 
         /// <summary>
-        /// Updates the Hightlight label that shows how many prayers have been made out of the total for this session.
+        /// Updates the Highlight label that shows how many prayers have been made out of the total for this session.
         /// </summary>
         /// <param name="currentNumber"></param>
         /// <param name="total"></param>
@@ -401,7 +404,7 @@ namespace RockWeb.Blocks.Prayer
         }
 
         /// <summary>
-        /// Binds the 'active' categories for the given top-level category GUID to the list for 
+        /// Binds the 'active' categories for the given top-level category GUID to the list for
         /// the user to choose.
         /// </summary>
         /// <param name="categoryGuid">the guid string of a top-level prayer category</param>
@@ -416,7 +419,7 @@ namespace RockWeb.Blocks.Prayer
             if ( !string.IsNullOrEmpty( categoryGuid ) )
             {
                 Guid guid = new Guid( categoryGuid );
-                var filterCategory = CacheCategory.Get( guid );
+                var filterCategory = CategoryCache.Get( guid );
                 if ( filterCategory != null )
                 {
                     prayerRequestQuery = prayerRequestQuery.Where( p => p.Category.ParentCategoryId == filterCategory.Id );
@@ -526,6 +529,11 @@ namespace RockWeb.Blocks.Prayer
             // need to load attributes so that lava can loop thru PrayerRequest.Attributes
             prayerRequest.LoadAttributes();
 
+            // Filter to only show attribute / attribute values that the person is authorized to view.
+            var excludeForView = prayerRequest.Attributes.Where( a => !a.Value.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+            prayerRequest.Attributes = prayerRequest.Attributes.Where( a => !excludeForView.Contains( a.Key ) ).ToDictionary( k => k.Key, k => k.Value );
+            prayerRequest.AttributeValues = prayerRequest.AttributeValues.Where( av => !excludeForView.Contains( av.Key ) ).ToDictionary( k => k.Key, k => k.Value );
+
             mergeFields.Add( "PrayerRequest", prayerRequest );
             string prayerPersonLava = this.GetAttributeValue( "PrayerPersonLava" );
             string prayerDisplayLava = this.GetAttributeValue( "PrayerDisplayLava" );
@@ -535,8 +543,7 @@ namespace RockWeb.Blocks.Prayer
             pnlPrayerComments.Visible = prayerRequest.AllowComments ?? false;
             if ( notesComments.Visible )
             {
-                notesComments.EntityId = prayerRequest.Id;
-                notesComments.RebuildNotes( true );
+                notesComments.NoteOptions.EntityId = prayerRequest.Id;
             }
 
             CurrentPrayerRequestId = prayerRequest.Id;

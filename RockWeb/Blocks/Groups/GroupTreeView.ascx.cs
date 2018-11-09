@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Groups
 
             var detailPageReference = new Rock.Web.PageReference( GetAttributeValue( "DetailPage" ) );
 
-            // NOTE: if the detail page is the current page, use the current route instead of route specified in the DetailPage (to preserve old behavoir)
+            // NOTE: if the detail page is the current page, use the current route instead of route specified in the DetailPage (to preserve old behavior)
             if ( detailPageReference == null || detailPageReference.PageId == this.RockPage.PageId )
             {
                 hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
@@ -79,7 +79,7 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 hfPageRouteTemplate.Value = string.Empty;
-                var pageCache = CachePage.Get( detailPageReference.PageId );
+                var pageCache = PageCache.Get( detailPageReference.PageId );
                 if ( pageCache != null )
                 {
                     var route = pageCache.PageRoutes.FirstOrDefault( a => a.Id == detailPageReference.RouteId );
@@ -148,22 +148,22 @@ namespace RockWeb.Blocks.Groups
                 ddlCountsType.SetValue( "" );
             }
 
-            ddlCampuses.Campuses = CacheCampus.All( GetAttributeValue( "DisplayInactiveCampuses" ).AsBoolean() );
+            ddlCampuses.Campuses = CampusCache.All( GetAttributeValue( "DisplayInactiveCampuses" ).AsBoolean() );
 
-            var CampusFilter = this.GetUserPreference( "CampusFilter" );
+            var campusFilter = this.GetUserPreference( "CampusFilter" );
             if ( pnlConfigPanel.Visible )
             {
-                ddlCampuses.SetValue( CampusFilter );
+                ddlCampuses.SetValue( campusFilter );
             }
             else
             {
                 ddlCampuses.SetValue( "" );
             }
 
-            var IncludeNoCampus = this.GetUserPreference( "IncludeNoCampus" ).AsBoolean();
+            var includeNoCampus = this.GetUserPreference( "IncludeNoCampus" ).AsBoolean();
             if ( pnlConfigPanel.Visible )
             {
-                tglIncludeNoCampus.Checked = IncludeNoCampus;
+                tglIncludeNoCampus.Checked = includeNoCampus;
             }
 
         }
@@ -308,7 +308,7 @@ namespace RockWeb.Blocks.Groups
                             canAddChildGroup = selectedGroup.IsAuthorized( Authorization.EDIT, CurrentPerson );
                             if ( !canAddChildGroup )
                             {
-                                var groupType = CacheGroupType.Get( selectedGroup.GroupTypeId );
+                                var groupType = GroupTypeCache.Get( selectedGroup.GroupTypeId );
                                 if ( groupType != null )
                                 {
                                     foreach ( var childGroupType in groupType.ChildGroupTypes )
@@ -429,7 +429,7 @@ namespace RockWeb.Blocks.Groups
                 var groupTypeIdIncludeList = new List<int>();
                 foreach ( Guid guid in groupTypeIncludeGuids )
                 {
-                    var groupType = CacheGroupType.Get( guid );
+                    var groupType = GroupTypeCache.Get( guid );
                     if ( groupType != null )
                     {
                         groupTypeIdIncludeList.Add( groupType.Id );
@@ -446,7 +446,7 @@ namespace RockWeb.Blocks.Groups
                 var groupTypeIdExcludeList = new List<int>();
                 foreach ( Guid guid in groupTypeExcludeGuids )
                 {
-                    var groupType = CacheGroupType.Get( guid );
+                    var groupType = GroupTypeCache.Get( guid );
                     if ( groupType != null )
                     {
                         groupTypeIdExcludeList.Add( groupType.Id );

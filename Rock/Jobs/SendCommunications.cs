@@ -94,25 +94,18 @@ namespace Rock.Jobs
 
             // check for communications that have not been sent but are past the expire date. Mark them as failed and set a warning.
             var beginWindow = RockDateTime.Now.AddDays( 0 - expirationDays );
-            var qryExpired = new CommunicationService( rockContext ).Queryable()
-                .Where( c =>
-                    c.Status == CommunicationStatus.Approved &&
-                    c.Recipients.Any( r => r.Status == CommunicationRecipientStatus.Pending ) &&
+            var qryExpiredRecipients = new CommunicationRecipientService( rockContext ).Queryable()
+                .Where( cr =>
+                    cr.Communication.Status == CommunicationStatus.Approved &&
+                    cr.Status == CommunicationRecipientStatus.Pending &&
                     (
-                        (!c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value.CompareTo( beginWindow ) < 0 ) ||
-                        (c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) < 0 )
+                        ( !cr.Communication.FutureSendDateTime.HasValue && cr.Communication.CreatedDateTime.HasValue && cr.Communication.CreatedDateTime < beginWindow )
+                        || ( cr.Communication.FutureSendDateTime.HasValue && cr.Communication.FutureSendDateTime < beginWindow )
                     ) );
 
-            foreach ( var comm in qryExpired.ToList() )
-            {
-                foreach ( var recipient in comm.Recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending ) )
-                {
-                    recipient.Status = CommunicationRecipientStatus.Failed;
-                    recipient.StatusNote = "Communication was not sent before the expire window (possibly due to delayed approval).";
-                    rockContext.SaveChanges();
-                }
-            }
+            var count = qryExpiredRecipients.Count();
 
+            rockContext.BulkUpdate( qryExpiredRecipients, c => new CommunicationRecipient { Status = CommunicationRecipientStatus.Failed, StatusNote = "Communication was not sent before the expire window (possibly due to delayed approval)." } );
         }
     }
 }

@@ -35,7 +35,8 @@ namespace Rock.Model
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="ownerId">The owner identifier.</param>
         /// <returns></returns>
-        [Obsolete("Use one of the other Gets")]
+        [RockObsolete( "1.7" )]
+        [Obsolete("Use one of the other Gets", true )]
         public IQueryable<Tag> Get( int entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? ownerId )
         {
             return this.Get( entityTypeId, entityQualifierColumn, entityQualifierValue, ownerId, null, null );
@@ -61,12 +62,12 @@ namespace Rock.Model
                     ( t.OwnerPersonAlias == null || ( ownerId.HasValue && t.OwnerPersonAlias.PersonId == ownerId ) ) );
 
 
-            if ( entityQualifierColumn.IsNotNullOrWhitespace() )
+            if ( entityQualifierColumn.IsNotNullOrWhiteSpace() )
             {
                 qry = qry.Where( t => t.EntityTypeQualifierColumn == entityQualifierColumn );
             }
 
-            if ( entityQualifierValue.IsNotNullOrWhitespace() )
+            if ( entityQualifierValue.IsNotNullOrWhiteSpace() )
             {
                 qry = qry.Where( t => t.EntityTypeQualifierValue == entityQualifierValue );
             }

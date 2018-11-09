@@ -27,7 +27,7 @@ using Rock;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI
 {
@@ -83,7 +83,7 @@ namespace Rock.Web.UI
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            var blockCache = _rockBlock.CacheBlock;
+            var blockCache = _rockBlock.BlockCache;
 
             string preHtml = string.Empty;
             string postHtml = string.Empty;
@@ -105,8 +105,8 @@ namespace Rock.Web.UI
                 if ( preHtml.HasMergeFields() || postHtml.HasMergeFields() )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( _rockBlock.RockPage );
-                    preHtml = preHtml.ResolveMergeFields( mergeFields );
-                    postHtml = postHtml.ResolveMergeFields( mergeFields );
+                    preHtml = preHtml.ResolveMergeFields( mergeFields, "All" );
+                    postHtml = postHtml.ResolveMergeFields( mergeFields, "All" );
                 }
             }
 
@@ -114,7 +114,7 @@ namespace Rock.Web.UI
             StringWriter swOutput = null;
             HtmlTextWriter twOutput = null;
 
-            if ( _rockBlock.CacheBlock.OutputCacheDuration > 0 )
+            if ( _rockBlock.BlockCache.OutputCacheDuration > 0 )
             {
                 sbOutput = new StringBuilder();
                 swOutput = new StringWriter( sbOutput );
@@ -155,7 +155,7 @@ namespace Rock.Web.UI
                 twOutput.RenderBeginTag( HtmlTextWriterTag.Div );
             }
 
-            if ( _rockBlock.CachePage.IncludeAdminFooter && _adminControls.Any() )
+            if ( _rockBlock.PageCache.IncludeAdminFooter && _adminControls.Any() )
             {
                 // Add the config buttons
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "block-configuration config-bar" );

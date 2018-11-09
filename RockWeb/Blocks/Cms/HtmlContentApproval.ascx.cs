@@ -22,7 +22,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
@@ -249,8 +249,8 @@ namespace RockWeb.Blocks.Cms
         {
             var rockContext = new RockContext();
 
-            int entityTypeIdBlock = CacheEntityType.Get( typeof( Rock.Model.Block ), true, rockContext ).Id;
-            string entityTypeQualifier = CacheBlockType.Get( Rock.SystemGuid.BlockType.HTML_CONTENT.AsGuid(), rockContext ).Id.ToString();
+            int entityTypeIdBlock = EntityTypeCache.Get( typeof( Rock.Model.Block ), true, rockContext ).Id;
+            string entityTypeQualifier = BlockTypeCache.Get( Rock.SystemGuid.BlockType.HTML_CONTENT.AsGuid(), rockContext ).Id.ToString();
             var htmlContentService = new HtmlContentService( rockContext );
             var attributeValueQry = new AttributeValueService( rockContext ).Queryable()
                 .Where( a => a.Attribute.Key == "RequireApproval" && a.Attribute.EntityTypeId == entityTypeIdBlock )
@@ -307,7 +307,7 @@ namespace RockWeb.Blocks.Cms
                 BlockSiteId = a.Block.SiteId,
             } );
 
-            gContentList.EntityTypeId = CacheEntityType.Get<HtmlContent>().Id;
+            gContentList.EntityTypeId = EntityTypeCache.Get<HtmlContent>().Id;
 
             // Filter by Site
             if ( ddlSiteFilter.SelectedIndex > 0 )

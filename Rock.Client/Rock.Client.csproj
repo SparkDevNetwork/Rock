@@ -37,6 +37,9 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
+      <Link>AssemblySharedInfo.cs</Link>
+    </Compile>
     <Compile Include="CodeGenerated\AnalyticsDimAttendanceLocation.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimCampus.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimFamilyCurrent.cs" />
@@ -54,14 +57,17 @@
     <Compile Include="CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourcePersonHistorical.cs" />
+    <Compile Include="CodeGenerated\AssetStorageProvider.cs" />
     <Compile Include="CodeGenerated\Attendance.cs" />
     <Compile Include="CodeGenerated\AttendanceCode.cs" />
+    <Compile Include="CodeGenerated\AttendanceOccurrence.cs" />
     <Compile Include="CodeGenerated\Attribute.cs" />
     <Compile Include="CodeGenerated\AttributeMatrix.cs" />
     <Compile Include="CodeGenerated\AttributeMatrixItem.cs" />
     <Compile Include="CodeGenerated\AttributeMatrixTemplate.cs" />
     <Compile Include="CodeGenerated\AttributeQualifier.cs" />
     <Compile Include="CodeGenerated\AttributeValue.cs" />
+    <Compile Include="CodeGenerated\AttributeValueHistorical.cs" />
     <Compile Include="CodeGenerated\Audit.cs" />
     <Compile Include="CodeGenerated\AuditDetail.cs" />
     <Compile Include="CodeGenerated\Auth.cs" />
@@ -139,8 +145,12 @@
     <Compile Include="CodeGenerated\FollowingSuggested.cs" />
     <Compile Include="CodeGenerated\FollowingSuggestionType.cs" />
     <Compile Include="CodeGenerated\Group.cs" />
+    <Compile Include="CodeGenerated\GroupHistorical.cs" />
     <Compile Include="CodeGenerated\GroupLocation.cs" />
+    <Compile Include="CodeGenerated\GroupLocationHistorical.cs" />
+    <Compile Include="CodeGenerated\GroupLocationHistoricalSchedule.cs" />
     <Compile Include="CodeGenerated\GroupMember.cs" />
+    <Compile Include="CodeGenerated\GroupMemberHistorical.cs" />
     <Compile Include="CodeGenerated\GroupMemberRequirement.cs" />
     <Compile Include="CodeGenerated\GroupMemberWorkflowTrigger.cs" />
     <Compile Include="CodeGenerated\GroupRequirement.cs" />
@@ -175,7 +185,9 @@
     <Compile Include="CodeGenerated\MetricValuePartition.cs" />
     <Compile Include="CodeGenerated\NcoaHistory.cs" />
     <Compile Include="CodeGenerated\Note.cs" />
+    <Compile Include="CodeGenerated\NoteAttachment.cs" />
     <Compile Include="CodeGenerated\NoteType.cs" />
+    <Compile Include="CodeGenerated\NoteWatch.cs" />
     <Compile Include="CodeGenerated\Notification.cs" />
     <Compile Include="CodeGenerated\NotificationRecipient.cs" />
     <Compile Include="CodeGenerated\Page.cs" />
@@ -211,6 +223,7 @@
     <Compile Include="CodeGenerated\Schedule.cs" />
     <Compile Include="CodeGenerated\ScheduleCategoryExclusion.cs" />
     <Compile Include="CodeGenerated\ServiceJob.cs" />
+    <Compile Include="CodeGenerated\ServiceJobHistory.cs" />
     <Compile Include="CodeGenerated\ServiceLog.cs" />
     <Compile Include="CodeGenerated\SignalType.cs" />
     <Compile Include="CodeGenerated\SignatureDocument.cs" />

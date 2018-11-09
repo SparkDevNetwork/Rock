@@ -21,7 +21,7 @@
 			<div class="col-md-2">
 				<b>Date</b>
 			</div>
-			<div class="col-md-2">       
+			<div class="col-md-2">
 				<b>Time</b>
 			</div>
 			<div class="col-md-2">
@@ -40,7 +40,7 @@
 					{{ eventItemOccurrence.Date | Date: 'MMM d' }}
 				{% endif %}
 			</div>
-			<div class="col-md-2">       
+			<div class="col-md-2">
 				{{ eventItemOccurrence.Time }}
 			</div>
 			<div class="col-md-2">

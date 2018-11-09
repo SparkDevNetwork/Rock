@@ -432,6 +432,7 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use HistoryChangeList instead" )]
         public virtual List<string> HistoryChanges { get; set; }
 
@@ -451,6 +452,7 @@ namespace Rock.Model
         /// The batch history changes.
         /// </value>
         [NotMapped]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use BatchHistoryChangeList instead" )]
         public virtual Dictionary<int, List<string>> BatchHistoryChanges { get; set; }
 
@@ -648,7 +650,7 @@ namespace Rock.Model
             {
                 if ( keyVal.Value.Any() )
                 {
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), keyVal.Key, keyVal.Value, string.Empty, typeof( FinancialTransaction ), this.Id, true, this.ModifiedByPersonAliasId );
+                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), keyVal.Key, keyVal.Value, string.Empty, typeof( FinancialTransaction ), this.Id, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                 }
             }
 

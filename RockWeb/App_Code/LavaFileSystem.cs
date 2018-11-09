@@ -24,7 +24,7 @@ using DotLiquid.Exceptions;
 using DotLiquid.FileSystems;
 
 using Rock;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -94,7 +94,7 @@ namespace RockWeb
                     HttpContext.Current.Items != null &&
                     HttpContext.Current.Items.Contains( "Rock:PageId" ) )
                 {
-                    var rockPage = CachePage.Get( HttpContext.Current.Items["Rock:PageId"].ToString().AsInteger() );
+                    var rockPage = PageCache.Get( HttpContext.Current.Items["Rock:PageId"].ToString().AsInteger() );
                     if ( rockPage != null &&
                         rockPage.Layout != null &&
                         rockPage.Layout.Site != null )

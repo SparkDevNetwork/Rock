@@ -21,7 +21,7 @@ using System.Linq;
 
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using System.Collections.Generic;
 using System.Data;
@@ -78,7 +78,7 @@ namespace Rock.Rest.Controllers
                                         .Where( t => t.Group.GroupType.Guid == groupTypeGuid
                                                  && t.PersonId == personId
                                                  && t.GroupMemberStatus == GroupMemberStatus.Active
-                                                 && t.Group.IsActive )
+                                                 && t.Group.IsActive && !t.Group.IsArchived )
                                         .OrderBy( g => g.GroupRole.Order );
 
             foreach ( GroupMember member in groupMembershipsQuery )
@@ -120,7 +120,7 @@ namespace Rock.Rest.Controllers
                 result.LastName = person.LastName;
             }
 
-            var purposeValue = CacheDefinedValue.Get( definedValueGuid );
+            var purposeValue = DefinedValueCache.Get( definedValueGuid );
             result.Purpose = purposeValue.Value;
 
             // determine if person is in a group with this purpose
@@ -217,7 +217,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/PersonBadges/LastVisitOnSite/{personId}/{siteId}" )]
         public int GetLastVisitOnSite( int personId, int siteId )
         {
-            int channelMediumValueId = CacheDefinedValue.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+            int channelMediumValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
 
             InteractionChannelService interactionChannelService = new InteractionChannelService( ( Rock.Data.RockContext ) Service.Context );
             var interactionChannel = interactionChannelService.Queryable()
@@ -252,7 +252,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/PersonBadges/PersonalDevicesNumber/{personId}" )]
         public int GetPersonalDevicesNumber( int personId )
         {
-            int channelMediumValueId = CacheDefinedValue.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+            int channelMediumValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
 
             PersonalDeviceService personalDeviceService = new PersonalDeviceService( ( Rock.Data.RockContext ) Service.Context );
             return personalDeviceService.Queryable()

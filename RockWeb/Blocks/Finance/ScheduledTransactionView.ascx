@@ -98,7 +98,7 @@
 
         <Rock:ModalDialog ID="mdAccount" runat="server" Title="Account" SaveButtonText="OK" OnSaveClick="mdAccount_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Account">
             <Content>
-                <asp:ValidationSummary ID="valSummaryAccount" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="Account" />
+                <asp:ValidationSummary ID="valSummaryAccount" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Account" />
                 <asp:HiddenField ID="hfAccountGuid" runat="server" />
                 <div class="row">
                     <div class="col-md-6">

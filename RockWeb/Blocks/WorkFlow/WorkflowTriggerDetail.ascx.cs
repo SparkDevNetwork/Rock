@@ -26,7 +26,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Security;
@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.WorkFlow
         {
             ddlQualifierColumn.Items.Clear();
 
-            var entityType = CacheEntityType.Get( ddlEntityType.SelectedValueAsInt().Value );
+            var entityType = EntityTypeCache.Get( ddlEntityType.SelectedValueAsInt().Value );
             if ( entityType != null )
             {
                 Type type = entityType.GetEntityType();
@@ -171,7 +171,12 @@ namespace RockWeb.Blocks.WorkFlow
                     var propertyNames = new List<string>();
                     foreach ( var property in type.GetProperties() )
                     {
-                        if ( !property.GetGetMethod().IsVirtual || property.Name == "Id" || property.Name == "Guid" || property.Name == "Order" || property.Name == "IsActive" )
+                        if ( ( property.GetGetMethod() != null && !property.GetGetMethod().IsVirtual) ||
+                            property.GetCustomAttributes( typeof( IncludeAsEntityProperty ) ).Any() ||
+                            property.Name == "Id" ||
+                            property.Name == "Guid" ||
+                            property.Name == "Order" ||
+                            property.Name == "IsActive" )
                         {
                             propertyNames.Add( property.Name );
                         }
@@ -281,7 +286,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             rockContext.SaveChanges();
 
-            CacheWorkflowTriggers.Remove();
+            WorkflowTriggersCache.Remove();
 
             NavigateToParentPage();
         }
@@ -330,7 +335,9 @@ namespace RockWeb.Blocks.WorkFlow
                 }
 
                 if ( usePreviousValue
-                    && ( !string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValue ) || !string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValuePrevious ) ) )
+                    && ( !string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValue ) || !string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValuePrevious ) )
+                     && workflowTrigger.WorkflowTriggerValueChangeType == WorkflowTriggerValueChangeType.ChangeFromTo
+                    )
                 {
                     tbQualifierValueAlt.Text = workflowTrigger.EntityTypeQualifierValue;
                     tbPreviousQualifierValue.Text = workflowTrigger.EntityTypeQualifierValuePrevious;

@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using DotLiquid;
@@ -225,7 +225,7 @@ namespace RockWeb.Blocks.Finance
                 }
                 else
                 {
-                    content.Text = String.Format( "<div class='alert alert-danger'>An error occured while deleting your scheduled transation. Message: {0}</div>", errorMessage );
+                    content.Text = String.Format( "<div class='alert alert-danger'>An error occurred while deleting your scheduled transaction. Message: {0}</div>", errorMessage );
                 }
             }
 
@@ -289,7 +289,7 @@ namespace RockWeb.Blocks.Finance
                 var schedules = transactionService.Queryable( "ScheduledTransactionDetails.Account" )
                     .Where( s => givingIds.Contains( s.AuthorizedPersonAlias.Person.GivingId ) && s.IsActive == true );
 
-                // filter the list if necesssary
+                // filter the list if necessary
                 var gatewayFilterGuid = GetAttributeValue( "GatewayFilter" ).AsGuidOrNull();
                 if ( gatewayFilterGuid != null )
                 {

@@ -27,7 +27,7 @@ using System.Collections.Generic;
 using System.Data;
 using System;
 using System.Diagnostics;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.PersonProfile.Badge
 {
@@ -39,7 +39,7 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata( "ComponentName", "DISC" )]
 
     [LinkedPage( "DISC Result Detail", "Page to show the details of the DISC assessment results. If blank no link is created.", false )]
-    public class DISC : BadgeComponentModern
+    public class DISC : BadgeComponent
     {
         /// <summary>
         /// The max value of a Natural DISC score.
@@ -51,7 +51,7 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( CachePersonBadge badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
             // Grab the DISC Scores
             bool isValidDiscScore = true;
@@ -91,7 +91,7 @@ namespace Rock.PersonProfile.Badge
                 string personalityType = Person.GetAttributeValue( "PersonalityType" );
                 if ( !string.IsNullOrEmpty( personalityType ) )
                 {
-                    var personalityValue = CacheDefinedType.Get( Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid() ).DefinedValues.Where( v => v.Value == personalityType ).FirstOrDefault();
+                    var personalityValue = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid() ).DefinedValues.Where( v => v.Value == personalityType ).FirstOrDefault();
                     if ( personalityValue != null )
                     {
                         description = personalityValue.Description;
@@ -102,7 +102,7 @@ namespace Rock.PersonProfile.Badge
                 string detailPageUrl = string.Empty;
                 if ( !String.IsNullOrEmpty( GetAttributeValue( badge, "DISCResultDetail" ) ) )
                 {
-                    int pageId = Rock.Cache.CachePage.Get( Guid.Parse( GetAttributeValue( badge, "DISCResultDetail" ) ) ).Id;
+                    int pageId = PageCache.Get( Guid.Parse( GetAttributeValue( badge, "DISCResultDetail" ) ) ).Id;
                     detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( String.Format( "~/page/{0}?Person={1}", pageId, Person.UrlEncodedKey ) );
                     writer.Write( "<a href='{0}'>", detailPageUrl  );
                 }

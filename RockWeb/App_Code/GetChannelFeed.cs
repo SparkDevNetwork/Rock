@@ -25,7 +25,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Collections.Generic;
 
 namespace RockWeb
@@ -59,7 +59,7 @@ namespace RockWeb
             {
                 int channelId;
                 int templateDefinedValueId;
-                CacheDefinedValue dvRssTemplate;
+                DefinedValueCache dvRssTemplate;
                 string rssTemplate;
 
                 if ( !int.TryParse( request.QueryString["ChannelId"] , out channelId ))
@@ -71,11 +71,11 @@ namespace RockWeb
 
                 if ( request.QueryString["TemplateId"] == null || !int.TryParse( request.QueryString["TemplateId"], out templateDefinedValueId ) )
                 {
-                    dvRssTemplate = CacheDefinedValue.Get( Rock.SystemGuid.DefinedValue.DEFAULT_RSS_CHANNEL );
+                    dvRssTemplate = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEFAULT_RSS_CHANNEL );
                 }
                 else
                 {
-                    dvRssTemplate = CacheDefinedValue.Get( templateDefinedValueId );
+                    dvRssTemplate = DefinedValueCache.Get( templateDefinedValueId );
                 }
 
                 rssTemplate = dvRssTemplate.GetAttributeValue( "Template" );
@@ -157,7 +157,7 @@ namespace RockWeb
                             item.Content = item.Content.ResolveMergeFields( mergeFields );
 
                             // resolve any relative links
-                            var globalAttributes = Rock.Cache.CacheGlobalAttributes.Get();
+                            var globalAttributes = GlobalAttributesCache.Get();
                             string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
                             item.Content = item.Content.Replace( @" src=""/", @" src=""" + publicAppRoot );
                             item.Content = item.Content.Replace( @" href=""/", @" href=""" + publicAppRoot );

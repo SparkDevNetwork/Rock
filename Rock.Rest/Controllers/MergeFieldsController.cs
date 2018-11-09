@@ -22,7 +22,7 @@ using System.Web.Http;
 using System.Web.Routing;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Security;
 using Rock.Web.UI.Controls;
 
@@ -101,7 +101,7 @@ namespace Rock.Rest.Controllers
 
                                     string fieldType = idParts.Length > 1 ? idParts[1] : fieldId;
 
-                                    var entityType = CacheEntityType.Get( fieldType, false );
+                                    var entityType = EntityTypeCache.Get( fieldType, false );
                                     if ( entityType != null )
                                     {
                                         items.Add( new TreeViewItem
@@ -129,7 +129,7 @@ namespace Rock.Rest.Controllers
 
                 case "GlobalAttribute":
                     {
-                        var globalAttributes = Rock.Cache.CacheGlobalAttributes.Get();
+                        var globalAttributes = GlobalAttributesCache.Get();
 
                         foreach ( var attributeCache in globalAttributes.Attributes.OrderBy( a => a.Key ) )
                         {
@@ -149,20 +149,20 @@ namespace Rock.Rest.Controllers
 
                 default:
                     {
-                        // In this scenario, the id should be a concatnation of a root qualified entity name and then the property path
+                        // In this scenario, the id should be a concatenation of a root qualified entity name and then the property path
                         var idParts = id.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                         if ( idParts.Count > 0 )
                         {
                             // Get the root type
                             int pathPointer = 0;
-                            CacheEntityType entityType = null;
+                            EntityTypeCache entityType = null;
                             while ( entityType == null && pathPointer < idParts.Count() )
                             {
                                 string item = idParts[pathPointer];
                                 string[] itemParts = item.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
                                 string itemType = itemParts.Length > 1 ? itemParts[1] : item;
 
-                                entityType = CacheEntityType.Get( itemType, false );
+                                entityType = EntityTypeCache.Get( itemType, false );
                                 pathPointer++;
                             }
 
@@ -189,7 +189,7 @@ namespace Rock.Rest.Controllers
                                     pathPointer++;
                                 }
 
-                                entityType = CacheEntityType.Get( type );
+                                entityType = EntityTypeCache.Get( type );
 
                                 // Add the tree view items
                                 foreach ( var propInfo in type.GetProperties() )
@@ -213,7 +213,7 @@ namespace Rock.Rest.Controllers
                                         }
 
                                         bool hasChildren = false;
-                                        if ( CacheEntityType.Get( propertyType.FullName, false ) != null )
+                                        if ( EntityTypeCache.Get( propertyType.FullName, false ) != null )
                                         {
                                             foreach ( var childPropInfo in propertyType.GetProperties() )
                                             {

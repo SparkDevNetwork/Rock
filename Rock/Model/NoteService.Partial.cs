@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -53,6 +54,74 @@ namespace Rock.Model
                     n.NoteTypeId == noteTypeId )
                 .OrderByDescending( n => n.IsAlert )
                 .ThenByDescending( n => n.CreatedDateTime );
+        }
+
+        /// <summary>
+        /// Returns an enumerable collection of <see cref="Rock.Model.Note">Notes</see> that are descendants (replies) of a specified note.
+        /// </summary>
+        /// <param name="parentNoteId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Note"/> to retrieve descendants for.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.Note">Notes</see> that are descendants of referenced note.</returns>
+        public IEnumerable<Note> GetAllDescendents( int parentNoteId )
+        {
+            return this.ExecuteQuery(
+                @"
+                with CTE as (
+                select * from [Note] where [ParentNoteId]={0}
+                union all
+                select [a].* from [Note] [a]
+                inner join CTE pcte on pcte.Id = [a].[ParentNoteId]
+                )
+                select * from CTE
+                ", parentNoteId );
+        }
+
+        /// <summary>
+        /// Deletes the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="deleteChildNotes">if set to <c>true</c> [delete child notes].</param>
+        /// <returns></returns>
+        public bool Delete( Note item, bool deleteChildNotes )
+        {
+            if ( deleteChildNotes )
+            {
+                var childNotes = GetAllDescendents( item.Id );
+                if ( childNotes.Any() )
+                {
+                    base.DeleteRange( childNotes );
+                }
+            }
+
+            return base.Delete( item );
+        }
+
+        /// <summary>
+        /// Determines whether this instance [can delete child notes] the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance [can delete child notes] the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDeleteChildNotes( Note item, Person currentPerson, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            var childNotes = this.GetAllDescendents( item.Id );
+            if ( childNotes.Any() )
+            {
+                foreach ( var childNote in childNotes )
+                {
+                    if ( !childNote.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) )
+                    {
+                        errorMessage = "This note contains one or more note replies that cannot be deleted.";
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
     }
 }

@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Store;
@@ -70,9 +70,9 @@ namespace RockWeb.Blocks.Store
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
         }
 
         /// <summary>

@@ -21,7 +21,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 using Rock;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
@@ -34,18 +34,19 @@ namespace Rock.Utility
     public static class TextToWorkflow
     {
         /// <summary>
-        /// Handles a recieved message
+        /// Handles a received message and sets the response using the Workflow's "SMSResponse" attribute value (if any).
+        /// If a keyword match cannot be found, it returns an 'unrecognized keyword' response message.
         /// </summary>
         /// <param name="toPhone">To phone.</param>
         /// <param name="fromPhone">From phone.</param>
         /// <param name="message">The message.</param>
-        /// <param name="response">The response.</param>
+        /// <param name="response">The response from the Workflow's "SMSResponse" attribute value.</param>
         public static void MessageRecieved( string toPhone, string fromPhone, string message, out string response )
         {
             response = "The keyword you provided was not recognized as a valid keyword.";
 
             // get TextToWorkflow defined types for this number
-            var definedType = CacheDefinedType.Get( SystemGuid.DefinedType.TEXT_TO_WORKFLOW.AsGuid() );
+            var definedType = DefinedTypeCache.Get( SystemGuid.DefinedType.TEXT_TO_WORKFLOW.AsGuid() );
 
             // If there are not any defined values, then return with the invalid keyword response
             if ( definedType == null || definedType.DefinedValues == null || !definedType.DefinedValues.Any() ) return;
@@ -55,9 +56,9 @@ namespace Rock.Utility
                 .OrderBy( v => v.Order ).ToList();
 
             // Iterate through workflows looking for a keyword match (Only the first match will be processed)
-            foreach ( CacheDefinedValue dvWorkflow in smsWorkflows )
+            foreach ( DefinedValueCache dvWorkflow in smsWorkflows )
             {
-                // Get the Keyword expression attribute and see if it matches the message that was recieved
+                // Get the Keyword expression attribute and see if it matches the message that was received
                 string keywordExpression = dvWorkflow.GetAttributeValue( "KeywordExpression" );
                 if ( string.IsNullOrWhiteSpace( keywordExpression ) )
                 {
@@ -77,7 +78,7 @@ namespace Rock.Utility
                     keywordExpression = $"^{keywordExpression}";
                 }
 
-                // If the keyword expression does not match the message that was recieved ignore this TextToWorkflow value and continue to the next
+                // If the keyword expression does not match the message that was received ignore this TextToWorkflow value and continue to the next
                 var match = Regex.Match( message, keywordExpression, RegexOptions.IgnoreCase );
                 if ( !match.Success ) continue;
 
@@ -86,7 +87,7 @@ namespace Rock.Utility
                 if ( !workflowTypeGuid.HasValue ) return;
 
                 // Get the configured workflow type, if it is not valid return with invalid keyword response
-                var workflowType = CacheWorkflowType.Get( workflowTypeGuid.Value );
+                var workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
                 if ( workflowType == null ) return;
 
                 // Get the list of workflow attributes to set
@@ -108,7 +109,7 @@ namespace Rock.Utility
 
                 using ( var rockContext = new RockContext() )
                 {
-                    // Try to find a person associated with phone number recieved
+                    // Try to find a person associated with phone number received
                     var fromPerson = GetPerson( fromPhone, rockContext );
 
                     // Activate a new workflow
@@ -123,7 +124,7 @@ namespace Rock.Utility
                     // Format the phone number that was received
                     var formattedPhoneNumber = PhoneNumber.CleanNumber( PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), fromPhone ) );
 
-                    // Create list of the keyword expressions that matched the recieved message
+                    // Create list of the keyword expressions that matched the received message
                     var matchGroups = new List<string>();
                     foreach ( var matchItem in match.Groups )
                     {
@@ -155,7 +156,7 @@ namespace Rock.Utility
 
                     // Set the workflow name
                     var name = nameTemplate.ResolveMergeFields( mergeValues );
-                    if ( name.IsNotNullOrWhitespace() )
+                    if ( name.IsNotNullOrWhiteSpace() )
                     {
                         workflow.Name = name;
                     }
@@ -166,8 +167,7 @@ namespace Rock.Utility
 
                     // Check to see if there is a response to return
                     var responseAttribute = workflow.GetAttributeValue( "SMSResponse" );
-                    response = !string.IsNullOrWhiteSpace( responseAttribute ) ? responseAttribute : "We recieved your message. Thank-you.";
-
+                    response = !string.IsNullOrWhiteSpace( responseAttribute ) ? responseAttribute : string.Empty;
                 }
 
                 // once we find one match stop processing
@@ -192,8 +192,8 @@ namespace Rock.Utility
 
             var phoneNumber = fromPhone.Replace( "+", "" );
 
-            // Get the person ids for people who's Mobile number matches the recieved From number
-            var mobilePhoneType = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+            // Get the person ids for people who's Mobile number matches the received From number
+            var mobilePhoneType = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
             var peopleWithMobileNumber = phoneNumberService
                 .Queryable().AsNoTracking()
                 .Where( n => ( n.CountryCode ?? "" ) + ( n.Number ?? "" ) == phoneNumber )

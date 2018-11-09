@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Collections.Generic;
@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !EntityTypeId.HasValue )
             {
-                var entityType = CacheEntityType.Get( GetAttributeValue( "EntityType" ).AsGuid() );
+                var entityType = EntityTypeCache.Get( GetAttributeValue( "EntityType" ).AsGuid() );
                 EntityTypeId = entityType != null ? entityType.Id : (int?)null;
             }
         }
@@ -290,7 +290,7 @@ namespace RockWeb.Blocks.Core
             if ( tags.Count() == 0 )
             {
                 tagOutput.Clear();
-                tagOutput.Append("<div class='alert alert-info'><h4>Note</h4>No personal tags exist.</div>");
+                tagOutput.Append( string.Format(@"<div class='alert alert-info'><h4>Note</h4>No {0} tags exist.</div>", TagCloudTab ) );
             }
 
             lTagList.Text = tagOutput.ToString();

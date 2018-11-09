@@ -12,7 +12,7 @@
 --%>
 
         <Rock:NotificationBox ID="nbApprovalRequired" runat="server" NotificationBoxType="Info" Text="Your changes will not be visible until they are reviewed and approved." Visible="false" />
-        <%--<div class="html-content-view">--%><asp:Literal ID="lHtmlContent" runat="server" /><%--</div>--%>
+        <%--<div class="html-content-view">--%><asp:Literal ID="lHtmlContent" runat="server" EnableViewState="false" /><%--</div>--%>
 
 
         <%-- Edit Panel --%>

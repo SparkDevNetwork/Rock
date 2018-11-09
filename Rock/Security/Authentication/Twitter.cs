@@ -33,7 +33,7 @@ using RestSharp.Authenticators;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Security.ExternalAuthentication
 {
@@ -295,6 +295,12 @@ namespace Rock.Security.ExternalAuthentication
         /// <returns></returns>
         public static string GetTwitterUser( dynamic twitterUser, string accessToken = "" )
         {
+            // accessToken is required
+            if ( accessToken.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
             string username = string.Empty;
             string twitterId = twitterUser.id_str;
             string twitterLink = "https://twitter.com/" + twitterUser.screen_name;
@@ -330,8 +336,8 @@ namespace Rock.Security.ExternalAuthentication
                         person = personService.FindPerson( firstName, lastName, email, true );
                     }
 
-                    var personRecordTypeId = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                    var personStatusPending = CacheDefinedValue.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+                    var personRecordTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                    var personStatusPending = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
 
                     rockContext.WrapTransaction( () =>
                     {
@@ -356,7 +362,7 @@ namespace Rock.Security.ExternalAuthentication
 
                         if ( person != null )
                         {
-                            int typeId = CacheEntityType.Get( typeof( Facebook ) ).Id;
+                            int typeId = EntityTypeCache.Get( typeof( Facebook ) ).Id;
                             user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, typeId, userName, "Twitter", true );
                         }
 
@@ -412,7 +418,7 @@ namespace Rock.Security.ExternalAuthentication
                             }
 
                             // Save the Twitter social media link
-                            var twitterAttribute = CacheAttribute.Get( Rock.SystemGuid.Attribute.PERSON_TWITTER.AsGuid() );
+                            var twitterAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_TWITTER.AsGuid() );
                             if ( twitterAttribute != null )
                             {
                                 person.LoadAttributes( rockContext );

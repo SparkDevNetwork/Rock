@@ -35,7 +35,28 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public string CssClass { get; set; }
+        public bool AllowsAttachments { get; set; }
+
+        /// <summary />
+        public bool AllowsReplies { get; set; }
+
+        /// <summary />
+        public bool AllowsWatching { get; set; }
+
+        /// <summary />
+        public string ApprovalUrlTemplate { get; set; }
+
+        /// <summary />
+        public bool AutoWatchAuthors { get; set; }
+
+        /// <summary />
+        public string BackgroundColor { get; set; }
+
+        /// <summary />
+        public int? BinaryFileTypeId { get; set; }
+
+        /// <summary />
+        public string BorderColor { get; set; }
 
         /// <summary />
         public int EntityTypeId { get; set; }
@@ -45,6 +66,9 @@ namespace Rock.Client
 
         /// <summary />
         public string EntityTypeQualifierValue { get; set; }
+
+        /// <summary />
+        public string FontColor { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -58,6 +82,9 @@ namespace Rock.Client
         /// <summary />
         public bool IsSystem { get; set; }
 
+        /// <summary />
+        public int? MaxReplyDepth { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -68,6 +95,12 @@ namespace Rock.Client
 
         /// <summary />
         public int Order { get; set; }
+
+        /// <summary />
+        public bool RequiresApprovals { get; set; }
+
+        /// <summary />
+        public bool SendApprovalNotifications { get; set; }
 
         /// <summary />
         public bool UserSelectable { get; set; }
@@ -105,17 +138,28 @@ namespace Rock.Client
         public void CopyPropertiesFrom( NoteType source )
         {
             this.Id = source.Id;
-            this.CssClass = source.CssClass;
+            this.AllowsAttachments = source.AllowsAttachments;
+            this.AllowsReplies = source.AllowsReplies;
+            this.AllowsWatching = source.AllowsWatching;
+            this.ApprovalUrlTemplate = source.ApprovalUrlTemplate;
+            this.AutoWatchAuthors = source.AutoWatchAuthors;
+            this.BackgroundColor = source.BackgroundColor;
+            this.BinaryFileTypeId = source.BinaryFileTypeId;
+            this.BorderColor = source.BorderColor;
             this.EntityTypeId = source.EntityTypeId;
             this.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             this.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            this.FontColor = source.FontColor;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;
             this.IsSystem = source.IsSystem;
+            this.MaxReplyDepth = source.MaxReplyDepth;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Order = source.Order;
+            this.RequiresApprovals = source.RequiresApprovals;
+            this.SendApprovalNotifications = source.SendApprovalNotifications;
             this.UserSelectable = source.UserSelectable;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -132,6 +176,9 @@ namespace Rock.Client
     /// </summary>
     public partial class NoteType : NoteTypeEntity
     {
+        /// <summary />
+        public BinaryFileType BinaryFileType { get; set; }
+
         /// <summary />
         public EntityType EntityType { get; set; }
 

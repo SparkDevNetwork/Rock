@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Workflow;
 
 namespace Rock.Web.UI.Controls

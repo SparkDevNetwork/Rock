@@ -31,7 +31,7 @@
                 <div id="pnlEditDetails" runat="server">
 
                     <Rock:ModalAlert ID="maContentChannelWarning" runat="server" />
-                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                     <div class="row">
@@ -67,7 +67,7 @@
                             <Rock:RockCheckBox ID="cbRequireApproval" runat="server" Label="Items Require Approval" Text="Yes" />
 
                             <Rock:RockCheckBox ID="cbIndexChannel" runat="server" Label="Indexing Enabled" Text="Yes" />
-                            <Rock:RockTextBox ID="tbContentChannelItemPublishingPoint" runat="server" Label="Content Channel Item Publishing Point" Help="Lava template to the URL that the content item can be viewed (Keys: 'Id', 'Title', 'ContentChannelId')." />
+                            <Rock:RockTextBox ID="tbContentChannelItemPublishingPoint" runat="server" Label="Content Channel Item Publishing Point" Help="Lava template to the URL that the content item can be viewed (Keys: 'Id', 'Title', 'ContentChannelId', 'Slug')." />
 
                             <div class="row">
                                 <div class="col-xs-6">

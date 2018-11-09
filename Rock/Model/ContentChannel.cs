@@ -22,9 +22,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
+using Rock.Transactions;
 
 namespace Rock.Model
 {
@@ -34,7 +36,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentChannel" )]
     [DataContract]
-    public partial class ContentChannel : Model<ContentChannel>
+    public partial class ContentChannel : Model<ContentChannel>, ICacheable
     {
         #region Entity Properties
 
@@ -296,45 +298,47 @@ namespace Rock.Model
         #region Methods
 
         #region Index Methods
+
         /// <summary>
-        /// Deletes the indexed documents by content channel.
+        /// Queues ContentChannelItems of this ContentChannel to have their indexes deleted
         /// </summary>
         /// <param name="contentChannelId">The content channel identifier.</param>
         public void DeleteIndexedDocumentsByContentChannel( int contentChannelId )
         {
-            var contentItems = new ContentChannelItemService( new RockContext() ).Queryable()
-                                    .Where( i => i.ContentChannelId == contentChannelId );
+            var contentChannelItemIds = new ContentChannelItemService( new RockContext() ).Queryable()
+                                    .Where( i => i.ContentChannelId == contentChannelId ).Select( a => a.Id ).ToList();
 
-            foreach ( var item in contentItems )
+            int contentChannelItemEntityTypeId = EntityTypeCache.GetId<Rock.Model.ContentChannelItem>().Value;
+
+            foreach ( var contentChannelItemId in contentChannelItemIds )
             {
-                var indexableChannelItem = ContentChannelItemIndex.LoadByModel( item );
-                IndexContainer.DeleteDocument<ContentChannelItemIndex>( indexableChannelItem );
+                var transaction = new DeleteIndexEntityTransaction { EntityId = contentChannelItemId, EntityTypeId = contentChannelItemEntityTypeId };
+                transaction.Enqueue();
             }
         }
 
         /// <summary>
-        /// Bulks the index documents by content channel.
+        /// Queues ContentChannelItems of this ContentChannel to have their indexes updated
         /// </summary>
         /// <param name="contentChannelId">The content channel identifier.</param>
         public void BulkIndexDocumentsByContentChannel( int contentChannelId )
         {
-            List<ContentChannelItemIndex> indexableChannelItems = new List<ContentChannelItemIndex>();
-
             // return all approved content channel items that are in content channels that should be indexed
-            RockContext rockContext = new RockContext();
-            var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable()
+            var contentChannelItemIds = new ContentChannelItemService( new RockContext() ).Queryable()
                                             .Where( i =>
                                                 i.ContentChannelId == contentChannelId
-                                                && ( i.ContentChannel.RequiresApproval == false || i.ContentChannel.ContentChannelType.DisableStatus || i.Status == ContentChannelItemStatus.Approved ) );
+                                                && ( i.ContentChannel.RequiresApproval == false || i.ContentChannel.ContentChannelType.DisableStatus || i.Status == ContentChannelItemStatus.Approved ) )
+                                            .Select( a => a.Id ).ToList();
 
-            foreach ( var item in contentChannelItems )
+            int contentChannelItemEntityTypeId = EntityTypeCache.GetId<Rock.Model.ContentChannelItem>().Value;
+
+            foreach ( var contentChannelItemId in contentChannelItemIds )
             {
-                var indexableChannelItem = ContentChannelItemIndex.LoadByModel( item );
-                indexableChannelItems.Add( indexableChannelItem );
+                var transaction = new IndexEntityTransaction { EntityId = contentChannelItemId, EntityTypeId = contentChannelItemEntityTypeId };
+                transaction.Enqueue();
             }
-
-            IndexContainer.IndexDocuments( indexableChannelItems );
         }
+
         #endregion
 
         /// <summary>
@@ -388,6 +392,29 @@ namespace Rock.Model
         {
             return this.Name;
         }
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return ContentChannelCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            ContentChannelCache.UpdateCachedEntity( this.Id, entityState );
+        }
+
         #endregion
     }
 

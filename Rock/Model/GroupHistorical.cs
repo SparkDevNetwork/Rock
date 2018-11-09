@@ -100,6 +100,15 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the Group Status Id.  DefinedType depends on this group's <see cref="Rock.Model.GroupType.GroupStatusDefinedType"/>
+        /// </summary>
+        /// <value>
+        /// The status value identifier.
+        /// </value>
+        [DataMember]
+        public int? StatusValueId { get; set; }
+
+        /// <summary>
         /// If this group's group type supports a schedule for a group, this is the schedule id for that group at this point in history
         /// NOTE: If this Group has Schedules at it's Locations, those will be in GroupLocationHistorical.GroupLocationHistoricalSchedules
         /// </summary>
@@ -292,6 +301,7 @@ namespace Rock.Model
                 ScheduleName = group.Schedule?.ToString(),
                 ScheduleModifiedDateTime = group.Schedule?.ModifiedDateTime,
                 Description = group.Description,
+                StatusValueId = group.StatusValueId,
                 IsArchived = group.IsArchived,
                 ArchivedDateTime = group.ArchivedDateTime,
                 ArchivedByPersonAliasId = group.ArchivedByPersonAliasId,

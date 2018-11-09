@@ -14,8 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Linq;
-
+using Rock.Web.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -47,7 +48,6 @@ namespace Rock.Model
                 noteType.Name = name;
                 noteType.UserSelectable = true;
                 noteType.IconCssClass = string.Empty;
-                noteType.CssClass = string.Empty;
                 noteType.Order = noteTypes.Any() ? noteTypes.Max( t => t.Order ) + 1 : 0;
 
                 // Create a new context/service so that save does not affect calling method's context
@@ -81,5 +81,67 @@ namespace Rock.Model
                     ( n.EntityTypeQualifierValue ?? "" ) == ( entityTypeQualifierValue ?? "" ) );
         }
 
+        /// <summary>
+        /// Gets the approvers.
+        /// </summary>
+        /// <param name="noteTypeId">The note type identifier.</param>
+        /// <returns></returns>
+        public List<Person> GetApprovers( int noteTypeId )
+        {
+            var rockContext = this.Context as RockContext;
+            var groupMemberService = new GroupMemberService( rockContext );
+
+            var noteType = NoteTypeCache.Get( noteTypeId );
+            int? noteTypeEntityTypeId = EntityTypeCache.GetId<NoteType>();
+            if ( !noteTypeEntityTypeId.HasValue || noteType == null )
+            {
+                // shouldn't happen
+                return new List<Person>();
+            }
+
+            var authService = new AuthService( rockContext );
+
+            var approvalAuths = authService.GetAuths( noteTypeEntityTypeId.Value, noteTypeId, Rock.Security.Authorization.APPROVE );
+
+            // Get a list of all PersonIds that are allowed that are included in the Auths
+            // Then, when we get a list of all the allowed people that are in the auth as a specific Person or part of a Role (Group), we'll run all those people thru NoteType.IsAuthorized
+            // That way, we don't have to figure out all the logic of Allow/Deny based on Order, etc
+            List<int> authPersonIdListAll = new List<int>();
+            var approvalAuthsAllowed = approvalAuths.Where( a => a.AllowOrDeny == "A" ).ToList();
+
+            foreach ( var approvalAuth in approvalAuthsAllowed )
+            {
+                var personId = approvalAuth.PersonAlias?.PersonId;
+                if ( personId.HasValue )
+                {
+                    authPersonIdListAll.Add( personId.Value );
+                }
+                else if ( approvalAuth.GroupId.HasValue )
+                {
+                    var groupPersonIdsQuery = groupMemberService.Queryable().Where( a => a.GroupId == approvalAuth.GroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active && a.Person.IsDeceased == false ).Select( a => a.PersonId );
+                    authPersonIdListAll.AddRange( groupPersonIdsQuery.ToList() );
+                }
+                else if ( approvalAuth.SpecialRole != SpecialRole.None )
+                {
+                    // Not Supported: Get people that belong to Special Roles like AllUsers, AllAuthenticatedUser, and AllUnAuthenicatedUsers doesn't really make sense, so ignore it
+                }
+            }
+
+            authPersonIdListAll = authPersonIdListAll.Distinct().ToList();
+
+            var authPersonsAll = new PersonService( rockContext ).Queryable().Where( a => authPersonIdListAll.Contains( a.Id ) ).ToList();
+            var authorizedApprovers = new List<Person>();
+
+            // now that we have a list of all people that have at least one Allow auth, run them thru noteType.IsAuthorized, to get rid of people that would have been excluded due to a Deny auth
+            foreach ( var authPerson in authPersonsAll )
+            {
+                if ( noteType.IsAuthorized( Rock.Security.Authorization.APPROVE, authPerson ) )
+                {
+                    authorizedApprovers.Add( authPerson );
+                }
+            }
+
+            return authorizedApprovers;
+        }
     }
 }

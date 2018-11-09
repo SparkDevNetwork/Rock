@@ -22,7 +22,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 using System.Linq;
-using Rock.Cache;
+using Rock.Web.Cache;
+using System.Data.Entity;
 
 namespace Rock.Field.Types
 {
@@ -63,13 +64,14 @@ namespace Rock.Field.Types
             var ddl = new RockDropDownList();
             controls.Add( ddl );
             ddl.AutoPostBack = true;
+            ddl.EnhanceForLongLists = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
             ddl.Label = "Content Channel";
             ddl.Help = "Content Channel to select items from, if left blank any content channel's item can be selected.";
 
             ddl.Items.Add( new ListItem() );
             
-            var contentChannels = CacheContentChannel.All().OrderBy( a => a.Name ).ToList();
+            var contentChannels = ContentChannelCache.All().OrderBy( a => a.Name ).ToList();
             contentChannels.ForEach( g =>
                 ddl.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) )
             );
@@ -133,10 +135,13 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( value, out guid ) )
             {
-                var contentChannelItem = new ContentChannelItemService( new RockContext() ).Get( guid );
-                if ( contentChannelItem != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = contentChannelItem.Title;
+                    var contentChannelItem = new ContentChannelItemService( rockContext ).GetNoTracking( guid );
+                    if ( contentChannelItem != null )
+                    {
+                        formattedValue = contentChannelItem.Title;
+                    }
                 }
             }
 
@@ -188,11 +193,11 @@ namespace Rock.Field.Types
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        itemGuid = new ContentChannelItemService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        itemGuid = new ContentChannelItemService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
 
-                return itemGuid?.ToString();
+                return itemGuid?.ToString() ?? string.Empty;
             }
 
             return null;

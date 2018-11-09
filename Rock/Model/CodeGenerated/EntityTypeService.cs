@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<AssetStorageProvider>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, AssetStorageProvider.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Attribute>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Attribute.FriendlyTypeName );
@@ -85,6 +91,12 @@ namespace Rock.Model
             if ( new Service<Category>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Category.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<CommunicationRecipient>( Context ).Queryable().Any( a => a.MediumEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, CommunicationRecipient.FriendlyTypeName );
                 return false;
             }  
  

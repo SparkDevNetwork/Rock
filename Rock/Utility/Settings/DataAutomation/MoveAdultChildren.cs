@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,10 +15,12 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Linq;
+using Rock.Web.Cache;
 
 namespace Rock.Utility.Settings.DataAutomation
 {
- 
+
     /// <summary>
     /// Settings for controlling how adult children are moved to their own family
     /// </summary>
@@ -32,7 +34,14 @@ namespace Rock.Utility.Settings.DataAutomation
             AdultAge = 18;
             UseSameHomeAddress = true;
             UseSameHomePhone = true;
+            IsOnlyMoveGraduated = false;
             MaximumRecords = 200;
+            var knownRelGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+            if ( knownRelGroupType != null )
+            {
+                SiblingRelationshipId = knownRelGroupType.Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_SIBLING.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
+                ParentRelationshipId = knownRelGroupType.Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_PARENT.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
+            }
             WorkflowTypeIds = new List<int>();
         }
 
@@ -43,6 +52,15 @@ namespace Rock.Utility.Settings.DataAutomation
         ///   <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
         public bool IsEnabled { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to only move children who have graduated
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the data automation job should only move graduated children; otherwise, if children should be moved regardless of if they've graduated <c>false</c>.
+        /// </value>
+        public bool IsOnlyMoveGraduated { get; set; }
 
         /// <summary>
         /// Gets or sets the adult age.

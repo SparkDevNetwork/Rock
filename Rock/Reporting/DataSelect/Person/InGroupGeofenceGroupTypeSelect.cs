@@ -25,7 +25,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
@@ -131,7 +131,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            var groupType = CacheGroupType.Get( selection.AsGuid() );
+            var groupType = GroupTypeCache.Get( selection.AsGuid() );
             int groupTypeId = ( groupType != null ) ? groupType.Id : 0;
 
             var qry = new PersonService( context ).Queryable()
@@ -190,7 +190,7 @@ namespace Rock.Reporting.DataSelect.Person
             var groupTypeId = ( controls[0] as GroupTypePicker ).SelectedValueAsId().GetValueOrDefault(0);
             if (groupTypeId > 0)
             {
-                var groupType = CacheGroupType.Get(groupTypeId);
+                var groupType = GroupTypeCache.Get(groupTypeId);
                 return (groupType == null) ? string.Empty : groupType.Guid.ToString();
             }
 

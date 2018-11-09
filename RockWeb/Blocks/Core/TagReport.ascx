@@ -13,7 +13,7 @@
                 </div>
                 <div class="panel-body">
                     <div class="grid grid-panel">
-                        <Rock:Grid ID="gReport" runat="server" AllowSorting="true" RowItemText="Tag" EmptyDataText="No Results" OnRowSelected="gReport_RowSelected" >
+                        <Rock:Grid ID="gReport" runat="server" AllowSorting="true" RowItemText="Tag" EmptyDataText="No Results" OnRowSelected="gReport_RowSelected" ExportSource="ColumnOutput" ExportTitleName="Tagged People" >
                             <Columns>
                                 <Rock:SelectField Visible="false" />
                                 <Rock:RockBoundField DataField="Id" Visible="false" />

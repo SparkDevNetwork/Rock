@@ -22,7 +22,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -79,8 +79,8 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 ChannelAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
-            }            
-            
+            }
+
             json = ViewState["ItemAttributesState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
@@ -227,6 +227,7 @@ namespace RockWeb.Blocks.Cms
                 contentType.DisablePriority = cbDisablePriority.Checked;
                 contentType.DisableContentField = cbDisableContentField.Checked;
                 contentType.DisableStatus = cbDisableStatus.Checked;
+                contentType.ShowInChannelList = cbShowInChannelList.Checked;
 
                 if ( !Page.IsValid || !contentType.IsValid )
                 {
@@ -243,11 +244,11 @@ namespace RockWeb.Blocks.Cms
                     contentType = contentTypeService.Get( contentType.Guid );
 
                     // Save the Channel Attributes
-                    int entityTypeId = CacheEntityType.Get( typeof( ContentChannel ) ).Id;
+                    int entityTypeId = EntityTypeCache.Get( typeof( ContentChannel ) ).Id;
                     SaveAttributes( contentType.Id, entityTypeId, ChannelAttributesState, rockContext );
 
                     // Save the Item Attributes
-                    entityTypeId = CacheEntityType.Get( typeof( ContentChannelItem ) ).Id;
+                    entityTypeId = EntityTypeCache.Get( typeof( ContentChannelItem ) ).Id;
                     SaveAttributes( contentType.Id, entityTypeId, ItemAttributesState, rockContext );
 
                 } );
@@ -314,7 +315,7 @@ namespace RockWeb.Blocks.Cms
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtChannelAttributes.ActionTitle = ActionTitle.Add( tbName.Text + " Channel Attribute" );
 
             }
@@ -467,7 +468,7 @@ namespace RockWeb.Blocks.Cms
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                attribute.FieldTypeId = CacheFieldType.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtItemAttributes.ActionTitle = ActionTitle.Add( tbName.Text + " Item Attribute" );
 
             }
@@ -647,7 +648,7 @@ namespace RockWeb.Blocks.Cms
             cbDisablePriority.Checked = contentType.DisablePriority;
             cbDisableContentField.Checked = contentType.DisableContentField;
             cbDisableStatus.Checked = contentType.DisableStatus;
-
+            cbShowInChannelList.Checked = contentType.ShowInChannelList;
             // load attribute data 
             ChannelAttributesState = new List<Attribute>();
             ItemAttributesState = new List<Attribute>();
@@ -662,6 +663,11 @@ namespace RockWeb.Blocks.Cms
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .ToList()
                 .ForEach( a => ChannelAttributesState.Add( a ) );
+            
+            // Set order 
+            int newOrder = 0;
+            ChannelAttributesState.ForEach( a => a.Order = newOrder++ );
+                
             BindChannelAttributesGrid();
 
             attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId, true ).AsQueryable()
@@ -670,6 +676,11 @@ namespace RockWeb.Blocks.Cms
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .ToList()
                 .ForEach( a => ItemAttributesState.Add( a ) );
+                
+            // Set order 
+            newOrder = 0;
+            ItemAttributesState.ForEach( a => a.Order = newOrder++ );
+            
             BindItemAttributesGrid();
         }
 
@@ -694,7 +705,6 @@ namespace RockWeb.Blocks.Cms
             var selectedAttributeGuids = attributes.Select( a => a.Guid );
             foreach ( var attr in existingAttributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
-                Rock.Cache.CacheAttribute.Remove( attr.Id );
                 attributeService.Delete( attr );
             }
 
@@ -705,8 +715,6 @@ namespace RockWeb.Blocks.Cms
             {
                 Rock.Attribute.Helper.SaveAttributeEdits( attr, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
-
-            CacheAttribute.RemoveEntityAttributes();
         }
 
         /// <summary>

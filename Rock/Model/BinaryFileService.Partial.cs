@@ -20,7 +20,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {

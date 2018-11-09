@@ -14,7 +14,7 @@
                         <ContentTemplate>
 
                             <Rock:RockDropDownList ID="ddlSettingPowerBiAccount" runat="server" Label="Power BI Account" AutoPostBack="true" OnSelectedIndexChanged="ddlSettingPowerBiAccount_SelectedIndexChanged" />
-                            <Rock:RockDropDownList ID="ddlSettingPowerBiGroup" runat="server" Label="Power BI Group"  AutoPostBack="true" OnSelectedIndexChanged="ddlSettingPowerBiGroup_SelectedIndexChanged"/>
+                            <Rock:RockDropDownList ID="ddlSettingPowerBiGroup" runat="server" Label="Power BI Workspace"  AutoPostBack="true" OnSelectedIndexChanged="ddlSettingPowerBiGroup_SelectedIndexChanged"/>
                             <Rock:RockDropDownList ID="ddlSettingPowerBiReportUrl" runat="server" Label="Report" />
 
                         </ContentTemplate>
@@ -36,7 +36,6 @@
             </div>
 
             <script type="text/javascript">
-                $(document).ready(function () {
                     Sys.Application.add_load(function () {
                         iframe = document.getElementById('report-iframe');
                         if (!iframe) {
@@ -87,7 +86,6 @@
                             }
                         });
                     });
-                });
 
                 // post the auth token to the iFrame. 
                 function postActionLoadReport() {

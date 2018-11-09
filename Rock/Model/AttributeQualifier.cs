@@ -20,6 +20,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -32,7 +33,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AttributeQualifier" )]
     [DataContract]
-    public partial class AttributeQualifier : Entity<AttributeQualifier>
+    public partial class AttributeQualifier : Entity<AttributeQualifier>, ICacheable
     {
         #region Entity Properties
 
@@ -90,6 +91,31 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         public virtual Attribute Attribute { get; set; }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            // doesn't apply
+            return null;
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            // AttributeCache has QualifierValues that could get stale if AttributeQualifier is modified
+            AttributeCache.UpdateCachedEntity( this.AttributeId, System.Data.Entity.EntityState.Modified );
+        }
 
         #endregion
 

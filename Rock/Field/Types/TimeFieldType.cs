@@ -110,9 +110,11 @@ namespace Rock.Field.Types
             {
                 if ( picker.SelectedTime.HasValue )
                 {
-                    // serialize the time using culture-insensitive "constant" fromat
+                    // serialize the time using culture-insensitive "constant" format
                     return picker.SelectedTime.Value.ToString( "c" );
                 }
+
+                return string.Empty;
             }
 
             return null;

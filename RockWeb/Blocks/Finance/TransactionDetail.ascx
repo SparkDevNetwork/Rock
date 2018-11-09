@@ -16,7 +16,8 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-credit-card"></i>Financial Transaction
+                    <i class="fa fa-credit-card"></i>
+                    Financial Transaction
                 </h1>
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlBatchId" LabelType="Info" runat="server" />
@@ -29,7 +30,7 @@
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
                 <div id="pnlEditDetails" runat="server">
-                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" Visible="false" />
 
                     <div class="row">
@@ -71,10 +72,10 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockDropDownList ID="ddlTransactionType" runat="server" Label="Transaction Type" Required="true" />
-                            <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source" />
-                            <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
-                            <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
+                            <Rock:DefinedValuePicker ID="dvpTransactionType" runat="server" Label="Transaction Type" Required="true" />
+                            <Rock:DefinedValuePicker ID="dvpSourceType" runat="server" Label="Source" />
+                            <Rock:DefinedValuePicker ID="dvpCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" Required="true" />
+                            <Rock:DefinedValuePicker ID="dvpCreditCardType" runat="server" Label="Credit Card Type" />
                             <Rock:DynamicPlaceholder ID="phPaymentAttributeEdits" runat="server" />
                             <Rock:FinancialGatewayPicker ID="gpPaymentGateway" runat="server" Label="Payment Gateway" ShowAll="true" />
                             <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"
@@ -83,7 +84,7 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsRefund" runat="server" Label="This is a Refund" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbIsRefund_CheckedChanged" />
-                            <Rock:RockDropDownList ID="ddlRefundReasonEdit" runat="server" Label="Refund Reason" Visible="false" />
+                            <Rock:DefinedValuePicker ID="dvpRefundReasonEdit" runat="server" Label="Refund Reason" Visible="false" />
                             <Rock:RockTextBox ID="tbRefundSummaryEdit" runat="server" Label="Refund Reason Summary" TextMode="MultiLine" Rows="3" Visible="false" />
                             <h4>Images</h4>
                             <asp:DataList ID="dlImages" runat="server" RepeatDirection="Horizontal" RepeatColumns="2" OnItemDataBound="dlImages_ItemDataBound">
@@ -226,7 +227,7 @@
 
         <Rock:ModalDialog ID="mdAccount" runat="server" Title="Account" OnSaveClick="mdAccount_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Account">
             <Content>
-                <asp:ValidationSummary ID="valSummaryAccount" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="Account" />
+                <asp:ValidationSummary ID="valSummaryAccount" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Account" />
                 <asp:HiddenField ID="hfAccountGuid" runat="server" />
                 <div class="row">
                     <div class="col-md-6">
@@ -245,14 +246,14 @@
 
         <Rock:ModalDialog ID="mdRefund" runat="server" Title="Refund" OnSaveClick="mdRefund_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Refund">
             <Content>
-                <asp:ValidationSummary ID="valSummaryRefund" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" ValidationGroup="Refund" />
+                <asp:ValidationSummary ID="valSummaryRefund" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Refund" />
                 <Rock:NotificationBox ID="nbRefundError" runat="server" NotificationBoxType="Danger" Visible="false" />
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:CurrencyBox ID="tbRefundAmount" runat="server" Label="Amount" Required="true" ValidationGroup="Refund" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlRefundReason" runat="server" Label="Reason" Required="true" ValidationGroup="Refund" />
+                        <Rock:DefinedValuePicker ID="dvpRefundReason" runat="server" Label="Reason" Required="true" ValidationGroup="Refund" />
                     </div>
                 </div>
                 <div class="row">

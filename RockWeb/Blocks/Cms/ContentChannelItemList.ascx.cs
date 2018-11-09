@@ -25,7 +25,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using System.Collections.Generic;
 using System.Web.UI.WebControls;
 
@@ -168,7 +168,7 @@ namespace RockWeb.Blocks.Cms
                 gItems.Actions.AddClick += gItems_Add;
                 gItems.GridRebind += gItems_GridRebind;
                 gItems.GridReorder += GItems_GridReorder;
-                gItems.EntityTypeId = CacheEntityType.Get<ContentChannelItem>().Id;
+                gItems.EntityTypeId = EntityTypeCache.Get<ContentChannelItem>().Id;
 
                 AddAttributeColumns();
 
@@ -185,7 +185,7 @@ namespace RockWeb.Blocks.Cms
                 var securityField = new SecurityField();
                 gItems.Columns.Add( securityField );
                 securityField.TitleField = "Title";
-                securityField.EntityTypeId = CacheEntityType.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
                 
                 var deleteField = new DeleteField();
                 gItems.Columns.Add( deleteField );
@@ -316,8 +316,8 @@ namespace RockWeb.Blocks.Cms
                 {
                     contentItemAssociationService.DeleteRange( contentItem.ChildItems );
                     contentItemAssociationService.DeleteRange( contentItem.ParentItems );
-                    contentItemService.Delete( contentItem );
                     contentItemSlugService.DeleteRange( contentItem.ContentChannelItemSlugs );
+                    contentItemService.Delete( contentItem );
                     rockContext.SaveChanges();
                 } );
             }
@@ -391,7 +391,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             // Add attribute columns
-            int entityTypeId = CacheEntityType.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
+            int entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
             foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
@@ -414,7 +414,7 @@ namespace RockWeb.Blocks.Cms
                     boundField.AttributeId = attribute.Id;
                     boundField.HeaderText = attribute.Name;
 
-                    var attributeCache = Rock.Cache.CacheAttribute.Get( attribute.Id );
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                     if ( attributeCache != null )
                     {
                         boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;

@@ -20,12 +20,13 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Quartz;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -59,6 +60,7 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public void Execute( IJobExecutionContext context )
         {
+            var errors = new List<string>();
             var rockContext = new RockContext();
 
             JobDataMap dataMap = context.JobDetail.JobDataMap;
@@ -181,7 +183,7 @@ namespace Rock.Jobs
                             }
                             else
                             {
-                                // all parents in the heirarchy
+                                // all parents in the hierarchy
                                 var parentIds = groupService.GetAllAncestorIds( group.Id );
                                 parentLeaders = parentLeaders.Where( m => parentIds.Contains( m.GroupId ) );
                             }
@@ -197,12 +199,17 @@ namespace Rock.Jobs
                     }
                 }
 
-                // send out notificatons
+                // send out notifications
                 int recipients = 0;
                 var notificationRecipients = _notificationList.GroupBy( p => p.Person.Id ).ToList();
                 foreach ( var recipientId in notificationRecipients )
                 {
                     var recipient = _notificationList.Where( n => n.Person.Id == recipientId.Key ).Select( n => n.Person ).FirstOrDefault();
+
+                    if ( !recipient.IsEmailActive || recipient.Email.IsNullOrWhiteSpace() || recipient.EmailPreference == EmailPreference.DoNotEmail )
+                    {
+                        continue;
+                    }
 
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                     mergeFields.Add( "Person", recipient );
@@ -215,7 +222,9 @@ namespace Rock.Jobs
 
                     var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
                     emailMessage.AddRecipient( new RecipientData( recipient.Email, mergeFields ) );
-                    emailMessage.Send();
+                    var emailErrors = new List<string>();
+                    emailMessage.Send( out emailErrors );
+                    errors.AddRange( emailErrors );
 
                     recipients++;
                 }
@@ -236,11 +245,26 @@ namespace Rock.Jobs
                         emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
                         recipients++;
                     }
-                    emailMessage.Send();
+                    var emailErrors = new List<string>();
+                    emailMessage.Send(out emailErrors);
+                    errors.AddRange( emailErrors );
                 }
 
                 context.Result = string.Format( "{0} requirement notification {1} sent", recipients, "email".PluralizeIf( recipients != 1 ) );
 
+                if ( errors.Any() )
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine();
+                    sb.Append( string.Format( "{0} Errors: ", errors.Count() ) );
+                    errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
+                    string errorMessage = sb.ToString();
+                    context.Result += errorMessage;
+                    var exception = new Exception( errorMessage );
+                    HttpContext context2 = HttpContext.Current;
+                    ExceptionLogService.LogException( exception, context2 );
+                    throw exception;
+                }
             }
             else
             {

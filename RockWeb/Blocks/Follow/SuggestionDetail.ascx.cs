@@ -26,7 +26,7 @@ using Rock.Follow;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -263,8 +263,8 @@ namespace RockWeb.Blocks.Follow
                 SuggestionEntityTypeId = followingSuggestion.EntityTypeId;
                 if ( followingSuggestion.EntityTypeId.HasValue )
                 {
-                    var SuggestionComponentEntityType = CacheEntityType.Get( followingSuggestion.EntityTypeId.Value );
-                    var SuggestionEntityType = CacheEntityType.Get( "Rock.Model.FollowingSuggestionType" );
+                    var SuggestionComponentEntityType = EntityTypeCache.Get( followingSuggestion.EntityTypeId.Value );
+                    var SuggestionEntityType = EntityTypeCache.Get( "Rock.Model.FollowingSuggestionType" );
                     if ( SuggestionComponentEntityType != null && SuggestionEntityType != null )
                     {
                         using ( var rockContext = new RockContext() )

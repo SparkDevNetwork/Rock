@@ -125,7 +125,7 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Discounteds the cost.
+        /// Discounts the cost.
         /// </summary>
         /// <param name="discountPercent">The discount percent.</param>
         /// <returns></returns>

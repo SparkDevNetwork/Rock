@@ -24,11 +24,10 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -159,7 +158,7 @@ namespace RockWeb.Blocks.Core
                         int? categoryId = e.Value.AsIntegerOrNull();
                         if ( categoryId.HasValue )
                         {
-                            var category = CacheCategory.Get( categoryId.Value );
+                            var category = CategoryCache.Get( categoryId.Value );
                             if ( category != null )
                             {
                                 e.Value = category.Name;
@@ -181,7 +180,7 @@ namespace RockWeb.Blocks.Core
                         int personId = int.MinValue;
                         if ( int.TryParse( e.Value, out personId ) )
                         {
-                            var person = new PersonService( new RockContext() ).Get( personId );
+                            var person = new PersonService( new RockContext() ).GetNoTracking( personId );
                             if ( person != null )
                             {
                                 e.Value = person.FullName;
@@ -249,14 +248,41 @@ namespace RockWeb.Blocks.Core
         {
             if ( _entity != null )
             {
-                var entityTypeCache = CacheEntityType.Get( _entity.GetType(), false );
+                var entityTypeCache = EntityTypeCache.Get( _entity.GetType(), false );
                 if ( entityTypeCache != null )
                 {
                     var rockContext = new RockContext();
                     var historyService = new HistoryService( rockContext );
-                    var qry = historyService.Queryable().Include( a => a.CreatedByPersonAlias.Person )
+                    IQueryable<History> qry;
+
+                    if ( entityTypeCache.Id == EntityTypeCache.GetId<Rock.Model.Person>() )
+                    {
+                        // If this is History for a Person, also include any History for any of their Families
+                        int? groupEntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>();
+                        List<int> familyIds = ( _entity as Person ).GetFamilies().Select( a => a.Id ).ToList();
+
+                        qry = historyService.Queryable().Include( a => a.CreatedByPersonAlias.Person )
+                        .Where( h =>
+                            ( h.EntityTypeId == entityTypeCache.Id && h.EntityId == _entity.Id )
+                            || ( h.EntityTypeId == groupEntityTypeId && familyIds.Contains( h.EntityId ) ) );
+
+                        // as per issue #1594, if relatedEntityType is an Attribute then check View Authorization
+                        var attributeEntity = EntityTypeCache.Get( Rock.SystemGuid.EntityType.ATTRIBUTE.AsGuid() );
+                        var personAttributes = new AttributeService( rockContext ).GetByEntityTypeId( entityTypeCache.Id ).ToList().Select( a => AttributeCache.Get( a ) );
+                        var allowedAttributeIds = personAttributes.Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ).Select( a => a.Id ).ToList();
+                        qry = qry.Where( a => ( a.RelatedEntityTypeId == attributeEntity.Id ) ? allowedAttributeIds.Contains( a.RelatedEntityId.Value ) : true );                            
+                    }
+                    else
+                    {
+                        qry = historyService.Queryable().Include( a => a.CreatedByPersonAlias.Person )
                         .Where( h =>
                             ( h.EntityTypeId == entityTypeCache.Id && h.EntityId == _entity.Id ) );
+                    }
+
+                    var historyCategories = new CategoryService( rockContext ).GetByEntityTypeId( EntityTypeCache.GetId<Rock.Model.History>() ).ToList().Select( a => CategoryCache.Get( a ) );
+                    var allowedCategoryIds = historyCategories.Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ).Select( a => a.Id ).ToList();
+
+                    qry = qry.Where( a => allowedCategoryIds.Contains( a.CategoryId ) );
 
                     int? categoryId = gfSettings.GetUserPreference( "Category" ).AsIntegerOrNull();
                     if ( categoryId.HasValue )
@@ -302,7 +328,7 @@ namespace RockWeb.Blocks.Core
                     }
 
                     gHistory.DataSource = historySummaryList;
-                    gHistory.EntityTypeId = CacheEntityType.Get<History>().Id;
+                    gHistory.EntityTypeId = EntityTypeCache.Get<History>().Id;
                     gHistory.DataBind();
                 }
             }

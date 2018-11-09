@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,7 +32,7 @@ using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -373,7 +373,7 @@ namespace RockWeb.Blocks.Event
                                 t.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
                                 t.AttributeId.HasValue ) ) )
                     {
-                        var attribute = CacheAttribute.Get( field.AttributeId.Value );
+                        var attribute = AttributeCache.Get( field.AttributeId.Value );
                         if ( attribute != null )
                         {
                             string originalValue = registrant.GetAttributeValue( attribute.Key );
@@ -436,11 +436,11 @@ namespace RockWeb.Blocks.Event
                                 if ( groupMember == null )
                                 {
                                     groupMember = new GroupMember();
-                                    groupMemberService.Add( groupMember );
                                     groupMember.GroupId = reloadedRegistrant.Registration.Group.Id;
                                     groupMember.PersonId = ppPerson.PersonId.Value;
                                     groupMember.GroupRoleId = groupRoleId.Value;
                                     groupMember.GroupMemberStatus = TemplateState.GroupMemberStatus;
+                                    groupMemberService.Add( groupMember );
 
                                     newRockContext.SaveChanges();
 
@@ -452,12 +452,15 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 // Record this to the Person's and Registrants Notes and History...
-                                reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.PersonAlias.Person, this.CurrentPersonAliasId, previousRegistrantPersonIds );
 
                                 reloadedRegistrant.GroupMemberId = groupMember.Id;
-                                newRockContext.SaveChanges();
                             }
                         }
+                        if (reloadedRegistrant.Registration.FirstName.IsNotNullOrWhiteSpace() && reloadedRegistrant.Registration.LastName.IsNotNullOrWhiteSpace())
+                        {
+                            reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.FirstName, reloadedRegistrant.Registration.LastName, this.CurrentPersonAliasId, previousRegistrantPersonIds );
+                        }
+                        newRockContext.SaveChanges();
                     }
                 }
 
@@ -493,7 +496,7 @@ namespace RockWeb.Blocks.Event
         protected void lbWizardTemplate_Click( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
-            var pageCache = CachePage.Get( RockPage.PageId );
+            var pageCache = PageCache.Get( RockPage.PageId );
             if ( pageCache != null && 
                 pageCache.ParentPage != null && 
                 pageCache.ParentPage.ParentPage != null &&
@@ -512,7 +515,7 @@ namespace RockWeb.Blocks.Event
         protected void lbWizardInstance_Click( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
-            var pageCache = CachePage.Get( RockPage.PageId );
+            var pageCache = PageCache.Get( RockPage.PageId );
             if ( pageCache != null &&
                 pageCache.ParentPage != null &&
                 pageCache.ParentPage.ParentPage != null )
@@ -717,34 +720,37 @@ namespace RockWeb.Blocks.Event
         {
             phFields.Controls.Clear();
 
-            if ( TemplateState.Forms != null )
+            if ( TemplateState.Forms == null )
             {
-                foreach ( var form in TemplateState.Forms.OrderBy( f => f.Order ) )
+                return;
+            }
+
+            foreach ( var form in TemplateState.Forms.OrderBy( f => f.Order ) )
+            {
+                if ( form.Fields == null )
                 {
-                    if ( form.Fields != null )
+                    continue;
+                }
+
+                foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
+                {
+                    if ( field.FieldSource == RegistrationFieldSource.RegistrationAttribute )
                     {
-                        foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
+                        if ( field.AttributeId.HasValue )
                         {
-                            if ( field.FieldSource == RegistrationFieldSource.RegistrationAttribute )
+                            object fieldValue = RegistrantState.FieldValues.ContainsKey( field.Id ) ? RegistrantState.FieldValues[field.Id].FieldValue : null;
+                            string value = setValues && fieldValue != null ? fieldValue.ToString() : null;
+
+                            var attribute = AttributeCache.Get( field.AttributeId.Value );
+
+                            if ( ( setValues && value == null ) || (value.IsNullOrWhiteSpace() && field.IsRequired == true ) )
                             {
-                                object fieldValue = null;
-                                if ( RegistrantState.FieldValues.ContainsKey( field.Id ) )
-                                {
-                                    fieldValue = RegistrantState.FieldValues[field.Id].FieldValue;
-                                }
-
-                                if ( field.AttributeId.HasValue )
-                                {
-                                    var attribute = CacheAttribute.Get( field.AttributeId.Value );
-                                    string value = string.Empty;
-                                    if ( setValues && fieldValue != null )
-                                    {
-                                        value = fieldValue.ToString();
-                                    }
-
-                                    attribute.AddControl( phFields.Controls, value, BlockValidationGroup, setValues, true, field.IsRequired, null, string.Empty );
-                                }
+                                // If the value was not set already, or if it is required and currently empty then use the default
+                                // Intentionally leaving the possibility of saving an empty string as the value for non-required fields.
+                                value = attribute.DefaultValue;
                             }
+
+                            attribute.AddControl( phFields.Controls, value, BlockValidationGroup, setValues, true, field.IsRequired, null, field.Attribute.Description );
                         }
                     }
                 }
@@ -802,7 +808,7 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Builds the DropDownList contorl for multi-option single-quantity fees.
+        /// Builds the DropDownList control for multi-option single-quantity fees.
         /// </summary>
         /// <param name="fee">The fee.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
@@ -1006,7 +1012,7 @@ namespace RockWeb.Blocks.Event
 
                                 if ( field.AttributeId.HasValue )
                                 {
-                                    var attribute = CacheAttribute.Get( field.AttributeId.Value );
+                                    var attribute = AttributeCache.Get( field.AttributeId.Value );
                                     string fieldId = "attribute_field_" + attribute.Id.ToString();
 
                                     Control control = phFields.FindControl( fieldId );

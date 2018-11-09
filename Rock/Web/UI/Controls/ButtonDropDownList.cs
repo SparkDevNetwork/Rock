@@ -386,7 +386,7 @@ namespace Rock.Web.UI.Controls
                 postbackControlId = this.ID;
             }
 
-            // Caching $(this) into $el for efficiency purposes, and supressing the default
+            // Caching $(this) into $el for efficiency purposes, and suppressing the default
             // <a> click event to prevent the browser from appending '#' to the URL and 
             // causing the window to jump to the top of the.
             const string scriptFormat = @"
