@@ -283,7 +283,6 @@ namespace RockWeb.Blocks.Administration
             sb.Append( "<tr><th>Route</th><th>Pages</th></tr>" );
             foreach ( var routeItem in routes )
             {
-                //sb.AppendFormat( "{0}<br />", routeItem.Key );
                 var pages = pageService.GetListByIds( routeItem.Value.PageIds() );
 
                 sb.AppendFormat( "<tr><td>{0}</td><td>{1}</td></tr>", routeItem.Key, string.Join( "<br />", pages.Select( n => n.InternalName + " (" + n.Id.ToString() + ")" ).ToArray() ) );
@@ -388,27 +387,26 @@ namespace RockWeb.Blocks.Administration
         // method from Rick Strahl http://weblog.west-wind.com/posts/2006/Oct/08/Recycling-an-ASPNET-Application-from-within
         private bool RestartWebApplication()
         {
-            bool Error = false;
+            bool error = false;
             try
             {
-                // *** This requires full trust so this will fail
-                // *** in many scenarios
+                // *** This requires full trust so this will fail in many scenarios
                 HttpRuntime.UnloadAppDomain();
             }
             catch
             {
-                Error = true;
+                error = true;
             }
 
-            if ( !Error )
+            if ( !error )
                 return true;
 
             // *** Couldn't unload with Runtime - let's try modifying web.config
-            string ConfigPath = HttpContext.Current.Request.PhysicalApplicationPath + "\\web.config";
+            string configPath = HttpContext.Current.Request.PhysicalApplicationPath + "\\web.config";
 
             try
             {
-                File.SetLastWriteTimeUtc( ConfigPath, DateTime.UtcNow );
+                File.SetLastWriteTimeUtc( configPath, DateTime.UtcNow );
             }
             catch
             {
@@ -424,5 +422,30 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
+
+        /// <summary>
+        /// Handles the Click event of the btnRegisterRoutes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnRegisterRoutes_Click( object sender, EventArgs e )
+        {
+            try
+            {
+                PageRouteService.RegisterRoutes();
+            }
+            catch ( Exception ex )
+            {
+                nbMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
+                nbMessage.Visible = true;
+                nbMessage.Text = "The following error occurred when attempting to refresh routes: " + ex.Message;
+                return;
+            }
+
+            nbMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Success;
+            nbMessage.Visible = true;
+            nbMessage.Title = "Refresh Routes";
+            nbMessage.Text = "<p>Routing table refreshed successfully</p>";
+        }
     }
 }
