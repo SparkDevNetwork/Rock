@@ -397,13 +397,16 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control-group js-date-picker-container" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
                 if (IsCurrentDateOffset)
                 {
                     // set this.Attributes["disabled"] instead of this.Enabled so that our child controls don't get disabled
                     this.Attributes["disabled"] = "true";
 
                     // set textbox val to something instead of empty string so that validation doesn't complain
-                    this.Text = "current";
+                    this.Text = "Current";
                     _nbDayOffset.Style[HtmlTextWriterStyle.Display] = "";
                 }
                 else
@@ -416,8 +419,18 @@ namespace Rock.Web.UI.Controls
 
             if ( DisplayCurrentOption )
             {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbCurrent.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag(); // form-row
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _nbDayOffset.RenderControl( writer );
+                writer.RenderEndTag();
+
                 writer.RenderEndTag();
             }
         }
