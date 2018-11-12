@@ -13,16 +13,14 @@
       {
         var self = this;
 
-        $('#component-section-backgroundcolor-1,#component-section-backgroundcolor-2,#component-section-backgroundcolor-3').colorpicker().on('changeColor', function ()
+        $('#component-section-backgroundcolor-1,#component-section-backgroundcolor-2,#component-section-backgroundcolor-3').colorpicker().on('changeColor', function (ev)
         {
           self.setBackgroundColor(this);
         });
 
 
-        $('.js-component-section-padding-input').on('change', function (e)
+        $('.js-component-section-padding-input').on('input', function (e)
         {
-          // just keep the numeric portion in case they included alpha chars
-          $(this).val(parseFloat($(this).val()) || '');
           self.setPadding();
         });
 
@@ -50,10 +48,21 @@
           var columnNumber = index + 1;
           $('#component-section-backgroundcolor-' + columnNumber).colorpicker('setValue', $columnTd.css('backgroundColor'));
 
-          $('#component-section-padding-top-' + columnNumber).val(parseFloat(columnEl.style['padding-top']) || '');
-          $('#component-section-padding-left-' + columnNumber).val(parseFloat(columnEl.style['padding-left']) || '');
-          $('#component-section-padding-right-' + columnNumber).val(parseFloat(columnEl.style['padding-right']) || '');
-          $('#component-section-padding-bottom-' + columnNumber).val(parseFloat(columnEl.style['padding-bottom']) || '');
+          var padTop = parseFloat(columnEl.style['padding-top']) || '';
+          var padLeft = parseFloat(columnEl.style['padding-left']) || '';
+          var padRight = parseFloat(columnEl.style['padding-right']) || '';
+          var padBottom = parseFloat(columnEl.style['padding-bottom']) || '';
+
+          if(padTop !== '' && padTop == padBottom && padLeft == padRight && padTop == padLeft ) {
+            var inputGroup = $('#component-section-padding-top-1').closest('.margin-input-group');
+            inputGroup.addClass('locked');
+            Rock.controls.emailEditor.handleMarginLock();
+          }
+
+          $('#component-section-padding-top-' + columnNumber).val(padTop);
+          $('#component-section-padding-left-' + columnNumber).val(padLeft);
+          $('#component-section-padding-right-' + columnNumber).val(padRight);
+          $('#component-section-padding-bottom-' + columnNumber).val(padBottom);
         });
 
       },
@@ -80,6 +89,7 @@
           if (inputEl.id == colorPickerInputId)
           {
             var $columnTd = $($dropzones[index]).closest('td');
+            var colorAlpha = $('#' + colorPickerInputId).data('colorpicker').color.value.a;
             var color = $('#' + colorPickerInputId).colorpicker('getValue');
             $columnTd.css('backgroundColor', color);
           }

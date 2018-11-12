@@ -12,7 +12,7 @@
         if (!options.id) {
           throw 'id is required';
         }
-        
+
         var self = this;
         self.editorToolbarContent = $('#'+ options.id).find('.js-editor-toolbar-content')[0];
         self.editorToolbarStructure = $('#' + options.id).find('.js-editor-toolbar-structure')[0];
@@ -109,7 +109,7 @@
       initializeEventHandlers: function ()
       {
         var self = this;
-        // wire up the clicking on components to call the 
+        // wire up the clicking on components to call the
         // parent window to handle the properties editing
         $(document).on('click', '.component', function (e)
         {
@@ -133,7 +133,7 @@
           $('.js-editor-content-toolbar').hide();
           $('.js-editor-structure-toolbar').show();
         });
-        
+
 
         // add autoscroll capabilities during dragging
         $(window).mousemove(function (e) {

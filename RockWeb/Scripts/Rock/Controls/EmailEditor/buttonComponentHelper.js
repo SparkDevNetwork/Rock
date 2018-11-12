@@ -41,7 +41,7 @@
             self.setButtonWidth();
         });
 
-        $('#component-button-buttonalign').on('change', function (e)
+        $('input[type=radio][name=component-button-align]').on('change', function (e)
         {
           self.setButtonAlign();
         });
@@ -61,8 +61,11 @@
           self.setButtonFontSize();
         });
 
-        $('#component-button-buttonpadding').on('input', function (e)
+        $('#component-button-padding-top,#component-button-padding-left,#component-button-padding-right,#component-button-padding-bottom').on('change', function (e)
         {
+          // just keep the numeric portion in case they included alpha chars
+          $(this).val(parseFloat($(this).val()) || '');
+
           self.setButtonPadding();
         });
       },
@@ -77,11 +80,13 @@
         var buttonAlign = $buttonComponent.find('.button-innerwrap').attr('align');
         var buttonFont = $buttonComponent.find('.button-link').css("font-family");
         var buttonFontWeight = $buttonComponent.find('.button-link')[0].style['font-weight'];
-        var buttonFontSize = $buttonComponent.find('.button-link').css("font-size");
+        var buttonFontSize = parseFloat($buttonComponent.find('.button-link').css("font-size"));
         var buttonPadding = $buttonComponent.find('.button-content')[0].style['padding'];
+        var buttonObject = $buttonComponent.find('.button-content')[0];
 
         $('#component-button-buttontext').val(buttonText);
         $('#component-button-buttonurl').val(buttonUrl);
+
         $('#component-button-buttonbackgroundcolor').colorpicker('setValue', buttonBackgroundColor);
         $('#component-button-buttonfontcolor').colorpicker('setValue', buttonFontColor);
 
@@ -103,12 +108,18 @@
             $('#component-button-buttonfixedwidth').val(buttonWidth);
         }
 
-        $('#component-button-buttonalign').val(buttonAlign);
+        $('.alignment').find('.btn').removeClass('active');
+        $('#component-button-align-' + buttonAlign).prop("checked", true ).parent().addClass('active');
 
         $('#component-button-buttonfont').val(buttonFont);
         $('#component-button-buttonfontweight').val(buttonFontWeight);
         $('#component-button-buttonfontsize').val(buttonFontSize);
         $('#component-button-buttonpadding').val(buttonPadding);
+
+        $('#component-button-padding-top').val(parseFloat(buttonObject.style['padding-top']) || '');
+        $('#component-button-padding-left').val(parseFloat(buttonObject.style['padding-left']) || '');
+        $('#component-button-padding-right').val(parseFloat(buttonObject.style['padding-right']) || '');
+        $('#component-button-padding-bottom').val(parseFloat(buttonObject.style['padding-bottom']) || '');
       },
       setButtonText: function ()
       {
@@ -153,7 +164,7 @@
       },
       setButtonAlign: function ()
       {
-        var selectValue = $('#component-button-buttonalign').val();
+        var selectValue = $('input[name="component-button-align"]:checked').val();
         Rock.controls.emailEditor.$currentButtonComponent.find('.button-innerwrap')
                     .attr('align', selectValue)
                     .css('text-align', selectValue);
@@ -175,8 +186,11 @@
       },
       setButtonPadding: function ()
       {
-        var text = $('#component-button-buttonpadding').val()
-        Rock.controls.emailEditor.$currentButtonComponent.find('.button-content').css('padding', text);
+        Rock.controls.emailEditor.$currentButtonComponent.find('.button-content')
+            .css('padding-top', Rock.controls.util.getValueAsPixels($('#component-button-padding-top').val()))
+            .css('padding-left', Rock.controls.util.getValueAsPixels($('#component-button-padding-left').val()))
+            .css('padding-right', Rock.controls.util.getValueAsPixels($('#component-button-padding-right').val()))
+            .css('padding-bottom', Rock.controls.util.getValueAsPixels($('#component-button-padding-bottom').val()));
       }
 
     }

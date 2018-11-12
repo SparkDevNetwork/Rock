@@ -218,7 +218,7 @@
 
                         </div>
                     </div>
-                    <div class="emaileditor-wrapper margin-t-md">
+                    <div class="emaileditor-wrapper">
                         <section id="emaileditor">
 			                <div id="emaileditor-designer">
 				                <iframe id="ifEmailDesigner" name="emaileditor-iframe" class="emaileditor-iframe js-emaileditor-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
@@ -276,32 +276,32 @@
 
                                         <div class="row">
                                             <div class="col-md-6">
-                                                <div class="form-group">
-									                <label for="component-text-padding-top">Padding Top</label>
-                                                    <div class="input-group input-width-md">
-								                        <input class="form-control" id="component-text-padding-top" type="number"><span class="input-group-addon">px</span>
-							                        </div>
-								                </div>
-                                                <div class="form-group">
-									                <label for="component-text-padding-left">Padding Left</label>
-									                <div class="input-group input-width-md">
-								                        <input class="form-control" id="component-text-padding-left" type="number"><span class="input-group-addon">px</span>
-							                        </div>
-								                </div>
+                                                    <div class="form-group">
+                                                        <label>Padding</label>
+                                                        <div class="margin-input-group">
+                                                            <div class="margin-input-cell">
+                                                                <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-top" id="component-text-padding-top">
+                                                                <label for="component-text-padding-top">Top</label>
+                                                            </div>
+                                                            <div class="margin-input-cell">
+                                                                <input type="number" min="0" placeholder="0" class="form-control  margin-input-padding-bottom" id="component-text-padding-bottom">
+                                                                <label for="component-text-padding-bottom">Bottom</label>
+                                                            </div>
+                                                            <div class="margin-input-cell">
+                                                                <input type="number" min="0" placeholder="0" class="form-control  margin-input-padding-left" id="component-text-padding-left">
+                                                                <label for="component-text-padding-left">Left</label>
+                                                            </div>
+                                                            <div class="margin-input-cell">
+                                                                <input type="number" min="0" placeholder="0" class="form-control  margin-input-padding-right" id="component-text-padding-right">
+                                                                <label for="component-text-padding-right">Right</label>
+                                                            </div>
+                                                            <a class="margin-input-lock"><i class="fa fa-unlock"></i></a>
+                                                        </div>
+                                                    </div>
+
                                             </div>
                                             <div class="col-md-6">
-                                                <div class="form-group">
-									                <label for="component-text-padding-bottom">Padding Bottom</label>
-									                <div class="input-group input-width-md">
-								                        <input class="form-control" id="component-text-padding-bottom" type="number"><span class="input-group-addon">px</span>
-							                        </div>
-								                </div>
-                                                <div class="form-group">
-									                <label for="component-text-padding-right">Padding Right</label>
-									                <div class="input-group input-width-md">
-								                        <input class="form-control" id="component-text-padding-right" type="number"><span class="input-group-addon">px</span>
-							                        </div>
-								                </div>
+
                                             </div>
                                         </div>
 					                </div>
@@ -351,18 +351,6 @@
                                                         <input class="form-control" id="component-image-imagewidth" type="number"><span class="input-group-addon">px</span>
                                                     </div>
                                                 </div>
-                                                <div class="form-group">
-									                <label for="component-image-margin-top">Margin Top</label>
-                                                    <div class="input-group input-width-md">
-								                        <input class="form-control" id="component-image-margin-top" type="number"><span class="input-group-addon">px</span>
-							                        </div>
-								                </div>
-                                                <div class="form-group">
-									                <label for="component-image-margin-left">Margin Left</label>
-									                <div class="input-group input-width-md">
-								                        <input class="form-control" id="component-image-margin-left" type="number"><span class="input-group-addon">px</span>
-							                        </div>
-								                </div>
 							                </div>
 							                <div class="col-md-6">
                                                 <div class="form-group">
@@ -371,136 +359,131 @@
                                                         <input class="form-control" id="component-image-imageheight" type="number"><span class="input-group-addon">px</span>
                                                     </div>
                                                 </div>
-                                                <div class="form-group">
-									                <label for="component-image-margin-bottom">Margin Bottom</label>
-									                <div class="input-group input-width-md">
-								                        <input class="form-control" id="component-image-margin-bottom" type="number"><span class="input-group-addon">px</span>
-							                        </div>
-								                </div>
-                                                <div class="form-group">
-									                <label for="component-image-margin-right">Margin Right</label>
-									                <div class="input-group input-width-md">
-								                        <input class="form-control" id="component-image-margin-right" type="number"><span class="input-group-addon">px</span>
-							                        </div>
-								                </div>
+
 							                </div>
 						                </div>
 
                                         <div class="row">
-                                            <div class="col-md-6">
+                                        <div class="col-md-12">
                                                 <div class="form-group">
-                                                    <label for="component-image-link">Link</label>
-                                                    <input type="url" id="component-image-link" class="form-control" />
-                                                </div>
+									                <label>Margin</label>
+                                                    <div class="margin-input-group">
+                                                        <div class="margin-input-cell">
+								                            <input type="number" min="0" placeholder="0" class="form-control  margin-input-padding-top" id="component-image-margin-top">
+                                                            <label for="component-image-margin-top">Top</label>
+                                                        </div>
+                                                        <div class="margin-input-cell">
+                                                            <input type="number" min="0" placeholder="0" class="form-control  margin-input-padding-bottom" id="component-image-margin-bottom">
+                                                            <label for="component-image-margin-bottom">Bottom</label>
+                                                        </div>
+                                                        <div class="margin-input-cell">
+                                                            <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-left" id="component-image-margin-left">
+                                                            <label for="component-image-margin-left">Left</label>
+                                                        </div>
+                                                        <div class="margin-input-cell">
+                                                            <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-right" id="component-image-margin-right">
+                                                            <label for="component-image-margin-right">Right</label>
+                                                        </div>
+                                                        <a class="margin-input-lock"><i class="fa fa-unlock"></i></a>
+							                        </div>
+								                </div>
+                                        </div>
+                                        </div>
+
+
+                                        <div class="form-group">
+                                            <label for="component-image-link">Link</label>
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><i class="fa fa-link"></i></span>
+                                                <input type="url" id="component-image-link" class="form-control" />
                                             </div>
                                         </div>
+
 					                </div>
 
                                     <!-- Section Properties -->
                                     <div class="propertypanel propertypanel-section" data-component="section" style="display: none;">
 						                <h4 class="propertypanel-title">Section</h4>
+
                                         <div id="component-section-column1">
                                             <span class="label label-default">Column 1</span>
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-									                    <label for="component-section-backgroundcolor-1">Background Color</label>
-									                    <div id="component-section-backgroundcolor-1" class="input-group colorpicker-component">
-										                    <input type="text" value="" class="form-control" />
-										                    <span class="input-group-addon"><i></i></span>
-									                    </div>
-								                    </div>
-                                                </div>
-                                                <div class="col-md-6">
+
+                                            <div class="form-group">
+                                                <label for="component-section-backgroundcolor-1">Background Color</label>
+                                                <div id="component-section-backgroundcolor-1" class="input-group colorpicker-component">
+                                                    <input type="text" value="" class="form-control" />
+                                                    <span class="input-group-addon"><i></i></span>
                                                 </div>
                                             </div>
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-									                    <label for="component-section-padding-top-1">Padding Top</label>
-                                                        <div class="input-group input-width-md">
-								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-top-1" type="number"><span class="input-group-addon">px</span>
-							                            </div>
-								                    </div>
-                                                    <div class="form-group">
-									                    <label for="component-section-padding-left-1">Padding Left</label>
-									                    <div class="input-group input-width-md">
-								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-left-1" type="number"><span class="input-group-addon">px</span>
-							                            </div>
-								                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-									                    <label for="component-section-padding-bottom-1">Padding Bottom</label>
-									                    <div class="input-group input-width-md">
-								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-bottom-1" type="number"><span class="input-group-addon">px</span>
-							                            </div>
-								                    </div>
-                                                    <div class="form-group">
-									                    <label for="component-section-padding-right-1">Padding Right</label>
-									                    <div class="input-group input-width-md">
-								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-right-1" type="number"><span class="input-group-addon">px</span>
-							                            </div>
-								                    </div>
+
+                                            <div class="form-group">
+                                                <label>Padding</label>
+                                                <div class="margin-input-group">
+                                                    <div class="margin-input-cell">
+                                                        <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-top js-component-section-padding-input" id="component-section-padding-top-1">
+                                                        <label for="component-section-padding-top-1">Top</label>
+                                                    </div>
+                                                    <div class="margin-input-cell">
+                                                        <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-bottom js-component-section-padding-input" id="component-section-padding-bottom-1">
+                                                        <label for="component-section-padding-bottom-1">Bottom</label>
+                                                    </div>
+                                                    <div class="margin-input-cell">
+                                                        <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-left js-component-section-padding-input" id="component-section-padding-left-1">
+                                                        <label for="component-section-padding-left-1">Left</label>
+                                                    </div>
+                                                    <div class="margin-input-cell">
+                                                        <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-right js-component-section-padding-input" id="component-section-padding-right-1">
+                                                        <label for="component-section-padding-right-1">Right</label>
+                                                    </div>
+                                                    <a class="margin-input-lock"><i class="fa fa-unlock"></i></a>
                                                 </div>
                                             </div>
+
                                         </div>
 
                                         <div id="component-section-column2">
                                             <hr class="margin-all-sm">
                                             <span class="label label-default">Column 2</span>
 
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-									                    <label for="component-section-backgroundcolor-2">Background Color</label>
-									                    <div id="component-section-backgroundcolor-2" class="input-group colorpicker-component">
-										                    <input type="text" value="" class="form-control" />
-										                    <span class="input-group-addon"><i></i></span>
-									                    </div>
-								                    </div>
-                                                </div>
-                                                <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="component-section-backgroundcolor-2">Background Color</label>
+                                                <div id="component-section-backgroundcolor-2" class="input-group colorpicker-component">
+                                                    <input type="text" value="" class="form-control" />
+                                                    <span class="input-group-addon"><i></i></span>
                                                 </div>
                                             </div>
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-									                    <label for="component-section-padding-top-2">Padding Top</label>
-                                                        <div class="input-group input-width-md">
-								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-top-2" type="number"><span class="input-group-addon">px</span>
-							                            </div>
-								                    </div>
-                                                    <div class="form-group">
-									                    <label for="component-section-padding-left-2">Padding Left</label>
-									                    <div class="input-group input-width-md">
-								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-left-2" type="number"><span class="input-group-addon">px</span>
-							                            </div>
-								                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-									                    <label for="component-section-padding-bottom-2">Padding Bottom</label>
-									                    <div class="input-group input-width-md">
-								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-bottom-2" type="number"><span class="input-group-addon">px</span>
-							                            </div>
-								                    </div>
-                                                    <div class="form-group">
-									                    <label for="component-section-padding-right-2">Padding Right</label>
-									                    <div class="input-group input-width-md">
-								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-right-2" type="number"><span class="input-group-addon">px</span>
-							                            </div>
-								                    </div>
+
+
+                                            <div class="form-group">
+                                                <label>Padding</label>
+                                                <div class="margin-input-group">
+                                                    <div class="margin-input-cell">
+                                                        <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-top js-component-section-padding-input" id="component-section-padding-top-2">
+                                                        <label for="component-section-padding-top-2">Top</label>
+                                                    </div>
+                                                    <div class="margin-input-cell">
+                                                        <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-bottom js-component-section-padding-input" id="component-section-padding-bottom-2">
+                                                        <label for="component-section-padding-bottom-2">Bottom</label>
+                                                    </div>
+                                                    <div class="margin-input-cell">
+                                                        <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-left js-component-section-padding-input" id="component-section-padding-left-2">
+                                                        <label for="component-section-padding-left-2">Left</label>
+                                                    </div>
+                                                    <div class="margin-input-cell">
+                                                        <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-right js-component-section-padding-input" id="component-section-padding-right-2">
+                                                        <label for="component-section-padding-right-2">Right</label>
+                                                    </div>
+                                                    <a class="margin-input-lock"><i class="fa fa-unlock"></i></a>
                                                 </div>
                                             </div>
+
                                         </div>
 
                                         <div id="component-section-column3">
                                             <hr class="margin-all-sm">
                                             <span class="label label-default">Column 3</span>
 
-                                            <div class="row">
-                                                <div class="col-md-6">
+
                                                     <div class="form-group">
 									                    <label for="component-section-backgroundcolor-3">Background Color</label>
 									                    <div id="component-section-backgroundcolor-3" class="input-group colorpicker-component">
@@ -508,40 +491,31 @@
 										                    <span class="input-group-addon"><i></i></span>
 									                    </div>
 								                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-md-6">
+
+
                                                     <div class="form-group">
-									                    <label for="component-section-padding-top-3">Padding Top</label>
-                                                        <div class="input-group input-width-md">
-								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-top-3" type="number"><span class="input-group-addon">px</span>
-							                            </div>
-								                    </div>
-                                                    <div class="form-group">
-									                    <label for="component-section-padding-left-3">Padding Left</label>
-									                    <div class="input-group input-width-md">
-								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-left-3" type="number"><span class="input-group-addon">px</span>
-							                            </div>
-								                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-									                    <label for="component-section-padding-bottom-3">Padding Bottom</label>
-									                    <div class="input-group input-width-md">
-								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-bottom-3" type="number"><span class="input-group-addon">px</span>
-							                            </div>
-								                    </div>
-                                                    <div class="form-group">
-									                    <label for="component-section-padding-right-3">Padding Right</label>
-									                    <div class="input-group input-width-md">
-								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-right-3" type="number"><span class="input-group-addon">px</span>
-							                            </div>
-								                    </div>
-                                                </div>
-                                            </div>
+                                                        <label>Padding</label>
+                                                        <div class="margin-input-group">
+                                                            <div class="margin-input-cell">
+                                                                <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-top js-component-section-padding-input" id="component-section-padding-top-3">
+                                                                <label for="component-section-padding-top-3">Top</label>
+                                                            </div>
+                                                            <div class="margin-input-cell">
+                                                                <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-bottom js-component-section-padding-input" id="component-section-padding-bottom-3">
+                                                                <label for="component-section-padding-bottom-3">Bottom</label>
+                                                            </div>
+                                                            <div class="margin-input-cell">
+                                                                <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-left js-component-section-padding-input" id="component-section-padding-left-3">
+                                                                <label for="component-section-padding-left-3">Left</label>
+                                                            </div>
+                                                            <div class="margin-input-cell">
+                                                                <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-right js-component-section-padding-input" id="component-section-padding-right-3">
+                                                                <label for="component-section-padding-right-3">Right</label>
+                                                            </div>
+                                                            <a class="margin-input-lock"><i class="fa fa-unlock"></i></a>
+                                                        </div>
+                                                    </div>
+
                                         </div>
 					                </div>
 
@@ -592,31 +566,31 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="component-code-margin-top">Margin Top</label>
-                                                    <div class="input-group input-width-md">
-                                                        <input class="form-control" id="component-code-margin-top" type="number"><span class="input-group-addon">px</span>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="component-code-margin-left">Margin Left</label>
-                                                    <div class="input-group input-width-md">
-                                                        <input class="form-control" id="component-code-margin-left" type="number"><span class="input-group-addon">px</span>
-                                                    </div>
-                                                </div>
+									                <label>Margin</label>
+                                                    <div class="margin-input-group">
+                                                        <div class="margin-input-cell">
+								                            <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-top" id="component-code-margin-top">
+                                                            <label for="component-code-margin-top">Top</label>
+                                                        </div>
+                                                        <div class="margin-input-cell">
+                                                        <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-bottom" id="component-code-margin-bottom">
+                                                        <label for="component-code-margin-bottom">Bottom</label>
+                                                        </div>
+                                                        <div class="margin-input-cell">
+                                                        <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-left" id="component-code-margin-left">
+                                                        <label for="component-code-margin-left">Left</label>
+                                                        </div>
+                                                        <div class="margin-input-cell">
+                                                        <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-right" id="component-code-margin-right">
+                                                        <label for="component-code-margin-right">Right</label>
+                                                        </div>
+                                                        <a class="margin-input-lock"><i class="fa fa-unlock"></i></a>
+							                        </div>
+								                </div>
+
                                             </div>
                                             <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="component-code-margin-bottom">Margin Bottom</label>
-                                                    <div class="input-group input-width-md">
-                                                        <input class="form-control" id="component-code-margin-bottom" type="number"><span class="input-group-addon">px</span>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="component-code-margin-right">Margin Right</label>
-                                                    <div class="input-group input-width-md">
-                                                        <input class="form-control" id="component-code-margin-right" type="number"><span class="input-group-addon">px</span>
-                                                    </div>
-                                                </div>
+
                                             </div>
                                         </div>
 					                </div>
@@ -626,38 +600,42 @@
 						                <h4 class="propertypanel-title">Button</h4>
 						                <hr />
 						                <div class="form-group">
-							                <label for="component-button-buttontext">Button Text</label>
+							                <label for="component-button-buttontext">Text</label>
 							                <input class="form-control" id="component-button-buttontext" placeholder="Press Me">
 						                </div>
 
 						                <div class="form-group">
-							                <label for="component-button-buttonurl">Url</label>
+							                <label for="component-button-buttonurl">Link</label>
 							                <div class="input-group">
 								                <span class="input-group-addon"><i class="fa fa-link"></i></span>
 								                <input class="form-control" id="component-button-buttonurl" placeholder="http://yourlink.com">
 							                </div>
 						                </div>
 
-						                <div class="row">
-							                <div class="col-md-6">
-								                <div class="form-group">
-									                <label for="component-button-buttonbackgroundcolor">Background Color</label>
-									                <div id="component-button-buttonbackgroundcolor" class="input-group colorpicker-component">
-										                <input type="text" value="" class="form-control" />
-										                <span class="input-group-addon"><i></i></span>
-									                </div>
-								                </div>
-							                </div>
-							                <div class="col-md-6">
-								                <div class="form-group">
-									                <label for="component-button-buttonfontcolor">Font Color</label>
-									                <div id="component-button-buttonfontcolor" class="input-group colorpicker-component">
-										                <input type="text" value="" class="form-control" />
-										                <span class="input-group-addon"><i></i></span>
-									                </div>
-								                </div>
-							                </div>
-						                </div>
+
+                                        <div class="form-group">
+                                            <label for="component-button-buttonfontsize">Font Size</label>
+                                            <div class="input-group">
+                                            <input class="form-control" id="component-button-buttonfontsize">
+                                            <span class="input-group-addon">px</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="component-button-buttonfontcolor">Color</label>
+                                            <div id="component-button-buttonfontcolor" class="input-group colorpicker-component">
+                                                <input type="text" value="" class="form-control" />
+                                                <span class="input-group-addon"><i></i></span>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="component-button-buttonbackgroundcolor">Background Color</label>
+                                            <div id="component-button-buttonbackgroundcolor" class="input-group colorpicker-component">
+                                                <input type="text" value="" class="form-control" />
+                                                <span class="input-group-addon"><i></i></span>
+                                            </div>
+                                        </div>
 
 						                <div class="row">
 							                <div class="col-md-6">
@@ -675,14 +653,19 @@
 								                </div>
 							                </div>
 							                <div class="col-md-6">
-								                <div class="form-group">
-									                <label for="component-button-buttonalign">Align</label>
-									                <select id="component-button-buttonalign" class="form-control">
-										                <option value="left">Left</option>
-										                <option value="center">Center</option>
-										                <option value="right">Right</option>
-									                </select>
-								                </div>
+
+                                                <label>Alignment</label>
+                                                <div class="btn-group alignment" data-toggle="buttons">
+                                                    <label class="btn btn-default">
+                                                        <input type="radio" name="component-button-align" value="left" id="component-button-align-left" autocomplete="off" checked><i class="fa fa-align-left"></i>
+                                                    </label>
+                                                    <label class="btn btn-default">
+                                                        <input type="radio" name="component-button-align"value="center" id="component-button-align-center" autocomplete="off"><i class="fa fa-align-center"></i>
+                                                    </label>
+                                                    <label class="btn btn-default">
+                                                        <input type="radio" name="component-button-align" value="right" id="component-button-align-right" autocomplete="off"><i class="fa fa-align-right"></i>
+                                                    </label>
+                                                    </div>
 							                </div>
 						                </div>
 
@@ -705,41 +688,47 @@
 							                </select>
 						                </div>
 
-						                <div class="row">
-							                <div class="col-md-6">
-								                <div class="form-group">
-									                <label for="component-button-buttonfontweight">Font Weight</label>
-									                <select id="component-button-buttonfontweight" class="form-control">
-										                <option value="normal">Normal</option>
-										                <option value="bold">Bold</option>
-										                <option value="bolder">Bolder</option>
-										                <option value="lighter">Lighter</option>
-									                </select>
-								                </div>
-							                </div>
-							                <div class="col-md-6">
-								                <div class="form-group">
-									                <label for="component-button-buttonfontsize">Font Size</label>
-									                <input class="form-control" id="component-button-buttonfontsize">
-								                </div>
-							                </div>
-						                </div>
 
-						                <div class="row">
-							                <div class="col-md-6">
-								                <div class="form-group">
-									                <label for="component-button-buttonpadding">Button Padding</label>
-									                <input class="form-control" id="component-button-buttonpadding">
-								                </div>
-							                </div>
-							                <div class="col-md-6">
-							                </div>
-						                </div>
+                                        <div class="form-group">
+                                            <label for="component-button-buttonfontweight">Font Weight</label>
+                                            <select id="component-button-buttonfontweight" class="form-control">
+                                                <option value="normal">Normal</option>
+                                                <option value="bold">Bold</option>
+                                                <option value="bolder">Bolder</option>
+                                                <option value="lighter">Lighter</option>
+                                            </select>
+                                        </div>
+
+
+                                        <div class="form-group">
+                                            <label>Padding</label>
+                                            <div class="margin-input-group">
+                                                <div class="margin-input-cell">
+                                                    <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-top" id="component-button-padding-top">
+                                                    <label for="component-button-padding-top">Top</label>
+                                                </div>
+                                                <div class="margin-input-cell">
+                                                    <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-bottom" id="component-button-padding-bottom">
+                                                    <label for="component-button-padding-bottom">Bottom</label>
+                                                </div>
+                                                <div class="margin-input-cell">
+                                                    <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-left" id="component-button-padding-left">
+                                                    <label for="component-button-padding-left">Left</label>
+                                                </div>
+                                                <div class="margin-input-cell">
+                                                    <input type="number" min="0" placeholder="0" class="form-control margin-input-padding-right" id="component-button-padding-right">
+                                                    <label for="component-button-padding-right">Right</label>
+                                                </div>
+                                                <a class="margin-input-lock"><i class="fa fa-unlock"></i></a>
+                                            </div>
+                                        </div>
+
+
 					                </div>
 
                                     <div class="js-propertypanel-actions actions" style="display:none">
                                         <a href="#" class="btn btn-primary" onclick="clearPropertyPane(event); return false;">Complete</a>
-                                        <a href="#" class="btn btn-link" onclick="deleteCurrentComponent(); return false;">Delete</a>
+                                        <a href="#" class="btn btn-delete" onclick="deleteCurrentComponent(); return false;">Delete</a>
                                     </div>
 				                </div>
 
@@ -764,7 +753,7 @@
 				                    <div class="component component-code" data-content="Add your code here..." data-state="template">
 					                    <i class="fa fa-code"></i> <br /> HTML
 				                    </div>
-				                    <div class="component component-button" data-content="<table class='button-outerwrap' border='0' cellpadding='0' cellspacing='0' width='100%' style='min-width:100%;'><tbody><tr><td style='padding-top:0; padding-right:0; padding-bottom:0; padding-left:0;' valign='top' align='center' class='button-innerwrap'><table border='0' cellpadding='0' cellspacing='0' class='button-shell' style='display: inline-table; border-collapse: separate !important; border-radius: 3px; background-color: rgb(43, 170, 223);'><tbody><tr><td align='center' valign='middle' class='button-content' style='font-family: Arial; font-size: 16px; padding: 15px;'><a class='button-link' title='Push Me' href='http://' target='_blank' style='font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: rgb(255, 255, 255);'>Push Me</a></td></tr></tbody></table></td></tr></tbody></table>" data-state="template">
+				                    <div class="component component-button" data-content="<table class='button-outerwrap' border='0' cellpadding='0' cellspacing='0' width='100%' style='min-width:100%;'><tbody><tr><td style='padding-top:0; padding-right:0; padding-bottom:0; padding-left:0;' valign='top' align='center' class='button-innerwrap'><table border='0' cellpadding='0' cellspacing='0' class='button-shell' style='display: inline-table; border-collapse: separate !important; border-radius: 3px; background-color: #2baadf;'><tbody><tr><td align='center' valign='middle' class='button-content' style='font-family: Arial; font-size: 16px; padding: 15px;'><a class='button-link' title='Push Me' href='' target='_blank' style='font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #ffffff;'>Push Me</a></td></tr></tbody></table></td></tr></tbody></table>" data-state="template">
 					                    <i class="fa fa-square-o"></i> <br /> Button
 				                    </div>
 
@@ -1442,6 +1431,9 @@
 			}
 
         </script>
+
+        <!-- Text Component -->
+        <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/emailUtil.js", true)%>' ></script>
 
         <!-- Text Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/textComponentHelper.js", true)%>' ></script>

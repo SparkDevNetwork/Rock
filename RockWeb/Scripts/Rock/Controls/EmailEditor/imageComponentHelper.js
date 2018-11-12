@@ -59,14 +59,14 @@
         $('#component-image-imagewidth').val(imageWidth);
         $('#component-image-imageheight').val(imageHeight);
         $('#component-image-resizemode').val(imageResizeMode);
-        
+
         var imageEl = $imageComponent[0];
 
         $('#component-image-margin-top').val(parseFloat(imageEl.style['margin-top']) || '');
         $('#component-image-margin-left').val(parseFloat(imageEl.style['margin-left']) || '');
         $('#component-image-margin-right').val(parseFloat(imageEl.style['margin-right']) || '');
         $('#component-image-margin-bottom').val(parseFloat(imageEl.style['margin-bottom']) || '');
-        
+
         var $imageLinkInput = $('#component-image-link');
         if ($img.parent().is('a')) {
           $imageLinkInput.val($img.parent().attr('href'));
@@ -144,7 +144,7 @@
                   + '&id=' + binaryFileId
                   + '&fileName=' + Rock.controls.emailEditor.$currentImageComponent.attr('data-image-filename');
         }
-        
+
         var imageWidth = parseInt($('#component-image-imagewidth').val()) || '';
         var imageHeight = parseInt($('#component-image-imageheight').val()) || '';
         var imageResizeMode = $('#component-image-resizemode').val();
@@ -173,5 +173,3 @@
 
   }());
 }(jQuery));
-
-

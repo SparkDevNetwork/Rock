@@ -46,3 +46,102 @@
 @import "rock-components/person-directory.less";       // 42. Person Directory
 @import "rock-components/panel.less";                  // 43. Panel Helpers
 @import "rock-components/chosen.less";                 // 44. Chosen Picker
+
+
+.margin-input-group {
+  display: flex;
+  width: 100%;
+}
+
+.margin-input-cell {
+  text-align: center;
+  position: relative;
+  &:before {
+    content: 'px';
+    position: absolute;
+    right: 6px;
+    font-size: 12px;
+    opacity: .4;
+    top: 12px;
+    pointer-events: none;
+}
+
+  input[type=number] {
+    margin: 0;
+    border-right-width: 0;
+    width: 100%;
+    box-shadow: none;
+    text-align: right;
+    padding-right: 21px;
+
+    &:focus+label {
+      opacity: .8
+    }
+  }
+
+  label {
+    display: block;
+    font-size: .75em;
+    line-height: 1;
+    text-transform: uppercase;
+    margin-top: 2px;
+    opacity: .4;
+    transition: opacity .12s linear .1s;
+  }
+}
+
+.margin-input-lock {
+  padding: 5px 11px;
+  display: block;
+  background: @input-group-addon-bg;
+  border: 1px solid @input-group-addon-border-color;
+  text-align: center;
+  height: @input-height-base;
+}
+
+
+// .main-content {
+//   margin: 0 !important;
+//   top: 0;
+//   bottom: 0;
+//   position: fixed;
+//   left: 80px;
+//   right: 0;
+//   z-index: 2000;
+
+//   #page-content {
+//     min-height: auto;
+//   }
+// }
+
+// .communication-entry-wizard {
+//   position: relative;
+// }
+
+// .main-footer,
+// .page-title {
+//   display: none;
+// }
+
+// .emaileditor-wrapper {
+//   position: absolute;
+//   top: 100px;
+//   bottom: 0;
+//   left: 0;
+//   right:0;
+//   margin: 0;
+//   height: 100%;
+// }
+.emaileditor-wrapper {
+position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0 !important;
+    margin-top: 0 !important;
+    z-index: 2000;
+    height: 100%;
+}
+
+
