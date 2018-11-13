@@ -530,60 +530,85 @@ namespace RockWeb.Blocks.Administration
         protected void masterPage_OnSave( object sender, EventArgs e )
         {
             Page.Validate( BlockValidationGroup );
-            if ( Page.IsValid )
+            if ( !Page.IsValid )
             {
-                var rockContext = new RockContext();
-                var pageService = new PageService( rockContext );
-                var routeService = new PageRouteService( rockContext );
-                var contextService = new PageContextService( rockContext );
+                throw new Exception("Page is not valid");
+            }
 
-                int pageId = hfPageId.Value.AsInteger();
+            var rockContext = new RockContext();
+            var pageService = new PageService( rockContext );
+            var routeService = new PageRouteService( rockContext );
+            var contextService = new PageContextService( rockContext );
 
-                var page = pageService.Get( pageId );
-                if ( page == null )
+            int pageId = hfPageId.Value.AsInteger();
+
+            var page = pageService.Get( pageId );
+            if ( page == null )
+            {
+                page = new Rock.Model.Page();
+                pageService.Add( page );
+            }
+
+            // validate/check for removed routes
+            var editorRoutes = tbPageRoute.Text.SplitDelimitedValues().Distinct();
+            var databasePageRoutes = page.PageRoutes.ToList();
+            var deletedRouteIds = new List<int>();
+            var addedRoutes = new List<string>();
+
+            if ( editorRoutes.Any() )
+            {
+                int? siteId = null;
+                if ( page != null && page.Layout != null )
                 {
-                    page = new Rock.Model.Page();
-                    pageService.Add( page );
+                    siteId = page.Layout.SiteId;
                 }
 
-                // validate/check for removed routes
-                var editorRoutes = tbPageRoute.Text.SplitDelimitedValues().Distinct();
-                var databasePageRoutes = page.PageRoutes.ToList();
-                var deletedRouteIds = new List<int>();
-                var addedRoutes = new List<string>();
-
-                if ( editorRoutes.Any() )
+                // validate for any duplicate routes
+                var duplicateRouteQry = routeService.Queryable()
+                    .Where( r =>
+                        r.PageId != pageId &&
+                        editorRoutes.Contains( r.Route ) );
+                if ( siteId.HasValue )
                 {
-                    int? siteId = null;
-                    if ( page != null && page.Layout != null )
-                    {
-                        siteId = page.Layout.SiteId;
-                    }
-
-                    // validate for any duplicate routes
-                    var duplicateRouteQry = routeService.Queryable()
+                    duplicateRouteQry = duplicateRouteQry
                         .Where( r =>
-                            r.PageId != pageId &&
-                            editorRoutes.Contains( r.Route ) );
-                    if ( siteId.HasValue )
-                    {
-                        duplicateRouteQry = duplicateRouteQry
-                            .Where( r =>
-                                r.Page != null &&
-                                r.Page.Layout != null &&
-                                r.Page.Layout.SiteId == siteId.Value );
-                    }
+                            r.Page != null &&
+                            r.Page.Layout != null &&
+                            r.Page.Layout.SiteId == siteId.Value );
+                }
 
-                    var duplicateRoutes = duplicateRouteQry
-                        .Select( r => r.Route )
-                        .Distinct()
-                        .ToList();
+                var duplicateRoutes = duplicateRouteQry
+                    .Select( r => r.Route )
+                    .Distinct()
+                    .ToList();
 
-                    if ( duplicateRoutes.Any() )
+                if ( duplicateRoutes.Any() )
+                {
+                    // Duplicate routes
+                    nbPageRouteWarning.Title = "Duplicate Route(s)";
+                    nbPageRouteWarning.Text = string.Format( "<p>The page route <strong>{0}</strong>, already exists for another page in the same site. Please choose a different route name.</p>", duplicateRoutes.AsDelimited( "</strong> and <strong>" ) );
+                    nbPageRouteWarning.Dismissable = true;
+                    nbPageRouteWarning.Visible = true;
+                    CurrentTab = "Advanced Settings";
+
+                    rptProperties.DataSource = _tabs;
+                    rptProperties.DataBind();
+                    ShowSelectedPane();
+                    throw new Exception( string.Format( "The page route {0} already exists for another page in the same site.", duplicateRoutes.AsDelimited( " and " ) ) );
+                }
+            }
+
+            // validate if removed routes can be deleted
+            foreach ( var pageRoute in databasePageRoutes )
+            {
+                if ( !editorRoutes.Contains( pageRoute.Route ) )
+                {
+                    // make sure the route can be deleted
+                    string errorMessage;
+                    if ( !routeService.CanDelete( pageRoute, out errorMessage ) )
                     {
-                        // Duplicate routes
-                        nbPageRouteWarning.Title = "Duplicate Route(s)";
-                        nbPageRouteWarning.Text = string.Format( "<p>The page route <strong>{0}</strong>, already exists for another page in the same site. Please choose a different route name.</p>", duplicateRoutes.AsDelimited( "</strong> and <strong>" ) );
+                        nbPageRouteWarning.Text = string.Format( "The page route <strong>{0}</strong>, cannot be removed. {1}", pageRoute.Route, errorMessage );
+                        nbPageRouteWarning.NotificationBoxType = NotificationBoxType.Warning;
                         nbPageRouteWarning.Dismissable = true;
                         nbPageRouteWarning.Visible = true;
                         CurrentTab = "Advanced Settings";
@@ -591,218 +616,150 @@ namespace RockWeb.Blocks.Administration
                         rptProperties.DataSource = _tabs;
                         rptProperties.DataBind();
                         ShowSelectedPane();
-                        return;
+                        throw new Exception( string.Format( "The page route {0} cannot be removed. {1}", pageRoute.Route, errorMessage ) );
                     }
                 }
+            }
 
-                // validate if removed routes can be deleted
-                foreach ( var pageRoute in databasePageRoutes )
+            // take care of deleted routes
+            foreach ( var pageRoute in databasePageRoutes )
+            {
+                if ( !editorRoutes.Contains( pageRoute.Route ) )
                 {
-                    if ( !editorRoutes.Contains( pageRoute.Route ) )
-                    {
-                        // make sure the route can be deleted
-                        string errorMessage;
-                        if ( !routeService.CanDelete( pageRoute, out errorMessage ) )
-                        {
-                            nbPageRouteWarning.Text = string.Format( "The page route <strong>{0}</strong>, cannot be removed. {1}", pageRoute.Route, errorMessage );
-                            nbPageRouteWarning.NotificationBoxType = NotificationBoxType.Warning;
-                            nbPageRouteWarning.Dismissable = true;
-                            nbPageRouteWarning.Visible = true;
-                            CurrentTab = "Advanced Settings";
+                    // if they removed the Route, remove it from the database
+                    page.PageRoutes.Remove( pageRoute );
 
-                            rptProperties.DataSource = _tabs;
-                            rptProperties.DataBind();
-                            ShowSelectedPane();
-                            return;
-                        }
+                    routeService.Delete( pageRoute );
+                    deletedRouteIds.Add( pageRoute.Id );
+                }
+            }
+
+            // take care of added routes
+            foreach ( string route in editorRoutes )
+            {
+                // if they added the Route, add it to the database
+                if ( !databasePageRoutes.Any( a => a.Route == route ) )
+                {
+                    var pageRoute = new PageRoute();
+                    pageRoute.Route = route.TrimStart( new char[] { '/' } );
+                    pageRoute.Guid = Guid.NewGuid();
+                    page.PageRoutes.Add( pageRoute );
+                    addedRoutes.Add( pageRoute.Route );
+                }
+            }
+
+            int parentPageId = ppParentPage.SelectedValueAsInt() ?? 0;
+
+            page.InternalName = tbPageName.Text;
+            page.PageTitle = tbPageTitle.Text;
+            page.BrowserTitle = tbBrowserTitle.Text;
+            page.BodyCssClass = tbBodyCssClass.Text;
+
+            if ( parentPageId != 0 )
+            {
+                page.ParentPageId = parentPageId;
+
+                if ( page.Id == 0 )
+                {
+                    // newly added page, make sure the Order is correct
+                    Rock.Model.Page lastPage = pageService.GetByParentPageId( parentPageId ).OrderByDescending( b => b.Order ).FirstOrDefault();
+                    if ( lastPage != null )
+                    {
+                        page.Order = lastPage.Order + 1;
                     }
                 }
+            }
+            else
+            {
+                page.ParentPageId = null;
+            }
 
-                // take care of deleted routes
-                foreach ( var pageRoute in databasePageRoutes )
+            page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
+
+            int? orphanedIconFileId = null;
+
+            page.IconCssClass = tbIconCssClass.Text;
+
+            page.PageDisplayTitle = cbPageTitle.Checked;
+            page.PageDisplayBreadCrumb = cbPageBreadCrumb.Checked;
+            page.PageDisplayIcon = cbPageIcon.Checked;
+            page.PageDisplayDescription = cbPageDescription.Checked;
+
+            page.DisplayInNavWhen = ddlMenuWhen.SelectedValue.ConvertToEnumOrNull<DisplayInNavWhen>() ?? DisplayInNavWhen.WhenAllowed;
+            page.MenuDisplayDescription = cbMenuDescription.Checked;
+            page.MenuDisplayIcon = cbMenuIcon.Checked;
+            page.MenuDisplayChildPages = cbMenuChildPages.Checked;
+
+            page.BreadCrumbDisplayName = cbBreadCrumbName.Checked;
+            page.BreadCrumbDisplayIcon = cbBreadCrumbIcon.Checked;
+
+            page.RequiresEncryption = cbRequiresEncryption.Checked;
+            page.EnableViewState = cbEnableViewState.Checked;
+            page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
+            page.AllowIndexing = cbAllowIndexing.Checked;
+            page.OutputCacheDuration = tbCacheDuration.Text.AsIntegerOrNull() ?? 0;
+            page.Description = tbDescription.Text;
+            page.HeaderContent = ceHeaderContent.Text;
+
+            // update PageContexts
+            foreach ( var pageContext in page.PageContexts.ToList() )
+            {
+                contextService.Delete( pageContext );
+            }
+
+            page.PageContexts.Clear();
+            foreach ( var control in phContext.Controls )
+            {
+                if ( control is RockTextBox )
                 {
-                    if ( !editorRoutes.Contains( pageRoute.Route ) )
+                    var tbContext = control as RockTextBox;
+                    if ( !string.IsNullOrWhiteSpace( tbContext.Text ) )
                     {
-                        // if they removed the Route, remove it from the database
-                        page.PageRoutes.Remove( pageRoute );
-
-                        routeService.Delete( pageRoute );
-                        deletedRouteIds.Add( pageRoute.Id );
+                        var pageContext = new PageContext();
+                        pageContext.Entity = tbContext.ID.Substring( 8 ).Replace( '_', '.' );
+                        pageContext.IdParameter = tbContext.Text;
+                        page.PageContexts.Add( pageContext );
                     }
                 }
+            }
 
-                // take care of added routes
-                foreach ( string route in editorRoutes )
+            // Page Attributes
+            page.LoadAttributes();
+
+            Rock.Attribute.Helper.GetEditValues( phPageAttributes, page );
+
+            // save page and its routes
+            if ( page.IsValid )
+            {
+                // use WrapTransaction since SaveAttributeValues does its own RockContext.SaveChanges()
+                rockContext.WrapTransaction( () =>
                 {
-                    // if they added the Route, add it to the database
-                    if ( !databasePageRoutes.Any( a => a.Route == route ) )
+                    rockContext.SaveChanges();
+                    page.SaveAttributeValues( rockContext );
+                } );
+
+                // Refresh the RouteTable in IIS if there are any changes
+                if ( addedRoutes.Any() || deletedRouteIds.Any() )
+                {
+                    PageRouteService.RegisterRoutes();
+                }
+                
+                if ( orphanedIconFileId.HasValue )
+                {
+                    BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                    var binaryFile = binaryFileService.Get( orphanedIconFileId.Value );
+                    if ( binaryFile != null )
                     {
-                        var pageRoute = new PageRoute();
-                        pageRoute.Route = route.TrimStart( new char[] { '/' } );
-                        pageRoute.Guid = Guid.NewGuid();
-                        page.PageRoutes.Add( pageRoute );
-                        addedRoutes.Add( pageRoute.Route );
-                    }
-                }
-
-                int parentPageId = ppParentPage.SelectedValueAsInt() ?? 0;
-
-                page.InternalName = tbPageName.Text;
-                page.PageTitle = tbPageTitle.Text;
-                page.BrowserTitle = tbBrowserTitle.Text;
-                page.BodyCssClass = tbBodyCssClass.Text;
-
-                if ( parentPageId != 0 )
-                {
-                    page.ParentPageId = parentPageId;
-
-                    if ( page.Id == 0 )
-                    {
-                        // newly added page, make sure the Order is correct
-                        Rock.Model.Page lastPage = pageService.GetByParentPageId( parentPageId ).OrderByDescending( b => b.Order ).FirstOrDefault();
-                        if ( lastPage != null )
-                        {
-                            page.Order = lastPage.Order + 1;
-                        }
-                    }
-                }
-                else
-                {
-                    page.ParentPageId = null;
-                }
-
-                page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
-
-                int? orphanedIconFileId = null;
-
-                page.IconCssClass = tbIconCssClass.Text;
-
-                page.PageDisplayTitle = cbPageTitle.Checked;
-                page.PageDisplayBreadCrumb = cbPageBreadCrumb.Checked;
-                page.PageDisplayIcon = cbPageIcon.Checked;
-                page.PageDisplayDescription = cbPageDescription.Checked;
-
-                page.DisplayInNavWhen = ddlMenuWhen.SelectedValue.ConvertToEnumOrNull<DisplayInNavWhen>() ?? DisplayInNavWhen.WhenAllowed;
-                page.MenuDisplayDescription = cbMenuDescription.Checked;
-                page.MenuDisplayIcon = cbMenuIcon.Checked;
-                page.MenuDisplayChildPages = cbMenuChildPages.Checked;
-
-                page.BreadCrumbDisplayName = cbBreadCrumbName.Checked;
-                page.BreadCrumbDisplayIcon = cbBreadCrumbIcon.Checked;
-
-                page.RequiresEncryption = cbRequiresEncryption.Checked;
-                page.EnableViewState = cbEnableViewState.Checked;
-                page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
-                page.AllowIndexing = cbAllowIndexing.Checked;
-                page.OutputCacheDuration = tbCacheDuration.Text.AsIntegerOrNull() ?? 0;
-                page.Description = tbDescription.Text;
-                page.HeaderContent = ceHeaderContent.Text;
-
-                // update PageContexts
-                foreach ( var pageContext in page.PageContexts.ToList() )
-                {
-                    contextService.Delete( pageContext );
-                }
-
-                page.PageContexts.Clear();
-                foreach ( var control in phContext.Controls )
-                {
-                    if ( control is RockTextBox )
-                    {
-                        var tbContext = control as RockTextBox;
-                        if ( !string.IsNullOrWhiteSpace( tbContext.Text ) )
-                        {
-                            var pageContext = new PageContext();
-                            pageContext.Entity = tbContext.ID.Substring( 8 ).Replace( '_', '.' );
-                            pageContext.IdParameter = tbContext.Text;
-                            page.PageContexts.Add( pageContext );
-                        }
-                    }
-                }
-
-                // Page Attributes
-                page.LoadAttributes();
-
-                Rock.Attribute.Helper.GetEditValues( phPageAttributes, page );
-
-                // save page and it's routes
-                if ( page.IsValid )
-                {
-                    // use WrapTransaction since SaveAttributeValues does its own RockContext.SaveChanges()
-                    rockContext.WrapTransaction( () =>
-                    {
+                        // marked the old images as IsTemporary so they will get cleaned up later
+                        binaryFile.IsTemporary = true;
                         rockContext.SaveChanges();
-
-                        page.SaveAttributeValues( rockContext );
-                    } );
-
-                    // remove any routes for this page that are no longer configured
-                    foreach ( var existingRoute in RouteTable.Routes.OfType<Route>().Where( a => a.PageIds().Contains( page.Id ) ) )
-                    {
-                        if ( !editorRoutes.Any( a => a == existingRoute.Url ) )
-                        {
-                            var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
-                            pageAndRouteIds = pageAndRouteIds.Where( p => p.PageId != page.Id ).ToList();
-                            if ( pageAndRouteIds.Any() )
-                            {
-                                existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
-                            }
-                            else
-                            {
-                                RouteTable.Routes.Remove( existingRoute );
-                            }
-                        }
                     }
-
-                    // Remove the '{shortlink}' route (will be added back after specific routes)
-                    var shortLinkRoute = RouteTable.Routes.OfType<Route>().Where( r => r.Url == "{shortlink}" ).FirstOrDefault();
-                    if ( shortLinkRoute != null )
-                    {
-                        RouteTable.Routes.Remove( shortLinkRoute );
-                    }
-
-                    // Add any routes that were added
-                    foreach ( var pageRoute in new PageRouteService( rockContext ).GetByPageId( page.Id ) )
-                    {
-                        if ( addedRoutes.Contains( pageRoute.Route ) )
-                        {
-                            var pageAndRouteId = new Rock.Web.PageAndRouteId { PageId = pageRoute.PageId, RouteId = pageRoute.Id };
-
-                            var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( r => r.Url == pageRoute.Route );
-                            if ( existingRoute != null )
-                            {
-                                var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
-                                pageAndRouteIds.Add( pageAndRouteId );
-                                existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
-                            }
-                            else
-                            {
-                                var pageAndRouteIds = new List<Rock.Web.PageAndRouteId>();
-                                pageAndRouteIds.Add( pageAndRouteId );
-                                RouteTable.Routes.AddPageRoute( pageRoute.Route, pageAndRouteIds );
-                            }
-                        }
-                    }
-
-                    RouteTable.Routes.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
-
-                    if ( orphanedIconFileId.HasValue )
-                    {
-                        BinaryFileService binaryFileService = new BinaryFileService( rockContext );
-                        var binaryFile = binaryFileService.Get( orphanedIconFileId.Value );
-                        if ( binaryFile != null )
-                        {
-                            // marked the old images as IsTemporary so they will get cleaned up later
-                            binaryFile.IsTemporary = true;
-                            rockContext.SaveChanges();
-                        }
-                    }
-
-                    string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close('PAGE_UPDATED');";
-                    ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
-
-                    hfPageId.Value = page.Id.ToString();
                 }
+
+                string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close('PAGE_UPDATED');";
+                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
+
+                hfPageId.Value = page.Id.ToString();
             }
         }
 
@@ -1088,41 +1045,49 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            masterPage_OnSave( sender, e );
-
-            // reload page using the current page
-            var pageId = hfPageId.Value.AsIntegerOrNull();
-            var qryParams = new Dictionary<string, string>();
-            if ( pageId.HasValue )
+            try
             {
-                qryParams["Page"] = pageId.ToString();
+                // Let's not navigate away from the error message shall we??
+                masterPage_OnSave( sender, e );
 
-                string expandedIds = this.Request.Params["ExpandedIds"];
-                if ( expandedIds != null )
+                // reload page using the current page
+                var pageId = hfPageId.Value.AsIntegerOrNull();
+                var qryParams = new Dictionary<string, string>();
+                if ( pageId.HasValue )
                 {
-                    // remove the current pageId param to avoid extra treeview flash
-                    var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
-                    expandedIdList.Remove( pageId.Value );
+                    qryParams["Page"] = pageId.ToString();
 
-                    // add the parentPageId to the expanded ids
-                    var parentPageParam = this.Request.Params["ParentPageId"];
-                    if ( !string.IsNullOrEmpty( parentPageParam ) )
+                    string expandedIds = this.Request.Params["ExpandedIds"];
+                    if ( expandedIds != null )
                     {
-                        var parentPageId = parentPageParam.AsIntegerOrNull();
-                        if ( parentPageId.HasValue )
+                        // remove the current pageId param to avoid extra treeview flash
+                        var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
+                        expandedIdList.Remove( pageId.Value );
+
+                        // add the parentPageId to the expanded ids
+                        var parentPageParam = this.Request.Params["ParentPageId"];
+                        if ( !string.IsNullOrEmpty( parentPageParam ) )
                         {
-                            if ( !expandedIdList.Contains( parentPageId.Value ) )
+                            var parentPageId = parentPageParam.AsIntegerOrNull();
+                            if ( parentPageId.HasValue )
                             {
-                                expandedIdList.Add( parentPageId.Value );
+                                if ( !expandedIdList.Contains( parentPageId.Value ) )
+                                {
+                                    expandedIdList.Add( parentPageId.Value );
+                                }
                             }
                         }
+
+                        qryParams["ExpandedIds"] = expandedIdList.AsDelimited( "," );
                     }
-
-                    qryParams["ExpandedIds"] = expandedIdList.AsDelimited( "," );
                 }
-            }
 
-            NavigateToPage( RockPage.Guid, qryParams );
+                NavigateToPage( RockPage.Guid, qryParams );
+            }
+            catch
+            {
+                //Left empty, error displyed in UI.
+            }
         }
 
         /// <summary>

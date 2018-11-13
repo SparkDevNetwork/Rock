@@ -61,6 +61,14 @@
                         $noteEditor.find('.js-noteprivate').prop('checked', noteData.IsPrivateNote);
                         $noteEditor.find('.js-notealert').prop('checked', noteData.IsAlert);
 
+                      var date = new Date(noteData.CreatedDateTime);
+                      var timeWithouthSecond = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                      var $datetimepicker = $noteEditor.find('.js-notecreateddate').find('input');
+                      $datetimepicker.first().val(date.toLocaleDateString());
+                      $datetimepicker.last().val(timeWithouthSecond);
+
+
                         var $noteTypeInput = $noteEditor.find('.js-notenotetype');
 
                         // noteType dropdown will only be rendered if more than one notetype is pickable
