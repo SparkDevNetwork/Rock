@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
@@ -36,6 +37,52 @@ namespace Rock.Model
         public IQueryable<PageRoute> GetByPageId( int pageId )
         {
             return Queryable().Where( t => t.PageId == pageId );
+        }
+
+        /// <summary>
+        /// Registers the routes in Model.PageRoute to IIS's routing table.
+        /// This is called at application start and can be run again if the routes
+        /// somehow get out of sync.
+        /// </summary>
+        /// <param name="routes">The routes.</param>
+        public static void RegisterRoutes()
+        {
+            var routes = System.Web.Routing.RouteTable.Routes;
+            using ( routes.GetWriteLock() )
+            {
+                routes.Clear();
+
+                PageRouteService pageRouteService = new PageRouteService( new RockContext() );
+
+                // Add ingore rule for asp.net ScriptManager files. 
+                routes.Ignore( "{resource}.axd/{*pathInfo}" );
+
+                var pageRoutes = pageRouteService
+                    .Queryable()
+                    .AsNoTracking()
+                    .GroupBy( r => r.Route )
+                    .Select( s => new
+                    {
+                        Name = s.Key,
+                        Pages = s.Select( pr => new Rock.Web.PageAndRouteId { PageId = pr.PageId, RouteId = pr.Id } ).ToList()
+                    } )
+                    .ToList();
+
+                // Add page routes
+                foreach ( var route in pageRoutes )
+                {
+                    routes.AddPageRoute( route.Name, route.Pages );
+                }
+
+                // Add a default page route
+                routes.Add( new System.Web.Routing.Route( "page/{PageId}", new Rock.Web.RockRouteHandler() ) );
+
+                // Add a default route for when no parameters are passed
+                routes.Add( new System.Web.Routing.Route( "", new Rock.Web.RockRouteHandler() ) );
+
+                // Add a default route for shortlinks
+                routes.Add( new System.Web.Routing.Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
+            }
         }
     }
 }

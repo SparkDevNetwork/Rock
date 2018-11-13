@@ -76,8 +76,10 @@ namespace Rock.Jobs
                 var activeSyncIds = new List<int>();
                 using ( var rockContext = new RockContext() )
                 {
+                    // Get groups that are not archived and are still active.
                     activeSyncIds = new GroupSyncService( rockContext )
                         .Queryable().AsNoTracking()
+                        .Where( x => !x.Group.IsArchived && x.Group.IsActive )
                         .Select( x => x.Id )
                         .ToList();
                 }

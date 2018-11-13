@@ -945,6 +945,8 @@ namespace Rock.Model
         /// Check the specified communication if falling inside DND window.
         /// </summary>
         /// <param name="communicationDateTime">The communication date and time.</param>
+        /// <param name="endDateTime">The end date time.</param>
+        /// <returns></returns>
         public static bool CheckCommunicationForDND( DateTime communicationDateTime, out DateTime? endDateTime )
         {
             endDateTime = null;

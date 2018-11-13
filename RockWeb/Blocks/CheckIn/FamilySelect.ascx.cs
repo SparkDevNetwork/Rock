@@ -96,21 +96,29 @@ namespace RockWeb.Blocks.CheckIn
                 }
                 else
                 {
+                    // make sure the ShowEditFamilyPrompt is disabled so that it doesn't show again until explicitly enabled after doing a Search (which happens in HandleRepeaterPostback)
+                    hfShowEditFamilyPrompt.Value = "0";
+
                     if ( this.Request.Params["__EVENTTARGET"] == rSelection.UniqueID )
                     {
                         HandleRepeaterPostback( this.Request.Params["__EVENTARGUMENT"] );
                     }
-
-                    // make sure the ShowEditFamilyPrompt is disabled so that it doesn't show again until explicitly enabled after doing a Search
-                    hfShowEditFamilyPrompt.Value = "0";
 
                     if ( this.Request.Params["__EVENTARGUMENT"] == "EditFamily" )
                     {
                         var editFamilyBlock = this.RockPage.ControlsOfTypeRecursive<CheckInEditFamilyBlock>().FirstOrDefault();
                         if ( editFamilyBlock != null )
                         {
-                            var firstListedFamily = this.CurrentCheckInState.CheckIn.Families.FirstOrDefault();
-                            editFamilyBlock.ShowEditFamily( firstListedFamily );
+                            CheckInFamily familyToEdit;
+                            int? currentFamilyGroupId = hfSelectedFamilyGroupId.Value.AsIntegerOrNull();
+                            if ( currentFamilyGroupId.HasValue )
+                            {
+                                familyToEdit = this.CurrentCheckInState.CheckIn.Families.Where( a => a.Group.Id == currentFamilyGroupId ).FirstOrDefault();
+                                if ( familyToEdit != null )
+                                {
+                                    editFamilyBlock.ShowEditFamily( familyToEdit );
+                                }
+                            }
                         }
                     }
                 }
@@ -186,6 +194,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( KioskCurrentlyActive )
             {
                 int groupId = commandArgument.AsInteger();
+                hfSelectedFamilyGroupId.Value = groupId.ToString();
                 var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Group.Id == groupId ).FirstOrDefault();
                 if ( family != null )
                 {

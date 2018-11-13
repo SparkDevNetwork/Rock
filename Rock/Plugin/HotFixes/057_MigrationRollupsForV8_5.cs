@@ -43,7 +43,6 @@ namespace Rock.Plugin.HotFixes
             //AddCommunicationSetting();
         }
 
-
         /// <summary>
         /// The commands to undo a migration from a specific version
         /// </summary>
