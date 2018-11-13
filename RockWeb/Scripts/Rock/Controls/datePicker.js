@@ -45,20 +45,14 @@
                         $dateOffsetBox.show();
 
                         // set textbox val to something instead of empty string so that validation doesn't complain
-                        $textBox.val('current');
-
-                        $textBox.prop('disabled', true);
-                        $textBox.addClass('aspNetDisabled');
+                        $textBox.data( "last-value", $textBox.val()).val('Current').prop('disabled', true).addClass('aspNetDisabled');
 
                     } else {
                         $dateOffsetlabel.hide();
                         $dateOffsetBox.hide();
-                        $textBox.prop('disabled', false);
-                        
-                        // set textbox val to empty string so that validation will work again (if it is enabled)
-                        $textBox.val('');
 
-                        $textBox.removeClass('aspNetDisabled');
+                        // set textbox val to last value so that validation will work again (if it is enabled)
+                        $textBox.val($textBox.data('last-value')).prop('disabled', false).removeClass('aspNetDisabled');
                     }
                 });
             }
