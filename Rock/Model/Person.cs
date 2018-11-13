@@ -1880,20 +1880,19 @@ namespace Rock.Model
                         {
                             groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
                         }
+
                         // Also update the person's connection requests
                         int[] aliasIds = Aliases.Select( a => a.Id ).ToArray();
-                        foreach (var connectionRequest in new ConnectionRequestService(rockContext)
+                        foreach ( var connectionRequest in new ConnectionRequestService( rockContext )
                             .Queryable()
-                            .Where(c =>
-                                aliasIds.Contains(c.PersonAliasId) &&
-                                c.ConnectionState != ConnectionState.Inactive && 
-                                c.ConnectionState != ConnectionState.Connected ) )
+                            .Where( c =>
+                                 aliasIds.Contains( c.PersonAliasId ) &&
+                                 c.ConnectionState != ConnectionState.Inactive &&
+                                 c.ConnectionState != ConnectionState.Connected ) )
                         {
                             connectionRequest.ConnectionState = ConnectionState.Inactive;
                         }
                     }
-
-
                 }
             }
 
