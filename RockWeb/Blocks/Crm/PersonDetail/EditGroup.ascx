@@ -7,7 +7,7 @@
         <div class="panel panel-block" id="pnlEditGroup" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-users"></i> 
+                    <i class="fa fa-users"></i>
                     <asp:Literal ID="lBanner" runat="server" />
                 </h1>
             </div>
@@ -58,9 +58,9 @@
                                             <div class="person-image" id="divPersonImage" runat="server"></div>
                                             <div class="member-information">
                                                 <h4><%# Eval("NickName") %> <%# Eval("LastName") %><asp:Literal ID="lFamilyMemberAge" runat="server" /></h4>
-                                            
+
                                                   <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" />
-                                            
+
                                             </div>
                                         </div>
                                         <div class="actions">
@@ -83,7 +83,7 @@
                     </div>
 
                     <div class="panel-body">
-                
+
                         <div class="grid grid-panel">
                             <Rock:Grid ID="gLocations" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light" RowItemText="Address">
                                 <Columns>
@@ -103,21 +103,21 @@
                                             <Rock:AddressControl ID="acAddress" runat="server" Required="true" RequiredErrorMessage="Address is required"/>
                                         </EditItemTemplate>
                                     </Rock:RockTemplateField>
-                                    <Rock:RockTemplateField HeaderText="Mailing" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
+                                    <Rock:RockTemplateField HeaderText="Mailing" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-select-field">
                                         <ItemTemplate>
                                             <%# ((bool)Eval("IsMailing")) ? "<i class=\"fa fa-check\"></i>" : "" %>
                                         </ItemTemplate>
                                         <EditItemTemplate>
-                                            <asp:CheckBox ID="cbMailing" runat="server" Checked='<%# Eval("IsMailing") %>' />
+                                            <asp:CheckBox ID="cbMailing" runat="server" Checked='<%# Eval("IsMailing") %>' Text="<span class='sr-only'>Is Mailing Address</span>" />
                                         </EditItemTemplate>
                                     </Rock:RockTemplateField>
-                                    <Rock:RockTemplateField HeaderText="Map Location" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
+                                    <Rock:RockTemplateField HeaderText="Map Location" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-select-field">
                                         <ItemTemplate>
                                             <%# ((bool)Eval("IsLocation")) ? "<i class=\"fa fa-check\"></i>" : "" %>
                                         </ItemTemplate>
                                         <EditItemTemplate>
                                             <%# ((bool)Eval("IsLocation")) ? "<i class=\"fa fa-check\"></i>" : "" %>
-                                            <asp:CheckBox ID="cbLocation" runat="server" Checked='<%# Eval("IsLocation") %>' Visible='<%# !(bool)Eval("IsLocation") %>' />
+                                            <asp:CheckBox ID="cbLocation" runat="server" Checked='<%# Eval("IsLocation") %>' Visible='<%# !(bool)Eval("IsLocation") %>' Text="<span class='sr-only'>Is Map Location</span>" />
                                         </EditItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockTemplateField ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" HeaderStyle-CssClass="span1" ItemStyle-CssClass="grid-columncommand" ItemStyle-Wrap="false">
@@ -154,7 +154,7 @@
 
             </div>
         </div>
-        
+
         <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this group that have not yet been saved." Enabled="false" />
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
