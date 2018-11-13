@@ -148,63 +148,25 @@ namespace RockWeb.Blocks.Cms
                 nbErrorMessage.Title = "Duplicate Route";
                 nbErrorMessage.Text = "<p>There is already an existing route with this name for the selected page's site. Route names must be unique per site. Please choose a different route name.</p>";
                 nbErrorMessage.Visible = true;
+                return;
             }
-            else
+
+            pageRoute.LoadAttributes( rockContext );
+
+            rockContext.WrapTransaction( () =>
             {
-                pageRoute.LoadAttributes( rockContext );
-
-                rockContext.WrapTransaction( () =>
+                rockContext.SaveChanges();
+                if ( !pageRoute.IsSystem )
                 {
-                    rockContext.SaveChanges();
-                    if ( !pageRoute.IsSystem )
-                    {
-                        Rock.Attribute.Helper.GetEditValues( phAttributes, pageRoute );
-                        pageRoute.SaveAttributeValues( rockContext );
-                    }
-                } );
-                // Remove previous route
-                var oldRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteIds().Contains( pageRoute.Id ) );
-                if ( oldRoute != null )
-                {
-                    var pageAndRouteIds = oldRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
-                    pageAndRouteIds = pageAndRouteIds.Where( p => p.RouteId != pageRoute.Id ).ToList();
-                    if ( pageAndRouteIds.Any() )
-                    {
-                        oldRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
-                    }
-                    else
-                    {
-                        RouteTable.Routes.Remove( oldRoute );
-                    }
+                    Rock.Attribute.Helper.GetEditValues( phAttributes, pageRoute );
+                    pageRoute.SaveAttributeValues( rockContext );
                 }
+            } );
 
-                // Remove the '{shortlink}' route (will be added back after specific routes)
-                var shortLinkRoute = RouteTable.Routes.OfType<Route>().Where( r => r.Url == "{shortlink}" ).FirstOrDefault();
-                if ( shortLinkRoute != null )
-                {
-                    RouteTable.Routes.Remove( shortLinkRoute );
-                }
+            // Refresh the RouteTable in IIS
+            PageRouteService.RegisterRoutes();
 
-                // Add new route
-                var pageAndRouteId = new Rock.Web.PageAndRouteId { PageId = pageRoute.PageId, RouteId = pageRoute.Id };
-                var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( r => r.Url == pageRoute.Route );
-                if ( existingRoute != null )
-                {
-                    var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
-                    pageAndRouteIds.Add( pageAndRouteId );
-                    existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
-                }
-                else
-                {
-                    var pageAndRouteIds = new List<Rock.Web.PageAndRouteId>();
-                    pageAndRouteIds.Add( pageAndRouteId );
-                    RouteTable.Routes.AddPageRoute( pageRoute.Route, pageAndRouteIds );
-                }
-
-                RouteTable.Routes.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
-
-                NavigateToParentPage();
-            }
+            NavigateToParentPage();
         }
 
         /// <summary>

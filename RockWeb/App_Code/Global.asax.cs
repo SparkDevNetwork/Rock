@@ -210,7 +210,7 @@ namespace RockWeb
 
                     // Register Routes
                     stopwatch.Restart();
-                    RegisterRoutes( rockContext, RouteTable.Routes );
+                    PageRouteService.RegisterRoutes();
                     if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                     {
                         System.Diagnostics.Debug.WriteLine( string.Format( "RegisterRoutes - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
@@ -836,42 +836,6 @@ namespace RockWeb
         }
 
         /// <summary>
-        /// Registers the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        private void RegisterRoutes( RockContext rockContext, RouteCollection routes )
-        {
-            routes.Clear();
-
-            PageRouteService pageRouteService = new PageRouteService( rockContext );
-
-            // Add ingore rule for asp.net ScriptManager files. 
-            routes.Ignore("{resource}.axd/{*pathInfo}");
-
-            // Add page routes
-            foreach ( var route in pageRouteService 
-                .Queryable().AsNoTracking()
-                .GroupBy( r => r.Route )
-                .Select( s => new {
-                    Name = s.Key,
-                    Pages = s.Select( pr => new Rock.Web.PageAndRouteId { PageId = pr.PageId, RouteId = pr.Id } ).ToList() 
-                } )
-                .ToList() )
-            {
-                routes.AddPageRoute( route.Name, route.Pages );
-            }
-
-            // Add a default page route
-            routes.Add( new Route( "page/{PageId}", new Rock.Web.RockRouteHandler() ) );
-
-            // Add a default route for when no parameters are passed
-            routes.Add( new Route( "", new Rock.Web.RockRouteHandler() ) );
-
-            // Add a default route for shortlinks
-            routes.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
-        }
-
-        /// <summary>
         /// Loads the cache objects.
         /// </summary>
         private void LoadCacheObjects( RockContext rockContext )
@@ -935,7 +899,6 @@ namespace RockWeb
                 DefinedValueCache.Get( definedValue );
             }
         }
-
 
         /// <summary>
         /// Sets flag for serious error
