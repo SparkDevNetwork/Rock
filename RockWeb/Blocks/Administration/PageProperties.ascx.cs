@@ -728,22 +728,68 @@ namespace RockWeb.Blocks.Administration
 
             Rock.Attribute.Helper.GetEditValues( phPageAttributes, page );
 
-            // save page and its routes
+            // save page and it's routes
             if ( page.IsValid )
             {
                 // use WrapTransaction since SaveAttributeValues does its own RockContext.SaveChanges()
                 rockContext.WrapTransaction( () =>
                 {
                     rockContext.SaveChanges();
+
                     page.SaveAttributeValues( rockContext );
                 } );
 
-                // Refresh the RouteTable in IIS if there are any changes
-                if ( addedRoutes.Any() || deletedRouteIds.Any() )
+                // remove any routes for this page that are no longer configured
+                var existingRoutes = RouteTable.Routes.OfType<Route>().Where( a => a.PageIds().Contains( page.Id ) ).ToList();
+                foreach ( var existingRoute in existingRoutes )
                 {
-                    PageRouteService.RegisterRoutes();
+                    if ( !editorRoutes.Any( a => a == existingRoute.Url ) )
+                    {
+                        var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
+                        pageAndRouteIds = pageAndRouteIds.Where( p => p.PageId != page.Id ).ToList();
+                        if ( pageAndRouteIds.Any() )
+                        {
+                            existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
+                        }
+                        else
+                        {
+                            RouteTable.Routes.Remove( existingRoute );
+                        }
+                    }
                 }
-                
+
+                // Remove the '{shortlink}' route (will be added back after specific routes)
+                var shortLinkRoute = RouteTable.Routes.OfType<Route>().Where( r => r.Url == "{shortlink}" ).FirstOrDefault();
+                if ( shortLinkRoute != null )
+                {
+                    RouteTable.Routes.Remove( shortLinkRoute );
+                }
+
+                // Add any routes that were added
+                foreach ( var pageRoute in new PageRouteService( rockContext ).GetByPageId( page.Id ) )
+                {
+                    if ( addedRoutes.Contains( pageRoute.Route ) )
+                    {
+                        var pageAndRouteId = new Rock.Web.PageAndRouteId { PageId = pageRoute.PageId, RouteId = pageRoute.Id };
+
+                        var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( r => r.Url == pageRoute.Route );
+                        if ( existingRoute != null )
+                        {
+                            var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
+                            pageAndRouteIds.Add( pageAndRouteId );
+                            existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
+                        }
+                        else
+                        {
+                            var pageAndRouteIds = new List<Rock.Web.PageAndRouteId>();
+                            pageAndRouteIds.Add( pageAndRouteId );
+                            RouteTable.Routes.AddPageRoute( pageRoute.Route, pageAndRouteIds );
+                        }
+                    }
+                }
+
+                RouteTable.Routes.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
+
                 if ( orphanedIconFileId.HasValue )
                 {
                     BinaryFileService binaryFileService = new BinaryFileService( rockContext );
