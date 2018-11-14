@@ -192,7 +192,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class DuplicatePersonInfo
         {
@@ -584,7 +584,7 @@ namespace Rock.Rest.Controllers
                 }
                 else
                 {
-                    personInfoHtml += "<div class='role'>" + familyGroupType.Roles.First( a => a.Id == familyGroupMember.GroupRoleId ).Name + "</div>";
+                    personInfoHtml += "<span class='role'>" + familyGroupType.Roles.First( a => a.Id == familyGroupMember.GroupRoleId ).Name + "</span>";
                 }
 
                 if ( personAge != null )
@@ -624,7 +624,7 @@ namespace Rock.Rest.Controllers
 
                 if ( location != null )
                 {
-                    string addressHtml = "<div class='address'><h5>Address</h5>" + location.GetFullStreetAddress().ConvertCrLfToHtmlBr() + "</div>";
+                    string addressHtml = "<dl class='address'><dt>Address</dt><dd>" + location.GetFullStreetAddress().ConvertCrLfToHtmlBr() + "</dd></dl>";
                     personSearchResult.Address = location.GetFullStreetAddress();
                     personInfoHtml += addressHtml;
                 }
@@ -635,17 +635,17 @@ namespace Rock.Rest.Controllers
             {
                 string emailAndPhoneHtml = "<div class='margin-t-sm'>";
                 emailAndPhoneHtml += "<span class='email'>" + person.Email + "</span>";
-                string phoneNumberList = "<div class='phones'>";
+                string phoneNumberList = "<ul class='phones list-unstyled'>";
                 foreach ( var phoneNumber in person.PhoneNumbers )
                 {
                     var phoneType = DefinedValueCache.Get( phoneNumber.NumberTypeValueId ?? 0 );
                     phoneNumberList += string.Format(
-                        "<br>{0} <small>{1}</small>",
+                        "<li>{0} <small>{1}</small></li>",
                         phoneNumber.IsUnlisted ? "Unlisted" : phoneNumber.NumberFormatted,
                         phoneType != null ? phoneType.Value : string.Empty );
                 }
 
-                emailAndPhoneHtml += phoneNumberList + "</div></div>";
+                emailAndPhoneHtml += phoneNumberList + "</ul></div>";
 
                 personInfoHtml += emailAndPhoneHtml;
             }
@@ -669,8 +669,8 @@ namespace Rock.Rest.Controllers
         [Obsolete( "Returns incorrect results, will be removed in a future version" )]
         public string GetImpersonationParameterObsolete( int personId )
         {
-            // NOTE: This route is called GetSearchDetails but really returns an ImpersonationParameter due to a copy/paste bug. 
-            // Marked obsolete but kept around in case anybody was taking advantage of this bug 
+            // NOTE: This route is called GetSearchDetails but really returns an ImpersonationParameter due to a copy/paste bug.
+            // Marked obsolete but kept around in case anybody was taking advantage of this bug
 
             string result = string.Empty;
 
