@@ -585,9 +585,9 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static CacheItemStatistics GetStatisticsForType( string cacheTypeName )
         {
-            if ( cacheTypeName.StartsWith( "Cache" ) )
+            if ( cacheTypeName.Contains( "Cache" ) )
             {
-                return GetStatisticsForType( Type.GetType( $"{cacheTypeName},Rock" ) );
+                return GetStatisticsForType( Type.GetType( $"Rock.Web.Cache.{cacheTypeName},Rock" ) );
             }
 
             return GetStatForSystemType( cacheTypeName );
