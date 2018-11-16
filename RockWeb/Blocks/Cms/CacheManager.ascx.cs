@@ -223,28 +223,6 @@ namespace RockWeb.Blocks.Cms
 
         #region Redis
 
-        //private string GetValueFromWebConfig( string key )
-        //{
-        //    return ConfigurationManager.AppSettings[key] ?? string.Empty;
-        //}
-
-        //private void SetValueToWebConfig( string key, string value )
-        //{
-        //    try
-        //    {
-        //        if ( ConfigurationManager.AppSettings[key] != null )
-        //        {
-        //            Configuration rockWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration( "~" );
-        //            rockWebConfig.AppSettings.Settings[key].Value = value;
-        //            rockWebConfig.Save();
-        //        }
-        //    }
-        //    catch ( Exception ex )
-        //    {
-        //        LogException( ex );
-        //    }
-        //}
-
         protected void PopulateRedisView()
         {
             // clear and hide edit
@@ -254,8 +232,8 @@ namespace RockWeb.Blocks.Cms
 
             redisView.Visible = true;
 
-            bool enabled = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBoolean();
-            if( !enabled )
+            bool enabled = RockCache.IsCacheSerialized;
+            if ( !enabled )
             {
                 DisplayNotification( nbRedisSettings, "Redis is currently not enabled. Review documentation for more information on enabling Redis backplane support.", NotificationBoxType.Info );
                 redisEnabled.Visible = false;
@@ -267,7 +245,7 @@ namespace RockWeb.Blocks.Cms
             string redisPassword = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
 
             string serverList = string.Join(
-                "",
+                string.Empty,
                 SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST )
                     .Split( ',' )
                     .Select( s => 
@@ -365,10 +343,6 @@ namespace RockWeb.Blocks.Cms
             settings.Add( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER, tbDatabaseNumber.Text );
 
             SystemSettings.SetValueToWebConfig( settings );
-            //SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER, cbEnabledEdit.Checked.ToString() );
-            //SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST, serverList );
-            //SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.REDIS_PASSWORD, tbPassword.Text );
-            //SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER, tbDatabaseNumber.Text );
 
             Response.Redirect( Request.RawUrl );
         }
@@ -405,7 +379,7 @@ namespace RockWeb.Blocks.Cms
         {
             bool redisEnabled = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBooleanOrNull() ?? false;
 
-            if ( !redisEnabled  )
+            if ( !redisEnabled )
             {
                 spRedisStatus.Visible = false;
                 return;
@@ -623,6 +597,5 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
-
     }
 }
