@@ -85,6 +85,11 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        [RockObsolete( "1.7" )]
+        [Obsolete( "This no longer is functional. Please use GroupRequirement.MustMeetRequirementToAddMember instead.", true )]
+        public bool? MustMeetRequirementsToAddMember { get; set; }
+
+        /// <summary />
         public string Name { get; set; }
 
         /// <summary />
