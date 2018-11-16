@@ -432,9 +432,9 @@ namespace Rock.Web.Cache
                 return "Nothing to clear";
             }
 
-            if ( cacheTypeName.StartsWith( "Cache" ) )
+            if ( cacheTypeName.Contains( "Cache" ) )
             {
-                return ClearCachedItemsForType( Type.GetType( $"{cacheTypeName},Rock" ) );
+                return ClearCachedItemsForType( Type.GetType( $"Rock.Web.Cache.{cacheTypeName},Rock" ) );
             }
 
             return ClearCachedItemsForSystemType( cacheTypeName );
