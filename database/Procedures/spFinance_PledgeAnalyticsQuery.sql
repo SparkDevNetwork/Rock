@@ -26,8 +26,17 @@ BEGIN
 	-- interfering with SELECT statements.
 	SET NOCOUNT ON;
 
-	DECLARE @Sql varchar(max)
+	IF @StartDate IS NULL
+	BEGIN
+		SET @StartDate = CAST('17530101' as datetime)
+	END
 
+	IF @EndDate IS NULL
+	BEGIN
+		SET @EndDate = CAST('99991231' as datetime)
+	END
+
+	DECLARE @Sql varchar(max)
 	SET @Sql = '
 	;WITH CTE_ACCOUNTS AS (
 		SELECT [Id]
@@ -52,32 +61,13 @@ BEGIN
 		INNER JOIN [Person] [p] ON [p].[Id] = [pa].[PersonId]
 		WHERE [fp].[AccountId] = ' + CAST(@AccountId as varchar)
 
-	IF @StartDate IS NOT NULL AND @EndDate IS NOT NULL
-	BEGIN
 		SET @Sql = @Sql + '
 		AND ( 
-			( [StartDate] <= ''' + CAST( @StartDate as varchar ) + ''' AND [EndDate] >= ''' + CAST( @StartDate as varchar ) + ''') OR 
-			( [StartDate] <= ''' + CAST( @EndDate as varchar ) + ''' AND [EndDate] >= ''' + CAST( @EndDate as varchar ) + ''') 
+			( [StartDate] BETWEEN ''' + CAST( @StartDate as varchar ) + ''' AND ''' + CAST( @EndDate as varchar ) + ''') OR
+			( [EndDate] BETWEEN ''' + CAST( @StartDate as varchar ) + ''' AND ''' + CAST( @EndDate as varchar ) + ''' ) OR
+			( [StartDate] <= ''' + CAST( @StartDate as varchar ) + ''' AND [EndDate] >= ''' + CAST( @StartDate as varchar ) + ''') OR
+			( [StartDate] <= ''' + CAST( @EndDate as varchar ) + ''' AND [EndDate] >= ''' + CAST( @EndDate as varchar ) + ''')
 		)'
-	END
-	ELSE
-	BEGIN
-
-		IF @StartDate IS NOT NULL
-		BEGIN
-			SET @Sql = @Sql + '
-		AND [StartDate] <= ''' + CAST( @StartDate as varchar ) + '''
-		AND [EndDate] >= ''' + CAST( @StartDate as varchar ) + ''''
-		END
-
-		IF @EndDate IS NOT NULL
-		BEGIN
-			SET @Sql = @Sql + '
-		AND [StartDate] <= ''' + CAST( @EndDate as varchar ) + '''
-		AND [EndDate] >= ''' + CAST( @EndDate as varchar ) + ''''
-		END
-
-	END
 
 	SET @Sql = @Sql + '
 
