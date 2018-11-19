@@ -15,38 +15,19 @@
 // </copyright>
 //
 using System;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// 
     /// </summary>
-    public class BirthdayPicker : DatePartsPicker, IRockChangeHandlerControl
+    public interface IRockChangeHandlerControl
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BirthdayPicker"/> class.
+        /// Occurs when the selected value has changed
         /// </summary>
-        public BirthdayPicker()
-        {
-            this.AllowFutureDates = false;
-            this.RequireYear = false;
-            this.FutureDatesErrorMessage = "Birthdates cannot be in the future";
-        }
-
-        /// <summary>
-        /// Occurs when [selected birthday changed].
-        /// </summary>
-        public event EventHandler SelectedBirthdayChanged
-        {
-            add
-            {
-                this.SelectedDatePartsChanged += value;
-            }
-
-            remove
-            {
-                this.SelectedDatePartsChanged -= value;
-            }
-        }
+        event EventHandler ValueChanged;
     }
 }

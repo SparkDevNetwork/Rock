@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,39 +14,30 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
-namespace Rock.Web.UI.Controls
+namespace Rock.Migrations
 {
+    using System;
+    using System.Data.Entity.Migrations;
+    
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    public class BirthdayPicker : DatePartsPicker, IRockChangeHandlerControl
+    public partial class RegistrationFieldVisibilityRules : Rock.Migrations.RockMigration
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BirthdayPicker"/> class.
+        /// Operations to be performed during the upgrade process.
         /// </summary>
-        public BirthdayPicker()
+        public override void Up()
         {
-            this.AllowFutureDates = false;
-            this.RequireYear = false;
-            this.FutureDatesErrorMessage = "Birthdates cannot be in the future";
+            AddColumn("dbo.RegistrationTemplateFormField", "FieldVisibilityRulesJSON", c => c.String());
         }
-
+        
         /// <summary>
-        /// Occurs when [selected birthday changed].
+        /// Operations to be performed during the downgrade process.
         /// </summary>
-        public event EventHandler SelectedBirthdayChanged
+        public override void Down()
         {
-            add
-            {
-                this.SelectedDatePartsChanged += value;
-            }
-
-            remove
-            {
-                this.SelectedDatePartsChanged -= value;
-            }
+            DropColumn("dbo.RegistrationTemplateFormField", "FieldVisibilityRulesJSON");
         }
     }
 }

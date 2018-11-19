@@ -27,7 +27,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     ///
     /// </summary>
-    public class PersonPicker : CompositeControl, IRockControl
+    public class PersonPicker : CompositeControl, IRockControl, IRockChangeHandlerControl
     {
         #region IRockControl implementation
 
@@ -654,10 +654,9 @@ namespace Rock.Web.UI.Controls
         /// <exception cref="System.NotImplementedException"></exception>
         protected void btnSelect_Click( object sender, EventArgs e )
         {
-            if ( SelectPerson != null )
-            {
-                SelectPerson( sender, e );
-            }
+            SelectPerson?.Invoke( sender, e );
+
+            ValueChanged?.Invoke( sender, e );
         }
 
         /// <summary>
@@ -669,5 +668,14 @@ namespace Rock.Web.UI.Controls
         public event EventHandler SelectPerson;
 
         #endregion
+
+        #region IRockChangeHandlerControl
+
+        /// <summary>
+        /// Occurs when the selected value has changed
+        /// </summary>
+        public event EventHandler ValueChanged;
+
+        #endregion IRockChangeHandlerControl
     }
 }
