@@ -385,6 +385,7 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="Field\FieldVisibilityRules.cs" />
     <Compile Include="Field\Types\AssetFieldType.cs" />
     <Compile Include="Field\Types\AssetStorageProviderFieldType.cs" />
     <Compile Include="Model\CodeGenerated\NoteAttachmentService.cs" />
@@ -1639,16 +1640,19 @@
     <Compile Include="Web\HttpModules\HttpModuleContainer.cs" />
     <Compile Include="Web\UI\Adapters\ListControlAdaptor.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
+    <Compile Include="Web\UI\Controls\FieldVisibilityWrapper.cs" />
     <Compile Include="Web\UI\Controls\Captcha.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />
     <Compile Include="Web\UI\Controls\AttributeMatrixEditor.cs" />
     <Compile Include="Web\UI\Controls\DynamicPlaceholder.cs" />
+    <Compile Include="Web\UI\Controls\FieldVisibilityRulesEditor.cs" />
     <Compile Include="Web\UI\Controls\Grid\EncryptedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\HtmlField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaField.cs" />
     <Compile Include="Web\UI\Controls\HiddenFieldRangeValidator.cs" />
     <Compile Include="Web\UI\Controls\HiddenFieldWithValidationProperty.cs" />
     <Compile Include="Web\UI\Controls\IHasRequired.cs" />
+    <Compile Include="Web\UI\Controls\IRockChangeHandlerControl.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\AdvanceInfo.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\AdvanceInfoRow.cs" />
     <Compile Include="Web\UI\Controls\NoteEditor.cs" />

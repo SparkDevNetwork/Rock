@@ -173,6 +173,22 @@ namespace Rock.Field
         void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value );
 
         /// <summary>
+        /// Determines whether this FieldType supports doing PostBack for the editControl 
+        /// </summary>
+        /// <param name="editControl">The edit control.</param>
+        /// <returns>
+        ///   <c>true</c> if [has change handler] [the specified control]; otherwise, <c>false</c>.
+        /// </returns>
+        bool HasChangeHandler( Control editControl );
+
+        /// <summary>
+        /// Specifies an action to perform when the EditControl's Value is changed. See also <seealso cref="HasChangeHandler(Control)"/>
+        /// </summary>
+        /// <param name="editControl">The edit control.</param>
+        /// <param name="action">The action.</param>
+        void AddChangeHandler( Control editControl, Action action );
+
+        /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
         /// </summary>
         /// <param name="value">The value.</param>
@@ -221,12 +237,20 @@ namespace Rock.Field
         List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode );
 
         /// <summary>
-        /// Gets the filter compare value.
+        /// Gets the filter compare value (int or string version of <seealso cref="Rock.Model.ComparisonType"/> as a string)
         /// </summary>
-        /// <param name="control">The control.</param>
+        /// <param name="control">The control that has the comparison options (or null if this fieldtype doesn't have one).</param>
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
         string GetFilterCompareValue( Control control, FilterMode filterMode );
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The filter value control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues );
 
         /// <summary>
         /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
