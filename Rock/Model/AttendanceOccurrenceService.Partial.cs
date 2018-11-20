@@ -56,6 +56,44 @@ namespace Rock.Model
             return qry.FirstOrDefault();
         }
 
+        /// <summary>
+        /// Gets the specified occurrence record, creating it if necessary.
+        /// </summary>
+        /// <param name="occurrenceDate">The occurrence date.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <returns></returns>
+        public AttendanceOccurrence GetOrAdd( DateTime occurrenceDate, int? groupId, int? locationId, int? scheduleId )
+        {
+            var occurrence = Get( occurrenceDate, groupId, locationId, scheduleId );
+
+            if ( occurrence == null )
+            {
+                // If occurrence does not yet exist, create it
+                // A new context is used so the occurrence can be saved and used on multiple new attendance records that will be saved at once.
+                using ( var newContext = new RockContext() )
+                {
+                    occurrence = new AttendanceOccurrence
+                                 {
+                                     OccurrenceDate = occurrenceDate,
+                                     GroupId = groupId,
+                                     LocationId = locationId,
+                                     ScheduleId = scheduleId,
+                                 };
+
+                    var newOccurrenceService = new AttendanceOccurrenceService( newContext );
+                    newOccurrenceService.Add( occurrence );
+                    newContext.SaveChanges();
+
+                    // Query for the new occurrence using original context.
+                    occurrence = Get( occurrence.Id );
+                }
+            }
+
+            return occurrence;
+        }
+
 
         /// <summary>
         /// Gets occurrence data for the selected group
