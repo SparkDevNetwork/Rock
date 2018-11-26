@@ -328,7 +328,8 @@ namespace Rock.Utility.SparkDataApi
                 try
                 {
                     NcoaResponse file = JsonConvert.DeserializeObject<NcoaResponse>( response.Content );
-                    return file.Status == "Exporting" || file.Status == "Exported" || file.Status == "Processed";
+                    return file.Status == "Exported" || file.Status == "Processed";
+
                 }
                 catch
                 {
