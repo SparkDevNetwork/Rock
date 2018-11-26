@@ -43,9 +43,9 @@ install:
 
     git clone -q --depth=1 https://github.com/NewSpring/rock-f1.git c:\projects\rock-f1
 
-    git clone -q --depth=1 git@github.com:NewSpring/rock-cache-sync.git c:\projects\rock-cache-sync
+    git clone -q --depth=1 https://github.com/NewSpring/rock-cache-sync.git c:\projects\rock-cache-sync
 
-    git clone -q --depth=1 git@github.com:NewSpring/rock-attended-checkin.git c:\projects\rock-attended-checkin
+    git clone -q --depth=1 https://github.com/NewSpring/rock-attended-checkin.git c:\projects\rock-attended-checkin
 
 
 # directories to preserve between builds
