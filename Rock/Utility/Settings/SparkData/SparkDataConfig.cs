@@ -45,7 +45,7 @@ namespace Rock.Utility.Settings.SparkData
         /// The minimum addresses required to run NCOA
         /// </summary>
         [JsonIgnore]
-        public static readonly int NCOA_MIN_ADDRESSES = 20;
+        public static readonly int NCOA_MIN_ADDRESSES = 50;
 
         /// <summary>
         /// Gets or sets the NCOA settings.
