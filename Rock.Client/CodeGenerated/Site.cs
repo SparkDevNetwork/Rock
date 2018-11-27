@@ -38,7 +38,7 @@ namespace Rock.Client
         public string AllowedFrameDomains { get; set; }
 
         /// <summary />
-        public bool AllowIndexing { get; set; }
+        public bool AllowIndexing { get; set; } = true;
 
         /// <summary />
         public int? ChangePasswordPageId { get; set; }
@@ -62,13 +62,13 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
-        public bool EnabledForShortening { get; set; }
+        public bool EnabledForShortening { get; set; } = true;
 
         /// <summary />
         public bool EnableMobileRedirect { get; set; }
 
         /// <summary />
-        public bool EnablePageViews { get; set; } = true
+        public bool EnablePageViews { get; set; } = true;
 
         /// <summary />
         public string ErrorPage { get; set; }
@@ -89,7 +89,7 @@ namespace Rock.Client
         public string GoogleAnalyticsCode { get; set; }
 
         /// <summary />
-        [RockObsolete( "1.8" )]
+        // Made Obsolete in Rock "1.8"
         [Obsolete( "Moved to Theme", false )]
         public Rock.Client.Enums.IconCssWeight IconCssWeight { get; set; }
 

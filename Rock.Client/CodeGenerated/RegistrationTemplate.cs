@@ -35,10 +35,10 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public bool AddPersonNote { get; set; }
+        public bool AddPersonNote { get; set; } = true;
 
         /// <summary />
-        public bool AllowExternalRegistrationUpdates { get; set; }
+        public bool AllowExternalRegistrationUpdates { get; set; } = true;
 
         /// <summary />
         public bool AllowGroupPlacement { get; set; }
@@ -92,7 +92,7 @@ namespace Rock.Client
         public int? GroupTypeId { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
         public bool LoginRequired { get; set; }
