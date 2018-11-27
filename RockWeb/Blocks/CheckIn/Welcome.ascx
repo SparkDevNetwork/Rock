@@ -124,7 +124,7 @@
                     window.location = "javascript:__doPostBack('<%=upContent.ClientID%>', 'StartClick')";
                 });
 
-                if ($('.js-manager-login').is(':visible')) {
+                if ($('.js-manager-login').length) {
                     $('.tenkey a.digit').click(function () {
                         $phoneNumber = $("input[id$='tbPIN']");
                         $phoneNumber.val($phoneNumber.val() + $(this).html());

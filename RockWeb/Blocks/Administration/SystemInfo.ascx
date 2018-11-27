@@ -93,7 +93,23 @@
              <asp:Literal ID="lLastMigrations" runat="server"></asp:Literal>
         </p>
 
-        <div class="row">
+        <div>
+            <h4>Transaction Queue</h4>
+            <asp:Literal ID="lTransactionQueue" runat="server"></asp:Literal>
+        </div>
+
+        <div>
+            <h4>Routes</h4>
+            <p><a id="show-routes" href="#">Show Routes</a></p>
+            <div id="routes" style="display:none">
+                <p>
+                    <asp:Literal ID="lRoutes" runat="server"></asp:Literal>
+                </p>
+            </div>
+        </div>
+
+
+        <%--<div class="row">
             <div class="col-md-6">
                 <h4>Transaction Queue</h4>
                 <asp:Literal ID="lTransactionQueue" runat="server"></asp:Literal>
@@ -107,7 +123,7 @@
                     </p>
                 </div>
             </div>
-        </div>
+        </div>--%>
 
         <h4>Cache</h4>
         <div id="cache-details">

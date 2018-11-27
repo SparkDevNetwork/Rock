@@ -2153,7 +2153,7 @@ namespace RockWeb.Blocks.Connection
                                     else
                                     {
                                         labelText = string.Empty;
-                                        labelType = string.Empty;
+                                        labelType = "default";
                                     }
                                 }
 
