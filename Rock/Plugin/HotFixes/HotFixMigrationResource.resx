@@ -187,4 +187,10 @@
   <data name="_059_MigrationRollupsForV8_5_2_spCheckin_AttendanceAnalyticsQuery_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>059_migrationrollupsforv8_5_2_spcheckin_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_060_MigrationRollupsForV8_6_spFinance_PledgeAnalyticsQuery_Down" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>060_migrationrollupsforv8_6_spfinance_pledgeanalyticsquery_down.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_060_MigrationRollupsForV8_6_spFinance_PledgeAnalyticsQuery_Up" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>060_migrationrollupsforv8_6_spfinance_pledgeanalyticsquery_up.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>
