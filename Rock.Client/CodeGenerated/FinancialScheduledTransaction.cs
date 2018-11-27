@@ -59,7 +59,7 @@ namespace Rock.Client
         public string GatewayScheduleId { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
         public DateTime? LastRemindedDate { get; set; }

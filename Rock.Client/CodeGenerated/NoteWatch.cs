@@ -35,7 +35,7 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public bool AllowOverride { get; set; }
+        public bool AllowOverride { get; set; } = true;
 
         /// <summary />
         public int? EntityId { get; set; }
@@ -50,7 +50,7 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public bool IsWatching { get; set; }
+        public bool IsWatching { get; set; } = true;
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
