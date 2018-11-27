@@ -56,7 +56,6 @@
 
         <div class="actions margin-t-xl">
             <Rock:BootstrapButton runat="server" ID="btnFlushCache" CssClass="btn btn-primary" Text="Clear Cache" OnClick="btnClearCache_Click" DataLoadingText="Clearing..." ToolTip="Flushes all cached items from the Rock cache (e.g. Pages, BlockTypes, Blocks, Attributes, etc." />
-            <Rock:BootstrapButton runat="server" ID="btnRegisterRoutes" CssClass="btn btn-primary" Text="Refresh Route Tables" OnClick="btnRegisterRoutes_Click" DataLoadingText="Refreshing Routes..." ToolTip="Clears the routing table in IIS and reloads the Rock PageRoutes. Do this if routs get out of sync and it is not practical to restart Rock." />
             <asp:Button runat="server" ID="btnRestart" CssClass="btn btn-link js-restart" Text="Restart Rock" OnClick="btnRestart_Click" ToolTip="Restarts the Application." />
         </div>
     </div>
@@ -108,6 +107,23 @@
                 </p>
             </div>
         </div>
+
+
+        <%--<div class="row">
+            <div class="col-md-6">
+                <h4>Transaction Queue</h4>
+                <asp:Literal ID="lTransactionQueue" runat="server"></asp:Literal>
+            </div>
+            <div class="col-md-6">
+                <h4>Routes</h4>
+                <p><a id="show-routes" href="#">Show Routes</a></p>
+                <div id="routes" style="display:none">
+                    <p>
+                    <asp:Literal ID="lRoutes" runat="server"></asp:Literal>
+                    </p>
+                </div>
+            </div>
+        </div>--%>
 
         <h4>Cache</h4>
         <div id="cache-details">
