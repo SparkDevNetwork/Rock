@@ -21,12 +21,12 @@ _Put an `x` in the boxes that apply_
 
 _Put an `x` in the boxes that apply. You can also fill these out after creating the PR. If you're unsure about any of them, don't hesitate to ask. We're here to help! This is simply a reminder of what we are going to look for before merging your code._
 
-- [ ] I verified my PR does not include whitespace/formatting changes -- because if it does it will be closed without merging.
-- [ ] I have read the [CONTRIBUTING](https://github.com/SparkDevNetwork/Rock/blob/master/.github/CONTRIBUTING.md) doc
+- [ ] I verified my PR does not include whitespace/formatting changes -- because if it does it will be closed without merging.	
+- [ ] I have read the [Contributing to Rock](https://github.com/SparkDevNetwork/Rock/blob/master/.github/CONTRIBUTING.md) doc
 - [ ] By contributing code, I agree to license my contribution under the [Rock Community License Agreement](https://www.rockrms.com/license)
 - [ ] Unit tests pass locally with my changes
-- [ ] I have added [REQUIRED tests](https://github.com/SparkDevNetwork/Rock/blob/develop/Rock.Tests/README.md) to Rock.Tests that prove my fix is effective or that my feature works
-- [ ] I have included necessary documentation (if appropriate)
+- [ ] I have added [required tests](https://github.com/SparkDevNetwork/Rock/blob/develop/Rock.Tests/README.md) that prove my fix is effective or that my feature works
+- [ ] I have included updated language for the [Rock Documentation](https://www.rockrms.com/Learn/Documentation) (if appropriate)
 
 ## Further comments
 <!--

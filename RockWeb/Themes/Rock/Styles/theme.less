@@ -58,8 +58,9 @@ dt {
 input[type="text"],
 textarea,
 .form-control {
+  background-clip: padding-box;
+  -webkit-box-shadow: none;
   box-shadow: none;
-  transition: @input-focus-transition;
 
   &:focus {
     border: 1px solid @input-border-focus;
@@ -568,12 +569,12 @@ td.grid-select-field {
 
   .navbar-toggle {
     float: left;
-    font-size: 1.5em;
-    line-height: @navbar-top-height;
     width: @navbarside-width;
     height: @navbar-top-height;
     padding: 0 28px;
     margin: 0;
+    font-size: 1.5em;
+    line-height: @navbar-top-height;
     color: #fff;
     cursor: pointer;
 
@@ -593,7 +594,8 @@ td.grid-select-field {
   }
 
   .navbar-brand-corner {
-    position: relative;
+    position: fixed;
+    top: 0;
     display: none;
     float: left;
     width: @navbarside-width;
@@ -877,8 +879,8 @@ td.grid-select-field {
     left: 0;
     z-index: -1;
     width: inherit;
-    content: "";
     width: @navbarside-width;
+    content: "";
     background-color: @navbarside-background-color;
     background-color: var(--navbarside-background-color);
   }
@@ -887,15 +889,15 @@ td.grid-select-field {
 .navbar-static-side {
   position: fixed;
   top: 0;
-  left: 0;
   bottom: 0;
-  z-index: @zindex-navbar-fixed + 50;
+  left: 0;
+  z-index: @zindex-navbar-fixed + 10;
   display: none;
   width: @navbarside-width;
   height: 100%;
-  color: @navbarside-color;
   overflow-x: hidden;
   overflow-y: auto;
+  color: @navbarside-color;
   background-color: @navbarside-background-color;
   background-color: var(--navbarside-background-color);
 
@@ -1134,7 +1136,15 @@ td.grid-select-field {
 }
 
 .navbar-side-open #cms-admin-footer {
-  padding-left: @navbarside-width;
+  left: @navbarside-width;
+  width: auto;
+}
+
+@media (min-width: @screen-sm-min) {
+  #cms-admin-footer {
+    left: @navbarside-width;
+    width: auto;
+  }
 }
 
 // expanded view
