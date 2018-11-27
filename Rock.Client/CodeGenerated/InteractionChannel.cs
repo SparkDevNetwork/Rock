@@ -62,6 +62,9 @@ namespace Rock.Client
         public string ComponentListTemplate { get; set; }
 
         /// <summary />
+        public int? EngagementStrength { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -141,6 +144,7 @@ namespace Rock.Client
             this.ComponentDetailTemplate = source.ComponentDetailTemplate;
             this.ComponentEntityTypeId = source.ComponentEntityTypeId;
             this.ComponentListTemplate = source.ComponentListTemplate;
+            this.EngagementStrength = source.EngagementStrength;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.InteractionDetailTemplate = source.InteractionDetailTemplate;

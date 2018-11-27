@@ -432,9 +432,9 @@ namespace Rock.Web.Cache
                 return "Nothing to clear";
             }
 
-            if ( cacheTypeName.StartsWith( "Cache" ) )
+            if ( cacheTypeName.Contains( "Cache" ) )
             {
-                return ClearCachedItemsForType( Type.GetType( $"{cacheTypeName},Rock" ) );
+                return ClearCachedItemsForType( Type.GetType( $"Rock.Web.Cache.{cacheTypeName},Rock" ) );
             }
 
             return ClearCachedItemsForSystemType( cacheTypeName );
@@ -585,9 +585,9 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static CacheItemStatistics GetStatisticsForType( string cacheTypeName )
         {
-            if ( cacheTypeName.StartsWith( "Cache" ) )
+            if ( cacheTypeName.Contains( "Cache" ) )
             {
-                return GetStatisticsForType( Type.GetType( $"{cacheTypeName},Rock" ) );
+                return GetStatisticsForType( Type.GetType( $"Rock.Web.Cache.{cacheTypeName},Rock" ) );
             }
 
             return GetStatForSystemType( cacheTypeName );
