@@ -34,7 +34,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            FixPledgeAnalyticsGiftDateFilteringUp();
+            //FixPledgeAnalyticsGiftDateFilteringUp();
         }
 
 
@@ -43,7 +43,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Down()
         {
-            FixPledgeAnalyticsGiftDateFilteringDown();
+            //FixPledgeAnalyticsGiftDateFilteringDown();
         }
 
         /// <summary>
