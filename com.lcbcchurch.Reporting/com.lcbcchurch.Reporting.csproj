@@ -64,6 +64,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\002_AddAbsenteePage.cs" />
     <Compile Include="Migrations\001_AddAssimilationPage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
