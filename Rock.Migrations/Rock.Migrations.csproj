@@ -148,6 +148,10 @@
     <Compile Include="Migrations\201811271852316_Rollup_1127.Designer.cs">
       <DependentUpon>201811271852316_Rollup_1127.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201811272108424_RegistrationTemplateFeeItem.cs" />
+    <Compile Include="Migrations\201811272108424_RegistrationTemplateFeeItem.Designer.cs">
+      <DependentUpon>201811272108424_RegistrationTemplateFeeItem.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -499,6 +503,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201811271852316_Rollup_1127.resx">
       <DependentUpon>201811271852316_Rollup_1127.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201811272108424_RegistrationTemplateFeeItem.resx">
+      <DependentUpon>201811272108424_RegistrationTemplateFeeItem.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

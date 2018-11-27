@@ -68,6 +68,9 @@ namespace Rock.Client
         public decimal Cost { get; set; }
 
         /// <summary />
+        public decimal? DefaultPayment { get; set; }
+
+        /// <summary />
         public string DiscountCodeTerm { get; set; }
 
         /// <summary />
@@ -239,6 +242,7 @@ namespace Rock.Client
             this.ConfirmationFromName = source.ConfirmationFromName;
             this.ConfirmationSubject = source.ConfirmationSubject;
             this.Cost = source.Cost;
+            this.DefaultPayment = source.DefaultPayment;
             this.DiscountCodeTerm = source.DiscountCodeTerm;
             this.FeeTerm = source.FeeTerm;
             this.FinancialGatewayId = source.FinancialGatewayId;
