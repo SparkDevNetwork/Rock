@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// RegistrationTemplateFee Service class
+    /// RegistrationTemplateFeeItem Service class
     /// </summary>
-    public partial class RegistrationTemplateFeeService : Service<RegistrationTemplateFee>
+    public partial class RegistrationTemplateFeeItemService : Service<RegistrationTemplateFeeItem>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="RegistrationTemplateFeeService"/> class
+        /// Initializes a new instance of the <see cref="RegistrationTemplateFeeItemService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public RegistrationTemplateFeeService(RockContext context) : base(context)
+        public RegistrationTemplateFeeItemService(RockContext context) : base(context)
         {
         }
 
@@ -48,13 +48,13 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( RegistrationTemplateFee item, out string errorMessage )
+        public bool CanDelete( RegistrationTemplateFeeItem item, out string errorMessage )
         {
             errorMessage = string.Empty;
  
-            if ( new Service<RegistrationRegistrantFee>( Context ).Queryable().Any( a => a.RegistrationTemplateFeeId == item.Id ) )
+            if ( new Service<RegistrationRegistrantFee>( Context ).Queryable().Any( a => a.RegistrationTemplateFeeItemId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", RegistrationTemplateFee.FriendlyTypeName, RegistrationRegistrantFee.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", RegistrationTemplateFeeItem.FriendlyTypeName, RegistrationRegistrantFee.FriendlyTypeName );
                 return false;
             }  
             return true;
@@ -64,49 +64,44 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class RegistrationTemplateFeeExtensionMethods
+    public static partial class RegistrationTemplateFeeItemExtensionMethods
     {
         /// <summary>
-        /// Clones this RegistrationTemplateFee object to a new RegistrationTemplateFee object
+        /// Clones this RegistrationTemplateFeeItem object to a new RegistrationTemplateFeeItem object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static RegistrationTemplateFee Clone( this RegistrationTemplateFee source, bool deepCopy )
+        public static RegistrationTemplateFeeItem Clone( this RegistrationTemplateFeeItem source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as RegistrationTemplateFee;
+                return source.Clone() as RegistrationTemplateFeeItem;
             }
             else
             {
-                var target = new RegistrationTemplateFee();
+                var target = new RegistrationTemplateFeeItem();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another RegistrationTemplateFee object to this RegistrationTemplateFee object
+        /// Copies the properties from another RegistrationTemplateFeeItem object to this RegistrationTemplateFeeItem object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this RegistrationTemplateFee target, RegistrationTemplateFee source )
+        public static void CopyPropertiesFrom( this RegistrationTemplateFeeItem target, RegistrationTemplateFeeItem source )
         {
             target.Id = source.Id;
-            target.AllowMultiple = source.AllowMultiple;
-            #pragma warning disable 612, 618
-            target.CostValue = source.CostValue;
-            #pragma warning restore 612, 618
-            target.DiscountApplies = source.DiscountApplies;
-            target.FeeType = source.FeeType;
+            target.Cost = source.Cost;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
-            target.IsRequired = source.IsRequired;
+            target.MaximumUsageCount = source.MaximumUsageCount;
             target.Name = source.Name;
             target.Order = source.Order;
-            target.RegistrationTemplateId = source.RegistrationTemplateId;
+            target.RegistrationTemplateFeeId = source.RegistrationTemplateFeeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

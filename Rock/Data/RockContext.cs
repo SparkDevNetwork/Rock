@@ -1429,6 +1429,14 @@ namespace Rock.Data
         public DbSet<RegistrationTemplateFee> RegistrationTemplateFees { get; set; }
 
         /// <summary>
+        /// Gets or sets the registration template fee items.
+        /// </summary>
+        /// <value>
+        /// The registration template fee items.
+        /// </value>
+        public DbSet<RegistrationTemplateFeeItem> RegistrationTemplateFeeItems { get; set; }
+
+        /// <summary>
         /// Gets or sets the registration template forms.
         /// </summary>
         /// <value>

@@ -27,42 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for RegistrationInstance that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for RegistrationTemplateFeeItem that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class RegistrationInstanceEntity
+    public partial class RegistrationTemplateFeeItemEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int? AccountId { get; set; }
-
-        /// <summary />
-        public string AdditionalConfirmationDetails { get; set; }
-
-        /// <summary />
-        public string AdditionalReminderDetails { get; set; }
-
-        /// <summary />
-        public string ContactEmail { get; set; }
-
-        /// <summary />
-        public int? ContactPersonAliasId { get; set; }
-
-        /// <summary />
-        public string ContactPhone { get; set; }
-
-        /// <summary />
-        public decimal? Cost { get; set; }
-
-        /// <summary />
-        public decimal? DefaultPayment { get; set; }
-
-        /// <summary />
-        public string Details { get; set; }
-
-        /// <summary />
-        public DateTime? EndDateTime { get; set; }
+        public decimal Cost { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -71,13 +44,10 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; }
 
         /// <summary />
-        public int MaxAttendees { get; set; }
-
-        /// <summary />
-        public decimal? MinimumInitialPayment { get; set; }
+        public int? MaximumUsageCount { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -88,22 +58,10 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public string RegistrationInstructions { get; set; }
+        public int Order { get; set; }
 
         /// <summary />
-        public int RegistrationTemplateId { get; set; }
-
-        /// <summary />
-        public int? RegistrationWorkflowTypeId { get; set; }
-
-        /// <summary />
-        public bool ReminderSent { get; set; }
-
-        /// <summary />
-        public DateTime? SendReminderDateTime { get; set; }
-
-        /// <summary />
-        public DateTime? StartDateTime { get; set; }
+        public int? RegistrationTemplateFeeId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -132,35 +90,21 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source RegistrationInstance object
+        /// Copies the base properties from a source RegistrationTemplateFeeItem object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( RegistrationInstance source )
+        public void CopyPropertiesFrom( RegistrationTemplateFeeItem source )
         {
             this.Id = source.Id;
-            this.AccountId = source.AccountId;
-            this.AdditionalConfirmationDetails = source.AdditionalConfirmationDetails;
-            this.AdditionalReminderDetails = source.AdditionalReminderDetails;
-            this.ContactEmail = source.ContactEmail;
-            this.ContactPersonAliasId = source.ContactPersonAliasId;
-            this.ContactPhone = source.ContactPhone;
             this.Cost = source.Cost;
-            this.DefaultPayment = source.DefaultPayment;
-            this.Details = source.Details;
-            this.EndDateTime = source.EndDateTime;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
-            this.MaxAttendees = source.MaxAttendees;
-            this.MinimumInitialPayment = source.MinimumInitialPayment;
+            this.MaximumUsageCount = source.MaximumUsageCount;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
-            this.RegistrationInstructions = source.RegistrationInstructions;
-            this.RegistrationTemplateId = source.RegistrationTemplateId;
-            this.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;
-            this.ReminderSent = source.ReminderSent;
-            this.SendReminderDateTime = source.SendReminderDateTime;
-            this.StartDateTime = source.StartDateTime;
+            this.Order = source.Order;
+            this.RegistrationTemplateFeeId = source.RegistrationTemplateFeeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -172,22 +116,10 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for RegistrationInstance that includes all the fields that are available for GETs. Use this for GETs (use RegistrationInstanceEntity for POST/PUTs)
+    /// Client model for RegistrationTemplateFeeItem that includes all the fields that are available for GETs. Use this for GETs (use RegistrationTemplateFeeItemEntity for POST/PUTs)
     /// </summary>
-    public partial class RegistrationInstance : RegistrationInstanceEntity
+    public partial class RegistrationTemplateFeeItem : RegistrationTemplateFeeItemEntity
     {
-        /// <summary />
-        public FinancialAccount Account { get; set; }
-
-        /// <summary />
-        public PersonAlias ContactPersonAlias { get; set; }
-
-        /// <summary />
-        public RegistrationTemplate RegistrationTemplate { get; set; }
-
-        /// <summary />
-        public WorkflowType RegistrationWorkflowType { get; set; }
-
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>

@@ -842,9 +842,19 @@ namespace RockWeb.Blocks.Examples
                                         {
                                             attrState.FieldTypeId = fieldType.Id;
                                             var attribute = Helper.SaveAttributeEdits( attrState, registrationRegistrantEntityTypeId, registrationAttributeQualifierColumn, registrationTemplate.Id.ToString(), rockContext );
+                                            
                                             //rockContext.ChangeTracker.DetectChanges();
                                             rockContext.SaveChanges( disablePrePostProcessing: true );
+
+                                            // update AttributeCache manully since saved changes with disablePrePostProcessing = true
+                                            attribute.FieldTypeId = fieldType.Id;
+                                            AttributeCache.Get( attribute );
+
                                             formField.Attribute = attribute;
+                                        }
+                                        else
+                                        {
+                                            throw new Exception( "Unable to find FieldType for attribute" );
                                         }
                                         break;
                                     default:
@@ -923,47 +933,44 @@ namespace RockWeb.Blocks.Examples
                         feeOrder++;
                         var fee = new RegistrationTemplateFee();
                         fee.Guid = Guid.NewGuid();
+                        fee.Name = feeElement.Attribute( "name" ).Value.Trim();
                         registrationTemplate.Fees.Add( fee );
-
 
                         switch ( feeElement.Attribute( "type" ).Value.Trim().ToLowerInvariant() )
                         {
                             case "multiple":
                                 fee.FeeType = RegistrationFeeType.Multiple;
-                                fee.CostValue = FormatMultipleFeeCosts( feeElement.Elements( "option" ) );
+                                fee.FeeItems = new List<RegistrationTemplateFeeItem>();
+                                foreach ( XElement option in feeElement.Elements( "option" ) )
+                                {
+                                    var feeItem = new RegistrationTemplateFeeItem();
+                                    feeItem.Name = option.Attribute( "name" ).Value;
+                                    feeItem.Cost = option.Attribute( "cost" ).Value.AsDecimal();
+                                    fee.FeeItems.Add( feeItem );
+                                }
+                                
                                 break;
                             case "single":
-                                fee.FeeType = RegistrationFeeType.Single;
-                                fee.CostValue = feeElement.Attribute( "cost" ).Value.Trim();
-                                break;
+                                {
+                                    fee.FeeType = RegistrationFeeType.Single;
+                                    fee.FeeItems = new List<RegistrationTemplateFeeItem>();
+                                    var feeItem = new RegistrationTemplateFeeItem();
+                                    feeItem.Name = fee.Name;
+                                    feeItem.Cost = feeElement.Attribute( "cost" ).Value.AsDecimal();
+                                    fee.FeeItems.Add( feeItem );
+                                    break;
+                                }
                             default:
                                 throw new NotSupportedException( string.Format( "unknown fee type: {0}", feeElement.Attribute( "type" ).Value ) );
                         }
 
-                        fee.Name = feeElement.Attribute( "name" ).Value.Trim();
+                        
                         fee.DiscountApplies = feeElement.Attribute( "discountApplies" ).Value.AsBoolean();
                         fee.AllowMultiple = feeElement.Attribute( "enableQuantity" ).Value.AsBoolean();
                         fee.Order = feeOrder;
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Formats the fee cost options for the CostValue field.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        private string FormatMultipleFeeCosts( IEnumerable<XElement> options )
-        {
-            var values = new List<string>();
-
-            foreach ( XElement option in options )
-            {
-                //values.Add( string.Format( "{0}^{1}", option.Attribute( "name" ).Value, option.Attribute( "cost" ).Value.AsDecimal().FormatAsCurrency() ) );
-                values.Add( string.Format( "{0}^{1}", option.Attribute( "name" ).Value, option.Attribute( "cost" ).Value ) );
-            }
-            return values.AsDelimited( "|" );
         }
 
         /// <summary>
