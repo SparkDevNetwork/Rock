@@ -175,7 +175,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var values = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray();
+            var values = value?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray() ?? new string[0];
             values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
 
             if ( configurationValues != null && configurationValues.ContainsKey( "definedtype" ) )

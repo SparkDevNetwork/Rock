@@ -178,24 +178,6 @@
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="wpPersonFields" runat="server" Title="Form(s)">
-                        <Rock:PanelWidget ID="wpDefaultForm" runat="server" Title="Default Form" Expanded="true">
-                            <Rock:Grid ID="gFields" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Field">
-                                <Columns>
-                                    <Rock:ReorderField />
-                                    <Rock:RockBoundField DataField="Name" HeaderText="Field" />
-                                    <Rock:EnumField DataField="FieldSource" HeaderText="Source" />
-                                    <Rock:FieldTypeField DataField="FieldType" HeaderText="Type" />
-                                    <Rock:BoolField DataField="IsInternal" HeaderText="Internal" />
-                                    <Rock:BoolField DataField="IsSharedValue" HeaderText="Common" />
-                                    <Rock:BoolField DataField="ShowCurrentValue" HeaderText="Use Current Value" />
-                                    <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
-                                    <Rock:BoolField DataField="IsGridField" HeaderText="Show on Grid" />
-                                    <Rock:BoolField DataField="ShowOnWaitlist" HeaderText="Show on Wait List" />
-                                    <Rock:EditField OnClick="gFields_Edit" />
-                                    <Rock:DeleteField OnClick="gFields_Delete" />
-                                </Columns>
-                            </Rock:Grid>
-                        </Rock:PanelWidget>
                         <div class="form-list">
                             <asp:PlaceHolder ID="phForms" runat="server" />
                         </div>
@@ -395,6 +377,19 @@
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
+        <%-- Field Filter Dialog --%>
+        <Rock:ModalDialog ID="dlgFieldFilter" runat="server" Title="Form Field Filter" OnSaveClick="dlgFieldFilter_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="FieldFilter">
+            <Content>
+                <asp:HiddenField ID="hfFormGuidFilter" runat="server" />
+                <asp:HiddenField ID="hfFormFieldGuidFilter" runat="server" />
+                <asp:ValidationSummary ID="ValidationSummaryFieldFilter" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="FieldFilter" />
+
+                <Rock:FieldVisibilityRulesEditor ID="fvreFieldVisibilityRulesEditor" runat="server" />
+                
+            </Content>
+        </Rock:ModalDialog>
+
+        <%-- Field Dialog --%>
         <Rock:ModalDialog ID="dlgField" runat="server" Title="Form Field" OnSaveClick="dlgField_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Field">
             <Content>
                 <asp:HiddenField ID="hfFormGuid" runat="server" />
@@ -434,6 +429,7 @@
            </Content>
         </Rock:ModalDialog>
 
+        <%-- Discounts Dialog --%>
         <Rock:ModalDialog ID="dlgDiscount" runat="server" Title="Discount Code" OnSaveClick="dlgDiscount_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Discount">
             <Content>
                 <asp:HiddenField ID="hfDiscountGuid" runat="server" />
@@ -464,6 +460,7 @@
             </Content>
         </Rock:ModalDialog>
 
+        <%-- Fees Dialog --%>
         <Rock:ModalDialog ID="dlgFee" runat="server" Title="Fee" OnSaveClick="dlgFee_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Fee">
             <Content>
                 <asp:HiddenField ID="hfFeeGuid" runat="server" />
@@ -511,7 +508,10 @@
                     $('.forms-readonly-list').toggle(500);
                 })
 
-                $('.form-list').sortable({
+                // NOTE: js-optional-form-list is a div created in codebehind around the optional forms
+                var $formList = $('.js-optional-form-list');
+
+                $formList.sortable({
                     helper: fixHelper,
                     handle: '.form-reorder',
                     containment: 'parent',

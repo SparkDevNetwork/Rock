@@ -495,15 +495,11 @@ namespace RockWeb.Blocks.Security
             if ( tbFirstName.Visible && tbLastName.Visible && tbEmail.Visible && tbMobilePhone.Visible )
             {
                 mobilePhoneNumber = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters();
-                person = personService
-                .Queryable()
-                .Where( p => p.FirstName == tbFirstName.Text )
-                .Where( p => p.LastName == tbLastName.Text )
-                .Where( p => p.Email == tbEmail.Text )
-                .Where( p => p.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault().Number == mobilePhoneNumber )
-                .FirstOrDefault();
 
-                if ( person != null )
+                var personQuery = new PersonService.PersonMatchQuery( tbFirstName.Text, tbLastName.Text, tbEmail.Text, mobilePhoneNumber );
+                person = personService.FindPerson( personQuery, true );
+
+                if ( person.IsNotNull() )
                 {
                     RockPage.LinkPersonAliasToDevice( person.PrimaryAlias.Id, hfMacAddress.Value );
                     return person.PrimaryAliasId;

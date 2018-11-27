@@ -35,7 +35,8 @@ namespace Rock.Utility.SparkDataApi
     /// </summary>
     public class NcoaApi
     {
-        private string NCOA_SERVER = "https://app.truencoa.com"; // "https://app.testing.truencoa.com";
+        private string NCOA_SERVER = "https://app.truencoa.com";
+        //private string NCOA_SERVER = "https://app.testing.truencoa.com";
         private int _batchsize = 150;
         private string _username;
         private string _password;
@@ -328,6 +329,7 @@ namespace Rock.Utility.SparkDataApi
                 {
                     NcoaResponse file = JsonConvert.DeserializeObject<NcoaResponse>( response.Content );
                     return file.Status == "Exported" || file.Status == "Processed";
+
                 }
                 catch
                 {
