@@ -413,7 +413,7 @@ namespace RockWeb.Blocks.Core
             tbValueDescription.Text = definedValue.Description;
             
             avcDefinedValueAttributes.ValidationGroup = modalValue.ValidationGroup;
-            avcDefinedValueAttributes.AddEditControls( definedValue, true );
+            avcDefinedValueAttributes.AddEditControls( definedValue );
 
             modalValue.Show();
         }

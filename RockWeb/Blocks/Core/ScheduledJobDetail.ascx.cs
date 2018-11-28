@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            avcAttributes.AddEditControls( job, true );
+            avcAttributes.AddEditControls( job );
         }
 
         /// <summary>
@@ -248,7 +248,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             job.LoadAttributes();
-            avcAttributes.AddEditControls( job, true );
+            avcAttributes.AddEditControls( job );
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;

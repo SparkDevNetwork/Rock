@@ -196,7 +196,7 @@ namespace RockWeb.Blocks.Core
 
             campus.LoadAttributes();
             avcAttributes.ExcludedAttributes = campus.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
-            avcAttributes.AddEditControls( campus, true );
+            avcAttributes.AddEditControls( campus );
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
