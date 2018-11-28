@@ -87,7 +87,19 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a list of Attributes to exclude with creating Display/Edit controls
+        /// Gets or sets a list of Attributes to include when creating Display/Edit controls. Leave null to include all attributes.
+        /// </summary>
+        /// <value>
+        /// The included attributes.
+        /// </value>
+        public AttributeCache[] IncludedAttributes
+        {
+            get => ViewState["IncludedAttributes"] as AttributeCache[];
+            set => ViewState["IncludedAttributes"] = value;
+        }
+
+        /// <summary>
+        /// Gets or sets a list of Attributes to exclude when creating Display/Edit controls
         /// </summary>
         /// <value>
         /// The excluded attributes.
@@ -96,6 +108,42 @@ namespace Rock.Web.UI.Controls
         {
             get => ViewState["ExcludedAttributes"] as AttributeCache[] ?? new AttributeCache[0];
             set => ViewState["ExcludedAttributes"] = value;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the category header/label should be displayed (defaults to true)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show category label]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowCategoryLabel
+        {
+            get => ViewState["ShowCategoryLabel"] as bool? ?? true;
+            set => ViewState["ShowCategoryLabel"] = value;
+        }
+
+        /// <summary>
+        /// Set this to limit attributes by category name (case-insensitive). Leave null to not limit by category.
+        /// </summary>
+        /// <value>
+        /// The included categories.
+        /// </value>
+        public string[] IncludedCategoryNames
+        {
+            get => ViewState["IncludedCategoryNames"] as string[];
+            set => ViewState["IncludedCategoryNames"] = value;
+        }
+
+        /// <summary>
+        /// Set this to exclude attributes by category name (case-insensitive).
+        /// </summary>
+        /// <value>
+        /// The excluded category names.
+        /// </value>
+        public string[] ExcludedCategoryNames
+        {
+            get => ViewState["ExcludedCategoryNames"] as string[];
+            set => ViewState["ExcludedCategoryNames"] = value;
         }
 
         /// <summary>
@@ -225,7 +273,16 @@ namespace Rock.Web.UI.Controls
         #region Methods
 
         /// <summary>
-        /// Adds edit controls for each of the item's attributes
+        /// Adds the edit controls (and set the edit values)
+        /// </summary>
+        /// <param name="item">The item.</param>
+        public void AddEditControls( Rock.Attribute.IHasAttributes item )
+        {
+            this.AddEditControls( item, true );
+        }
+
+        /// <summary>
+        /// Adds edit controls for each of the item's attributes, with an option to set the edit control values.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
@@ -251,9 +308,30 @@ namespace Rock.Web.UI.Controls
             _editModeAttributeIdsState = new List<int>();
             if ( item != null && item.Attributes != null )
             {
-                foreach ( var attributeCategory in Rock.Attribute.Helper.GetAttributeCategories( item, LimitToShowInGridAttributes, false, suppressOrdering ) )
+                var attributeCategories = Rock.Attribute.Helper.GetAttributeCategories( item, LimitToShowInGridAttributes, false, suppressOrdering );
+                if ( this.IncludedCategoryNames != null )
                 {
-                    var attributes = attributeCategory.Attributes.Where( a => a.IsActive ).Where( a => !excludedAttributeGuids.Contains( a.Guid ) ).ToList();
+                    attributeCategories = attributeCategories.Where( a => this.IncludedCategoryNames.Any( c => c.Equals( a.CategoryName, StringComparison.OrdinalIgnoreCase ) ) ).ToList();
+                }
+
+                if ( this.ExcludedCategoryNames != null )
+                {
+                    attributeCategories = attributeCategories.Where( a => !this.ExcludedCategoryNames.Any( c => c.Equals( a.CategoryName, StringComparison.OrdinalIgnoreCase ) ) ).ToList();
+                }
+
+                foreach ( var attributeCategory in attributeCategories )
+                {
+                    var attributes = attributeCategory.Attributes.Where( a => a.IsActive );
+                    if ( this.IncludedAttributes != null )
+                    {
+                        attributes = attributes.Where( a => this.IncludedAttributes.Any( c => c.Guid == a.Guid ) ).ToList();
+                    }
+
+                    if ( this.ExcludedAttributes != null )
+                    {
+                        attributes = attributes.Where( a => !this.ExcludedAttributes.Any( c => c.Guid == a.Guid ) ).ToList();
+                    }
+
                     if ( attributes.Any() )
                     {
                         var attributeKeys = attributes.Select( a => a.Key ).ToList();
@@ -261,8 +339,18 @@ namespace Rock.Web.UI.Controls
                         // keep track of which attributes we created edit controls for, so we can re-create them on postback
                         _editModeAttributeIdsState.AddRange( attributes.Select( a => a.Id ) );
 
+                        string categoryLabelText;
+                        if ( ShowCategoryLabel )
+                        {
+                            categoryLabelText = attributeCategory.Category?.Name ?? string.Empty;
+                        }
+                        else
+                        {
+                            categoryLabelText = string.Empty;
+                        }
+
                         Rock.Attribute.Helper.AddEditControls(
-                            attributeCategory.Category?.Name ?? string.Empty,
+                            categoryLabelText,
                             attributeKeys,
                             item,
                             _phAttributes,
@@ -290,6 +378,8 @@ namespace Rock.Web.UI.Controls
             {
                 item.LoadAttributes();
             }
+
+            EnsureChildControls();
 
             Rock.Attribute.Helper.GetEditValues( _phAttributes, item );
         }
@@ -319,7 +409,17 @@ namespace Rock.Web.UI.Controls
             var excludedAttributeGuids = this.ExcludedAttributes.Select( a => a.Guid ).ToList();
             _displayModeAttributeIdValuesState = new Dictionary<int, string>();
 
-            var attributes = item.Attributes.Select( a => a.Value ).Where( a => a.IsActive ).Where( a => !excludedAttributeGuids.Contains( a.Guid ) );
+            var attributes = item.Attributes.Select( a => a.Value ).Where( a => a.IsActive );
+            if ( this.IncludedAttributes != null )
+            {
+                attributes = attributes.Where( a => this.IncludedAttributes.Any( c => c.Guid == a.Guid ) ).ToList();
+            }
+
+            if ( this.ExcludedAttributes != null )
+            {
+                attributes = attributes.Where( a => !this.ExcludedAttributes.Any( c => c.Guid == a.Guid ) ).ToList();
+            }
+
             if ( !this.SuppressOrderingWithinCategory )
             {
                 attributes = attributes.OrderBy( t => t.EntityTypeQualifierValue ).ThenBy( t => t.Order ).ThenBy( t => t.Name );
@@ -328,7 +428,18 @@ namespace Rock.Web.UI.Controls
             _displayModeAttributeIdValuesState = attributes.ToDictionary( k => k.Id, v => item.GetAttributeValue( v.Key ) );
 
             List<AttributeCategory> attributeCategories = Rock.Attribute.Helper.GetAttributeCategories( attributes.ToList(), this.LimitToShowInGridAttributes, false );
-            Rock.Attribute.Helper.AddDisplayControls( item, attributeCategories, _phAttributes, null, true );
+
+            if ( this.IncludedCategoryNames != null )
+            {
+                attributeCategories = attributeCategories.Where( a => this.IncludedCategoryNames.Any( c => c.Equals( a.CategoryName, StringComparison.OrdinalIgnoreCase ) ) ).ToList();
+            }
+
+            if ( this.ExcludedCategoryNames != null )
+            {
+                attributeCategories = attributeCategories.Where( a => !this.ExcludedCategoryNames.Any( c => c.Equals( a.CategoryName, StringComparison.OrdinalIgnoreCase ) ) ).ToList();
+            }
+
+            Rock.Attribute.Helper.AddDisplayControls( item, attributeCategories, _phAttributes, null, this.ShowCategoryLabel );
         }
 
         #endregion Methods
