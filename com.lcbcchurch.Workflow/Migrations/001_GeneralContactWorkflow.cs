@@ -262,6 +262,9 @@ away, please call <strong>{{ 'Global' | Attribute:'OrganizationPhone' }}</strong
 			AND [aq].[key] = 'definedtypeguid'
 		" );
 
+            // Attrib Value for Block:Workflow Entry, Attribute:Workflow Type Page: Contact Us, Site: External Website
+            RockMigrationHelper.AddBlockAttributeValue( "CA7D13BB-6781-4908-9198-CF89E915F9D7", "2F1D98C4-A8EF-4680-9F64-11BFC28D5597", @"9a5541bd-a914-4ee2-9cc0-dc6258d7d17d" );
+
             #endregion
         }
         public override void Down()
