@@ -82,7 +82,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DynamicPlaceholder ID="phAttributes" runat="server" />
+                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
                         </div>
                     </div>
 

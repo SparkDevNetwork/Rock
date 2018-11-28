@@ -85,17 +85,6 @@ namespace RockWeb.Blocks.Groups
                 SetBlockOptions();
                 ShowDetail( PageParameter( "GroupMemberId" ).AsInteger(), PageParameter( "GroupId" ).AsIntegerOrNull() );
             }
-            else
-            {
-                var groupMember = new GroupMember { GroupId = hfGroupId.ValueAsInt() };
-                if ( groupMember != null )
-                {
-                    groupMember.LoadAttributes();
-                    phAttributes.Controls.Clear();
-                    var excludeForEdit = groupMember.Attributes.Where( a => !a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
-                    Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, false, BlockValidationGroup, excludeForEdit );
-                }
-            }
         }
 
         /// <summary>
@@ -428,8 +417,7 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 groupMember.LoadAttributes();
-
-                Rock.Attribute.Helper.GetEditValues( phAttributes, groupMember );
+                avcAttributes.GetEditValues( groupMember );
 
                 if ( !Page.IsValid )
                 {
@@ -753,28 +741,24 @@ namespace RockWeb.Blocks.Groups
             }
 
             groupMember.LoadAttributes();
-
-            phAttributes.Controls.Clear();
-            phAttributes.Visible = false;
-
-            phAttributesReadOnly.Controls.Clear();
-            phAttributesReadOnly.Visible = false;
+            avcAttributes.Visible = false;
+            avcAttributesReadOnly.Visible = false;
 
             var editableAttributes = !readOnly ? groupMember.Attributes.Where( a => a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList() : new List<string>();
             var viewableAttributes = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) && a.Value.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
 
             if ( editableAttributes.Any() )
             {
-                var excludeKeys = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
-                Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, true, string.Empty, excludeKeys );
-                phAttributes.Visible = true;
+                avcAttributes.AddEditControls( groupMember );
+                avcAttributes.ExcludedAttributes = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) ).Select( a => a.Value ).ToArray();
+                avcAttributes.Visible = true;
             }
 
             if ( viewableAttributes.Any() )
             {
                 var excludeKeys = groupMember.Attributes.Where( a => !viewableAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
-                Rock.Attribute.Helper.AddDisplayControls( groupMember, phAttributesReadOnly, excludeKeys, false, false );
-                phAttributesReadOnly.Visible = true;
+                avcAttributesReadOnly.AddDisplayControls( groupMember );
+                avcAttributesReadOnly.Visible = true;
             }
 
             var groupHasRequirements = group.GetGroupRequirements( rockContext ).Any();
