@@ -51,7 +51,7 @@
                         </div>
                     </div>
                     <div class="attributes">
-                        <Rock:DynamicPlaceHolder ID="phDefinedValueAttributes" runat="server" />
+                        <Rock:AttributeValuesContainer ID="avcDefinedValueAttributes" runat="server" />
                     </div>
                 </fieldset>
 
