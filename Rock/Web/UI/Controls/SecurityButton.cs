@@ -70,8 +70,6 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
 
-            this.Attributes.Add( "height", "500px" );
-
             HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
             buttonIcon.Attributes.Add( "class", "fa fa-lock" );
             this.Controls.Add( buttonIcon );
