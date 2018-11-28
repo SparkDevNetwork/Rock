@@ -1643,6 +1643,7 @@
     <Compile Include="Web\HttpModules\HttpModuleContainer.cs" />
     <Compile Include="Web\UI\Adapters\ListControlAdaptor.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
+    <Compile Include="Web\UI\Controls\AttributeValuesContainer.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityWrapper.cs" />
     <Compile Include="Web\UI\Controls\Captcha.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />

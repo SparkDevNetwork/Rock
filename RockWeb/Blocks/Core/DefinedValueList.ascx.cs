@@ -131,13 +131,6 @@ namespace RockWeb.Blocks.Core
                     pnlList.Visible = false;
                 }
             }
-            else
-            {
-                if ( !string.IsNullOrWhiteSpace( hfDefinedValueId.Value ) )
-                {
-                    ShowDefinedValueEdit( hfDefinedValueId.ValueAsInt(), false );
-                }
-            }
         }
 
         #endregion
@@ -245,8 +238,7 @@ namespace RockWeb.Blocks.Core
 
             definedValue.Value = tbValueName.Text;
             definedValue.Description = tbValueDescription.Text;
-            definedValue.LoadAttributes();
-            Rock.Attribute.Helper.GetEditValues( phDefinedValueAttributes, definedValue );
+            avcDefinedValueAttributes.GetEditValues( definedValue );
 
             if ( !Page.IsValid )
             {
@@ -387,10 +379,10 @@ namespace RockWeb.Blocks.Core
         /// <param name="valueId">The value id.</param>
         protected void gDefinedValues_ShowEdit( int valueId )
         {
-            ShowDefinedValueEdit( valueId, true );
+            ShowDefinedValueEdit( valueId );
         }
 
-        private void ShowDefinedValueEdit( int valueId, bool setValues )
+        private void ShowDefinedValueEdit( int valueId )
         {
             var definedType = DefinedTypeCache.Get( hfDefinedTypeId.ValueAsInt() );
             DefinedValue definedValue;
@@ -415,16 +407,13 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-            if ( setValues )
-            {
-                hfDefinedValueId.SetValue( definedValue.Id );
-                tbValueName.Text = definedValue.Value;
-                tbValueDescription.Text = definedValue.Description;
-            }
-
-            definedValue.LoadAttributes();
-            phDefinedValueAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( definedValue, phDefinedValueAttributes, setValues, modalValue.ValidationGroup );
+            
+            hfDefinedValueId.SetValue( definedValue.Id );
+            tbValueName.Text = definedValue.Value;
+            tbValueDescription.Text = definedValue.Description;
+            
+            avcDefinedValueAttributes.ValidationGroup = modalValue.ValidationGroup;
+            avcDefinedValueAttributes.AddEditControls( definedValue, true );
 
             modalValue.Show();
         }
