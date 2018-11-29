@@ -671,9 +671,19 @@ namespace RockWeb.Blocks.Groups
                 // hide the ShowMoveDialog if this is readOnly or if this is a new group member (can't move a group member that doesn't exist yet)
                 btnShowMoveDialog.Visible = false;
             }
-            
-            LoadDropDowns();
 
+            var currentSyncdRoles = new GroupSyncService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( s => s.GroupId == groupMember.GroupId )
+                    .Select( s => s.GroupTypeRoleId )
+                    .ToList();
+
+            LoadDropDowns( currentSyncdRoles, groupMember.GroupRoleId );
+
+            ddlGroupRole.SetValue( groupMember.GroupRoleId );
+            ddlGroupRole.Enabled = ddlGroupRole.Enabled == true ? !readOnly : false;
+            
             ShowRequiredDocumentStatus( rockContext, groupMember, group );
 
             ppGroupMemberPerson.SetValue( groupMember.Person );
@@ -684,9 +694,6 @@ namespace RockWeb.Blocks.Groups
                 // once a group member record is saved, don't let them change the person
                 ppGroupMemberPerson.Enabled = false;
             }
-
-            ddlGroupRole.SetValue( groupMember.GroupRoleId );
-            ddlGroupRole.Enabled = !readOnly;
 
             tbNote.Text = groupMember.Note;
             tbNote.ReadOnly = readOnly;
@@ -973,25 +980,39 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
-        private void LoadDropDowns()
+        /// <param name="syncdRoles">The syncd roles.</param>
+        private void LoadDropDowns( List<int> syncdRoles, int groupMemberRole )
         {
             int groupId = hfGroupId.ValueAsInt();
             RockContext rockContext = new RockContext();
             Group group = new GroupService( rockContext ).Get( groupId );
+
             if ( group != null )
             {
-                var currentSyncdRoles = new GroupSyncService( rockContext )
+                IQueryable<GroupTypeRole> groupTypeRoles = new GroupTypeRoleService( rockContext )
                     .Queryable()
-                    .Where( s => s.GroupId == groupId )
-                    .Select( s => s.GroupTypeRoleId )
-                    .ToList();
+                    .AsNoTracking()
+                    .Where( r => r.GroupTypeId == group.GroupTypeId );
 
-                ddlGroupRole.DataSource = new GroupTypeRoleService( rockContext )
-                    .Queryable()
-                    .Where( r => r.GroupTypeId == group.GroupTypeId && !currentSyncdRoles.Contains( r.Id ) )
-                    .OrderBy( a => a.Order )
-                    .ToList();
+                if ( syncdRoles.Any() )
+                {
+                    // At least one role is sync'd so we need to handle them.
+                    if (syncdRoles.Contains( groupMemberRole ) && hfGroupMemberId.ValueAsInt() != 0 )
+                    {
+                        // This role is being sync'd so keep the full list of roles, disable the ddl, and show a tool tip explaining why it's disabled.
+                        ddlGroupRole.ToolTip = "Role selection disabled because this member was added to this role automatically by Group Sync.";
+                        ddlGroupRole.Enabled = false;
+                    }
+                    else
+                    {
+                        // This role is not being sync'd but the group has sync'd roles. So remove the sync'd roles and display a tool tip explaining their absense.
+                        groupTypeRoles = groupTypeRoles.Where( r => !syncdRoles.Contains( r.Id ) );
 
+                        ddlGroupRole.ToolTip = "Roles used for Group Sync cannot be used for manual additions and so are not being displayed.";
+                    }
+                }
+
+                ddlGroupRole.DataSource = groupTypeRoles.OrderBy( a => a.Order ).ToList();
                 ddlGroupRole.DataBind();
             }
 
