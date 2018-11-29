@@ -498,12 +498,15 @@ namespace Rock
         }
 
         /// <summary>
-        /// Binds to the values of a definedType using the definedValue's Id as the listitem value
+        /// Binds to the values of a definedType using the definedValue's Id as the listitem value.
+        /// NOTE: In most cases, instead of using BindToDefinedType, use <see cref="Rock.Web.UI.Controls.DefinedValuePicker"/> instead
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="definedType">Type of the defined.</param>
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
         /// <param name="useDescriptionAsText">if set to <c>true</c> [use description as text].</param>
+        [RockObsolete( "1.9" )]
+        [Obsolete( "Use DefinedValuePicker instead." )]
         public static void BindToDefinedType( this ListControl listControl, DefinedTypeCache definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
         {
             // For IDefinedValuePicker types: Before this section of code was added, BindToDefinedType did not update DefinedTypeId, because not all ListControls have it.
