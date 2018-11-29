@@ -293,9 +293,11 @@ textarea,
 .grid .table > thead > tr > th {
   padding: 18px 0 18px 12px;
   vertical-align: middle;
-  // &:last-child {
-  //   border-right: 1px solid @table-border-color;
-  // }
+
+  // Remove padding offset on center
+  &[align="center"] {
+    padding: 18px 6px;
+  }
 }
 
 .grid .table > thead > tr.grid-header-bold > th {
@@ -334,10 +336,6 @@ textarea,
   .btn {
     width: 33px;
     padding: 5px 7px;
-    &.fa-clone {
-      width: 33px;
-      padding: 8px 8px 8px 7px;
-    }
   }
 }
 
