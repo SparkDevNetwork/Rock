@@ -510,32 +510,35 @@ namespace Rock.Model
                 return null;
             }
 
-            // If location is not a campus, check the location's parent locations to see if any of them are a campus
             var location = this.Get( locationId.Value );
             int? campusId = location.CampusId;
-            if ( !campusId.HasValue )
+            if ( campusId.HasValue )
             {
-                var campusLocations = new Dictionary<int, int>();
-                CampusCache.All()
-                    .Where( c => c.LocationId.HasValue )
-                    .Select( c => new
-                    {
-                        CampusId = c.Id,
-                        LocationId = c.LocationId.Value
-                    } )
-                    .ToList()
-                    .ForEach( c => campusLocations.Add( c.CampusId, c.LocationId ) );
+                return campusId;
+            }
 
-                foreach ( var parentLocationId in this.GetAllAncestorIds( locationId.Value ) )
+            // If location is not a campus, check the location's parent locations to see if any of them are a campus
+            var campusLocations = new Dictionary<int, int>();
+            CampusCache.All()
+                .Where( c => c.LocationId.HasValue )
+                .Select( c => new
                 {
-                    campusId = campusLocations
-                        .Where( c => c.Value == parentLocationId )
-                        .Select( c => c.Key )
-                        .FirstOrDefault();
-                    if ( campusId != 0 )
-                    {
-                        return campusId;
-                    }
+                    CampusId = c.Id,
+                    LocationId = c.LocationId.Value
+                } )
+                .ToList()
+                .ForEach( c => campusLocations.Add( c.CampusId, c.LocationId ) );
+
+            foreach ( var parentLocationId in this.GetAllAncestorIds( locationId.Value ) )
+            {
+                campusId = campusLocations
+                    .Where( c => c.Value == parentLocationId )
+                    .Select( c => c.Key )
+                    .FirstOrDefault();
+
+                if ( campusId != 0 )
+                {
+                    return campusId;
                 }
             }
 
