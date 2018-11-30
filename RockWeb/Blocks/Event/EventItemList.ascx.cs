@@ -170,6 +170,7 @@ namespace RockWeb.Blocks.Event
             rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Audience" ), "Audience", dvpAudience.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Status" ), "Status", ddlStatus.SelectedValue );
             rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "ApprovalStatus" ), "Approval Status", ddlApprovalStatus.SelectedValue );
+            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "CreatedBy" ), "CreatedBy", string.Join( ";", ppCreatedBy.PersonId, ppCreatedBy.PersonName ) );
 
             if ( AvailableAttributes != null )
             {
@@ -239,6 +240,15 @@ namespace RockWeb.Blocks.Event
                 e.Key == MakeKeyUniqueToEventCalendar( "ApprovalStatus" ) )
             {
                 e.Value = e.Value;
+            }
+            else if ( e.Key == MakeKeyUniqueToEventCalendar( "CreatedBy" ) )
+            {
+                var createdBy = e.Value.Split( ';' );
+                if ( createdBy.Length > 1 )
+                {
+                    // display PersonName instead of PersonId in the filter overview
+                    e.Value = createdBy[1];
+                }
             }
             else
             {
@@ -359,6 +369,13 @@ namespace RockWeb.Blocks.Event
             ddlStatus.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Status" ) ) );
 
             ddlApprovalStatus.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "ApprovalStatus" ) ) );
+
+            var createdBy = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "CreatedBy" ) ).Split( ';' );
+            if ( createdBy.Length > 1 && createdBy[0].AsIntegerOrNull().HasValue )
+            {
+                ppCreatedBy.SelectedValue = createdBy[0].AsIntegerOrNull();
+                ppCreatedBy.PersonName = createdBy[1];
+            }
 
             BindAttributes();
             AddDynamicControls();
@@ -566,6 +583,14 @@ namespace RockWeb.Blocks.Event
                                     campusIds.Contains( c.CampusId.Value ) ) );
                 }
 
+                // Filter by CreatedBy
+                int? personId = ppCreatedBy.SelectedValue;
+                if ( personId.HasValue )
+                {
+                    qry = qry
+                        .Where( i => i.EventItem.CreatedByPersonAlias.Person.Id == personId.Value );
+                }
+
                 // Filter query by any configured attribute filters
                 if ( AvailableAttributes != null && AvailableAttributes.Any() )
                 {
@@ -670,7 +695,8 @@ namespace RockWeb.Blocks.Event
                     Calendar = i.EventCalendarItem.EventItem.EventCalendarItems.ToList().Select( c => c.EventCalendar.Name ).ToList().AsDelimited( "<br>" ),
                     Audience = i.EventCalendarItem.EventItem.EventItemAudiences.ToList().Select( a => a.DefinedValue.Value ).ToList().AsDelimited( "<br>" ),
                     Status = i.EventCalendarItem.EventItem.IsActive ? "<span class='label label-success'>Active</span>" : "<span class='label label-default'>Inactive</span>",
-                    ApprovalStatus = i.EventCalendarItem.EventItem.IsApproved ? "<span class='label label-info'>Approved</span>" : "<span class='label label-warning'>Not Approved</span>"
+                    ApprovalStatus = i.EventCalendarItem.EventItem.IsApproved ? "<span class='label label-info'>Approved</span>" : "<span class='label label-warning'>Not Approved</span>",
+                    CreatedBy = i.EventCalendarItem.EventItem.CreatedByPersonName,
                 } ).ToList();
 
                 gEventCalendarItems.DataBind();
