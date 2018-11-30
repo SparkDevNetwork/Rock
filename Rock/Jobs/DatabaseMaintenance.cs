@@ -38,7 +38,7 @@ namespace Rock.Jobs
     [BooleanField( "Run Integrity Check", "Determines if an integrity check should be performed.", true, order:0 )]
     [BooleanField( "Run Index Rebuild", "Determines if indexes should be rebuilt.", true, order: 1 )]
     [BooleanField( "Run Statistics Update", "Determines if the statistics should be updated.", true, order: 2 )]
-    [EmailField ("Alert Email", "Email address to send alerts to errors occur (multiple address delimited with comma).", true, order: 3)]
+    [TextField ("Alert Email", "Email address to send alerts to errors occur (multiple address delimited with comma).", true, order: 3)]
 
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each step to complete.", false, 900, "Advanced", 4, "CommandTimeout")]
     [IntegerField( "Minimum Index Page Count", "The minimum size in pages that an index must be before it's considered for being re-built. Default value is 100.", false, 100, category: "Advanced", order: 5 )]
