@@ -36,7 +36,7 @@
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-
+                <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                 <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <Rock:NotificationBox ID="nbValidation" runat="server" NotificationBoxType="Danger" Visible="false" />
 

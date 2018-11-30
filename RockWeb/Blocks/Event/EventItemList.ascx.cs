@@ -269,7 +269,7 @@ namespace RockWeb.Blocks.Event
                 EventItem eventItem = eventItemService.Get( e.RowKeyId );
                 if ( eventItem != null )
                 {
-                    if ( _canEdit )
+                    if ( eventItem.IsAuthorized( Authorization.DELETE, CurrentPerson ) )
                     {
                         string errorMessage;
                         if ( !eventItemService.CanDelete( eventItem, out errorMessage ) )

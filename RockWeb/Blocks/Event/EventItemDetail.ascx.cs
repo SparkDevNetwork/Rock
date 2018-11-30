@@ -298,16 +298,24 @@ namespace RockWeb.Blocks.Event
 
                 if ( eventItem != null )
                 {
-                    string errorMessage;
-                    if ( !eventItemService.CanDelete( eventItem, out errorMessage ) )
+                    if ( eventItem.IsAuthorized( Authorization.DELETE, CurrentPerson ) )
                     {
-                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                        string errorMessage;
+                        if ( !eventItemService.CanDelete( eventItem, out errorMessage ) )
+                        {
+                            mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                            return;
+                        }
+
+                        eventItemService.Delete( eventItem );
+
+                        rockContext.SaveChanges();
+                    }
+                    else
+                    {
+                        mdGridWarning.Show( "You are not authorized to delete this calendar item", ModalAlertType.Warning );
                         return;
                     }
-
-                    eventItemService.Delete( eventItem );
-
-                    rockContext.SaveChanges();
                 }
             }
 

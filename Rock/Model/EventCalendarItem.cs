@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -32,7 +33,6 @@ namespace Rock.Model
     [DataContract]
     public partial class EventCalendarItem : Model<EventCalendarItem>, ISecured
     {
-
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.EventCalendar"/> that this EventCalendarItem belongs to. This property is required.
         /// </summary>
@@ -78,6 +78,22 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Gets the supported actions.
+        /// </summary>
+        /// <value>
+        /// The supported actions.
+        /// </value>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( Rock.Security.Authorization.DELETE, "The roles and/or users that have access to delete calendar items." );
+                return supportedActions;
+            }
+        }
 
         /// <summary>
         /// Gets the parent authority.
