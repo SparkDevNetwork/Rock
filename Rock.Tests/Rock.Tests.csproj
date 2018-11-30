@@ -106,6 +106,7 @@
     <Compile Include="Rock\Model\PersonTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\StringExtensionsTests.cs" />
     <Compile Include="Rock\Utility\NcoaApi\TrueNcoaApiTests.cs" />
+    <Compile Include="Rock\Utility\RockDynamicTests.cs" />
     <Compile Include="Rock\Workflow\Action\BackgroundCheckRequestTests.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
