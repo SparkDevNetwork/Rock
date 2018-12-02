@@ -142,7 +142,7 @@ namespace Rock.CodeGeneration
                     var dbSetEntityType = typeof( Rock.Data.RockContext ).GetProperties().Where( a => a.PropertyType.IsGenericType && a.PropertyType.Name == "DbSet`1" ).Select( a => a.PropertyType.GenericTypeArguments[0] ).ToList();
                     var entityTypes = cblModels.Items.Cast<Type>().ToList();
                     var missingDbSets = entityTypes.Where( a => !dbSetEntityType.Any( x => x.FullName == a.FullName ) ).ToList();
-                    tbResults.Text += missingDbSets.Select( a => a.Name + "is missing DbSet<> in RockContext" ).ToList().AsDelimited( "\r\n" ) + "\r\n\r\n";
+                    tbResults.Text += missingDbSets.Select( a => a.Name + " is missing DbSet<> in RockContext" ).ToList().AsDelimited( "\r\n" ) + "\r\n\r\n";
 
                     foreach ( object item in cblModels.CheckedItems )
                     {
@@ -419,7 +419,7 @@ GO
                 dbContextFullName = dbContextFullName.Replace( "Rock.Data.", "" );
             }
 
-            var properties = GetEntityProperties( type, false );
+            var properties = GetEntityProperties( type, false, true );
 
             var sb = new StringBuilder();
 
@@ -512,7 +512,23 @@ GO
 
             foreach ( var property in properties )
             {
-                sb.AppendFormat( "            target.{0} = source.{0};" + Environment.NewLine, property.Key );
+                PropertyInfo propertyInfo = property.Value;
+                var obsolete = propertyInfo.GetCustomAttribute<ObsoleteAttribute>();
+
+                // wrap with a pragma to disable the obsolete warning (since we do want to copy obsolete values when cloning, unless this is obsolete.IsError )
+                if ( obsolete != null )
+                {
+                    if ( obsolete.IsError == false )
+                    {
+                        sb.AppendLine( $"            #pragma warning disable 612, 618" );
+                        sb.AppendLine( $"            target.{property.Key} = source.{property.Key};" );
+                        sb.AppendLine( $"            #pragma warning restore 612, 618" );
+                    }
+                }
+                else
+                {
+                    sb.AppendLine( $"            target.{property.Key} = source.{property.Key};" );
+                }
             }
 
             sb.Append( @"
@@ -940,7 +956,14 @@ order by [parentTable], [columnName]
             }
         }
 
-        private Dictionary<string, PropertyInfo> GetEntityProperties( Type type, bool includeRockClientIncludes )
+        /// <summary>
+        /// Gets the entity properties.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="includeRockClientIncludes">if set to <c>true</c> [include rock client includes].</param>
+        /// <param name="includeObsolete">if set to <c>true</c> [include obsolete].</param>
+        /// <returns></returns>
+        private Dictionary<string, PropertyInfo> GetEntityProperties( Type type, bool includeRockClientIncludes, bool includeObsolete )
         {
             var properties = new Dictionary<string, PropertyInfo>();
 
@@ -984,7 +1007,7 @@ order by [parentTable], [columnName]
 
                 if ( !property.GetCustomAttributes( typeof( DatabaseGeneratedAttribute ) ).Any() )
                 {
-                    if ( ( property.GetCustomAttribute<ObsoleteAttribute>() == null ) )
+                    if ( ( property.GetCustomAttribute<ObsoleteAttribute>() == null || includeObsolete ) )
                     {
                         if ( property.SetMethod != null && property.SetMethod.IsPublic && property.GetMethod.IsPublic )
                         {
@@ -1153,7 +1176,7 @@ order by [parentTable], [columnName]
         private void WriteRockClientFile( string rootFolder, Type type )
         {
             // make a copy of the EntityProperties since we are deleting some for this method
-            var entityProperties = GetEntityProperties( type, true ).ToDictionary( k => k.Key, v => v.Value );
+            var entityProperties = GetEntityProperties( type, true, true ).ToDictionary( k => k.Key, v => v.Value );
 
             var dataMembers = type.GetProperties().SortByStandardOrder()
                 .Where( a => a.GetCustomAttribute<DataMemberAttribute>() != null )
@@ -1229,8 +1252,12 @@ order by [parentTable], [columnName]
 
             foreach ( var keyVal in entityProperties )
             {
-                var propertyRockClientIncludeAttribute = keyVal.Value.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
-                var defaultValueAttribute = keyVal.Value.GetCustomAttribute<System.ComponentModel.DefaultValueAttribute>();
+                var propertyName = keyVal.Key;
+                var propertyInfo = keyVal.Value;
+                ObsoleteAttribute obsolete = propertyInfo.GetCustomAttribute<ObsoleteAttribute>();
+                RockObsolete rockObsolete = propertyInfo.GetCustomAttribute<RockObsolete>();
+                var propertyRockClientIncludeAttribute = propertyInfo.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
+                var defaultValueAttribute = propertyInfo.GetCustomAttribute<System.ComponentModel.DefaultValueAttribute>();
                 string propertyComments = null;
 
                 if ( propertyRockClientIncludeAttribute != null )
@@ -1249,39 +1276,41 @@ order by [parentTable], [columnName]
                     sb.AppendLine( "        /// <summary />" );
                 }
 
+                if ( obsolete != null )
+                {
+                    if ( rockObsolete != null)
+                    {
+                        // [RockObsolete( "1.9" )]
+                        sb.AppendLine( $"        [RockObsolete( \"{rockObsolete.Version}\" )]" );
+                    }
+
+                    //[Obsolete( "Use PreventInactivePeople instead.", true )]
+                    sb.AppendLine( $"        [Obsolete( \"{obsolete.Message}\", {obsolete.IsError.ToTrueFalse().ToLower()} )]" );
+                }
+
                 if ( defaultValueAttribute != null )
                 {
-                    sb.AppendFormat( "        public {0} {1}" + Environment.NewLine, this.PropertyTypeName( keyVal.Value.PropertyType ), keyVal.Key );
-                    sb.AppendLine( "        {" );
-                    sb.AppendFormat( "            get {{ return _{0}; }}" + Environment.NewLine, keyVal.Key );
-                    sb.AppendFormat( "            set {{ _{0} = value; }}" + Environment.NewLine, keyVal.Key );
-                    sb.AppendLine( "        }" );
+                    string defaultValueCode;
                     if ( defaultValueAttribute.Value is string )
                     {
-                        sb.AppendFormat( "        private {0} _{1} = \"{2}\";" + Environment.NewLine, this.PropertyTypeName( keyVal.Value.PropertyType ), keyVal.Key, defaultValueAttribute.Value );
+                        defaultValueCode = $"\"{defaultValueAttribute.Value}\";";
                     }
                     else if ( defaultValueAttribute.Value is bool )
                     {
-                        sb.AppendFormat( "        private {0} _{1} = {2};" + Environment.NewLine, this.PropertyTypeName( keyVal.Value.PropertyType ), keyVal.Key, ( bool ) defaultValueAttribute.Value ? "true" : "false" );
+                        defaultValueCode = ( bool ) defaultValueAttribute.Value ? "true" : "false";
                     }
                     else
                     {
-                        sb.AppendFormat( "        private {0} _{1} = {2};" + Environment.NewLine, this.PropertyTypeName( keyVal.Value.PropertyType ), keyVal.Key, defaultValueAttribute.Value );
+                        defaultValueCode = defaultValueAttribute.Value.ToString();
                     }
-                    /*
-                     public bool IsEmailActive
-        {
-            get { return _isEmailActive; }
-            set { _isEmailActive = value; }
-        }
-        private bool _isEmailActive = true;
-                     
-                     */
+
+                    sb.AppendLine( $"        public {this.PropertyTypeName( propertyInfo.PropertyType )} {propertyName} {{ get; set; }} = {defaultValueCode}" );
                 }
                 else
                 {
-                    sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, this.PropertyTypeName( keyVal.Value.PropertyType ), keyVal.Key );
+                    sb.AppendLine( $"        public {this.PropertyTypeName( propertyInfo.PropertyType )} {propertyName} {{ get; set; }}" );
                 }
+
                 sb.AppendLine( "" );
             }
 
@@ -1296,7 +1325,23 @@ order by [parentTable], [columnName]
 
             foreach ( var keyVal in entityProperties )
             {
-                sb.AppendFormat( "            this.{0} = source.{0};" + Environment.NewLine, keyVal.Key );
+
+                var obsolete = keyVal.Value.GetCustomAttribute<ObsoleteAttribute>();
+
+                // wrap with a pragma to disable the obsolete warning (since we do want to copy obsolete values when cloning, unless this is obsolete.IsError )
+                if ( obsolete != null )
+                {
+                    if ( obsolete.IsError == false )
+                    {
+                        sb.AppendLine( $"            #pragma warning disable 612, 618" );
+                        sb.AppendLine( $"            this.{keyVal.Key} = source.{keyVal.Key};" );
+                        sb.AppendLine( $"            #pragma warning restore 612, 618" );
+                    }
+                }
+                else
+                {
+                    sb.AppendLine( $"            this.{keyVal.Key} = source.{keyVal.Key};" );
+                }
             }
 
             sb.Append( @"

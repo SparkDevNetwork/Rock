@@ -273,18 +273,27 @@ namespace RockWeb.Blocks.Administration
 
         private string GetRoutesInfo()
         {
+            var pageService = new PageService( new RockContext() );
+            
             var routes = new SortedDictionary<string, System.Web.Routing.Route>();
             foreach ( System.Web.Routing.Route route in System.Web.Routing.RouteTable.Routes.OfType<System.Web.Routing.Route>() )
             {
-                if ( !routes.ContainsKey( route.Url ) ) routes.Add( route.Url, route );
+                if ( !routes.ContainsKey( route.Url ) )
+                    routes.Add( route.Url, route );
             }
 
             StringBuilder sb = new StringBuilder();
+            sb.AppendFormat( "<table class='table table-condensed'>" );
+            sb.Append( "<tr><th>Route</th><th>Pages</th></tr>" );
             foreach ( var routeItem in routes )
             {
-                sb.AppendFormat( "{0}<br />", routeItem.Key );
+                //sb.AppendFormat( "{0}<br />", routeItem.Key );
+                var pages = pageService.GetListByIds( routeItem.Value.PageIds() );
+
+                sb.AppendFormat( "<tr><td>{0}</td><td>{1}</td></tr>", routeItem.Key, string.Join( "<br />", pages.Select( n => n.InternalName + " (" + n.Id.ToString() + ")" ).ToArray() ) );
             }
 
+            sb.AppendFormat( "</table>" );
             return sb.ToString();
         }
 
@@ -383,7 +392,7 @@ namespace RockWeb.Blocks.Administration
         // method from Rick Strahl http://weblog.west-wind.com/posts/2006/Oct/08/Recycling-an-ASPNET-Application-from-within
         private bool RestartWebApplication()
         {
-            bool error = false;
+            bool Error = false;
             try
             {
                 // *** This requires full trust so this will fail
@@ -392,18 +401,18 @@ namespace RockWeb.Blocks.Administration
             }
             catch
             {
-                error = true;
+                Error = true;
             }
 
-            if ( !error )
+            if ( !Error )
                 return true;
 
             // *** Couldn't unload with Runtime - let's try modifying web.config
-            string configPath = HttpContext.Current.Request.PhysicalApplicationPath + "\\web.config";
+            string ConfigPath = HttpContext.Current.Request.PhysicalApplicationPath + "\\web.config";
 
             try
             {
-                File.SetLastWriteTimeUtc( configPath, DateTime.UtcNow );
+                File.SetLastWriteTimeUtc( ConfigPath, DateTime.UtcNow );
             }
             catch
             {

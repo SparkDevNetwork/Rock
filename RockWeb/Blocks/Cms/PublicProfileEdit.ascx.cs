@@ -662,6 +662,18 @@ namespace RockWeb.Blocks.Cms
 
                                                         familyAddress.Location = new LocationService( rockContext ).Get(
                                                             loc.Street1, loc.Street2, loc.City, loc.State, loc.PostalCode, loc.Country, familyGroup, true );
+                                                        
+                                                        // since there can only be one mapped location, set the other locations to not mapped
+                                                        if ( familyAddress.IsMappedLocation )
+                                                        {
+                                                            var groupLocations = groupLocationService.Queryable()
+                                                                .Where( l => l.GroupId == familyGroup.Id && l.Id != familyAddress.Id ).ToList();
+
+                                                            foreach ( var groupLocation in groupLocations )
+                                                            {
+                                                                groupLocation.IsMappedLocation = false;
+                                                            }
+                                                        }
 
                                                         rockContext.SaveChanges();
                                                     }

@@ -97,12 +97,7 @@ namespace Rock.Client
         public bool IsDeceased { get; set; }
 
         /// <summary />
-        public bool IsEmailActive
-        {
-            get { return _IsEmailActive; }
-            set { _IsEmailActive = value; }
-        }
-        private bool _IsEmailActive = true;
+        public bool IsEmailActive { get; set; } = true
 
         /// <summary />
         public bool IsLockedAsChild { get; set; }

@@ -289,18 +289,18 @@ namespace RockWeb.Blocks.Groups
 
             if ( mergeTemplate == null )
             {
-                this.LogException( new Exception( "No Merge Template specified in block settings" ) );
+                this.LogException( new Exception( "Error printing Attendance Roster: No merge template selected. Please configure an 'Attendance Roster Template' in the block settings." ) );
                 nbPrintRosterWarning.Visible = true;
-                nbPrintRosterWarning.Text = "Unable to print Attendance Roster";
+                nbPrintRosterWarning.Text = "Unable to print Attendance Roster: No merge template selected. Please configure an 'Attendance Roster Template' in the block settings.";
                 return;
             }
 
             MergeTemplateType mergeTemplateType = mergeTemplate.GetMergeTemplateType();
             if ( mergeTemplateType == null )
             {
-                this.LogException( new Exception( "Unable to determine Merge Template Type" ) );
+                this.LogException( new Exception( "Error printing Attendance Roster: Unable to determine Merge Template Type from the 'Attendance Roster Template' in the block settings." ) );
                 nbPrintRosterWarning.Visible = true;
-                nbPrintRosterWarning.Text = "Error printing Attendance Roster";
+                nbPrintRosterWarning.Text = "Error printing Attendance Roster: Unable to determine Merge Template Type from the 'Attendance Roster Template' in the block settings.";
                 return;
             }
 
