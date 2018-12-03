@@ -270,7 +270,7 @@ namespace Rock.Checkr
         }
 
         /// <summary>
-        /// Updates the workflow.
+        /// Updates the workflow, closing it if the reportStatus is blank and the recommendation is "Invitation Expired".
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <param name="recommendation">The recommendation.</param>
@@ -311,6 +311,11 @@ namespace Rock.Checkr
                     {
                     }
 
+                    if ( reportStatus.IsNullOrWhiteSpace() && recommendation == "Invitation Expired" )
+                    {
+                        workflow.CompletedDateTime = RockDateTime.Now;
+                        workflow.MarkComplete( recommendation );
+                    }
                 }
                 // Save the report link
                 if ( documentId.IsNotNullOrWhiteSpace() )
@@ -680,7 +685,8 @@ namespace Rock.Checkr
                 }
 
                 return UpdateBackgroundCheckAndWorkFlow( invitationWebhook.Data.Object.CandidateId, genericWebhook.Type, invitationWebhook.Data.Object.Package, genericWebhook.Type.ConvertToString( false ) );
-            } else if ( genericWebhook.Type == Enums.WebhookTypes.ReportCreated ||
+            }
+            else if ( genericWebhook.Type == Enums.WebhookTypes.ReportCreated ||
                 genericWebhook.Type == Enums.WebhookTypes.ReportCompleted ||
                 genericWebhook.Type == Enums.WebhookTypes.ReportDisputed ||
                 genericWebhook.Type == Enums.WebhookTypes.ReportEngaged ||
