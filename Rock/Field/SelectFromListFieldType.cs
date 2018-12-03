@@ -32,6 +32,14 @@ namespace Rock.Field.Types
     /// </summary>
     public abstract class SelectFromListFieldType : FieldType
     {
+        private const string REPEAT_COLUMNS = "repeatColumns";
+
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = base.ConfigurationKeys();
+            configKeys.Add( REPEAT_COLUMNS );
+            return configKeys;
+        }
 
         #region Formatting
 
@@ -77,6 +85,11 @@ namespace Rock.Field.Types
         {
             RockCheckBoxList editControl = new RockCheckBoxList { ID = id };
             editControl.RepeatDirection = RepeatDirection.Horizontal;
+
+            if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+            {
+                editControl.RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
+            }
 
             if ( ListSource.Any() )
             {
