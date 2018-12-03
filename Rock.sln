@@ -76,8 +76,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "org.newpointe.MiniCheckin", "org.newpointe.minicheckin\org.newpointe.MiniCheckin.csproj", "{FB3D2E1B-A968-4C0E-933D-920A365E7F5D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "org.newpointe.ReEncrypt", "org.newpointe.ReEncrypt\org.newpointe.ReEncrypt.csproj", "{C21394F1-98FC-45B4-9A89-26B229C44823}"
 EndProject
 Global
