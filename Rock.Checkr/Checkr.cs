@@ -43,7 +43,8 @@ namespace Rock.Checkr
         #region BackgroundCheckComponent Implementation
 
         /// <summary>
-        /// Sends a background request to Checkr.
+        /// Sends a background request to Checkr.  This method is called by the BackgroundCheckRequest action's Execute
+        /// method for the Checkr component.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="workflow">The Workflow initiating the request.</param>
@@ -125,10 +126,20 @@ namespace Rock.Checkr
                     backgroundCheck.RequestDate = RockDateTime.Now;
                     backgroundCheck.RequestId = candidateId;
                     newRockContext.SaveChanges();
-
-                    UpdateWorkflowRequestStatus( workflow, newRockContext, "SUCCESS" );
-                    return true;
                 }
+
+                UpdateWorkflowRequestStatus( workflow, rockContext, "SUCCESS" );
+
+                if ( workflow.IsPersisted )
+                {
+                    // Make sure the AttributeValues are saved to the database immediately because the Checkr WebHook
+                    // (which might otherwise get called before they are saved by the workflow processing) needs to
+                    // have the correct attribute values.
+                    workflow.SaveAttributeValues( rockContext );
+                }
+
+                return true;
+
             }
             catch ( Exception ex )
             {
@@ -694,7 +705,8 @@ namespace Rock.Checkr
                 genericWebhook.Type == Enums.WebhookTypes.ReportPreAdverseAction ||
                 genericWebhook.Type == Enums.WebhookTypes.ReportResumed ||
                 genericWebhook.Type == Enums.WebhookTypes.ReportSuspended ||
-                genericWebhook.Type == Enums.WebhookTypes.ReportUpgraded )
+                genericWebhook.Type == Enums.WebhookTypes.ReportUpgraded ||
+                genericWebhook.Type == Enums.WebhookTypes.ReportUpdated )
             {
                 ReportWebhook reportWebhook = JsonConvert.DeserializeObject<ReportWebhook>( postedData );
                 if ( reportWebhook == null )
