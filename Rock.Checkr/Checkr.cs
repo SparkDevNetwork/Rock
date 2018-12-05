@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -40,6 +41,17 @@ namespace Rock.Checkr
     [EncryptedTextField( "Access Token", "Checkr Access Token", true, "", "", 0, null, true )]
     public class Checkr : BackgroundCheckComponent
     {
+        #region Private Fields
+        /// <summary>
+        /// The objects to use when locking our use of the workflow's attribute values and the webhook's use of them.
+        /// We're using a concurrent dictionary to hold small lock objects that are based on the workflow id so
+        /// we don't needlessly lock two different workflow's from being worked on at the same time.
+        /// Based on https://kofoedanders.com/c-sharp-dynamic-locking/
+        /// </summary>
+        private static ConcurrentDictionary<int, object> _lockObjects = new ConcurrentDictionary<int, object>();
+
+        #endregion
+
         #region BackgroundCheckComponent Implementation
 
         /// <summary>
@@ -72,70 +84,77 @@ namespace Rock.Checkr
                     return true;
                 }
 
-                Person person;
-                int? personAliasId;
-                if ( !GetPerson( rockContext, workflow, personAttribute, out person, out personAliasId, errorMessages ) )
+                // Lock the workflow until we're finished saving so the webhook can't start working on it.
+                var lockObject = _lockObjects.GetOrAdd( workflow.Id, new object() );
+                lock ( lockObject )
                 {
-                    errorMessages.Add( "Unable to get Person." );
-                    UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
-                    return true;
-                }
-
-                string packageName;
-                if ( !GetPackageName( rockContext, workflow, requestTypeAttribute, out packageName, errorMessages ) )
-                {
-                    errorMessages.Add( "Unable to get Package." );
-                    UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
-                    return true;
-                }
-
-                string candidateId;
-                if ( !CreateCandidate( person, out candidateId, errorMessages ) )
-                {
-                    errorMessages.Add( "Unable to create candidate." );
-                    UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
-                    return true;
-                }
-
-                if ( !CreateInvitation( candidateId, packageName, errorMessages ) )
-                {
-                    errorMessages.Add( "Unable to create invitation." );
-                    UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
-                    return true;
-                }
-
-                using ( var newRockContext = new RockContext() )
-                {
-                    var backgroundCheckService = new BackgroundCheckService( newRockContext );
-                    var backgroundCheck = backgroundCheckService.Queryable()
-                            .Where( c =>
-                                c.WorkflowId.HasValue &&
-                                c.WorkflowId.Value == workflow.Id )
-                            .FirstOrDefault();
-
-                    if ( backgroundCheck == null )
+                    Person person;
+                    int? personAliasId;
+                    if ( !GetPerson( rockContext, workflow, personAttribute, out person, out personAliasId, errorMessages ) )
                     {
-                        backgroundCheck = new BackgroundCheck();
-                        backgroundCheck.WorkflowId = workflow.Id;
-                        backgroundCheckService.Add( backgroundCheck );
+                        errorMessages.Add( "Unable to get Person." );
+                        UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
+                        return true;
                     }
 
-                    backgroundCheck.PersonAliasId = personAliasId.Value;
-                    backgroundCheck.ForeignId = 2;
-                    backgroundCheck.PackageName = packageName;
-                    backgroundCheck.RequestDate = RockDateTime.Now;
-                    backgroundCheck.RequestId = candidateId;
-                    newRockContext.SaveChanges();
-                }
+                    string packageName;
+                    if ( !GetPackageName( rockContext, workflow, requestTypeAttribute, out packageName, errorMessages ) )
+                    {
+                        errorMessages.Add( "Unable to get Package." );
+                        UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
+                        return true;
+                    }
 
-                UpdateWorkflowRequestStatus( workflow, rockContext, "SUCCESS" );
+                    string candidateId;
+                    if ( !CreateCandidate( person, out candidateId, errorMessages ) )
+                    {
+                        errorMessages.Add( "Unable to create candidate." );
+                        UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
+                        return true;
+                    }
 
-                if ( workflow.IsPersisted )
-                {
-                    // Make sure the AttributeValues are saved to the database immediately because the Checkr WebHook
-                    // (which might otherwise get called before they are saved by the workflow processing) needs to
-                    // have the correct attribute values.
-                    workflow.SaveAttributeValues( rockContext );
+                    if ( !CreateInvitation( candidateId, packageName, errorMessages ) )
+                    {
+                        errorMessages.Add( "Unable to create invitation." );
+                        UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
+                        return true;
+                    }
+
+                    using ( var newRockContext = new RockContext() )
+                    {
+                        var backgroundCheckService = new BackgroundCheckService( newRockContext );
+                        var backgroundCheck = backgroundCheckService.Queryable()
+                                .Where( c =>
+                                    c.WorkflowId.HasValue &&
+                                    c.WorkflowId.Value == workflow.Id )
+                                .FirstOrDefault();
+
+                        if ( backgroundCheck == null )
+                        {
+                            backgroundCheck = new BackgroundCheck();
+                            backgroundCheck.WorkflowId = workflow.Id;
+                            backgroundCheckService.Add( backgroundCheck );
+                        }
+
+                        backgroundCheck.PersonAliasId = personAliasId.Value;
+                        backgroundCheck.ForeignId = 2;
+                        backgroundCheck.PackageName = packageName;
+                        backgroundCheck.RequestDate = RockDateTime.Now;
+                        backgroundCheck.RequestId = candidateId;
+                        newRockContext.SaveChanges();
+                    }
+
+                    UpdateWorkflowRequestStatus( workflow, rockContext, "SUCCESS" );
+
+                    if ( workflow.IsPersisted )
+                    {
+                        // Make sure the AttributeValues are saved to the database immediately because the Checkr WebHook
+                        // (which might otherwise get called before they are saved by the workflow processing) needs to
+                        // have the correct attribute values.
+                        workflow.SaveAttributeValues( rockContext );
+                    }
+
+                    _lockObjects.TryRemove( workflow.Id, out _ ); // we no longer need that lock for this workflow
                 }
 
                 return true;
@@ -290,80 +309,87 @@ namespace Rock.Checkr
         /// <param name="rockContext">The rock context.</param>
         private static void UpdateWorkflow( int id, string recommendation, string documentId, string reportStatus, RockContext rockContext )
         {
-            var workflowService = new WorkflowService( rockContext );
-            var workflow = new WorkflowService( rockContext ).Get( id );
-            if ( workflow != null && workflow.IsActive )
+            // Make sure the workflow isn't locked (i.e., it's still being worked on by the 'SendRequest' method of the workflow
+            // BackgroundCheckComponent) before we start working on it -- especially before we load the workflow's attributes.
+            var lockObject = _lockObjects.GetOrAdd( id, new object() );
+            lock ( lockObject )
             {
-                workflow.LoadAttributes();
-                if ( workflow.Attributes.ContainsKey( "ReportStatus" ) )
+                var workflowService = new WorkflowService( rockContext );
+                var workflow = workflowService.Get( id );
+                if ( workflow != null && workflow.IsActive )
                 {
-                    if ( workflow.GetAttributeValue( "ReportStatus" ).IsNotNullOrWhiteSpace() && reportStatus.IsNullOrWhiteSpace() )
+                    workflow.LoadAttributes();
+                    if ( workflow.Attributes.ContainsKey( "ReportStatus" ) )
                     {
-                        // Don't override current values if Webhook is older than current values
-                        return;
-                    }
-                }
-
-                if ( workflow.Attributes.ContainsKey( "Report" ) )
-                {
-                    if ( workflow.GetAttributeValue( "Report" ).IsNotNullOrWhiteSpace() && documentId.IsNullOrWhiteSpace() )
-                    {
-                        // Don't override current values if Webhook is older than current values
-                        return;
-                    }
-                }
-
-                // Save the recommendation
-                if ( !string.IsNullOrWhiteSpace( recommendation ) )
-                {
-                    if ( SaveAttributeValue( workflow, "ReportRecommendation", recommendation,
-                        FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
-                        new Dictionary<string, string> { { "ispassword", "false" } } ) )
-                    {
+                        if ( workflow.GetAttributeValue( "ReportStatus" ).IsNotNullOrWhiteSpace() && reportStatus.IsNullOrWhiteSpace() )
+                        {
+                            // Don't override current values if Webhook is older than current values
+                            return;
+                        }
                     }
 
-                    if ( reportStatus.IsNullOrWhiteSpace() && recommendation == "Invitation Expired" )
+                    if ( workflow.Attributes.ContainsKey( "Report" ) )
                     {
-                        workflow.CompletedDateTime = RockDateTime.Now;
-                        workflow.MarkComplete( recommendation );
+                        if ( workflow.GetAttributeValue( "Report" ).IsNotNullOrWhiteSpace() && documentId.IsNullOrWhiteSpace() )
+                        {
+                            // Don't override current values if Webhook is older than current values
+                            return;
+                        }
                     }
-                }
-                // Save the report link
-                if ( documentId.IsNotNullOrWhiteSpace() )
-                {
-                    int entityTypeId = EntityTypeCache.Get( typeof( Checkr ) ).Id;
-                    if ( SaveAttributeValue( workflow, "Report", $"{entityTypeId},{documentId}",
-                        FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
-                        new Dictionary<string, string> { { "ispassword", "false" } } ) )
+
+                    // Save the recommendation
+                    if ( !string.IsNullOrWhiteSpace( recommendation ) )
                     {
+                        if ( SaveAttributeValue( workflow, "ReportRecommendation", recommendation,
+                            FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
+                            new Dictionary<string, string> { { "ispassword", "false" } } ) )
+                        {
+                        }
+
+                        if ( reportStatus.IsNullOrWhiteSpace() && recommendation == "Invitation Expired" )
+                        {
+                            workflow.CompletedDateTime = RockDateTime.Now;
+                            workflow.MarkComplete( recommendation );
+                        }
                     }
+                    // Save the report link
+                    if ( documentId.IsNotNullOrWhiteSpace() )
+                    {
+                        int entityTypeId = EntityTypeCache.Get( typeof( Checkr ) ).Id;
+                        if ( SaveAttributeValue( workflow, "Report", $"{entityTypeId},{documentId}",
+                            FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
+                            new Dictionary<string, string> { { "ispassword", "false" } } ) )
+                        {
+                        }
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( reportStatus ) )
+                    {
+                        // Save the status
+                        if ( SaveAttributeValue( workflow, "ReportStatus", reportStatus,
+                        FieldTypeCache.Get( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ), rockContext,
+                        new Dictionary<string, string> { { "fieldtype", "ddl" }, { "values", "Pass,Fail,Review" } } ) )
+                        {
+                        }
+                    }
+
+                    rockContext.WrapTransaction( () =>
+                    {
+                        rockContext.SaveChanges();
+                        workflow.SaveAttributeValues( rockContext );
+                        foreach ( var activity in workflow.Activities )
+                        {
+                            activity.SaveAttributeValues( rockContext );
+                        }
+                    } );
                 }
 
-                if ( !string.IsNullOrWhiteSpace( reportStatus ) )
-                {
-                    // Save the status
-                    if ( SaveAttributeValue( workflow, "ReportStatus", reportStatus,
-                    FieldTypeCache.Get( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ), rockContext,
-                    new Dictionary<string, string> { { "fieldtype", "ddl" }, { "values", "Pass,Fail,Review" } } ) )
-                    {
-                    }
-                }
+                rockContext.SaveChanges();
 
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    workflow.SaveAttributeValues( rockContext );
-                    foreach ( var activity in workflow.Activities )
-                    {
-                        activity.SaveAttributeValues( rockContext );
-                    }
-                } );
+                List<string> workflowErrors;
+                workflowService.Process( workflow, out workflowErrors );
+                _lockObjects.TryRemove( id, out _ ); // we no longer need that lock for this workflow
             }
-
-            rockContext.SaveChanges();
-
-            List<string> workflowErrors;
-            workflowService.Process( workflow, out workflowErrors );
         }
 
         /// <summary>
@@ -453,7 +479,7 @@ namespace Rock.Checkr
         }
 
         /// <summary>
-        /// Sets the workflow requeststatus attribute.
+        /// Sets the workflow RequestStatus attribute.
         /// </summary>
         /// <param name="workflow">The workflow.</param>
         /// <param name="rockContext">The rock context.</param>
