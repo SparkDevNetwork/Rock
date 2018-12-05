@@ -60,7 +60,7 @@ namespace Rock.Checkr.CheckrApi
 
             /// <summary>
             /// Report updated. (NOTE: this is not in their API docs, but it was passed to us
-            /// during testing and threw an exception because we didn't have it initially.)
+            /// during testing and threw an exception because we didn't have it here.)
             /// </summary>
             [EnumMember( Value = "report.updated" )]
             ReportUpdated,
