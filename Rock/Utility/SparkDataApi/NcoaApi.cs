@@ -355,8 +355,8 @@ namespace Rock.Utility.SparkDataApi
             {
                 DateTime dt = DateTime.Now;
                 int start = 1;
-                int end = 100;
-                int step = 100;
+                int end = 1000;
+                int step = 1000;
                 bool finished = false;
                 records = new List<NcoaReturnRecord>();
                 while ( !finished )
