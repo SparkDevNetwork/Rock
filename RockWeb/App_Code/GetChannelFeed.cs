@@ -46,6 +46,17 @@ namespace RockWeb
             request = context.Request;
             response = context.Response;
 
+            string cacheKey = "Rock:GetChannelFeed:" + request.RawUrl;
+            var contentCache = RockCache.Get( cacheKey );
+            var mimeTypeCache = RockCache.Get( cacheKey + ":MimeType" );
+            if ( mimeTypeCache != null && mimeTypeCache != null )
+            {
+                response.ContentType = ( string ) mimeTypeCache;
+                response.Write( ( string ) contentCache );
+                response.StatusCode = 200;
+                return;
+            }
+
             RockContext rockContext = new RockContext();
 
             if ( request.HttpMethod != "GET" )
@@ -174,8 +185,14 @@ namespace RockWeb
 
                         mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
 
-                        // show debug info
-                        response.Write( rssTemplate.ResolveMergeFields( mergeFields ) );
+                        var outputContent = rssTemplate.ResolveMergeFields( mergeFields );
+                        response.Write( outputContent );
+                        var expiration = RockDateTime.Now.AddMinutes( dvRssTemplate.GetAttributeValue( "CacheDuration" ).AsInteger() );
+                        if ( expiration > RockDateTime.Now )
+                        {
+                            RockCache.AddOrUpdate( cacheKey + ":MimeType", null, response.ContentType, expiration );
+                            RockCache.AddOrUpdate( cacheKey, null, outputContent, expiration );
+                        };
                     }
                     else
                     {
@@ -186,7 +203,6 @@ namespace RockWeb
                 }
                 else
                 {
-                    response.StatusCode = 200;
                     response.Write( "Invalid channel id." );
                     response.StatusCode = 200;
                     return;
