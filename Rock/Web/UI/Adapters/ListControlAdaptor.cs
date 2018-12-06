@@ -140,7 +140,7 @@ namespace Rock.Web.UI.Adapters
                     postBackEventReference = Page.ClientScript.GetPostBackEventReference( postBackOption, true );
                 }
 
-                
+
                 bool createInputDivClass;
                 string inputTagType = GetInputTagType( listControl );
 
@@ -156,53 +156,12 @@ namespace Rock.Web.UI.Adapters
                 }
 
                 int repeatColumns = GetRepeatColumns( listControl );
-                
+
                 bool wrapInRow = repeatColumns > 1;
-
-                if ( wrapInRow )
-                {
-                    // if there are multiple columns, RepeatDirection doesn't matter, either way we want it to Left To Right as A | B | C | D |.  
-                    writer.WriteLine();
-                    writer.Indent++;
-                    writer.AddAttribute( "class", "row" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                }
-
-                string columnClass = string.Empty;
-
-                if ( wrapInRow )
-                {
-                    switch ( repeatColumns )
-                    {
-                        case 2:
-                            columnClass = "col-md-6";
-                            break;
-                        case 3:
-                            columnClass = "col-sm-6 col-md-4";
-                            break;
-                        case 4:
-                            columnClass = "col-sm-6 col-md-3";
-                            break;
-                        case 6:
-                            columnClass = "col-sm-4 col-md-2";
-                            break;
-                        default:
-                            columnClass = "col-sm-4 col-md-2";
-                            break;
-                    }
-                }
 
                 int itemIndex = 0;
                 foreach ( ListItem li in listControl.Items )
                 {
-                    if ( wrapInRow )
-                    {
-                        writer.WriteLine();
-                        writer.Indent++;
-                        writer.AddAttribute( "class", columnClass );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    }
-
                     if ( createInputDivClass )
                     {
                         writer.WriteLine();
@@ -272,23 +231,12 @@ namespace Rock.Web.UI.Adapters
                         writer.Indent--;
                     }
 
-                    if ( wrapInRow )
-                    {
-                        writer.RenderEndTag();   // col div
-                        writer.Indent--;
-                    }
-
                     if ( Page != null && Page.ClientScript != null )
                     {
                         Page.ClientScript.RegisterForEventValidation( listControl.UniqueID, li.Value );
                     }
                 }
 
-                if ( wrapInRow )
-                {
-                    writer.RenderEndTag();   // row div
-                    writer.Indent--;
-                }
 
                 if ( Page != null && Page.ClientScript != null )
                 {

@@ -339,6 +339,7 @@ namespace RockWeb.Blocks.CheckIn
             pnlClosed.Visible = false;
             pnlActive.Visible = false;
             pnlManager.Visible = false;
+            btnManager.Visible = false;
 
             tbPIN.Text = string.Empty;
 

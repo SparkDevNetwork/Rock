@@ -19,12 +19,12 @@
         <asp:Panel ID="pnlSettings" runat="server" Visible="false">
             <Rock:ModalDialog ID="mdSettings" runat="server" OnSaveClick="mdSettings_SaveClick" Title="Channel Item Configuration" OnCancelScript="clearDialog();">
                 <Content>
+
                     <div class="row">
                         <div class="col-md-12">
                             <Rock:RockDropDownList ID="ddlContentChannel" runat="server" Label="Content Channel" Help="Limits content channel items to a specific channel and enables Social Media Settings to be configurable, or leave blank to leave unrestricted." AutoPostBack="true" OnSelectedIndexChanged="ddlContentChannel_SelectedIndexChanged" />
-
+                            <Rock:RockCheckBoxList ID="cblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" Help="Include items with the following status." />
                             <Rock:CodeEditor ID="ceLavaTemplate" runat="server" Label="Lava Template" Help="The template to use when formatting the content channel item." EditorMode="Lava" EditorTheme="Rock" EditorHeight="200" />
-
                         </div>
                     </div>
 

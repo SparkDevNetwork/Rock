@@ -70,7 +70,7 @@
                 <div class="checkin-search-body">
 
                 <asp:Panel ID="pnlSearchPhone" runat="server" CssClass="clearfix">
-                    <Rock:RockTextBox ID="tbPhone" MaxLength="10" CssClass="search-input checkin-phone-entry input-lg" runat="server" Label="Phone Number" autocomplete="off" />
+                    <Rock:RockTextBox ID="tbPhone" MaxLength="10" CssClass="search-input checkin-phone-entry input-lg" FormGroupCssClass="search-phone-form-group" runat="server" Label="Phone Number" autocomplete="off" />
 
                     <div class="tenkey checkin-phone-keypad">
                         <div>
@@ -97,7 +97,7 @@
                 </asp:Panel>
 
                 <asp:Panel ID="pnlSearchName" CssClass="clearfix" runat="server">
-                    <Rock:RockTextBox ID="txtName" runat="server" Label="Name" CssClass="search-input namesearch input-lg" />
+                    <Rock:RockTextBox ID="txtName" runat="server" Label="Name" CssClass="search-input namesearch input-lg" FormGroupCssClass="search-name-form-group" />
                 </asp:Panel>
 
                 <div class="checkin-actions">

@@ -51,7 +51,6 @@ namespace Rock.PersonProfile.Badge
         /// <param name="writer">The writer.</param>
         public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
-            var value = Person.GetAttributeValue( "FirstVisit" );
             DateTime? firstVisit = Person.GetAttributeValue( "FirstVisit" ).AsDateTime();
             if (firstVisit.HasValue)
             {

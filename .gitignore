@@ -26,6 +26,7 @@ RockWeb/prepros-6.config
 #specific folders
 [Oo]bj/
 RockWeb/Cache/*
+RockWeb/Content/ASM_Thumbnails
 RockWeb/App_Data/PackageStaging
 RockWeb/.well-known/*
 /scaffolding.config
