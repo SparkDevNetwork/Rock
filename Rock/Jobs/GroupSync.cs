@@ -187,8 +187,24 @@ namespace Rock.Jobs
                                     newGroupMember.GroupId = sync.GroupId;
                                     newGroupMember.GroupMemberStatus = GroupMemberStatus.Active;
                                     newGroupMember.GroupRoleId = sync.GroupTypeRoleId;
-                                    groupMemberService.Add( newGroupMember );
-                                    groupMemberContext.SaveChanges();
+
+                                    try
+                                    {
+                                        // The Model will throw and log GroupMemberValidationException if the group member can't be added due to validation issues
+                                        groupMemberService.Add( newGroupMember );
+                                        groupMemberContext.SaveChanges();
+                                    }
+                                    catch ( GroupMemberValidationException )
+                                    {
+                                        // This has been logged by the model, so just continue
+                                        continue;
+                                    }
+                                    catch ( Exception ex )
+                                    {
+                                        // Log this and contine on
+                                        ExceptionLogService.LogException( ex );
+                                        continue;
+                                    }
 
                                     // If the Group has a welcome email, and person has an email address, send them the welcome email and possibly create a login
                                     if ( sync.WelcomeSystemEmail != null )
