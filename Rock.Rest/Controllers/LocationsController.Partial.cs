@@ -58,6 +58,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="postalCode">The postalcode.</param>
         /// <returns></returns>
+        [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/locations/postalcodetomapcoordinate/{postalCode}" )]
         public MapCoordinate GetMapCoordinateFromPostalCode( string postalCode )
