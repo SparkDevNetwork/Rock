@@ -130,10 +130,11 @@ namespace RockWeb.Blocks.Finance
             var chartStyleDefinedValueGuid = this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull();
 
             lcAmount.Options.SetChartStyle( chartStyleDefinedValueGuid );
-            bcAmount.Options.SetChartStyle( chartStyleDefinedValueGuid );
             bcAmount.Options.xaxis = new AxisOptions { mode = AxisMode.categories, tickLength = 0 };
             bcAmount.Options.series.bars.barWidth = 0.6;
             bcAmount.Options.series.bars.align = "center";
+            // Set chart style after setting options so they are not overwritten.
+            bcAmount.Options.SetChartStyle( chartStyleDefinedValueGuid );
 
             if ( !Page.IsPostBack )
             {
