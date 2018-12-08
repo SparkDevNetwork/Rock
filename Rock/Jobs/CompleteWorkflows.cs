@@ -68,7 +68,9 @@ namespace Rock.Jobs
             var workflowService = new WorkflowService( rockContext );
 
             var qry = workflowService.Queryable().AsNoTracking()
-                        .Where( w => workflowTypeGuids.Contains( w.WorkflowType.Guid ) );
+                        .Where( w => workflowTypeGuids.Contains( w.WorkflowType.Guid )
+                                     && w.ActivatedDateTime.HasValue
+                                     && !w.CompletedDateTime.HasValue );
 
             if ( expirationAge.HasValue )
             {
