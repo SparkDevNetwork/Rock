@@ -20,6 +20,7 @@ $ErrorActionPreference = "Stop"
 
 # stop web site and app pool
 $Site = Get-WebSite -Name "$env:APPLICATION_SITE_NAME"
+Write-Output $Site
 If ( $Site.State -eq "Started" ) {
 	Write-Host "Stopping Website"
 	Stop-Website -Name "$env:APPLICATION_SITE_NAME"
