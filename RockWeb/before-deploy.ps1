@@ -19,16 +19,15 @@ $ErrorActionPreference = "Stop"
 ### stop-service -servicename w3svc
 
 # stop web site and app pool
-$Site = Get-WebSite -Name "$env:APPLICATION_SITE_NAME"
-Write-Output $Site
-If ( $Site.State -eq "Started" ) {
-	Write-Host "Stopping Website"
-	Stop-Website -Name "$env:APPLICATION_SITE_NAME"
-}
-If ( (Get-WebAppPoolState -Name $Site.applicationPool).Value -eq "Started" ) {
-	Write-Host "Stopping ApplicationPool"
-	Stop-WebAppPool -Name $Site.applicationPool
-}
+# $Site = Get-WebSite -Name "$env:APPLICATION_SITE_NAME"
+# If ( $Site.State -eq "Started" ) {
+# 	Write-Host "Stopping Website"
+# 	Stop-Website -Name "$env:APPLICATION_SITE_NAME"
+# }
+# If ( (Get-WebAppPoolState -Name $Site.applicationPool).Value -eq "Started" ) {
+# 	Write-Host "Stopping ApplicationPool"
+# 	Stop-WebAppPool -Name $Site.applicationPool
+# }
 
 # wait for 10 seconds before continuing
 Start-Sleep 10
