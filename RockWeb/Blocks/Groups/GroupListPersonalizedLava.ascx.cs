@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( _hideInactive )
             {
-                qry = qry.Where( m => m.Group.IsActive == true );
+                qry = qry.Where( m => m.Group.IsActive == true && !m.Group.IsArchived );
             }
 
             List<Guid> includeGroupTypeGuids = GetAttributeValue( "IncludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();

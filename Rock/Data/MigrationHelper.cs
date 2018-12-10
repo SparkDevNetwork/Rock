@@ -1321,7 +1321,7 @@ namespace Rock.Data
                     name.Replace( "'", "''" ),
                     description.Replace( "'", "''" ),
                     order,
-                    defaultValue,
+                    defaultValue.Replace( "'", "''" ),
                     guid,
                     entityTypeQualifierColumn,
                     entityTypeQualifierValue )
@@ -1832,7 +1832,7 @@ namespace Rock.Data
 ",
                     attributeGuid, // {0}
                     key, // {1}
-                    value, // {2}
+                    value.Replace( "'", "''" ), // {2}
                     guid ) // {3}
             );
         }

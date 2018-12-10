@@ -419,6 +419,15 @@ Guid - ContentChannelItem Guid
                     return;
                 }
 
+                if ( contentChannelItem.ContentChannel.RequiresApproval )
+                {
+                    if ( contentChannelItem.Status != ContentChannelItemStatus.Approved )
+                    {
+                        ShowNoDataFound();
+                        return;
+                    }
+                }
+
                 // if a Channel was specified, verify that the ChannelItem is part of the channel
                 var channelGuid = this.GetAttributeValue( "ContentChannel" ).AsGuidOrNull();
                 if ( channelGuid.HasValue )

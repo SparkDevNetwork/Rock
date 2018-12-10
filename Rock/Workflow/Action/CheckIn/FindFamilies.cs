@@ -225,6 +225,7 @@ namespace Rock.Workflow.Action.CheckIn
                             var family = new CheckInFamily();
                             family.Group = group.Clone( false );
                             family.Caption = group.ToString();
+                            family.FirstNames = firstNames;
                             family.SubCaption = firstNames.AsDelimited( ", " );
                             checkInState.CheckIn.Families.Add( family );
                         }

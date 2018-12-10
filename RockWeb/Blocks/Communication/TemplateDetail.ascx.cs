@@ -191,7 +191,7 @@ namespace RockWeb.Blocks.Communication
             // add any new attachments that were added
             foreach ( var attachmentBinaryFileId in binaryFileIds.Where( a => communicationTemplate.Attachments.All( x => x.BinaryFileId != a ) ) )
             {
-                communicationTemplate.Attachments.Add( new CommunicationTemplateAttachment { BinaryFileId = attachmentBinaryFileId } );
+                communicationTemplate.Attachments.Add( new CommunicationTemplateAttachment { BinaryFileId = attachmentBinaryFileId, CommunicationType = CommunicationType.Email } );
             }
 
             communicationTemplate.Subject = tbEmailSubject.Text;

@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
-
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                 groupTypeService.Delete( groupType );
                 rockContext.SaveChanges();
-                
+
                 Rock.CheckIn.KioskDevice.Clear();
             }
 
@@ -249,11 +249,76 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupType.SetAttributeValue( "core_checkin_SecurityCodeLength", nbCodeAlphaNumericLength.Text );
                 groupType.SetAttributeValue( "core_checkin_SecurityCodeAlphaLength", nbCodeAlphaLength.Text );
                 groupType.SetAttributeValue( "core_checkin_SecurityCodeNumericLength", nbCodeNumericLength.Text );
-                groupType.SetAttributeValue( "core_checkin_SecurityCodeNumericRandom", cbCodeRandom.Checked.ToString());
+                groupType.SetAttributeValue( "core_checkin_SecurityCodeNumericRandom", cbCodeRandom.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_AllowCheckout", cbAllowCheckout.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_AutoSelectDaysBack", nbAutoSelectDaysBack.Text );
                 groupType.SetAttributeValue( "core_checkin_AutoSelectOptions", ddlAutoSelectOptions.SelectedValueAsInt() );
 
+                // Registration Settings
+
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORADULTS, cbRegistrationDisplayAlternateIdFieldForAdults.Checked.ToTrueFalse() );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORCHILDREN, cbRegistrationDisplayAlternateIdFieldForChildren.Checked.ToTrueFalse() );
+
+                groupType.SetAttributeValue(
+                    Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORADULTS,
+                     lbRegistrationRequiredAttributesForAdults.SelectedValues.AsDelimited( "," ) );
+
+                groupType.SetAttributeValue(
+                    Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORADULTS,
+                     lbRegistrationOptionalAttributesForAdults.SelectedValues.AsDelimited( "," ) );
+
+                groupType.SetAttributeValue(
+                    Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORCHILDREN,
+                    lbRegistrationRequiredAttributesForChildren.SelectedValues.AsDelimited( "," ) );
+
+                groupType.SetAttributeValue(
+                    Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORCHILDREN,
+                    lbRegistrationOptionalAttributesForChildren.SelectedValues.AsDelimited( "," ) );
+
+                groupType.SetAttributeValue(
+                    Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORFAMILIES,
+                    lbRegistrationRequiredAttributesForFamilies.SelectedValues.AsDelimited( "," ) );
+
+                groupType.SetAttributeValue(
+                    Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORFAMILIES,
+                    lbRegistrationOptionalAttributesForFamilies.SelectedValues.AsDelimited( "," ) );
+
+                Guid? defaultPersonConnectionStatusValueGuid = null;
+                var defaultPersonConnectionStatusValueId = dvpRegistrationDefaultPersonConnectionStatus.SelectedValue.AsIntegerOrNull();
+                if ( defaultPersonConnectionStatusValueId.HasValue )
+                {
+                    var defaultPersonConnectionStatusValue = DefinedValueCache.Get( defaultPersonConnectionStatusValueId.Value );
+                    if ( defaultPersonConnectionStatusValue != null )
+                    {
+                        defaultPersonConnectionStatusValueGuid = defaultPersonConnectionStatusValue.Guid;
+                    }
+                }
+
+                groupType.SetAttributeValue(
+                    Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTPERSONCONNECTIONSTATUS,
+                    defaultPersonConnectionStatusValueGuid.ToString() );
+
+                var workflowTypeService = new WorkflowTypeService( rockContext );
+
+                groupType.SetAttributeValue(
+                    Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDFAMILYWORKFLOWTYPES,
+                    workflowTypeService.GetByIds( wftpRegistrationAddFamilyWorkflowTypes.SelectedValuesAsInt().ToList() ).Select( a => a.Guid ).ToList().AsDelimited( "," ) );
+
+                groupType.SetAttributeValue(
+                    Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDPERSONWORKFLOWTYPES,
+                    workflowTypeService.GetByIds( wftpRegistrationAddPersonWorkflowTypes.SelectedValuesAsInt().ToList() ).Select( a => a.Guid ).ToList().AsDelimited( "," ) );
+
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ENABLECHECKINAFTERREGISTRATION, cbEnableCheckInAfterRegistration.Checked.ToTrueFalse() );
+
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_KNOWNRELATIONSHIPTYPES, lbKnownRelationshipTypes.SelectedValues.AsDelimited( "," ) );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_SAMEFAMILYKNOWNRELATIONSHIPTYPES, lbSameFamilyKnownRelationshipTypes.SelectedValues.AsDelimited( "," ) );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_CANCHECKINKNOWNRELATIONSHIPTYPES, lbCanCheckInKnownRelationshipTypes.SelectedValues.AsDelimited( "," ) );
+
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_START_LAVA_TEMPLATE, ceStartTemplate.Text );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_FAMILYSELECT_LAVA_TEMPLATE, ceFamilySelectTemplate.Text );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE, ceSuccessTemplate.Text );
+
+                // Save group type and attributes
                 rockContext.WrapTransaction( () =>
                 {
                     rockContext.SaveChanges();
@@ -271,7 +336,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     groupType = groupTypeService.Get( groupType.Id );
                     ShowReadonlyDetails( groupType );
                 }
-                
+
                 Rock.CheckIn.KioskDevice.Clear();
             }
         }
@@ -329,6 +394,12 @@ namespace RockWeb.Blocks.CheckIn.Config
             if ( groupType == null )
             {
                 groupType = new GroupType { Id = 0 };
+                var templatePurpose = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
+                if ( templatePurpose != null )
+                {
+                    groupType.GroupTypePurposeValueId = templatePurpose.Id;
+                }
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -426,11 +497,53 @@ namespace RockWeb.Blocks.CheckIn.Config
                 nbCodeAlphaNumericLength.Text = groupType.GetAttributeValue( "core_checkin_SecurityCodeLength" );
                 nbCodeAlphaLength.Text = groupType.GetAttributeValue( "core_checkin_SecurityCodeAlphaLength" );
                 nbCodeNumericLength.Text = groupType.GetAttributeValue( "core_checkin_SecurityCodeNumericLength" );
-                cbCodeRandom.Checked = groupType.GetAttributeValue( "core_checkin_SecurityCodeNumericRandom" ).AsBoolean(true);
+                cbCodeRandom.Checked = groupType.GetAttributeValue( "core_checkin_SecurityCodeNumericRandom" ).AsBoolean( true );
                 cbAllowCheckout.Checked = groupType.GetAttributeValue( "core_checkin_AllowCheckout" ).AsBoolean( true );
                 nbAutoSelectDaysBack.Text = groupType.GetAttributeValue( "core_checkin_AutoSelectDaysBack" );
                 ddlAutoSelectOptions.SetValue( groupType.GetAttributeValue( "core_checkin_AutoSelectOptions" ) );
 
+                // Registration Settings
+                cbRegistrationDisplayAlternateIdFieldForAdults.Checked = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORADULTS ).AsBoolean();
+                cbRegistrationDisplayAlternateIdFieldForChildren.Checked = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORCHILDREN ).AsBoolean();
+
+                lbRegistrationRequiredAttributesForAdults.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORADULTS ).SplitDelimitedValues() );
+                lbRegistrationOptionalAttributesForAdults.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORADULTS ).SplitDelimitedValues() );
+
+                lbRegistrationRequiredAttributesForChildren.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORCHILDREN ).SplitDelimitedValues() );
+                lbRegistrationOptionalAttributesForChildren.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORCHILDREN ).SplitDelimitedValues() );
+
+                lbRegistrationRequiredAttributesForFamilies.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORFAMILIES ).SplitDelimitedValues() );
+                lbRegistrationOptionalAttributesForFamilies.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORFAMILIES ).SplitDelimitedValues() );
+
+                int? defaultPersonConnectionStatusValueId = null;
+                Guid? defaultPersonConnectionStatusValueGuid = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTPERSONCONNECTIONSTATUS ).AsGuidOrNull();
+                if ( defaultPersonConnectionStatusValueGuid.HasValue )
+                {
+                    var defaultPersonRecordStatusValue = DefinedValueCache.Get( defaultPersonConnectionStatusValueGuid.Value );
+                    if ( defaultPersonRecordStatusValue != null)
+                    {
+                        defaultPersonConnectionStatusValueId = defaultPersonRecordStatusValue.Id;
+                    }
+                }
+
+                dvpRegistrationDefaultPersonConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Id;
+                dvpRegistrationDefaultPersonConnectionStatus.SetValue( defaultPersonConnectionStatusValueId );
+
+                var workflowTypeService = new WorkflowTypeService( rockContext );
+                wftpRegistrationAddFamilyWorkflowTypes.SetValues( workflowTypeService.GetByGuids( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDFAMILYWORKFLOWTYPES ).SplitDelimitedValues().AsGuidList() ) );
+                wftpRegistrationAddPersonWorkflowTypes.SetValues( workflowTypeService.GetByGuids( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDPERSONWORKFLOWTYPES ).SplitDelimitedValues().AsGuidList() ) );
+
+                cbEnableCheckInAfterRegistration.Checked = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ENABLECHECKINAFTERREGISTRATION ).AsBoolean();
+
+                lbKnownRelationshipTypes.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_KNOWNRELATIONSHIPTYPES ).SplitDelimitedValues() );
+                lbSameFamilyKnownRelationshipTypes.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_SAMEFAMILYKNOWNRELATIONSHIPTYPES ).SplitDelimitedValues() );
+                lbCanCheckInKnownRelationshipTypes.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_CANCHECKINKNOWNRELATIONSHIPTYPES ).SplitDelimitedValues() );
+
+                ceStartTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_START_LAVA_TEMPLATE );
+                ceFamilySelectTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_FAMILYSELECT_LAVA_TEMPLATE );
+                ceSuccessTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE );
+
+                // Other GroupType Attributes
                 BuildAttributeEdits( groupType, true );
 
                 SetFieldVisibility();
@@ -465,6 +578,26 @@ namespace RockWeb.Blocks.CheckIn.Config
             excludeList.Add( "core_checkin_AllowCheckout" );
             excludeList.Add( "core_checkin_AutoSelectDaysBack" );
             excludeList.Add( "core_checkin_AutoSelectOptions" );
+
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_CANCHECKINKNOWNRELATIONSHIPTYPES );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORADULTS );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORCHILDREN );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ENABLECHECKINAFTERREGISTRATION );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_KNOWNRELATIONSHIPTYPES );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORADULTS );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORCHILDREN );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORFAMILIES );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORADULTS );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORCHILDREN );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORFAMILIES );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_SAMEFAMILYKNOWNRELATIONSHIPTYPES );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDFAMILYWORKFLOWTYPES );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDPERSONWORKFLOWTYPES );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTPERSONCONNECTIONSTATUS );
+
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_START_LAVA_TEMPLATE );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_FAMILYSELECT_LAVA_TEMPLATE );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE );
 
             if ( groupType.Attributes.Any( t => !excludeList.Contains( t.Value.Key ) ) )
             {
@@ -591,13 +724,53 @@ namespace RockWeb.Blocks.CheckIn.Config
             var searchTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CHECKIN_SEARCH_TYPE.AsGuid() );
             if ( searchTypes != null )
             {
-                foreach( var searchType in searchTypes.DefinedValues )
+                foreach ( var searchType in searchTypes.DefinedValues )
                 {
-                    if ( searchType.GetAttributeValue("UserSelectable").AsBooleanOrNull() ?? true ) 
+                    if ( searchType.GetAttributeValue( "UserSelectable" ).AsBooleanOrNull() ?? true )
                     {
                         ddlSearchType.Items.Add( new System.Web.UI.WebControls.ListItem( searchType.Value, searchType.Id.ToString() ) );
                     }
                 }
+            }
+
+            lbKnownRelationshipTypes.Items.Clear();
+            lbKnownRelationshipTypes.Items.Add( new ListItem( "Child", "0" ) );
+            lbSameFamilyKnownRelationshipTypes.Items.Clear();
+            lbSameFamilyKnownRelationshipTypes.Items.Add( new ListItem( "Child", "0" ) );
+            lbCanCheckInKnownRelationshipTypes.Items.Clear();
+            var knownRelationShipRoles = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ).Roles;
+            foreach ( var knownRelationShipRole in knownRelationShipRoles.Where( a => a.Name != "Child" ) )
+            {
+                lbKnownRelationshipTypes.Items.Add( new ListItem( knownRelationShipRole.Name, knownRelationShipRole.Id.ToString() ) );
+                lbSameFamilyKnownRelationshipTypes.Items.Add( new ListItem( knownRelationShipRole.Name, knownRelationShipRole.Id.ToString() ) );
+                lbCanCheckInKnownRelationshipTypes.Items.Add( new ListItem( knownRelationShipRole.Name, knownRelationShipRole.Id.ToString() ) );
+            }
+
+            lbRegistrationRequiredAttributesForAdults.Items.Clear();
+            lbRegistrationOptionalAttributesForAdults.Items.Clear();
+            lbRegistrationRequiredAttributesForChildren.Items.Clear();
+            lbRegistrationOptionalAttributesForChildren.Items.Clear();
+
+            var fakePerson = new Person();
+            fakePerson.LoadAttributes();
+            foreach ( var personAttribute in fakePerson.Attributes.Select( a => new { Name = a.Value.Name, Value = a.Value.Guid.ToString() } ) )
+            {
+                lbRegistrationRequiredAttributesForAdults.Items.Add( new ListItem( personAttribute.Name, personAttribute.Value ) );
+                lbRegistrationOptionalAttributesForAdults.Items.Add( new ListItem( personAttribute.Name, personAttribute.Value ) );
+                lbRegistrationRequiredAttributesForChildren.Items.Add( new ListItem( personAttribute.Name, personAttribute.Value ) );
+                lbRegistrationOptionalAttributesForChildren.Items.Add( new ListItem( personAttribute.Name, personAttribute.Value ) );
+            }
+
+            lbRegistrationOptionalAttributesForFamilies.Items.Clear();
+            lbRegistrationRequiredAttributesForFamilies.Items.Clear();
+
+            var fakeFamily = new Group { GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id };
+            fakeFamily.LoadAttributes();
+
+            foreach ( var groupTypeFamilyAttribute in fakeFamily.Attributes.Select( a => new { Name = a.Value.Name, Value = a.Value.Guid.ToString() } ) )
+            {
+                lbRegistrationRequiredAttributesForFamilies.Items.Add( new ListItem( groupTypeFamilyAttribute.Name, groupTypeFamilyAttribute.Value ) );
+                lbRegistrationOptionalAttributesForFamilies.Items.Add( new ListItem( groupTypeFamilyAttribute.Name, groupTypeFamilyAttribute.Value ) );
             }
         }
 
