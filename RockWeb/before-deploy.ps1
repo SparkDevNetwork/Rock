@@ -30,7 +30,19 @@ $ErrorActionPreference = "Stop"
 # }
 
 # wait for 10 seconds before continuing
-Start-Sleep 10
+# Start-Sleep 10
+
+# backup web.config file
+If (Test-Path "$webroot\web.config"){
+	Write-Host "Moving web.config to config dir"
+	Copy-Item "$webroot\web.config" "$rootfolder\config" -force
+}
+
+# backup connection string file
+If (Test-Path "$webroot\web.connectionstrings.config"){
+	Write-Host "Moving web.connectionstrings.config to config dir"
+	Copy-Item "$webroot\web.connectionstrings.config" "$rootfolder\config" -force
+}
 
 # delete the contents of the temp directory or create it
 If (Test-Path "$rootfolder\temp"){
@@ -72,10 +84,11 @@ If (Test-Path "$rootfolder\temp\Plugins"){
 #Move-Item "$webroot\Themes\CheckinKids_CentralAZ\Assets" "$rootfolder\temp\CheckinKids_CentralAZ\Assets" -Force
 
 # move non com_lcbcchurch plugins to temp\Plugins folder
-Write-Host "Moving non com_lcbcchurch Plugins to temp Plugins directory"
-$files = GCI -path "$webroot\Plugins\" | Where-Object {$_.name -ne "com_lcbcchurch" -and $_.name -ne ".gitignore" -and $_.name -ne "readme.txt"}
-foreach ($file in $files) { Move-Item  "$webroot\Plugins\$file" -Destination "$rootfolder\temp\Plugins" -Force }
-
+If (Test-Path "$webroot\Plugins\"){
+	Write-Host "Moving non com_lcbcchurch Plugins to temp Plugins directory"
+	$files = GCI -path "$webroot\Plugins\" | Where-Object {$_.name -ne "com_lcbcchurch" -and $_.name -ne ".gitignore" -and $_.name -ne "readme.txt"}
+	foreach ($file in $files) { Move-Item  "$webroot\Plugins\$file" -Destination "$rootfolder\temp\Plugins" -Force }
+}
 # move a robots file if it exists
 If (Test-Path "$webroot\robots.txt"){
 	Move-Item "$webroot\robots.txt" "$rootfolder\temp"
