@@ -1222,6 +1222,12 @@ namespace RockWeb.Blocks.Groups
             if ( !groupId.Equals( 0 ) )
             {
                 group = GetGroup( groupId, rockContext );
+                if ( group == null )
+                {
+                    pnlDetails.Visible = false;
+                    nbNotFoundOrArchived.Visible = true;
+                    return;
+                }
             }
 
             if ( group == null )

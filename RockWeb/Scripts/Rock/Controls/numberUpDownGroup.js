@@ -23,7 +23,7 @@
         }
 
         if (isValid == false) {
-            validator.errormessage = $numberUpDownGroup.find('label').text() + " is Required";
+            validator.errormessage = $numberUpDownGroup.find('label').text() + " is required";
         }
 
         var control = $numberUpDownGroup

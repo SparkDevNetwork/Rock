@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
@@ -107,6 +108,38 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string formattedValue = string.Empty;
+
+            int id = 0;
+            if ( int.TryParse( value, out id ) )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var site = new SiteService( rockContext ).GetNoTracking( id );
+                    if ( site != null )
+                    {
+                        formattedValue = site.Name;
+                    }
+                }
+            }
+
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
+        }
+
+        #endregion
+
         #region Edit Control 
 
         /// <summary>
@@ -170,7 +203,7 @@ namespace Rock.Field.Types
             {
                 if ( dropDownList.SelectedValue.Equals( None.IdValue ) )
                 {
-                    return null;
+                    return string.Empty;
                 }
                 else
                 {

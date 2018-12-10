@@ -188,7 +188,7 @@ namespace Rock.Field.Types
                     }
                 }
 
-                return itemGuid?.ToString();
+                return itemGuid?.ToString() ?? string.Empty;
             }
 
             return null;

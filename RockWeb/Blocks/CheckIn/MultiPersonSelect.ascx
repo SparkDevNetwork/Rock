@@ -27,17 +27,18 @@
 
                             <div class="control-group checkin-body-container">
                                 <label class="control-label"><asp:Literal ID="lCaption" runat="server" /></label>
+                                <asp:LinkButton CssClass="btn btn-link pull-right" ID="lbEditFamily" runat="server" OnClick="lbEditFamily_Click" Text="<i class='fa fa-pencil-alt'></i> Edit Family" />
                                 <div class="controls checkin-person-list">
                                     <asp:Repeater ID="rSelection" runat="server">
                                         <ItemTemplate>
                                             <div class="row">
                                                 <asp:Panel ID="pnlPersonButton" runat="server" CssClass="col-xs-12">
-                                                    <a data-person-id='<%# Eval("Person.Id") %>' class="btn btn-primary btn-checkin-select btn-block js-person-select" style="text-align: left">
+                                                    <a data-person-id='<%# Eval("Person.Id") %>' class="btn btn-primary btn-checkin-select btn-block js-person-select <%# GetSelectedClass( (bool)Eval("PreSelected") ) %>">
                                                         <div class="row">
-                                                            <div class="col-md-1 col-sm-2 col-xs-3">
+                                                            <div class="col-md-1 col-sm-2 col-xs-3 checkbox-container">
                                                                 <i class='fa fa-3x <%# GetCheckboxClass( (bool)Eval("PreSelected") ) %>'></i>
                                                             </div>
-                                                            <asp:Panel ID="pnlPhoto" runat="server" CssClass="col-md-1 col-sm-2 col-xs-3">
+                                                            <asp:Panel ID="pnlPhoto" runat="server" CssClass="col-md-1 col-sm-2 col-xs-3 photo-container">
                                                                 <div class="photo-round photo-round-md pull-left" style="display: block; background-image: url('<%# GetPersonImageTag( Eval("Person") ) %>');"></div>
                                                             </asp:Panel>
                                                             <asp:Panel ID="pnlPerson" runat="server"><asp:Literal ID="lPersonButton" runat="server"></asp:Literal></asp:Panel>
@@ -62,9 +63,10 @@
 
                 <div class="checkin-footer">
                     <div class="checkin-actions">
+                        <asp:LinkButton CssClass="btn btn-primary " ID="lbSelect" runat="server" OnClientClick="return GetPersonSelection();" OnClick="lbSelect_Click" Text="Next" />
                         <asp:LinkButton CssClass="btn btn-default btn-back" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
                         <asp:LinkButton CssClass="btn btn-default btn-cancel" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
-                        <asp:LinkButton CssClass="btn btn-primary pull-right" ID="lbSelect" runat="server" OnClientClick="return GetPersonSelection();" OnClick="lbSelect_Click" Text="Next" />
+
                     </div>
                 </div>
             </asp:Panel>
@@ -115,6 +117,8 @@
                     <div class="checkin-actions">
                         <asp:LinkButton CssClass="btn btn-default btn-cancel" ID="lbOptionCacncel" runat="server" OnClick="lbOptionCancel_Click" Text="Cancel" />
                         <asp:LinkButton CssClass="btn btn-primary pull-right" ID="lbOptionSelect" runat="server" OnClientClick="return GetOptionSelection();" OnClick="lbOptionSelect_Click" Text="Ok" />
+
+
                     </div>
                 </div>
 

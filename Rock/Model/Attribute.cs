@@ -507,6 +507,17 @@ namespace Rock.Model
                             GroupTypeCache.FlushItem( groupTypeId.Value );
                         }
                     }
+                    else if ( entityTypeQualifierColumn.Equals( "GroupTypePurposeValueId", StringComparison.OrdinalIgnoreCase ))
+                    {
+                        int? groupTypePurposeValueId = entityTypeQualifierValue.AsIntegerOrNull();
+                        if ( groupTypePurposeValueId.HasValue )
+                        {
+                            foreach ( var groupTypeId in GroupTypeCache.All().Where( a => a.GroupTypePurposeValueId == groupTypePurposeValueId.Value ).Select( a => a.Id ).ToList() )
+                            {
+                                GroupTypeCache.FlushItem( groupTypeId );
+                            }
+                        }
+                    }
                 }
                 else if ( entityTypeId.HasValue )
                 {
