@@ -12,7 +12,7 @@ Write-Output "Web root folder: $webroot"
 Write-Output "Running script as: $env:userdomain\$env:username"
 
 # ensure that the compilation debug is false
-(Get-Content "$webroot\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "$webroot\web.config"
+(Get-Content "$webroot\config\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "$webroot\config\web.config"
 
 # delete the content directory if it exists as it was added by the deploy
 # If (Test-Path "$webroot\Content"){
@@ -94,6 +94,11 @@ If (Test-Path "$webroot\before-deploy.ps1"){
 }
 
 # delete the appveyor deploy cache
+Write-Host "Deleting appveyor deploy cache"
 If (Test-Path c:\appveyor){
 	Remove-Item c:\appveyor -Force -Confirm:$False -Recurse
 }
+
+Write-Output "--------------------------------------------------"
+Write-Output "Post-deploy script complete"
+Write-Output "--------------------------------------------------"
