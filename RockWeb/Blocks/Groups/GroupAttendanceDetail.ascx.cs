@@ -1030,6 +1030,7 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
                 }
+                _occurrence.Id = occurrence.Id;
             }
 
             return true;
@@ -1042,9 +1043,11 @@ namespace RockWeb.Blocks.Groups
         {
             try
             {
+                var rockContext = new RockContext();
+                var occurrence = new AttendanceOccurrenceService( rockContext ).Get(_occurrence.Id);
                 var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 mergeObjects.Add( "Group", _group );
-                mergeObjects.Add( "AttendanceOccurrence", _occurrence );
+                mergeObjects.Add( "AttendanceOccurrence", occurrence );
                 mergeObjects.Add( "AttendanceNoteLabel", GetAttributeValue( "AttendanceNoteLabel" ) );
 
                 List<string> recipients = new List<string>();

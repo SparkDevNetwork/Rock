@@ -49,7 +49,7 @@
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
 
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
-    <script src="<%# ResolveRockUrl("~~/Assets/Scripts/theme.js" ) %>"></script>
+    <script src="<%# ResolveRockUrl("~~/Assets/Scripts/theme.js", true) %>"></script>
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 

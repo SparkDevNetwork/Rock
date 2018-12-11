@@ -50,7 +50,7 @@ namespace Rock.Client
         public bool? DidAttend { get; set; }
 
         /// <summary />
-        [RockObsolete( "1.8" )]
+        // Made Obsolete in Rock "1.8"
         [Obsolete( "Use Occurrence.DidNotOccur instead", false )]
         public bool? DidNotOccur { get; set; }
 
@@ -64,12 +64,12 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        [RockObsolete( "1.8" )]
+        // Made Obsolete in Rock "1.8"
         [Obsolete( "Use Occurrence.GroupId instead", false )]
         public int? GroupId { get; set; }
 
         /// <summary />
-        [RockObsolete( "1.8" )]
+        // Made Obsolete in Rock "1.8"
         [Obsolete( "Use Occurrence.LocationId instead", false )]
         public int? LocationId { get; set; }
 
@@ -97,7 +97,7 @@ namespace Rock.Client
         public Rock.Client.Enums.RSVP RSVP { get; set; }
 
         /// <summary />
-        [RockObsolete( "1.8" )]
+        // Made Obsolete in Rock "1.8"
         [Obsolete( "Use Occurrence.ScheduleId instead", false )]
         public int? ScheduleId { get; set; }
 
@@ -114,7 +114,7 @@ namespace Rock.Client
         public DateTime StartDateTime { get; set; }
 
         /// <summary />
-        [RockObsolete( "1.8" )]
+        // Made Obsolete in Rock "1.8"
         [Obsolete( "Use Occurrence.SundayDate instead", false )]
         public DateTime SundayDate { get; set; }
 

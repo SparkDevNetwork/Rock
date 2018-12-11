@@ -97,6 +97,7 @@
                             <div class="col-md-6">
                                 <Rock:RockLiteral ID="lCost" runat="server" Label="Cost" />
                                 <Rock:RockLiteral ID="lMinimumInitialPayment" runat="server" Label="Minimum Initial Payment" />
+                                <Rock:RockLiteral ID="lDefaultPaymentAmount" runat="server" Label="Default Payment Amount" />
                                 <Rock:RockLiteral ID="lAccount" runat="server" Label="Account" />
                             </div>
                         </div>
@@ -347,7 +348,7 @@
                                         <Rock:RockBoundField HeaderText ="Registrant" DataField="RegistrantName" SortExpression="RegistrantName" />
                                         <Rock:RockBoundField HeaderText ="Registrant ID" DataField="RegistrantId" ExcelExportBehavior="AlwaysInclude" Visible="false" />
 		                                <Rock:RockBoundField HeaderText ="Fee Name" DataField="FeeName" SortExpression="FeeName" />
-                                        <Rock:RockBoundField HeaderText ="Option" DataField="Option" SortExpression="Option" />
+                                        <Rock:RockBoundField HeaderText ="Option" DataField="FeeItemName" SortExpression="FeeItemName" />
 		                                <Rock:RockBoundField HeaderText ="Quantity" DataField="Quantity" SortExpression="Quantity" />
                                         <Rock:CurrencyField HeaderText ="Cost" DataField="Cost" SortExpression="Cost" />
                                         <Rock:CurrencyField HeaderText ="Fee Total" DataField="FeeTotal" SortExpression="FeeTotal"  />

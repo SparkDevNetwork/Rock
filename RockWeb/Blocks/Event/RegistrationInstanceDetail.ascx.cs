@@ -2698,6 +2698,8 @@ namespace RockWeb.Blocks.Event
                 lCost.Text = registrationInstance.Cost.FormatAsCurrency();
                 lMinimumInitialPayment.Visible = registrationInstance.MinimumInitialPayment.HasValue;
                 lMinimumInitialPayment.Text = registrationInstance.MinimumInitialPayment.HasValue ? registrationInstance.MinimumInitialPayment.Value.FormatAsCurrency() : string.Empty;
+                lDefaultPaymentAmount.Visible = registrationInstance.DefaultPayment.HasValue;
+                lDefaultPaymentAmount.Text = registrationInstance.DefaultPayment.HasValue ? registrationInstance.DefaultPayment.Value.FormatAsCurrency() : string.Empty;
             }
             else
             {
@@ -4521,7 +4523,7 @@ namespace RockWeb.Blocks.Event
             }
 
             // Fee Name
-            if (ddlFeeName.SelectedIndex > 0 )
+            if ( ddlFeeName.SelectedIndex > 0 )
             {
                 data = data.Where( r => r.FeeName == ddlFeeName.SelectedItem.Text );
             }
@@ -4529,7 +4531,7 @@ namespace RockWeb.Blocks.Event
             // Fee Options
             if ( cblFeeOptions.SelectedValues.Count > 0 )
             {
-                data = data.Where( r => cblFeeOptions.SelectedValues.Contains( r.Option ) );
+                data = data.Where( r => cblFeeOptions.SelectedValues.Any( v => v.Equals( r.FeeItem.Guid.ToString(), StringComparison.OrdinalIgnoreCase) ) );
             }
 
             SortProperty sortProperty = gFees.SortProperty;
@@ -4590,15 +4592,14 @@ namespace RockWeb.Blocks.Event
         {
             cblFeeOptions.Items.Clear();
 
-            string feeId = ddlFeeName.SelectedValue;
-            if ( feeId.IsNotNullOrWhiteSpace() )
+            int? feeId = ddlFeeName.SelectedValue.AsIntegerOrNull();
+            if ( feeId.HasValue )
             {
-                var registrationTemplateFeeService = new RegistrationTemplateFeeService( new RockContext() );
-                var fees = registrationTemplateFeeService.GetParsedFeeOptionsWithoutCost( feeId.AsInteger() );
+                var feeItems = new RegistrationTemplateFeeItemService( new RockContext() ).Queryable().Where( a => a.RegistrationTemplateFeeId == feeId );
 
-                foreach ( var fee in fees )
+                foreach ( var feeItem in feeItems )
                 {
-                    cblFeeOptions.Items.Add( new ListItem( fee, fee ) );
+                    cblFeeOptions.Items.Add( new ListItem( feeItem.Name, feeItem.Guid.ToString() ) );
                 }
 
                 string feeOptionValues = fFees.GetUserPreference( "FeeOptions" );

@@ -519,6 +519,12 @@ Guid - ContentChannelItem Guid
                 RockPage.PageTitle = pageTitle;
                 RockPage.BrowserTitle = string.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
                 RockPage.Header.Title = string.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
+
+                var pageBreadCrumb = RockPage.PageReference.BreadCrumbs.FirstOrDefault();
+                if ( pageBreadCrumb != null )
+                {
+                    pageBreadCrumb.Name = RockPage.PageTitle;
+                }
             }
 
             LaunchWorkflow();
@@ -533,7 +539,7 @@ Guid - ContentChannelItem Guid
         private ContentChannelItem GetContentChannelItem( string contentChannelItemKey )
         {
             int? itemCacheDuration = GetAttributeValue( "ItemCacheDuration" ).AsIntegerOrNull();
-            
+
             ContentChannelItem contentChannelItem = null;
 
             if ( string.IsNullOrEmpty( contentChannelItemKey ) )
