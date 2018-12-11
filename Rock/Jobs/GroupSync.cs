@@ -125,10 +125,11 @@ namespace Rock.Jobs
                                 continue;
                             }
 
-                            // Get the person id's in the group (target)
+                            // Get the person id's in the group (target) for the role being sync'd
                             var targetPersonIds = new GroupMemberService( rockContext )
                                 .Queryable().AsNoTracking()
                                 .Where( gm => gm.GroupId == sync.GroupId )
+                                .Where( gm => gm.GroupRoleId == sync.GroupTypeRoleId)
                                 .Select( gm => gm.PersonId )
                                 .ToList();
 

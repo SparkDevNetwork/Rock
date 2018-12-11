@@ -31,6 +31,14 @@ namespace Rock.Field.Types
     [Serializable]
     public class LavaCommandsFieldType : FieldType
     {
+        private const string REPEAT_COLUMNS = "repeatColumns";
+
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add( REPEAT_COLUMNS );
+            return configKeys;
+        }
 
         #region Edit Control
 
@@ -44,7 +52,14 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new LavaCommandsPicker { ID = id };
+            var editControl = new LavaCommandsPicker { ID = id };
+
+            if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+            {
+                editControl.RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
+            }
+
+            return editControl;
         }
 
         /// <summary>

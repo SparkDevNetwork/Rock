@@ -156,10 +156,11 @@ namespace RockWeb.Blocks.CheckIn
             var chartStyleDefinedValueGuid = this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull();
 
             lcAttendance.Options.SetChartStyle( chartStyleDefinedValueGuid );
-            bcAttendance.Options.SetChartStyle( chartStyleDefinedValueGuid );
             bcAttendance.Options.xaxis = new AxisOptions { mode = AxisMode.categories, tickLength = 0 };
             bcAttendance.Options.series.bars.barWidth = 0.6;
             bcAttendance.Options.series.bars.align = "center";
+            // Set chart style after setting options so they are not overwritten.
+            bcAttendance.Options.SetChartStyle( chartStyleDefinedValueGuid );
 
             if ( !Page.IsPostBack )
             {
