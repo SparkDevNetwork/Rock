@@ -27,6 +27,7 @@ using System.Runtime.Serialization;
 using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Security;
+using Newtonsoft.Json;
 
 namespace Rock.Model
 {
@@ -210,6 +211,7 @@ namespace Rock.Model
         /// The parent note.
         /// </value>
         [DataMember]
+        [JsonIgnore]
         public virtual Note ParentNote { get; set; }
 
         /// <summary>
