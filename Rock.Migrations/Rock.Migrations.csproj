@@ -152,6 +152,10 @@
     <Compile Include="Migrations\201811272108424_RegistrationTemplateFeeItem.Designer.cs">
       <DependentUpon>201811272108424_RegistrationTemplateFeeItem.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201812111901295_Rollup_1211.cs" />
+    <Compile Include="Migrations\201812111901295_Rollup_1211.Designer.cs">
+      <DependentUpon>201812111901295_Rollup_1211.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -507,6 +511,9 @@
     <EmbeddedResource Include="Migrations\201811272108424_RegistrationTemplateFeeItem.resx">
       <DependentUpon>201811272108424_RegistrationTemplateFeeItem.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201812111901295_Rollup_1211.resx">
+      <DependentUpon>201812111901295_Rollup_1211.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
     </EmbeddedResource>
@@ -767,6 +774,7 @@
     <Content Include="Migrations\201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Up.sql">
       <DependentUpon>201811271852316_Rollup_1127.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\201812111901295_Rollup_1211_FixChartShortcode.sql" />
     <Content Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.sql">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
     </Content>

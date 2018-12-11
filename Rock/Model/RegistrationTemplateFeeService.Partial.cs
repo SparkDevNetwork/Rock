@@ -186,7 +186,7 @@ namespace Rock.Model
             var result = qry.Select( a => new TemplateFeeReport
             {
                 RegistrationId = a.RegistrationRegistrant.RegistrationId,
-                RegistrationDate = a.RegistrationRegistrant.Registration.CreatedDateTime,
+                RegistrationDate = a.RegistrationRegistrant.Registration.CreatedDateTime ?? DateTime.MinValue,
                 RegisteredByName = a.RegistrationRegistrant.Registration.FirstName + " " + a.RegistrationRegistrant.Registration.LastName,
                 RegistrantPerson = a.RegistrationRegistrant.PersonAlias.Person,
                 RegistrantId = a.RegistrationRegistrantId,
@@ -217,7 +217,7 @@ namespace Rock.Model
         /// <summary>
         /// The registration date
         /// </summary>
-        private DateTime? _registrationDate;
+        private DateTime _registrationDate;
 
         /// <summary>
         /// Gets or sets the registration date.
@@ -225,11 +225,11 @@ namespace Rock.Model
         /// <value>
         /// The registration date.
         /// </value>
-        public DateTime? RegistrationDate
+        public DateTime RegistrationDate
         {
             get
             {
-                return _registrationDate?.Date;
+                return _registrationDate.Date;
             }
 
             set
