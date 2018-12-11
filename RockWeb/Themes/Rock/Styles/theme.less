@@ -471,7 +471,12 @@ td.grid-actions {
 }
 
 .grid-select-field {
-  width: @custom-control-indicator-size;
+
+  .checkbox,
+  .radio {
+    display: inline;
+    padding-right: (@custom-control-indicator-size / 2);
+  }
 
   .checkbox:last-child,
   .radio:last-child {
@@ -482,10 +487,6 @@ td.grid-actions {
   .radio input[type="radio"] + span.label-text::before {
     margin: 0;
   }
-}
-
-td.grid-select-field {
-  width: auto;
 }
 
 .grid-actions {
@@ -1347,15 +1348,6 @@ body.navbar-side-open {
 // 6. Components          */
 // -------------------------
 
-// Date Picker
-.picker-daterange {
-  .input-group-lower{
-    .input-group-addon {
-      display: none;
-    }
-  }
-}
-
 // radio buttons & checkboxes - fancy styling
 .radio,
 .checkbox {
@@ -1484,11 +1476,6 @@ body.navbar-side-open {
       background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3E%3Ccircle r='3' fill='%23ffffff'/%3E%3C/svg%3E");
     }
   }
-}
-
-.schedule-builder .checkbox {
-  display: inline;
-  padding-right: (@custom-control-indicator-size / 2);
 }
 
 .note-editor.note-frame {

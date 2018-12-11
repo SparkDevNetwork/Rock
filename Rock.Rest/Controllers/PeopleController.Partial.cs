@@ -192,7 +192,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class DuplicatePersonInfo
         {
@@ -584,7 +584,7 @@ namespace Rock.Rest.Controllers
                 }
                 else
                 {
-                    personInfoHtml += "<div class='role'>" + familyGroupType.Roles.First( a => a.Id == familyGroupMember.GroupRoleId ).Name + "</div>";
+                    personInfoHtml += "<span class='role'>" + familyGroupType.Roles.First( a => a.Id == familyGroupMember.GroupRoleId ).Name + "</span>";
                 }
 
                 if ( personAge != null )
@@ -624,7 +624,7 @@ namespace Rock.Rest.Controllers
 
                 if ( location != null )
                 {
-                    string addressHtml = "<div class='address'><h5>Address</h5>" + location.GetFullStreetAddress().ConvertCrLfToHtmlBr() + "</div>";
+                    string addressHtml = "<dl class='address'><dt>Address</dt><dd>" + location.GetFullStreetAddress().ConvertCrLfToHtmlBr() + "</dd></dl>";
                     personSearchResult.Address = location.GetFullStreetAddress();
                     personInfoHtml += addressHtml;
                 }
@@ -635,17 +635,17 @@ namespace Rock.Rest.Controllers
             {
                 string emailAndPhoneHtml = "<div class='margin-t-sm'>";
                 emailAndPhoneHtml += "<span class='email'>" + person.Email + "</span>";
-                string phoneNumberList = "<div class='phones'>";
+                string phoneNumberList = "<ul class='phones list-unstyled'>";
                 foreach ( var phoneNumber in person.PhoneNumbers )
                 {
                     var phoneType = DefinedValueCache.Get( phoneNumber.NumberTypeValueId ?? 0 );
                     phoneNumberList += string.Format(
-                        "<br>{0} <small>{1}</small>",
+                        "<li>{0} <small>{1}</small></li>",
                         phoneNumber.IsUnlisted ? "Unlisted" : phoneNumber.NumberFormatted,
                         phoneType != null ? phoneType.Value : string.Empty );
                 }
 
-                emailAndPhoneHtml += phoneNumberList + "</div></div>";
+                emailAndPhoneHtml += phoneNumberList + "</ul></div>";
 
                 personInfoHtml += emailAndPhoneHtml;
             }
