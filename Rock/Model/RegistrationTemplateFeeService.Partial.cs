@@ -304,7 +304,8 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// The option.
-        /// </value> [RockObsolete( "1.9" )]
+        /// </value>
+        [RockObsolete( "1.9" )]
         [Obsolete( "Use FeeItemName instead" )]
         public string Option
         {

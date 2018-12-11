@@ -38,7 +38,7 @@ namespace Rock.Client
         public bool AllowMultiple { get; set; }
 
         /// <summary />
-        [RockObsolete( "1.9" )]
+        // Made Obsolete in Rock "1.9"
         [Obsolete( "Use FeeItems instead", false )]
         public string CostValue { get; set; }
 
