@@ -1,7 +1,7 @@
 {% for blogpost in Items %}
 	{% assign displayBlogTitle = blogpost.ContentChannel | Attribute:'DisplayBlogTitle' %}
-	{% assign blogPostHdrImg = blogpost | Attribute:'Image', 'Url' %}
-	{% assign blogHdrImg = blogpost.ContentChannel | Attribute:'BlogImage', 'Url' %}
+	{% assign blogPostHdrImg = blogpost | Attribute:'BlogImage', 'Url' %}
+	{% assign blogHdrImg = blogpost.ContentChannel | Attribute:'Image', 'Url' %}
 	{% if blogPostHdrImg != '' and blogpost.ContentChannel.Name != "Dwight Mason" and blogpost.ContentChannel.Name != "The Daily" %}
 		{% assign blogHdrBg = blogPostHdrImg %}
 	{% else %}
