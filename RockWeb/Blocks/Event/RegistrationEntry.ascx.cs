@@ -2908,7 +2908,7 @@ namespace RockWeb.Blocks.Event
                 var errorMessages = new List<string>();
                 if ( string.IsNullOrWhiteSpace( ccNum ) )
                 {
-                    errorMessages.Add("Card Number is required");
+                    errorMessages.Add( "Card Number is required" );
                     isValid = false;
                 }
 
@@ -3177,7 +3177,7 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private CreditCardPaymentInfo GetCCPaymentInfo( GatewayComponent gateway )
         {
-            var ccPaymentInfo = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate != null ? mypExpiration.SelectedDate.Value : new DateTime());
+            var ccPaymentInfo = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate != null ? mypExpiration.SelectedDate.Value : new DateTime() );
 
             ccPaymentInfo.NameOnCard = gateway != null && gateway.SplitNameOnCard ? txtCardFirstName.Text : txtCardName.Text;
             ccPaymentInfo.LastNameOnCard = txtCardLastName.Text;
@@ -3469,10 +3469,10 @@ namespace RockWeb.Blocks.Event
                         if ( CurrentFormIndex == 0 && RegistrationState != null && RegistrationTemplate.ShowCurrentFamilyMembers )
                         {
                             if ( registrant.Id <= 0 &&
-                            	CurrentFormIndex == 0 &&
-                            	RegistrationTemplate.RegistrantsSameFamily != RegistrantsSameFamily.No &&
-                            	RegistrationTemplate.ShowCurrentFamilyMembers &&
-                            	CurrentPerson != null )
+                                CurrentFormIndex == 0 &&
+                                RegistrationTemplate.RegistrantsSameFamily != RegistrantsSameFamily.No &&
+                                RegistrationTemplate.ShowCurrentFamilyMembers &&
+                                CurrentPerson != null )
                             {
                                 var familyMembers = CurrentPerson.GetFamilyMembers( true )
                                     .Select( m => m.Person )
@@ -3904,32 +3904,32 @@ namespace RockWeb.Blocks.Event
     }}
 
 ", nbAmountPaid.ClientID                 // {0}
-            ,hfTotalCost.ClientID                   // {1}
-            ,hfMinimumDue.ClientID                  // {2}
-            ,hfPreviouslyPaid.ClientID              // {3}
-            ,lRemainingDue.ClientID                 // {4}
-            ,hfTriggerScroll.ClientID               // {5}
-            ,GlobalAttributesCache.Value( "CurrencySymbol" ) // {6}
-            ,hfStep2Url.ClientID                    // {7}
-            ,hfStep2ReturnQueryString.ClientID      // {8}
-            ,this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) // {9}
-            ,this.BlockValidationGroup              // {10}
-            ,txtCreditCard.ClientID                 // {11}
-            ,mypExpiration.ClientID                 // {12}
-            ,txtCVV.ClientID                        // {13}
-            ,hfStep2AutoSubmit.ClientID             // {14}
-            ,acBillingAddress.ClientID              // {15}
-            ,txtCardFirstName.ClientID              // {16}
-            ,txtCardLastName.ClientID               // {17}
+            , hfTotalCost.ClientID                   // {1}
+            , hfMinimumDue.ClientID                  // {2}
+            , hfPreviouslyPaid.ClientID              // {3}
+            , lRemainingDue.ClientID                 // {4}
+            , hfTriggerScroll.ClientID               // {5}
+            , GlobalAttributesCache.Value( "CurrencySymbol" ) // {6}
+            , hfStep2Url.ClientID                    // {7}
+            , hfStep2ReturnQueryString.ClientID      // {8}
+            , this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) // {9}
+            , this.BlockValidationGroup              // {10}
+            , txtCreditCard.ClientID                 // {11}
+            , mypExpiration.ClientID                 // {12}
+            , txtCVV.ClientID                        // {13}
+            , hfStep2AutoSubmit.ClientID             // {14}
+            , acBillingAddress.ClientID              // {15}
+            , txtCardFirstName.ClientID              // {16}
+            , txtCardLastName.ClientID               // {17}
             , txtCardName.ClientID                  // {18}
-            ,hfRequiredDocumentQueryString.ClientID // {19}
-            ,this.Page.ClientScript.GetPostBackEventReference( lbRequiredDocumentNext, "" ) // {20}
-            ,hfRequiredDocumentLinkUrl.ClientID     // {21}
-            ,GetAttributeValue( "FamilyTerm" )      // {22}
-            ,RegistrantTerm                         // {23}
-            ,rblFamilyOptions.ClientID              // {24}
-            ,pnlFamilyMembers.ClientID              // {25}
-            ,controlFamilyGuid                      // {26}
+            , hfRequiredDocumentQueryString.ClientID // {19}
+            , this.Page.ClientScript.GetPostBackEventReference( lbRequiredDocumentNext, "" ) // {20}
+            , hfRequiredDocumentLinkUrl.ClientID     // {21}
+            , GetAttributeValue( "FamilyTerm" )      // {22}
+            , RegistrantTerm                         // {23}
+            , rblFamilyOptions.ClientID              // {24}
+            , pnlFamilyMembers.ClientID              // {25}
+            , controlFamilyGuid                      // {26}
 );
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registrationEntry", script, true );
@@ -4024,7 +4024,7 @@ namespace RockWeb.Blocks.Event
                     if ( CurrentFormIndex == 0 && RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
                     {
                         var familyOptions = RegistrationState.GetFamilyOptions( RegistrationTemplate, CurrentRegistrantIndex );
-                        if ( CurrentRegistrantIndex == 0  && CurrentPerson != null )
+                        if ( CurrentRegistrantIndex == 0 && CurrentPerson != null )
                         {
                             // GetFamilyOptions ignores the first registrant by default, so add it manually when set to Ask
                             familyOptions.Add( CurrentPerson.GetFamily().Guid, CurrentPerson.FullName );
@@ -4093,7 +4093,7 @@ namespace RockWeb.Blocks.Event
                     }
                     else
                     {
-                        CreateAttributeField( field, setValues, value );
+                        CreateAttributeField( form, field, setValues, value );
                     }
 
                     if ( !string.IsNullOrWhiteSpace( field.PostText ) )
@@ -4101,6 +4101,8 @@ namespace RockWeb.Blocks.Event
                         phRegistrantControls.Controls.Add( new LiteralControl( field.PostText ) );
                     }
                 }
+
+                FieldVisibilityWrapper.ApplyFieldVisibilityRules( phRegistrantControls );
 
                 // If the current form, is the last one, add any fee controls
                 if ( FormCount - 1 == CurrentFormIndex && !registrant.OnWaitList )
@@ -4403,10 +4405,11 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Creates the attribute field.
         /// </summary>
+        /// <param name="form">The form.</param>
         /// <param name="field">The field.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="fieldValue">The field value.</param>
-        private void CreateAttributeField( RegistrationTemplateFormField field, bool setValue, object fieldValue )
+        private void CreateAttributeField( RegistrationTemplateForm form, RegistrationTemplateFormField field, bool setValue, object fieldValue )
         {
             if ( field.AttributeId.HasValue )
             {
@@ -4421,8 +4424,40 @@ namespace RockWeb.Blocks.Event
                 }
 
                 string helpText = GetAttributeValue( "ShowFieldDescriptions" ).AsBoolean() ? field.Attribute.Description : string.Empty;
-                attribute.AddControl( phRegistrantControls.Controls, value, BlockValidationGroup, setValue, true, field.IsRequired, null, helpText );
+                FieldVisibilityWrapper fieldVisibilityWrapper = new FieldVisibilityWrapper
+                {
+                    ID = "_fieldVisibilityWrapper_attribute_" + attribute.Id.ToString(),
+                    AttributeId = attribute.Id,
+                    FieldVisibilityRules = field.FieldVisibilityRules
+                };
+
+                fieldVisibilityWrapper.EditValueUpdated += FieldVisibilityWrapper_EditValueUpdated;
+
+                phRegistrantControls.Controls.Add( fieldVisibilityWrapper );
+
+                var editControl = attribute.AddControl( fieldVisibilityWrapper.Controls, value, BlockValidationGroup, setValue, true, field.IsRequired, null, helpText );
+                fieldVisibilityWrapper.EditControl = editControl;
+
+                bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.Any( r => r.ComparedToAttributeGuid == attribute.Guid ) );
+
+                if ( hasDependantVisibilityRule && attribute.FieldType.Field.HasChangeHandler( editControl ) )
+                {
+                    attribute.FieldType.Field.AddChangeHandler( editControl, () =>
+                     {
+                         fieldVisibilityWrapper.TriggerEditValueUpdated( editControl, new FieldVisibilityWrapper.FieldEventArgs( attribute, editControl ) );
+                     } );
+                }
             }
+        }
+
+        /// <summary>
+        /// Handles the EditValueUpdated event of the FieldVisibilityWrapper control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="args">The <see cref="FieldVisibilityWrapper.FieldEventArgs"/> instance containing the event data.</param>
+        private void FieldVisibilityWrapper_EditValueUpdated( object sender, FieldVisibilityWrapper.FieldEventArgs args )
+        {
+            FieldVisibilityWrapper.ApplyFieldVisibilityRules( phRegistrantControls );
         }
 
         /// <summary>

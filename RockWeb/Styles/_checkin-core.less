@@ -30,6 +30,11 @@
 @fa-theme-weight-name: 'solid';
 .fa-font-face( @fa-theme-weight-name );
 
+select.form-control {
+  // Fix for iOS not trimming border-radius
+  border-radius: 4px
+}
+
 h1,
 h2,
 h3 {
@@ -162,7 +167,7 @@ body {
   .checkin-actions {
     text-align: right;
 
-    .btn {
+    .btn-primary {
       font-size: 36px;
     }
   }
@@ -513,7 +518,7 @@ input.namesearch {
 .checkin-scroll-panel {
   position: absolute;
   top: 45px;
-  bottom: 48px;
+  bottom: 24px;
   z-index: 1;
   width: 100%;
   overflow: hidden;
