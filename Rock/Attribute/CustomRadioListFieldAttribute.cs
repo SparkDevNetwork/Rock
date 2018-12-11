@@ -25,8 +25,11 @@ namespace Rock.Attribute
     /// Field Attribute for selecting radio button options.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class CustomRadioListFieldAttribute : FieldAttribute
+    public class CustomRadioListFieldAttribute : SelectFieldAttribute
     {
+        private const string VALUES = "values";
+        private const string FIELDTYPE = "fieldtype";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomRadioListFieldAttribute" /> class.
         /// </summary>
@@ -41,8 +44,8 @@ namespace Rock.Attribute
         public CustomRadioListFieldAttribute( string name, string description, string listSource, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectSingleFieldType ).FullName )
         {
-            FieldConfigurationValues.Add( "values", new Field.ConfigurationValue( listSource ) );
-            FieldConfigurationValues.Add( "fieldtype", new Field.ConfigurationValue( "rb" ) );
+            FieldConfigurationValues.Add( VALUES, new Field.ConfigurationValue( listSource ) );
+            FieldConfigurationValues.Add( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
         }
     }
 }

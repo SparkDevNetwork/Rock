@@ -125,10 +125,11 @@ namespace Rock.Jobs
                                 continue;
                             }
 
-                            // Get the person id's in the group (target)
+                            // Get the person id's in the group (target) for the role being sync'd
                             var targetPersonIds = new GroupMemberService( rockContext )
                                 .Queryable().AsNoTracking()
                                 .Where( gm => gm.GroupId == sync.GroupId )
+                                .Where( gm => gm.GroupRoleId == sync.GroupTypeRoleId)
                                 .Select( gm => gm.PersonId )
                                 .ToList();
 
@@ -187,8 +188,24 @@ namespace Rock.Jobs
                                     newGroupMember.GroupId = sync.GroupId;
                                     newGroupMember.GroupMemberStatus = GroupMemberStatus.Active;
                                     newGroupMember.GroupRoleId = sync.GroupTypeRoleId;
-                                    groupMemberService.Add( newGroupMember );
-                                    groupMemberContext.SaveChanges();
+
+                                    try
+                                    {
+                                        // The Model will throw and log GroupMemberValidationException if the group member can't be added due to validation issues
+                                        groupMemberService.Add( newGroupMember );
+                                        groupMemberContext.SaveChanges();
+                                    }
+                                    catch ( GroupMemberValidationException )
+                                    {
+                                        // This has been logged by the model, so just continue
+                                        continue;
+                                    }
+                                    catch ( Exception ex )
+                                    {
+                                        // Log this and contine on
+                                        ExceptionLogService.LogException( ex );
+                                        continue;
+                                    }
 
                                     // If the Group has a welcome email, and person has an email address, send them the welcome email and possibly create a login
                                     if ( sync.WelcomeSystemEmail != null )

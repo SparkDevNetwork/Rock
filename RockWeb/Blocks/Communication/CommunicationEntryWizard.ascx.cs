@@ -488,23 +488,20 @@ namespace RockWeb.Blocks.Communication
 
             var selectedNumberGuids = GetAttributeValue( "AllowedSMSNumbers" ).SplitDelimitedValues( true ).AsGuidList();
             var smsFromDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
+            var smsDefinedValues = smsFromDefinedType.DefinedValues.ToList();
             if ( selectedNumberGuids.Any() )
             {
-                ddlSMSFrom.SelectedIndex = -1;
-                ddlSMSFrom.DataSource = smsFromDefinedType.DefinedValues.Where( v => selectedNumberGuids.Contains( v.Guid ) ).Select( v => new
-                {
-                    v.Description,
-                    v.Id
-                } );
-                ddlSMSFrom.DataTextField = "Description";
-                ddlSMSFrom.DataValueField = "Id";
-                ddlSMSFrom.DataBind();
-                ddlSMSFrom.Items.Insert( 0, new ListItem() );
+                smsDefinedValues = smsDefinedValues.Where( v => selectedNumberGuids.Contains( v.Guid ) ).ToList();
             }
-            else
+
+            ddlSMSFrom.Items.Clear();
+            ddlSMSFrom.Items.Add( new ListItem() );
+            foreach ( var item in smsDefinedValues )
             {
-                ddlSMSFrom.BindToDefinedType( smsFromDefinedType, true, true );
+                ddlSMSFrom.Items.Add( new ListItem( item.Description, item.Id.ToString() ) );
             }
+
+            ddlSMSFrom.SelectedIndex = -1;
         }
 
         /// <summary>

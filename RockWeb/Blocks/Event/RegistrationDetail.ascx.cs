@@ -2204,11 +2204,26 @@ namespace RockWeb.Blocks.Event
                         foreach ( var feeInfo in fee.Value )
                         {
                             decimal cost = feeInfo.PreviousCost > 0.0m ? feeInfo.PreviousCost : feeInfo.Cost;
-                            string desc = string.Format( "{0}{1} ({2:N0} @ {3})",
-                                templateFee != null ? templateFee.Name : "(Previous Cost)",
-                                string.IsNullOrWhiteSpace( feeInfo.Option ) ? "" : "-" + feeInfo.Option,
-                                feeInfo.Quantity,
-                                cost.FormatAsCurrency() );
+                            string feeName;
+                            if ( templateFee != null )
+                            {
+                                feeName = templateFee.Name;
+
+                                if ( templateFee.FeeType == RegistrationFeeType.Multiple && feeInfo.FeeLabel.IsNotNullOrWhiteSpace() )
+                                {
+                                    feeName = string.Format( "{0}-{1}", templateFee.Name, feeInfo.FeeLabel );
+                                }
+                            }
+                            else
+                            {
+                                feeName = "(Previous Cost)";
+                                if ( feeInfo.FeeLabel.IsNotNullOrWhiteSpace() )
+                                {
+                                    feeName += "-" + feeInfo.FeeLabel;
+                                }
+                            }
+
+                            string desc = string.Format( "{0} ({1:N0} @ {2})", feeName, feeInfo.Quantity, cost.FormatAsCurrency() );
 
                             var costSummary = new RegistrationCostSummaryInfo();
                             costSummary.Type = RegistrationCostSummaryType.Fee;
@@ -2543,7 +2558,7 @@ namespace RockWeb.Blocks.Event
                             else
                             {
                                 var rlDiscountedFee = new RockLiteral();
-                                rlDiscountedFee.ID = string.Format( "rlDiscountedFee_{0}_{1}_{2}", registrant.Id, templateFee.Id, feeInfo.Option );
+                                rlDiscountedFee.ID = string.Format( "rlDiscountedFee_{0}_{1}_{2}", registrant.Id, templateFee.Id, feeInfo.FeeLabel );
                                 rlDiscountedFee.Label = "Discounted Amount";
                                 rlDiscountedFee.Text = discountedCost.FormatAsCurrency();
 
@@ -2601,12 +2616,13 @@ namespace RockWeb.Blocks.Event
             if ( feeInfo.Quantity > 0 )
             {
                 var rlField = new RockLiteral();
-                rlField.ID = string.Format( "rlFee_{0}_{1}_{2}", registrant.Id, fee.Id, feeInfo.Option );
+                rlField.ID = string.Format( "rlFee_{0}_{1}_{2}", registrant.Id, fee.Id, feeInfo.FeeLabel );
+                
                 rlField.Label = fee.Name;
 
-                if ( !string.IsNullOrWhiteSpace( feeInfo.Option ) )
+                if ( fee.FeeType == RegistrationFeeType.Multiple && feeInfo.FeeLabel.IsNotNullOrWhiteSpace() )
                 {
-                    rlField.Label += " - " + feeInfo.Option;
+                    rlField.Label = string.Format( "{0}-{1}", fee.Name, feeInfo.FeeLabel );
                 }
 
                 if ( feeInfo.Quantity > 1 )

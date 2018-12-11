@@ -134,7 +134,7 @@
 
                             <%-- Family Attributes --%>
 
-                            <Rock:DynamicPlaceholder ID="phFamilyAttributes" runat="server" />
+                            <Rock:AttributeValuesContainer ID="avcFamilyAttributes" runat="server" />
 
                             <%-- Edit Family Buttons --%>
                             <div class="actions">
@@ -208,12 +208,12 @@
 
                             <%-- Person Attributes editing an Adult --%>
                             <Rock:HtmlGenericContainer ID="pnlAdultFields" runat="server">
-                                <Rock:DynamicPlaceholder ID="phAdultAttributes" runat="server" />
+                                <Rock:AttributeValuesContainer ID="avcAdultAttributes" runat="server" />
                             </Rock:HtmlGenericContainer>
 
                             <%-- Person Attributes when editing a Child --%>
                             <Rock:HtmlGenericContainer ID="pnlChildFields" runat="server">
-                                <Rock:DynamicPlaceholder ID="phChildAttributes" runat="server" />
+                                <Rock:AttributeValuesContainer ID="avcChildAttributes" runat="server" />
                             </Rock:HtmlGenericContainer>
 
                             <%-- Person Actions --%>

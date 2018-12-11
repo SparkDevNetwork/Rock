@@ -290,6 +290,7 @@
     <Compile Include="Attribute\RegistrationInstanceFieldAttribute.cs" />
     <Compile Include="Attribute\RegistrationTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\ReportFieldAttribute.cs" />
+    <Compile Include="Attribute\SelectFieldAttribute.cs" />
     <Compile Include="Attribute\TimeZoneFieldAttribute.cs" />
     <Compile Include="Attribute\FileFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileFieldAttribute.cs" />
@@ -389,9 +390,10 @@
     <Compile Include="Field\Types\AssetFieldType.cs" />
     <Compile Include="Field\Types\AssetStorageProviderFieldType.cs" />
     <Compile Include="Model\CodeGenerated\NoteAttachmentService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationTemplateFeeItemService.cs" />
     <Compile Include="Model\NoteAttachment.cs" />
+    <Compile Include="Model\RegistrationTemplateFeeItem.cs" />
     <Compile Include="Model\SpiritualGiftsService.cs" />
-    <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
     <Compile Include="CheckIn\CheckInEditFamilyBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -406,6 +408,7 @@
     <Compile Include="Jobs\PostV84DataMigrations.cs" />
     <Compile Include="Lava\Shortcodes\Scripturize.cs" />
     <Compile Include="Lava\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
+    <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
     <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
     <Compile Include="Plugin\HotFixes\060_MigrationRollupsForV8_6.cs" />
     <Compile Include="Plugin\HotFixes\059_MigrationRollupsForV8_5_2.cs" />
@@ -422,6 +425,7 @@
     </Compile>
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\BenevolenceResultDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceResult\BenevolenceRequestDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\AttendanceDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasDuplicateEmailFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasDuplicatePhoneFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InteractionDataViewFilter.cs" />
@@ -433,6 +437,7 @@
     <Compile Include="SystemGuid\SystemSetting.cs" />
     <Compile Include="SystemKey\GroupTypeAttributeKey.cs" />
     <Compile Include="Utility\RockColor.cs" />
+    <Compile Include="Utility\RockDynamic.cs" />
     <Compile Include="Utility\Scripturize.cs" />
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
@@ -1641,6 +1646,7 @@
     <Compile Include="Web\HttpModules\HttpModuleContainer.cs" />
     <Compile Include="Web\UI\Adapters\ListControlAdaptor.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
+    <Compile Include="Web\UI\Controls\AttributeValuesContainer.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityWrapper.cs" />
     <Compile Include="Web\UI\Controls\Captcha.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />
@@ -2284,6 +2290,9 @@
     </Content>
     <Content Include="Plugin\HotFixes\059_MigrationRollupsForV8_5_2_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>059_MigrationRollupsForV8_5_2.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\060_MigrationRollupsForV8_6_FixChartShortcode.sql">
+      <DependentUpon>060_MigrationRollupsForV8_6.cs</DependentUpon>
     </Content>
     <Content Include="Plugin\HotFixes\060_MigrationRollupsForV8_6_spFinance_PledgeAnalyticsQuery_Down.sql">
       <DependentUpon>060_MigrationRollupsForV8_6.cs</DependentUpon>
