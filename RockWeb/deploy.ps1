@@ -11,8 +11,21 @@ Write-Output "Root folder: $rootfolder"
 Write-Output "Web root folder: $webroot"
 Write-Output "Running script as: $env:userdomain\$env:username"
 
+# move connection string file back from config
+Write-Host "Copying web.ConnectionStrings.config to web dir"
+If (Test-Path "$rootfolder\config\web.connectionstrings.config"){
+	Write-Host "Moving web.connectionstrings.config from config dir"
+	Copy-Item "$rootfolder\config\web.connectionstrings.config" "$webroot" -force
+}
+
+# move web.config file back from temp (restarts the app pool)
+If (Test-Path "$rootfolder\config\web.config"){
+	Write-Host "Moving web.config from config dir"
+	Copy-Item "$rootfolder\config\web.config" "$webroot" -force
+}
+
 # ensure that the compilation debug is false
-(Get-Content "$webroot\config\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "$webroot\config\web.config"
+(Get-Content "$webroot\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "$webroot\web.config"
 
 # delete the content directory if it exists as it was added by the deploy
 # If (Test-Path "$webroot\Content"){
@@ -60,10 +73,6 @@ If (Test-Path "$rootfolder\temp\robots.txt"){
 Write-Host "Copying any manual-fix\bin DLLs to web bin folder"
 $files = GCI -path "$rootfolder\manual-fixes\bin"
 foreach ($file in $files) { Copy-Item  "$rootfolder\manual-fixes\bin\$file" -Destination "$webroot\bin\" -Force}
-
-# copy new connection string file
-Write-Host "Copying new web.ConnectionStrings.config to web dir"
-Copy-Item "$rootfolder\config\web.ConnectionStrings.config" $webroot -force
 
 # start web publishing service
 Write-Host "Starting Web Publishing Service"
