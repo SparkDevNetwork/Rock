@@ -2362,6 +2362,9 @@
     <Content Include="Plugin\HotFixes\059_MigrationRollupsForV8_5_2_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>059_MigrationRollupsForV8_5_2.cs</DependentUpon>
     </Content>
+    <Content Include="Plugin\HotFixes\060_MigrationRollupsForV8_6_FixChartShortcode.sql">
+      <DependentUpon>060_MigrationRollupsForV8_6.cs</DependentUpon>
+    </Content>
     <Content Include="Plugin\HotFixes\060_MigrationRollupsForV8_6_spFinance_PledgeAnalyticsQuery_Down.sql">
       <DependentUpon>060_MigrationRollupsForV8_6.cs</DependentUpon>
     </Content>
