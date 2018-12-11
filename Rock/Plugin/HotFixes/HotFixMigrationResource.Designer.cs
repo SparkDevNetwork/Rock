@@ -591,6 +591,25 @@ namespace Rock.Plugin.HotFixes {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortCode] 
+        ///SET [Markup] = &apos;{% javascript url:&apos;&apos;~/Scripts/moment.min.js&apos;&apos; id:&apos;&apos;moment&apos;&apos;%}{% endjavascript %}
+        ///{% javascript url:&apos;&apos;~/Scripts/Chartjs/Chart.min.js&apos;&apos; id:&apos;&apos;chartjs&apos;&apos;%}{% endjavascript %}
+        ///
+        ///{% assign id = uniqueid %}
+        ///{% assign curvedlines = curvedlines | AsBoolean %}
+        ///
+        ///{% assign dataitemCount = dataitems | Size -%}
+        ///{% if dataitemCount &gt; 0 -%}
+        ///    {% assign fillColors = dataitems | Map:&apos;&apos;fillcolor&apos;&apos; | Join:&apos;&apos;&quot;, &quot;&apos;&apos; | Prepend:&apos;&apos;[&quot;&apos;&apos; | Append:&apos;&apos;&quot;]&apos;&apos; %}
+        ///    {% assign borderColors = [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _060_MigrationRollupsForV8_6_FixChartShortcode {
+            get {
+                return ResourceManager.GetString("_060_MigrationRollupsForV8_6_FixChartShortcode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to /*
         ///&lt;doc&gt;
         ///	&lt;summary&gt;

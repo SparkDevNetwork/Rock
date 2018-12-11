@@ -35,6 +35,7 @@ namespace Rock.Plugin.HotFixes
         public override void Up()
         {
             FixPledgeAnalyticsGiftDateFilteringUp();
+            FixChartShortcode();
         }
 
 
@@ -63,7 +64,13 @@ namespace Rock.Plugin.HotFixes
             Sql( HotFixMigrationResource._060_MigrationRollupsForV8_6_spFinance_PledgeAnalyticsQuery_Down );
         }
 
-
+        /// <summary>
+        /// GJ: Fix Chart Shortcode
+        /// </summary>
+        private void FixChartShortcode()
+        {
+            Sql( HotFixMigrationResource._060_MigrationRollupsForV8_6_FixChartShortcode );
+        }
 
     }
 }
