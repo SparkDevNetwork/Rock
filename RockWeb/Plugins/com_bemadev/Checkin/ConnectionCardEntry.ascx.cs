@@ -36,13 +36,36 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
     [Category( "com_bemadev > Check-in" )]
     [Description( "Provides a way to manually enter attendance for a large group of people in an efficient manner." )]
 
-    [IntegerField( "Checkin Config Id", "Select the parent group whose immediate children will be displayed as options to take attendance for.", required: true, order: 0 )]
-    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The type of address to be displayed / edited.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", order: 4 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status", "The connection status that should be set by default", false, false, "", "", order: 0 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Record Status", "The record status that should be used when adding new people.", false, false, Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE, "", 7 )]
-    [CampusField( "Default Campus", "An optional campus to use by default when adding a new family.", false, "", "", 1 )]
+    // Attendance Settings
+    [IntegerField( "Checkin Config Id", "Select the parent group whose immediate children will be displayed as options to take attendance for.", required: true, category: "Attendance Settings" )]
+    [BooleanField( "Default Show Current Attendees", "Should the Current Attendees grid be visible by default. When the grid is enabled performance will be reduced.", false, category: "Attendance Settings" )]
 
-    [BooleanField( "Default Show Current Attendees", "Should the Current Attendees grid be visible by default. When the grid is enabled performance will be reduced.", false, order: 1 )]
+    // Person Entry Settings
+    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The type of address to be displayed / edited.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, category: "Person Entry Settings" )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status", "The connection status that should be set by default", false, false, "", category: "Person Entry Settings" )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Record Status", "The record status that should be used when adding new people.", false, false, Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE, "Person Entry Settings" )]
+    [CampusField( "Default Campus", "An optional campus to use by default when adding a new family.", false, "", "Person Entry Settings" )]
+
+    //Prayer Request Settings
+    [IntegerField( "Expires After (Days)", "Default number of days until the request will expire.", false, 14, "Prayer Request Settings", 0, "ExpireDays" )]
+    [CategoryField( "Default Category", "If a category is not selected, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "Prayer Request Settings", 1, "DefaultCategory" )]
+    [BooleanField( "Default To Public", "If enabled, all prayers will be set to public by default", false, "Prayer Request Settings", 4 )]
+    [BooleanField( "Default Allow Comments Checked", "If true, the Allow Comments checkbox will be pre-checked for all new requests by default.", true, "Prayer Request Settings", order: 5 )]
+
+    //Interest Settings
+    [TextField( "Interest Attribute Key", "The Key of the Workflow Attribute that the selected interests will be passed to", true, "Interests", "Interest Workflow Settings" )]
+    [WorkflowTypeField( "Interest Workflow Type", "The type of workflow to be fired if any of the interests are selected", false, false, "", "Interest Workflow Settings" )]
+
+    //General Comment Settings
+    [TextField( "General Comment Attribute Key", "The Key of the Workflow Attribute that the comment's text will be passed to", true, "Comment", "General Comment Workflow Settings" )]
+    [WorkflowTypeField( "General Comment Workflow Type", "The type of workflow to be fired", false, false, "", "General Comment Workflow Settings" )]
+
+    //Commitment Settings
+    [TextField( "Commitment Attribute Key", "The Key of the Workflow Attribute that the selected commitments will be passed to", true, "Commitment", "Commitment Workflow Settings" )]
+    [TextField( "Contact Info Attribute Key", "The Key of the Workflow Attribute that the contact info will be passed to", true, "ContactInfo", "Commitment Workflow Settings" )]
+    [WorkflowTypeField( "Commitment Workflow Type", "The type of workflow to be fired if any of the commitments are selected", false, false, "", "Commitment Workflow Settings" )]
+
+
     public partial class ConnectionCardEntry : RockBlock
     {
         #region Properties
@@ -355,10 +378,10 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             UpdateAddress( person.GetFamily() );
 
             RecordAttendance();
-            FireInterestWorkflow(); // TODO
-            SavePrayerRequest(); // TODO
-            SaveGeneralComment(); // TODO
-            SaveCommitment(); // TODO
+            FireInterestWorkflow( person ); 
+            SavePrayerRequest( person ); 
+            SaveGeneralComment( person ); 
+            SaveCommitment( person ); 
 
             //
             // Clear all person information
@@ -790,8 +813,23 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     person.RecordStatusValueId = defaultRecordStatus.Id;
                 }
 
-                var defaultCampus = CampusCache.Get( GetAttributeValue( "DefaultCampus" ).AsGuid() );
-                familyGroup = PersonService.SaveNewPerson( person, rockContext, ( defaultCampus != null ? defaultCampus.Id : ( int? ) null ), false );
+                int? campusId = null;
+                var group = new GroupService( rockContext ).Get( ddlGroup.SelectedValue.AsInteger() );
+                if ( group != null )
+                {
+                    campusId = group.CampusId;
+                }
+
+                if ( !campusId.HasValue )
+                {
+                    var defaultCampus = CampusCache.Get( GetAttributeValue( "DefaultCampus" ).AsGuid() );
+                    if ( defaultCampus != null )
+                    {
+                        campusId = defaultCampus.Id;
+                    }
+                }
+
+                familyGroup = PersonService.SaveNewPerson( person, rockContext, campusId, false );
                 if ( familyGroup != null && familyGroup.Members.Any() )
                 {
                     person = familyGroup.Members.Select( m => m.Person ).First();
@@ -955,7 +993,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
 
                                         var loc = new Location();
                                         acAddress.GetValues( loc );
-                                  
+
                                         var locationId = locationService.Get(
                                             loc.Street1, loc.Street2, loc.City, loc.State, loc.PostalCode, loc.Country, familyGroup, true ).Id;
 
@@ -1016,20 +1054,140 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             Rock.CheckIn.KioskLocationAttendance.Remove( groupLocation.LocationId );
         }
 
-        private void FireInterestWorkflow()
+        private void SavePrayerRequest( Person person )
         {
+            if ( tbPrayerRequests.Text.IsNotNullOrWhiteSpace() )
+            {
+                var rockContext = new RockContext();
+                PrayerRequest prayerRequest = null;
+                PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
+                var expireDays = Convert.ToDouble( GetAttributeValue( "ExpireDays" ) );
+                var group = new GroupService( rockContext ).Get( ddlGroup.SelectedValue.AsInteger() );
+
+                prayerRequest = new PrayerRequest();
+                prayerRequestService.Add( prayerRequest );
+
+                prayerRequest.EnteredDateTime = RockDateTime.Now;
+                prayerRequest.RequestedByPersonAliasId = person.PrimaryAliasId;
+                prayerRequest.ExpirationDate = RockDateTime.Now.AddDays( expireDays );
+                prayerRequest.CampusId = group.CampusId;
+
+                var defaultCategoryGuid = GetAttributeValue( "DefaultCategory" ).AsGuidOrNull();
+                if ( defaultCategoryGuid.HasValue )
+                {
+                    var prayRequestCategory = new CategoryService( new RockContext() ).Get( defaultCategoryGuid.Value );
+                    if ( prayRequestCategory != null )
+                    {
+                        prayerRequest.CategoryId = prayRequestCategory.Id;
+                    }
+                }
+
+                prayerRequest.IsApproved = false;
+                prayerRequest.IsActive = true;
+                prayerRequest.AllowComments = GetAttributeValue( "DefaultAllowCommentsChecked" ).AsBooleanOrNull() ?? true;
+                prayerRequest.IsPublic = GetAttributeValue( "DefaultToPublic" ).AsBooleanOrNull() ?? false;
+                prayerRequest.FirstName = tbFirstName.Text;
+                prayerRequest.LastName = tbLastName.Text;
+                prayerRequest.Email = tbEmail.Text;
+                prayerRequest.Text = tbPrayerRequests.Text.Trim();
+
+                rockContext.SaveChanges();
+
+            }
         }
 
-        private void SavePrayerRequest()
+        private void FireInterestWorkflow( Person person )
         {
+            if ( cblInterests.SelectedValues.Any() )
+            {
+                String workflowTypeAttributeKey = "InterestWorkflowType";
+                Dictionary<string, string> attributeDictionary = new Dictionary<string, string>();
+                attributeDictionary.Add( GetAttributeValue( "InterestAttributeKey" ), cblInterests.SelectedValues.AsDelimited( "," ) );
+
+                LaunchWorkflow( person, workflowTypeAttributeKey, attributeDictionary );
+            }
         }
 
-        private void SaveGeneralComment()
+        private void SaveGeneralComment( Person person )
         {
+            if ( tbComments.Text.IsNotNullOrWhiteSpace() )
+            {
+                String workflowTypeAttributeKey = "GeneralCommentWorkflowType";
+                Dictionary<string, string> attributeDictionary = new Dictionary<string, string>();
+                attributeDictionary.Add( GetAttributeValue( "GeneralCommentAttributeKey" ), tbComments.Text.Trim() );
+
+                LaunchWorkflow( person, workflowTypeAttributeKey, attributeDictionary );
+            }
         }
 
-        private void SaveCommitment()
+        private void SaveCommitment( Person person )
         {
+            if ( rblLifeChoice.SelectedValue.IsNotNullOrWhiteSpace() )
+            {
+                String workflowTypeAttributeKey = "CommitmentWorkflowType";
+                Dictionary<string, string> attributeDictionary = new Dictionary<string, string>();
+                attributeDictionary.Add( GetAttributeValue( "CommitmentAttributeKey" ), rblLifeChoice.SelectedValue );
+                attributeDictionary.Add( GetAttributeValue( "ContactInfoAttributeKey" ), tbContactInfo.Text.Trim() );
+
+                LaunchWorkflow( person, workflowTypeAttributeKey, attributeDictionary );
+            }
+        }
+
+        private void LaunchWorkflow( Person person, string workflowTypeAttributeKey, Dictionary<string, string> attributeDictionary )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var group = new GroupService( rockContext ).Get( ddlGroup.SelectedValue.AsInteger() );
+
+                Guid? workflowTypeGuid = GetAttributeValue( workflowTypeAttributeKey ).AsGuidOrNull();
+                if ( workflowTypeGuid.HasValue )
+                {
+                    var workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
+                    if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                    {
+                        try
+                        {
+                            var workflowService = new WorkflowService( rockContext );
+                            var workflow = Workflow.Activate( workflowType, person.FullName );
+                            workflow.LoadAttributes();
+                            workflow.SetAttributeValue( "Person", person.PrimaryAlias.Guid.ToString() );
+                            workflow.SetAttributeValue( "Campus", group.Campus.Guid.ToString() );
+
+                            foreach ( var row in attributeDictionary )
+                            {
+                                workflow.SetAttributeValue( row.Key, row.Value );
+                            }
+
+                            List<string> workflowErrors;
+                            if ( workflowService.Process( workflow, person, out workflowErrors ) )
+                            {
+                                if ( workflow.IsPersisted || workflowType.IsPersisted )
+                                {
+                                    if ( workflow.Id == 0 )
+                                    {
+                                        workflowService.Add( workflow );
+                                    }
+
+                                    rockContext.WrapTransaction( () =>
+                                    {
+                                        rockContext.SaveChanges();
+                                        workflow.SaveAttributeValues( rockContext );
+                                        foreach ( var activity in workflow.Activities )
+                                        {
+                                            activity.SaveAttributeValues( rockContext );
+                                        }
+                                    } );
+                                }
+                            }
+
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( ex, this.Context );
+                        }
+                    }
+                }
+            }
         }
 
         void UpdatePhoneNumber( Person person, string mobileNumber )
