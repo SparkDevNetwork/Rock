@@ -34,7 +34,7 @@
                 <hr />
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:PersonPicker ID="ppAttendee" runat="server" Label="Attendee" Required="true" CssClass="js-attendee" OnSelectPerson="ppAttendee_SelectPerson" />
+                        <Rock:PersonPicker ID="ppAttendee" runat="server" Label="Attendee" Required="false" CssClass="js-attendee" OnSelectPerson="ppAttendee_SelectPerson" />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockCheckBoxList ID="cblFamilyMembers" Label="Mark Attendance for the following:" ValidateRequestMode="Disabled" Visible="false" runat="server" RepeatDirection="Horizontal" />
@@ -185,6 +185,10 @@
                         <Rock:DatePicker ID="bpChildBirthdate" Label="Birthdate" runat="server" />
                     </div>
                     <div class="col-md-4">
+                        <%-- This YearPicker is needed for the GradePicker to work --%>
+                        <div style="display: none;">
+                            <Rock:YearPicker ID="ypGraduation" runat="server" Label="Graduation Year" Help="High School Graduation Year." />
+                        </div>
                         <Rock:GradePicker ID="gpChildGrade" Label="Grade" runat="server" />
                     </div>
                 </div>

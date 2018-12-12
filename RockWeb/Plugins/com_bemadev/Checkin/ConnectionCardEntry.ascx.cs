@@ -46,7 +46,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
     public partial class ConnectionCardEntry : RockBlock
     {
         #region Properties
-        private List<ChildSummary> ChildrenState { get; set; }
+        private List<AttendeeSummary> AttendeeState { get; set; }
         #endregion
 
         #region Base Method Overrides
@@ -58,14 +58,14 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
         {
             base.LoadViewState( savedState );
 
-            var json = ViewState["ChildrenState"] as string;
+            var json = ViewState["AttendeeState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
-                ChildrenState = new List<ChildSummary>();
+                AttendeeState = new List<AttendeeSummary>();
             }
             else
             {
-                ChildrenState = JsonConvert.DeserializeObject<List<ChildSummary>>( json );
+                AttendeeState = JsonConvert.DeserializeObject<List<AttendeeSummary>>( json );
             }
         }
         /// <summary>
@@ -80,6 +80,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             gChildren.Actions.ShowAdd = true;
             gChildren.Actions.AddClick += gChildren_Add;
             gChildren.GridRebind += gChildren_GridRebind;
+            ScriptManager.RegisterStartupScript( gpChildGrade, gpChildGrade.GetType(), "grade-selection-" + BlockId.ToString(), gpChildGrade.GetJavascriptForYearPicker( ypGraduation ), true );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -115,7 +116,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                 ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
             };
 
-            ViewState["ChildrenState"] = JsonConvert.SerializeObject( ChildrenState, Formatting.None, jsonSetting );
+            ViewState["AttendeeState"] = JsonConvert.SerializeObject( AttendeeState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -180,7 +181,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
 
             UpdateLocations();
 
-            ChildrenState = new List<ChildSummary>();
+            AttendeeState = new List<AttendeeSummary>();
             BindChildrenGrid();
 
 
@@ -350,13 +351,37 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            AddOrUpdatePerson();
+            var person = AddOrUpdatePerson();
+            UpdateAddress( person.GetFamily() );
+
             RecordAttendance();
+            FireInterestWorkflow(); // TODO
+            SavePrayerRequest(); // TODO
+            SaveGeneralComment(); // TODO
+            SaveCommitment(); // TODO
 
             //
-            // Clear the person picker and open it so it's ready to go.
+            // Clear all person information
             //
             ppAttendee.SetValue( null );
+            cblFamilyMembers.Items.Clear();
+            cblFamilyMembers.Visible = false;
+
+            tbFirstName.Text = tbLastName.Text = tbSpouseName.Text = string.Empty;
+            tbEmail.Text = string.Empty;
+            pnPhone.Text = string.Empty;
+            bpBirthDay.SelectedDate = null;
+
+            acAddress.SetValues( null );
+
+            AttendeeState = new List<AttendeeSummary>();
+            BindChildrenGrid();
+
+            cblInterests.SelectedValue = null;
+            tbPrayerRequests.Text = tbComments.Text = string.Empty;
+            rblLifeChoice.SelectedValue = null;
+            tbContactInfo.Text = string.Empty;
+
             nbInactivePerson.Visible = false;
 
             //
@@ -484,15 +509,6 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                 var rockContext = new RockContext();
                 var person = new PersonService( rockContext ).Get( ppAttendee.PersonId.Value );
 
-                cblFamilyMembers.Items.Clear();
-                foreach ( var familyMember in person.GetFamilyMembers( true ) )
-                {
-                    cblFamilyMembers.Items.Add( new ListItem( familyMember.Person.FullName, familyMember.Person.Guid.ToString() ) );
-                }
-                cblFamilyMembers.SelectedValue = person.Guid.ToString();
-
-                cblFamilyMembers.Visible = true;
-
                 tbFirstName.Text = person.NickName;
                 tbLastName.Text = person.LastName;
                 tbSpouseName.Text = person.GetSpouse() != null ? person.GetSpouse().NickName : string.Empty;
@@ -521,26 +537,41 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     }
                 }
 
-                ChildrenState = new List<ChildSummary>();
+                AttendeeState = new List<AttendeeSummary>();
                 var childRoleGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-                foreach ( var child in person.GetFamilyMembers().Where( gm => gm.GroupRole.Guid == childRoleGuid ).Select( gm => gm.Person ).ToList() )
+                foreach ( var familyMember in person.GetFamilyMembers( true ).ToList() )
                 {
-                    var childSummary = new ChildSummary();
-                    childSummary.Name = child.NickName;
-                    childSummary.BirthDate = child.BirthDate;
+                    var attendeeSummary = new AttendeeSummary();
+                    attendeeSummary.Name = familyMember.Person.NickName;
+                    attendeeSummary.BirthDate = familyMember.Person.BirthDate;
+                    attendeeSummary.Guid = familyMember.Person.Guid;
+                    attendeeSummary.IsChild = familyMember.GroupRole.Guid == childRoleGuid;
 
                     var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
                     if ( schoolGrades != null )
                     {
-                        var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
-                        var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= child.GradeOffset.Value ).FirstOrDefault();
-                        if ( schoolGradeValue != null )
+                        if ( familyMember.Person.GradeOffset.HasValue )
                         {
-                            childSummary.Grade = schoolGradeValue;
+                            var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
+                            var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= familyMember.Person.GradeOffset.Value ).FirstOrDefault();
+                            if ( schoolGradeValue != null )
+                            {
+                                attendeeSummary.Grade = schoolGradeValue;
+                            }
                         }
+
                     }
-                    ChildrenState.Add( childSummary );
+                    AttendeeState.Add( attendeeSummary );
                 }
+
+                cblFamilyMembers.Items.Clear();
+                foreach ( var attendee in AttendeeState )
+                {
+                    cblFamilyMembers.Items.Add( new ListItem( attendee.Name, attendee.Guid.ToString() ) );
+                }
+                cblFamilyMembers.SelectedValue = person.Guid.ToString();
+
+                cblFamilyMembers.Visible = true;
 
                 BindChildrenGrid();
             }
@@ -625,7 +656,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
         /// <param name="reservationLocationGuid">The reservation location unique identifier.</param>
         protected void gChildren_ShowEdit( Guid childGuid )
         {
-            ChildSummary child = ChildrenState.FirstOrDefault( l => l.Guid.Equals( childGuid ) );
+            AttendeeSummary child = AttendeeState.FirstOrDefault( l => l.Guid.Equals( childGuid ) );
             if ( child != null )
             {
                 tbChildName.Text = child.Name;
@@ -655,31 +686,23 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
         }
 
         /// <summary>
-        /// Binds the reservation locations grid.
-        /// </summary>
-        private void BindReservationLocationsGrid()
-        {
-            gChildren.SetLinqDataSource( ChildrenState.AsQueryable().OrderBy( c => c.Name ) );
-            gChildren.DataBind();
-        }
-
-        /// <summary>
         /// Saves the reservation location.
         /// </summary>
         private void SaveChild()
         {
             bool newChild = false;
-            ChildSummary child = null;
+            AttendeeSummary child = null;
             Guid guid = hfChildGuid.Value.AsGuid();
             if ( !guid.IsEmpty() )
             {
-                child = ChildrenState.FirstOrDefault( l => l.Guid.Equals( guid ) );
+                child = AttendeeState.FirstOrDefault( l => l.Guid.Equals( guid ) );
             }
 
             if ( child == null )
             {
-                child = new ChildSummary();
+                child = new AttendeeSummary();
                 child.Guid = Guid.NewGuid();
+                child.IsChild = true;
                 newChild = true;
             }
 
@@ -687,19 +710,19 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             child.BirthDate = bpChildBirthdate.SelectedDate;
             child.Grade = gpChildGrade.SelectedGradeValue;
 
-            foreach ( var childSummary in ChildrenState.Where( a => a.Guid.Equals( child.Guid ) ).ToList() )
+            foreach ( var childSummary in AttendeeState.Where( a => a.Guid.Equals( child.Guid ) ).ToList() )
             {
-                ChildrenState.Remove( childSummary );
+                AttendeeState.Remove( childSummary );
             }
 
-            ChildrenState.Add( child );
+            AttendeeState.Add( child );
 
             if ( newChild && ppAttendee.PersonId.HasValue )
             {
-                cblFamilyMembers.Items.Add( new ListItem( String.Format( "{0} {1}", child.Name, tbLastName.Text ), child.Guid.ToString() ) );
+                cblFamilyMembers.Items.Add( new ListItem( child.Name, child.Guid.ToString() ) );
             }
 
-            BindReservationLocationsGrid();
+            BindChildrenGrid();
         }
 
         /// <summary>
@@ -707,7 +730,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
         /// </summary>
         private void BindChildrenGrid()
         {
-            gChildren.SetLinqDataSource( ChildrenState.AsQueryable().Select( c => new
+            gChildren.SetLinqDataSource( AttendeeState.AsQueryable().Where( a => a.IsChild ).Select( c => new
             {
                 Name = c.Name,
                 BirthDate = c.BirthDate.HasValue ? c.BirthDate.Value.ToShortDateString() : String.Empty,
@@ -721,30 +744,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
 
         #region Internal Methods
 
-        private void RecordAttendance()
-        {
-
-            var rockContext = new RockContext();
-            var attendanceService = new AttendanceService( rockContext );
-            var group = new GroupService( rockContext ).Get( ddlGroup.SelectedValue.AsInteger() );
-            var person = new PersonService( rockContext ).Get( ppAttendee.PersonId.Value );
-            var scheduleId = ddlSchedule.SelectedValue.AsIntegerOrNull();
-            var dateTime = dpAttendanceDate.SelectedDate.Value;
-            var groupLocation = new GroupLocationService( rockContext ).Get( ddlLocation.SelectedValue.AsInteger() );
-
-            attendanceService.AddOrUpdate( person.PrimaryAliasId.Value, dateTime, group.Id, groupLocation.LocationId, scheduleId, group.CampusId );
-
-            rockContext.SaveChanges();
-
-            //
-            // Flush the attendance cache.
-            //
-            Rock.CheckIn.KioskLocationAttendance.Remove( groupLocation.LocationId );
-
-            nbAttended.Text = string.Format( "{0} has been marked attended.", person.FullName );
-        }
-
-        private void AddOrUpdatePerson()
+        private Person AddOrUpdatePerson()
         {
             var rockContext = new RockContext();
 
@@ -753,6 +753,8 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             PersonAlias personAlias = null;
             var personService = new PersonService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
+            int adultRoleId = GroupTypeCache.GetFamilyGroupType().Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
+            int childRoleId = GroupTypeCache.GetFamilyGroupType().Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
 
             var personQuery = new PersonService.PersonMatchQuery( tbFirstName.Text, tbLastName.Text, tbEmail.Text, pnPhone.Number, null, bpBirthDay.SelectedDate.HasValue ? ( int? ) bpBirthDay.SelectedDate.Value.Month : null, bpBirthDay.SelectedDate.HasValue ? ( int? ) bpBirthDay.SelectedDate.Value.Day : null, bpBirthDay.SelectedDate.HasValue ? ( int? ) bpBirthDay.SelectedDate.Value.Year : null );
             person = personService.FindPerson( personQuery, true );
@@ -795,18 +797,27 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     person = familyGroup.Members.Select( m => m.Person ).First();
                     personAlias = person.PrimaryAlias;
                 }
+
+                AttendeeSummary attendee = new AttendeeSummary();
+                attendee.Name = person.NickName;
+                attendee.Guid = person.Guid;
+                attendee.IsChild = false;
+                AttendeeState.Add( attendee );
             }
 
             UpdatePhoneNumber( person, pnPhone.Number );
 
             var spouse = person.GetSpouse();
-            if ( ( spouse != null && tbSpouseName.Text.IsNotNullOrWhiteSpace() ) || ( tbSpouseName.Text != spouse.NickName ) )
+            if ( ( spouse == null && tbSpouseName.Text.IsNotNullOrWhiteSpace() ) || ( spouse != null && tbSpouseName.Text != spouse.NickName ) )
             {
                 // Add New Person
                 spouse = new Person();
                 spouse.FirstName = tbSpouseName.Text;
                 spouse.LastName = tbLastName.Text;
                 spouse.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+
+                person.MaritalStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
+                spouse.MaritalStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
 
                 var defaultConnectionStatus = DefinedValueCache.Get( GetAttributeValue( "DefaultConnectionStatus" ).AsGuid() );
                 if ( defaultConnectionStatus != null )
@@ -820,85 +831,205 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     spouse.RecordStatusValueId = defaultRecordStatus.Id;
                 }
 
-                var groupMember = new GroupMember() { Person = spouse, Group = familyGroup, GroupId = familyGroup.Id };
+                var groupMember = new GroupMember() { Person = spouse, Group = familyGroup, GroupId = familyGroup.Id, GroupRoleId = adultRoleId };
                 groupMemberService.Add( groupMember );
+                rockContext.SaveChanges();
+
+                AttendeeSummary attendeeSpouse = new AttendeeSummary();
+                attendeeSpouse.Name = spouse.NickName;
+                attendeeSpouse.Guid = spouse.Guid;
+                attendeeSpouse.IsChild = false;
+                AttendeeState.Add( attendeeSpouse );
             }
 
-            // save family information
-            if ( pnlAddress.Visible )
+            foreach ( var childSummary in AttendeeState.Where( p => p.IsChild ) )
             {
-                Guid? familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuidOrNull();
-                if ( familyGroupTypeGuid.HasValue )
+                Person child = null;
+                child = personService.Get( childSummary.Guid );
+                if ( child == null )
                 {
-                    if ( familyGroup != null )
+                    // Add New Person
+                    child = new Person();
+                    child.FirstName = childSummary.Name;
+                    child.LastName = tbLastName.Text;
+                    child.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+
+                    var defaultConnectionStatus = DefinedValueCache.Get( GetAttributeValue( "DefaultConnectionStatus" ).AsGuid() );
+                    if ( defaultConnectionStatus != null )
                     {
-                        Guid? addressTypeGuid = GetAttributeValue( "AddressType" ).AsGuidOrNull();
-                        if ( addressTypeGuid.HasValue )
+                        child.ConnectionStatusValueId = defaultConnectionStatus.Id;
+                    }
+
+                    var defaultRecordStatus = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
+                    if ( defaultRecordStatus != null )
+                    {
+                        child.RecordStatusValueId = defaultRecordStatus.Id;
+                    }
+
+                    var groupMember = new GroupMember() { Person = child, Group = familyGroup, GroupId = familyGroup.Id, GroupRoleId = childRoleId };
+                    groupMemberService.Add( groupMember );
+                }
+                else
+                {
+                    child.FirstName = childSummary.Name;
+                }
+
+                child.SetBirthDate( childSummary.BirthDate );
+                if ( childSummary.Grade != null )
+                {
+                    child.GradeOffset = childSummary.Grade.Value.AsInteger();
+                }
+
+                rockContext.SaveChanges();
+            }
+
+            return person;
+        }
+
+        private void UpdateAddress( Group familyGroup )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var locationService = new LocationService( rockContext );
+
+                //save family information
+                if ( pnlAddress.Visible )
+                {
+                    Guid? familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuidOrNull();
+                    if ( familyGroupTypeGuid.HasValue )
+                    {
+                        if ( familyGroup != null )
                         {
-                            var groupLocationService = new GroupLocationService( rockContext );
+                            Guid? addressTypeGuid = GetAttributeValue( "AddressType" ).AsGuidOrNull();
+                            if ( addressTypeGuid.HasValue )
+                            {
+                                var groupLocationService = new GroupLocationService( rockContext );
 
-                            var dvHomeAddressType = DefinedValueCache.Get( addressTypeGuid.Value );
-                            var familyAddress = groupLocationService.Queryable().Where( l => l.GroupId == familyGroup.Id && l.GroupLocationTypeValueId == dvHomeAddressType.Id ).FirstOrDefault();
-                            if ( familyAddress != null && string.IsNullOrWhiteSpace( acAddress.Street1 ) )
-                            {
-                                // delete the current address
-                                groupLocationService.Delete( familyAddress );
-                                rockContext.SaveChanges();
-                            }
-                            else
-                            {
-                                if ( !string.IsNullOrWhiteSpace( acAddress.Street1 ) )
+                                var dvHomeAddressType = DefinedValueCache.Get( addressTypeGuid.Value );
+                                var familyAddress = groupLocationService.Queryable().Where( l => l.GroupId == familyGroup.Id && l.GroupLocationTypeValueId == dvHomeAddressType.Id ).FirstOrDefault();
+                                if ( familyAddress != null && string.IsNullOrWhiteSpace( acAddress.Street1 ) )
                                 {
-                                    if ( familyAddress == null )
-                                    {
-                                        familyAddress = new GroupLocation();
-                                        groupLocationService.Add( familyAddress );
-                                        familyAddress.GroupLocationTypeValueId = dvHomeAddressType.Id;
-                                        familyAddress.GroupId = familyGroup.Id;
-                                        familyAddress.IsMailingLocation = true;
-                                        familyAddress.IsMappedLocation = true;
-                                    }
-                                    else if ( hfStreet1.Value != string.Empty )
-                                    {
-                                        // user clicked move so create a previous address
-                                        var previousAddress = new GroupLocation();
-                                        groupLocationService.Add( previousAddress );
-
-                                        var previousAddressValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
-                                        if ( previousAddressValue != null )
-                                        {
-                                            previousAddress.GroupLocationTypeValueId = previousAddressValue.Id;
-                                            previousAddress.GroupId = familyGroup.Id;
-
-                                            Location previousAddressLocation = new Location();
-                                            previousAddressLocation.Street1 = hfStreet1.Value;
-                                            previousAddressLocation.Street2 = hfStreet2.Value;
-                                            previousAddressLocation.City = hfCity.Value;
-                                            previousAddressLocation.State = hfState.Value;
-                                            previousAddressLocation.PostalCode = hfPostalCode.Value;
-                                            previousAddressLocation.Country = hfCountry.Value;
-
-                                            previousAddress.Location = previousAddressLocation;
-                                        }
-                                    }
-
-                                    familyAddress.IsMailingLocation = cbIsMailingAddress.Checked;
-                                    familyAddress.IsMappedLocation = cbIsPhysicalAddress.Checked;
-
-                                    var loc = new Location();
-                                    acAddress.GetValues( loc );
-
-                                    familyAddress.Location = new LocationService( rockContext ).Get(
-                                        loc.Street1, loc.Street2, loc.City, loc.State, loc.PostalCode, loc.Country, familyGroup, true );
-
+                                    // delete the current address
+                                    groupLocationService.Delete( familyAddress );
                                     rockContext.SaveChanges();
+                                }
+                                else
+                                {
+                                    if ( !string.IsNullOrWhiteSpace( acAddress.Street1 ) )
+                                    {
+                                        if ( familyAddress == null )
+                                        {
+                                            familyAddress = new GroupLocation();
+                                            groupLocationService.Add( familyAddress );
+                                            familyAddress.GroupLocationTypeValueId = dvHomeAddressType.Id;
+                                            familyAddress.GroupId = familyGroup.Id;
+                                            familyAddress.IsMailingLocation = true;
+                                            familyAddress.IsMappedLocation = true;
+                                        }
+                                        else if ( hfStreet1.Value != string.Empty )
+                                        {
+                                            // user clicked move so create a previous address
+                                            var previousAddress = new GroupLocation();
+                                            groupLocationService.Add( previousAddress );
+
+                                            var previousAddressValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
+                                            if ( previousAddressValue != null )
+                                            {
+                                                previousAddress.GroupLocationTypeValueId = previousAddressValue.Id;
+                                                previousAddress.GroupId = familyGroup.Id;
+
+                                                Location previousAddressLocation = new Location();
+                                                previousAddressLocation.Street1 = hfStreet1.Value;
+                                                previousAddressLocation.Street2 = hfStreet2.Value;
+                                                previousAddressLocation.City = hfCity.Value;
+                                                previousAddressLocation.State = hfState.Value;
+                                                previousAddressLocation.PostalCode = hfPostalCode.Value;
+                                                previousAddressLocation.Country = hfCountry.Value;
+
+                                                previousAddress.Location = previousAddressLocation;
+                                            }
+                                        }
+
+                                        familyAddress.IsMailingLocation = cbIsMailingAddress.Checked;
+                                        familyAddress.IsMappedLocation = cbIsPhysicalAddress.Checked;
+
+                                        var loc = new Location();
+                                        acAddress.GetValues( loc );
+                                  
+                                        var locationId = locationService.Get(
+                                            loc.Street1, loc.Street2, loc.City, loc.State, loc.PostalCode, loc.Country, familyGroup, true ).Id;
+
+                                        familyAddress.Location = locationService.Get( locationId );
+
+                                        rockContext.SaveChanges();
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+        }
 
+        private void RecordAttendance()
+        {
+
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            var attendanceService = new AttendanceService( rockContext );
+            var group = new GroupService( rockContext ).Get( ddlGroup.SelectedValue.AsInteger() );
+            var scheduleId = ddlSchedule.SelectedValue.AsIntegerOrNull();
+            var dateTime = dpAttendanceDate.SelectedDate.Value;
+            var groupLocation = new GroupLocationService( rockContext ).Get( ddlLocation.SelectedValue.AsInteger() );
+
+            if ( ppAttendee.PersonId.HasValue )
+            {
+                var guidList = cblFamilyMembers.SelectedValues.AsGuidList();
+                foreach ( var attendee in AttendeeState.Where( a => guidList.Contains( a.Guid ) ) )
+                {
+                    attendee.Attended = true;
+                }
+            }
+            else
+            {
+                foreach ( var attendee in AttendeeState )
+                {
+                    attendee.Attended = true;
+                }
+            }
+
+            foreach ( var attendee in AttendeeState.Where( a => a.Attended ).ToList() )
+            {
+                var person = personService.Get( attendee.Guid );
+                if ( person != null )
+                {
+                    attendanceService.AddOrUpdate( person.PrimaryAliasId.Value, dateTime, group.Id, groupLocation.LocationId, scheduleId, group.CampusId );
+
+                }
+            }
+
+            rockContext.SaveChanges();
+
+            //
+            // Flush the attendance cache.
+            //
+            Rock.CheckIn.KioskLocationAttendance.Remove( groupLocation.LocationId );
+        }
+
+        private void FireInterestWorkflow()
+        {
+        }
+
+        private void SavePrayerRequest()
+        {
+        }
+
+        private void SaveGeneralComment()
+        {
+        }
+
+        private void SaveCommitment()
+        {
         }
 
         void UpdatePhoneNumber( Person person, string mobileNumber )
@@ -934,13 +1065,17 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
 
         }
 
-        private class ChildSummary
+        private class AttendeeSummary
         {
             public String Name { get; set; }
             public DateTime? BirthDate { get; set; }
             public DefinedValueCache Grade { get; set; }
 
+            public bool IsChild { get; set; }
+
             public Guid Guid { get; set; }
+
+            public bool Attended { get; set; }
         }
     }
 }
