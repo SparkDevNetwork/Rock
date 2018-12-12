@@ -25,6 +25,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -156,9 +157,31 @@ namespace Rock.Model
         [DataMember]
         public bool ShowOnWaitlist { get; set; }
 
+        /// <summary>
+        /// JSON Serialized <see cref="FieldVisibilityRules"/>
+        /// </summary>
+        /// <value>
+        /// The field visibility rules json.
+        /// </value>
+        [DataMember]
+        public string FieldVisibilityRulesJSON
+        {
+            get => FieldVisibilityRules?.ToJson();
+            set => FieldVisibilityRules = value.FromJsonOrNull<Rock.Field.FieldVisibilityRules>() ?? new Field.FieldVisibilityRules();
+        }
+
         #endregion
 
         #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the field visibility rules.
+        /// </summary>
+        /// <value>
+        /// The field visibility rules.
+        /// </value>
+        [NotMapped]
+        public virtual Rock.Field.FieldVisibilityRules FieldVisibilityRules { get; set; } = new Rock.Field.FieldVisibilityRules();
 
         /// <summary>
         /// Gets or sets the registration template form.
