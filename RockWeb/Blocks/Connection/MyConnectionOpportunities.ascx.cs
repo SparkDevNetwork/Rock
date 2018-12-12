@@ -307,7 +307,6 @@ namespace RockWeb.Blocks.Connection
             {
                 var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Queryable().AsNoTracking().FirstOrDefault( a => a.Id == opportunitySummary.Id );
                 mergeFields.Add( "ConnectionOpportunity", connectionOpportunity );
-                mergeFields.Add( "ConnectionRequests", connectionOpportunity.ConnectionRequests );
 
                 result = template.ResolveMergeFields( mergeFields );
             }

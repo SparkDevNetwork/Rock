@@ -27,7 +27,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public abstract class ItemPicker : CompositeControl, IRockControl
+    public abstract class ItemPicker : CompositeControl, IRockControl, IRockChangeHandlerControl
     {
         #region IRockControl implementation
 
@@ -594,8 +594,8 @@ $@"Rock.controls.itemPicker.initialize({{
             _btnSelect.InnerText = "Select";
             _btnSelect.CausesValidation = false;
 
-            // make sure PagePicker always does a postback, even if _selectItem is not assigned
-            if ( _selectItem == null && ( this is PagePicker ) )
+            // make sure  this always does a postback if this is a PagePicker or if ValueChanged is assigned, even if _selectItem is not assigned
+            if ( _selectItem == null && ( this is PagePicker || ValueChanged != null ) )
             {
                 _btnSelect.ServerClick += btnSelect_Click;
             }
@@ -607,8 +607,8 @@ $@"Rock.controls.itemPicker.initialize({{
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
 
-            // make sure PagePicker always does a postback, even if _selectItem is not assigned
-            if ( _selectItem == null && ( this is PagePicker ) )
+            // make sure  this always does a postback if this is a PagePicker or if ValueChanged is assigned, even if _selectItem is not assigned
+            if ( _selectItem == null && ( this is PagePicker || ValueChanged != null ) )
             {
                 _btnSelectNone.ServerClick += btnSelect_Click;
             }
@@ -849,6 +849,8 @@ $@"Rock.controls.itemPicker.initialize({{
             {
                 _selectItem( sender, e );
             }
+
+            ValueChanged?.Invoke( sender, e );
         }
 
         /// <summary>
@@ -881,6 +883,14 @@ $@"Rock.controls.itemPicker.initialize({{
         /// </summary>
         protected abstract void SetValuesOnSelect();
 
+        /// <summary>
+        /// Occurs when the selected value has changed
+        /// </summary>
+        public event EventHandler ValueChanged;
+
+        /// <summary>
+        /// private reference to SelectItem so that we can do special stuff in the add/remove accessors
+        /// </summary>
         private event EventHandler _selectItem;
 
         /// <summary>
