@@ -3241,6 +3241,8 @@ namespace RockWeb.Blocks.Event
             // If this is an existing registration, go directly to the summary
             if ( !Page.IsPostBack && RegistrationState != null && RegistrationState.RegistrationId.HasValue && !PageParameter( START_AT_BEGINNING ).AsBoolean() )
             {
+                // ShowSummary will set visibility on things like the lbSummaryPrev button, so we want to
+                // call this before we might change that lbSummaryPrev button's visibility below.
                 ShowSummary();
 
                 // check if template does not allow updating the saved registration, if so hide the back button on the summary screen
