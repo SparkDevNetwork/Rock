@@ -2,32 +2,35 @@
 #            Rock RMS             #
 #---------------------------------#
 
-# version format
+# Version Format
 version: 0.1.{build}
 
-# increment flag
+# Don't increment build number for pull requests
 pull_requests:
   do_not_increment_build_number: true
 
-# Do not build on tags (GitHub only)
+# Do not build on tags
 skip_tags: true
 
-# operating system (build VM template)
+# Build VM template
 image: Visual Studio 2017
+
+# Build configuration
 configuration: Release
 platform: Any CPU
 
-# clone directory and depth
+# Shallow clone to reduce download time
 shallow_clone: true
 clone_folder: C:\projects\Rock
 
-# cache some things to speed up builds
+# Cache some things to speed up builds
+# I don't think this actually speeds anything up
 cache:
 - packages -> **\packages.config # cache the packages folder unless a project changes package dependancies
 - C:\Users\appveyor\AppData\Local\NuGet\Cache # always cache the nuget cache
 
 
-# scripts to run before build
+# Make sure all dependancies are available before build
 before_build:
 - ps: >-
     if (Test-Path 'C:\Tools\NuGet3') { $nugetDir = 'C:\Tools\NuGet3' } else { $nugetDir = 'C:\Tools\NuGet' }
@@ -42,22 +45,30 @@ before_build:
     
     Get-ChildItem $src | Copy-Item -Destination $dst -Force
  
-# build configuration
+# More build configuration
 build:
   project: Rock.sln
   publish_wap: false
   parallel: true
   verbosity: minimal
 
+# Save the RockWeb folder as an artifact for deployment
 artifacts:
 - path: RockWeb
   name: RockWeb
 
-# flag to stop building if an error throws
+# Stop matrix builds if one of them has an error
 matrix:
   fast_finish: true
 
-# test
+# Tests
 test:
   assemblies:
   - Rock.Tests\**\*.dll
+
+# Skip commits for static repository files
+skip_commits:
+  files:
+    - '.github/'
+    - '**/README.markdown'
+    - '**/README.md'
