@@ -610,7 +610,7 @@ namespace Rock.Model
         public Person FindPerson( PersonMatchQuery personMatchQuery, bool updatePrimaryEmail, bool includeDeceased = false, bool includeBusinesses = false )
         {
             var matches = this.FindPersons( personMatchQuery, includeDeceased, includeBusinesses ).ToList();
-            
+
             var match = matches.FirstOrDefault();
 
             // Check if we care about updating the person's primary email
@@ -2994,11 +2994,11 @@ namespace Rock.Model
 
             if ( personId.HasValue )
             {
-                personQuery = personService.AsNoFilter().Where( a => a.Id == personId );
+                personQuery = personService.AsNoFilter().Where( a => a.Id == personId && !a.IsDeceased);
             }
             else
             {
-                personQuery = personService.Queryable( includeDeceased: true, includeBusinesses: false );
+                personQuery = personService.Queryable( includeDeceased: false, includeBusinesses: false );
             }
 
             // get the min birthdate of people 18 and younger;
@@ -3024,7 +3024,7 @@ namespace Rock.Model
                         ||
                         familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).All( f => f.GroupRoleId == groupRoleChildId )
                     ) );
-            
+
             // update records that aren't marked as Adult but now should be
             int updatedAdultCount = rockContext.BulkUpdate(
                 adultBasedOnBirthdateOrFamilyRole.Where( a => a.AgeClassification != AgeClassification.Adult && !a.IsLockedAsChild ),
