@@ -162,8 +162,8 @@
                                 <Rock:WorkflowTypePicker ID="wtpRegistrationWorkflow" runat="server" Label="Registration Workflow"
                                     Help="An optional workflow type to launch when a new registration is completed." />
                                 <Rock:RockCheckBox ID="cbAllowExternalUpdates" runat="server" Label="Allow External Updates to Saved Registrations" Text="Yes"
-                                            Help="Allow saved registrations to be updated online. If false the individual will be able to make additional payments, but will
-                                            not be allow to change any of the registrant information and attributes." />
+                                            Help="Allow saved registrations to be updated online. If false, the individual will be able to make additional payments but will
+                                            not be allowed to change any of the registrant information and attributes." />
                             </div>
                             <div class="col-md-6">
                                 <div class="row">
