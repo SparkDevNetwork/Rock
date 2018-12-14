@@ -48,7 +48,7 @@ namespace RockWeb
 
             RockContext rockContext = new RockContext();
 
-            if ( request.HttpMethod != "GET" )
+            if ( request.HttpMethod != "GET" && request.HttpMethod != "HEAD" )
             {
                 response.TrySkipIisCustomErrors = true;
                 response.StatusCode = 405;
@@ -132,6 +132,12 @@ namespace RockWeb
             else
             {
                 response.ContentType = dvRssTemplate.GetAttributeValue( "MimeType" );
+            }
+
+            if (request.HttpMethod == "HEAD")
+            {
+                response.StatusCode = 200;
+                return;
             }
 
             // load merge fields
