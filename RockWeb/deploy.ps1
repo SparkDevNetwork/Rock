@@ -168,7 +168,7 @@ if(Test-Path $InstalledPluginsPath) {
         $PluginVersions = Get-ChildItem $Plugin.FullName;
         if($PluginVersions.Count -gt 0) {
 
-            $LatestVersion = $PluginVersions  | Sort-Object "Name" | Select-Object -Last 1;
+            $LatestVersion = $PluginVersions  | Sort-Object {$_.BaseName -replace "\D+" -as [Int]} | Select-Object -Last 1;
             Write-Host "Restoring ${LatestVersion.Name}";
             Restore-RockPlugin $LatestVersion.FullName;
 
