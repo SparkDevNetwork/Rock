@@ -41,6 +41,7 @@ namespace Rock.Jobs
     [TextField( "Base Cache Folder", "The base/starting Directory for the file cache (default is ~/Cache.)", false, "~/Cache", "General", 4, "BaseCacheDirectory" )]
     [IntegerField( "Max Metaphone Names", "The maximum number of person names to process metaphone values for each time job is run (only names that have not yet been processed are checked).", false, 500, "General", 5 )]
     [IntegerField( "Batch Cleanup Amount", "The number of records to delete at a time dependent on infrastructure. Recommended range is 1000 to 10,000.", false, 1000, "General", 6 )]
+    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the sql operations to complete. Leave blank to use the default for this job (900). Note, some operations could take several minutes, so you might want to set it at 900 (15 minutes) or higher", false, 60 * 15, "General", 7, "CommandTimeout" )]
     [DisallowConcurrentExecution]
     public class RockCleanup : IJob
     {
@@ -287,24 +288,27 @@ namespace Rock.Jobs
                 }
             }
 
+            int commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 900;
             // Ensures the PrimaryFamily is correct for all person records in the database
             using ( var personRockContext = new Rock.Data.RockContext() )
             {
+                personRockContext.Database.CommandTimeout = commandTimeout;
                 int primaryFamilyUpdates = PersonService.UpdatePrimaryFamilyAll( personRockContext );
             }
 
             // update any updated or incorrect age classifications on persons
             using ( var personRockContext = new Rock.Data.RockContext() )
             {
+                personRockContext.Database.CommandTimeout = commandTimeout;
                 int ageClassificationUpdates = PersonService.UpdatePersonAgeClassificationAll( personRockContext );
             }
 
             //// Add any missing Implied/Known relationship groups
             // Known Relationship Group
-            AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() );
+            AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid(), commandTimeout );
 
             // Implied Relationship Group
-            AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK ), Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid() );
+            AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK ), Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid(), commandTimeout );
 
             // Find family groups that have no members or that have only 'inactive' people (record status) and mark the groups inactive.
             using ( var familyRockContext = new Rock.Data.RockContext() )
@@ -388,7 +392,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="relationshipGroupType">Type of the relationship group.</param>
         /// <param name="ownerRoleGuid">The owner role unique identifier.</param>
-        private static void AddMissingRelationshipGroups( GroupTypeCache relationshipGroupType, Guid ownerRoleGuid )
+        private static void AddMissingRelationshipGroups( GroupTypeCache relationshipGroupType, Guid ownerRoleGuid, int commandTimeout )
         {
             if ( relationshipGroupType != null )
             {
@@ -397,6 +401,7 @@ namespace Rock.Jobs
                 if ( ownerRoleId.HasValue )
                 {
                     var rockContext = new RockContext();
+                    rockContext.Database.CommandTimeout = commandTimeout;
                     var personService = new PersonService( rockContext );
                     var memberService = new GroupMemberService( rockContext );
 
