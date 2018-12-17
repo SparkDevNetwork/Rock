@@ -95,7 +95,7 @@ namespace Rock.Lava.Blocks
             // Check first to see if this is a core model
             var entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, model, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
 
-            // If not, look for first plugin model that has same friendly name
+            // If not, look for first plug-in model that has same friendly name
             if ( entityTypeCache == null )
             {
                 entityTypeCache = entityTypes
@@ -159,7 +159,7 @@ namespace Rock.Lava.Blocks
                             }
                         }
 
-                        // dataview expression
+                        // DataView expression
                         if ( parms.Any( p => p.Key == "dataview" ) )
                         {
                             var dataViewId = parms["dataview"].AsIntegerOrNull();
@@ -721,24 +721,41 @@ namespace Rock.Lava.Blocks
                     else
                     {
                         AttributeCache filterAttribute = null;
+                        Expression attributeWhereExpression = null;
+
+                        // We would really love to further qualify this beyond the EntityType by including the
+                        // EntityTypeQualifier and EntityTypeQualifierValue but we can't easily do that so, we
+                        // will do that "Just in case..." code below (because this actually happened in our Spark
+                        // environment.
                         foreach ( var id in AttributeCache.GetByEntity( entityTypeCache.Id ).SelectMany( a => a.AttributeIds ) )
                         {
                             var attribute = AttributeCache.Get( id );
+
+                            // Just in case this EntityType has multiple attributes with the same key, create a OR'd clause for each attribute that has this key
+                            // NOTE: this could easily happen if doing an entity command against a DefinedValue, and the same attribute key is used in more than one defined type
                             if ( attribute.Key == property )
                             {
                                 filterAttribute = attribute;
-                                break;
+                                var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute );
+
+                                if ( attributeWhereExpression == null )
+                                {
+                                    attributeWhereExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                                }
+                                else
+                                {
+                                    attributeWhereExpression = Expression.OrElse( attributeWhereExpression, ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms ) );
+                                }
                             }
                         }
 
-                        if ( filterAttribute != null )
+                        if ( attributeWhereExpression != null )
                         {
-                            var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute );
-                            expression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                            expression = attributeWhereExpression;
                         }
                     }
 
-                    if ( returnExpression == null )
+                   if ( returnExpression == null )
                     {
                         returnExpression = expression;
                     }

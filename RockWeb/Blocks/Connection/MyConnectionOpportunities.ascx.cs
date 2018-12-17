@@ -48,10 +48,10 @@ namespace RockWeb.Blocks.Connection
 
     [CodeEditorField( "Status Template", "Lava Template that can be used to customize what is displayed in the status bar. Includes common merge fields plus ConnectionOpportunities, ConnectionTypes and the default IdleTooltip.", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
 @"<div class='pull-left badge-legend padding-r-md'>
-    <span class='pull-left badge badge-info badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Assigned To You'>&nbsp;</span>
-    <span class='pull-left badge badge-warning badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned Item'>&nbsp;</span>
-    <span class='pull-left badge badge-critical badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Critical Status'>&nbsp;</span>
-    <span class='pull-left badge badge-danger badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'>&nbsp;</span>
+    <span class='pull-left badge badge-info badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Assigned To You'><span class='sr-only'>Assigned To You</span></span>
+    <span class='pull-left badge badge-warning badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned Item'><span class='sr-only'>Unassigned Item</span></span>
+    <span class='pull-left badge badge-critical badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Critical Status'><span class='sr-only'>Critical Status</span></span>
+    <span class='pull-left badge badge-danger badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'><span class='sr-only'>{{ IdleTooltip }}</span></span>
 </div>", order:5
 )]
 
@@ -71,16 +71,16 @@ namespace RockWeb.Blocks.Connection
 @"
 <div class='status-list'>
     {% if ConnectionRequestStatusIcons.IsAssignedToYou %}
-    <span class='badge badge-info js-legend-badge' data-toggle='tooltip' data-original-title='Assigned To You'>&nbsp;</span>
+    <span class='badge badge-info js-legend-badge' data-toggle='tooltip' data-original-title='Assigned To You'><span class='sr-only'>Assigned To You</span></span>
     {% endif %}
     {% if ConnectionRequestStatusIcons.IsUnassigned %}
-    <span class='badge badge-warning js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned'>&nbsp;</span>
+    <span class='badge badge-warning js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned'><span class='sr-only'>Unassigned</span></span>
     {% endif %}
     {% if ConnectionRequestStatusIcons.IsCritical %}
-    <span class='badge badge-critical js-legend-badge' data-toggle='tooltip' data-original-title='Critical'>&nbsp;</span>
+    <span class='badge badge-critical js-legend-badge' data-toggle='tooltip' data-original-title='Critical'><span class='sr-only'>Critical</span></span>
     {% endif %}
     {% if ConnectionRequestStatusIcons.IsIdle %}
-    <span class='badge badge-danger js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'>&nbsp;</span>
+    <span class='badge badge-danger js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'><span class='sr-only'>{{ IdleTooltip }}</span></span>
     {% endif %}
 </div>
 ", key: "ConnectionRequestStatusIconsTemplate", order:7
@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.Connection
 
                 GetSummaryData();
 
-                RockPage.AddScriptLink( "~/Scripts/jquery.visible.min.js", false );
+                RockPage.AddScriptLink( "~/Scripts/jquery.visible.min.js" );
             }
         }
 
@@ -307,7 +307,6 @@ namespace RockWeb.Blocks.Connection
             {
                 var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Queryable().AsNoTracking().FirstOrDefault( a => a.Id == opportunitySummary.Id );
                 mergeFields.Add( "ConnectionOpportunity", connectionOpportunity );
-                mergeFields.Add( "ConnectionRequests", connectionOpportunity.ConnectionRequests );
 
                 result = template.ResolveMergeFields( mergeFields );
             }

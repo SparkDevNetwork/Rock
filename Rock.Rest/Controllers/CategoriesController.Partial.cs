@@ -293,7 +293,7 @@ namespace Rock.Rest.Controllers
             if ( categoryItem.IsCategory )
             {
                 int parentId = int.Parse( categoryItem.Id );
-                var childCategories = Get().Where( c => c.ParentCategoryId == parentId );
+                var childCategories = Get().Where( c => c.ParentCategoryId == parentId ).OrderBy( c => c.Order).ThenBy( c => c.Name );
 
                 foreach ( var childCategory in childCategories )
                 {
@@ -335,7 +335,7 @@ namespace Rock.Rest.Controllers
                     var childItems = GetCategorizedItems( serviceInstance, parentId, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
                     if ( childItems != null )
                     {
-                        foreach ( var categorizedItem in childItems )
+                        foreach ( var categorizedItem in childItems.OrderBy( c => c.Name ) )
                         {
                             if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
                             {

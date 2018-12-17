@@ -53,10 +53,10 @@
   }
 
   .scroll-container-picker {
-    width: 390px;
+    width: 100%;
 
     .viewport {
-      width: 360px;
+      width: ~"calc(100% - 15px)";
       height: 380px;
     }
 
@@ -109,19 +109,26 @@
 
   // details used for pickers like person picker to show the details of the selected item
   .picker-select-item-details {
-    margin-left: 29px;
+    @media (min-width: @screen-sm-min) {
+      margin-left: 29px;
+    }
 
     .person-image {
       float: left;
       width: 70px;
       height: 70px;
-      margin-right: 7.5px;
+      margin-right: 8px;
       border: 1px solid @photo-border;
     }
 
+    .label.pull-right {
+      position: absolute;
+      right: 0;
+    }
+
     .contents {
+      width: ~"calc(100% - 78px)";
       float: left;
-      margin-left: 10px;
 
       h5 {
         margin-bottom: 2px;

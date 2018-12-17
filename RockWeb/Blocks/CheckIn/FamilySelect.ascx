@@ -24,6 +24,9 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
     <asp:HiddenField ID="hfShowEditFamilyPrompt" runat="server" Value="0" />
 
+    <%-- Hidden field to keep track of which family was clicked on in the rSelection repeater --%>
+    <asp:HiddenField ID="hfSelectedFamilyGroupId" runat="server" />
+
     <div class="checkin-header">
         <h1><asp:Literal ID="lTitle" runat="server" /></h1>
     </div>

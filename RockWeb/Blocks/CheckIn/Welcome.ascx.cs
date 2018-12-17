@@ -65,8 +65,8 @@ namespace RockWeb.Blocks.CheckIn
                 return;
             }
 
-            RockPage.AddScriptLink( "~/scripts/jquery.plugin.min.js", false );
-            RockPage.AddScriptLink( "~/scripts/jquery.countdown.min.js", false );
+            RockPage.AddScriptLink( "~/scripts/jquery.plugin.min.js" );
+            RockPage.AddScriptLink( "~/scripts/jquery.countdown.min.js" );
 
             RegisterScript();
 
@@ -106,28 +106,39 @@ namespace RockWeb.Blocks.CheckIn
                     CurrentWorkflow = null;
                     CurrentCheckInState.CheckIn = new CheckInStatus();
                     SaveState();
-                    RefreshView();
 
-                    lNotActiveTitle.Text = GetAttributeValue( "NotActiveTitle" );
-                    lNotActiveCaption.Text = GetAttributeValue( "NotActiveCaption" );
-                    lNotActiveYetTitle.Text = GetAttributeValue( "NotActiveYetTitle" );
-                    lNotActiveYetCaption.Text = string.Format( GetAttributeValue( "NotActiveYetCaption" ), "<span class='countdown-timer'></span>" );
-                    lClosedTitle.Text = GetAttributeValue( "ClosedTitle" );
-                    lClosedCaption.Text = GetAttributeValue( "ClosedCaption" );
-
-                    string checkinButtonText = GetAttributeValue( "CheckinButtonText" ).IfEmpty( "Start" );
-
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-                    mergeFields.Add( "CheckinButtonText", checkinButtonText );
-                    mergeFields.Add( "Kiosk", CurrentCheckInState.Kiosk );
-                    mergeFields.Add( "RegistrationModeEnabled", CurrentCheckInState.Kiosk.RegistrationModeEnabled );
-                    if ( CurrentGroupTypeIds != null )
+                    string familyId = PageParameter( "FamilyId" );
+                    if ( familyId.IsNotNullOrWhiteSpace() )
                     {
-                        var checkInAreas = CurrentGroupTypeIds.Select( a => GroupTypeCache.Get( a ) );
-                        mergeFields.Add( "CheckinAreas", checkInAreas );
+                        var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_FAMILY_ID );
+                        DoFamilySearch( dv, familyId );
                     }
+                    else
+                    {
+                        RefreshView();
 
-                    lStartButtonHtml.Text = CurrentCheckInState.CheckInType.StartLavaTemplate.ResolveMergeFields( mergeFields );
+                        lNotActiveTitle.Text = GetAttributeValue( "NotActiveTitle" );
+                        lNotActiveCaption.Text = GetAttributeValue( "NotActiveCaption" );
+                        lNotActiveYetTitle.Text = GetAttributeValue( "NotActiveYetTitle" );
+                        lNotActiveYetCaption.Text = string.Format( GetAttributeValue( "NotActiveYetCaption" ), "<span class='countdown-timer'></span>" );
+                        lClosedTitle.Text = GetAttributeValue( "ClosedTitle" );
+                        lClosedCaption.Text = GetAttributeValue( "ClosedCaption" );
+
+                        string checkinButtonText = GetAttributeValue( "CheckinButtonText" ).IfEmpty( "Start" );
+
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                        mergeFields.Add( "CheckinButtonText", checkinButtonText );
+                        mergeFields.Add( "Kiosk", CurrentCheckInState.Kiosk );
+                        mergeFields.Add( "RegistrationModeEnabled", CurrentCheckInState.Kiosk.RegistrationModeEnabled );
+
+                        if ( CurrentGroupTypeIds != null )
+                        {
+                            var checkInAreas = CurrentGroupTypeIds.Select( a => GroupTypeCache.Get( a ) );
+                            mergeFields.Add( "CheckinAreas", checkInAreas );
+                        }
+
+                        lStartButtonHtml.Text = CurrentCheckInState.CheckInType.StartLavaTemplate.ResolveMergeFields( mergeFields );
+                    }
                 }
             }
             else
@@ -339,6 +350,7 @@ namespace RockWeb.Blocks.CheckIn
             pnlClosed.Visible = false;
             pnlActive.Visible = false;
             pnlManager.Visible = false;
+            btnManager.Visible = false;
 
             tbPIN.Text = string.Empty;
 

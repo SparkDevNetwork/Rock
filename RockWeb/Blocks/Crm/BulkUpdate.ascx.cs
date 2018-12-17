@@ -37,6 +37,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
 using Rock.Transactions;
+using System.Web;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -792,6 +793,13 @@ namespace RockWeb.Blocks.Crm
                 _errorCount = 0;
                 var individuals = Individuals.ToList();
 
+                var httpContext = HttpContext.Current;
+                Dictionary<object, object> httpContextItems = new Dictionary<object, object>();
+                foreach (var key in HttpContext.Current.Items.Keys )
+                {
+                    httpContextItems[key] = HttpContext.Current.Items[key];
+                }
+
                 var task = new Task( () =>
                 {
                     int taskCount = GetAttributeValue( "TaskCount" ).AsInteger();
@@ -826,7 +834,7 @@ namespace RockWeb.Blocks.Crm
                         //
                         for ( int i = 0; i < taskCount; i++ )
                         {
-                            var worker = Task.Factory.StartNew( () => WorkerTask( individuals ) );
+                            var worker = Task.Factory.StartNew( () => WorkerTask( individuals, httpContext, httpContextItems ) );
                             workers.Add( worker );
                         }
 
@@ -903,8 +911,16 @@ namespace RockWeb.Blocks.Crm
         /// Worker task for processing individuals in batches.
         /// </summary>
         /// <param name="individualsList">The individuals list.</param>
-        protected void WorkerTask( object individualsList )
+        /// <param name="httpContext">The HTTP context. This is needed because is not automatically passed between threads. This is needed to determine the current user.</param>
+        /// <param name="httpContextItems">The HTTP context items. This is needed because the Items are cleared when main thread finish.</param>
+        protected void WorkerTask( object individualsList, HttpContext httpContext, Dictionary<object, object> httpContextItems )
         {
+            HttpContext.Current = httpContext;
+            foreach ( var item in httpContextItems )
+            {
+                HttpContext.Current.Items[item.Key] = item.Value;
+            }
+
             const int batchSize = 50;
 
             var individuals = ( List<Individual> ) individualsList;

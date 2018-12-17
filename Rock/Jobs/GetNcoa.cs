@@ -34,7 +34,7 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     public class GetNcoa : IJob
     {
-        /// <summary> 
+        /// <summary>
         /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -47,7 +47,7 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Job to get a National Change of Address (NCOA) report for all active people's addresses.
-        /// 
+        ///
         /// Called by the <see cref="IScheduler" /> when a
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
@@ -69,7 +69,7 @@ namespace Rock.Jobs
                 Guid? sparkDataApiKeyGuid = sparkDataConfig.SparkDataApiKey.AsGuidOrNull();
                 if ( sparkDataApiKeyGuid == null )
                 {
-                    exception = new NoRetryException( $"Spark Data Api Key '{sparkDataConfig.SparkDataApiKey.ToStringSafe()}' is empty or invalid. The Spark Data Api Key can be configured in System Settings > Spark Data Settings." );
+                    exception = new NoRetryException( $"Spark Data API Key '{sparkDataConfig.SparkDataApiKey.ToStringSafe()}' is empty or invalid. The Spark Data API Key can be configured in System Settings > Spark Data Settings." );
                     return;
                 }
 

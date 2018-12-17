@@ -33,9 +33,27 @@ namespace RockWeb.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Displays a list of families to select for checkin." )]
 
-    [TextField( "Title", "Title to display.", false, "Families", "Text", 5 )]
-    [TextField( "Caption", "", false, "Select Your Family", "Text", 6 )]
-    [TextField( "No Option Message", "", false, "Sorry, no one in your family is eligible to check-in at this location.", "Text", 7 )]
+    [TextField( "Title",
+        description: "Title to display.",
+        required: false, 
+        defaultValue: "Families", 
+        category: "Text", 
+        order: 5,
+        key: "Title" )]
+    [TextField( "Caption",
+        description: "Caption to display.",
+        required: false,
+        defaultValue: "Select Your Family",
+        category: "Text", 
+        order: 6,
+        key: "Caption" )]
+    [TextField( "No Option Message", 
+        description: "Text to display when there is not anyone in the family that can check-in",
+        required: false,
+        defaultValue: "Sorry, no one in your family is eligible to check-in at this location.", 
+        category: "Text", 
+        order: 7,
+        key: "NoOptionMessage" )]
     public partial class FamilySelect : CheckInBlock
     {
         /// <summary>
@@ -78,43 +96,59 @@ namespace RockWeb.Blocks.CheckIn
                                 family.Selected = true;
                             }
 
-                            ProcessSelection();
+                            if ( !ProcessSelection() )
+                            {
+                                BindResults();
+                            }
                         }
                     }
                     else
                     {
-                        lTitle.Text = GetAttributeValue( "Title" );
-                        lCaption.Text = GetAttributeValue( "Caption" );
-
-                        rSelection.DataSource = CurrentCheckInState.CheckIn.Families
-                            .OrderBy( f => f.Caption )
-                            .ThenBy( f => f.SubCaption )
-                            .ToList();
-
-                        rSelection.DataBind();
+                        BindResults();
                     }
                 }
                 else
                 {
+                    // make sure the ShowEditFamilyPrompt is disabled so that it doesn't show again until explicitly enabled after doing a Search (which happens in HandleRepeaterPostback)
+                    hfShowEditFamilyPrompt.Value = "0";
+
                     if ( this.Request.Params["__EVENTTARGET"] == rSelection.UniqueID )
                     {
                         HandleRepeaterPostback( this.Request.Params["__EVENTARGUMENT"] );
                     }
-
-                    // make sure the ShowEditFamilyPrompt is disabled so that it doesn't show again until explicitly enabled after doing a Search
-                    hfShowEditFamilyPrompt.Value = "0";
 
                     if ( this.Request.Params["__EVENTARGUMENT"] == "EditFamily" )
                     {
                         var editFamilyBlock = this.RockPage.ControlsOfTypeRecursive<CheckInEditFamilyBlock>().FirstOrDefault();
                         if ( editFamilyBlock != null )
                         {
-                            var firstListedFamily = this.CurrentCheckInState.CheckIn.Families.FirstOrDefault();
-                            editFamilyBlock.ShowEditFamily( firstListedFamily );
+                            CheckInFamily familyToEdit;
+                            int? currentFamilyGroupId = hfSelectedFamilyGroupId.Value.AsIntegerOrNull();
+                            if ( currentFamilyGroupId.HasValue )
+                            {
+                                familyToEdit = this.CurrentCheckInState.CheckIn.Families.Where( a => a.Group.Id == currentFamilyGroupId ).FirstOrDefault();
+                                if ( familyToEdit != null )
+                                {
+                                    editFamilyBlock.ShowEditFamily( familyToEdit );
+                                }
+                            }
                         }
                     }
                 }
             }
+        }
+
+        private void BindResults()
+        {
+            lTitle.Text = GetAttributeValue( "Title" );
+            lCaption.Text = GetAttributeValue( "Caption" );
+
+            rSelection.DataSource = CurrentCheckInState.CheckIn.Families
+                .OrderBy( f => f.Caption )
+                .ThenBy( f => f.SubCaption )
+                .ToList();
+
+            rSelection.DataBind();
         }
 
         /// <summary>
@@ -186,6 +220,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( KioskCurrentlyActive )
             {
                 int groupId = commandArgument.AsInteger();
+                hfSelectedFamilyGroupId.Value = groupId.ToString();
                 var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Group.Id == groupId ).FirstOrDefault();
                 if ( family != null )
                 {
@@ -257,7 +292,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <summary>
         /// Processes the selection.
         /// </summary>
-        private void ProcessSelection()
+        private bool ProcessSelection()
         {
             var editFamilyBlock = this.RockPage.ControlsOfTypeRecursive<CheckInEditFamilyBlock>().FirstOrDefault();
 
@@ -287,9 +322,14 @@ namespace RockWeb.Blocks.CheckIn
                 }
             };
 
-            if ( !ProcessSelection( null, doNotProceedCondition, this.ConditionMessage ) )
+            if ( ProcessSelection( null, doNotProceedCondition, this.ConditionMessage ))
+            {
+                return true;
+            }
+            else
             {
                 ClearSelection();
+                return false;
             }
         }
 

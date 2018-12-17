@@ -1758,7 +1758,7 @@ namespace RockWeb.Blocks.Connection
                     groups = connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups
                         .Where( g =>
                             g.Group != null &&
-                            g.Group.IsActive &&
+                            g.Group.IsActive && !g.Group.IsArchived &&
                             ( !campusId.HasValue || !g.Group.CampusId.HasValue || campusId.Value == g.Group.CampusId.Value ) )
                         .Select( g => g.Group )
                         .ToList();
@@ -1775,7 +1775,7 @@ namespace RockWeb.Blocks.Connection
                             .Queryable().AsNoTracking()
                             .Where( g =>
                                 !existingGroupIds.Contains( g.Id ) &&
-                                g.IsActive &&
+                                g.IsActive && !g.IsArchived &&
                                 g.GroupTypeId == groupConfig.GroupTypeId &&
                                 ( !campusId.HasValue || !g.CampusId.HasValue || campusId.Value == g.CampusId.Value ) )
                             .ToList() );
@@ -2153,7 +2153,7 @@ namespace RockWeb.Blocks.Connection
                                     else
                                     {
                                         labelText = string.Empty;
-                                        labelType = string.Empty;
+                                        labelType = "default";
                                     }
                                 }
 

@@ -32,6 +32,19 @@ namespace Rock.Field.Types
     [Serializable]
     public abstract class EnumFieldType<T> : FieldType where T : struct
     {
+        private const string REPEAT_COLUMNS = "repeatColumns";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add( REPEAT_COLUMNS );
+            return configKeys;
+        }
+
         private Dictionary<int, string> EnumValues { get; set; }
 
         /// <summary>
@@ -108,7 +121,12 @@ namespace Rock.Field.Types
                 var editControl = new RockRadioButtonList { ID = id };
                 editControl.RepeatDirection = RepeatDirection.Horizontal;
 
-                foreach( var keyVal in EnumValues )
+                if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+                {
+                    ( ( RockRadioButtonList ) editControl ).RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
+                }
+
+                foreach ( var keyVal in EnumValues )
                 {
                     editControl.Items.Add( new ListItem( keyVal.Value, keyVal.Key.ToString() ) );
                 }

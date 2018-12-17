@@ -89,8 +89,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             base.OnInit( e );
 
             RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
-            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js", false );
-            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;

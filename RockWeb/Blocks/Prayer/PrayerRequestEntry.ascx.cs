@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Require Last Name", "Require that a last name be entered", true, "Features", 11 )]
     [BooleanField( "Show Campus", "Show a campus picker", true, "Features", 12 )]
     [BooleanField( "Require Campus", "Require that a campus be selected", false, "Features", 13 )]
-    [BooleanField( "Enable Person Matching", "If enabled, requester detail will be matched with all existing person to see if it's already exists.", false, "Features", 14 )]
+    [BooleanField( "Enable Person Matching", "If enabled, the request will be linked to an existing person if a match can be made between the requester and an existing person.", false, "Features", 14 )]
 
     // On Save Behavior
     [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 14 )]

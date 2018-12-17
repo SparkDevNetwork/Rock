@@ -19,7 +19,6 @@
 @checkin-scrollbar-bg: fade(@text-color, 50%);
 
 @font-size-base: 18px;
-@input-border-radius: 50px;
 @font-size-h1: 28px;
 
 // 2. Bootstrap Overrides
@@ -31,6 +30,11 @@
 @fa-theme-weight-name: 'solid';
 .fa-font-face( @fa-theme-weight-name );
 
+select.form-control {
+  // Fix for iOS not trimming border-radius
+  border-radius: 4px
+}
+
 h1,
 h2,
 h3 {
@@ -38,7 +42,6 @@ h3 {
 }
 
 h1 {
-  // font-size: 28px;
   color: @header-text-color;
 }
 
@@ -57,7 +60,6 @@ h1 {
   font-size: 24px;
   font-weight: @font-weight-semibold;
   white-space: normal;
-  text-align: left;
 }
 
 // unlike Bootstrap's original .table-responsive, this is applied for all widths. (i.e. NOT only applied <768px)
@@ -165,7 +167,7 @@ body {
   .checkin-actions {
     text-align: right;
 
-    .btn {
+    .btn-primary {
       font-size: 36px;
     }
   }
@@ -246,7 +248,7 @@ body {
 
 /* Ten Key Keypad */
 .tenkey {
-  width: 320px;
+  width: 265px;
 
   a {
     &:focus, &:active {
@@ -324,35 +326,43 @@ img[src*="no-photo"] {
   margin: 0 auto;
 }
 
+.search-phone-form-group {
+  width: 260px; // keypad is 320 - padding (24px x 2)
+  margin: 0 auto;
+}
+
 input.checkin-phone-entry {
-  float: left;
   width: 260px; // keypad is 320 - padding (24px x 2)
   height: 60px;
   padding: 6px 20px;
-  margin-bottom: 10px;
+  margin: 0 auto 10px auto;
   font-size: 36px;
   font-weight: @checkin-button-text-weight;
 }
 
 input.namesearch {
-  float: left;
   width: 360px;
   height: 60px;
   padding: 6px 20px;
-  margin-bottom: 10px;
+  margin: 0 auto 10px auto;
   font-size: 36px;
-  font-weight: 700;
+  font-weight: @checkin-button-text-weight;
 }
 
 .checkin-phone-keypad {
-  float: left;
-  margin-bottom: 12px;
+  margin: 0 auto 24px auto;
 }
 
 // time select
 .checkin-time-select {
   display: table;
   margin: 0 auto;
+
+  .control-label {
+    display: block;
+    font-size: @font-size-h1;
+    font-weight: @headings-font-weight;
+  }
 }
 
 .checkin-timelist {
@@ -508,7 +518,7 @@ input.namesearch {
 .checkin-scroll-panel {
   position: absolute;
   top: 45px;
-  bottom: 48px;
+  bottom: 24px;
   z-index: 1;
   width: 100%;
   overflow: hidden;
@@ -573,6 +583,7 @@ input.namesearch {
   position: absolute;
   right: 12px;
   bottom: 8px;
+  z-index: @zindex-navbar;
   color: @text-color;
   opacity: .5;
 
