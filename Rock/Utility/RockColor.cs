@@ -296,7 +296,7 @@ namespace Rock.Utility
         /// <summary>
         /// Initializes a new instance of the <see cref="RockColor" /> class.
         /// </summary>
-        /// <param name="color">The color.</param>
+        /// <param name="color">The color in hexidecimal or rgba format.</param>
         public RockColor( string color )
         {
             // #ee7625
@@ -423,7 +423,7 @@ namespace Rock.Utility
         #region Properties
 
         /// <summary>
-        /// The RGB
+        /// The RGB value
         /// </summary>
         public readonly double[] RGB = new double[3];
 
@@ -639,7 +639,7 @@ namespace Rock.Utility
         }
 
         /// <summary>
-        /// Adjusts the hue by a certain percent.
+        /// Adjusts the hue by a the specified percentage.
         /// </summary>
         /// <param name="percentage">The percentage.</param>
         public void AdjustHueByPercent( int percentage )

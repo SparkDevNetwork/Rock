@@ -27,7 +27,7 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
 {
-    public partial class AssetStorageProviderController
+    public partial class AssetStorageProvidersController
     {
         /// <summary>
         /// Gets the children.

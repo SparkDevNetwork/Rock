@@ -58,8 +58,9 @@ dt {
 input[type="text"],
 textarea,
 .form-control {
+  background-clip: padding-box;
+  -webkit-box-shadow: none;
   box-shadow: none;
-  transition: @input-focus-transition;
 
   &:focus {
     border: 1px solid @input-border-focus;
@@ -247,7 +248,7 @@ textarea,
 
 .has-error .form-control,
 .has-error .input-group-addon {
-  box-shadow: 0;
+  box-shadow: none;
 }
 
 .has-error .form-control:focus {
@@ -292,9 +293,11 @@ textarea,
 .grid .table > thead > tr > th {
   padding: 18px 0 18px 12px;
   vertical-align: middle;
-  // &:last-child {
-  //   border-right: 1px solid @table-border-color;
-  // }
+
+  // Remove padding offset on center
+  &[align="center"] {
+    padding: 18px 6px;
+  }
 }
 
 .grid .table > thead > tr.grid-header-bold > th {
@@ -333,10 +336,6 @@ textarea,
   .btn {
     width: 33px;
     padding: 5px 7px;
-    &.fa-clone {
-      width: 33px;
-      padding: 8px 8px 8px 7px;
-    }
   }
 }
 
@@ -360,7 +359,7 @@ textarea,
 // 3. Rock Overrides         */
 // -------------------------
 
-.rollover-item {
+.panel-heading .rollover-item {
   > a {
     color: @gray;
 
@@ -470,7 +469,12 @@ td.grid-actions {
 }
 
 .grid-select-field {
-  width: @custom-control-indicator-size;
+
+  .checkbox,
+  .radio {
+    display: inline;
+    padding-right: (@custom-control-indicator-size / 2);
+  }
 
   .checkbox:last-child,
   .radio:last-child {
@@ -481,10 +485,6 @@ td.grid-actions {
   .radio input[type="radio"] + span.label-text::before {
     margin: 0;
   }
-}
-
-td.grid-select-field {
-  width: auto;
 }
 
 .grid-actions {
@@ -568,12 +568,12 @@ td.grid-select-field {
 
   .navbar-toggle {
     float: left;
-    font-size: 1.5em;
-    line-height: @navbar-top-height;
     width: @navbarside-width;
     height: @navbar-top-height;
     padding: 0 28px;
     margin: 0;
+    font-size: 1.5em;
+    line-height: @navbar-top-height;
     color: #fff;
     cursor: pointer;
 
@@ -593,7 +593,8 @@ td.grid-select-field {
   }
 
   .navbar-brand-corner {
-    position: relative;
+    position: fixed;
+    top: 0;
     display: none;
     float: left;
     width: @navbarside-width;
@@ -877,8 +878,8 @@ td.grid-select-field {
     left: 0;
     z-index: -1;
     width: inherit;
-    content: "";
     width: @navbarside-width;
+    content: "";
     background-color: @navbarside-background-color;
     background-color: var(--navbarside-background-color);
   }
@@ -887,15 +888,15 @@ td.grid-select-field {
 .navbar-static-side {
   position: fixed;
   top: 0;
-  left: 0;
   bottom: 0;
-  z-index: @zindex-navbar-fixed + 50;
+  left: 0;
+  z-index: @zindex-navbar-fixed + 10;
   display: none;
   width: @navbarside-width;
   height: 100%;
-  color: @navbarside-color;
   overflow-x: hidden;
   overflow-y: auto;
+  color: @navbarside-color;
   background-color: @navbarside-background-color;
   background-color: var(--navbarside-background-color);
 
@@ -1134,7 +1135,15 @@ td.grid-select-field {
 }
 
 .navbar-side-open #cms-admin-footer {
-  padding-left: @navbarside-width;
+  left: @navbarside-width;
+  width: auto;
+}
+
+@media (min-width: @screen-sm-min) {
+  #cms-admin-footer {
+    left: @navbarside-width;
+    width: auto;
+  }
 }
 
 // expanded view
@@ -1247,7 +1256,7 @@ body.navbar-side-open {
       padding: 0 @padding-base-horizontal;
     }
 
-    .btn {
+    .login .btn {
       display: block;
       width: 100%;
       margin: 18px 0 0;
@@ -1336,15 +1345,6 @@ body.navbar-side-open {
 /*#region
 // 6. Components          */
 // -------------------------
-
-// Date Picker
-.picker-daterange {
-  .input-group-lower{
-    .input-group-addon {
-      display: none;
-    }
-  }
-}
 
 // radio buttons & checkboxes - fancy styling
 .radio,
@@ -1474,11 +1474,6 @@ body.navbar-side-open {
       background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3E%3Ccircle r='3' fill='%23ffffff'/%3E%3C/svg%3E");
     }
   }
-}
-
-.schedule-builder .checkbox {
-  display: inline;
-  padding-right: (@custom-control-indicator-size / 2);
 }
 
 .note-editor.note-frame {

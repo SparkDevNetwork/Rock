@@ -1714,7 +1714,20 @@ namespace Rock.Web.UI.Controls
             {
                 // make sure each qualifier control has a unique/predictable ID to help avoid viewstate issues
                 var controlTypeName = control.GetType().Name;
+                var oldControlId = control.ID ?? string.Empty;
                 control.ID = $"qualifier_{fieldTypeId}_{controlTypeName}_{i++}";
+
+                // if this is a RockControl with a required field validator, make sure RequiredFieldValidator.ControlToValidate gets updated with the new control id
+                if ( control is IRockControl rockControl )
+                {
+                    if ( rockControl.RequiredFieldValidator != null)
+                    {
+                        if ( rockControl.RequiredFieldValidator.ControlToValidate == oldControlId )
+                        {
+                            rockControl.RequiredFieldValidator.ControlToValidate = control.ID;
+                        }
+                    }
+                }
                 _phQualifiers.Controls.Add( control );
             }
         }

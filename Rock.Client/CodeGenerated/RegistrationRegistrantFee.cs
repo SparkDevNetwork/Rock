@@ -60,6 +60,9 @@ namespace Rock.Client
         /// <summary />
         public int RegistrationTemplateFeeId { get; set; }
 
+        /// <summary />
+        public int? RegistrationTemplateFeeItemId { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -101,6 +104,7 @@ namespace Rock.Client
             this.Quantity = source.Quantity;
             this.RegistrationRegistrantId = source.RegistrationRegistrantId;
             this.RegistrationTemplateFeeId = source.RegistrationTemplateFeeId;
+            this.RegistrationTemplateFeeItemId = source.RegistrationTemplateFeeItemId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

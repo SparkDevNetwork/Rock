@@ -49,7 +49,9 @@
                 var $CountdownTimer = $('.countdown-timer');
 
                 if ($ActiveWhen.text() != '') {
-                    var timeActive = new Date($ActiveWhen.text());
+                    // Ensure date is parsed as local timezone
+                    var tc = $ActiveWhen.text().split(/\D/);
+                    var timeActive = new Date(tc[0], tc[1]-1, tc[2], tc[3], tc[4], tc[5]);
                     $CountdownTimer.countdown({
                         until: timeActive,
                         compact: true,
@@ -124,7 +126,7 @@
                     window.location = "javascript:__doPostBack('<%=upContent.ClientID%>', 'StartClick')";
                 });
 
-                if ($('.js-manager-login').is(':visible')) {
+                if ($('.js-manager-login').length) {
                     $('.tenkey a.digit').click(function () {
                         $phoneNumber = $("input[id$='tbPIN']");
                         $phoneNumber.val($phoneNumber.val() + $(this).html());

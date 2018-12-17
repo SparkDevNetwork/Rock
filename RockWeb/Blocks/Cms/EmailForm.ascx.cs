@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            RockPage.AddScriptLink( "~/Scripts/jquery.visible.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.visible.min.js" );
         }
 
         #endregion

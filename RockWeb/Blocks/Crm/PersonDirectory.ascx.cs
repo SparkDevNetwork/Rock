@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js" );
 
             rptPeople.ItemDataBound += rptPeople_ItemDataBound;
             rptFamilies.ItemDataBound += rptFamilies_ItemDataBound;

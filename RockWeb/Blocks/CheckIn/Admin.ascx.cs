@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.CheckIn
     {
         protected override void OnLoad( EventArgs e )
         {
-            RockPage.AddScriptLink( "~/Blocks/CheckIn/Scripts/geo-min.js", false );
+            RockPage.AddScriptLink( "~/Blocks/CheckIn/Scripts/geo-min.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
             if ( !Page.IsPostBack )
@@ -84,7 +84,14 @@ namespace RockWeb.Blocks.CheckIn
                     // Save the check-in state
                     SaveState();
 
-                    // Navigate to the check-in home (welcome) page
+                    // Navigate to the check-in home (welcome) page, passing family ID if it was included in the query string
+                    var queryParams = new Dictionary<string, string>();
+                    string familyId = PageParameter( "FamilyId" );
+                    if ( familyId.IsNotNullOrWhiteSpace() )
+                    {
+                        queryParams.Add( "FamilyId", familyId );
+                    }
+
                     NavigateToNextPage();
                 }
                 else

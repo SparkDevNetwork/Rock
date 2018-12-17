@@ -20,7 +20,7 @@ namespace Rock
         /// <summary>
         /// Initializes a new instance of the <see cref="RockObsolete"/> class.
         /// </summary>
-        /// <param name="version">The version when this became obsolete (for example, "v7")</param>
+        /// <param name="version">The version when this became obsolete (for example, "1.7")</param>
         public RockObsolete( string version )
         {
             Version = version;

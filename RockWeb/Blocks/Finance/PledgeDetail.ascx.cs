@@ -236,7 +236,7 @@ namespace RockWeb.Blocks.Finance
                             m.Group.GroupType.Guid == groupTypeGuid.Value &&
                             m.PersonId == personId.Value &&
                             m.GroupMemberStatus == GroupMemberStatus.Active &&
-                            m.Group.IsActive )
+                            m.Group.IsActive && !m.Group.IsArchived )
                         .Select( m => new
                         {
                             m.GroupId,

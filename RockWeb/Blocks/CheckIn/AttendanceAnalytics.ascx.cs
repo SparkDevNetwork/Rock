@@ -115,7 +115,7 @@ namespace RockWeb.Blocks.CheckIn
             else
             {
                 btnCopyToClipboard.Visible = true;
-                RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js", false );
+                RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
                 string script = string.Format( @"
     new ClipboardJS('#{0}');
     $('#{0}').tooltip();
@@ -156,10 +156,11 @@ namespace RockWeb.Blocks.CheckIn
             var chartStyleDefinedValueGuid = this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull();
 
             lcAttendance.Options.SetChartStyle( chartStyleDefinedValueGuid );
-            bcAttendance.Options.SetChartStyle( chartStyleDefinedValueGuid );
             bcAttendance.Options.xaxis = new AxisOptions { mode = AxisMode.categories, tickLength = 0 };
             bcAttendance.Options.series.bars.barWidth = 0.6;
             bcAttendance.Options.series.bars.align = "center";
+            // Set chart style after setting options so they are not overwritten.
+            bcAttendance.Options.SetChartStyle( chartStyleDefinedValueGuid );
 
             if ( !Page.IsPostBack )
             {
@@ -948,6 +949,9 @@ function(item) {
         /// <returns></returns>
         private IEnumerable<Rock.Chart.IChartData> GetAttendanceChartData()
         {
+            var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
+            var graphBy = hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total;
+
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
             if ( dateRange.End == null )
             {
@@ -969,20 +973,12 @@ function(item) {
             }
 
             string groupIds = GetSelectedGroupIds().AsDelimited( "," );
-
-            var scheduleIds = GetAttributeValue( "ShowScheduleFilter" ).AsBoolean() ? spSchedules.SelectedValues.ToList().AsDelimited( "," ) : string.Empty;
-
             string campusIds = GetAttributeValue( "ShowCampusFilter" ).AsBoolean() ? clbCampuses.SelectedValues.AsDelimited( "," ) : string.Empty;
+            var dataView = dvpDataView.SelectedValueAsInt();
+            var scheduleIds = GetAttributeValue( "ShowScheduleFilter" ).AsBoolean() ? spSchedules.SelectedValues.ToList().AsDelimited( "," ) : string.Empty;
+            
+            var chartData = new AttendanceService( _rockContext ).GetChartData( groupBy, graphBy, start, end, groupIds, campusIds, dataView, scheduleIds );
 
-            var chartData = new AttendanceService( _rockContext ).GetChartData(
-                hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week,
-                hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total,
-                start,
-                end,
-                groupIds,
-                campusIds,
-                dvpDataView.SelectedValueAsInt(),
-                scheduleIds );
             return chartData;
         }
 

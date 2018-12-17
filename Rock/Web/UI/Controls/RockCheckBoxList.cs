@@ -253,7 +253,8 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the number of columns to display in the <see cref="T:System.Web.UI.WebControls.CheckBoxList" /> control.
-        /// If RepeatDirection is Horizontal, this will default to 4 columns
+        /// If RepeatDirection is Horizontal, this will default to 4 columns. There is no upper limit in the code so use
+        /// wisely.
         /// </summary>
         public override int RepeatColumns
         {
@@ -277,7 +278,7 @@ namespace Rock.Web.UI.Controls
         }
 
         private int? _repeatColumns;
-        
+
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -396,10 +397,12 @@ namespace Rock.Web.UI.Controls
                 cssClassBuilder.Append( " rockcheckboxlist-vertical" );
             }
 
-            if ( this.RepeatColumns > 0 )
+            if ( this.RepeatColumns <= 0 )
             {
-                cssClassBuilder.Append( " in-columns" );
+                this.RepeatColumns = 4;
             }
+
+            cssClassBuilder.Append( string.Format(" in-columns in-columns-{0}", RepeatColumns ) );
 
             writer.AddAttribute( "class", cssClassBuilder.ToString() );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );

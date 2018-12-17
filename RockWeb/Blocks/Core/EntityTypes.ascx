@@ -17,7 +17,7 @@
 
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="gfSettings" runat="server">
-                        <Rock:RockTextBox ID="tbSearch" runat="server" Label="EntityType or Name Contains" />
+                        <Rock:RockTextBox ID="tbSearch" runat="server" Label="Entity Type or Name Contains" />
                     </Rock:GridFilter>
                     <Rock:Grid ID="gEntityTypes" runat="server" AllowSorting="true">
                         <Columns>
@@ -28,7 +28,7 @@
                                 <HeaderStyle CssClass="span1" />
                                 <ItemStyle HorizontalAlign="Center"/>
                                 <ItemTemplate>
-                                    <a id="aSecure" runat="server" class="btn btn-security btn-sm" height="500px"><i class="fa fa-lock"></i></a>
+                                    <a id="aSecure" runat="server" class="btn btn-security btn-sm"><i class="fa fa-lock"></i></a>
                                 </ItemTemplate>
                             </Rock:RockTemplateFieldUnselected>
                         </Columns>
@@ -38,7 +38,7 @@
             </div>
         </div>
 
-        
+
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 

@@ -101,7 +101,7 @@
             </div>
         </asp:Panel>
         
-        <asp:Panel ID="pnlRegistrarInfo" runat="server" CssClass="well">
+        <asp:Panel ID="pnlRegistrarInfoPrompt" runat="server" CssClass="well">
             
             <h4>This <asp:Literal id="lRegistrationTerm" runat="server" /> Was Completed By</h4>
             <div class="row">
@@ -125,6 +125,10 @@
                 </div>
             </div>
 
+        </asp:Panel>
+
+        <asp:Panel ID="pnlRegistrarInfoUseLoggedInPerson" runat="server" CssClass="well" Visible="false">
+            <Rock:EmailBox ID="cbUseLoggedInPersonEmail" runat="server" Label="Email" Required="true" />
         </asp:Panel>
         
         <asp:Panel ID="pnlRegistrantsReview" CssClass="margin-b-md" runat="server" Visible="false">

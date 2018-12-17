@@ -5765,7 +5765,7 @@ END
         #region Reports
 
         /// <summary>
-        /// Adds a report.
+        /// Adds a report if the provided GUID does not already exist. Does nothing if the report already exists.
         /// </summary>
         /// <param name="categoryGuid">The category unique identifier.</param>
         /// <param name="dataViewGuid">The data view unique identifier.</param>
@@ -5839,7 +5839,7 @@ END
         }
 
         /// <summary>
-        /// Adds a report field to a report
+        /// Adds a report field to a report if the provided GUID does not exists. Does nothing if the report field already exists.
         /// </summary>
         /// <param name="reportGuid">The report unique identifier.</param>
         /// <param name="reportFieldType">Type of the report field.</param>

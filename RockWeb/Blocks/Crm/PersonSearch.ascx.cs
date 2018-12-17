@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Crm
 
             base.OnInit( e );
 
-            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js" );
 
             gPeople.DataKeyNames = new string[] { "Id" };
             gPeople.Actions.ShowAdd = false;
