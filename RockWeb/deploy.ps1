@@ -30,6 +30,16 @@ function Join-Paths {
     return $path;
 }
 
+function Get-VersionId([string] $FileName) {
+    $Parts = $FileName -split "-";
+    if($Parts.Length -gt 0) {
+        return $Parts[0] -replace "\D+" -as [Int];
+    }
+    else {
+        return 0;
+    }
+}
+
 function Expand-RockPlugin([string] $PluginPath, [string] $DestinationPath) {
     
     $PackageHash = (Get-FileHash $PluginPath).Hash;
@@ -168,7 +178,7 @@ if(Test-Path $InstalledPluginsPath) {
         $PluginVersions = Get-ChildItem $Plugin.FullName;
         if($PluginVersions.Count -gt 0) {
 
-            $LatestVersion = $PluginVersions  | Sort-Object {$_.BaseName -replace "\D+" -as [Int]} | Select-Object -Last 1;
+            $LatestVersion = $PluginVersions  | Sort-Object {Get-VersionId $_.BaseName} | Select-Object -Last 1;
             Write-Host "Restoring ${LatestVersion.Name}";
             Restore-RockPlugin $LatestVersion.FullName;
 
