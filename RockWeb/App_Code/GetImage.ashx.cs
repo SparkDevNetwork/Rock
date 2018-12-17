@@ -411,8 +411,12 @@ namespace RockWeb
 
                 MemoryStream resizedStream = new MemoryStream();
 
-                ImageBuilder.Current.Build( fileContent, resizedStream, settings );
-                return resizedStream;
+                ImageBuilder.Current.Build( fileContent, resizedStream, settings, false );
+                if ( resizedStream.Length > 0 )
+                {
+                    return resizedStream;
+                }
+                return fileContent;
             }
             catch
             {
