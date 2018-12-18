@@ -43,6 +43,8 @@
     <Compile Include="Attribute\EventItemOccurrenceFieldAttribute.cs" />
     <Compile Include="Field\Types\EventItemOccurrenceFieldType.cs" />
     <Compile Include="Web\UI\Controls\EventItemOccurrencePicker.cs" />
+    <Compile Include="Workflow\Action\RockU\ActivateActivityForEach.cs" />
+    <Compile Include="Workflow\Action\RockU\CompleteOtherActivities.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
