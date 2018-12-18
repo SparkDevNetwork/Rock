@@ -1,28 +1,23 @@
-{% for blogpost in Items %}
+{% assign Item = Items | First %}
 
-	{% assign blogpost_FeaturedImage_Url = blogpost | Attribute:'FeaturedImage', 'Url' %}
-	{% assign blogpost_Image_Url = blogpost | Attribute:'Image', 'Url' %}
+{% assign blogpost_HeaderImage_Url = Item | Attribute:'HeaderImage','Url' %}
+{% assign blog_BlogImage_Url = Item.ContentChannel | Attribute:'BlogImage','Url' %}
 
-	{% assign blogHdrBg = blogpost_FeaturedImage_Url | Default:blogpost_Image_Url %}
+{% assign headerImg = blog_BlogImage_Url | Default:blogpost_HeaderImage_Url %}
 
-	<div class="headerImage" style="background-image:url({{ blogHdrBg }});">
-		<div>
-		    <div class="titleBlock">
+<div class="headerImage" style="background-image:url({{ headerImg }});">
+	<div>
+		{% assign displayBlogTitle = Item.ContentChannel | Attribute:'DisplayBlogTitle' %}
+		{% if displayBlogTitle != "No" %}
+			<div class="titleBlock">
 				<div class="container">
 					<div class="row">
-						<div class="col-xs-12 col-sm-8 col-sm-offset-4 col-md-6 col-md-offset-6">
-							<div class="featureContainer">
-					            <div class="blog-content">
-									<h6 class="blog-name">{{ blogpost.ContentChannel.Name }}</h6>
-									<h2>{{ blogpost.Title }}</h2>
-									<p class="blogpost-summary">{{ blogpost | Attribute:'WriteupSummary' | StripHtml | TruncateWords:20 }}</p>
-									<p><a class="readmore" href="{{ blogpost.ContentChannel.ItemUrl }}/{{ blogpost.Id }}">Watch</a></p>
-								</div>
-							</div>
-				        </div>
+						<div class="col-xs-12">
+							<h1>{{ Item.ContentChannel.Name }}</h1>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+		{% endif %}
 	</div>
-{% endfor %}
+</div>

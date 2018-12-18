@@ -1,104 +1,48 @@
-{% if Pagination.ItemCount == '1' %}
+<div id="blogpost">
+	<div class="row">
+		<div class="col-sm-8 col-md-6 col-sm-offset-1 col-md-offset-2">
+				
+				<h2 class="blogpost-title">{{ Item.Title }}</h2>
 
-  <div id="blogpost">
-    <div class="row">
-  	  <div class="col-sm-8 col-md-6 col-sm-offset-1 col-md-offset-2">
-  		  {% for item in Items %}
-  		    <h2 class="blogpost-title">{{ item.Title }}</h2>
-          {% assign itemWriteupSummary = item | Attribute:'WriteupSummary' %}
-  		    {% if itemWriteupSummary != '' %}
-  			    <div class='intro-text'>{{ itemWriteupSummary | StripHtml }}</div>
-  		    {% endif %}
-  		    <p class='blogpost-date'><strong>{{ item.StartDateTime | Date:'MMMM d, yyyy' }}</strong></p>
-          {% assign itemVimeoId = item | Attribute:'VimeoId' %}
-  		    {% if itemVimeoId != empty %}
-  		      <div class="embed-container embed-responsive embed-responsive-16by9">
-  		        <iframe src="https://player.vimeo.com/video/{{ itemVimeoId }}?wmode=transparent" frameborder="0" webkitallowfullscreen="" mozallowfullscreen="" allowfullscreen=""></iframe>
-  		      </div>
-  		    {% endif %}
-  		    {{ item.Content }}
-  		  {% endfor %}
-    	</div>
-    	<div class="col-sm-1 col-sm-offset-2">
-    		<div class="sidebar">
-    				<div class="addthis_toolbox vertical">
-    				  <div class="custom_images">
-    				    <a class="addthis_button_facebook" title="Share to Facebook">
-    					    <span class="fa-stack">
-    					    	<i class="fa fa-fw fa-facebook-square fa-lg"></i>
-    					    </span>
-    					  </a>
-    				    <a class="addthis_button_twitter" title="Share to Twitter">
-    					    <span class="fa-stack">
-    					    	<i class="fa fa-fw fa-twitter fa-lg"></i>
-    					    </span>
-    					  </a>
-    				    <a class="addthis_button_email" title="Share via Email">
-    					    <span class="fa-stack">
-    					    	<i class="fa fa-fw fa-envelope fa-lg"></i>
-    					    </span>
-    					  </a>
-    				  </div>
-    				</div>
-    		</div>
-    	</div>
-    </div>
-  </div>
+				{% assign Item_Subtitle = Item | Attribute:'Subtitle' %}
+				{% if Item_Subtitle != '' %}
+					<div class='intro-text'>{{ Item_Subtitle | StripHtml }}</div>
+				{% endif %}
+				
+				<p class='blogpost-date'><strong>{{ Item.StartDateTime | Date:'MMMM d, yyyy' }}</strong></p>
+				
+				{% assign Item_VimeoId = Item | Attribute:'VimeoId' %}
+				{% if Item_VimeoId != empty %}
+					<div class="embed-container embed-responsive embed-responsive-16by9">
+						<iframe src="https://player.vimeo.com/video/{{ Item_VimeoId }}?wmode=transparent" frameborder="0" webkitallowfullscreen="" mozallowfullscreen="" allowfullscreen=""></iframe>
+					</div>
+				{% endif %}
 
-{% else %}
+				{{ Item.Content }}
 
-  <div id="blogslist" class="css-grid">
-  	{% for blogpost in Items %}
-    	{% assign blog = blogpost.ContentChannel %}
-
-    	{% assign blogpostCoverImage = blogpost | Attribute:'CoverImage', 'Url' %}
-    	{% assign blogpostImage = blogpost | Attribute:'Image', 'Url' %}
-    	{% assign blogBlogImage = blog | Attribute:'BlogImage', 'Url' %}
-      {% assign blogHdrBg = blogpostCoverImage | Default:blogpostImage | Default:blogBlogImage %}
-
-    	<div class="css-grid-item {{ blog.Name | ToCssClass }} {{ blogpost.StartDateTime | Date:'dddd' | ToCssClass }}">
-    		<div class="blog-header"><a class="" href="{{ blogpost.ContentChannel.ItemUrl }}/{{ blogpost.Id }}" style="background-image:url('{{ blogHdrBg }}')"></a></div>
-    		<div class="blog-content">
-    			<h6 class="blog-name">{{ blog.Name }}</h6>
-    				<h2>{{ blogpost.Title }}</h2>
-    				<p class="blogpost-summary">
-
-              {% assign blogpostSummary = blogpost | Attribute:'Summary' %}
-              {% assign blogpostWriteupSummary = blogpost | Attribute:'WriteupSummary' %}
-              {{ blogpostSummary | Default:blogpostWriteupSummary | Default:blogpost.Content | StripHtml | TruncateWords:15 }}
-
-   					</p>
-    		</div>
-    		<p class="readmore"><a href="{{ blogpost.ContentChannel.ItemUrl }}/{{ blogpost.Id }}">Read</a></p>
-    	</div>
-    {% endfor %}
-  </div>
-
-  {% if Pagination.TotalPages > 1 %}
-    <div class="margin-t-lg">
-      {% assign nextPageString = Pagination.NextPage | ToString %}
-      {% assign prevPageString = Pagination.PreviousPage | ToString %}
-
-      {% if Pagination.PreviousPage == -1 %}
-        <div class="btn btn-default disabled pull-right">
-          Newer <i class="fa fa-chevron-right"></i>
-        </div>
-      {% else %}
-        <a class="btn btn-primary pull-right" href="{{Pagination.UrlTemplate | Replace:'PageNum', prevPageString}}">
-          Newer <i class="fa fa-chevron-right"></i>
-        </a>
-      {% endif %}
-
-      {% if Pagination.NextPage == -1 %}
-        <div class="btn btn-default disabled pull-left">
-          <i class="fa fa-chevron-left"></i> Older
-        </div>
-      {% else %}
-        <a class="btn btn-primary pull-left backlink" href="{{Pagination.UrlTemplate | Replace:'PageNum', nextPageString}}">
-          <i class="fa fa-chevron-left"></i> Older
-        </a>
-      {% endif %}
-    </div>
-    {% endif %}
-
-{% endif %}
+		</div>
+		<div class="col-sm-1 col-sm-offset-2">
+			<div class="sidebar">
+				<div class="addthis_toolbox vertical">
+					<div class="custom_images">
+						<a class="addthis_button_facebook" title="Share to Facebook">
+							<span class="fa-stack">
+								<i class="fa fa-fw fa-facebook-square fa-lg"></i>
+							</span>
+						</a>
+						<a class="addthis_button_twitter" title="Share to Twitter">
+							<span class="fa-stack">
+								<i class="fa fa-fw fa-twitter fa-lg"></i>
+							</span>
+						</a>
+						<a class="addthis_button_email" title="Share via Email">
+							<span class="fa-stack">
+								<i class="fa fa-fw fa-envelope fa-lg"></i>
+							</span>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

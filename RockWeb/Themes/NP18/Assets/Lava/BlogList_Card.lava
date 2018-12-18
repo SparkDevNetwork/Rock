@@ -1,0 +1,26 @@
+﻿{% if Item == null %}{% assign Item = Items.first %}{% endif %}
+{% assign Channel = Item.ContentChannel %}
+
+{% assign Card_HeaderImg = Item | Attribute:'Image', 'Url' %}
+{% if Card_HeaderImg == "" %}{% assign Card_HeaderImg = Channel | Attribute:'BlogImage','Url' %}{% endif %}
+
+{% assign Card_ActionLabel = Item | Attribute:'ActionLabel' %}
+{% if Card_ActionLabel == "" %}{% assign Card_ActionLabel = Channel | Attribute:'ActionLabel' %}{% endif %}
+{% if Card_ActionLabel == "" %}{% assign Card_ActionLabel = 'Read' %}{% endif %}
+
+{% capture Card_ActionUrl %}{{ Channel.ItemUrl }}{% endcapture %}
+
+<div class="css-grid-item {{ Channel.Name | ToCssClass }} {{ Item.StartDateTime | Date:'dddd' | ToCssClass }}">
+	<div class="blog-header"><a class="" href="{{ Card_ActionUrl }}" style="background-image:url('{{ Card_HeaderImg }}')"></a></div>
+	<div class="blog-content">
+		<h6 class="blog-name">{{ Channel.Name }}</h6>
+		<h2>{{ Item.Title }}</h2>
+		<p class="blogpost-summary">
+			{% assign Item_Summary = Item | Attribute:'Summary' | StripHtml | Trim %}
+			{% if Item_Summary == "" %}{% assign Item_Summary = Item | Attribute:'Subtitle' | StripHtml | Trim %}{% endif %}
+			{% if Item_Summary == "" %}{% assign Item_Summary = Item.Content | StripHtml | Trim %}{% endif %}
+			{{ Item_Summary | TruncateWords:15 }}
+		</p>
+	</div>
+	<p class="readmore"><a href="{{ Card_ActionUrl }}">{{ Card_ActionLabel }}</a></p>
+</div>

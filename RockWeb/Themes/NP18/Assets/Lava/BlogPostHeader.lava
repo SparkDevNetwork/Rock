@@ -1,25 +1,23 @@
-{% for blogpost in Items %}
-	{% assign displayBlogTitle = blogpost.ContentChannel | Attribute:'DisplayBlogTitle' %}
-	{% assign blogPostHdrImg = blogpost | Attribute:'Image', 'Url' %}
-	{% assign blogHdrImg = blogpost.ContentChannel | Attribute:'BlogImage', 'Url' %}
-	{% if blogPostHdrImg != '' and blogpost.ContentChannel.Name != "Dwight Mason" and blogpost.ContentChannel.Name != "The Daily" %}
-		{% assign blogHdrBg = blogPostHdrImg %}
-	{% else %}
-		{% assign blogHdrBg = blogHdrImg %}
-	{% endif %}
-	<div class="headerImage" style="background-image:url({{ blogHdrBg }});">
-		<div>
-			{% if displayBlogTitle != "No" %}
-		  <div class="titleBlock">
+
+
+{% assign blogpost_HeaderImage_Url = Item | Attribute:'HeaderImage','Url' %}
+{% assign blog_BlogImage_Url = Item.ContentChannel | Attribute:'BlogImage','Url' %}
+
+{% assign headerImg = blogpost_HeaderImage_Url | Default:blog_BlogImage_Url %}
+
+<div class="headerImage" style="background-image:url({{ headerImg }});">
+	<div>
+		{% assign displayBlogTitle = Item.ContentChannel | Attribute:'DisplayBlogTitle' %}
+		{% if displayBlogTitle != "No" %}
+			<div class="titleBlock">
 				<div class="container">
 					<div class="row">
-						<div class="col-xs-12">							
-				      <h1>{{ blogpost.ContentChannel.Name }}</h1>
-				    </div>
+						<div class="col-xs-12">
+							<h1>{{ Item.ContentChannel.Name }}</h1>
+						</div>
 					</div>
 				</div>
 			</div>
-			{% endif %}
-		</div>
+		{% endif %}
 	</div>
-{% endfor %}
+</div>

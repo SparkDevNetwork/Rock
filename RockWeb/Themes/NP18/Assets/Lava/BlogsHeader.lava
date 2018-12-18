@@ -1,0 +1,27 @@
+{% assign Item = Items | First %}
+
+{% assign blogpost_HeaderImage_Url = Item | Attribute:'HeaderImage','Url' %}
+{% assign blog_BlogImage_Url = Item.ContentChannel | Attribute:'BlogImage','Url' %}
+
+{% assign headerImg = blogpost_HeaderImage_Url | Default:blog_BlogImage_Url %}
+
+<div class="headerImage" style="background-image:url({{ headerImg }});">
+	<div>
+		<div class="titleBlock">
+			<div class="container">
+				<div class="row">
+					<div class="col-xs-12 col-sm-8 col-sm-offset-4 col-md-6 col-md-offset-6">
+						<div class="featureContainer">
+							<div class="blog-content">
+								<h6 class="blog-name">{{ Item.ContentChannel.Name }}</h6>
+								<h2>{{ Item.Title }}</h2>
+								<p class="blogpost-summary">{{ Item | Attribute:'Summary' | StripHtml | TruncateWords:20 }}</p>
+								<p><a class="readmore" href="{{ Item.ContentChannel.ItemUrl }}/{{ Item.Id }}">Watch</a></p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
