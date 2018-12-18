@@ -460,8 +460,8 @@ namespace RockWeb.Blocks.Finance
                                 {
                                     AccountId = a.Key.Value,
                                     TotalAmount = a.Sum( x => x.TotalAmount ),
-                                    Name = a.Select( p => p.Account.Name ).FirstOrDefault(),
-                                    Order = a.Select( p => p.Account.Order ).FirstOrDefault()
+                                    Name = a.Where( p => p.Account != null ).Select( p => p.Account.Name ).FirstOrDefault(),
+                                    Order = a.Where( p => p.Account != null ).Select( p => p.Account.Order ).FirstOrDefault()
                                 } ).ToList();
 
                 var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ) : 0;

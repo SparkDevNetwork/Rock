@@ -57,8 +57,8 @@ namespace RockWeb.Blocks.Examples
             gExample.DataKeyNames = new string[] { "Id" };
             gExample.GridRebind += gExample_GridRebind;
 
-            geopExamplePoint.SelectGeography += geoPicker_SelectGeography;
-            geopExamplePolygon.SelectGeography += geoPicker1_SelectGeography;
+            geopExamplePoint.SelectGeography += geopExamplePoint_SelectGeography;
+            geopExamplePolygon.SelectGeography += geopExamplePolygon_SelectGeography;
             geopExamplePoint.MapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
 
             htmlEditorLight.MergeFields.Add( "GlobalAttribute" );
@@ -372,23 +372,23 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
-        /// Handles the SelectGeography event of the geoPicker1 control.
+        /// Handles the SelectGeography event of the geopExamplePolygon control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void geoPicker1_SelectGeography( object sender, EventArgs e )
+        protected void geopExamplePolygon_SelectGeography( object sender, EventArgs e )
         {
-            string debug = geopExamplePoint.SelectedValue.AsText();
+            string debug = geopExamplePolygon.SelectedValue.AsText();
         }
 
         /// <summary>
-        /// Handles the SelectGeography event of the geoPicker control.
+        /// Handles the SelectGeography event of the geopExamplePoint control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void geoPicker_SelectGeography( object sender, EventArgs e )
+        protected void geopExamplePoint_SelectGeography( object sender, EventArgs e )
         {
-            string debug = geopExamplePolygon.SelectedValue.AsText();
+            string debug = geopExamplePoint.SelectedValue.AsText();
         }
 
         /// <summary>

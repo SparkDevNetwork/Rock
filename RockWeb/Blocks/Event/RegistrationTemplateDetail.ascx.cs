@@ -1498,30 +1498,21 @@ The first registrant's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgField_SaveClick( object sender, EventArgs e )
         {
-            var formGuid = hfFormGuid.Value.AsGuid();
-            var attributeGuid = hfAttributeGuid.Value.AsGuid();
+            FieldSave();
+            HideDialog();
+            BuildControls( true );
+        }
 
+        /// <summary>
+        /// Saves the form field
+        /// </summary>
+        private void FieldSave()
+        {
+            var formGuid = hfFormGuid.Value.AsGuid();
+            
             if ( FormFieldsState.ContainsKey( formGuid ) )
             {
-                var attributeForm = FormFieldsState[formGuid].FirstOrDefault( a => a.Guid.Equals( attributeGuid ) );
-                if ( attributeForm == null )
-                {
-                    attributeForm = new RegistrationTemplateFormField();
-                    attributeForm.Order = FormFieldsState[formGuid].Any() ? FormFieldsState[formGuid].Max( a => a.Order ) + 1 : 0;
-                    attributeForm.Guid = attributeGuid;
-                    FormFieldsState[formGuid].Add( attributeForm );
-                }
-
-                attributeForm.PreText = ceAttributePreText.Text;
-                attributeForm.PostText = ceAttributePostText.Text;
-                attributeForm.FieldSource = ddlFieldSource.SelectedValueAsEnum<RegistrationFieldSource>();
-                if ( ddlPersonField.Visible )
-                {
-                    attributeForm.PersonFieldType = ddlPersonField.SelectedValueAsEnum<RegistrationPersonFieldType>();
-                }
-
-                attributeForm.IsInternal = cbInternalField.Checked;
-                attributeForm.IsSharedValue = cbCommonValue.Checked;
+                var attributeForm = CreateFormField( formGuid );
 
                 int? attributeId = null;
 
@@ -1582,10 +1573,38 @@ The first registrant's information will be used to complete the registrar inform
                     }
                 }
             }
+        }
 
-            HideDialog();
+        /// <summary>
+        /// Creates the form field.
+        /// </summary>
+        /// <param name="formGuid">The form unique identifier.</param>
+        /// <returns></returns>
+        private RegistrationTemplateFormField CreateFormField( Guid formGuid )
+        {
+            var attributeGuid = hfAttributeGuid.Value.AsGuid();
 
-            BuildControls( true );
+            var attributeForm = FormFieldsState[formGuid].FirstOrDefault( a => a.Guid.Equals( attributeGuid ) );
+            if ( attributeForm == null )
+            {
+                attributeForm = new RegistrationTemplateFormField();
+                attributeForm.Order = FormFieldsState[formGuid].Any() ? FormFieldsState[formGuid].Max( a => a.Order ) + 1 : 0;
+                attributeForm.Guid = attributeGuid;
+                FormFieldsState[formGuid].Add( attributeForm );
+            }
+
+            attributeForm.PreText = ceAttributePreText.Text;
+            attributeForm.PostText = ceAttributePostText.Text;
+            attributeForm.FieldSource = ddlFieldSource.SelectedValueAsEnum<RegistrationFieldSource>();
+            if ( ddlPersonField.Visible )
+            {
+                attributeForm.PersonFieldType = ddlPersonField.SelectedValueAsEnum<RegistrationPersonFieldType>();
+            }
+
+            attributeForm.IsInternal = cbInternalField.Checked;
+            attributeForm.IsSharedValue = cbCommonValue.Checked;
+
+            return attributeForm;
         }
 
         #endregion

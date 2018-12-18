@@ -197,7 +197,7 @@ namespace Rock.Reporting
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
+        /// <returns>A formatted string representing the filter settings.</returns>
         public virtual string GetSelection( Type entityType, Control[] controls, FilterMode filterMode )
         {
             return GetSelection( entityType, controls );
@@ -209,7 +209,7 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
         /// <param name="controls">The collection of controls used to set the filter values.</param>
-        /// <returns>A formatted string.</returns>
+        /// <returns>A formatted string representing the filter settings.</returns>
         public virtual string GetSelection( Type entityType, Control[] controls )
         {
             string comparisonType = ( (DropDownList)controls[0] ).SelectedValue;
@@ -236,7 +236,7 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
-        /// <param name="selection">The selection.</param>
+        /// <param name="selection">A formatted string representing the filter settings.</param>
         public virtual void SetSelection( Type entityType, Control[] controls, string selection )
         {
             string[] options = selection.Split( '|' );

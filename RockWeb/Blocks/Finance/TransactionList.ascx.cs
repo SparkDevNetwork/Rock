@@ -393,6 +393,7 @@ namespace RockWeb.Blocks.Finance
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             SetBlockOptions();
+            SetupGridActionControls();
             BindGrid();
         }
 

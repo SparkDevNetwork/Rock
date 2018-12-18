@@ -116,7 +116,7 @@ namespace Rock.Jobs
                 foreach ( var gm in new GroupMemberService( rockContext ).Queryable()
                     .Where( m =>
                         m.GroupMemberStatus == GroupMemberStatus.Active &&
-                        m.Group.IsActive &&
+                        m.Group.IsActive && !m.Group.IsArchived &&
                         m.Person.Email != null &&
                         m.Person.Email != "" &&
                         m.Group.RequiredSignatureDocumentTemplate != null &&

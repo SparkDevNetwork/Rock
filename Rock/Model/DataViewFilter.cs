@@ -253,7 +253,7 @@ namespace Rock.Model
                             {
                                 try
                                 {
-                                    string selection;
+                                    string selection; // A formatted string representing the filter settings: FieldName, <see cref="ComparisonType">Comparison Type</see>, (optional) Comparison Value(s)
                                     var dataViewFilterOverride = dataViewFilterOverrides?.GetOverride( this.Guid );
                                     if ( dataViewFilterOverride != null )
                                     {

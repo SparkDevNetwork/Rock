@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Require Last Name", "Require that a last name be entered", true, "Features", 11 )]
     [BooleanField( "Show Campus", "Show a campus picker", true, "Features", 12 )]
     [BooleanField( "Require Campus", "Require that a campus be selected", false, "Features", 13 )]
-    [BooleanField( "Enable Person Matching", "If enabled, requester detail will be matched with all existing person to see if it's already exists.", false, "Features", 14 )]
+    [BooleanField( "Enable Person Matching", "If enabled, the request will be linked to an existing person if a match can be made between the requester and an existing person.", false, "Features", 14 )]
 
     // On Save Behavior
     [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 14 )]
@@ -102,6 +102,7 @@ namespace RockWeb.Blocks.Prayer
             tbLastName.Required = GetAttributeValue( "RequireLastName" ).AsBooleanOrNull() ?? true;
             cpCampus.Visible = GetAttributeValue( "ShowCampus" ).AsBoolean();
             cpCampus.Required = GetAttributeValue( "RequireCampus" ).AsBoolean();
+            pnbPhone.Visible = GetAttributeValue( "EnablePersonMatching" ).AsBoolean();
 
             if ( cpCampus.Visible )
             {
@@ -219,13 +220,10 @@ namespace RockWeb.Blocks.Prayer
             bool isAutoApproved = GetAttributeValue( "EnableAutoApprove" ).AsBoolean();
             bool defaultAllowComments = GetAttributeValue( "DefaultAllowCommentsSetting" ).AsBoolean();
             bool isPersonMatchingEnabled = GetAttributeValue( "EnablePersonMatching" ).AsBoolean();
-            bool isNoteCreated = false;
 
             PrayerRequest prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = isAutoApproved, AllowComments = defaultAllowComments };
 
             var rockContext = new RockContext();
-            PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
-            prayerRequestService.Add( prayerRequest );
             prayerRequest.EnteredDateTime = RockDateTime.Now;
 
             if ( isAutoApproved )
@@ -262,25 +260,51 @@ namespace RockWeb.Blocks.Prayer
                 {
                     var personService = new PersonService( new RockContext() );
                     person = personService.FindPerson( new PersonService.PersonMatchQuery( tbFirstName.Text, tbLastName.Text, tbEmail.Text, pnbPhone.Number ), false, true, false );
+
+                    if ( person == null && ( !string.IsNullOrWhiteSpace( tbEmail.Text ) || !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) ) )
+                    {
+                        var personRecordTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                        var personStatusPending = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+
+                        person = new Person();
+                        person.IsSystem = false;
+                        person.RecordTypeValueId = personRecordTypeId;
+                        person.RecordStatusValueId = personStatusPending;
+                        person.FirstName = tbFirstName.Text;
+                        person.LastName = tbLastName.Text;
+                        person.Gender = Gender.Unknown;
+
+                        if ( !string.IsNullOrWhiteSpace( tbEmail.Text ) )
+                        {
+                            person.Email = tbEmail.Text;
+                            person.IsEmailActive = true;
+                            person.EmailPreference = EmailPreference.EmailAllowed;
+                        }
+
+                        PersonService.SaveNewPerson( person, rockContext, cpCampus.SelectedCampusId );
+
+                        if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) )
+                        {
+                            var mobilePhoneType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
+
+                            var phoneNumber = new PhoneNumber { NumberTypeValueId = mobilePhoneType.Id };
+                            phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
+                            phoneNumber.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
+                            person.PhoneNumbers.Add( phoneNumber );
+                        }
+                    }
                 }
 
+                prayerRequest.FirstName = tbFirstName.Text;
+                prayerRequest.LastName = tbLastName.Text;
+                prayerRequest.Email = tbEmail.Text;
                 if ( person != null )
                 {
                     prayerRequest.RequestedByPersonAliasId = person.PrimaryAliasId;
-                    prayerRequest.FirstName = string.IsNullOrEmpty( person.NickName ) ? person.FirstName : person.NickName;
-                    prayerRequest.LastName = person.LastName;
-                    prayerRequest.Email = person.Email;
                 }
                 else
                 {
                     prayerRequest.RequestedByPersonAliasId = CurrentPersonAliasId;
-                    prayerRequest.FirstName = tbFirstName.Text;
-                    prayerRequest.LastName = tbLastName.Text;
-                    prayerRequest.Email = tbEmail.Text;
-                    if ( !string.IsNullOrEmpty( pnbPhone.Text ) )
-                    {
-                        isNoteCreated = true;
-                    }
                 }
             }
             else
@@ -323,6 +347,8 @@ namespace RockWeb.Blocks.Prayer
                 return;
             }
 
+            PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
+            prayerRequestService.Add( prayerRequest );
             prayerRequest.LoadAttributes( rockContext );
             Rock.Attribute.Helper.GetEditValues( phAttributes, prayerRequest );
 
@@ -336,21 +362,6 @@ namespace RockWeb.Blocks.Prayer
             {
                 rockContext.SaveChanges();
                 prayerRequest.SaveAttributeValues( rockContext );
-
-                if ( isNoteCreated )
-                {
-                    var noteService = new NoteService( rockContext );
-                    var noteType = new NoteTypeService( rockContext ).Get( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() );
-                    var note = new Note()
-                    {
-                        Caption = "Mobile Phone",
-                        Text = pnbPhone.Text,
-                        EntityId = prayerRequest.Id,
-                        NoteTypeId = noteType.Id
-                    };
-                    noteService.Add( note );
-                    rockContext.SaveChanges();
-                }
             } );
 
 

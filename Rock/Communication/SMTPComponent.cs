@@ -655,7 +655,7 @@ namespace Rock.Communication.Transport
                         string orgEmail = globalAttributes.GetValue( "OrganizationEmail" );
                         if ( !string.IsNullOrWhiteSpace( orgEmail ) && !orgEmail.Equals( from, StringComparison.OrdinalIgnoreCase ) )
                         {
-                            message.From = new MailAddress( orgEmail );
+                            message.From = new MailAddress( orgEmail, fromName );
 
                             bool addReplyTo = true;
                             foreach ( var replyTo in message.ReplyToList )

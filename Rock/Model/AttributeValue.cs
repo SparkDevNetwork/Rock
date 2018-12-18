@@ -40,6 +40,34 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
+        /// Creates the non persisted attribute value.
+        /// Warning: This should NOT be used to create an AttributeValue that is stored in the database.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        static internal AttributeValue CreateNonPersistedAttributeValue( string value )
+        {
+            var attributeValue = new AttributeValue()
+            {
+                Value = value,
+                ValueAsBoolean = value.AsBooleanOrNull(),
+                ValueAsDateTime = value.AsDateTime(),
+                ValueAsNumeric = value.AsDecimalOrNull()
+            };
+
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                using ( var rockContext = new RockContext())
+                {
+                    attributeValue.ValueAsPersonId = new PersonAliasService( rockContext).Queryable().Where( a => a.Guid.Equals( guid.Value ) ).Select( a => a.PersonId).FirstOrDefault();
+                }
+            }
+
+            return attributeValue;
+        }
+
+        /// <summary>
         /// Gets or sets a flag indicating if this AttributeValue is part of the Rock core system/framework.
         /// </summary>
         /// <value>
@@ -564,6 +592,10 @@ namespace Rock.Model
                 if ( entityType?.HasEntityCache() == true )
                 {
                     entityType.FlushCachedItem( this.EntityId.Value );
+                }
+                else if ( cacheAttribute.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Device>())
+                {
+                    Rock.CheckIn.KioskDevice.FlushItem( this.EntityId.Value );
                 }
             }
 

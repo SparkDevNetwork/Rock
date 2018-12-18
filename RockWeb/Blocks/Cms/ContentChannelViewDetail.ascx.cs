@@ -39,35 +39,28 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block to display a specific content channel item." )]
 
-    [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this content channel item block.", false, category: "CustomSetting" )]
+    [LavaCommandsField( "Enabled Lava Commands", description: "The Lava commands that should be enabled for this content channel item block.", required: false, category: "CustomSetting" )]
 
-    [ContentChannelField( "Content Channel", "Limits content channel items to a specific channel, or leave blank to leave unrestricted.", false, "", category: "CustomSetting" )]
-    [TextField( "Content Channel Query Parameter", @"
-Specify the URL parameter to use to determine which Content Channel Item to show, or leave blank to use whatever the first parameter is.
-The type of the value will determine how the content channel item will be determined as follows:
+    [ContentChannelField( "Content Channel", description: "Limits content channel items to a specific channel, or leave blank to leave unrestricted.", required: false, defaultValue: "", category: "CustomSetting" )]
+    [TextField( "Content Channel Query Parameter", description: CONTENT_CHANNEL_QUERY_PARAMETER_DESCRIPTION, required: false, category: "CustomSetting" )]
 
-Integer - ContentChannelItem Id
-String - ContentChannelItem Slug
-Guid - ContentChannelItem Guid
-
-", required: false, category: "CustomSetting" )]
-
-    [CodeEditorField( "Lava Template", "The template to use when formatting the content channel item.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, category: "CustomSetting", defaultValue: @"
+    [CodeEditorField( "Lava Template", description: "The template to use when formatting the content channel item.", mode: CodeEditorMode.Lava, theme: CodeEditorTheme.Rock, height: 200, required: false, category: "CustomSetting", defaultValue: @"
 <h1>{{ Item.Title }}</h1>
 {{ Item.Content }}" )]
 
-    [IntegerField( "Output Cache Duration", "Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.", required: false, key: "OutputCacheDuration", category: "CustomSetting" )]
-    [IntegerField( "Item Cache Duration", "Number of seconds to cache the content item specified by the parameter.", false, 3600, "CustomSetting", 0, "ItemCacheDuration" )]
-    [CustomCheckboxListField( "Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", listSource: "", required: false, key: "CacheTags", category: "CustomSetting" )]
+    [IntegerField( "Output Cache Duration", OUTPUT_CACHE_DURATION_DESCRIPTION, required: false, key: "OutputCacheDuration", category: "CustomSetting" )]
+    [IntegerField( "Item Cache Duration", description: "Number of seconds to cache the content item specified by the parameter.", required: false, defaultValue: 3600, category: "CustomSetting", order: 0, key: "ItemCacheDuration" )]
+    [CustomCheckboxListField( "Cache Tags", description: "Cached tags are used to link cached content so that it can be expired as a group", listSource: "", required: false, key: "CacheTags", category: "CustomSetting" )]
 
-    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the channel name or content item.", category: "CustomSetting" )]
+    [BooleanField( "Set Page Title", description: "Determines if the block should set the page title with the channel name or content item.", category: "CustomSetting" )]
+    [LinkedPage( "Detail Page", description: "Page used to view a content item.", order: 1, category: "CustomSetting", key: "DetailPage" )]
 
     [BooleanField( "Log Interactions", category: "CustomSetting" )]
-    [BooleanField( "Write Interaction Only If Individual Logged In", "Set to true to only write interactions for logged in users, or set to false to write interactions for both logged in and anonymous users.", category: "CustomSetting" )]
+    [BooleanField( "Write Interaction Only If Individual Logged In", description: "Set to true to only write interactions for logged in users, or set to false to write interactions for both logged in and anonymous users.", category: "CustomSetting" )]
 
-    [WorkflowTypeField( "Workflow Type", "The workflow type to launch when the content is viewed.", category: "CustomSetting" )]
-    [BooleanField( "Launch Workflow Only If Individual Logged In", "Set to true to only launch a workflow for logged in users, or set to false to launch for both logged in and anonymous users.", category: "CustomSetting" )]
-    [EnumField( "Launch Workflow Condition", "", typeof( LaunchWorkflowCondition ), defaultValue: "1", category: "CustomSetting" )]
+    [WorkflowTypeField( "Workflow Type", description: "The workflow type to launch when the content is viewed.", category: "CustomSetting" )]
+    [BooleanField( "Launch Workflow Only If Individual Logged In", description: "Set to true to only launch a workflow for logged in users, or set to false to launch for both logged in and anonymous users.", category: "CustomSetting" )]
+    [EnumField( "Launch Workflow Condition", "", enumSourceType: typeof( LaunchWorkflowCondition ), defaultValue: "1", category: "CustomSetting" )]
 
     [TextField( "Meta Description Attribute", required: false, category: "CustomSetting" )]
     [TextField( "Open Graph Type", required: false, category: "CustomSetting" )]
@@ -80,6 +73,20 @@ Guid - ContentChannelItem Guid
     [TextField( "Twitter Card", required: false, defaultValue: "none", category: "CustomSetting" )]
     public partial class ContentChannelViewDetail : RockBlockCustomSettings
     {
+        #region Block Property Constants
+        private const string CONTENT_CHANNEL_QUERY_PARAMETER_DESCRIPTION = @"
+Specify the URL parameter to use to determine which Content Channel Item to show, or leave blank to use whatever the first parameter is.
+The type of the value will determine how the content channel item will be determined as follows:
+
+Integer - ContentChannelItem Id
+String - ContentChannelItem Slug
+Guid - ContentChannelItem Guid
+
+";
+        private const string OUTPUT_CACHE_DURATION_DESCRIPTION = @"Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.";
+
+        #endregion Block Property Constants
+
         #region Fields
 
         /// <summary>
@@ -209,6 +216,7 @@ Guid - ContentChannelItem Guid
             ddlContentChannel.SetValue( channelGuid );
             UpdateSocialMediaDropdowns( channelGuid );
 
+            nbDetailPage.Text = this.GetAttributeValue( "DetailPage" );
             tbContentChannelQueryParameter.Text = this.GetAttributeValue( "ContentChannelQueryParameter" );
             ceLavaTemplate.Text = this.GetAttributeValue( "LavaTemplate" );
             nbOutputCacheDuration.Text = this.GetAttributeValue( "OutputCacheDuration" );
@@ -279,6 +287,7 @@ Guid - ContentChannelItem Guid
         protected void mdSettings_SaveClick( object sender, EventArgs e )
         {
             this.SetAttributeValue( "ContentChannel", ddlContentChannel.SelectedValue );
+            this.SetAttributeValue( "DetailPage", nbDetailPage.Text );
             this.SetAttributeValue( "ContentChannelQueryParameter", tbContentChannelQueryParameter.Text );
             this.SetAttributeValue( "LavaTemplate", ceLavaTemplate.Text );
             this.SetAttributeValue( "OutputCacheDuration", nbOutputCacheDuration.Text );
@@ -410,6 +419,15 @@ Guid - ContentChannelItem Guid
                     return;
                 }
 
+                if ( contentChannelItem.ContentChannel.RequiresApproval )
+                {
+                    if ( contentChannelItem.Status != ContentChannelItemStatus.Approved )
+                    {
+                        ShowNoDataFound();
+                        return;
+                    }
+                }
+
                 // if a Channel was specified, verify that the ChannelItem is part of the channel
                 var channelGuid = this.GetAttributeValue( "ContentChannel" ).AsGuidOrNull();
                 if ( channelGuid.HasValue )
@@ -428,6 +446,7 @@ Guid - ContentChannelItem Guid
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
                 mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                 mergeFields.Add( "Item", contentChannelItem );
+                mergeFields.Add( "DetailPage", GetAttributeValue( "DetailPage" ) );
 
                 string metaDescriptionValue = GetMetaValueFromAttribute( this.GetAttributeValue( "MetaDescriptionAttribute" ), contentChannelItem );
 

@@ -780,18 +780,29 @@ namespace RockWeb.Blocks.Crm
         {
             if ( Page.IsValid )
             {
+                int errorCount = 0;
                 var individuals = Individuals.ToList();
                 while ( individuals.Any() )
                 {
-                    ProcessIndividuals( individuals.Take( 50 ).ToList() );
+                    errorCount += ProcessIndividuals( individuals.Take( 50 ).ToList() );
                     individuals = individuals.Skip( 50 ).ToList();
                 }
 
                 pnlEntry.Visible = false;
                 pnlConfirm.Visible = false;
 
-                nbResult.Text = string.Format( "{0} {1} successfully updated.",
-                    Individuals.Count().ToString( "N0" ), ( Individuals.Count() > 1 ? "people were" : "person was" ) );
+                if ( errorCount == 0 )
+                {
+                    nbResult.Text = string.Format( "{0} {1} successfully updated.",
+                        Individuals.Count().ToString( "N0" ), ( Individuals.Count() > 1 ? "people were" : "person was" ) );
+                    nbResult.NotificationBoxType = NotificationBoxType.Success;
+                }
+                else
+                {
+                    nbResult.Text = string.Format( "{0} {1} updated with {2} error(s). Please look in the exception log for more details.",
+                        Individuals.Count().ToString( "N0" ), ( Individuals.Count() > 1 ? "people were" : "person was" ), errorCount );
+                    nbResult.NotificationBoxType = NotificationBoxType.Warning;
+                }
 
                 pnlResult.Visible = true;
             }
@@ -802,11 +813,12 @@ namespace RockWeb.Blocks.Crm
         /// a huge boost to performance when dealing with large numbers of people.
         /// </summary>
         /// <param name="individuals">The list of individuals to process in this batch.</param>
-        private void ProcessIndividuals( List<Individual> individuals )
+        private int ProcessIndividuals( List<Individual> individuals )
         {
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
             var ids = individuals.Select( i => i.PersonId ).ToList();
+            int errorCount = 0;
 
             #region Individual Details Updates
 
@@ -1175,6 +1187,8 @@ namespace RockWeb.Blocks.Crm
                     string action = ddlGroupAction.SelectedValue;
                     if ( action == "Remove" )
                     {
+                        var groupTypeCache = GroupTypeCache.Get( group.GroupTypeId );
+
                         var existingIds = existingMembersQuery.Select( gm => gm.Id ).Distinct().ToList();
 
                         Action<RockContext, List<int>> deleteAction = ( context, items ) =>
@@ -1184,16 +1198,47 @@ namespace RockWeb.Blocks.Crm
 
                             var batchGroupMembers = groupMemberService.Queryable( true ).Where( x => items.Contains( x.Id ) ).ToList();
 
-                            // also unregister them from any registration groups
-                            RegistrationRegistrantService registrantService = new RegistrationRegistrantService( context );
-                            foreach ( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId.HasValue && items.Contains( r.GroupMemberId.Value ) ) )
+                            GroupMemberHistoricalService groupMemberHistoricalService = new GroupMemberHistoricalService( context );
+
+                            foreach( GroupMember groupMember in batchGroupMembers )
                             {
-                                registrant.GroupMemberId = null;
+                                try
+                                {
+                                    bool archive = false;
+                                    if ( groupTypeCache.EnableGroupHistory == true && groupMemberHistoricalService.Queryable().Any( a => a.GroupMemberId == groupMember.Id ) )
+                                    {
+                                        // if the group has GroupHistory enabled, and this group member has group member history snapshots, they were prompted to Archive
+                                        archive = true;
+                                    }
+                                    else
+                                    {
+                                        string errorMessage;
+                                        if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )
+                                        {
+                                            ExceptionLogService.LogException( new Exception( string.Format( "Error removing person {0} from group {1}: ", groupMember.Person.FullName, group.Name ) + errorMessage ), null );
+                                            errorCount++;
+                                            continue;
+                                        }
+                                    }
+
+                                    if ( archive )
+                                    {
+                                        // NOTE: Delete will AutoArchive, but since we know that we need to archive, we can call .Archive directly
+                                        groupMemberService.Archive( groupMember, this.CurrentPersonAliasId, true );
+                                    }
+                                    else
+                                    {
+                                        groupMemberService.Delete( groupMember, true );
+                                    }
+
+                                    context.SaveChanges();
+                                }
+                                catch (Exception ex)
+                                {
+                                    ExceptionLogService.LogException( new Exception( string.Format("Error removing person {0} from group {1}", groupMember.Person.FullName, group.Name), ex ), null );
+                                    errorCount++;
+                                }
                             }
-
-                            groupMemberService.DeleteRange( batchGroupMembers );
-
-                            context.SaveChanges();
                         };
 
                         ProcessBatchUpdate( existingIds, 50, deleteAction );
@@ -1382,6 +1427,8 @@ namespace RockWeb.Blocks.Crm
                 }
             }
             #endregion
+
+            return errorCount;
         }
 
         /// <summary>

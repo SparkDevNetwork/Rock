@@ -38,6 +38,7 @@
                     </asp:Panel>
 
                     <asp:Panel ID="pnlCustomGridTab" runat="server" Visible="false">
+                        <Rock:NotificationBox ID="nbGridWarning" runat="server" Text="With great power comes great responsibility! This feature allows you to easily display additional information but be aware for large grids and complex lava that will come with a performance penalty."></Rock:NotificationBox>
                         <Rock:Toggle ID="tglEnableStickyHeader" runat="server" Label="Enable Sticky Header" OnText="Yes" OffText="No" Checked="false" Help="If set to yes, all the table headers will stay at the top of the window when scrolling." />
                         <Rock:RockControlWrapper ID="rcwCustomGridColumns" runat="server" Label="Custom Columns">
                             <asp:LinkButton ID="lbAddColumns" runat="server" CssClass="btn btn-default" Text="Add Column" OnClick="lbAddColumns_Click" />

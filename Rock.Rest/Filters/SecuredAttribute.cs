@@ -83,7 +83,7 @@ namespace Rock.Rest.Filters
                         if ( userName.StartsWith( "rckipid=" ) )
                         {
                             Rock.Model.PersonService personService = new Model.PersonService( rockContext );
-                            Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( userName.Substring( 8 ), false, null );
+                            Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( userName.Substring( 8 ) );
                             if ( impersonatedPerson != null )
                             {
                                 userLogin = impersonatedPerson.GetImpersonatedUser();

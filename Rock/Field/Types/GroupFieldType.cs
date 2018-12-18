@@ -49,10 +49,13 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var groupName = new GroupService( new RockContext() ).GetSelect( guid.Value, a => a.Name );
-                if ( groupName != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = groupName;
+                    var groupName = new GroupService( rockContext ).GetSelect( guid.Value, a => a.Name );
+                    if ( groupName != null )
+                    {
+                        formattedValue = groupName;
+                    }
                 }
             }
 
@@ -94,8 +97,8 @@ namespace Rock.Field.Types
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        itemGuid = new GroupService( rockContext ).GetGuid( itemId.Value );
-                        return itemGuid?.ToString();
+                        itemGuid = new GroupService( rockContext ).GetNoTracking( itemId.Value ).Guid;
+                        return itemGuid?.ToString() ?? string.Empty;
                     }
                 }
 

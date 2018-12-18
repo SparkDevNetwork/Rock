@@ -33,16 +33,98 @@ namespace RockWeb.Blocks.Security
     [DisplayName( "Captive Portal" )]
     [Category( "Security" )]
     [Description( "Controls access to Wi-Fi." )]
-    [TextField( "MAC Address Paramameter", "The query string parameter used for the MAC Address", true, "client_mac", "", 0, "MacAddressParam" )]
-    [TextField( "Release Link", "The full URL to redirect users to after registration.", true, "", "", 1, "ReleaseLink" )]
-    [BooleanField("Show Name", "Show or hide the Name fields. If it is visible then it will be required.", true, "", 2, "ShowName", IsRequired = true )]
-    [BooleanField( "Show Mobile Phone", "Show or hide the Mobile Phone Number field. If it is visible then it will be required.", true, "", 3, "ShowMobilePhone", IsRequired = true )]
-    [BooleanField( "Show Email", "Show or hide the Email field. If it is visible then it will be required.", true, "", 4, "ShowEmail", IsRequired = true )]
-    [BooleanField( "Show Acceptance Checkbox", "Show or hide the \"I Accept\" checkbox. If it is visible then it will be required. This should be visible if the \"Terms And Conditions\" are also visible.", false, "", 5, "ShowAccept", IsRequired = true )]
-    [TextField( "Acceptance Checkbox Label", "Text used to signify user agreement with the Terms and Conditions", true, "I Accept", "", 6, "AcceptanceLabel" )]
-    [TextField( "Button Text", "Text to display on the button", true, "Accept and Connect", "", 7, "ButtonText" )]
-    [BooleanField( "Show Legal Note", "Show or hide the Terms and Conditions. This should be always be visible unless users are being automatically connected without any agreement needed.", true, "", 8, "ShowLegalNote", IsRequired = true )]
-    [CodeEditorField ( "Legal Note", "A legal note outlining the Terms and Conditions for using Wi-Fi.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, false, DEFAULT_LEGAL_NOTE, "", 9, "LegalNote" )]
+
+    #region Block Settings
+    [TextField(
+        name: "MAC Address Paramameter",
+        description: "The query string parameter used for the MAC Address",
+        defaultValue: "client_mac",
+        order: 0,
+        key: "MacAddressParam" )]
+    [TextField(
+        name: "Release Link",
+        description: "The full URL to redirect users to after registration.",
+        order: 1,
+        key: "ReleaseLink" )]
+    [BooleanField(
+        name: "Show Name",
+        description: "Show or hide the Name fields. If it is visible then it will be required.",
+        defaultValue: true,
+        order: 2,
+        key: "ShowName",
+        IsRequired = true )]
+    [BooleanField(
+        name: "Show Mobile Phone",
+        description: "Show or hide the Mobile Phone Number field. If it is visible then it will be required.",
+        defaultValue: true,
+        order: 3,
+        key: "ShowMobilePhone",
+        IsRequired = true )]
+    [BooleanField(
+        name: "Show Email",
+        description: "Show or hide the Email field. If it is visible then it will be required.",
+        defaultValue: true,
+        order: 4,
+        key: "ShowEmail",
+        IsRequired = true )]
+    [BooleanField(
+        name: "Show Acceptance Checkbox",
+        description: "Show or hide the \"I Accept\" checkbox. If it is visible then it will be required. This should be visible if the \"Terms And Conditions\" are also visible.",
+        defaultValue: false,
+        order: 5,
+        key: "ShowAccept",
+        IsRequired = true )]
+    [TextField(
+        name: "Acceptance Checkbox Label",
+        description: "Text used to signify user agreement with the Terms and Conditions",
+        defaultValue: "I Accept",
+        order: 6,
+        key: "AcceptanceLabel" )]
+    [TextField(
+        name: "Button Text",
+        description: "Text to display on the button",
+        defaultValue: "Accept and Connect",
+        order: 7,
+        key: "ButtonText" )]
+    [BooleanField(
+        name: "Show Legal Note",
+        description: "Show or hide the Terms and Conditions. This should be always be visible unless users are being automatically connected without any agreement needed.",
+        defaultValue: true,
+        order: 8,
+        key: "ShowLegalNote",
+        IsRequired = true )]
+    [DefinedValueField(
+        definedTypeGuid: Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON,
+        name: "New Person Record Type",
+        description: "The person type to assign to new persons created by Captive Portal.",
+        defaultValue: Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON,
+        order: 9,
+        key: "NewPersonRecordType")]
+    [DefinedValueField(
+        definedTypeGuid: Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
+        name: "New Person Record Status",
+        description: "The record status to assign to new persons created by Captive Portal.",
+        defaultValue: Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE,
+        order: 10,
+        key: "NewPersonRecordStatus")]
+    [DefinedValueField(
+        definedTypeGuid: Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
+        name: "New Person Connection Status",
+        description: "The connection status to assign to new persons created by Captive Portal",
+        defaultValue: Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR,
+        order: 11,
+        key: "NewPersonConnectionStatus")]
+    [CodeEditorField(
+        name: "Legal Note",
+        description: "A legal note outlining the Terms and Conditions for using Wi-Fi.",
+        mode: CodeEditorMode.Html,
+        height: 400,
+        required: false,
+        defaultValue: DEFAULT_LEGAL_NOTE,
+        order: 12,
+        key: "LegalNote" )]
+
+    #endregion Block Settings
     public partial class CaptivePortal : RockBlock
     {
         #region Block Setting Strings
@@ -140,14 +222,11 @@ namespace RockWeb.Blocks.Security
                 macAddress = macAddress.RemoveAllNonAlphaNumericCharacters();
                 hfMacAddress.Value = macAddress;
 
-                RockContext rockContext = new RockContext();
-
                 // create or get device
-                PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
+                PersonalDeviceService personalDeviceService = new PersonalDeviceService( new RockContext() );
                 PersonalDevice personalDevice = null;
 
-                bool isAnExistingDevice = DoesPersonalDeviceExist( macAddress );
-                if ( isAnExistingDevice )
+                if ( DoesPersonalDeviceExist( macAddress ) )
                 {
                     personalDevice = VerifyDeviceInfo( macAddress );
                 }
@@ -160,29 +239,11 @@ namespace RockWeb.Blocks.Security
                 // and then deleted by the user/browser/software, then they'll never get the cookie again and won't automatically get linked by RockPage.
                 CreateDeviceCookie( macAddress );
 
-                // See if user is logged and link the alias to the device.
+                // See if user is logged in and link the alias to the device.
                 if ( CurrentPerson != null )
                 {
                     Prefill( CurrentPerson );
                     RockPage.LinkPersonAliasToDevice( ( int ) CurrentPersonAliasId, macAddress );
-                    hfPersonAliasId.Value = CurrentPersonAliasId.ToString();
-                }
-                else if ( isAnExistingDevice )
-                {
-                    // if the user is not logged in but we have the device lets try to get a person
-                    if ( personalDevice.PersonAliasId != null )
-                    {
-                        // Get the person
-                        PersonService personService = new PersonService( rockContext );
-                        Person person = personService.Get( personalDevice.PersonAlias.PersonId );
-
-                        if ( person != null )
-                        {
-                            Prefill( person );
-                            RockPage.LinkPersonAliasToDevice( ( int ) personalDevice.PersonAliasId, macAddress );
-                            hfPersonAliasId.Value = personalDevice.PersonAliasId.ToString();
-                        }
-                    }
                 }
 
                 // Direct connect if no controls are visible
@@ -399,10 +460,10 @@ namespace RockWeb.Blocks.Security
             // We know there is a device with the stored MAC
             // If we have an alias ID then we have all data needed and can redirect the user to frontporch
             // also if hfPersonAliasId has a value at this time it has already been linked to the device.
-            if ( hfPersonAliasId.Value != string.Empty)
+            if ( CurrentPerson != null )
             {
                 UpdatePersonInfo();
-                Response.Redirect( CreateRedirectUrl( int.Parse( hfPersonAliasId.Value ) ) );
+                Response.Redirect( CreateRedirectUrl( CurrentPersonAliasId ) );
                 return;
             }
 
@@ -491,11 +552,18 @@ namespace RockWeb.Blocks.Security
         {
             int mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
 
+            var recordTypeValue = DefinedValueCache.Get( GetAttributeValue( "NewPersonRecordType" ).AsGuid() ) ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() );
+            var recordStatusValue = DefinedValueCache.Get( GetAttributeValue( "NewPersonRecordStatus" ).AsGuid() ) ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+            var connectionStatusValue = DefinedValueCache.Get( GetAttributeValue( "NewPersonConnectionStatus" ).AsGuid() ) ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() );
+            
             var person = new Person
             {
                 FirstName = tbFirstName.Text,
                 LastName = tbLastName.Text,
-                Email = tbEmail.Text
+                Email = tbEmail.Text,
+                RecordTypeValueId = recordTypeValue != null ? recordTypeValue.Id : ( int? ) null,
+                RecordStatusValueId = recordStatusValue != null ? recordStatusValue.Id : ( int? ) null,
+                ConnectionStatusValueId = connectionStatusValue != null ? connectionStatusValue.Id : ( int? ) null
             };
 
             if ( tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters().IsNotNullOrWhiteSpace() )
@@ -569,21 +637,19 @@ namespace RockWeb.Blocks.Security
         }
 
         /// <summary>
-        /// Updates the person email and mobile phone number with the entered values if they are different
+        /// Updates the CurrentPerson email and mobile phone number with the entered values if they are different.
+        /// Does nothing if there is no CurrentPerson
         /// </summary>
         private void UpdatePersonInfo()
         {
+            if ( CurrentPerson == null )
+            {
+                return;
+            }
+
             using ( RockContext rockContext = new RockContext() )
             {
-                int? personId = CurrentPersonId ?? new PersonAliasService( rockContext ).GetPersonId( int.Parse( hfPersonAliasId.Value ) );
-
-                // If we can't get a person ID then just return
-                if( personId == null )
-                {
-                    return;
-                }
-
-                Person person = new PersonService( rockContext ).Get( ( int ) personId );
+                Person person = new PersonService( rockContext ).Get( ( int ) CurrentPersonId );
                 person.Email = tbEmail.Text;
 
                 int mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;

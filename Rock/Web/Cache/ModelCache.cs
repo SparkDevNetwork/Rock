@@ -365,6 +365,25 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Loads the attributes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        [Obsolete( "No longer needed on Cached items. The Attributes will get loaded automatically." )]
+        public void LoadAttributes( RockContext rockContext )
+        {
+            ReloadAttributeValues();
+        }
+
+        /// <summary>
+        /// Loads the attributes.
+        /// </summary>
+        [Obsolete( "No longer needed on Cached items. The Attributes will get loaded automatically." )]
+        public void LoadAttributes()
+        {
+            ReloadAttributeValues();
+        }
+
         #endregion
 
         #region ILiquidizable Implementation
@@ -484,7 +503,8 @@ namespace Rock.Web.Cache
 
             if ( Attributes == null )
             {
-                this.LoadAttributes();
+                // shouldn't happen
+                return false;
             }
 
             if ( attributeKey.EndsWith( "_unformatted" ) )

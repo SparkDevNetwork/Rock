@@ -33,7 +33,7 @@ namespace Rock.Field.Types
     /// Stored as either a single DefinedValue.Guid or a comma-delimited list of DefinedValue.Guids (if AllowMultiple).
     /// </summary>
     [Serializable]
-    public class DefinedValueFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType
+    public class DefinedValueFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType, ICachedEntitiesFieldType
     {
         #region Configuration
 
@@ -318,6 +318,8 @@ namespace Rock.Field.Types
             return base.SortValue( parentControl, value, configurationValues );
         }
 
+
+
         #endregion
 
         #region Edit Control
@@ -595,7 +597,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return values.Select( v => "'" + v + "'" ).ToList().AsDelimited( " or " );
+            return AddQuotes( values.ToList().AsDelimited( "' OR '" ) );
         }
 
         /// <summary>
@@ -830,6 +832,32 @@ namespace Rock.Field.Types
             return null;
         }
 
+        #endregion
+
+        #region ICachedEntitiesFieldType Members
+        /// <summary>
+        /// Gets the cached defined values.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public List<IEntityCache> GetCachedEntities( string value )
+        {
+            var definedValues = new List<IEntityCache>();
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
+                {
+                    var definedValue = DefinedValueCache.Get( guid );
+                    if ( definedValue != null )
+                    {
+                        definedValues.Add( definedValue );
+                    }
+                }
+            }
+
+            return definedValues;
+        }
         #endregion
     }
 }

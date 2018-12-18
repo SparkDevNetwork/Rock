@@ -405,20 +405,54 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null, string labelText = null, string helpText = null, string warningText = null )
         {
-            if ( labelText == null )
-            {
-                labelText = Name;
-            }
+            return AddControl( controls, value, validationGroup, setValue, setId, required, labelText, helpText, warningText, null );
+        }
 
-            if ( helpText == null )
+        /// <summary>
+        /// Adds the control.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="validationGroup">The validation group.</param>
+        /// <param name="setValue">if set to <c>true</c> [set value].</param>
+        /// <param name="setId">if set to <c>true</c> [set identifier].</param>
+        /// <param name="required">The required.</param>
+        /// <param name="labelText">The label text.</param>
+        /// <param name="helpText">The help text.</param>
+        /// <param name="warningText">The warning text.</param>
+        /// <param name="attributeControlId">The attribute control identifier.</param>
+        /// <returns></returns>
+        public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required, string labelText, string helpText, string warningText, string attributeControlId )
+        {
+            AttributeControlOptions attributeControlOptions = new AttributeControlOptions
             {
-                helpText = Description;
-            }
+                Value = value,
+                ValidationGroup = validationGroup,
+                SetValue = setValue,
+                SetId = setId,
+                Required = required,
+                LabelText = labelText ?? Name,
+                HelpText = helpText ?? Description,
+                WarningText = warningText,
+                AttributeControlId = attributeControlId ?? $"attribute_field_{Id}"
+            };
 
-            var attributeControl = FieldType.Field.EditControl( QualifierValues, setId ? $"attribute_field_{Id}" : string.Empty );
+            return AddControl( controls, attributeControlOptions );
+        }
+
+
+        /// <summary>
+        /// Adds the control.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="options">The options.</param>
+        /// <returns></returns>
+        public Control AddControl( ControlCollection controls, AttributeControlOptions options )
+        {
+            var attributeControl = FieldType.Field.EditControl( QualifierValues, options.SetId ? options.AttributeControlId : string.Empty );
             if ( attributeControl == null ) return null;
 
-            if ( setId )
+            if ( options.SetId )
             {
                 attributeControl.ClientIDMode = ClientIDMode.AutoID;
             }
@@ -429,11 +463,11 @@ namespace Rock.Web.Cache
             
             if ( rockControl != null )
             {
-                rockControl.Label = labelText;
-                rockControl.Help = helpText;
-                rockControl.Warning = warningText;
-                rockControl.Required = required ?? IsRequired;
-                rockControl.ValidationGroup = validationGroup;
+                rockControl.Label = options.LabelText;
+                rockControl.Help = options.HelpText;
+                rockControl.Warning = options.WarningText;
+                rockControl.Required = options.Required ?? IsRequired;
+                rockControl.ValidationGroup = options.ValidationGroup;
 
                 controls.Add( attributeControl );
             }
@@ -441,13 +475,13 @@ namespace Rock.Web.Cache
             {
                 if ( controlHasRequired != null )
                 {
-                    controlHasRequired.Required = required ?? IsRequired;
-                    controlHasRequired.ValidationGroup = validationGroup;
+                    controlHasRequired.Required = options.Required ?? IsRequired;
+                    controlHasRequired.ValidationGroup = options.ValidationGroup;
                 }
 
-                bool renderLabel = !string.IsNullOrEmpty( labelText );
-                bool renderHelp = !string.IsNullOrWhiteSpace( helpText );
-                bool renderWarning = !string.IsNullOrWhiteSpace( warningText );
+                bool renderLabel = !string.IsNullOrEmpty( options.LabelText );
+                bool renderHelp = !string.IsNullOrWhiteSpace( options.HelpText );
+                bool renderWarning = !string.IsNullOrWhiteSpace( options.WarningText );
 
                 if ( renderLabel || renderHelp || renderWarning )
                 {
@@ -472,7 +506,7 @@ namespace Rock.Web.Cache
                         {
                             ID = $"_label_{Id}",
                             ClientIDMode = ClientIDMode.AutoID,
-                            Text = labelText,
+                            Text = options.LabelText,
                             CssClass = "control-label",
                             AssociatedControlID = attributeControl.ID
                         };
@@ -485,7 +519,7 @@ namespace Rock.Web.Cache
                         {
                             ID = $"_helpBlock_{Id}",
                             ClientIDMode = ClientIDMode.AutoID,
-                            Text = helpText
+                            Text = options.HelpText
                         };
                         div.Controls.Add( helpBlock );
                     }
@@ -496,7 +530,7 @@ namespace Rock.Web.Cache
                         {
                             ID = $"_warningBlock_{Id}",
                             ClientIDMode = ClientIDMode.AutoID,
-                            Text = warningText
+                            Text = options.WarningText
                         };
                         div.Controls.Add( warningBlock );
                     }
@@ -509,9 +543,9 @@ namespace Rock.Web.Cache
                 }
             }
 
-            if ( setValue )
+            if ( options.SetValue )
             {
-                FieldType.Field.SetEditValue( attributeControl, QualifierValues, value );
+                FieldType.Field.SetEditValue( attributeControl, QualifierValues, options.Value );
             }
 
             return attributeControl;
@@ -691,6 +725,85 @@ namespace Rock.Web.Cache
         #endregion
     }
 
+    /// <summary>
+    /// Defined options that be can used when calling AddControl
+    /// </summary>
+    public class AttributeControlOptions
+    {
+
+        /// <summary>
+        /// The value that should be set to the control after it is created.
+        /// </summary>
+        /// <value>
+        /// The value.
+        /// </value>
+        public string Value { get; set; }
+
+        /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup { get; set; }
+
+        /// <summary>
+        /// Apply or not to apply the value provided in Value
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [set value]; otherwise, <c>false</c>.
+        /// </value>
+        public bool SetValue { get; set; }
+
+        /// <summary>
+        /// Set the control ID or not. This must be true in order to use the value in AttributeControlId
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [set identifier]; otherwise, <c>false</c>.
+        /// </value>
+        public bool SetId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required.
+        /// </summary>
+        /// <value>
+        /// The required.
+        /// </value>
+        public bool? Required { get; set; }
+
+        /// <summary>
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        public string LabelText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        public string HelpText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the warning text.
+        /// </summary>
+        /// <value>
+        /// The warning text.
+        /// </value>
+        public string WarningText { get; set; }
+
+        /// <summary>
+        /// If a custom ID is required put it here. If an auto generated one is okay then just set SetId to true and the control will be named attribute_field_{AttributeId}
+        /// </summary>
+        /// <value>
+        /// The attribute control identifier.
+        /// </value>
+        public string AttributeControlId { get; set; }
+
+    }
 }
 
 

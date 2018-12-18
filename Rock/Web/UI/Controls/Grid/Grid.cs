@@ -1391,8 +1391,12 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 int? rowIndex = e.CommandArgument?.ToString().AsIntegerOrNull();
                 if ( rowIndex.HasValue )
                 {
-                    RowEventArgs a = new RowEventArgs( this.Rows[rowIndex.Value] );
-                    OnRowSelected( a );
+                    // The rows can have changed (the filter or data has changed) since the UI have been updated. This avoid an exception if there are now less rows than the selected row index.
+                    if ( this.Rows.Count > rowIndex.Value )
+                    {
+                        RowEventArgs a = new RowEventArgs( this.Rows[rowIndex.Value] );
+                        OnRowSelected( a );
+                    }
                 }
             }
         }
@@ -1735,11 +1739,10 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             {
                 // Columns to export with their column index as the key
                 var gridColumns = new Dictionary<int, DataControlField>();
-
-                for ( int i = 0; i < this.Columns.Count; i++ )
+                for ( int i = 0; i < this.CreatedColumns.Count; i++ )
                 {
-                    var dataField = this.Columns[i];
-                    var rockField = this.Columns[i] as IRockGridField;
+                    var dataField = this.CreatedColumns[i];
+                    var rockField = this.CreatedColumns[i] as IRockGridField;
                     if ( rockField != null &&
                         (
                             rockField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude ||
@@ -1900,6 +1903,18 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                     }
                 }
 
+                
+
+                if ( CustomColumns != null && CustomColumns.Any() )
+                {
+                    foreach ( var columnConfig in CustomColumns )
+                    {
+                        var column = columnConfig.GetGridColumn();
+                        lavaFields.Add( column );
+                        visibleFields.Add( fieldOrder++, column );
+                    }
+                }
+
                 var oType = GetDataSourceObjectType();
 
                 // get all properties of the objects in the grid
@@ -1919,7 +1934,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 {
                     // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
                     var getMethod = prop.GetGetMethod();
-                    if ( getMethod.IsVirtual && !getMethod.IsFinal && prop.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() == 0 )
+                    if ( getMethod == null || ( getMethod.IsVirtual && !getMethod.IsFinal && prop.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() == 0 ) )
                     {
                         continue;
                     }
@@ -1937,9 +1952,20 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
                 // Grid column headings
                 var boundPropNames = new List<string>();
-                foreach ( DataControlField dataField in visibleFields.OrderBy( f => f.Key ).Select( f => f.Value ) )
+
+                // Array provides slight performance improvement here over a list
+                var orderedVisibleFields = visibleFields.OrderBy( f => f.Key ).Select( f => f.Value ).ToArray();
+                for (int i = 0; i < orderedVisibleFields.Count(); i++ )
                 {
-                    worksheet.Cells[rowCounter, columnCounter].Value = dataField.HeaderText;
+                    DataControlField dataField = orderedVisibleFields[i];
+                    if (dataField.HeaderText.IsNullOrWhiteSpace())
+                    {
+                        dataField.HeaderText = string.Format( "Column {0}", i );
+                    }
+                    else
+                    {
+                        worksheet.Cells[rowCounter, columnCounter].Value = dataField.HeaderText;
+                    }
 
                     var boundField = dataField as BoundField;
                     if ( boundField != null )
@@ -2116,6 +2142,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                                 }
                                 mergeValues.Add( dataFieldItem.Key, dataFieldValue );
                             }
+                            mergeValues.Add( "Row", item );
 
                             string resolvedValue = lavaField.LavaTemplate.ResolveMergeFields( mergeValues );
                             resolvedValue = resolvedValue.Replace( "~~/", themeRoot ).Replace( "~/", appRoot ).ReverseCurrencyFormatting().ToString();
@@ -2132,7 +2159,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                         }
                     }
 
-                    foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
+                foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
                     {
                         columnCounter++;
                         object propValue = prop.GetValue( item, null );
@@ -2423,7 +2450,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 {
                     // limit to non-virtual methods to prevent lazy loading issues
                     var getMethod = property.GetGetMethod();
-                    if ( !getMethod.IsVirtual || getMethod.IsFinal || ( property.GetCustomAttribute<PreviewableAttribute>() != null ) )
+                    if ( ( getMethod != null && ( !getMethod.IsVirtual || getMethod.IsFinal ) ) || ( property.GetCustomAttribute<PreviewableAttribute>() != null ) )
                     {
                         if ( property.Name != "Id" )
                         {
@@ -3182,9 +3209,9 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 service.Add( entitySet );
                 rockContext.SaveChanges();
                 entitySetItems.ForEach( a =>
-                 {
-                     a.EntitySetId = entitySet.Id;
-                 } );
+                {
+                    a.EntitySetId = entitySet.Id;
+                } );
 
                 rockContext.BulkInsert( entitySetItems );
 

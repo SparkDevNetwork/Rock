@@ -46,6 +46,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32" /> representing the Id of the AttendanceOccurrence that the attendance is for.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int OccurrenceId { get; set; }
 
         /// <summary>

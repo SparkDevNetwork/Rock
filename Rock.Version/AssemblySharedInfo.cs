@@ -1,5 +1,5 @@
-﻿//36
-// ^^^ This number above is the build number used by the T4 template responsible for generating this file.
+﻿//2
+// ^^^ This number above is the build number used by the T4 template responsible for generating this file. 
 // Do Not Remove!
 //
 // <copyright>
@@ -42,13 +42,13 @@ using System.Reflection;
 // The AssemblyVersion number should change only when we are
 // making a breaking change and need the runtime binding to fail if it does not
 // match the correct version exactly.
-[assembly: AssemblyVersion( "1.8.3.36" )]
+[assembly: AssemblyVersion( "1.8.5.2" )]
 
-[assembly: AssemblyFileVersion( "1.8.3.36" )]
+[assembly: AssemblyFileVersion( "1.8.5.2" )]
 
 // This is the "official" product name that will be shown to people.
 // It's shown in the SystemInfo details and perhaps the RockUpdate page.
-[assembly: AssemblyInformationalVersion( "Rock McKinley 8.3" )]
+[assembly: AssemblyInformationalVersion( "Rock McKinley 8.5" )]
 
 
 

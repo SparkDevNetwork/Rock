@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
+using System.Data.Entity;
 
 namespace Rock.Field.Types
 {
@@ -51,7 +52,7 @@ namespace Rock.Field.Types
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var financialGateway = new FinancialGatewayService( rockContext ).Get( financialGatewayGuid.Value );
+                    var financialGateway = new FinancialGatewayService( rockContext ).GetNoTracking( financialGatewayGuid.Value );
                     if ( financialGateway != null )
                     {
                         formattedValue = financialGateway.Name;
@@ -97,11 +98,11 @@ namespace Rock.Field.Types
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        itemGuid = new FinancialGatewayService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        itemGuid = new FinancialGatewayService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
 
-                return itemGuid?.ToString();
+                return itemGuid?.ToString() ?? string.Empty;
             }
 
             return null;

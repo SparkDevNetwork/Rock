@@ -487,13 +487,28 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="CheckIn\CheckInEditFamilyBlock.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CheckIn\CheckInSearchBlock.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CheckIn\Registration\FamilyRegistrationState.cs" />
     <Compile Include="Data\NoAttributeFilterExpression.cs" />
+    <Compile Include="Field\ICachedEntitiesFieldType.cs" />
     <Compile Include="Jobs\NoRetryAggregateException.cs" />
     <Compile Include="Jobs\NoRetryException.cs" />
+    <Compile Include="Jobs\PostV84DataMigrations.cs" />
+    <Compile Include="Lava\Shortcodes\Scripturize.cs" />
+    <Compile Include="Lava\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
     <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
+    <Compile Include="Plugin\HotFixes\059_MigrationRollupsForV8_5_2.cs" />
+    <Compile Include="Plugin\HotFixes\057_MigrationRollupsForV8_5.cs" />
+    <Compile Include="Plugin\HotFixes\056_MigrationRollupsForV8_4.cs" />
     <Compile Include="Plugin\HotFixes\055_MigrationRollupsForV8_3.cs" />
     <Compile Include="Plugin\HotFixes\054_MigrationRollupsForV8_2.cs" />
     <Compile Include="Plugin\HotFixes\053_DuplicateDataIntegrityReports.cs" />
+    <Compile Include="Plugin\HotFixes\058_CheckinRegistration.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -506,6 +521,10 @@
     <Compile Include="Reporting\DataFilter\Person\InteractionsFilter.cs" />
     <Compile Include="Reporting\DataSelect\Person\InteractionCountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\InteractionDateSelect.cs" />
+    <Compile Include="SystemGuid\SystemSetting.cs" />
+    <Compile Include="SystemKey\GroupTypeAttributeKey.cs" />
+    <Compile Include="Utility\RockColor.cs" />
+    <Compile Include="Utility\Scripturize.cs" />
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentChannelCache.cs" />
@@ -1736,8 +1755,10 @@
     <Compile Include="Web\UI\Controls\Pickers\LavaCommandsPicker.cs" />
     <Compile Include="Web\UI\Controls\BackgroundCheckDocument.cs" />
     <Compile Include="Web\UI\Controls\SSNBox.cs" />
+    <Compile Include="Web\UI\Controls\ButtonGroup.cs" />
     <Compile Include="Web\UI\ICustomGridColumns.cs" />
     <Compile Include="Web\UI\ICustomGridOptions.cs" />
+    <Compile Include="Web\UI\IIdleRedirectBlock.cs" />
     <Compile Include="Web\UI\RockHiddenFieldPageStatePersister.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaBoundField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuesPickerEnhanced.cs" />
@@ -2130,6 +2151,7 @@
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Web\Utilities\RockUpdateHelper.cs" />
     <Compile Include="Web\Utilities\WebControlHelper.cs" />
+    <Compile Include="Web\BrowserClient.cs" />
     <Compile Include="Workflow\ActionCategoryAttribute.cs" />
     <Compile Include="Workflow\ActionComponent.cs" />
     <Compile Include="Workflow\ActionContainer.cs" />
@@ -2320,6 +2342,21 @@
     </Content>
     <Content Include="Plugin\HotFixes\052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive.sql">
       <DependentUpon>052_MigrationRollupsForV8_1.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\056_MigrationRollupsForV8_4_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>056_MigrationRollupsForV8_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\057_MigrationRollupsForV8_5_AddCheck-inLabelToInstallIconFont.sql">
+      <DependentUpon>057_MigrationRollupsForV8_5.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\057_MigrationRollupsForV8_5_spCheckin_BadgeAttendance.sql">
+      <DependentUpon>057_MigrationRollupsForV8_5.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\057_MigrationRollupsForV8_5_spCrm_FamilyAnalyticsFirstVisitsAttributeUpdate.sql">
+      <DependentUpon>057_MigrationRollupsForV8_5.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\059_MigrationRollupsForV8_5_2_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>059_MigrationRollupsForV8_5_2.cs</DependentUpon>
     </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />

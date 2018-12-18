@@ -52,10 +52,13 @@ namespace Rock.Field.Types
                 Guid? guid = value.AsGuidOrNull();
                 if ( guid.HasValue )
                 {
-                    var workflowTypeName = new WorkflowTypeService( new RockContext() ).GetSelect( guid.Value, a => a.Name );
-                    if ( workflowTypeName != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        formattedValue = workflowTypeName;
+                        var workflowTypeName = new WorkflowTypeService( rockContext ).GetSelect( guid.Value, a => a.Name );
+                        if ( workflowTypeName != null )
+                        {
+                            formattedValue = workflowTypeName;
+                        }
                     }
                 }
             }
@@ -102,7 +105,7 @@ namespace Rock.Field.Types
                     }
                 }
 
-                return itemGuid?.ToString();
+                return itemGuid?.ToString() ?? string.Empty;
             }
 
             return null;

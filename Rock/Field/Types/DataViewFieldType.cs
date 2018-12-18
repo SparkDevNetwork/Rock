@@ -137,12 +137,15 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var service = new DataViewService( new RockContext() );
-                var dataview = service.Get( guid.Value );
-
-                if ( dataview != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = dataview.Name;
+                    var service = new DataViewService( rockContext );
+                    var dataview = service.GetNoTracking( guid.Value );
+
+                    if ( dataview != null )
+                    {
+                        formattedValue = dataview.Name;
+                    }
                 }
             }
 
@@ -201,16 +204,21 @@ namespace Rock.Field.Types
                 int? id = picker.SelectedValue.AsIntegerOrNull();
                 if ( id.HasValue )
                 {
-                    var dataview = new DataViewService( new RockContext() ).Get( id.Value );
-
-                    if ( dataview != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        return dataview.Guid.ToString();
+                        var dataview = new DataViewService( rockContext ).GetNoTracking( id.Value );
+
+                        if ( dataview != null )
+                        {
+                            return dataview.Guid.ToString();
+                        }
                     }
                 }
+
+                return string.Empty;
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>

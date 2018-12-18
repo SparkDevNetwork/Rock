@@ -975,6 +975,17 @@ namespace RockWeb.Blocks.Groups
                 newGroup.IsSystem = false;
                 newGroup.Name = group.Name + " - Copy";
 
+                if ( group.ScheduleId.HasValue && group.Schedule.ScheduleType != ScheduleType.Named )
+                {
+                    newGroup.Schedule = new Schedule();
+                    // NOTE: Schedule Name should be set to string.Empty to indicate that it is a Custom or Weekly schedule and not a "Named" schedule
+                    newGroup.Schedule.Name = string.Empty;
+                    newGroup.Schedule.iCalendarContent = group.Schedule.iCalendarContent;
+                    newGroup.Schedule.WeeklyDayOfWeek = group.Schedule.WeeklyDayOfWeek;
+                    newGroup.Schedule.WeeklyTimeOfDay = group.Schedule.WeeklyTimeOfDay;
+              
+                }
+
                 var auths = authService.GetByGroup( group.Id );
                 rockContext.WrapTransaction( () =>
                 {
@@ -1211,6 +1222,12 @@ namespace RockWeb.Blocks.Groups
             if ( !groupId.Equals( 0 ) )
             {
                 group = GetGroup( groupId, rockContext );
+                if ( group == null )
+                {
+                    pnlDetails.Visible = false;
+                    nbNotFoundOrArchived.Visible = true;
+                    return;
+                }
             }
 
             if ( group == null )

@@ -262,6 +262,11 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        /// <summary>
+        /// Handles the SaveClick event of the mdRunNcoa control. This is the Start NCOA dialog. Save = Start
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdRunNcoa_SaveClick( object sender, EventArgs e)
         {
             Ncoa ncoa = new Ncoa();
@@ -438,7 +443,11 @@ namespace RockWeb.Blocks.Administration
                 nbNcoaRecurrenceInterval.Text = _sparkDataConfig.NcoaSettings.RecurrenceInterval.ToStringSafe();
                 cbNcoaAcceptTerms.Checked = _sparkDataConfig.NcoaSettings.IsAcceptedTerms;
                 cbNcoaAckPrice.Checked = _sparkDataConfig.NcoaSettings.IsAckPrice;
-                dvpNcoaInactiveRecordReason.SetValue( _sparkDataConfig.NcoaSettings.InactiveRecordReasonId );
+                if ( _sparkDataConfig.NcoaSettings.InactiveRecordReasonId.HasValue )
+                {
+                    dvpNcoaInactiveRecordReason.SetValue( _sparkDataConfig.NcoaSettings.InactiveRecordReasonId.Value );
+                }
+
                 nbNcoaCreditCard.Visible = false;
 
                 if ( _sparkDataConfig.NcoaSettings.CurrentReportStatus == null )

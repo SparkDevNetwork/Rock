@@ -345,6 +345,14 @@ namespace Rock.Attribute
                 return;
             }
 
+            if ( entity is Rock.Web.Cache.IEntityCache )
+            {
+                // Don't let this LoadAttributes get called on a IEntityCache (or ModelCache<,>)
+                // It'll just end up removing the attributes since this LoadAttributes is looking up Attributes based on entity.GetType(), which wouldn't be the entity type of the underlying model
+                // CacheObjects manage attributes themselves
+                return;
+            }
+
             Type entityType = entity.GetType();
             if ( entityType.IsDynamicProxyType() )
             {
@@ -1187,13 +1195,8 @@ namespace Rock.Attribute
                     Control control = parentControl.FindControl( string.Format( "attribute_field_{0}", attribute.Value.Id ) );
                     if ( control != null )
                     {
-                        var value = new AttributeValueCache();
-
-                        // Creating a brand new AttributeValue and setting its Value property.
-                        // The Value prop's setter then queries the AttributeCache passing in the AttributeId, which is 0
-                        // The AttributeCache.Read method returns null
-                        value.Value = attribute.Value.FieldType.Field.GetEditValue( control, attribute.Value.QualifierValues );
-                        item.AttributeValues[attribute.Key] = value;
+                        var editValue = attribute.Value.FieldType.Field.GetEditValue( control, attribute.Value.QualifierValues );
+                        item.AttributeValues[attribute.Key] = new AttributeValueCache { AttributeId = attribute.Value.Id, EntityId = item.Id, Value = editValue };
                     }
                 }
             }

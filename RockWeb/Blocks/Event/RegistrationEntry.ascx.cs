@@ -2410,7 +2410,7 @@ namespace RockWeb.Blocks.Event
                     // Remove/delete any registrant fees that are no longer in UI with quantity 
                     foreach ( var dbFee in registrant.Fees.ToList() )
                     {
-                        if ( !registrantInfo.FeeValues.Keys.Contains( dbFee.RegistrationTemplateFeeId ) ||
+                        if ( !registrantInfo.FeeValues.ContainsKey( dbFee.RegistrationTemplateFeeId ) ||
                             registrantInfo.FeeValues[dbFee.RegistrationTemplateFeeId] == null ||
                             !registrantInfo.FeeValues[dbFee.RegistrationTemplateFeeId]
                                 .Any( f =>
@@ -2647,7 +2647,7 @@ namespace RockWeb.Blocks.Event
                     familyId = RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask ?
                         multipleFamilyGroupIds[familyGuid] :
                         singleFamilyId.Value;
-                    PersonService.AddPersonToFamily( person, true, multipleFamilyGroupIds[familyGuid], familyRoleId, rockContext );
+                    PersonService.AddPersonToFamily( person, true, familyId.Value, familyRoleId, rockContext );
                 }
                 else
                 {
@@ -4390,11 +4390,13 @@ namespace RockWeb.Blocks.Event
             if ( field.AttributeId.HasValue )
             {
                 var attribute = AttributeCache.Get( field.AttributeId.Value );
+                string value = setValue && fieldValue != null ? fieldValue.ToString() : null;
 
-                string value = string.Empty;
-                if ( setValue && fieldValue != null )
+                if ( ( setValue && value == null ) || ( value.IsNullOrWhiteSpace() && field.IsRequired == true ) )
                 {
-                    value = fieldValue.ToString();
+                    // If the value was not set already, or if it is required and currently empty then use the default
+                    // Intentionally leaving the possibility of saving an empty string as the value for non-required fields.
+                    value = attribute.DefaultValue;
                 }
 
                 string helpText = GetAttributeValue( "ShowFieldDescriptions" ).AsBoolean() ? field.Attribute.Description : string.Empty;

@@ -52,7 +52,8 @@ namespace Rock.Web.UI
         private PageCache _pageCache = null;
 
         private string _clientType = null;
-
+        private BrowserInfo _browserInfo = null;
+        private BrowserClient _browserClient = null;
 
         private PageStatePersister _PageStatePersister = null;
         #endregion
@@ -417,6 +418,24 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets the client information.
+        /// </summary>
+        /// <value>
+        /// The client information.
+        /// </value>
+        public BrowserInfo BrowserInfo
+        {
+            get
+            {
+                if ( _browserInfo == null )
+                {
+                    _browserInfo = new BrowserInfo( Request.UserAgent ?? "" );
+                }
+                return _browserInfo;
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is mobile request.
         /// </summary>
         /// <value>
@@ -427,6 +446,27 @@ namespace Rock.Web.UI
             get
             {
                 return this.ClientType == "Mobile";
+            }
+        }
+
+        /// <summary>
+        /// Gets a single object that contains all of the information about the web browser.
+        /// </summary>
+        /// <value>
+        /// The browser client.
+        /// </value>
+        public BrowserClient BrowserClient
+        {
+            get
+            {
+                if ( _browserClient == null )
+                {
+                    _browserClient = new BrowserClient();
+                    _browserClient.BrowserInfo = BrowserInfo;
+                    _browserClient.IsMobile = IsMobileRequest;
+                    _browserClient.ClientType = ClientType;
+                }
+                return _browserClient;
             }
         }
 
@@ -1853,6 +1893,22 @@ Sys.Application.add_load(function () {
                 if ( secondaryBlock != caller )
                 {
                     secondaryBlock.SetVisible( !hidden );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Disables the idle redirect blocks if disable = true, or re-enables them if disable = false
+        /// </summary>
+        /// <param name="caller">The caller.</param>
+        /// <param name="disable">if set to <c>true</c> [disable].</param>
+        public void DisableIdleRedirectBlocks( RockBlock caller, bool disable )
+        {
+            foreach (  IIdleRedirectBlock idleRedirectBlock in this.RockBlocks.Where( a => a is IIdleRedirectBlock ) )
+            {
+                if ( idleRedirectBlock != caller )
+                {
+                    idleRedirectBlock.Disable( disable );
                 }
             }
         }

@@ -266,6 +266,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the edit button tool tip.
+        /// </summary>
+        /// <value>
+        /// The edit button tool tip.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The title attribute for the edit button." )
+        ]
+        public string ButtonToolTip
+        {
+            get { return ViewState["ButtonToolTip"] as string ?? string.Empty; }
+            set { ViewState["ButtonToolTip"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the CSS class for the edit button.
         /// </summary>
         /// <value>
@@ -591,6 +609,7 @@ namespace Rock.Web.UI.Controls
             _lbShowModal.ID = this.ID + "_lbShowModal";
             _lbShowModal.CssClass = this.ButtonCssClass;
             _lbShowModal.Text = this.ButtonText;
+            _lbShowModal.ToolTip = this.ButtonToolTip;
             _lbShowModal.Click += _lbShowModal_Click;
             _lbShowModal.CausesValidation = false;
             Controls.Add( _lbShowModal );
@@ -607,6 +626,7 @@ namespace Rock.Web.UI.Controls
             _lbUploadImage.ID = this.ID + "_lbUploadImage";
             _lbUploadImage.CssClass = this.ButtonCssClass;
             _lbUploadImage.Text = this.ButtonText;
+            _lbUploadImage.ToolTip = this.ButtonToolTip;
             _lbUploadImage.CausesValidation = false;
             Controls.Add( _lbUploadImage );
 

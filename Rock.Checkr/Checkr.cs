@@ -478,7 +478,8 @@ namespace Rock.Checkr
 
             if ( pkgTypeDefinedValue.Attributes == null )
             {
-                pkgTypeDefinedValue.LoadAttributes( rockContext );
+                // shouldn't happen since pkgTypeDefinedValue is a ModelCache<,> type 
+                return false;
             }
 
             packageName = pkgTypeDefinedValue.GetAttributeValue( "PMMPackageName" );

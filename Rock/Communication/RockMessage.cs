@@ -243,7 +243,7 @@ namespace Rock.Communication
         }
 
         /// <summary>
-        /// Sends the specified error message.
+        /// Sends the specified error message. Ensure you check for error messages and the boolean value to handle error causes where a communication may not be sent.
         /// </summary>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>

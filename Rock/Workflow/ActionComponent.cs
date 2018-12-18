@@ -177,7 +177,8 @@ namespace Rock.Workflow
             {
                 if ( actionType.Attributes == null )
                 {
-                    actionType.LoadAttributes();
+                    // shouldn't happen since actionType is a ModelCache<,> type 
+                    return string.Empty;
                 }
 
                 var values = actionType.AttributeValues;

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Rock;
@@ -335,7 +336,7 @@ namespace Rock.Utility
                     }
                 }
 
-                ProcessNcoaResults( sparkDataConfig );
+                ProcessNcoaResults( ncoaReturnRecords, sparkDataConfig );
 
                 sparkDataApi.NcoaCompleteReport( sparkDataConfig.SparkDataApiKey, sparkDataConfig.NcoaSettings.FileName, sparkDataConfig.NcoaSettings.CurrentReportExportKey );
 
@@ -347,17 +348,19 @@ namespace Rock.Utility
                 sparkDataConfig.NcoaSettings.FileName = null;
                 SaveSettings( sparkDataConfig );
             }
-            catch(Exception ex)
+            catch ( Exception ex )
             {
                 throw new NoRetryAggregateException( "Failed to process NCOA export.", ex );
             }
         }
 
         /// <summary>
-        /// Processes the NCOA History results.
+        /// Processes the NCOA results.
         /// </summary>
+        /// <param name="ncoaReturnRecords">The NCOA return records.</param>
         /// <param name="sparkDataConfig">The spark data configuration.</param>
-        public void ProcessNcoaResults( SparkDataConfig sparkDataConfig = null )
+        /// <exception cref="NoRetryException">Inactive Record Reason value is empty.</exception>
+        private void ProcessNcoaResults( List<NcoaReturnRecord> ncoaReturnRecords, SparkDataConfig sparkDataConfig = null )
         {
             if ( sparkDataConfig == null )
             {
@@ -381,7 +384,7 @@ namespace Rock.Utility
             // Process the '48 Month Move' NCOA Types
             var mark48MonthAsPrevious = SystemSettings.GetValue( SystemKey.SystemSetting.NCOA_SET_48_MONTH_AS_PREVIOUS ).AsBoolean();
 
-            ProcessNcoaResults( inactiveReason, markInvalidAsPrevious, mark48MonthAsPrevious, minMoveDistance );
+            ProcessNcoaResults( inactiveReason, markInvalidAsPrevious, mark48MonthAsPrevious, minMoveDistance, ncoaReturnRecords );
         }
 
         #endregion
@@ -462,16 +465,18 @@ namespace Rock.Utility
         /// <param name="markInvalidAsPrevious">If invalid addresses should be marked as previous, set to <c>true</c>.</param>
         /// <param name="mark48MonthAsPrevious">if a 48 month move should be marked as previous, set to <c>true</c>.</param>
         /// <param name="minMoveDistance">The minimum move distance.</param>
-        public void ProcessNcoaResults( DefinedValueCache inactiveReason, bool markInvalidAsPrevious, bool mark48MonthAsPrevious, decimal? minMoveDistance )
+        /// <param name="ncoaReturnRecords">The NCOA return records.</param>
+        private void ProcessNcoaResults( DefinedValueCache inactiveReason, bool markInvalidAsPrevious, bool mark48MonthAsPrevious, decimal? minMoveDistance, List<NcoaReturnRecord> ncoaReturnRecords )
         {
             // Get the ID's for the "Home" and "Previous" family group location types
             int? homeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )?.Id;
             int? previousValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() )?.Id;
+            var campusGeoPoints = GetCampusGeoPoints();
 
             ProcessNcoaResultsInvalidAddress( markInvalidAsPrevious, previousValueId );
             ProcessNcoaResults48MonthMove( mark48MonthAsPrevious, previousValueId );
-            ProcessNcoaResultsFamilyMove( inactiveReason, minMoveDistance, homeValueId, previousValueId );
-            ProcessNcoaResultsIndividualMove( inactiveReason, minMoveDistance, homeValueId, previousValueId );
+            ProcessNcoaResultsFamilyMove( inactiveReason, minMoveDistance, homeValueId, previousValueId, ncoaReturnRecords, campusGeoPoints );
+            ProcessNcoaResultsIndividualMove( inactiveReason, minMoveDistance, homeValueId, previousValueId, ncoaReturnRecords, campusGeoPoints );
         }
 
         /// <summary>
@@ -538,7 +543,14 @@ namespace Rock.Utility
                             ncoaHistory.Processed = Processed.ManualUpdateRequired;
                         }
 
-                        rockContext.SaveChanges();
+                        try
+                        {
+                            rockContext.SaveChanges();
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( new AggregateException( string.Format( "NCOA Failed to set an address as invalid. NcoaHistoryId:'{0}' GroupId: '{1}'", ncoaHistory.Id, ncoaHistory.FamilyId ), ex ) );
+                        }
                     }
                 }
             }
@@ -609,22 +621,126 @@ namespace Rock.Utility
                             ncoaHistory.Processed = Processed.ManualUpdateRequired;
                         }
 
-                        rockContext.SaveChanges();
-
+                        try
+                        {
+                            rockContext.SaveChanges();
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( new AggregateException( string.Format( "NCOA Failed to apply 48 months family move. NcoaHistoryId:'{0}' GroupId: '{1}'", ncoaHistory.Id, ncoaHistory.FamilyId ), ex ) );
+                        }
                     }
                 }
             }
         }
 
         /// <summary>
+        /// Gets the Geo points of all the campuses.
+        /// </summary>
+        /// <returns></returns>
+        private List<DbGeography> GetCampusGeoPoints()
+        {
+            List<DbGeography> campusGeoPoints = new List<DbGeography>();
+            var campusLocations = CampusCache.All( false ).Select( c => c.Location );
+            if ( campusLocations != null )
+            {
+                foreach ( var campusLocation in campusLocations )
+                {
+                    try
+                    {
+                        if ( campusLocation.Longitude != null && campusLocation.Latitude != null )
+                        {
+                            var geo = DbGeography.PointFromText( string.Format( "POINT({0} {1})", campusLocation.Longitude, campusLocation.Latitude ), 4326 );
+                            if ( geo != null )
+                            {
+                                campusGeoPoints.Add( geo );
+                            }
+                        }
+                    }
+                    catch
+                    {
+
+                    }
+                }
+            }
+
+            return campusGeoPoints;
+        }
+
+        /// <summary>
+        /// Checks if the person/family moved away from all campuses
+        /// If minMoveDistance is specified check if the move is more than the min move distance
+        /// If the move distance is more than the min move distance, check the distance between the campuses and updated address.
+        /// </summary>
+        /// <param name="ncoaHistory">The NCOA history.</param>
+        /// <param name="minMoveDistance">The minimum move distance.</param>
+        /// <param name="campusGeoPoints">The Geo points of all the campuses.</param>
+        /// <param name="ncoaReturnRecords">The NCOA return records.</param>
+        /// <returns></returns>
+        private bool IsCloseToCampus( NcoaHistory ncoaHistory, decimal? minMoveDistance, List<DbGeography> campusGeoPoints, List<NcoaReturnRecord> ncoaReturnRecords )
+        {
+            if ( ncoaHistory.MoveDistance.HasValue && minMoveDistance.HasValue &&
+                ncoaHistory.MoveDistance.Value >= minMoveDistance.Value )
+            {
+                if ( campusGeoPoints.Count() == 0 )
+                {
+                    // If unsure rather return the fail safe state
+                    return true;
+                }
+
+                // Barcode is unique per address. We only need the co-ordinates, so we don't care if it is the same entry.
+                var ncoaReturnRecord = ncoaReturnRecords.FirstOrDefault( n => n.Barcode == ncoaHistory.UpdatedBarcode );
+                if ( ncoaReturnRecord == null )
+                {
+                    // If unsure rather return the fail safe state
+                    return true;
+                }
+
+                bool isCloseToCampus = false;
+                if ( ncoaReturnRecord.Longitude != null && ncoaReturnRecord.Latitude != null )
+                {
+                    try
+                    {
+                        var geoPoint = DbGeography.PointFromText( string.Format( "POINT({0} {1})", ncoaReturnRecord.Longitude, ncoaReturnRecord.Latitude ), 4326 );
+                        if ( geoPoint != null )
+                        {
+                            foreach ( var campusGeoPoint in campusGeoPoints )
+                            {
+
+                                var distance = campusGeoPoint.Distance( geoPoint ) ?? 0.0D * 0.00062137505D;
+                                if ( distance < ( double ) minMoveDistance.Value )
+                                {
+                                    isCloseToCampus = true;
+                                    break;
+                                }
+                            }
+
+                            return isCloseToCampus;
+                        }
+                    }
+                    catch
+                    {
+
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Processes the NCOA results: Mark all family move addresses as previous, add the new address as current; and processed.
         /// If minMoveDistance is specified, mark the family as inactive if the family moved further than the specified distance.
+        /// If the move is more than the min move distance, check the distance between the campuses and updated address.
+        /// If the person is further away than the min move distance from all campuses, then only mark the person as inactive. 
         /// </summary>
         /// <param name="inactiveReason">The inactive reason.</param>
         /// <param name="minMoveDistance">The minimum move distance.</param>
         /// <param name="homeValueId">The home value identifier.</param>
         /// <param name="previousValueId">The previous value identifier.</param>
-        private void ProcessNcoaResultsFamilyMove( DefinedValueCache inactiveReason, decimal? minMoveDistance, int? homeValueId, int? previousValueId )
+        /// <param name="ncoaReturnRecords">The NCOA return records.</param>
+        /// <param name="campusGeoPoints">The campus Geo points.</param>
+        private void ProcessNcoaResultsFamilyMove( DefinedValueCache inactiveReason, decimal? minMoveDistance, int? homeValueId, int? previousValueId, List<NcoaReturnRecord> ncoaReturnRecords, List<DbGeography> campusGeoPoints )
         {
             List<int> ncoaIds = null;
             // Process 'Move' NCOA Types (The 'Family' move types will be processed first)
@@ -685,10 +801,10 @@ namespace Rock.Utility
                                     var family = groupService.Get( ncoaHistory.FamilyId );
                                     if ( family != null )
                                     {
+                                        var movedAway = !IsCloseToCampus( ncoaHistory, minMoveDistance, campusGeoPoints, ncoaReturnRecords );
                                         foreach ( var fm in family.Members )
                                         {
-                                            if ( ncoaHistory.MoveDistance.HasValue && minMoveDistance.HasValue &&
-                                                ncoaHistory.MoveDistance.Value >= minMoveDistance.Value )
+                                            if ( movedAway )
                                             {
                                                 History.HistoryChangeList personChanges;
 
@@ -723,7 +839,14 @@ namespace Rock.Utility
                             }
                         }
 
-                        rockContext.SaveChanges();
+                        try
+                        {
+                            rockContext.SaveChanges();
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( new AggregateException( string.Format( "NCOA Failed to apply family move. NcoaHistoryId:'{0}' GroupId: '{1}'", ncoaHistory.Id, ncoaHistory.FamilyId ), ex ) );
+                        }
                     }
                 }
             }
@@ -732,12 +855,16 @@ namespace Rock.Utility
         /// <summary>
         /// Processes the NCOA results: Mark all individual move addresses as previous, add the new address as current; and processed.
         /// If minMoveDistance is specified, mark the individual as inactive if the individual moved further than the specified distance.
+        /// If the move is more than the min move distance, check the distance between the campuses and updated address.
+        /// If the person is further away than the min move distance from all campuses, then only mark the person as inactive. 
         /// </summary>
         /// <param name="inactiveReason">The inactive reason.</param>
         /// <param name="minMoveDistance">The minimum move distance.</param>
         /// <param name="homeValueId">The home value identifier.</param>
         /// <param name="previousValueId">The previous value identifier.</param>
-        private void ProcessNcoaResultsIndividualMove( DefinedValueCache inactiveReason, decimal? minMoveDistance, int? homeValueId, int? previousValueId )
+        /// <param name="ncoaReturnRecords">The NCOA return records.</param>
+        /// <param name="campusGeoPoints">The campus Geo points.</param>
+        private void ProcessNcoaResultsIndividualMove( DefinedValueCache inactiveReason, decimal? minMoveDistance, int? homeValueId, int? previousValueId, List<NcoaReturnRecord> ncoaReturnRecords, List<DbGeography> campusGeoPoints )
         {
             List<int> ncoaIds = null;
             // Process 'Move' NCOA Types (For the remaining Individual move types that weren't updated with the family move)
@@ -755,6 +882,7 @@ namespace Rock.Utility
 
             foreach ( int id in ncoaIds )
             {
+                int personId = 0;
                 using ( var rockContext = new RockContext() )
                 {
                     // Get the NCOA record and make sure it still hasn't been processed
@@ -787,6 +915,7 @@ namespace Rock.Utility
                             {
                                 // If were able to mark their existing address as previous and add a new updated Home address, 
                                 // then set the status to complete (otherwise leave it as needing a manual update).
+                                personId = personAlias.PersonId;
                                 var previousGroupLocation = MarkAsPreviousLocation( ncoaHistory, groupLocationService, previousValueId, changes );
                                 if ( previousGroupLocation != null )
                                 {
@@ -810,8 +939,9 @@ namespace Rock.Utility
                                         // If there were any changes, write to history and check to see if person should be inactivated
                                         if ( changes.Any() )
                                         {
-                                            if ( ncoaHistory.MoveDistance.HasValue && minMoveDistance.HasValue &&
-                                                ncoaHistory.MoveDistance.Value >= minMoveDistance.Value )
+                                            var movedAway = !IsCloseToCampus( ncoaHistory, minMoveDistance, campusGeoPoints, ncoaReturnRecords );
+
+                                            if ( movedAway )
                                             {
                                                 History.HistoryChangeList personChanges;
 
@@ -846,7 +976,15 @@ namespace Rock.Utility
                             }
                         }
 
-                        rockContext.SaveChanges();
+                        try
+                        {
+                            rockContext.SaveChanges();
+                        }
+                        catch ( Exception ex )
+                        {
+                            var personAlias = personAliasService.Get( ncoaHistory.PersonAliasId );
+                            ExceptionLogService.LogException( new AggregateException( string.Format( "NCOA Failed to apply individual move. NcoaHistoryId:'{0}' PersonId: '{1}'", ncoaHistory.Id, personId ), ex ) );
+                        }
                     }
                 }
             }

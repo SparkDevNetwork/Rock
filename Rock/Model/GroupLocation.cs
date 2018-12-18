@@ -203,7 +203,7 @@ namespace Rock.Model
                         locationType = locationType.IsNotNullOrWhiteSpace() ? locationType : "Unknown";
                         History.EvaluateChange( GroupHistoryChanges, $"{locationType} Location", (int?)null, Location, LocationId, rockContext );
                         History.EvaluateChange( GroupHistoryChanges, $"{locationType} Is Mailing", false, IsMailingLocation );
-                        History.EvaluateChange( GroupHistoryChanges, $"{locationType} Is Mapp Location", false, IsMappedLocation );
+                        History.EvaluateChange( GroupHistoryChanges, $"{locationType} Is Map Location", false, IsMappedLocation );
 
                         break;
                     }
@@ -224,7 +224,7 @@ namespace Rock.Model
                         }
 
                         History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Mailing", entry.OriginalValues["IsMailingLocation"].ToStringSafe().AsBoolean(), IsMailingLocation );
-                        History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Mapp Location", entry.OriginalValues["IsMappedLocation"].ToStringSafe().AsBoolean(), IsMappedLocation );
+                        History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Map Location", entry.OriginalValues["IsMappedLocation"].ToStringSafe().AsBoolean(), IsMappedLocation );
 
                         break;
                     }

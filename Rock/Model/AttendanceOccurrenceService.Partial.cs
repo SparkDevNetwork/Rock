@@ -19,9 +19,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Linq;
-
-using Rock.Web.Cache;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -103,10 +102,11 @@ namespace Rock.Model
             Schedule groupSchedule = null;
             if ( group.ScheduleId.HasValue )
             {
-                groupSchedule = group.Schedule ?? new ScheduleService( (RockContext)Context ).Get( group.ScheduleId.Value );
+                groupSchedule = group.Schedule ?? new ScheduleService( ( RockContext ) Context ).Get( group.ScheduleId.Value );
             }
 
-            if ( groupSchedule == null ) return occurrences;
+            if ( groupSchedule == null )
+                return occurrences;
 
             var newOccurrences = new List<AttendanceOccurrence>();
 
@@ -127,11 +127,14 @@ namespace Rock.Model
                     var newOccurrence = new AttendanceOccurrence
                     {
                         OccurrenceDate = occurrence.Period.StartTime.Date.Add( occurrence.Period.StartTime.TimeOfDay ),
-                        GroupId = @group.Id,
-                        ScheduleId = groupSchedule.Id
+                        GroupId = group.Id,
+                        Group = group,
+                        ScheduleId = groupSchedule.Id,
+                        Schedule = groupSchedule
                     };
 
-                    if ( existingDates.Contains( newOccurrence.OccurrenceDate.Date ) ) continue;
+                    if ( existingDates.Contains( newOccurrence.OccurrenceDate.Date ) )
+                        continue;
 
                     newOccurrences.Add( newOccurrence );
                     existingDates.Add( newOccurrence.OccurrenceDate.Date );
@@ -170,8 +173,10 @@ namespace Rock.Model
                             var newOccurrence = new AttendanceOccurrence
                             {
                                 OccurrenceDate = startDate,
-                                GroupId = @group.Id,
-                                ScheduleId = groupSchedule.Id
+                                GroupId = group.Id,
+                                Group = group,
+                                ScheduleId = groupSchedule.Id,
+                                Schedule = groupSchedule
                             };
 
                             newOccurrences.Add( newOccurrence );
@@ -187,7 +192,8 @@ namespace Rock.Model
                 var groupType = GroupTypeCache.Get( group.GroupTypeId );
                 foreach ( var exclusion in groupType.GroupScheduleExclusions )
                 {
-                    if ( !exclusion.Start.HasValue || !exclusion.End.HasValue ) continue;
+                    if ( !exclusion.Start.HasValue || !exclusion.End.HasValue )
+                        continue;
 
                     foreach ( var occurrence in newOccurrences.ToList() )
                     {

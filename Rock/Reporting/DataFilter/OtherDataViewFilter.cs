@@ -21,12 +21,9 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Security;
-using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter
@@ -337,7 +334,7 @@ namespace Rock.Reporting.DataFilter
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="dataViewFilterOverrides">The data view filter overrides.</param>
-        /// <param name="selection">The selection.</param>
+        /// <param name="selection">A formatted string representing the filter settings: FieldName, <see cref="ComparisonType">Comparison Type</see>, (optional) Comparison Value(s)</param>
         /// <returns></returns>
         /// <exception cref="System.Exception">Filter issue(s): " + errorMessages.AsDelimited( "; " )</exception>
         public Expression GetExpressionWithOverrides( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, DataViewFilterOverrides dataViewFilterOverrides, string selection )

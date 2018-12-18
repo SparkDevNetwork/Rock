@@ -441,6 +441,7 @@ namespace RockWeb.Blocks.Communication
                     newCommunication.ReviewerPersonAliasId = null;
                     newCommunication.ReviewedDateTime = null;
                     newCommunication.ReviewerNote = string.Empty;
+                    newCommunication.SendDateTime = null;
 
                     communication.Recipients.ToList().ForEach( r =>
                         newCommunication.Recipients.Add( new CommunicationRecipient()
