@@ -28,7 +28,8 @@
     ///</summary>
     function isComplete() {
         var $completedQuestions = $('.js-disc-questions input[type=radio]:checked');
-        if ($completedQuestions.length < 60) {
+        var totalQuestions = $('.js-disc-questions').length;
+        if ($completedQuestions.length < totalQuestions * 2) {
             $('[id$="divError"]').fadeIn();
             return false;
         }
@@ -97,14 +98,14 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        <Rock:NotificationBox id="nbError" runat="server" Visible="false" NotificationBoxType="Danger">You have to be signed in to take the assessment.</Rock:NotificationBox>
+        <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger">You have to be signed in to take the assessment.</Rock:NotificationBox>
 
         <asp:Panel ID="pnlInstructions" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
-                <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i> DISC Assessment</h1>
-                   
-             </div>
-             <div class="panel-body">
+                <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i>DISC Assessment</h1>
+
+            </div>
+            <div class="panel-body">
                 <asp:Literal ID="lInstructions" runat="server"></asp:Literal>
 
                 <div class="actions">
@@ -114,17 +115,24 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlQuestions" CssClass="panel panel-block" runat="server">
-             <div class="panel-heading">
-                <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i> DISC Assessment</h1>
-                   
-             </div>
-             <div class="panel-body">
+            <div class="panel-heading">
+                <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i>DISC Assessment</h1>
+
+            </div>
+            <div class="panel-body">
+                <asp:HiddenField ID="hfPageNo" runat="server" />
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" aria-valuenow="<%=this.PercentComplete%>" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: <%=this.PercentComplete%>%;">
+                        <%=this.PercentComplete.ToString("F0") %>%
+                    </div>
+                </div>
                 <asp:Repeater ID="rQuestions" runat="server" OnItemDataBound="rQuestions_ItemDataBound">
                     <ItemTemplate>
+                        <asp:HiddenField ID="hfQuestionCode" runat="server" Value='<%# Eval( "QuestionNumber") %>' />
                         <table class="table table-condensed table-striped table-hover disc-assessment js-disc-questions margin-b-lg">
                             <thead>
                                 <tr>
-                                    <th class="disc-question">Question <%# Container.ItemIndex + 1 %></th>
+                                    <th class="disc-question">Question <%# Eval( "QuestionNumber") %></th>
                                     <th class="disc-answer disc-more">Most</th>
                                     <th class="disc-answer disc-less">Least</th>
                                 </tr>
@@ -168,10 +176,11 @@
                     </ItemTemplate>
                 </asp:Repeater>
                 <div style="display: none" class="alert alert-danger" id="divError">
-                    Please answer all questions before scoring.
+                    Please answer question(s) before proceeding further.
                 </div>
                 <div class="actions clearfix">
-                    <asp:LinkButton ID="btnScoreTest" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnScoreTest_Click" OnClientClick="if (!isComplete()) { return false; }"><i class="fa fa-check-circle-o"></i> Score</asp:LinkButton>
+                    <asp:LinkButton ID="btnPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnPrevious_Click" />
+                    <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" Text="Next" OnClientClick="if (!isComplete()) { return false; }" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" CausesValidation="true" OnClick="btnNext_Click" />
                 </div>
 
                 <div class="disc-attribution">
@@ -182,7 +191,7 @@
 
         <asp:Panel ID="pnlResults" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
-                <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i> DISC Assessment</h1>
+                <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i>DISC Assessment</h1>
             </div>
             <div class="panel-body">
 
@@ -191,7 +200,7 @@
 
                 <ul class="discchart">
                     <li class="discchart-midpoint"></li>
-                    <li style="height: 100%; width:0px;"></li>
+                    <li style="height: 100%; width: 0px;"></li>
                     <li id="discNaturalScore_D" runat="server" class="discbar discbar-d">
                         <div class="discbar-label">D</div>
                     </li>
@@ -222,9 +231,9 @@
                 <div class="disc-attribution">
                     <small>DISC assessment courtesy of Dr Gregory Wiens at <a href="http://www.healthygrowingleaders.com">healthygrowingleaders.com</a>.</small>
                 </div>
-        </div>
+            </div>
 
-    </asp:Panel>
+        </asp:Panel>
 
     </ContentTemplate>
 </asp:UpdatePanel>
