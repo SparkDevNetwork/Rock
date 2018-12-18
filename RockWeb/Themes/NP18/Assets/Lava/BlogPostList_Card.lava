@@ -1,7 +1,7 @@
 ﻿{% if Item == null %}{% assign Item = Items.first %}{% endif %}
 {% assign Channel = Item.ContentChannel %}
 
-{% assign Card_HeaderImg = Item | Attribute:'Image', 'Url' %}
+{% assign Card_HeaderImg = Item | Attribute:'Image','Url' %}
 {% if Card_HeaderImg == "" %}{% assign Card_HeaderImg = Channel | Attribute:'BlogImage','Url' %}{% endif %}
 
 {% assign Card_ActionLabel = Item | Attribute:'ActionLabel' %}
