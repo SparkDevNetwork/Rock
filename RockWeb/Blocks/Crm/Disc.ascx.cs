@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Linq;
@@ -63,23 +64,68 @@ namespace Rockweb.Blocks.Crm
                 When you are ready, click the 'Start' button to proceed.
             </p>
 " )]
-    [BooleanField("Always Allow Retakes", "Determines if the retake button should be shown.", false, order:5)]
+    [BooleanField( "Always Allow Retakes", "Determines if the retake button should be shown.", false, order: 5 )]
+    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 1, order: 6 )]
     public partial class Disc : Rock.Web.UI.RockBlock
     {
         #region Fields
 
+        private const string NUMBER_OF_QUESTIONS = "NumberofQuestions";
         // used for private variables
         Person _targetPerson = null;
+
+        private decimal _percentComplete = 0;
+
+        private List<AssessmentResponse> AssessmentResponses;
+
+        // View State Keys
+        private const string ASSESSMENT_STATE = "AssessmentState";
 
         #endregion
 
         #region Properties
 
         // used for public / protected properties
+        /// <summary>
+        /// Gets or sets the percent complete.
+        /// </summary>
+        /// <value>
+        /// The percent complete.
+        /// </value>
+        public decimal PercentComplete
+        {
+            get {
+                return _percentComplete;
+            }
+
+            set {
+                _percentComplete = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the total number of questions
+        /// </summary>
+        public int QuestionCount
+        {
+            get { return ViewState[NUMBER_OF_QUESTIONS] as int? ?? 0; }
+            set { ViewState[NUMBER_OF_QUESTIONS] = value; }
+        }
 
         #endregion
 
         #region Base Control Methods
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            AssessmentResponses = ViewState[ASSESSMENT_STATE] as List<AssessmentResponse> ?? new List<AssessmentResponse>();
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -103,7 +149,7 @@ namespace Rockweb.Blocks.Crm
             {
                 DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults( _targetPerson );
 
-                if ( savedScores.LastSaveDate <= DateTime.MinValue || !string.IsNullOrWhiteSpace(PageParameter( "RetakeDisc" ))  )
+                if ( savedScores.LastSaveDate <= DateTime.MinValue || !string.IsNullOrWhiteSpace( PageParameter( "RetakeDisc" ) ) )
                 {
                     ShowInstructions();
                 }
@@ -122,6 +168,19 @@ namespace Rockweb.Blocks.Crm
         {
         }
 
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            ViewState[ASSESSMENT_STATE] = AssessmentResponses;
+
+            return base.SaveViewState();
+        }
+
         #endregion
 
         #region Events
@@ -132,117 +191,78 @@ namespace Rockweb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnStart_Click( object sender, EventArgs e )
         {
-            pnlInstructions.Visible = false;
-            pnlQuestions.Visible = true;
-            BindRepeater();
+            ShowQuestions();
         }
 
 
         /// <summary>
-        /// Scores test, and displays results.
+        /// Handles the Click event of the btnNext control.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void btnScoreTest_Click( object sender, EventArgs e )
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnNext_Click( object sender, EventArgs e )
         {
-            try
-            {
-                int moreN = 0;
-                int moreD = 0;
-                int moreI = 0;
-                int moreS = 0;
-                int moreC = 0;
-                int lessN = 0;
-                int lessD = 0;
-                int lessI = 0;
-                int lessS = 0;
-                int lessC = 0;
+            int pageNumber = hfPageNo.ValueAsInt() + 1;
+            GetResponse();
 
-                foreach ( RepeaterItem rItem in rQuestions.Items )
+            LinkButton btn = ( LinkButton ) sender;
+            string commandArgument = btn.CommandArgument;
+
+            var totalQuestion = pageNumber * QuestionCount;
+            if ( ( AssessmentResponses.Count > totalQuestion && !AssessmentResponses.All( a => !string.IsNullOrEmpty( a.MostScore ) && !string.IsNullOrEmpty( a.LeastScore ) ) ) || "Next".Equals( commandArgument ) )
+            {
+                BindRepeater( pageNumber );
+            }
+            else
+            {
+                try
                 {
-                    RockRadioButtonList rblMore1 = rItem.FindControl( "rblMore1" ) as RockRadioButtonList;
-                    RockRadioButtonList rblMore2 = rItem.FindControl( "rblMore2" ) as RockRadioButtonList;
-                    RockRadioButtonList rblMore3 = rItem.FindControl( "rblMore3" ) as RockRadioButtonList;
-                    RockRadioButtonList rblMore4 = rItem.FindControl( "rblMore4" ) as RockRadioButtonList;
+                    var moreD = AssessmentResponses.Where( a => a.MostScore == "D" ).Count();
+                    var moreI = AssessmentResponses.Where( a => a.MostScore == "I" ).Count();
+                    var moreS = AssessmentResponses.Where( a => a.MostScore == "S" ).Count();
+                    var moreC = AssessmentResponses.Where( a => a.MostScore == "C" ).Count();
+                    var lessD = AssessmentResponses.Where( a => a.LeastScore == "D" ).Count();
+                    var lessI = AssessmentResponses.Where( a => a.LeastScore == "I" ).Count();
+                    var lessS = AssessmentResponses.Where( a => a.LeastScore == "S" ).Count();
+                    var lessC = AssessmentResponses.Where( a => a.LeastScore == "C" ).Count();
+                    // Score the responses and return the results
+                    DiscService.AssessmentResults results = DiscService.Score( moreD, moreI, moreS, moreC, lessD, lessI, lessS, lessC );
 
-                    RockRadioButtonList rblLess1 = rItem.FindControl( "rblLess1" ) as RockRadioButtonList;
-                    RockRadioButtonList rblLess2 = rItem.FindControl( "rblLess2" ) as RockRadioButtonList;
-                    RockRadioButtonList rblLess3 = rItem.FindControl( "rblLess3" ) as RockRadioButtonList;
-                    RockRadioButtonList rblLess4 = rItem.FindControl( "rblLess4" ) as RockRadioButtonList;
-
-                    string selectedMoreValue = GetSelectedValue( rblMore1, rblMore2, rblMore3, rblMore4 );
-                    string selectedLessValue = GetSelectedValue( rblLess1, rblLess2, rblLess3, rblLess4 );
-
-                    switch ( selectedMoreValue )
-                    {
-                        case "N":
-                            moreN++;
-                            break;
-                        case "D":
-                            moreD++;
-                            break;
-                        case "I":
-                            moreI++;
-                            break;
-                        case "S":
-                            moreS++;
-                            break;
-                        case "C":
-                            moreC++;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    switch ( selectedLessValue )
-                    {
-                        case "N":
-                            lessN++;
-                            break;
-                        case "D":
-                            lessD++;
-                            break;
-                        case "I":
-                            lessI++;
-                            break;
-                        case "S":
-                            lessS++;
-                            break;
-                        case "C":
-                            lessC++;
-                            break;
-                        default:
-                            break;
-                    }
+                    // Now save the results for this person
+                    DiscService.SaveAssessmentResults(
+                        _targetPerson,
+                        results.AdaptiveBehaviorD.ToString(),
+                        results.AdaptiveBehaviorI.ToString(),
+                        results.AdaptiveBehaviorS.ToString(),
+                        results.AdaptiveBehaviorC.ToString(),
+                        results.NaturalBehaviorD.ToString(),
+                        results.NaturalBehaviorI.ToString(),
+                        results.NaturalBehaviorS.ToString(),
+                        results.NaturalBehaviorC.ToString(),
+                        results.PersonalityType
+                    );
+                    ShowResults( results );
                 }
-
-                // Score the responses and return the results
-                DiscService.AssessmentResults results = DiscService.Score( moreN, moreD, moreI, moreS, moreC, lessN, lessD, lessI, lessS, lessC );
-
-                // Now save the results for this person
-                DiscService.SaveAssessmentResults(
-                    _targetPerson,
-                    results.AdaptiveBehaviorD.ToString(),
-                    results.AdaptiveBehaviorI.ToString(),
-                    results.AdaptiveBehaviorS.ToString(),
-                    results.AdaptiveBehaviorC.ToString(),
-                    results.NaturalBehaviorD.ToString(),
-                    results.NaturalBehaviorI.ToString(),
-                    results.NaturalBehaviorS.ToString(),
-                    results.NaturalBehaviorC.ToString(),
-                    results.PersonalityType
-                );
-
-                // Show the results
-                ShowResults( results );
+                catch ( Exception ex )
+                {
+                    nbError.Visible = true;
+                    nbError.Title = "We're Sorry...";
+                    nbError.Text = "Something went wrong while trying to save your test results.";
+                    LogException( ex );
+                }
             }
-            catch ( Exception ex )
-            {
-                nbError.Visible = true;
-                nbError.Title = "We're Sorry...";
-                nbError.Text = "Something went wrong while trying to save your test results.";
-                LogException( ex );
-            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnPrevious control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnPrevious_Click( object sender, EventArgs e )
+        {
+            int pageNumber = hfPageNo.ValueAsInt() - 1;
+            GetResponse();
+            BindRepeater( pageNumber );
         }
 
         /// <summary>
@@ -259,53 +279,47 @@ namespace Rockweb.Blocks.Crm
                 Literal lQuestion3 = e.Item.FindControl( "lQuestion3" ) as Literal;
                 Literal lQuestion4 = e.Item.FindControl( "lQuestion4" ) as Literal;
 
-                lQuestion1.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[0].ToString();
-                lQuestion2.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[1].ToString();
-                lQuestion3.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[2].ToString();
-                lQuestion4.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[3].ToString();
-
                 RockRadioButtonList rblMore1 = e.Item.FindControl( "rblMore1" ) as RockRadioButtonList;
-                RockRadioButtonList rblMore2 = e.Item.FindControl( "rblMore2" ) as RockRadioButtonList;
-                RockRadioButtonList rblMore3 = e.Item.FindControl( "rblMore3" ) as RockRadioButtonList;
-                RockRadioButtonList rblMore4 = e.Item.FindControl( "rblMore4" ) as RockRadioButtonList;
-
                 RockRadioButtonList rblLess1 = e.Item.FindControl( "rblLess1" ) as RockRadioButtonList;
+
+                RockRadioButtonList rblMore2 = e.Item.FindControl( "rblMore2" ) as RockRadioButtonList;
                 RockRadioButtonList rblLess2 = e.Item.FindControl( "rblLess2" ) as RockRadioButtonList;
+
+                RockRadioButtonList rblMore3 = e.Item.FindControl( "rblMore3" ) as RockRadioButtonList;
                 RockRadioButtonList rblLess3 = e.Item.FindControl( "rblLess3" ) as RockRadioButtonList;
+
+                RockRadioButtonList rblMore4 = e.Item.FindControl( "rblMore4" ) as RockRadioButtonList;
                 RockRadioButtonList rblLess4 = e.Item.FindControl( "rblLess4" ) as RockRadioButtonList;
 
+                var assessment = ( ( AssessmentResponse ) ( e.Item.DataItem ) );
+                ListItem m1 = new ListItem( "<span class='sr-only'></span>", assessment.Questions.Keys.ElementAt( 0 ) );
+                ListItem m2 = new ListItem( "<span class='sr-only'></span>", assessment.Questions.Keys.ElementAt( 1 ) );
+                ListItem m3 = new ListItem( "<span class='sr-only'></span>", assessment.Questions.Keys.ElementAt( 2 ) );
+                ListItem m4 = new ListItem( "<span class='sr-only'></span>", assessment.Questions.Keys.ElementAt( 3 ) );
 
-                ListItem m1 = new ListItem();
-                ListItem m2 = new ListItem();
-                ListItem m3 = new ListItem();
-                ListItem m4 = new ListItem();
-                m1.Text = m2.Text = m3.Text = m4.Text = "<span class='sr-only'>Most</span>";
+                ListItem l1 = new ListItem( "<span class='sr-only'></span>", assessment.Questions.Keys.ElementAt( 0 ) );
+                ListItem l2 = new ListItem( "<span class='sr-only'></span>", assessment.Questions.Keys.ElementAt( 1 ) );
+                ListItem l3 = new ListItem( "<span class='sr-only'></span>", assessment.Questions.Keys.ElementAt( 2 ) );
+                ListItem l4 = new ListItem( "<span class='sr-only'></span>", assessment.Questions.Keys.ElementAt( 3 ) );
 
-                m1.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 0, 1 );
-                m2.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 1, 1 );
-                m3.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 2, 1 );
-                m4.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 3, 1 );
-
+                lQuestion1.Text = assessment.Questions.Values.ElementAt( 0 );
                 rblMore1.Items.Add( m1 );
-                rblMore2.Items.Add( m2 );
-                rblMore3.Items.Add( m3 );
-                rblMore4.Items.Add( m4 );
-
-                ListItem l1 = new ListItem();
-                ListItem l2 = new ListItem();
-                ListItem l3 = new ListItem();
-                ListItem l4 = new ListItem();
-                l1.Text = l2.Text = l3.Text = l4.Text = "<span class='sr-only'>Least</span>";
-
-                l1.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 0, 1 );
-                l2.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 1, 1 );
-                l3.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 2, 1 );
-                l4.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 3, 1 );
-
                 rblLess1.Items.Add( l1 );
+
+                lQuestion2.Text = assessment.Questions.Values.ElementAt( 1 );
+                rblMore2.Items.Add( m2 );
                 rblLess2.Items.Add( l2 );
+
+                lQuestion3.Text = assessment.Questions.Values.ElementAt( 2 );
+                rblMore3.Items.Add( m3 );
                 rblLess3.Items.Add( l3 );
+
+                lQuestion4.Text = assessment.Questions.Values.ElementAt( 3 );
+                rblMore4.Items.Add( m4 );
                 rblLess4.Items.Add( l4 );
+
+                SetSelectedValue( assessment.MostScore, rblMore1, rblMore2, rblMore3, rblMore4 );
+                SetSelectedValue( assessment.LeastScore, rblLess1, rblLess2, rblLess3, rblLess4 );
             }
         }
 
@@ -333,13 +347,13 @@ namespace Rockweb.Blocks.Crm
         /// <param name="rbl4">The fourth RadioButtonList.</param>
         /// <returns>the value from the first non-empty RadioButtonList</returns>
         /// <exception cref="System.ArgumentOutOfRangeException">One of the RadioButtonList must be selected.</exception>
-        private string GetSelectedValue( RadioButtonList rbl1,  RadioButtonList rbl2, RadioButtonList rbl3, RadioButtonList rbl4 )
+        private string GetSelectedValue( RadioButtonList rbl1, RadioButtonList rbl2, RadioButtonList rbl3, RadioButtonList rbl4 )
         {
-            if ( ! string.IsNullOrEmpty( rbl1.SelectedValue ) )
+            if ( !string.IsNullOrEmpty( rbl1.SelectedValue ) )
             {
                 return rbl1.SelectedValue;
             }
-            else if (! string.IsNullOrEmpty( rbl2.SelectedValue ))
+            else if ( !string.IsNullOrEmpty( rbl2.SelectedValue ) )
             {
                 return rbl2.SelectedValue;
             }
@@ -351,9 +365,28 @@ namespace Rockweb.Blocks.Crm
             {
                 return rbl4.SelectedValue;
             }
-            else
             {
-                throw new ArgumentOutOfRangeException( "One of the RadioButtonList must be selected." );
+                return string.Empty;
+            }
+        }
+
+        private void SetSelectedValue( string value, RadioButtonList rbl1, RadioButtonList rbl2, RadioButtonList rbl3, RadioButtonList rbl4 )
+        {
+            if ( rbl1.Items.FindByValue( value ) != null )
+            {
+                rbl1.SelectedValue = value;
+            }
+            else if ( rbl2.Items.FindByValue( value ) != null )
+            {
+                rbl2.SelectedValue = value;
+            }
+            else if ( rbl3.Items.FindByValue( value ) != null )
+            {
+                rbl3.SelectedValue = value;
+            }
+            else if ( rbl4.Items.FindByValue( value ) != null )
+            {
+                rbl4.SelectedValue = value;
             }
         }
 
@@ -365,7 +398,7 @@ namespace Rockweb.Blocks.Crm
         {
             // Plot the Natural graph
             DiscService.PlotOneGraph( discNaturalScore_D, discNaturalScore_I, discNaturalScore_S, discNaturalScore_C,
-                results.NaturalBehaviorD, results.NaturalBehaviorI, results.NaturalBehaviorS, results.NaturalBehaviorC, 35 );
+                results.NaturalBehaviorD, results.NaturalBehaviorI, results.NaturalBehaviorS, results.NaturalBehaviorC, 100 );
         }
 
         /// <summary>
@@ -404,7 +437,7 @@ namespace Rockweb.Blocks.Crm
 
             // Show re-take test button if MinDaysToRetake has passed...
             double days = GetAttributeValue( "MinDaysToRetake" ).AsDouble();
-            if ( (savedScores.LastSaveDate.AddDays( days ) <= RockDateTime.Now) || GetAttributeValue( "AlwaysAllowRetakes" ).AsBoolean() )
+            if ( ( savedScores.LastSaveDate.AddDays( days ) <= RockDateTime.Now ) || GetAttributeValue( "AlwaysAllowRetakes" ).AsBoolean() )
             {
                 btnRetakeTest.Visible = true;
             }
@@ -431,36 +464,118 @@ namespace Rockweb.Blocks.Crm
         }
 
         /// <summary>
-        /// Binds the question data to the rQuestions repeater control.
+        /// Shows the questions.
         /// </summary>
-        private void BindRepeater()
+        private void ShowQuestions()
         {
-            String[,] questionData = DiscService.GetResponsesByQuestion();
-            var dataSet = new DataSet();
-            var dataTable = dataSet.Tables.Add();
-            var iRow = questionData.GetLongLength( 0 );
-            var iCol = questionData.GetLongLength( 1 );
+            pnlInstructions.Visible = false;
+            pnlQuestions.Visible = true;
 
-            dataTable.Columns.Add( "r1" ); //Response 1
-            dataTable.Columns.Add( "r2" ); //Response 2
-            dataTable.Columns.Add( "r3" ); //Response 3
-            dataTable.Columns.Add( "r4" ); //Response 4
-            dataTable.Columns.Add( "ms" ); //Most Scores
-            dataTable.Columns.Add( "ls" ); //Least Scores
+            Random r = new Random();
 
-            //Row
-            for ( var r = 0; r < iRow; r++ )
+            AssessmentResponses = DiscService.GetResponses()
+                                    .GroupBy( a => a.QuestionNumber )
+                                    .Select( a => new AssessmentResponse()
+                                    {
+                                        QuestionNumber = a.Key,
+                                        Questions = a.OrderBy( x => r.Next( 0, 4 ) ).ToDictionary( c => c.MostScore, b => b.ResponseText )
+                                    } ).ToList();
+
+            // If _maxQuestions has not been set yet...
+            if ( QuestionCount == 0 && AssessmentResponses != null )
             {
-                var row = dataTable.Rows.Add();
-                //Column
-                for ( var c = 0; c < iCol; c++ )
-                {
-                    row[c] = questionData[r, c];
-                }
+                // Set the max number of questions to be no greater than the actual number of questions.
+                int numQuestions = this.GetAttributeValue( NUMBER_OF_QUESTIONS ).AsInteger();
+                QuestionCount = ( numQuestions > AssessmentResponses.Count ) ? AssessmentResponses.Count : numQuestions;
             }
 
-            rQuestions.DataSource = dataSet.Tables[0];
+            BindRepeater( 0 );
+        }
+
+
+        /// <summary>
+        /// Binds the question data to the rQuestions repeater control.
+        /// </summary>
+        private void BindRepeater( int pageNumber )
+        {
+            hfPageNo.SetValue( pageNumber );
+
+            var answeredQuestionCount = AssessmentResponses.Where( a => !string.IsNullOrEmpty( a.MostScore ) && !string.IsNullOrEmpty( a.LeastScore ) ).Count();
+            PercentComplete = Math.Round( ( Convert.ToDecimal( answeredQuestionCount ) / Convert.ToDecimal( AssessmentResponses.Count ) ) * 100.0m, 2 );
+
+            var skipCount = pageNumber * QuestionCount;
+
+            var questions = AssessmentResponses
+                .Skip( skipCount )
+                .Take( QuestionCount + 1 )
+                .ToList();
+
+            rQuestions.DataSource = questions.Take( QuestionCount );
             rQuestions.DataBind();
+
+            // set next button
+            if ( questions.Count() > QuestionCount )
+            {
+                btnNext.Text = "Next";
+                btnNext.CommandArgument = "Next";
+            }
+            else
+            {
+                btnNext.Text = "Finish";
+                btnNext.CommandArgument = "Finish";
+            }
+
+            // build prev button
+            if ( pageNumber == 0 )
+            {
+                btnPrevious.Visible = btnPrevious.Enabled = false;
+            }
+            else
+            {
+                btnPrevious.Visible = btnPrevious.Enabled = true;
+            }
+
+        }
+
+        /// <summary>
+        /// Gets the response to the rQuestions repeater control.
+        /// </summary>
+        private void GetResponse()
+        {
+            foreach ( var item in rQuestions.Items.OfType<RepeaterItem>() )
+            {
+                HiddenField hfQuestionCode = item.FindControl( "hfQuestionCode" ) as HiddenField;
+                RockRadioButtonList rblMore1 = item.FindControl( "rblMore1" ) as RockRadioButtonList;
+                RockRadioButtonList rblMore2 = item.FindControl( "rblMore2" ) as RockRadioButtonList;
+                RockRadioButtonList rblMore3 = item.FindControl( "rblMore3" ) as RockRadioButtonList;
+                RockRadioButtonList rblMore4 = item.FindControl( "rblMore4" ) as RockRadioButtonList;
+
+                RockRadioButtonList rblLess1 = item.FindControl( "rblLess1" ) as RockRadioButtonList;
+                RockRadioButtonList rblLess2 = item.FindControl( "rblLess2" ) as RockRadioButtonList;
+                RockRadioButtonList rblLess3 = item.FindControl( "rblLess3" ) as RockRadioButtonList;
+                RockRadioButtonList rblLess4 = item.FindControl( "rblLess4" ) as RockRadioButtonList;
+
+                var assessment = AssessmentResponses.SingleOrDefault( a => a.QuestionNumber == hfQuestionCode.Value );
+
+                if ( assessment != null )
+                {
+                    assessment.MostScore = GetSelectedValue( rblMore1, rblMore2, rblMore3, rblMore4 );
+                    assessment.LeastScore = GetSelectedValue( rblLess1, rblLess2, rblLess3, rblLess4 );
+                }
+            }
+        }
+
+        #endregion
+
+        #region nested classes
+
+        [Serializable]
+        public class AssessmentResponse
+        {
+            public string QuestionNumber { get; set; }
+            public Dictionary<string, string> Questions { get; set; }
+            public string MostScore { get; set; }
+            public string LeastScore { get; set; }
         }
 
         #endregion

@@ -433,7 +433,8 @@ namespace Rock.Web.Cache
                 SetValue = setValue,
                 SetId = setId,
                 Required = required,
-                WarningText = warningText
+                WarningText = warningText,
+                LabelText = labelText
             };
 
             return AddControl( controls, attributeControlOptions );
@@ -463,7 +464,7 @@ namespace Rock.Web.Cache
             // If the control is a RockControl
             var rockControl = attributeControl as IRockControl;
             var controlHasRequired = attributeControl as IHasRequired;
-            
+
             if ( rockControl != null )
             {
                 rockControl.Label = options.LabelText;
@@ -618,7 +619,7 @@ namespace Rock.Web.Cache
         public override object this[object key]
         {
             get
-            {
+           {
                 var propInfo = GetType().GetProperty( key.ToStringSafe() );
                 if ( propInfo == null || propInfo.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Any() ) return null;
 
