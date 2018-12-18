@@ -142,10 +142,10 @@ namespace Rock.Model
             var feeUsedCount = registrationInstanceFeesQuery.Where( a => a.RegistrationTemplateFeeItemId == this.Id ).Sum( a => ( int? ) a.Quantity ) ?? 0;
 
             // get a list of fees that the other registrants in this registrant entry have incurred so far
-            List<FeeInfo> otherRegistrantsFees = otherRegistrants.SelectMany( a => a.FeeValues ).Where( a => a.Value != null && a.Key == this.RegistrationTemplateFeeId ).SelectMany( a => a.Value ).ToList();
+            List<FeeInfo> otherRegistrantsFees = otherRegistrants?.SelectMany( a => a.FeeValues ).Where( a => a.Value != null && a.Key == this.RegistrationTemplateFeeId ).SelectMany( a => a.Value ).ToList();
 
             // get the count of fees of this same fee item for other registrants
-            int otherRegistrantsUsedCount = otherRegistrantsFees.Where(a => a.RegistrationTemplateFeeItemId == this.Id).Sum( f => f.Quantity );
+            int otherRegistrantsUsedCount = otherRegistrantsFees?.Where( a => a.RegistrationTemplateFeeItemId == this.Id ).Sum( f => f.Quantity ) ?? 0;
 
             usageCountRemaining = this.MaximumUsageCount.Value - feeUsedCount - otherRegistrantsUsedCount;
             return usageCountRemaining;

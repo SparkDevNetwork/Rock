@@ -351,7 +351,7 @@ namespace Rock.Model
         /// <param name="registrationInstance">The registration instance.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         /// <param name="feeValues">The fee values.</param>
-        /// <param name="otherRegistrants">The other registrants that have been registered so far in this registration</param>
+        /// <param name="otherRegistrants">The other registrants that have been registered so far in this registration. Set to NULL if editing a single registrant.</param>
         public void AddFeeControl( PlaceHolder phFees, RegistrationInstance registrationInstance, bool setValues, List<FeeInfo> feeValues, List<RegistrantInfo> otherRegistrants )
         {
             RegistrationTemplateFee fee = this;

@@ -796,7 +796,7 @@ namespace RockWeb.Blocks.Event
                 foreach ( var fee in TemplateState.Fees.OrderBy( f => f.Order ) )
                 {
                     var feeValues = GetFeeValues( fee );
-                    fee.AddFeeControl( phFees, registrationInstance, true, feeValues );
+                    fee.AddFeeControl( phFees, registrationInstance, true, feeValues, null );
                 }
             }
             else
