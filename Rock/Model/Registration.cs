@@ -992,7 +992,7 @@ Registration By: {0} Total Cost/Fees:{1}
         public Dictionary<int, FieldValueObject> FieldValues { get; set; }
 
         /// <summary>
-        /// Gets or sets the fee values.
+        /// Gets or sets a dictionary of FeeValues (key is RegistrationTemplateFeeId)
         /// </summary>
         /// <value>
         /// The fee values.
