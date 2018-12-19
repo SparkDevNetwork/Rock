@@ -418,18 +418,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// An optional additional parent authority.  (i.e for Notes, the NoteType is main parent
-        /// authority, but parent note is an additional parent authority )
-        /// </summary>
-        public override ISecured ParentAuthorityPre
-        {
-            get
-            {
-                return this.ParentNote ?? base.ParentAuthorityPre;
-            }
-        }
-
-        /// <summary>
         /// Determines whether the specified action is authorized on this note.
         /// Special note on the VIEW action: a person can view a note if they have normal VIEW access, but also have any of the following is true of the note:
         ///  - Approved,
