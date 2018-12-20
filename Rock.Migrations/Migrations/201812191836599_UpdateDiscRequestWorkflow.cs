@@ -18,7 +18,8 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+    using Rock.Model;
+    using System.Linq;
     /// <summary>
     ///
     /// </summary>
@@ -28,6 +29,147 @@ namespace Rock.Migrations
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
+        {
+            UpdateDiscWorkflow();
+            UpdateDiscDefinedValueDescription();
+            UpdateDiscScoreConversion();
+        }
+
+        private void UpdateDiscDefinedValueDescription()
+        {
+            Sql( @"
+
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy maintaining high standards and following procedures correctly. You may have difficulty accepting the lack of quality in projects or people around you.'
+			WHERE
+				[Guid]='B428B0CA-2E41-4B3E-9A37-5B618C116CA3'
+
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy maintaining high standards and following procedures correctly while also accomplishing the task. You may be seen by others as being only concerned with accomplishing a goal to the exclusion of the people in the process.'
+			WHERE
+				[Guid]='C742748E-E86F-4145-962B-3468CC563D71'
+		
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy maintaining high standards and following procedures correctly while also valuing having fun with people in the process. You may be frustrated because it is difficult to maintaining excellence while having fun with people.'
+			WHERE
+				[Guid]='227A4C9A-F92B-48D7-9E2B-62D328369C3D'
+
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy maintaining high standards and following procedures correctly while keeping a stable and consistent pace. You may tend to hold high standards for yourself, your work as well as those around you; which may cause others not to meet your expectations.'
+			WHERE
+				[Guid]='3FDC0A3C-A826-4252-90A4-4BF710C12311'
+
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy accomplishing the end goal and are willing to do whatever it takes to accomplish the task. You may hurt people in accomplishing the goal, but you feel the goal is more important.'
+			WHERE
+				[Guid]='8B33090D-DD62-4BBB-BFDA-2DC67F26745D'
+
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy accomplishing the end goal as well as all of the steps needed to accomplish the goal. You have an excellent ability to see the end goal and know the specific steps needed to accomplish this which can make it difficult to work with you on a team.'
+			WHERE
+				[Guid]='20706B1C-B8CC-45AB-AF41-4D52E55583BB'
+
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy accomplishing the end goal and want to bring people with you to accomplish the task. You are able to persuade people to get on board, but when they are no longer needed, you can move on without them.'
+			WHERE
+				[Guid]='43164D7B-9521-40FF-8877-FAFA1C753284'
+
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy accomplishing the end goal and want to accomplish it without alienating people in the process. You may struggle between accomplishing the task and keeping people on board, the tradeoff is often difficult for you.'
+			WHERE
+				[Guid]='09D96C14-1F68-4454-954B-7EC8898B0A86'
+
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy bringing energy and life to people that you are with. You may not be able to keep focused on the task, but you enjoy hanging with people.'
+			WHERE
+				[Guid]='AD076E20-ADAB-4DF3-9598-8F9FCC19B9F0'
+
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy bringing energy and life to people that you are with as well as following rules and procedures. Because you have competing behavioral needs of enjoying people and focusing on details; you may find yourself torn between meeting the needs of people and paying attention to the rules or processes necessary to accomplish a task well.'
+			WHERE
+				[Guid]='879149E8-D396-41D9-92C2-EC9E62BE8916'
+
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy bringing energy and life to people that you are with as well as following rules and procedures. Because you have competing behavioral needs of enjoying people and focusing on details; you may find yourself torn between meeting the needs of people and paying attention to the rules or processes necessary to accomplish a task well.'
+			WHERE
+				[Guid]='879149E8-D396-41D9-92C2-EC9E62BE8916'
+
+
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy bringing energy and life to people that you are with and moving them in a direction to accomplish a task. You may not always accomplish the task, because you don’t want to hurt peoples’ feelings.'
+			WHERE
+				[Guid]='03B518C2-F9EB-4B84-A470-45EBEBAB7F17'
+
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy bringing energy and life to people that you are with and moving them in a direction to accomplish a task. You may not always accomplish the task, because you don’t want to hurt peoples’ feelings.'
+			WHERE
+				[Guid]='03B518C2-F9EB-4B84-A470-45EBEBAB7F17'
+
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy bringing energy and life to people that you are with and keeping everyone content and on board in long term relationships. You would tend to focus more on people than the task at hand, which may frustrate task oriented people.'
+			WHERE
+				[Guid]='99D3129C-295C-471A-8E8A-804A9EBF36B9'
+
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy a stable and consistent pace with everyone in harmony. You may have difficulty with change because it usually involves some sense of the unknown.'
+			WHERE
+				[Guid]='03DE220E-7924-47A5-90D4-D6383285340C'
+
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy a stable and consistent pace with everyone in harmony; while maintaining high standards and precise procedures. You may tend to hold high standards for yourself, your work as well as those around you; which may cause others not to meet your expectations.'
+			WHERE
+				[Guid]='AC246F37-0858-4692-A373-C0F125036355'
+
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy a stable and consistent pace with everyone in harmony while also wanting to accomplish a goal and/or task. You may struggle with valuing how to get the task done, while attempting to keep things consistent and everyone in harmony.'
+			WHERE
+				[Guid]='5580070A-3D01-4CB6-BC45-2645E222DC21'
+
+			UPDATE 
+				[DefinedValue]
+			SET
+				[Description]='You enjoy a stable and consistent pace with everyone in harmony as well as having fun in the moment. You would tend to focus more on people than the task at hand, which may frustrate task oriented people.'
+			WHERE
+				[Guid]='05868DFC-BED9-497D-8998-6B5474280568'
+" );
+            RockMigrationHelper.DeleteAttribute( "A500116E-37CB-400F-996B-A56940FD24E9" ); // RelationshipMatrix
+        }
+
+        private void UpdateDiscWorkflow()
         {
             RockMigrationHelper.UpdateEntityType( "Rock.Workflow.Action.RunLava", "BC21E57A-1477-44B3-A7C2-61A806118945", false, true );
 
@@ -179,172 +321,41 @@ namespace Rock.Migrations
             RockMigrationHelper.AddActionTypeAttributeValue( "2FEE6858-8A63-484F-9848-EAC4697DA1D5", "234910F2-A0DB-4D7D-BAF7-83C880EF30AE", @"False" ); // DISC Request:Launch From Person Profile:Custom Failure Message:Active
             RockMigrationHelper.AddActionTypeAttributeValue( "2FEE6858-8A63-484F-9848-EAC4697DA1D5", "C178113D-7C86-4229-8424-C6D0CF4A7E23", @"" ); // DISC Request:Launch From Person Profile:Custom Failure Message:Order
 
-            Sql( @"
-                DECLARE @NaturalDAttributeId int = ( SELECT [Id] FROM [Attribute] where [Key]='NaturalD')
-                DECLARE @NaturalIAttributeId int = ( SELECT [Id] FROM [Attribute] where [Key]='NaturalI')
-                DECLARE @NaturalSAttributeId int = ( SELECT [Id] FROM [Attribute] where [Key]='NaturalS')
-                DECLARE @NaturalCAttributeId int = ( SELECT [Id] FROM [Attribute] where [Key]='NaturalC')
+        }
 
-                UPDATE
-	                [AttributeValue]
-                SET
-	                 [Value] = CAST([Value] as int) * 100/35  
-                WHERE
-	                 [AttributeId]= @NaturalDAttributeId
-
-                UPDATE
-	                [AttributeValue]
-                SET
-	                 [Value] = CAST([Value] as int) * 100/35  
-                WHERE
-	                 [AttributeId]= @NaturalSAttributeId
-
-                UPDATE
-	                [AttributeValue]
-                SET
-	                 [Value] = CAST([Value] as int) * 100/33
-                WHERE
-	                 [AttributeId]= @NaturalIAttributeId
-
-
-                UPDATE
-	                [AttributeValue]
-                SET
-	                 [Value] = CAST([Value] as int) * 100/33  
-                WHERE
-	                 [AttributeId]= @NaturalCAttributeId
-            " );
-
-            Sql( @"
-
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy maintaining high standards and following procedures correctly. You may have difficulty accepting the lack of quality in projects or people around you.'
-			WHERE
-				[Guid]='B428B0CA-2E41-4B3E-9A37-5B618C116CA3'
-
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy maintaining high standards and following procedures correctly while also accomplishing the task. You may be seen by others as being only concerned with accomplishing a goal to the exclusion of the people in the process.'
-			WHERE
-				[Guid]='C742748E-E86F-4145-962B-3468CC563D71'
-		
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy maintaining high standards and following procedures correctly while also valuing having fun with people in the process. You may be frustrated because it is difficult to maintaining excellence while having fun with people.'
-			WHERE
-				[Guid]='227A4C9A-F92B-48D7-9E2B-62D328369C3D'
-
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy maintaining high standards and following procedures correctly while keeping a stable and consistent pace. You may tend to hold high standards for yourself, your work as well as those around you; which may cause others not to meet your expectations.'
-			WHERE
-				[Guid]='3FDC0A3C-A826-4252-90A4-4BF710C12311'
-
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy accomplishing the end goal and are willing to do whatever it takes to accomplish the task. You may hurt people in accomplishing the goal, but you feel the goal is more important.'
-			WHERE
-				[Guid]='8B33090D-DD62-4BBB-BFDA-2DC67F26745D'
-
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy accomplishing the end goal as well as all of the steps needed to accomplish the goal. You have an excellent ability to see the end goal and know the specific steps needed to accomplish this which can make it difficult to work with you on a team.'
-			WHERE
-				[Guid]='20706B1C-B8CC-45AB-AF41-4D52E55583BB'
-
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy accomplishing the end goal and want to bring people with you to accomplish the task. You are able to persuade people to get on board, but when they are no longer needed, you can move on without them.'
-			WHERE
-				[Guid]='43164D7B-9521-40FF-8877-FAFA1C753284'
-
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy accomplishing the end goal and want to accomplish it without alienating people in the process. You may struggle between accomplishing the task and keeping people on board, the tradeoff is often difficult for you.'
-			WHERE
-				[Guid]='09D96C14-1F68-4454-954B-7EC8898B0A86'
-
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy bringing energy and life to people that you are with. You may not be able to keep focused on the task, but you enjoy hanging with people.'
-			WHERE
-				[Guid]='AD076E20-ADAB-4DF3-9598-8F9FCC19B9F0'
-
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy bringing energy and life to people that you are with as well as following rules and procedures. Because you have competing behavioral needs of enjoying people and focusing on details; you may find yourself torn between meeting the needs of people and paying attention to the rules or processes necessary to accomplish a task well.'
-			WHERE
-				[Guid]='879149E8-D396-41D9-92C2-EC9E62BE8916'
-
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy bringing energy and life to people that you are with as well as following rules and procedures. Because you have competing behavioral needs of enjoying people and focusing on details; you may find yourself torn between meeting the needs of people and paying attention to the rules or processes necessary to accomplish a task well.'
-			WHERE
-				[Guid]='879149E8-D396-41D9-92C2-EC9E62BE8916'
-
-
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy bringing energy and life to people that you are with and moving them in a direction to accomplish a task. You may not always accomplish the task, because you don’t want to hurt peoples’ feelings.'
-			WHERE
-				[Guid]='03B518C2-F9EB-4B84-A470-45EBEBAB7F17'
-
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy bringing energy and life to people that you are with and moving them in a direction to accomplish a task. You may not always accomplish the task, because you don’t want to hurt peoples’ feelings.'
-			WHERE
-				[Guid]='03B518C2-F9EB-4B84-A470-45EBEBAB7F17'
-
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy bringing energy and life to people that you are with and keeping everyone content and on board in long term relationships. You would tend to focus more on people than the task at hand, which may frustrate task oriented people.'
-			WHERE
-				[Guid]='99D3129C-295C-471A-8E8A-804A9EBF36B9'
-
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy a stable and consistent pace with everyone in harmony. You may have difficulty with change because it usually involves some sense of the unknown.'
-			WHERE
-				[Guid]='03DE220E-7924-47A5-90D4-D6383285340C'
-
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy a stable and consistent pace with everyone in harmony; while maintaining high standards and precise procedures. You may tend to hold high standards for yourself, your work as well as those around you; which may cause others not to meet your expectations.'
-			WHERE
-				[Guid]='AC246F37-0858-4692-A373-C0F125036355'
-
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy a stable and consistent pace with everyone in harmony while also wanting to accomplish a goal and/or task. You may struggle with valuing how to get the task done, while attempting to keep things consistent and everyone in harmony.'
-			WHERE
-				[Guid]='5580070A-3D01-4CB6-BC45-2645E222DC21'
-
-			UPDATE 
-				[DefinedValue]
-			SET
-				[Description]='You enjoy a stable and consistent pace with everyone in harmony as well as having fun in the moment. You would tend to focus more on people than the task at hand, which may frustrate task oriented people.'
-			WHERE
-				[Guid]='05868DFC-BED9-497D-8998-6B5474280568'
-" );
-            RockMigrationHelper.DeleteAttribute( "A500116E-37CB-400F-996B-A56940FD24E9" ); // RelationshipMatrix
+        /// <summary>
+        /// SK: "Rock Update Helper v9.0 - DISC Score Conversion
+        /// </summary>
+        private void UpdateDiscScoreConversion()
+        {
+            Sql( @"IF NOT EXISTS (
+  SELECT[Id]
+  FROM[ServiceJob]
+  WHERE[Class] = 'Rock.Jobs.PostV90DataMigrations'
+   AND[Guid] = 'A839DFEC-B1A3-499C-9BB3-03241E8E5305'
+  )
+BEGIN
+ INSERT INTO[ServiceJob](
+  [IsSystem]
+  ,[IsActive]
+  ,[Name]
+  ,[Description]
+  ,[Class]
+  ,[CronExpression]
+  ,[NotificationStatus]
+  ,[Guid]
+  )
+ VALUES(
+  0
+  ,1
+  ,'Data Migrations for v9.0'
+  ,'This job will take care of any data migrations that need to occur after updating to v9.0. After all the operations are done, this job will delete itself.'
+  ,'Rock.Jobs.PostV90DataMigrations'
+  ,'0 0 21 1/1 * ? *'
+  ,1
+  ,'A839DFEC-B1A3-499C-9BB3-03241E8E5305'
+  );
+        END" );
         }
 
         /// <summary>

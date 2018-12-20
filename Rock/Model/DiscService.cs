@@ -253,15 +253,15 @@ namespace Rock.Model
         static public AssessmentResults Score( int moreD, int moreI, int moreS, int moreC, int lessD, int lessI, int lessS, int lessC )
         {
             AssessmentResults testResults = new AssessmentResults();
-            testResults.AdaptiveBehaviorS = Convert.ToInt32( GetAdaptiveScoreValue( moreS ) );
-            testResults.AdaptiveBehaviorC = Convert.ToInt32( GetAdaptiveScoreValue( moreC ) );
-            testResults.AdaptiveBehaviorI = Convert.ToInt32( GetAdaptiveScoreValue( moreI ) );
-            testResults.AdaptiveBehaviorD = Convert.ToInt32( GetAdaptiveScoreValue( moreD ) );
+            testResults.AdaptiveBehaviorS = GetAdaptiveScoreValue( AttributeKeys.AdaptiveS, moreS );
+            testResults.AdaptiveBehaviorC = GetAdaptiveScoreValue( AttributeKeys.AdaptiveC, moreC );
+            testResults.AdaptiveBehaviorI = GetAdaptiveScoreValue( AttributeKeys.AdaptiveI, moreI );
+            testResults.AdaptiveBehaviorD = GetAdaptiveScoreValue( AttributeKeys.AdaptiveD, moreD );
 
-            testResults.NaturalBehaviorS = Convert.ToInt32( GetNaturalScoreValue( lessS ) );
-            testResults.NaturalBehaviorC = Convert.ToInt32( GetNaturalScoreValue( lessC ) );
-            testResults.NaturalBehaviorI = Convert.ToInt32( GetNaturalScoreValue( lessI ) );
-            testResults.NaturalBehaviorD = Convert.ToInt32( GetNaturalScoreValue( lessD ) );
+            testResults.NaturalBehaviorS = GetNaturalScoreValue( AttributeKeys.NaturalS, lessS );
+            testResults.NaturalBehaviorC = GetNaturalScoreValue( AttributeKeys.NaturalC, lessC );
+            testResults.NaturalBehaviorI = GetNaturalScoreValue( AttributeKeys.NaturalI, lessI );
+            testResults.NaturalBehaviorD = GetNaturalScoreValue( AttributeKeys.NaturalD, lessD );
             testResults.LastSaveDate = RockDateTime.Now;
 
             // Determine the Natural personality type
@@ -270,11 +270,11 @@ namespace Rock.Model
             return testResults;
         }
 
-        private static decimal GetAdaptiveScoreValue( string key, int count )
+        public static int GetAdaptiveScoreValue( string key, int count )
         {
             var discConst = constructData[key];
             var scoreValue = Math.Round( ( count + 5 - discConst.Mean ) / constructData[key].StandardDeviation, 1 );
-            return GetPercentFromScore( scoreValue );
+            return Convert.ToInt32( GetPercentFromScore( scoreValue ) );
         }
 
         private static decimal GetPercentFromScore( double scoreValue )
@@ -289,12 +289,12 @@ namespace Rock.Model
             return percent;
         }
 
-        private static decimal GetNaturalScoreValue( string key, int count )
+        public static int GetNaturalScoreValue( string key, int count )
         {
             int nb = 30 - count;
             var discConst = constructData[key];
             var scoreValue = Math.Round( ( nb - 10 - discConst.Mean ) / constructData[key].StandardDeviation, 1 );
-            return GetPercentFromScore( scoreValue );
+            return Convert.ToInt32( GetPercentFromScore( scoreValue ) );
         }
 
         /// <summary>
@@ -314,7 +314,7 @@ namespace Rock.Model
 
             List<KeyValuePair<string, int>> list = dictionary.ToList();
             list.Sort( ( x, y ) => y.Value.CompareTo( x.Value ) );
-            personalityType = string.Format( "{0}{1}", list[0].Key, ( list[1].Value > 24 ) ? list[1].Key : string.Empty );
+            personalityType = string.Format( "{0}{1}", list[0].Key, ( list[1].Value > 50 ) ? list[1].Key : string.Empty );
             return personalityType;
         }
 
