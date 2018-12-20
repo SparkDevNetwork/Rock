@@ -17,95 +17,46 @@
 @import "_variables.less";
 @import "_variable-overrides.less";
 
-
 //
 // Mix-ins
 // --------------------------------------------------
 .checkinBackground () { }
-.checkinBackgroundRetina() { }
 
+.checkinBackgroundRetina() { }
 
 //
 // Custom Overrides
 // --------------------------------------------------
 
-html {
-  background: linear-gradient(#f7941d, #f67a22);
-}
-
-body {
-  -ms-touch-action: none !important;
-  touch-action: none; /* Disable any special actions on tap/touch */
-  -ms-content-zooming: none; /* Disables zooming */
-
-  background: repeat top left;
-  background-image: url('../Assets/Images/background.svg');
-
-  animation: fadein 0.4s;
-}
-
-@keyframes fadein {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-
 .checkin-count h3,
 .checkin-count li {
-    color: #4d4d4d;
+    color: #4c4c4b;
 }
 
-.checkin-header {
-  margin-top: 30px;
-  margin-bottom: 15px;
-}
-
-.checkin-header h1 {
+h1 {
     text-transform: uppercase;
     letter-spacing: 0px;
-}
-
-.checkin-search-actions {
-    text-align: center;
 }
 
 .btn {
     border-radius: 0;
     border: 2px solid #fff;
     text-transform: uppercase;
+    display: inline-flex;
+    justify-content: center;
 }
 
-.btn-lg {
-    padding: 12px 5px;
+body {
+    background: url('../Assets/Images/background.svg') repeat top left, linear-gradient(#f7941d, #f67a22) fixed;
+    animation: fadein 0.4s;
+    -ms-touch-action: none !important;
+    touch-action: none;   /* Disable any special actions on tap/touch */
+    -ms-content-zooming: none; /* Disables zooming */
 }
 
-.checkin-actions a.btn-primary {
-    padding: 14px 17px;
-    margin-left: 2px;
-}
-
-.checkin-footer .checkin-actions a.btn-default {
-    background-color: #8bc540;
-    color: #fff;
-    border-color: transparent;
-}
-
-.checkin-search-body {
-    width: 293px;
-}
-
-input.checkin-phone-entry {
-    width: 293px;
-}
-
-.tenkey a.command {
-    padding-top: 30px;
-}
-
-.tenkey a.btn {
-    width: 90px;
-    height: 90px;
-    margin: 3px;
+@keyframes fadein {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 @import "_css-overrides.less";

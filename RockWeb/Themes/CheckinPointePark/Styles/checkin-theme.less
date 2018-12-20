@@ -17,18 +17,16 @@
 @import "_variables.less";
 @import "_variable-overrides.less";
 
-
 //
 // Mix-ins
 // --------------------------------------------------
 .checkinBackground () {
-    background: @bg-color url('../Assets/Images/background.jpg') top right no-repeat fixed;
+    background: url('../Assets/Images/background.jpg') fixed center / contain no-repeat;
 }
 
 .checkinBackgroundRetina()
 {
-    background-image: url('../Assets/Images/background.jpg');
-    background-size: 1348px 1024px; // should be 1/2 of the actual
+    background: url('../Assets/Images/background@2x.jpg') fixed center / contain no-repeat;
 }
 
 
@@ -36,79 +34,39 @@
 // Custom Overrides
 // --------------------------------------------------
 
-body {
-  -ms-touch-action: none !important;
-  touch-action: none; /* Disable any special actions on tap/touch */
-  -ms-content-zooming: none; /* Disables zooming */
-
-  animation: fadein 0.4s;
-}
-
-@keyframes fadein {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 .checkin-count h3,
 .checkin-count li {
     color: #4d4d4d;
 }
 
-.checkin-header {
-  margin-top: 30px;
-  margin-bottom: 15px;
-}
-
-.checkin-header h1 {
+h1 {
     text-transform: uppercase;
     letter-spacing: 0px;
-}
-
-.checkin-search-actions {
-    text-align: center;
 }
 
 .btn {
     border-radius: 0;
     border: 2px solid #fff;
     text-transform: uppercase;
+    display: inline-flex;
+    justify-content: center;
 }
 
-.btn-lg {
-    padding: 12px 5px;
+body {
+    animation: fadein 0.4s;
+    -ms-touch-action: none !important;
+    touch-action: none;   /* Disable any special actions on tap/touch */
+
+    -ms-content-zooming: none; /* Disables zooming */
 }
 
-.checkin-actions a.btn-primary {
-    padding: 14px 17px;
-    margin-left: 2px;
-}
-
-.checkin-footer .checkin-actions a.btn-default {
-    background-color: #8bc540;
-    color: #fff;
-    border-color: transparent;
-}
-
-.checkin-search-body {
-    width: 293px;
-}
-
-input.checkin-phone-entry {
-    width: 293px;
-}
-
-.tenkey a.command {
-    padding-top: 30px;
-}
-
-.tenkey a.btn {
-    width: 90px;
-    height: 90px;
-    margin: 3px;
+@keyframes fadein {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 #pointepark-logo {
-    position: static;
+    position: fixed;
     bottom: 5px;
     left: 40%;
     opacity: .8;
