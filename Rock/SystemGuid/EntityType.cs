@@ -213,6 +213,11 @@ namespace Rock.SystemGuid
         public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
 
         /// <summary>
+        /// The guid for the Rock.Model.Registration entity
+        /// </summary>
+        public const string REGISTRATION = "D2F294C6-E161-4A56-85C7-CD74D535F61A";
+
+        /// <summary>
         /// The guid for the Rock.Model.RegistrationTemplate entity
         /// </summary>
         public const string REGISTRATION_TEMPLATE = "A01E3E99-A8AD-4C6C-BAAC-98795738BA70";

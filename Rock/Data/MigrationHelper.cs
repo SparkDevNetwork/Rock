@@ -1010,7 +1010,7 @@ namespace Rock.Data
         #region Category Methods
 
         /// <summary>
-        /// Updates the category or adds if it doesn't already exist (based on Guid)
+        /// Updates the category or adds if it doesn't already exist (based on Guid) and marks it as IsSystem
         /// </summary>
         /// <param name="entityTypeGuid">The entity type unique identifier.</param>
         /// <param name="name">The name.</param>
