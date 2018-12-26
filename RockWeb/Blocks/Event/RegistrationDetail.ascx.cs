@@ -332,6 +332,8 @@ namespace RockWeb.Blocks.Event
                         registration.GroupId = ddlGroup.SelectedValueAsInt();
                     }
 
+                    avcEditAttributes.GetEditValues( registration );
+
                     History.EvaluateChange( changes, "Discount Code", registration.DiscountCode, ddlDiscountCode.SelectedValue );
                     registration.DiscountCode = ddlDiscountCode.SelectedValue;
 
@@ -363,6 +365,8 @@ namespace RockWeb.Blocks.Event
                             registration.Id,
                             changes
                         );
+
+                        registration.SaveAttributeValues( rockContext );
                     } );
 
                     if ( newRegistration )
@@ -1444,6 +1448,13 @@ namespace RockWeb.Blocks.Event
             }
             ddlGroup.SetValue( registration.Group );
 
+            registration.LoadAttributes();
+
+            // Don't show the Categories, since they will probably be 'Start of Registration' or 'End of Registration';
+            avcEditAttributes.ShowCategoryLabel = false;
+            avcEditAttributes.ExcludedAttributes = registration.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
+            avcEditAttributes.AddEditControls( registration );
+
             ddlDiscountCode.DataSource = discountCodes;
             ddlDiscountCode.DataBind();
             ddlDiscountCode.Items.Insert( 0, new ListItem( "", "" ) );
@@ -1495,6 +1506,13 @@ namespace RockWeb.Blocks.Event
             {
                 lGroup.Visible = false;
             }
+
+            registration.LoadAttributes();
+            avcDisplayAttributes.ExcludedAttributes = registration.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
+
+            // Don't show the Categories, since they will probably be 'Start of Registration' or 'End of Registration';
+            avcDisplayAttributes.ShowCategoryLabel = false;
+            avcDisplayAttributes.AddDisplayControls( registration );
 
             lDiscountCode.Visible = !string.IsNullOrWhiteSpace( registration.DiscountCode );
             lDiscountCode.Text = registration.DiscountCode;

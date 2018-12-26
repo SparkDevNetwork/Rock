@@ -136,6 +136,26 @@ namespace Rock.Model
         public string DiscountCodeTerm { get; set; }
 
         /// <summary>
+        /// Gets or sets the section title for attributes that are collected at the start of the registration entry process.
+        /// </summary>
+        /// <value>
+        /// The registration attribute title start.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string RegistrationAttributeTitleStart { get; set; }
+
+        /// <summary>
+        /// Gets or sets the section title for attributes that are collected at the end of the registration entry process.
+        /// </summary>
+        /// <value>
+        /// The registration attribute title end.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string RegistrationAttributeTitleEnd { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the confirmation from.
         /// </summary>
         /// <value>

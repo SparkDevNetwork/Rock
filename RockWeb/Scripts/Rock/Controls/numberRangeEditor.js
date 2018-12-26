@@ -6,7 +6,6 @@
     Rock.controls.numberRangeEditor = (function () {
         var exports = {
             clientValidate: function (validator, args) {
-                debugger
                 var $numberRangeEditor = $(validator).closest('.js-numberrangeeditor');
                 var lowerValue = $numberRangeEditor.find('input.js-number-range-lower ').val();
                 var upperValue = $numberRangeEditor.find('input.js-number-range-upper').val();
