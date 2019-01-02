@@ -35,9 +35,7 @@
 		<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.min.css", true) %>"/>
 		<link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Assets/Icons/style.css", false) %>"/>
-    <link href="<%# ResolveRockUrl("~~/bower_components/select2/dist/css/select2.min.css") %>" rel="stylesheet" />
     
-		<script src="<%# ResolveRockUrl("~~/bower_components/select2/dist/js/select2.min.js") %>"></script>
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
     <script src="<%# ResolveRockUrl("~~/Scripts/scripts.min.js", true ) %>" ></script>
