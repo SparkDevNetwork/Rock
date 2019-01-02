@@ -35,15 +35,22 @@
 		<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.min.css", true) %>"/>
 		<link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Assets/Icons/style.css", false) %>"/>
+
+		<!-- Adobe Fonts (Din 2014) -->
+		<link rel="stylesheet" href="https://use.typekit.net/nuz3ykm.css" integrity="sha384-3Oksn1rfcunmyufe4U77X7mx3tf2WwJYDR9pMmX7iOZBO53RWIGodHaZtFkFBVZB" crossorigin="anonymous">
     
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
     <script src="<%# ResolveRockUrl("~~/Scripts/scripts.min.js", true ) %>" ></script>
 
-		<!-- Go to www.addthis.com/dashboard to customize your tools -->
+		<!-- addthis.com (Used for social/tracking buttons) -->
 		<script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5b2009499d65f890"></script>
 
-    <script src="<%# ResolveRockUrl("~~/Scripts/node_modules/animate.js/assets/js/dist/animate.js" ) %>" ></script>
+		<!-- animate.js (Used for scroll-triggered animations) -->
+    <script src="https://cdn.jsdelivr.net/npm/animate.js@1.4.1/assets/js/dist/animate.min.js" integrity="sha384-v878xwitWndgO2EepfRrgOy+ygmGIouBrMa0JoEE2iB850hugcMfv8Piilf9BPB8" crossorigin="anonymous"></script>
+
+		<!-- paroller.js (Used for scrolling parallax animations) -->
+		<script src="https://cdn.jsdelivr.net/npm/paroller.js@1.4.4/dist/jquery.paroller.min.js" integrity="sha384-xNAtEJGNci9hwWv3KQ+/mqwBRxn01jrGnxLG5ni29tS0YkZtUA90LGvB28mtBm76" crossorigin="anonymous"></script>
     
 </head>
 <body runat="server" id="body">
@@ -139,6 +146,14 @@
       </asp:UpdateProgress>
 		
     </form>
+
+		<script>
+    	var animate = new Animate({
+      	remove: false
+    	});
+    	animate.init();
+    	$('.paroller').paroller();
+		</script>
 
 </body>
 
