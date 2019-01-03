@@ -239,7 +239,13 @@ public class Lava : IHttpHandler
         dictionary.Add( "Headers", headers );
 
         // Add the cookies
-        dictionary.Add( "Cookies", request.Cookies.Cast<string>().ToDictionary( q => q, q => request.Cookies[q].Value ) );
+        try
+        {
+			dictionary.Add( "Cookies", request.Cookies.Cast<string>().ToDictionary( q => q, q => request.Cookies[q].Value ) );
+        }
+        catch
+        {
+        }
 
         return dictionary;
     }
