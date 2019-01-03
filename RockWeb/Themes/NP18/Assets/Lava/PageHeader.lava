@@ -1,46 +1,43 @@
-{% assign PageHeaderImage = CurrentPage | Attribute:'PageHeaderImage','Url' %}
-{% if PageHeaderImage and PageHeaderImage != "" %}
-<div class="headerImage" style="background-image:url({{ CurrentPage | Attribute:'PageHeaderImage','Url' }});">
-	<div>
-    {% assign backgroundVideo = CurrentPage | Attribute:'backgroundVideo','Url' %}
-    {% if backgroundVideo and backgroundVideo != empty %}
-    <link href="//vjs.zencdn.net/6.7/video-js.min.css" rel="stylesheet">
-		<script src="//vjs.zencdn.net/6.7/video.min.js"></script>
-    <script src="/Themes/NP18/Scripts/videojs-http-streaming.min.js" ></script>
-    	<div id="bgvideo">
-	    	<video id="background-video" preload="preload" muted autoplay playsinline loop class="video-js vjs-default-skin" width="100%" height="100%" poster="{{ CurrentPage | Attribute:'PageHeaderImage','Url' }}" >
-				</video>
-				<script>
-				var player = videojs('background-video');
-				player.src({
-				  src: '{{backgroundVideo}}',
-				  type: 'video/mp4'
-				});
-				player.play();
-				</script>
-    	</div>
-		{% endif %}
-		{% if CurrentPage.PageDisplayTitle %}
-	  <div class="titleBlock">
-			<div class="container">
-				<div class="row">
-					<div class="col-xs-12">
-			      <h1>{{ 'Global' | Page:'Title' }}</h1>
-			    </div>
-				</div>
-			</div>
-		</div>
-	  {% endif %}
-	</div>
-</div>
+{% assign PageHeaderImage_Url = CurrentPage | Attribute:'PageHeaderImage','Url' %}
+{% if PageHeaderImage_Url != "" %}
+
+    <div class="headerImage" style="background-image:url({{ PageHeaderImage_Url }});">
+        <div>
+
+            {% assign backgroundVideo = CurrentPage | Attribute:'backgroundVideo','Url' %}
+            {% if backgroundVideo and backgroundVideo != empty %}
+                <div id="bgvideo">
+                    <video id="background-video" preload="preload" muted autoplay playsinline loop width="100%" height="100%" poster="{{ PageHeaderImage_Url }}">
+                        <source src="{{ backgroundVideo }}" type="video/mp4">
+                    </video>
+                </div>
+            {% endif %}
+            
+            {% if CurrentPage.PageDisplayTitle %}
+                <div class="titleBlock">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <h1>{{ 'Global' | Page:'Title' }}</h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
 {% elseif CurrentPage.PageDisplayTitle %}
-<div class="pagetitle noheader">
-	<div class="container">
-		<div class="row">
-			<div class="col-xs-12">
-				<h1>{{ 'Global' | Page:'Title' }}</h1>
-			</div>
-		</div>
-	</div>
-</div>
+
+    <div class="pagetitle noheader">
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12">
+                    <h1>{{ 'Global' | Page:'Title' }}</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endif %}
