@@ -204,9 +204,7 @@ public class LaunchWorkflow : IHttpHandler
             {
                 dictionary.Add( "Body", Newtonsoft.Json.JsonConvert.DeserializeObject( (string)dictionary["RawBody"] ) );
             }
-            catch
-            {
-            }
+            catch { }
         }
         else if ( httpContext.Request.ContentType == "application/x-www-form-urlencoded" )
         {
@@ -214,9 +212,7 @@ public class LaunchWorkflow : IHttpHandler
             {
                 dictionary.Add( "Body", httpContext.Request.Form.Cast<string>().ToDictionary( q => q, q => httpContext.Request.Form[q] ) );
             }
-            catch
-            {
-            }
+            catch { }
         }
         else if ( httpContext.Request.ContentType == "application/xml" )
         {
@@ -227,9 +223,7 @@ public class LaunchWorkflow : IHttpHandler
                 string jsonText = JsonConvert.SerializeXmlNode( doc );
                 dictionary.Add( "Body", Newtonsoft.Json.JsonConvert.DeserializeObject( ( jsonText ) ) );
             }
-            catch
-            {
-            }
+            catch { }
         }
 
         // Add the headers
