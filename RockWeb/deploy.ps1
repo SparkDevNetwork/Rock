@@ -59,8 +59,8 @@ If (Test-Path "$rootfolder\config\web.config"){
 # Move-Item "$rootfolder\temp\CheckinKids_CentralAZ\Assets" "$webroot\Themes\CheckinKids_CentralAZ" -Force
 
 # move non com_lcbcchurch plugins back from temp\Plugins folder
-Write-Host "Moving non com_lcbcchurch Plugins back from temp Plugins directory"
-$files = GCI -path "$rootfolder\temp\Plugins" | Where-Object {$_.name -ne "com_lcbcchurch"}
+Write-Host "Moving non com_lcbcchurch/com_bemadev Plugins back from temp Plugins directory"
+$files = GCI -path "$rootfolder\temp\Plugins" | Where-Object {$_.name -ne "com_lcbcchurch" -and $_.name -ne "com_bemadev"}
 foreach ($file in $files) { Move-Item  "$rootfolder\temp\Plugins\$file" -Destination "$webroot\Plugins\" -Force }
 
 # move a robots file back from temp if it exists
