@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// CommunicationRecipient Service class
+    /// CommunicationResponse Service class
     /// </summary>
-    public partial class CommunicationRecipientService : Service<CommunicationRecipient>
+    public partial class CommunicationResponseService : Service<CommunicationResponse>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CommunicationRecipientService"/> class
+        /// Initializes a new instance of the <see cref="CommunicationResponseService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public CommunicationRecipientService(RockContext context) : base(context)
+        public CommunicationResponseService(RockContext context) : base(context)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( CommunicationRecipient item, out string errorMessage )
+        public bool CanDelete( CommunicationResponse item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -58,51 +58,47 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class CommunicationRecipientExtensionMethods
+    public static partial class CommunicationResponseExtensionMethods
     {
         /// <summary>
-        /// Clones this CommunicationRecipient object to a new CommunicationRecipient object
+        /// Clones this CommunicationResponse object to a new CommunicationResponse object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static CommunicationRecipient Clone( this CommunicationRecipient source, bool deepCopy )
+        public static CommunicationResponse Clone( this CommunicationResponse source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as CommunicationRecipient;
+                return source.Clone() as CommunicationResponse;
             }
             else
             {
-                var target = new CommunicationRecipient();
+                var target = new CommunicationResponse();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another CommunicationRecipient object to this CommunicationRecipient object
+        /// Copies the properties from another CommunicationResponse object to this CommunicationResponse object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this CommunicationRecipient target, CommunicationRecipient source )
+        public static void CopyPropertiesFrom( this CommunicationResponse target, CommunicationResponse source )
         {
             target.Id = source.Id;
-            target.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
-            target.CommunicationId = source.CommunicationId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.MediumEntityTypeId = source.MediumEntityTypeId;
-            target.OpenedClient = source.OpenedClient;
-            target.OpenedDateTime = source.OpenedDateTime;
-            target.PersonAliasId = source.PersonAliasId;
-            target.ResponseCode = source.ResponseCode;
-            target.SendDateTime = source.SendDateTime;
-            target.SentMessage = source.SentMessage;
-            target.Status = source.Status;
-            target.StatusNote = source.StatusNote;
-            target.TransportEntityTypeName = source.TransportEntityTypeName;
-            target.UniqueMessageId = source.UniqueMessageId;
+            target.FromPersonAliasId = source.FromPersonAliasId;
+            target.IsRead = source.IsRead;
+            target.MessageKey = source.MessageKey;
+            target.RelatedCommunicationId = source.RelatedCommunicationId;
+            target.RelatedMediumEntityTypeId = source.RelatedMediumEntityTypeId;
+            target.RelatedSmsFromDefinedValueId = source.RelatedSmsFromDefinedValueId;
+            target.RelatedTransportEntityTypeId = source.RelatedTransportEntityTypeId;
+            target.Response = source.Response;
+            target.ToPersonAliasId = source.ToPersonAliasId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

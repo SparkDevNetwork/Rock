@@ -27,18 +27,12 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for CommunicationRecipient that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for CommunicationResponse that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class CommunicationRecipientEntity
+    public partial class CommunicationResponseEntity
     {
         /// <summary />
         public int Id { get; set; }
-
-        /// <summary />
-        public string AdditionalMergeValuesJson { get; set; } = @"{}";
-
-        /// <summary />
-        public int CommunicationId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -47,7 +41,13 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public int? MediumEntityTypeId { get; set; }
+        public int? FromPersonAliasId { get; set; }
+
+        /// <summary />
+        public bool IsRead { get; set; }
+
+        /// <summary />
+        public string MessageKey { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -55,34 +55,22 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string OpenedClient { get; set; }
+        public int? RelatedCommunicationId { get; set; }
 
         /// <summary />
-        public DateTime? OpenedDateTime { get; set; }
+        public int RelatedMediumEntityTypeId { get; set; }
 
         /// <summary />
-        public int PersonAliasId { get; set; }
+        public int? RelatedSmsFromDefinedValueId { get; set; }
 
         /// <summary />
-        public string ResponseCode { get; set; }
+        public int RelatedTransportEntityTypeId { get; set; }
 
         /// <summary />
-        public DateTime? SendDateTime { get; set; }
+        public string Response { get; set; }
 
         /// <summary />
-        public string SentMessage { get; set; }
-
-        /// <summary />
-        public Rock.Client.Enums.CommunicationRecipientStatus Status { get; set; }
-
-        /// <summary />
-        public string StatusNote { get; set; }
-
-        /// <summary />
-        public string TransportEntityTypeName { get; set; }
-
-        /// <summary />
-        public string UniqueMessageId { get; set; }
+        public int? ToPersonAliasId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -111,28 +99,24 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source CommunicationRecipient object
+        /// Copies the base properties from a source CommunicationResponse object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( CommunicationRecipient source )
+        public void CopyPropertiesFrom( CommunicationResponse source )
         {
             this.Id = source.Id;
-            this.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
-            this.CommunicationId = source.CommunicationId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.MediumEntityTypeId = source.MediumEntityTypeId;
+            this.FromPersonAliasId = source.FromPersonAliasId;
+            this.IsRead = source.IsRead;
+            this.MessageKey = source.MessageKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.OpenedClient = source.OpenedClient;
-            this.OpenedDateTime = source.OpenedDateTime;
-            this.PersonAliasId = source.PersonAliasId;
-            this.ResponseCode = source.ResponseCode;
-            this.SendDateTime = source.SendDateTime;
-            this.SentMessage = source.SentMessage;
-            this.Status = source.Status;
-            this.StatusNote = source.StatusNote;
-            this.TransportEntityTypeName = source.TransportEntityTypeName;
-            this.UniqueMessageId = source.UniqueMessageId;
+            this.RelatedCommunicationId = source.RelatedCommunicationId;
+            this.RelatedMediumEntityTypeId = source.RelatedMediumEntityTypeId;
+            this.RelatedSmsFromDefinedValueId = source.RelatedSmsFromDefinedValueId;
+            this.RelatedTransportEntityTypeId = source.RelatedTransportEntityTypeId;
+            this.Response = source.Response;
+            this.ToPersonAliasId = source.ToPersonAliasId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -144,19 +128,10 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for CommunicationRecipient that includes all the fields that are available for GETs. Use this for GETs (use CommunicationRecipientEntity for POST/PUTs)
+    /// Client model for CommunicationResponse that includes all the fields that are available for GETs. Use this for GETs (use CommunicationResponseEntity for POST/PUTs)
     /// </summary>
-    public partial class CommunicationRecipient : CommunicationRecipientEntity
+    public partial class CommunicationResponse : CommunicationResponseEntity
     {
-        /// <summary />
-        public Dictionary<string, Object> AdditionalMergeValues { get; set; }
-
-        /// <summary />
-        public EntityType MediumEntityType { get; set; }
-
-        /// <summary />
-        public PersonAlias PersonAlias { get; set; }
-
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
