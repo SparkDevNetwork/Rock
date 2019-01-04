@@ -40,7 +40,7 @@ namespace Rock.Web.UI.Controls
         private RockTextBox _tbMiddleName;
         private RockTextBox _tbLastName;
         private DropDownList _ddlSuffix;
-        private DropDownList _ddlConnectionStatus;
+        private RockDropDownList _ddlConnectionStatus;
         private RockRadioButtonList _rblGender;
         private DatePicker _dpBirthdate;
         private GradePicker _ddlGradePicker;
@@ -408,7 +408,7 @@ namespace Rock.Web.UI.Controls
             _tbMiddleName = new RockTextBox();
             _tbLastName = new RockTextBox();
             _ddlSuffix = new DropDownList();
-            _ddlConnectionStatus = new DropDownList();
+            _ddlConnectionStatus = new RockDropDownList();
             _rblGender = new RockRadioButtonList();
             _dpBirthdate = new DatePicker();
             _ddlGradePicker = new GradePicker { UseAbbreviation = true, UseGradeOffsetAsValue = true };
@@ -485,6 +485,8 @@ namespace Rock.Web.UI.Controls
 
             _ddlConnectionStatus.CssClass = "form-control";
             BindListToDefinedType( _ddlConnectionStatus, Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, true );
+            _ddlConnectionStatus.Required = true;
+            _ddlConnectionStatus.RequiredErrorMessage = "Connection Status is required for all group members";
 
             _rblGender.RepeatDirection = RepeatDirection.Vertical;
             _rblGender.RequiredErrorMessage = "Gender is required for all group members";
