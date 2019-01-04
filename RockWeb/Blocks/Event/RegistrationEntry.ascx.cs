@@ -2107,9 +2107,7 @@ namespace RockWeb.Blocks.Event
                             }
                         }
                     }
-                    catch
-                    {
-                    }
+                    catch { }
 
                     return ( int? ) null;
                 }

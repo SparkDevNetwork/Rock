@@ -936,9 +936,7 @@ namespace RockWeb.Blocks.Event
                                 var values = attribute.FieldType.Field.GetFilterValues( filterControl, field.Attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 fRegistrants.SaveUserPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                             }
-                            catch
-                            {
-                            }
+                            catch { }
                         }
                     }
                 }
@@ -1078,9 +1076,7 @@ namespace RockWeb.Blocks.Event
                         e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
                         return;
                     }
-                    catch
-                    {
-                    }
+                    catch { }
                 }
             }
 
@@ -1841,10 +1837,7 @@ namespace RockWeb.Blocks.Event
                         item.EntityId = (int)key;
                         entitySet.Items.Add( item );
                     }
-                    catch
-                    {
-                        // ignore
-                    }
+                    catch { }
                 }
 
                 if ( entitySet.Items.Any() )
@@ -1977,9 +1970,7 @@ namespace RockWeb.Blocks.Event
                                 var values = attribute.FieldType.Field.GetFilterValues( filterControl, field.Attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 fWaitList.SaveUserPreference( "WL-" + attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                             }
-                            catch
-                            {
-                            }
+                            catch { }
                         }
                     }
                 }
@@ -2123,9 +2114,7 @@ namespace RockWeb.Blocks.Event
                             e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
                             return;
                         }
-                        catch
-                        {
-                        }
+                        catch { }
                     }
                 }
 
@@ -4266,9 +4255,7 @@ namespace RockWeb.Blocks.Event
                                         var values = JsonConvert.DeserializeObject<List<string>>( savedValue );
                                         attribute.FieldType.Field.SetFilterValues( registrantsControl, attribute.QualifierValues, values );
                                     }
-                                    catch
-                                    {
-                                    }
+                                    catch { }
                                 }
                             }
                         }
@@ -4303,9 +4290,7 @@ namespace RockWeb.Blocks.Event
                                         var values = JsonConvert.DeserializeObject<List<string>>( savedValue );
                                         attribute.FieldType.Field.SetFilterValues( groupPlacementsControl, attribute.QualifierValues, values );
                                     }
-                                    catch
-                                    {
-                                    }
+                                    catch { }
                                 }
                             }
                         }
@@ -4338,9 +4323,7 @@ namespace RockWeb.Blocks.Event
                                     var values = JsonConvert.DeserializeObject<List<string>>( savedValue );
                                     attribute.FieldType.Field.SetFilterValues( waitListControl, attribute.QualifierValues, values );
                                 }
-                                catch
-                                {
-                                }
+                                catch { }
                             }
                         }
 
@@ -5873,9 +5856,7 @@ namespace RockWeb.Blocks.Event
                                 var values = attribute.FieldType.Field.GetFilterValues( filterControl, field.Attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 fGroupPlacements.SaveUserPreference( "GroupPlacements-" + attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                             }
-                            catch
-                            {
-                            }
+                            catch { }
                         }
                     }
                 }
@@ -6019,9 +6000,7 @@ namespace RockWeb.Blocks.Event
                             e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
                             return;
                         }
-                        catch
-                        {
-                        }
+                        catch { }
                     }
                 }
 
