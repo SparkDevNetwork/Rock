@@ -176,9 +176,11 @@ namespace Rock.Field.Types
                         return campus.Guid.ToString();
                     }
                 }
+
+                return string.Empty;
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>
@@ -275,7 +277,7 @@ namespace Rock.Field.Types
             var campusGuids = value.SplitDelimitedValues().AsGuidList();
 
             var campuses = campusGuids.Select( a => CampusCache.Get( a ) ).Where( c => c != null );
-            return campuses.Select( a => a.Name ).ToList().AsDelimited( ", ", " or " );
+            return AddQuotes( campuses.Select( a => a.Name ).ToList().AsDelimited( "' OR '" ) );
         }
 
         /// <summary>

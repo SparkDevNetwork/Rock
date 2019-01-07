@@ -123,5 +123,20 @@ namespace Rock.SystemKey
         /// Settings for Spark Data
         /// </summary>
         public const string SPARK_DATA = "core_SparkData";
+
+        /// <summary>
+        /// Settings for Do Not Disturb Start
+        /// </summary>
+        public const string DO_NOT_DISTURB_START = "core_DoNotDisturbStart";
+
+        /// <summary>
+        /// Settings for Do Not Disturb End
+        /// </summary>
+        public const string DO_NOT_DISTURB_END = "core_DoNotDisturbEnd";
+
+        /// <summary>
+        /// Settings for Do Not Disturb Active
+        /// </summary>
+        public const string DO_NOT_DISTURB_ACTIVE = "core_DoNotDisturbActive";
     }
 }

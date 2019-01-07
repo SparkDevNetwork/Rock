@@ -96,6 +96,8 @@ namespace Rock.Field.Types
                 {
                     return backgroundCheckDocument.Text;
                 }
+
+                return string.Empty;
             }
 
             return null;

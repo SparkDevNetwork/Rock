@@ -127,8 +127,8 @@ namespace RockWeb.Blocks.Communication
             base.OnInit( e );
 
             // NOTE: moment.js needs to be loaded before chartjs
-            RockPage.AddScriptLink( "/Scripts/moment.min.js", true );
-            RockPage.AddScriptLink( "/Scripts/Chartjs/Chart.js", true );
+            RockPage.AddScriptLink( "~/Scripts/moment.min.js", true );
+            RockPage.AddScriptLink( "~/Scripts/Chartjs/Chart.js", true );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;

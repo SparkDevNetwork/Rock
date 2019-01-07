@@ -866,9 +866,19 @@ namespace Rock.Client.SystemGuid
 
     /// <summary>
     /// </summary>
+    public class SystemSetting
+    {
+        public const string DO_NOT_DISTURB_ACTIVE = "1BE30413-5C90-4B78-B324-BD31AA83C002";
+        public const string DO_NOT_DISTURB_END = "661802FC-E636-4CE2-B75A-4AC05595A347";
+        public const string DO_NOT_DISTURB_START = "4A558666-32C7-4490-B860-0F41358E14CA";
+    }
+
+    /// <summary>
+    /// </summary>
     public class WorkflowType
     {
         public const string PROTECTMYMINISTRY = "16D12EF7-C546-4039-9036-B73D118EDC90";
+        public const string UNATTENDED_CHECKIN = "011E9F5A-60D4-4FF5-912A-290881E37EAF";
     }
 
     #pragma warning restore CS1591

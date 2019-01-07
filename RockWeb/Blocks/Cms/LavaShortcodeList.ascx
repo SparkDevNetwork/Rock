@@ -53,7 +53,7 @@
                           </div>
                           <div class="panel-body" style="display: none;">
                                 <%# Eval("Documentation") %>
-                              
+                                <asp:Literal ID="lMessages" runat="server" />
                               <asp:HiddenField ID="hfShortcodeId" runat="server" Value='<%# DataBinder.Eval(Container.DataItem, "Id").ToString() %>' />
                               <div id="divViewPanel" runat="server" class="pull-right">
                                     <asp:LinkButton ID="btnView" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnEdit_Click"><i class="fa fa-search"></i></asp:LinkButton>

@@ -33,6 +33,17 @@ namespace Rock
         #region String Extensions
 
         /// <summary>
+        /// Joins and array of strings using the provided separator.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="separator">The separator.</param>
+        /// <returns>Concatencated string.</returns>
+        public static string JoinStrings( this IEnumerable<string> source, string separator )
+        {
+            return string.Join( separator, source.ToArray() );
+        }
+
+        /// <summary>
         /// Removes special characters from the string so that only Alpha, Numeric, '.' and '_' remain;
         /// </summary>
         /// <param name="str">The identifier.</param>
@@ -47,6 +58,7 @@ namespace Rock
                     sb.Append( c );
                 }
             }
+
             return sb.ToString();
         }
 
@@ -70,6 +82,7 @@ namespace Rock
                     sb.Append( replacementCharacters );
                 }
             }
+
             return sb.ToString();
         }
 
@@ -88,7 +101,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        [System.Diagnostics.DebuggerStepThrough()]
+        [System.Diagnostics.DebuggerStepThrough]
         public static bool IsNotNullOrWhiteSpace( this string str )
         {
             return !string.IsNullOrWhiteSpace( str );
@@ -112,7 +125,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        [System.Diagnostics.DebuggerStepThrough()]
+        [System.Diagnostics.DebuggerStepThrough]
         public static bool IsNullOrWhiteSpace( this string str )
         {
             return string.IsNullOrWhiteSpace( str );
@@ -144,7 +157,9 @@ namespace Rock
             foreach ( char c in str )
             {
                 if ( c < '0' || c > '9' )
+                {
                     return false;
+                }
             }
 
             return true;
@@ -185,28 +200,28 @@ namespace Rock
         /// <returns></returns>
         public static string RemoveInvalidReservedUrlChars( this string str )
         {
-            return str.Replace( " ", "" )
-                .Replace( ";", "" )
-                .Replace( "/", "" )
-                .Replace( "?", "" )
-                .Replace( ":", "" )
-                .Replace( "@", "" )
-                .Replace( "=", "" )
-                .Replace( "&", "" )
-                .Replace( "<", "" )
-                .Replace( ">", "" )
-                .Replace( "#", "" )
-                .Replace( "%", "" )
-                .Replace( "\"", "" )
-                .Replace( "{", "" )
-                .Replace( "}", "" )
-                .Replace( "|", "" )
-                .Replace( "\\", "" )
-                .Replace( "^", "" )
-                .Replace( "[", "" )
-                .Replace( "]", "" )
-                .Replace( "`", "" )
-                .Replace( "'", "" );
+            return str.Replace( " ", string.Empty )
+                .Replace( ";", string.Empty )
+                .Replace( "/", string.Empty )
+                .Replace( "?", string.Empty )
+                .Replace( ":", string.Empty )
+                .Replace( "@", string.Empty)
+                .Replace( "=", string.Empty )
+                .Replace( "&", string.Empty )
+                .Replace( "<", string.Empty )
+                .Replace( ">", string.Empty )
+                .Replace( "#", string.Empty )
+                .Replace( "%", string.Empty )
+                .Replace( "\"", string.Empty )
+                .Replace( "{", string.Empty )
+                .Replace( "}", string.Empty )
+                .Replace( "|", string.Empty )
+                .Replace( "\\", string.Empty )
+                .Replace( "^", string.Empty)
+                .Replace( "[", string.Empty )
+                .Replace( "]", string.Empty )
+                .Replace( "`", string.Empty )
+                .Replace( "'", string.Empty );
         }
 
         /// <summary>
@@ -214,24 +229,25 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static Int64 MakeInt64HashCode( this string str )
+        public static long MakeInt64HashCode( this string str )
         {
             // http://www.codeproject.com/Articles/34309/Convert-String-to-64bit-Integer
-            Int64 hashCode = 0;
+            long hashCode = 0;
             if ( !string.IsNullOrEmpty( str ) )
             {
-                //Unicode Encode Covering all characterset
+                // Unicode Encode Covering all characterset
                 byte[] byteContents = Encoding.Unicode.GetBytes( str );
                 System.Security.Cryptography.SHA256 hash =
                 new System.Security.Cryptography.SHA256CryptoServiceProvider();
                 byte[] hashText = hash.ComputeHash( byteContents );
 
-                Int64 hashCodeStart = BitConverter.ToInt64( hashText, 0 );
-                Int64 hashCodeMedium = BitConverter.ToInt64( hashText, 8 );
-                Int64 hashCodeEnd = BitConverter.ToInt64( hashText, 24 );
+                long hashCodeStart = BitConverter.ToInt64( hashText, 0 );
+                long hashCodeMedium = BitConverter.ToInt64( hashText, 8 );
+                long hashCodeEnd = BitConverter.ToInt64( hashText, 24 );
                 hashCode = hashCodeStart ^ hashCodeMedium ^ hashCodeEnd;
             }
-            return ( hashCode );
+
+            return hashCode;
         }
 
         /// <summary>
@@ -244,7 +260,7 @@ namespace Rock
         {
             string invalidChars = Regex.Escape( new string( System.IO.Path.GetInvalidFileNameChars() ) );
             string invalidReStr = string.Format( @"[{0}]+", invalidChars );
-            string replace = Regex.Replace( name, invalidReStr, "_" ).Replace( ";", "" ).Replace( ",", "" );
+            string replace = Regex.Replace( name, invalidReStr, "_" ).Replace( ";", string.Empty ).Replace( ",", string.Empty );
             return replace;
         }
 
@@ -256,7 +272,9 @@ namespace Rock
         public static string SplitCase( this string str )
         {
             if ( str == null )
+            {
                 return null;
+            }
 
             return Regex.Replace( Regex.Replace( str, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1 $2" ), @"(\p{Ll})(\P{Ll})", "$1 $2" );
         }
@@ -270,7 +288,9 @@ namespace Rock
         public static string[] SplitDelimitedValues( this string str, bool whitespace = true )
         {
             if ( str == null )
+            {
                 return new string[0];
+            }
 
             string regex = whitespace ? @"[\s\|,;]+" : @"[\|,;]+";
 
@@ -289,7 +309,9 @@ namespace Rock
         public static string ReplaceCaseInsensitive( this string str, string oldValue, string newValue )
         {
             if ( str == null )
+            {
                 return null;
+            }
 
             int count, position0, position1;
             count = position0 = position1 = 0;
@@ -298,18 +320,31 @@ namespace Rock
             int inc = ( str.Length / oldValue.Length ) *
                       ( newValue.Length - oldValue.Length );
             char[] chars = new char[str.Length + Math.Max( 0, inc )];
-            while ( ( position1 = upperString.IndexOf( upperPattern,
-                                              position0 ) ) != -1 )
+            while ( ( position1 = upperString.IndexOf( upperPattern, position0 ) ) != -1 )
             {
                 for ( int i = position0; i < position1; ++i )
+                {
                     chars[count++] = str[i];
+                }
+
                 for ( int i = 0; i < newValue.Length; ++i )
+                {
                     chars[count++] = newValue[i];
+                }
+
                 position0 = position1 + oldValue.Length;
             }
-            if ( position0 == 0 ) return str;
+
+            if ( position0 == 0 )
+            {
+                return str;
+            }
+
             for ( int i = position0; i < str.Length; ++i )
+            {
                 chars[count++] = str[i];
+            }
+
             return new string( chars, 0, count );
         }
 
@@ -344,7 +379,9 @@ namespace Rock
         public static string EscapeQuotes( this string str )
         {
             if ( str == null )
+            {
                 return null;
+            }
 
             return str.Replace( "'", "\\'" ).Replace( "\"", "\\\"" );
         }
@@ -392,16 +429,22 @@ namespace Rock
         public static string Truncate( this string str, int maxLength )
         {
             if ( str == null )
+            {
                 return null;
+            }
 
             if ( str.Length <= maxLength )
+            {
                 return str;
+            }
 
             maxLength -= 3;
             var truncatedString = str.Substring( 0, maxLength );
             var lastSpace = truncatedString.LastIndexOf( ' ' );
             if ( lastSpace > 0 )
+            {
                 truncatedString = truncatedString.Substring( 0, lastSpace );
+            }
 
             return truncatedString + "...";
         }
@@ -423,6 +466,7 @@ namespace Rock
                     return str.Left( maxLengthAttr.Length );
                 }
             }
+
             return str;
         }
 
@@ -433,7 +477,7 @@ namespace Rock
         /// <returns></returns>
         public static string AsNumeric( this string str )
         {
-            return Regex.Replace( str, @"[^0-9]", "" );
+            return Regex.Replace( str, @"[^0-9]", string.Empty );
         }
 
         /// <summary>
@@ -445,8 +489,8 @@ namespace Rock
         /// <returns></returns>
         public static string ReplaceLastOccurrence( this string source, string find, string replace )
         {
-            int Place = source.LastIndexOf( find );
-            return Place > 0 ? source.Remove( Place, find.Length ).Insert( Place, replace ) : source;
+            int place = source.LastIndexOf( find );
+            return place > 0 ? source.Remove( place, find.Length ).Insert( place, replace ) : source;
         }
 
         /// <summary>
@@ -460,7 +504,7 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="resultIfNullOrEmpty">if set to <c>true</c> [result if null or empty].</param>
         /// <returns></returns>
-        [System.Diagnostics.DebuggerStepThrough()]
+        [System.Diagnostics.DebuggerStepThrough]
         public static bool AsBoolean( this string str, bool resultIfNullOrEmpty = false )
         {
             if ( string.IsNullOrWhiteSpace( str ) )
@@ -506,6 +550,7 @@ namespace Rock
             {
                 nameValues = str.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
             }
+
             foreach ( string nameValue in nameValues )
             {
                 string[] nameAndValue = nameValue.Split( new char[] { '^' }, 2 );
@@ -514,6 +559,7 @@ namespace Rock
                     dictionary[nameAndValue[0]] = nameAndValue[1];
                 }
             }
+
             return dictionary;
         }
 
@@ -522,7 +568,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        [System.Diagnostics.DebuggerStepThrough()]
+        [System.Diagnostics.DebuggerStepThrough]
         public static System.Collections.Generic.Dictionary<string, string> AsDictionaryOrNull( this string str )
         {
             var dictionary = AsDictionary( str );
@@ -530,6 +576,7 @@ namespace Rock
             {
                 return dictionary;
             }
+
             return null;
         }
 
@@ -538,7 +585,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The STR.</param>
         /// <returns></returns>
-        [System.Diagnostics.DebuggerStepThrough()]
+        [System.Diagnostics.DebuggerStepThrough]
         public static int AsInteger( this string str )
         {
             return str.AsIntegerOrNull() ?? 0;
@@ -549,7 +596,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        [System.Diagnostics.DebuggerStepThrough()]
+        [System.Diagnostics.DebuggerStepThrough]
         public static int? AsIntegerOrNull( this string str )
         {
             int value;
@@ -568,7 +615,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The STR.</param>
         /// <returns></returns>
-        [System.Diagnostics.DebuggerStepThrough()]
+        [System.Diagnostics.DebuggerStepThrough]
         public static Guid AsGuid( this string str )
         {
             return str.AsGuidOrNull() ?? Guid.Empty;
@@ -579,7 +626,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        [System.Diagnostics.DebuggerStepThrough()]
+        [System.Diagnostics.DebuggerStepThrough]
         public static Guid? AsGuidOrNull( this string str )
         {
             Guid value;
@@ -623,7 +670,7 @@ namespace Rock
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
                 // strip off non numeric and characters (for example, currency symbols)
-                str = Regex.Replace( str, @"[^0-9\.-]", "" );
+                str = Regex.Replace( str, @"[^0-9\.-]", string.Empty );
             }
 
             decimal value;
@@ -657,7 +704,7 @@ namespace Rock
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
                 // strip off non numeric and characters at the beginning of the line (currency symbols)
-                str = Regex.Replace( str, @"^[^0-9\.-]", "" );
+                str = Regex.Replace( str, @"^[^0-9\.-]", string.Empty );
             }
 
             double value;
@@ -675,12 +722,22 @@ namespace Rock
         /// Attempts to convert string to DateTime.  Returns null if unsuccessful.
         /// NOTE: If this is a '#[#]/#[#]' string it will be interpreted as a "MM/dd", "M/dd", "M/d" or "MM/d" string and will resolve to a datetime with the year as the current year.
         /// However, in those cases, it would be better to use MonthDayStringAsDateTime.
+        /// Non-ASCI and control characters are stripped from the string to prevent invisible control characters from causing a null to return.
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        [System.Diagnostics.DebuggerStepThrough()]
+        [System.Diagnostics.DebuggerStepThrough]
         public static DateTime? AsDateTime( this string str )
         {
+            if ( str == null )
+            {
+                return null;
+            }
+
+            // Edge likes to put in 8206 when doing a toLocaleString(), which makes this method return null.
+            // This will correct the error and any other caused by non-ASCI & control characters.
+            str = new string( str.Where( c => c > 31 && c < 127 ).ToArray() );
+
             DateTime value;
             DateTime? valueFromMMDD = str.MonthDayStringAsDateTime();
 
@@ -844,20 +901,28 @@ namespace Rock
         public static string ReplaceWordChars( this string text )
         {
             var s = text;
+
             // smart single quotes and apostrophe
             s = Regex.Replace( s, "[\u2018\u2019\u201A]", "'" );
+
             // smart double quotes
             s = Regex.Replace( s, "[\u201C\u201D\u201E]", "\"" );
+
             // ellipsis
             s = Regex.Replace( s, "\u2026", "..." );
+
             // dashes
             s = Regex.Replace( s, "[\u2013\u2014]", "-" );
+
             // circumflex
             s = Regex.Replace( s, "\u02C6", "^" );
+
             // open angle bracket
             s = Regex.Replace( s, "\u2039", "<" );
+
             // close angle bracket
             s = Regex.Replace( s, "\u203A", ">" );
+
             // spaces
             s = Regex.Replace( s, "[\u02DC\u00A0]", " " );
 
@@ -897,7 +962,7 @@ namespace Rock
         /// <returns></returns>
         public static string RemoveSpaces( this string input )
         {
-            return input.Replace( " ", "" );
+            return input.Replace( " ", string.Empty );
         }
 
         /// <summary>
@@ -910,9 +975,10 @@ namespace Rock
         public static IEnumerable<string> SplitIntoChunks( this string str, int maxChunkSize )
         {
             for ( int i = 0; i < str.Length; i += maxChunkSize )
+            {
                 yield return str.Substring( i, Math.Min( maxChunkSize, str.Length - i ) );
+            }
         }
-
 
         /// <summary>
         /// Removes any carriage return and/or line feed characters.

@@ -1821,6 +1821,10 @@ namespace Rock.Model
                 }
             }
 
+            RecordTypeValueId = RecordTypeValueId ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            RecordStatusValueId = RecordStatusValueId ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+            ConnectionStatusValueId = ConnectionStatusValueId ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() ).Id;
+
             if ( string.IsNullOrWhiteSpace( NickName ) )
             {
                 NickName = FirstName;
@@ -1917,7 +1921,7 @@ namespace Rock.Model
                         {
                             PersonAlias = this.Aliases.First(),
                             SearchTypeValueId = alternateValueId,
-                            SearchValue = PersonSearchKeyService.GenerateRandomAlternateId( true )
+                            SearchValue = PersonSearchKeyService.GenerateRandomAlternateId( true, rockContext )
                         };
                         personSearchKeyService.Add( personSearchKey );
 
@@ -2027,6 +2031,7 @@ namespace Rock.Model
 
             base.PostSaveChanges( dbContext );
 
+            // NOTE: This is also done on GroupMember.PostSaveChanges in case Role or family membership changes
             PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
             PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
         }

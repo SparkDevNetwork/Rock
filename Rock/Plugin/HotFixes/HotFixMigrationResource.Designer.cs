@@ -366,6 +366,22 @@ namespace Rock.Plugin.HotFixes {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 
+        /// /*
+        ///&lt;doc&gt;
+        /// &lt;summary&gt;
+        ///   This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
+        /// &lt;/summary&gt;
+        /// 
+        /// &lt;remarks&gt; 
+        ///  Uses the following constants:
+        ///   * Group Type - Family: &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
+        ///            * Location Type - Home: &apos;8C52E53C-2A66-435A-AE6E-5EE307D9A0DC&apos;
+        ///            * Phone Type - Home: &apos;AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303&apos;
+        ///            * Phone Type - Cell: &apos;407E7E45-7B2E-4FCD-9605-ECB1339F2453&apos;
+        /// &lt;/remarks&gt;
+        /// &lt;code&gt;
+        ///   [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _050_MigrationRollupsForV7_4_spCrm_PersonDuplicateFinder {
             get {
@@ -480,6 +496,99 @@ namespace Rock.Plugin.HotFixes {
         public static string _056_MigrationRollupsForV8_4_spCrm_FamilyAnalyticsEraDataset {
             get {
                 return ResourceManager.GetString("_056_MigrationRollupsForV8_4_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 
+        ///INSERT INTO BinaryFile(
+        ///	  [IsTemporary]
+        ///	, [IsSystem]
+        ///	, [BinaryFileTypeId]
+        ///	, [FileName]
+        ///	, [MimeType]
+        ///	, [Description]
+        ///	, [StorageEntityTypeId]
+        ///	, [Guid]
+        ///	, [StorageEntitySettings]
+        ///	, [Path]
+        ///	, [FileSize]
+        ///)
+        ///VALUES (
+        ///	  0 --[IsTemporary]
+        ///	, 0 --[IsSystem]
+        ///	, (SELECT [Id] FROM [BinaryFileType] WHERE [Guid] = &apos;DE0E5C50-234B-474C-940C-C571F385E65F&apos;) --[BinaryFileTypeId]
+        ///	, &apos;Install Icon Font on Printer&apos; --[FileName]
+        ///	, &apos;text/plain&apos; --[MimeType]
+        ///	, &apos;This label installs the Rock icon font, [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _057_MigrationRollupsForV8_5_AddCheck_inLabelToInstallIconFont {
+            get {
+                return ResourceManager.GetString("_057_MigrationRollupsForV8_5_AddCheck_inLabelToInstallIconFont", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the attendance data needed for the Attendance Badge. If no family role (adult/child)
+        ///		is given it is looked up.  If the individual is an adult it will return family attendance if it&apos;s a child
+        ///		it will return the individual&apos;s attendance. If a person is in two families once as a child once as an
+        ///		adult it will pick the first role it finds.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* AttendanceCount
+        ///		* SundaysInMonth
+        ///		* Month
+        ///		* Year
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;P [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _057_MigrationRollupsForV8_5_spCheckin_BadgeAttendance {
+            get {
+                return ResourceManager.GetString("_057_MigrationRollupsForV8_5_spCheckin_BadgeAttendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure attempts to update an indivdiual&apos;s first and second visit
+        ///		attributes. Below are a few points of interest on the logic.
+        ///
+        ///		+ A child&apos;s date will only be calculated looking at their check-in data.
+        ///		+ An adult&apos;s date will be calculated looking at the check-in data of all the children.
+        ///
+        ///		+ When calculating a first-visit date it will only write the date if the first checkin date
+        ///		  is within 14 days of the record being created. This helps eliminate bad  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _057_MigrationRollupsForV8_5_spCrm_FamilyAnalyticsFirstVisitsAttributeUpdate {
+            get {
+                return ResourceManager.GetString("_057_MigrationRollupsForV8_5_spCrm_FamilyAnalyticsFirstVisitsAttributeUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns any person ids for people that have attended previously but who have not attended since the beginning date
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId 
+        ///		* SundayDate - Last time attended
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeIds&apos; datatype=&apos;varchar(max)&apos;&gt;The Group Type Ids (only attendance for these group types will be included&lt;/param&gt;
+        ///	&lt;param name=&apos;StartDateTime&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///	&lt;param name=&apos;GroupIds&apos; datatype=&apos;varchar( [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _059_MigrationRollupsForV8_5_2_spCheckin_AttendanceAnalyticsQuery_NonAttendees {
+            get {
+                return ResourceManager.GetString("_059_MigrationRollupsForV8_5_2_spCheckin_AttendanceAnalyticsQuery_NonAttendees", resourceCulture);
             }
         }
     }

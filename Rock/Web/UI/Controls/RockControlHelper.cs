@@ -181,7 +181,7 @@ namespace Rock.Web.UI.Controls
                     rockControl.RequiredFieldValidator.Enabled = true;
                     if ( string.IsNullOrWhiteSpace( rockControl.RequiredFieldValidator.ErrorMessage ) )
                     {
-                        rockControl.RequiredFieldValidator.ErrorMessage = rockControl.Label + " is Required.";
+                        rockControl.RequiredFieldValidator.ErrorMessage = rockControl.Label + " is required.";
                     }
                     rockControl.RequiredFieldValidator.RenderControl( writer );
                 }

@@ -912,10 +912,10 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.HomePhone:
-                                var tbRegistrantsMobilePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsMobilePhoneFilter" ) as RockTextBox;
-                                if ( tbRegistrantsMobilePhoneFilter != null )
+                                var tbRegistrantsHomePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsHomePhoneFilter" ) as RockTextBox;
+                                if ( tbRegistrantsHomePhoneFilter != null )
                                 {
-                                    fRegistrants.SaveUserPreference( "Home Phone", tbRegistrantsMobilePhoneFilter.Text );
+                                    fRegistrants.SaveUserPreference( "Home Phone", tbRegistrantsHomePhoneFilter.Text );
                                 }
 
                                 break;
@@ -1309,16 +1309,16 @@ namespace RockWeb.Blocks.Event
                 if ( _homePhoneNumbers.Any() )
                 {
                     var homePhoneNumber = _homePhoneNumbers[registrant.PersonId.Value];
-                    var mobileField = e.Row.FindControl( "lRegistrantsHomePhone" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsHomePhone" ) as Literal;
-                    if ( mobileField != null )
+                    var homePhoneField = e.Row.FindControl( "lRegistrantsHomePhone" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsHomePhone" ) as Literal;
+                    if ( homePhoneField != null )
                     {
                         if ( homePhoneNumber == null || homePhoneNumber.NumberFormatted.IsNullOrWhiteSpace() )
                         {
-                            mobileField.Text = string.Empty;
+                            homePhoneField.Text = string.Empty;
                         }
                         else
                         {
-                            mobileField.Text = homePhoneNumber.IsUnlisted ? "Unlisted" : homePhoneNumber.NumberFormatted;
+                            homePhoneField.Text = homePhoneNumber.IsUnlisted ? "Unlisted" : homePhoneNumber.NumberFormatted;
                         }
                     }
 
@@ -2284,14 +2284,14 @@ namespace RockWeb.Blocks.Event
                 if ( mobileField != null )
                 {
 
-                    var homePhoneNumber = _homePhoneNumbers[registrant.PersonId.Value];
-                    if ( homePhoneNumber == null || homePhoneNumber.NumberFormatted.IsNullOrWhiteSpace() )
+                    var mobilePhoneNumber = _mobilePhoneNumbers[registrant.PersonId.Value];
+                    if ( mobilePhoneNumber == null || mobilePhoneNumber.NumberFormatted.IsNullOrWhiteSpace() )
                     {
                         mobileField.Text = string.Empty;
                     }
                     else
                     {
-                        mobileField.Text = homePhoneNumber.IsUnlisted ? "Unlisted" : homePhoneNumber.NumberFormatted;
+                        mobileField.Text = mobilePhoneNumber.IsUnlisted ? "Unlisted" : mobilePhoneNumber.NumberFormatted;
                     }
                 }
 
@@ -6007,7 +6007,8 @@ namespace RockWeb.Blocks.Event
                     case "First Name":
                     case "Last Name":
                     case "Email":
-                    case "Home Phone":
+                    case "HomePhone":
+                    case "Phone":
                     case "Signed Document":
                         break;
 

@@ -826,9 +826,9 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             isRequired = SetControl( ADULT_MARTIAL_STATUS_KEY, pnlMaritalStatus1, pnlMaritalStatus2 );
             dvpMaritalStatus1.Required = isRequired;
             hfMaritalStatusRequired.Value = isRequired.ToStringSafe();
-            var MaritalStatusDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
-            dvpMaritalStatus1.BindToDefinedType( MaritalStatusDt, true );
-            dvpMaritalStatus2.BindToDefinedType( MaritalStatusDt, true );
+            var maritalStatusDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
+            dvpMaritalStatus1.BindToDefinedType( maritalStatusDt, true );
+            dvpMaritalStatus2.BindToDefinedType( maritalStatusDt, true );
 
             // Adult Email
             isRequired = SetControl( ADULT_EMAIL_KEY, pnlEmail1, pnlEmail2 );
@@ -1435,7 +1435,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         /// <returns></returns>
         private List<AttributeCache> GetCategoryAttributeList( string attributeKey )
         {
-            var AttributeList = new List<AttributeCache>();
+            var attributeList = new List<AttributeCache>();
             foreach ( Guid categoryGuid in GetAttributeValue( attributeKey ).SplitDelimitedValues( false ).AsGuidList() )
             {
                 var category = CategoryCache.Get( categoryGuid );
@@ -1445,13 +1445,13 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     {
                         if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                         {
-                            AttributeList.Add( AttributeCache.Get( attribute ) );
+                            attributeList.Add( AttributeCache.Get( attribute ) );
                         }
                     }
                 }
             }
 
-            return AttributeList;
+            return attributeList;
         }
 
         /// <summary>
@@ -1461,17 +1461,17 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         /// <returns></returns>
         private List<AttributeCache> GetAttributeList( string attributeKey )
         {
-            var AttributeList = new List<AttributeCache>();
+            var attributeList = new List<AttributeCache>();
             foreach ( Guid attributeGuid in GetAttributeValue( attributeKey ).SplitDelimitedValues( false ).AsGuidList() )
             {
                 var attribute = AttributeCache.Get( attributeGuid );
                 if ( attribute != null && attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
-                    AttributeList.Add( attribute );
+                    attributeList.Add( attribute );
                 }
             }
 
-            return AttributeList;
+            return attributeList;
         }
 
         /// <summary>
