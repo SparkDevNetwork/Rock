@@ -4412,7 +4412,20 @@ END
         }
 
         /// <summary>
-        /// Updates the person attribute category.
+        /// Adds or Updates the registration attribute category.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="order">The order.</param>
+        public void UpdateRegistrationAttributeCategory( string name, string iconCssClass, string description, string guid, int order = 0 )
+        {
+            UpdateEntityAttributeCategory( "Rock.Model.Registration", name, iconCssClass, description, guid, order );
+        }
+
+        /// <summary>
+        /// Adds or Updates the person attribute category.
         /// </summary>
         /// <param name="entityTypeName">The fully qualified entity name as found in the EntityType table.</param>
         /// <param name="name">The name.</param>
