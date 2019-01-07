@@ -38,8 +38,8 @@ namespace Rock.Migrations
             // Enable AttributesSupportPrePostHtml only for Rock.Model.Registration
             Sql( $"UPDATE [EntityType] SET [AttributesSupportPrePostHtml] = 1 WHERE [Guid] = '{Rock.SystemGuid.EntityType.REGISTRATION}'" );
 
-            RockMigrationHelper.UpdateCategory( Rock.SystemGuid.EntityType.REGISTRATION, "Start of Registration", "", "Registration Attributes that should be prompted for at the beginning of the registration process.", Rock.SystemGuid.Category.REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION, 0 );
-            RockMigrationHelper.UpdateCategory( Rock.SystemGuid.EntityType.REGISTRATION, "End of Registration", "", "Registration Attributes that should be prompted for at the end of the registration process.", Rock.SystemGuid.Category.REGISTRATION_ATTRIBUTE_END_OF_REGISTRATION, 1 );
+            RockMigrationHelper.UpdateRegistrationAttributeCategory( "Start of Registration", "", "Registration Attributes that should be prompted for at the beginning of the registration process.", Rock.SystemGuid.Category.REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION, 0 );
+            RockMigrationHelper.UpdateRegistrationAttributeCategory( "End of Registration", "", "Registration Attributes that should be prompted for at the end of the registration process.", Rock.SystemGuid.Category.REGISTRATION_ATTRIBUTE_END_OF_REGISTRATION, 1 );
         }
         
         /// <summary>
