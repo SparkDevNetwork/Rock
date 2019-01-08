@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -120,6 +121,18 @@ namespace Rock.Model
         public override string ToString()
         {
             return Name;
+        }
+
+        /// <summary>
+        /// Gets the usage count remaining.
+        /// </summary>
+        /// <param name="registrationInstance">The registration instance.</param>
+        /// <returns></returns>
+        [RockObsolete("1.8")]
+        [Obsolete("Use the override that includes otherRegistrant instead.")]
+        public int? GetUsageCountRemaining( RegistrationInstance registrationInstance )
+        {
+            return GetUsageCountRemaining( registrationInstance, null );
         }
 
         /// <summary>
