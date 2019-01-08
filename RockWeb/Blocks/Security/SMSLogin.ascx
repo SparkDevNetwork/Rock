@@ -3,7 +3,7 @@
     <ContentTemplate>
         <div class="col-md-12">
 
-            <legend>SMS Login</legend>
+            <legend>Mobile Login</legend>
             <asp:Panel ID="pnlPhoneNumber" runat="server">
                 <asp:ValidationSummary ID="valSummary" runat="server" ValidationGroup="PhoneNumber" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                 <p>

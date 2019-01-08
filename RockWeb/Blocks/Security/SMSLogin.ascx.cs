@@ -13,24 +13,16 @@
 // </copyright>
 //
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
-using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Security.ExternalAuthentication;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -121,10 +113,11 @@ We are sorry, but we could not determine which account this number belongs to.
             {
                 RockContext rockContext = new RockContext();
                 var smsAuthentication = new SMSAuthentication();
-                var person = smsAuthentication.GetNumberOwner( GetPhoneNumber(), rockContext );
+                string error;
+                var person = smsAuthentication.GetNumberOwner( GetPhoneNumber(), rockContext, out error );
                 if ( person == null )
                 {
-                    nbError.Text = "There was an issue with your request";
+                    nbError.Text = error;
                     nbError.Visible = true;
                     return;
                 }

@@ -40,6 +40,7 @@ namespace Rock.Security.ExternalAuthentication
     [IntegerField( "BCrypt Cost Factor", "The higher this number, the more secure BCrypt can be. However it also will be slower.", false, 11 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "From", "The number to originate message from (configured under Admin Tools > Communications > SMS From Values).", true, false, "", "", 3 )]
     [TextField( "Message", "Message that will be sent along with the login code.", true, "Use {{ password }} to log in to {{ 'Global' | Attribute:'OrganizationName' }}.", order: 4 )]
+    [IntegerField( "Minimum Age", "Minimum age which someone is allowed to log in.", true, 13 )]
     public class SMSAuthentication : AuthenticationComponent
     {
         #region Override Methods
@@ -233,7 +234,8 @@ namespace Rock.Security.ExternalAuthentication
         {
             RockContext rockContext = new RockContext();
 
-            var person = GetNumberOwner( phoneNumber, rockContext );
+            string error;
+            var person = GetNumberOwner( phoneNumber, rockContext, out error );
             if ( person == null )
             {
                 return false;
@@ -312,8 +314,9 @@ namespace Rock.Security.ExternalAuthentication
         /// <param name="phoneNumber"></param>
         /// <param name="rockContext"></param>
         /// <returns></returns>
-        public Person GetNumberOwner( string phoneNumber, RockContext rockContext )
+        public Person GetNumberOwner( string phoneNumber, RockContext rockContext, out string error )
         {
+            error = string.Empty;
             PhoneNumberService phoneNumberService = new PhoneNumberService( rockContext );
             var numberOwners = phoneNumberService.Queryable()
                 .Where( pn => pn.Number == phoneNumber )
@@ -323,16 +326,33 @@ namespace Rock.Security.ExternalAuthentication
 
             if ( numberOwners.Count == 0 || numberOwners.Count > 1 )
             {
+                error = "There was an issue with your request";
                 return null;
             }
 
             var person = numberOwners.FirstOrDefault();
-            if ( !person.IsDeceased )
+            if ( person.IsDeceased )
             {
-                return person;
+                error = "There was an issue with your request";
+                return null;
             }
 
-            return null;
+            var minimumAge = GetAttributeValue( "MinimumAge" ).AsInteger();
+            if ( minimumAge != 0 )
+            {
+                if ( person.Age == null )
+                {
+                    error = string.Format( "We could not determine your age. You must be at least {0} years old to log in.", minimumAge );
+                    return null;
+                }
+                if ( person.Age.Value < minimumAge )
+                {
+                    error = string.Format( "You must be at least {0} years old to log in.", minimumAge );
+                    return null;
+                }
+            }
+
+            return person;
         }
 
         /// <summary>
