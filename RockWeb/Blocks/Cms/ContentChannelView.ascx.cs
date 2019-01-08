@@ -1061,7 +1061,7 @@ $(document).ready(function() {
                                                 ) )
                                             .OrderByDescending( a => a.EntityTypeQualifierColumn )
                                             .ThenBy( a => a.Order )
-                                            .ToCacheAttributeList();
+                                            .ToAttributeCacheList();
 
                     foreach ( var attribute in itemAttributes )
                     {
