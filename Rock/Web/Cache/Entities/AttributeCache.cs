@@ -453,7 +453,10 @@ namespace Rock.Web.Cache
                 SetValue = setValue,
                 SetId = setId,
                 Required = required,
-                WarningText = warningText
+                LabelText = labelText,
+                HelpText = helpText,
+                WarningText = warningText,
+                AttributeControlId = attributeControlId
             };
 
             return AddControl( controls, attributeControlOptions );
