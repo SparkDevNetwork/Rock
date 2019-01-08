@@ -563,7 +563,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     SendAddressCounty = v.GetAttributeValue( "SendHomeCounty" ).AsBoolean(),
                     DefaultState = v.GetAttributeValue( "DefaultState" ),
                     SendAddressState = v.GetAttributeValue( "SendHomeState" ).AsBoolean(),
-                    MVRJurisdication = v.GetAttributeValue("MVRJurisdiction"),
+                    MVRJurisdiction = v.GetAttributeValue("MVRJurisdiction"),
                     SendAddressStateMVR = v.GetAttributeValue( "SendHomeStateMVR" ).AsBoolean()
                 } )
                 .ToList();
@@ -611,13 +611,13 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 definedValue.LoadAttributes();
 
                 dvpMVRJurisdiction.SetValue( 0 );
-                Guid? mvrJurisdicationGuid = definedValue.GetAttributeValue( "MVRJurisdiction" ).AsGuidOrNull();
-                if ( mvrJurisdicationGuid.HasValue )
+                Guid? mvrJurisdictionGuid = definedValue.GetAttributeValue( "MVRJurisdiction" ).AsGuidOrNull();
+                if ( mvrJurisdictionGuid.HasValue )
                 {
-                    var mvrJurisdication = DefinedValueCache.Get( mvrJurisdicationGuid.Value );
-                    if ( mvrJurisdication != null )
+                    var mvrJurisdiction = DefinedValueCache.Get( mvrJurisdictionGuid.Value );
+                    if ( mvrJurisdiction != null )
                     {
-                        dvpMVRJurisdiction.SetValue( mvrJurisdication.Id );
+                        dvpMVRJurisdiction.SetValue( mvrJurisdiction.Id );
                     }
                 }
 
