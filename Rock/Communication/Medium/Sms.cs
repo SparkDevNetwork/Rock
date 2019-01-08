@@ -142,12 +142,12 @@ namespace Rock.Communication.Medium
 
                             if ( recipient != null && recipient.Communication.SenderPersonAliasId.HasValue )
                             {
-                                CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, fromPhone, recipient.Communication.SenderPersonAliasId.Value, message.Replace( responseCode, "" ), plainMessage, rockSmsFromPhoneDv, "", rockContext );
+                                CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, fromPhone, recipient.Communication.SenderPersonAliasId.Value, message.Replace( responseCode, "" ), plainMessage, rockSmsFromPhoneDv, "", rockContext, out errorMessage );
                             }
                             else // send a warning message back to the medium recipient
                             {
                                 string warningMessage = string.Format( "A conversation could not be found with the response token {0}.", responseCode );
-                                CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, fromPhone, fromPerson.PrimaryAliasId.Value, warningMessage, plainMessage, rockSmsFromPhoneDv, "", rockContext );
+                                CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, fromPhone, fromPerson.PrimaryAliasId.Value, warningMessage, plainMessage, rockSmsFromPhoneDv, "", rockContext, out errorMessage );
                             }
                         }
                     }
@@ -159,12 +159,12 @@ namespace Rock.Communication.Medium
                         if ( fromPerson != null && fromPerson.PrimaryAliasId.HasValue )
                         {
                             message = $"-{fromPerson.FullName}-\n{message}\n( {messageId} )";
-                            CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, fromPhone, toPersonPrimaryAliasId, message, plainMessage, rockSmsFromPhoneDv, messageId, rockContext );
+                            CreateCommunication( fromPerson.PrimaryAliasId.Value, fromPerson.FullName, fromPhone, toPersonPrimaryAliasId, message, plainMessage, rockSmsFromPhoneDv, messageId, rockContext, out errorMessage );
                         }
                         else
                         {
                             message = $"-Unknown Person-\n{message}\n( {messageId} )";
-                            CreateCommunication( null, "Unknown Person", fromPhone, toPersonPrimaryAliasId, message, plainMessage, rockSmsFromPhoneDv, messageId, rockContext );
+                            CreateCommunication( null, "Unknown Person", fromPhone, toPersonPrimaryAliasId, message, plainMessage, rockSmsFromPhoneDv, messageId, rockContext, out errorMessage );
                         }
                     }
                 }
@@ -188,10 +188,22 @@ namespace Rock.Communication.Medium
         /// <param name="rockSmsFromPhoneDv">From phone.</param>
         /// <param name="responseCode">The reponseCode to use for tracking the conversation.</param>
         /// <param name="rockContext">A context to use for database calls.</param>
-        private void CreateCommunication( int? fromPersonAliasId, string fromPersonName, string messageKey, int? toPersonAliasId, string message, string plainMessage, DefinedValueCache rockSmsFromPhoneDv, string responseCode, Rock.Data.RockContext rockContext )
+        private void CreateCommunication( int? fromPersonAliasId, string fromPersonName, string messageKey, int? toPersonAliasId, string message, string plainMessage, DefinedValueCache rockSmsFromPhoneDv, string responseCode, Rock.Data.RockContext rockContext, out string errorMessage )
         {
-            LaunchWorkflow( fromPersonAliasId, messageKey, message, toPersonAliasId, rockSmsFromPhoneDv );
+            errorMessage = string.Empty;
 
+            try
+            {
+                LaunchWorkflow( fromPersonAliasId, messageKey, message, toPersonAliasId, rockSmsFromPhoneDv );
+
+            }
+            catch ( Exception ex )
+            {
+                errorMessage = ex.Message;
+                // Log error and continue, don't stop because the workflow failed.
+                ExceptionLogService.LogException( ex );
+            }
+            
             // See if this should go to a phone or to the DB. Default is to the phone so if for some reason we get a null here then just send it to the phone.
             var enableMobileConversations = rockSmsFromPhoneDv.GetAttributeValue( "EnableMobileConversations" ).AsBooleanOrNull() ?? true;
 
@@ -206,6 +218,14 @@ namespace Rock.Communication.Medium
             }
         }
 
+        /// <summary>
+        /// Launches the workflow.
+        /// </summary>
+        /// <param name="fromPersonAliasId">From person alias identifier.</param>
+        /// <param name="fromPhone">From phone.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="toPersonAliasId">To person alias identifier.</param>
+        /// <param name="rockSmsFromPhoneDv">The rock SMS from phone dv.</param>
         private void LaunchWorkflow( int? fromPersonAliasId, string fromPhone, string message, int? toPersonAliasId, DefinedValueCache rockSmsFromPhoneDv )
         {
             var workflowTypeGuid = rockSmsFromPhoneDv.GetAttributeValue( "LaunchWorkflowOnResponseReceived" );
