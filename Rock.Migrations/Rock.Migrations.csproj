@@ -164,6 +164,10 @@
     <Compile Include="Migrations\201901042316288_SMSConversations.Designer.cs">
       <DependentUpon>201901042316288_SMSConversations.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201901082226453_Rollup_0108.cs" />
+    <Compile Include="Migrations\201901082226453_Rollup_0108.Designer.cs">
+      <DependentUpon>201901082226453_Rollup_0108.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -527,6 +531,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201901042316288_SMSConversations.resx">
       <DependentUpon>201901042316288_SMSConversations.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201901082226453_Rollup_0108.resx">
+      <DependentUpon>201901082226453_Rollup_0108.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
