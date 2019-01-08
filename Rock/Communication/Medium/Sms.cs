@@ -490,6 +490,24 @@ namespace Rock.Communication.Medium
             return null;
         }
 
+        /// <summary>
+        /// Finds from phone defined value.
+        /// </summary>
+        /// <param name="phoneNumber">The phone number.</param>
+        /// <returns></returns>
+        public static DefinedValueCache FindFromPhoneDefinedValue( string phoneNumber )
+        {
+            var definedType = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
+            if ( definedType != null )
+            {
+                if ( definedType.DefinedValues != null && definedType.DefinedValues.Any() )
+                {
+                    return definedType.DefinedValues.Where( v => v.Value.RemoveSpaces() == phoneNumber.RemoveSpaces() ).OrderBy( v => v.Order ).FirstOrDefault();
+                }
+            }
+
+            return null;
+        }
 
         #region Obsolete 
 
