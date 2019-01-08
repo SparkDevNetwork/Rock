@@ -30,7 +30,7 @@ namespace com.lcbcchurch.Workflow.Migrations
         {
             RockMigrationHelper.UpdateNoteType( "Weekend Comments", "Rock.Model.Person", false, "E9BEA615-EFA0-452A-981E-3AF51626F86A" );
             var noteTypeId = SqlScalar( "Select Top 1 Id From NoteType Where [Guid] = 'E9BEA615-EFA0-452A-981E-3AF51626F86A'" ).ToString();
-            RockMigrationHelper.AddEntityAttribute( "Rock.Model.Note", "1B71FEF4-201F-4D53-8C60-2DF21F1985ED", "NoteTypeId", noteTypeId, "Campus", null, "", 1003, null, "8B14B6F4-93DF-447A-9097-83200CECEE26" );
+            RockMigrationHelper.AddEntityAttribute( "Rock.Model.Note", "1B71FEF4-201F-4D53-8C60-2DF21F1985ED", "NoteTypeId", noteTypeId, "Campus", null, "", 1003, "", "8B14B6F4-93DF-447A-9097-83200CECEE26", "Campus" );
 
             #region EntityTypes
 
