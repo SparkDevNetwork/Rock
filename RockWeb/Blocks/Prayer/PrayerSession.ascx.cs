@@ -81,6 +81,7 @@ namespace RockWeb.Blocks.Prayer
 
 " )]
     [BooleanField( "Display Campus", "Display the campus filter", true,category: "Filtering", order: 6 )]
+    [BooleanField( "Public Only", "If selected, all non-public prayer request will be excluded.", false, "", 7 )]
     public partial class PrayerSession : RockBlock
     {
         #region Fields
@@ -90,6 +91,8 @@ namespace RockWeb.Blocks.Prayer
         private string _categoryGuidString = string.Empty;
         private int? _flagLimit = 1;
         private string[] _savedCategoryIdsSetting;
+        private const string PUBLIC_ONLY = "PublicOnly";
+
         #endregion
 
         #region Properties
@@ -426,15 +429,16 @@ namespace RockWeb.Blocks.Prayer
                 }
             }
 
+            var limitToPublic = GetAttributeValue( PUBLIC_ONLY ).AsBoolean();
             var categoryList = prayerRequestQuery
-                .Where( p => p.Category != null )
+                .Where( p => p.Category != null && ( !limitToPublic || ( p.IsPublic ?? false ) ) )
                 .Select( p => new { p.Category.Id, p.Category.Name } )
                 .GroupBy( g => new { g.Id, g.Name } )
                 .OrderBy( g => g.Key.Name )
                 .Select( a => new
                 {
                     Id = a.Key.Id,
-                    Name = a.Key.Name + " (" + System.Data.Entity.SqlServer.SqlFunctions.StringConvert( (double)a.Count() ).Trim() + ")",
+                    Name = a.Key.Name + " (" + System.Data.Entity.SqlServer.SqlFunctions.StringConvert( ( double ) a.Count() ).Trim() + ")",
                     Count = a.Count()
                 } ).ToList();
 
@@ -494,6 +498,12 @@ namespace RockWeb.Blocks.Prayer
             if ( campusId.HasValue )
             {
                 prayerRequestQuery = prayerRequestQuery.Where( a => a.CampusId == campusId );
+            }
+
+            var limitToPublic = GetAttributeValue( PUBLIC_ONLY ).AsBoolean();
+            if ( limitToPublic )
+            {
+                prayerRequestQuery = prayerRequestQuery.Where( a => a.IsPublic.HasValue && a.IsPublic.Value );
             }
 
             var prayerRequests = prayerRequestQuery.OrderByDescending( p => p.IsUrgent ).ThenBy( p => p.PrayerCount ).ToList();

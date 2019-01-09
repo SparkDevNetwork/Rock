@@ -340,7 +340,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
             _gFields.Columns.Add( showOnWaitListField );
 
             var btnFieldFilterField = new LinkButtonField();
-            btnFieldFilterField.CssClass = "btn btn-default btn-sm";
+            btnFieldFilterField.CssClass = "btn btn-default btn-sm attribute-criteria";
             btnFieldFilterField.Text = "<i class='fa fa-filter'></i>";
             btnFieldFilterField.Click += gFields_btnFieldFilterField_Click;
             btnFieldFilterField.DataBound += btnFieldFilterField_DataBound;
@@ -398,11 +398,11 @@ $('.template-form > .panel-body').on('validation-error', function() {
                 {
                     if ( field.FieldVisibilityRules.Any() )
                     {
-                        linkButton.AddCssClass( "active" );
+                        linkButton.AddCssClass( "criteria-exists" );
                     }
                     else
                     {
-                        linkButton.RemoveCssClass( "active" );
+                        linkButton.RemoveCssClass( "criteria-exists" );
                     }
 
                     linkButton.Visible = true;

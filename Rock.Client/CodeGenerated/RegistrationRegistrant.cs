@@ -38,7 +38,7 @@ namespace Rock.Client
         public decimal Cost { get; set; }
 
         /// <summary />
-        public bool DiscountApplies { get; set; }
+        public bool DiscountApplies { get; set; } = true;
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
