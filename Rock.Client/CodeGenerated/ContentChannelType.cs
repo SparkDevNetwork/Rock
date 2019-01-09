@@ -53,7 +53,7 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public bool IncludeTime { get; set; }
+        public bool IncludeTime { get; set; } = true;
 
         /// <summary />
         public bool IsSystem { get; set; }
@@ -67,7 +67,7 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public bool ShowInChannelList { get; set; }
+        public bool ShowInChannelList { get; set; } = true;
 
         /// <summary>
         /// Leave this as NULL to let Rock set this

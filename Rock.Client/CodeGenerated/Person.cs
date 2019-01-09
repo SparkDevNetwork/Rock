@@ -50,7 +50,7 @@ namespace Rock.Client
         public int? BirthYear { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.CommunicationType CommunicationPreference { get; set; }
+        public Rock.Client.Enums.CommunicationType CommunicationPreference { get; set; } = Rock.Client.Enums.CommunicationType.Email;
 
         /// <summary />
         public int? ConnectionStatusValueId { get; set; }
@@ -97,7 +97,7 @@ namespace Rock.Client
         public bool IsDeceased { get; set; }
 
         /// <summary />
-        public bool IsEmailActive { get; set; } = true
+        public bool IsEmailActive { get; set; } = true;
 
         /// <summary />
         public bool IsLockedAsChild { get; set; }

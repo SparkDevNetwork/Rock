@@ -65,13 +65,13 @@ namespace Rock.Client
         public DateTime? InactiveDateTime { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
         public bool IsArchived { get; set; }
 
         /// <summary />
-        public bool IsPublic { get; set; }
+        public bool IsPublic { get; set; } = true;
 
         /// <summary />
         public bool IsSecurityRole { get; set; }
@@ -85,7 +85,7 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        [RockObsolete( "1.7" )]
+        // Made Obsolete in Rock "1.7"
         [Obsolete( "This no longer is functional. Please use GroupRequirement.MustMeetRequirementToAddMember instead.", true )]
         public bool? MustMeetRequirementsToAddMember { get; set; }
 

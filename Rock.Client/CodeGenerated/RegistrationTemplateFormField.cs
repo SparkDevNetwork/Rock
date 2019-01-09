@@ -41,7 +41,7 @@ namespace Rock.Client
         public Rock.Client.Enums.RegistrationFieldSource FieldSource { get; set; }
 
         /// <summary />
-        public string FieldVisibilityRulesJSON { get; set; }
+        public string FieldVisibilityRulesJSON { get; set; } = @"[]";
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }

@@ -25,7 +25,7 @@ namespace Rock.Attribute
     /// Field Attribute to select 0 or more connection types stored as a comma-delimited list of ConnectionType.Guid
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class ConnectionTypesFieldAttribute : FieldAttribute
+    public class ConnectionTypesFieldAttribute : SelectFieldAttribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CampusesFieldAttribute" /> class.

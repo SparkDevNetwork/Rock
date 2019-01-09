@@ -39,6 +39,7 @@ namespace Rock.Field.Types
 
         private const string VALUES_KEY = "values";
         private const string FIELDTYPE_KEY = "fieldtype";
+        private const string REPEAT_COLUMNS = "repeatColumns";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -49,6 +50,7 @@ namespace Rock.Field.Types
             List<string> configKeys = new List<string>();
             configKeys.Add( VALUES_KEY );
             configKeys.Add( FIELDTYPE_KEY );
+            configKeys.Add( REPEAT_COLUMNS );
             return configKeys;
         }
 
@@ -61,16 +63,15 @@ namespace Rock.Field.Types
             List<Control> controls = new List<Control>();
 
             var tb = new RockTextBox();
-            controls.Add( tb );
             tb.TextMode = TextBoxMode.MultiLine;
             tb.Rows = 3;
             tb.AutoPostBack = true;
             tb.TextChanged += OnQualifierUpdated;
             tb.Label = "Values";
             tb.Help = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.";
+            controls.Add( tb );
 
             var ddl = new RockDropDownList();
-            controls.Add( ddl );
             ddl.Items.Add( new ListItem( "Drop Down List", "ddl" ) );
             ddl.Items.Add( new ListItem( "Drop Down List (Enhanced for Long Lists)", "ddl_enhanced" ) );
             ddl.Items.Add( new ListItem( "Radio Buttons", "rb" ) );
@@ -78,6 +79,15 @@ namespace Rock.Field.Types
             ddl.SelectedIndexChanged += OnQualifierUpdated;
             ddl.Label = "Control Type";
             ddl.Help = "The type of control to use for selecting a single value from the list.";
+            controls.Add( ddl );
+
+            var tbRepeatColumns = new NumberBox();
+            tbRepeatColumns.Label = "Columns";
+            tbRepeatColumns.Help = "Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no enforced upper limit however the block this control is used in might add contraints due to available space.";
+            tbRepeatColumns.MinimumValue = "0";
+            tbRepeatColumns.AutoPostBack = true;
+            tbRepeatColumns.TextChanged += OnQualifierUpdated;
+            controls.Add( tbRepeatColumns );
 
             return controls;
         }
@@ -90,10 +100,15 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( VALUES_KEY, new ConfigurationValue( "Values",
-                "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.", "" ) );
-            configurationValues.Add( FIELDTYPE_KEY, new ConfigurationValue( "Control Type", 
-                "The type of control to use for selecting a single value from the list.", "ddl" ) );
+
+            string description = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.";
+            configurationValues.Add( VALUES_KEY, new ConfigurationValue( "Values", description, string.Empty ) );
+
+            description = "The type of control to use for selecting a single value from the list.";
+            configurationValues.Add( FIELDTYPE_KEY, new ConfigurationValue( "Control Type", description, "ddl" ) );
+
+            description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
+            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue( "Repeat Columns", description, string.Empty ) );
 
             if ( controls != null )
             {
@@ -105,6 +120,11 @@ namespace Rock.Field.Types
                 if ( controls.Count > 1 && controls[1] != null && controls[1] is DropDownList )
                 {
                     configurationValues[FIELDTYPE_KEY].Value = ( (DropDownList)controls[1] ).SelectedValue;
+                }
+
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is NumberBox )
+                {
+                    configurationValues[REPEAT_COLUMNS].Value = ( ( NumberBox ) controls[2] ).Text;
                 }
             }
 
@@ -128,6 +148,11 @@ namespace Rock.Field.Types
                 if ( controls.Count > 1 && controls[1] != null && controls[1] is DropDownList && configurationValues.ContainsKey( FIELDTYPE_KEY ) )
                 {
                     ( (DropDownList)controls[1] ).SelectedValue = configurationValues[FIELDTYPE_KEY].Value;
+                }
+
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is NumberBox && configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+                {
+                    ( ( NumberBox ) controls[2] ).Text = configurationValues[REPEAT_COLUMNS].Value;
                 }
             }
         }
@@ -195,6 +220,11 @@ namespace Rock.Field.Types
                 {
                     editControl = new RockRadioButtonList { ID = id }; 
                     ( (RadioButtonList)editControl ).RepeatDirection = RepeatDirection.Horizontal;
+
+                    if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+                    {
+                        ( ( RadioButtonList ) editControl ).RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
+                    }
                 }
                 else
                 {
