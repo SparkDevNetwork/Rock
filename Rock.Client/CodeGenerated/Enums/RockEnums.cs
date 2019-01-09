@@ -151,6 +151,8 @@ namespace Rock.Client.Enums
         Email = 0x1,
         SMS = 0x2,
         PushNotification = 0x3,
+
+        [Obsolete( "Not Supported", false )]
         Other = 0x4,
     }
 
@@ -530,6 +532,8 @@ namespace Rock.Client.Enums
         PersonAttribute = 0x1,
         GroupMemberAttribute = 0x2,
         RegistrantAttribute = 0x4,
+
+        [Obsolete( "Use RegistrantAttribute instead", false )]
         RegistrationAttribute = 0x4,
     }
 
