@@ -31,6 +31,7 @@ using Rock.Attribute;
 using Rock.Web.UI;
 using RestSharp;
 using Newtonsoft.Json;
+using Rock.Model;
 
 namespace Rock.Address
 {
@@ -61,55 +62,14 @@ namespace Rock.Address
             VerificationResult result = VerificationResult.None;
             resultMsg = string.Empty;
 
-            string authId = null;
-            string authToken = null;
-
-            if ( GetAttributeValue( "UseManagedAPIKey" ).AsBooleanOrNull() ?? true )
-            {
-                var lastKeyUpdate = Rock.Web.SystemSettings.GetValue( "core_SmartyStreetsApiKeyLastUpdate" ).AsDateTime() ?? DateTime.MinValue;
-                var hoursSinceLastUpdate = ( RockDateTime.Now - lastKeyUpdate ).TotalHours;
-                if ( hoursSinceLastUpdate > 24 || true )
-                {
-                    var rockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
-                    var getAPIKeyClient = new RestClient( "https://www.rockrms.com/api/SmartyStreets/GetSmartyStreetsApiKey?rockInstanceId={rockInstanceId}" );
-
-                    // If debugging locally
-                    // var getAPIKeyClient = new RestClient( $"http://localhost:57822/api/SmartyStreets/GetSmartyStreetsApiKey?rockInstanceId={rockInstanceId}" );
-
-                    var getApiKeyRequest = new RestRequest( Method.GET );
-                    var getApiKeyResponse = getAPIKeyClient.Get<SmartyStreetsAPIKey>( getApiKeyRequest );
-
-                    if ( getApiKeyResponse.StatusCode == HttpStatusCode.OK )
-                    {
-                        SmartyStreetsAPIKey managedKey = getApiKeyResponse.Data;
-                        if ( managedKey.AuthID != null && managedKey.AuthToken != null )
-                        {
-                            Rock.Web.SystemSettings.SetValue( "core_SmartyStreetsApiKeyLastUpdate", RockDateTime.Now.ToString( "o" ) );
-                            Rock.Web.SystemSettings.SetValue( "core_SmartyStreetsAuthID", Rock.Security.Encryption.EncryptString( managedKey.AuthID ) );
-                            Rock.Web.SystemSettings.SetValue( "core_SmartyStreetsAuthToken", Rock.Security.Encryption.EncryptString( managedKey.AuthToken ) );
-                        }
-                    }
-                }
-
-                string encryptedAuthID = Rock.Web.SystemSettings.GetValue( "core_SmartyStreetsAuthID" );
-                string encryptedAuthToken = Rock.Web.SystemSettings.GetValue( "core_SmartyStreetsAuthToken" );
-
-                authId = Rock.Security.Encryption.DecryptString( encryptedAuthID );
-                authToken = Rock.Security.Encryption.DecryptString( encryptedAuthToken );
-            }
-
-            if ( authId == null || authToken == null )
-            {
-                authId = GetAttributeValue( "AuthID" );
-                authToken = GetAttributeValue( "AuthToken" );
-            }
+            SmartyStreetsAPIKey apiKey = GetAPIKey();
 
             var dpvCodes = GetAttributeValue( "AcceptableDPVCodes" ).SplitDelimitedValues();
             var precisions = GetAttributeValue( "AcceptablePrecisions" ).SplitDelimitedValues();
 
             var payload = new[] { new { addressee = location.Name, street = location.Street1, street2 = location.Street2, city = location.City, state = location.State, zipcode = location.PostalCode, candidates = 1 } };
 
-            var client = new RestClient( string.Format( "https://api.smartystreets.com/street-address?auth-id={0}&auth-token={1}", authId, authToken ) );
+            var client = new RestClient( string.Format( "https://api.smartystreets.com/street-address?auth-id={0}&auth-token={1}", apiKey.AuthID, apiKey.AuthToken ) );
             var request = new RestRequest( Method.POST );
             request.RequestFormat = DataFormat.Json;
             request.AddHeader( "Accept", "application/json" );
@@ -162,6 +122,102 @@ namespace Rock.Address
             return result;
         }
 
+        public MapCoordinate GetLocationFromPostalCode( string postalCode, out string resultMsg )
+        {
+            MapCoordinate result = null;
+            resultMsg = string.Empty;
+
+            if ( this.IsActive )
+            {
+
+                SmartyStreetsAPIKey apiKey = GetAPIKey();
+
+                var payload = new[] { new { zipcode = postalCode } };
+
+                var client = new RestClient( string.Format( "https://us-zipcode.api.smartystreets.com/lookup?auth-id={0}&auth-token={1}", apiKey.AuthID, apiKey.AuthToken ) );
+                var request = new RestRequest( Method.POST );
+                request.RequestFormat = DataFormat.Json;
+                request.AddHeader( "Accept", "application/json" );
+                request.AddBody( payload );
+                var response = client.Execute( request );
+
+                if ( response.StatusCode == HttpStatusCode.OK )
+                {
+                    var lookupResponse = JsonConvert.DeserializeObject( response.Content, typeof( List<LookupResponse> ) ) as List<LookupResponse>;
+                    if ( lookupResponse != null && lookupResponse.Any()  && lookupResponse.First().zipcodes.Any() )
+                    {
+                        var zipcode = lookupResponse.First().zipcodes.FirstOrDefault();
+                        result = new MapCoordinate();
+                        result.Latitude = zipcode.latitude;
+                        result.Longitude = zipcode.longitude;
+                        resultMsg = JsonConvert.SerializeObject( zipcode );
+                    }
+                    else
+                    {
+                        resultMsg = "No Match";
+                    }
+                }
+                else
+                {
+                    resultMsg = response.StatusDescription;
+                }
+            }
+            else
+            {
+                resultMsg = "Smarty Steets is not active.";
+            }
+
+            return result;
+        }
+
+        private SmartyStreetsAPIKey GetAPIKey()
+        {
+            SmartyStreetsAPIKey apiKey = null;
+            if ( GetAttributeValue( "UseManagedAPIKey" ).AsBooleanOrNull() ?? true )
+            {
+                var lastKeyUpdate = Rock.Web.SystemSettings.GetValue( "core_SmartyStreetsApiKeyLastUpdate" ).AsDateTime() ?? DateTime.MinValue;
+                var hoursSinceLastUpdate = ( RockDateTime.Now - lastKeyUpdate ).TotalHours;
+                if ( hoursSinceLastUpdate > 24 || true )
+                {
+                    var rockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
+                    var getAPIKeyClient = new RestClient( "https://www.rockrms.com/api/SmartyStreets/GetSmartyStreetsApiKey?rockInstanceId={rockInstanceId}" );
+
+                    // If debugging locally
+                    // var getAPIKeyClient = new RestClient( $"http://localhost:57822/api/SmartyStreets/GetSmartyStreetsApiKey?rockInstanceId={rockInstanceId}" );
+
+                    var getApiKeyRequest = new RestRequest( Method.GET );
+                    var getApiKeyResponse = getAPIKeyClient.Get<SmartyStreetsAPIKey>( getApiKeyRequest );
+
+                    if ( getApiKeyResponse.StatusCode == HttpStatusCode.OK )
+                    {
+                        SmartyStreetsAPIKey managedKey = getApiKeyResponse.Data;
+                        if ( managedKey.AuthID != null && managedKey.AuthToken != null )
+                        {
+                            Rock.Web.SystemSettings.SetValue( "core_SmartyStreetsApiKeyLastUpdate", RockDateTime.Now.ToString( "o" ) );
+                            Rock.Web.SystemSettings.SetValue( "core_SmartyStreetsAuthID", Rock.Security.Encryption.EncryptString( managedKey.AuthID ) );
+                            Rock.Web.SystemSettings.SetValue( "core_SmartyStreetsAuthToken", Rock.Security.Encryption.EncryptString( managedKey.AuthToken ) );
+                        }
+                    }
+                }
+
+                string encryptedAuthID = Rock.Web.SystemSettings.GetValue( "core_SmartyStreetsAuthID" );
+                string encryptedAuthToken = Rock.Web.SystemSettings.GetValue( "core_SmartyStreetsAuthToken" );
+
+                apiKey = new SmartyStreetsAPIKey();
+                apiKey.AuthID = Rock.Security.Encryption.DecryptString( encryptedAuthID );
+                apiKey.AuthToken = Rock.Security.Encryption.DecryptString( encryptedAuthToken );
+            }
+
+            if ( apiKey == null || apiKey.AuthID == null || apiKey.AuthToken == null )
+            {
+                apiKey = new SmartyStreetsAPIKey();
+                apiKey.AuthID = GetAttributeValue( "AuthID" );
+                apiKey.AuthToken = GetAttributeValue( "AuthToken" );
+            }
+
+            return apiKey;
+        }
+
 #pragma warning disable
 
         public class CandidateAddress
@@ -210,6 +266,18 @@ namespace Rock.Address
             public string dpv_vacant { get; set; }
             public bool ews_match { get; set; }
             public string footnotes { get; set; }
+        }
+
+        public class Zipcode
+        {
+            public string zipcode { get; set; }
+            public double latitude { get; set; }
+            public double longitude { get; set; }
+        }
+
+        public class LookupResponse
+        {
+            public List<Zipcode> zipcodes { get; set; }
         }
 #pragma warning restore
 

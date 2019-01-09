@@ -35,10 +35,10 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public bool AddPersonNote { get; set; }
+        public bool AddPersonNote { get; set; } = true;
 
         /// <summary />
-        public bool AllowExternalRegistrationUpdates { get; set; }
+        public bool AllowExternalRegistrationUpdates { get; set; } = true;
 
         /// <summary />
         public bool AllowGroupPlacement { get; set; }
@@ -68,6 +68,9 @@ namespace Rock.Client
         public decimal Cost { get; set; }
 
         /// <summary />
+        public decimal? DefaultPayment { get; set; }
+
+        /// <summary />
         public string DiscountCodeTerm { get; set; }
 
         /// <summary />
@@ -92,7 +95,7 @@ namespace Rock.Client
         public int? GroupTypeId { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
         public bool LoginRequired { get; set; }
@@ -239,6 +242,7 @@ namespace Rock.Client
             this.ConfirmationFromName = source.ConfirmationFromName;
             this.ConfirmationSubject = source.ConfirmationSubject;
             this.Cost = source.Cost;
+            this.DefaultPayment = source.DefaultPayment;
             this.DiscountCodeTerm = source.DiscountCodeTerm;
             this.FeeTerm = source.FeeTerm;
             this.FinancialGatewayId = source.FinancialGatewayId;

@@ -493,6 +493,7 @@ namespace Rock.Client.Enums
         PromptForRegistrar = 0x0,
         PrefillFirstRegistrant = 0x1,
         UseFirstRegistrant = 0x2,
+        UseLoggedInPerson = 0x3,
     }
 
     /// <summary>

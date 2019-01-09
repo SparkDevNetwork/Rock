@@ -197,10 +197,6 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             EditFamilyState = ( this.ViewState["EditFamilyState"] as string ).FromJsonOrNull<FamilyRegistrationState>();
-
-            CreateDynamicFamilyControls( FamilyRegistrationState.FromGroup( new Group() { GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id } ), false );
-
-            CreateDynamicPersonControls( FamilyRegistrationState.FamilyPersonState.FromTemporaryPerson(), false );
         }
 
         /// <summary>
@@ -220,29 +216,23 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         /// <param name="editFamilyState">State of the edit family.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void CreateDynamicFamilyControls( FamilyRegistrationState editFamilyState, bool setValues )
+        private void CreateDynamicFamilyControls( FamilyRegistrationState editFamilyState )
         {
-            phFamilyAttributes.Controls.Clear();
-
             var fakeFamily = new Group() { GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id };
             var attributeList = editFamilyState.FamilyAttributeValuesState.Select( a => AttributeCache.Get( a.Value.AttributeId ) ).ToList();
             fakeFamily.Attributes = attributeList.ToDictionary( a => a.Key, v => v );
             fakeFamily.AttributeValues = editFamilyState.FamilyAttributeValuesState;
-            var familyAttributeKeysToEdit = this.RequiredAttributesForFamilies.OrderBy( a => a.Order ).Select( a => a.Key ).ToList();
-            familyAttributeKeysToEdit.AddRange( this.OptionalAttributesForFamilies.OrderBy( a => a.Order ).Select( a => a.Key ).ToList() );
+            var familyAttributeKeysToEdit = this.RequiredAttributesForFamilies.OrderBy( a => a.Order ).ToList();
+            familyAttributeKeysToEdit.AddRange( this.OptionalAttributesForFamilies.OrderBy( a => a.Order ).ToList() );
 
-            Rock.Attribute.Helper.AddEditControls(
-                string.Empty,
-                familyAttributeKeysToEdit,
-                fakeFamily,
-                phFamilyAttributes,
-                btnSaveFamily.ValidationGroup,
-                setValues,
-                new List<string>(),
-                2 );
+            avcFamilyAttributes.IncludedAttributes = familyAttributeKeysToEdit.ToArray();
+            avcFamilyAttributes.ValidationGroup = btnSaveFamily.ValidationGroup;
+            avcFamilyAttributes.NumberOfColumns = 2;
+            avcFamilyAttributes.ShowCategoryLabel = false;
+            avcFamilyAttributes.AddEditControls( fakeFamily );
 
             // override the attribute's IsRequired and set Required based on whether the attribute is part of the Required or Optional set of attributes for the Registration
-            foreach ( Control attributeControl in phFamilyAttributes.ControlsOfTypeRecursive<Control>().OfType<Control>() )
+            foreach ( Control attributeControl in avcFamilyAttributes.ControlsOfTypeRecursive<Control>().OfType<Control>() )
             {
                 if ( attributeControl is IHasRequired && attributeControl.ID.IsNotNullOrWhiteSpace() )
                 {
@@ -260,43 +250,33 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void CreateDynamicPersonControls( FamilyRegistrationState.FamilyPersonState familyPersonState, bool setValues )
+        private void CreateDynamicPersonControls( FamilyRegistrationState.FamilyPersonState familyPersonState )
         {
-            phAdultAttributes.Controls.Clear();
-            phChildAttributes.Controls.Clear();
             var fakePerson = new Person();
             var attributeList = familyPersonState.PersonAttributeValuesState.Select( a => AttributeCache.Get( a.Value.AttributeId ) ).ToList();
             fakePerson.Attributes = attributeList.ToDictionary( a => a.Key, v => v );
             fakePerson.AttributeValues = familyPersonState.PersonAttributeValuesState;
 
-            var adultAttributeKeysToEdit = this.RequiredAttributesForAdults.OrderBy( a => a.Order ).Select( a => a.Key ).ToList();
-            adultAttributeKeysToEdit.AddRange( this.OptionalAttributesForAdults.OrderBy( a => a.Order ).Select( a => a.Key ).ToList() );
+            var adultAttributeKeysToEdit = this.RequiredAttributesForAdults.OrderBy( a => a.Order ).ToList();
+            adultAttributeKeysToEdit.AddRange( this.OptionalAttributesForAdults.OrderBy( a => a.Order ).ToList() );
 
-            Rock.Attribute.Helper.AddEditControls(
-                string.Empty,
-                adultAttributeKeysToEdit,
-                fakePerson,
-                phAdultAttributes,
-                btnDonePerson.ValidationGroup,
-                setValues,
-                new List<string>(),
-                2 );
+            avcAdultAttributes.IncludedAttributes = adultAttributeKeysToEdit.ToArray();
+            avcAdultAttributes.ValidationGroup = btnDonePerson.ValidationGroup;
+            avcAdultAttributes.NumberOfColumns = 2;
+            avcAdultAttributes.ShowCategoryLabel = false;
+            avcAdultAttributes.AddEditControls( fakePerson );
 
-            var childAttributeKeysToEdit = this.RequiredAttributesForChildren.OrderBy( a => a.Order ).Select( a => a.Key ).ToList();
-            childAttributeKeysToEdit.AddRange( this.OptionalAttributesForChildren.OrderBy( a => a.Order ).Select( a => a.Key ).ToList() );
+            var childAttributeKeysToEdit = this.RequiredAttributesForChildren.OrderBy( a => a.Order ).ToList();
+            childAttributeKeysToEdit.AddRange( this.OptionalAttributesForChildren.OrderBy( a => a.Order ).ToList() );
 
-            Rock.Attribute.Helper.AddEditControls(
-                string.Empty,
-                childAttributeKeysToEdit,
-                fakePerson,
-                phChildAttributes,
-                btnDonePerson.ValidationGroup,
-                setValues,
-                new List<string>(),
-                2 );
+            avcChildAttributes.IncludedAttributes = childAttributeKeysToEdit.ToArray();
+            avcChildAttributes.ValidationGroup = btnDonePerson.ValidationGroup;
+            avcChildAttributes.NumberOfColumns = 2;
+            avcChildAttributes.ShowCategoryLabel = false;
+            avcChildAttributes.AddEditControls( fakePerson );
 
             // override the attribute's IsRequired and set Required based on whether the attribute is part of the Required or Optional set of attributes for the Registration
-            foreach ( Control attributeControl in phAdultAttributes.ControlsOfTypeRecursive<Control>().OfType<Control>() )
+            foreach ( Control attributeControl in avcAdultAttributes.ControlsOfTypeRecursive<Control>().OfType<Control>() )
             {
                 if ( attributeControl is IHasRequired && attributeControl.ID.IsNotNullOrWhiteSpace() )
                 {
@@ -308,7 +288,7 @@ namespace RockWeb.Blocks.CheckIn
                 }
             }
 
-            foreach ( Control attributeControl in phChildAttributes.ControlsOfTypeRecursive<Control>().OfType<Control>() )
+            foreach ( Control attributeControl in avcChildAttributes.ControlsOfTypeRecursive<Control>().OfType<Control>() )
             {
                 if ( attributeControl is IHasRequired && attributeControl.ID.IsNotNullOrWhiteSpace() )
                 {
@@ -400,14 +380,14 @@ namespace RockWeb.Blocks.CheckIn
                 }
 
                 BindFamilyMembersGrid();
-                CreateDynamicFamilyControls( EditFamilyState, true );
+                CreateDynamicFamilyControls( EditFamilyState );
 
                 ShowFamilyView();
             }
             else
             {
                 this.EditFamilyState = FamilyRegistrationState.FromGroup( new Group() { GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id } );
-                CreateDynamicFamilyControls( EditFamilyState, true );
+                CreateDynamicFamilyControls( EditFamilyState );
                 hfGroupId.Value = "0";
                 mdEditFamily.Title = "Add Family";
                 EditGroupMember( null );
@@ -677,7 +657,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             var fakeFamily = new Group() { GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id, Id = EditFamilyState.GroupId ?? 0 };
             fakeFamily.LoadAttributes();
-            Rock.Attribute.Helper.GetEditValues( phFamilyAttributes, fakeFamily );
+            avcFamilyAttributes.GetEditValues( fakeFamily );
 
             EditFamilyState.FamilyAttributeValuesState = fakeFamily.AttributeValues.ToDictionary( k => k.Key, v => v.Value );
         }
@@ -903,7 +883,7 @@ namespace RockWeb.Blocks.CheckIn
                 gpGradePicker.SelectedValue = null;
             }
 
-            CreateDynamicPersonControls( familyPersonState, true );
+            CreateDynamicPersonControls( familyPersonState );
 
             ShowPersonView( familyPersonState );
         }
@@ -939,8 +919,8 @@ namespace RockWeb.Blocks.CheckIn
             pnlChildRelationshipToAdult.Visible = !isAdult;
 
             tbAlternateID.Visible = ( isAdult && CurrentCheckInState.CheckInType.Registration.DisplayAlternateIdFieldforAdults ) || ( !isAdult && CurrentCheckInState.CheckInType.Registration.DisplayAlternateIdFieldforChildren );
-            phAdultAttributes.Visible = isAdult;
-            phChildAttributes.Visible = !isAdult;
+            avcAdultAttributes.Visible = isAdult;
+            avcChildAttributes.Visible = !isAdult;
         }
 
         /// <summary>
@@ -1035,11 +1015,11 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( familyPersonState.IsAdult )
             {
-                Rock.Attribute.Helper.GetEditValues( phAdultAttributes, fakePerson );
+                avcAdultAttributes.GetEditValues( fakePerson );
             }
             else
             {
-                Rock.Attribute.Helper.GetEditValues( phChildAttributes, fakePerson );
+                avcChildAttributes.GetEditValues( fakePerson );
             }
 
             familyPersonState.PersonAttributeValuesState = fakePerson.AttributeValues.ToDictionary( k => k.Key, v => v.Value );

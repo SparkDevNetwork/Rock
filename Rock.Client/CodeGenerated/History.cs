@@ -85,7 +85,7 @@ namespace Rock.Client
         public string SourceOfChange { get; set; }
 
         /// <summary />
-        [RockObsolete( "1.8" )]
+        // Made Obsolete in Rock "1.8"
         [Obsolete( "Use SummaryHtml instead to get the Summary, or use HistoryChangeList related functions to log history ", false )]
         public string Summary { get; set; }
 

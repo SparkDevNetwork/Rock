@@ -28,16 +28,17 @@ ul.rocklist {
       margin-bottom: 2px;
     }
 
-    i {
-      padding: 4px;
-      cursor: pointer;
-    }
+    // i {
+    //   padding: 4px;
+    //   cursor: pointer;
+    // }
 
     .file-name {
       display: block;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      cursor: pointer;
     }
 
     &:hover {
@@ -46,8 +47,8 @@ ul.rocklist {
     }
 
     &.selected {
-      color: @tree-rollover-color;
-      background: @tree-rollover-bg;
+      color: @tree-selected-color;
+      background: @tree-selected-bg;
     }
   }
 }
