@@ -14,14 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Web.UI;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
-    
+
     /// <summary>
-    /// Displays a bootstrap badge
+    /// PageBreadCrumbs Control
     /// </summary>
     [ToolboxData( "<{0}:PageBreadCrumbs runat=server></{0}:PageBreadCrumbs>" )]
     public class PageBreadCrumbs : Control
@@ -32,20 +33,33 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The pre text.
         /// </value>
+        [RockObsolete( "1.9" )]
+        [Obsolete( "Use PreHTML Instead" )]
         public string PreText
+        {
+            get => PreHtml;
+            set => PreHtml = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the pre HTML.
+        /// </summary>
+        /// <value>
+        /// The pre HTML.
+        /// </value>
+        public string PreHtml
         {
             get
             {
-                return ViewState["PreText"] as string;
+                return ViewState["PreHtml"] as string;
             }
 
             set
             {
-                ViewState["PreText"] = value;
+                ViewState["PreHtml"] = value;
             }
         }
-        
-        
+
         /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
@@ -61,13 +75,13 @@ namespace Rock.Web.UI.Controls
                     var crumbs = rockPage.BreadCrumbs;
                     if ( crumbs != null )
                     {
-                        writer.Write(this.PreText);
+                        writer.Write( this.PreHtml );
                         writer.AddAttribute( HtmlTextWriterAttribute.Class, "breadcrumb" );
                         writer.RenderBeginTag( HtmlTextWriterTag.Ul );
 
                         foreach ( var crumb in crumbs )
                         {
-                            if (!crumb.Active )
+                            if ( !crumb.Active )
                             {
                                 writer.RenderBeginTag( HtmlTextWriterTag.Li );
                                 writer.AddAttribute( HtmlTextWriterAttribute.Href, crumb.Url );

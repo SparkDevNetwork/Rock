@@ -429,6 +429,14 @@ namespace Rock.Data
         public DbSet<CommunicationRecipient> CommunicationRecipients { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication responses.
+        /// </summary>
+        /// <value>
+        /// The communication responses.
+        /// </value>
+        public DbSet<CommunicationResponse> CommunicationResponses { get; set; }
+
+        /// <summary>
         /// Gets or sets the communication template attachment.
         /// </summary>
         /// <value>
