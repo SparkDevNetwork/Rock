@@ -128,6 +128,15 @@ namespace Rock.Model
         public bool IsIndexingEnabled { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether attributes of this entity type support a Pre-HTML and Post-HTML option.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [attributes support pre post HTML]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AttributesSupportPrePostHtml { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether this entity supports indexing.
         /// </summary>
         /// <value>

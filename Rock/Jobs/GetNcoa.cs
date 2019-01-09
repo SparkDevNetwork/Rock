@@ -136,9 +136,7 @@ namespace Rock.Jobs
                         var ncoa = new Ncoa();
                         ncoa.SendNotification( sparkDataConfig, "failed" );
                     }
-                    catch
-                    {
-                    }
+                    catch { }
 
 
                     if ( sparkDataConfig.SparkDataApiKey.IsNotNullOrWhiteSpace() && sparkDataConfig.NcoaSettings.FileName.IsNotNullOrWhiteSpace() )

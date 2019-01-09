@@ -34,6 +34,7 @@ using Rock.Field.Types;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -622,7 +623,7 @@ $(document).ready(function() {
                     var context = HttpContext.Current;
                     string channelRssUrl = string.Format( "{0}://{1}{2}{3}{4}",
                                         context.Request.Url.Scheme,
-                                        context.Request.Url.Host,
+                                        WebRequestHelper.GetHostNameFromRequest( context ),
                                         context.Request.Url.Port == 80
                                             ? string.Empty
                                             : ":" + context.Request.Url.Port,
@@ -1061,7 +1062,7 @@ $(document).ready(function() {
                                                 ) )
                                             .OrderByDescending( a => a.EntityTypeQualifierColumn )
                                             .ThenBy( a => a.Order )
-                                            .ToCacheAttributeList();
+                                            .ToAttributeCacheList();
 
                     foreach ( var attribute in itemAttributes )
                     {

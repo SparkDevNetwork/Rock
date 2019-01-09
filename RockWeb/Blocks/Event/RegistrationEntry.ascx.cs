@@ -86,6 +86,17 @@ namespace RockWeb.Blocks.Event
         private const string MINIMUM_PAYMENT_KEY = "MinimumPayment";
         private const string DEFAULT_PAYMENT_KEY = "DefaultPayment";
 
+        private enum PanelIndex
+        {
+            PanelHowMany = 0,
+            PanelRegistrationAttributesStart = 1,
+            PanelRegistrant = 2,
+            PanelRegistrationAttributesEnd = 3,
+            PanelSummary = 4,
+            PanelPayment = 5,
+            PanelSuccess = 6
+        }
+
         // protected variables
         private decimal _percentComplete = 0;
 
@@ -119,6 +130,14 @@ namespace RockWeb.Blocks.Event
         /// The state of the registration instance.
         /// </value>
         private RegistrationInstance RegistrationInstanceState { get; set; }
+
+        /// <summary>
+        /// Gets or sets the state of the registration attributes.
+        /// </summary>
+        /// <value>
+        /// The state of the registration attributes.
+        /// </value>
+        private List<AttributeCache> RegistrationAttributesState { get; set; }
 
         /// <summary>
         /// Gets or sets the group identifier.
@@ -174,7 +193,7 @@ namespace RockWeb.Blocks.Event
         /// <value>
         /// The current panel.
         /// </value>
-        private int CurrentPanel { get; set; }
+        private PanelIndex CurrentPanel { get; set; }
 
         /// <summary>
         /// Gets or sets the index of the current registrant.
@@ -246,6 +265,44 @@ namespace RockWeb.Blocks.Event
                 }
 
                 return "Registration";
+            }
+        }
+
+        /// <summary>
+        /// Gets the registration attribute title start.
+        /// </summary>
+        /// <value>
+        /// The registration attribute title start.
+        /// </value>
+        private string RegistrationAttributeTitleStart
+        {
+            get
+            {
+                if ( RegistrationTemplate != null && !string.IsNullOrWhiteSpace( RegistrationTemplate.RegistrationAttributeTitleStart ) )
+                {
+                    return RegistrationTemplate.RegistrationAttributeTitleStart;
+                }
+
+                return "Registration Information";
+            }
+        }
+
+        /// <summary>
+        /// Gets the registration attribute title end.
+        /// </summary>
+        /// <value>
+        /// The registration attribute title end.
+        /// </value>
+        private string RegistrationAttributeTitleEnd
+        {
+            get
+            {
+                if ( RegistrationTemplate != null && !string.IsNullOrWhiteSpace( RegistrationTemplate.RegistrationAttributeTitleEnd ) )
+                {
+                    return RegistrationTemplate.RegistrationAttributeTitleEnd;
+                }
+
+                return "Registration Information";
             }
         }
 
@@ -385,6 +442,44 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Gets or sets the ids of registration attributes that will be prompted *before* editing registrants.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance has registration attributes before registrants; otherwise, <c>false</c>.
+        /// </value>
+        protected List<int> RegistrationAttributeIdsBeforeRegistrants
+        {
+            get
+            {
+                return ViewState["RegistrationAttributeIdsBeforeRegistrants"] as List<int> ?? new List<int>();
+            }
+
+            set
+            {
+                ViewState["RegistrationAttributeIdsBeforeRegistrants"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the ids of registration attributes that will be prompted *after* editing registrants.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance has registration attributes after registrants; otherwise, <c>false</c>.
+        /// </value>
+        protected List<int> RegistrationAttributeIdsAfterRegistrants
+        {
+            get
+            {
+                return ViewState["RegistrationAttributeIdsAfterRegistrants"] as List<int> ?? new List<int>();
+            }
+
+            set
+            {
+                ViewState["RegistrationAttributeIdsAfterRegistrants"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the progress bar steps.
         /// </summary>
         /// <value>
@@ -446,7 +541,7 @@ namespace RockWeb.Blocks.Event
 
             GroupId = ViewState[GROUP_ID_KEY] as int?;
             CampusId = ViewState[CAMPUS_ID_KEY] as int?;
-            CurrentPanel = ViewState[CURRENT_PANEL_KEY] as int? ?? 0;
+            CurrentPanel = ViewState[CURRENT_PANEL_KEY] as PanelIndex? ?? PanelIndex.PanelHowMany;
             CurrentRegistrantIndex = ViewState[CURRENT_REGISTRANT_INDEX_KEY] as int? ?? 0;
             CurrentFormIndex = ViewState[CURRENT_FORM_INDEX_KEY] as int? ?? 0;
             minimumPayment = ViewState[MINIMUM_PAYMENT_KEY] as decimal?;
@@ -498,14 +593,13 @@ namespace RockWeb.Blocks.Event
 
             if ( !Page.IsPostBack )
             {
-                var personDv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() );
-                if ( CurrentPerson != null && CurrentPerson.RecordTypeValue != null && personDv != null && CurrentPerson.RecordTypeValue.Guid != personDv.Guid )
+                if ( CurrentPerson != null && CurrentPerson.IsBusiness() )
                 {
                     ShowError( "Invalid Login", "Sorry, the login you are using doesn't appear to be tied to a valid person record. Try logging out and logging in with a different username, or create a new account before registering for the selected event." );
                 }
                 else
                 {
-                    // Get the a registration if it has not already been loaded ( breadcrumbs may have loaded it )
+                    // Get the a registration if it has not already been loaded
                     if ( RegistrationState != null || SetRegistrationState() )
                     {
                         if ( RegistrationTemplate != null )
@@ -582,15 +676,14 @@ namespace RockWeb.Blocks.Event
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            if ( RegistrationInstanceState == null )
-            {
-                SetRegistrationState();
-            }
+            int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
 
-            if ( RegistrationInstanceState != null )
+            if ( registrationInstanceId.HasValue )
             {
-                RockPage.Title = RegistrationInstanceState.Name;
-                breadCrumbs.Add( new BreadCrumb( RegistrationInstanceState.Name, pageReference ) );
+                var registrationInstanceName = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, a => a.Name );
+
+                RockPage.Title = registrationInstanceName;
+                breadCrumbs.Add( new BreadCrumb( registrationInstanceName, pageReference ) );
                 return breadCrumbs;
             }
 
@@ -639,7 +732,7 @@ namespace RockWeb.Blocks.Event
                 hfAllowNavigate.Value = true.ToTrueFalse();
                 try
                 {
-                    if ( CurrentPanel != 1 )
+                    if ( CurrentPanel != PanelIndex.PanelRegistrant )
                     {
                         this.AddHistory( "event", string.Format( "{0},0,0", CurrentPanel ) );
                     }
@@ -676,20 +769,26 @@ namespace RockWeb.Blocks.Event
             {
                 string[] commands = state.Split( ',' );
 
-                int panelId = 0;
+                PanelIndex panelIndex = PanelIndex.PanelHowMany;
                 int registrantId = 0;
                 int formId = 0;
 
                 if ( commands.Count() == 3 )
                 {
-                    panelId = int.Parse( commands[0] );
+                    panelIndex = commands[0].ConvertToEnumOrNull<PanelIndex>() ?? PanelIndex.PanelHowMany;
                     registrantId = int.Parse( commands[1] );
                     formId = int.Parse( commands[2] );
                 }
 
-                switch ( panelId )
+                switch ( panelIndex )
                 {
-                    case 1:
+                    case PanelIndex.PanelRegistrationAttributesStart:
+                        {
+                            ShowRegistrationAttributesStart( true );
+                            break;
+                        }
+
+                    case PanelIndex.PanelRegistrant:
                         {
                             CurrentRegistrantIndex = registrantId;
                             CurrentFormIndex = formId;
@@ -697,13 +796,19 @@ namespace RockWeb.Blocks.Event
                             break;
                         }
 
-                    case 2:
+                    case PanelIndex.PanelRegistrationAttributesEnd:
+                        {
+                            ShowRegistrationAttributesEnd( true );
+                            break;
+                        }
+
+                    case PanelIndex.PanelSummary:
                         {
                             ShowSummary();
                             break;
                         }
 
-                    case 3:
+                    case PanelIndex.PanelPayment:
                         {
                             ShowPayment();
                             break;
@@ -739,6 +844,130 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbHowManyNext_Click( object sender, EventArgs e )
         {
+            ShowRegistrationAttributesStart( true );
+        }
+
+        /// <summary>
+        /// Shows the registration attributes before (or navigate to next/prev page if there aren't any)
+        /// </summary>
+        private void ShowRegistrationAttributesStart( bool forward )
+        {
+            if ( this.RegistrationAttributeIdsBeforeRegistrants.Any() )
+            {
+                decimal currentStep = 1;
+                PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
+                pnlRegistrationAttributesStartProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
+
+                lRegistrationAttributesStartTitle.Text = this.RegistrationAttributeTitleStart;
+
+                avcRegistrationAttributesStart.ShowCategoryLabel = false;
+                avcRegistrationAttributesStart.IncludedAttributes = this.RegistrationAttributeIdsBeforeRegistrants.Select( a => AttributeCache.Get( a ) ).ToArray();
+                Registration registration = null;
+                if ( ( this.RegistrationState != null ) && this.RegistrationState.RegistrationId.HasValue )
+                {
+                    registration = new RegistrationService( new RockContext() ).Get( this.RegistrationState.RegistrationId.Value );
+                }
+
+                if ( registration == null )
+                {
+                    registration = new Registration
+                    {
+                        RegistrationInstance = this.RegistrationInstanceState
+                    };
+                }
+
+                if ( !avcRegistrationAttributesStart.HasEditControls( registration ) )
+                {
+                    avcRegistrationAttributesStart.AddEditControls( registration );
+                }
+
+                SetPanel( PanelIndex.PanelRegistrationAttributesStart );
+            }
+            else
+            {
+                if ( forward )
+                {
+                    btnRegistrationAttributesStartNext_Click( null, null );
+                }
+                else
+                {
+                    btnRegistrationAttributesStartPrev_Click( null, null );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Shows the registration attributes after (or navigate to next page if there aren't any)
+        /// </summary>
+        private void ShowRegistrationAttributesEnd( bool forward )
+        {
+            if ( this.RegistrationAttributeIdsAfterRegistrants.Any() )
+            {
+                decimal currentStep = ( FormCount * RegistrationState.RegistrantCount ) + 1;
+                if ( this.RegistrationAttributeIdsBeforeRegistrants.Any() )
+                {
+                    currentStep++;
+                }
+
+                PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
+                pnlRegistrationAttributesStartProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
+
+                lRegistrationAttributesEndTitle.Text = this.RegistrationAttributeTitleEnd;
+                avcRegistrationAttributesEnd.ShowCategoryLabel = false;
+                avcRegistrationAttributesEnd.IncludedAttributes = this.RegistrationAttributeIdsAfterRegistrants.Select( a => AttributeCache.Get( a ) ).ToArray();
+                Registration registration = null;
+                if ( ( this.RegistrationState != null ) && this.RegistrationState.RegistrationId.HasValue )
+                {
+                    registration = new RegistrationService( new RockContext() ).Get( this.RegistrationState.RegistrationId.Value );
+                }
+
+                if ( registration == null )
+                {
+                    registration = new Registration
+                    {
+                        RegistrationInstance = this.RegistrationInstanceState
+                    };
+                }
+
+                var setValues = forward;
+                if ( !avcRegistrationAttributesEnd.HasEditControls( registration ) )
+                {
+                    avcRegistrationAttributesEnd.AddEditControls( registration );
+                }
+
+                SetPanel( PanelIndex.PanelRegistrationAttributesEnd );
+            }
+            else
+            {
+                if ( forward )
+                {
+                    btnRegistrationAttributesEndNext_Click( null, null );
+                }
+                else
+                {
+                    btnRegistrationAttributesEndPrev_Click( null, null );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnRegistrationAttributesStartPrev_Click control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnRegistrationAttributesStartPrev_Click( object sender, EventArgs e )
+        {
+            ShowHowMany();
+            hfTriggerScroll.Value = "true";
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnRegistrationAttributesStartNext control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnRegistrationAttributesStartNext_Click( object sender, EventArgs e )
+        {
             _saveNavigationHistory = true;
 
             CurrentRegistrantIndex = 0;
@@ -747,18 +976,42 @@ namespace RockWeb.Blocks.Event
             // Create registrants based on the number selected
             SetRegistrantState( numHowMany.Value );
 
-            // set the max number of steps in the progress bar
-            int registrantPages = FormCount;
-            if ( SignInline )
-            {
-                registrantPages += 1;
-            }
-
-            ProgressBarSteps = ( numHowMany.Value * registrantPages ) + ( Using3StepGateway ? 3 : 2 );
+            SetProgressBarStepsCount();
 
             ShowRegistrant( true, false );
 
             hfTriggerScroll.Value = "true";
+        }
+
+        /// <summary>
+        /// Sets the progress bar steps count.
+        /// </summary>
+        private void SetProgressBarStepsCount()
+        {
+            // set the max number of steps in the progress bar
+            int registrantPages = FormCount;
+            if ( SignInline )
+            {
+                registrantPages += 2;
+            }
+
+            int registrantCount = 0;
+            if ( RegistrationState != null )
+            {
+                registrantCount = RegistrationState.RegistrantCount;
+            }
+
+            this.ProgressBarSteps = ( registrantCount * registrantPages ) + 2;
+
+            if ( this.RegistrationAttributeIdsBeforeRegistrants.Any() )
+            {
+                this.ProgressBarSteps++;
+            }
+
+            if ( this.RegistrationAttributeIdsAfterRegistrants.Any() )
+            {
+                this.ProgressBarSteps++;
+            }
         }
 
         /// <summary>
@@ -768,7 +1021,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRegistrantPrev_Click( object sender, EventArgs e )
         {
-            if ( CurrentPanel == 1 )
+            if ( CurrentPanel == PanelIndex.PanelRegistrant )
             {
                 _saveNavigationHistory = true;
 
@@ -791,7 +1044,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRegistrantNext_Click( object sender, EventArgs e )
         {
-            if ( CurrentPanel == 1 )
+            if ( CurrentPanel == PanelIndex.PanelRegistrant )
             {
                 _saveNavigationHistory = true;
 
@@ -838,13 +1091,13 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Handles the Click event of the lbSummaryPrev control.
+        /// Handles the Click event of the btnRegistrationAttributesEndPrev_Click control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbSummaryPrev_Click( object sender, EventArgs e )
+        protected void btnRegistrationAttributesEndPrev_Click( object sender, EventArgs e )
         {
-            if ( CurrentPanel == 2 )
+            if ( CurrentPanel == PanelIndex.PanelRegistrationAttributesEnd )
             {
                 _saveNavigationHistory = true;
 
@@ -855,6 +1108,39 @@ namespace RockWeb.Blocks.Event
                 RegistrationState.PaymentAmount = null;
 
                 ShowRegistrant( false, false );
+
+                hfTriggerScroll.Value = "true";
+            }
+            else
+            {
+                ShowHowMany();
+            }
+
+            hfTriggerScroll.Value = "true";
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnRegistrationAttributesEndNext control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnRegistrationAttributesEndNext_Click( object sender, EventArgs e )
+        {
+            ShowSummary();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbSummaryPrev control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbSummaryPrev_Click( object sender, EventArgs e )
+        {
+            if ( CurrentPanel == PanelIndex.PanelSummary )
+            {
+                _saveNavigationHistory = true;
+
+                ShowRegistrationAttributesEnd( false );
             }
             else
             {
@@ -871,7 +1157,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSummaryNext_Click( object sender, EventArgs e )
         {
-            if ( CurrentPanel == 2 )
+            if ( CurrentPanel == PanelIndex.PanelSummary )
             {
                 List<string> summaryErrors = ValidateSummary();
                 if ( !summaryErrors.Any() )
@@ -932,7 +1218,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbPaymentPrev_Click( object sender, EventArgs e )
         {
-            if ( CurrentPanel == 3 )
+            if ( CurrentPanel == PanelIndex.PanelPayment )
             {
                 _saveNavigationHistory = true;
 
@@ -953,7 +1239,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbStep2Return_Click( object sender, EventArgs e )
         {
-            if ( CurrentPanel == 2 || CurrentPanel == 3 )
+            if ( CurrentPanel == PanelIndex.PanelSummary || CurrentPanel == PanelIndex.PanelPayment )
             {
                 int? registrationId = SaveChanges();
                 if ( registrationId.HasValue )
@@ -962,7 +1248,7 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    if ( CurrentPanel == 2 )
+                    if ( CurrentPanel == PanelIndex.PanelSummary )
                     {
                         ShowSummary();
                     }
@@ -1486,6 +1772,10 @@ namespace RockWeb.Blocks.Event
                 if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState != null && RegistrationInstanceState.MaxAttendees > 0 )
                 {
                     var existingRegistrantIds = RegistrationState.Registrants.Select( r => r.Id ).ToList();
+                    var otherRegistrantsCount = new RegistrationRegistrantService( new RockContext() ).Queryable()
+                        .Where( a => a.Registration.RegistrationInstanceId == registrationInstanceId && !a.Registration.IsTemporary )
+                        .Where( a => !existingRegistrantIds.Contains( a.Id ) ).Count();
+
                     int otherRegistrants = RegistrationInstanceState.Registrations
                         .Where( r => !r.IsTemporary )
                         .Sum( r => r.Registrants.Where( t => !existingRegistrantIds.Contains( t.Id ) ).Count() );
@@ -1510,6 +1800,25 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
+            if ( RegistrationTemplate != null )
+            {
+                RegistrationAttributesState = new AttributeService( rockContext ).GetByEntityTypeId( new Registration().TypeId, true ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( RegistrationTemplate.Id.ToString() ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToAttributeCacheList()
+                .Where( a => a.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) )
+                .ToList();
+
+                // only show the Registration Attributes Before Registrants that have a category of REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION
+                this.RegistrationAttributeIdsBeforeRegistrants = RegistrationAttributesState.Where( a => a.Categories.Any( c => c.Guid == Rock.SystemGuid.Category.REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION.AsGuid() ) ).Select( a => a.Id ).ToList();
+
+                // only show the Registration Attributes After Registrants that have don't have a category or have a category of REGISTRATION_ATTRIBUTE_END_OF_REGISTRATION
+                this.RegistrationAttributeIdsAfterRegistrants = RegistrationAttributesState.Where( a => !a.Categories.Any() || a.Categories.Any( c => c.Guid == Rock.SystemGuid.Category.REGISTRATION_ATTRIBUTE_END_OF_REGISTRATION.AsGuid() ) ).Select( a => a.Id ).ToList();
+            }
+
             SignInline = false;
             if ( RegistrationTemplate != null &&
                 RegistrationTemplate.RequiredSignatureDocumentTemplate != null &&
@@ -1523,15 +1832,6 @@ namespace RockWeb.Blocks.Event
                     DigitalSignatureComponent = provider;
                 }
             }
-
-            // set the max number of steps in the progress bar
-            int registrantPages = FormCount;
-            if ( SignInline )
-            {
-                registrantPages += 2;
-            }
-
-            this.ProgressBarSteps = ( numHowMany.Value * registrantPages ) + 2;
 
             return true;
         }
@@ -1807,9 +2107,7 @@ namespace RockWeb.Blocks.Event
                             }
                         }
                     }
-                    catch
-                    {
-                    }
+                    catch { }
 
                     return ( int? ) null;
                 }
@@ -1939,7 +2237,7 @@ namespace RockWeb.Blocks.Event
         {
             var registrationService = new RegistrationService( rockContext );
             var registrantService = new RegistrationRegistrantService( rockContext );
-            
+
             var personService = new PersonService( rockContext );
             var groupService = new GroupService( rockContext );
             var documentService = new SignatureDocumentService( rockContext );
@@ -2127,8 +2425,12 @@ namespace RockWeb.Blocks.Event
                 registration.IsTemporary = false;
             }
 
+            avcRegistrationAttributesStart.GetEditValues( registration );
+            avcRegistrationAttributesEnd.GetEditValues( registration );
+
             // Save the registration ( so we can get an id )
             rockContext.SaveChanges();
+            registration.SaveAttributeValues( rockContext );
             RegistrationState.RegistrationId = registration.Id;
 
             try
@@ -2496,7 +2798,7 @@ namespace RockWeb.Blocks.Event
                     foreach ( var field in RegistrationTemplate.Forms
                         .SelectMany( f => f.Fields
                             .Where( t =>
-                                t.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
+                                t.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
                                 t.AttributeId.HasValue ) ) )
                     {
                         // Find the registrant's value
@@ -3241,13 +3543,15 @@ namespace RockWeb.Blocks.Event
             // If this is an existing registration, go directly to the summary
             if ( !Page.IsPostBack && RegistrationState != null && RegistrationState.RegistrationId.HasValue && !PageParameter( START_AT_BEGINNING ).AsBoolean() )
             {
+                // ShowSummary will set visibility on things like the lbSummaryPrev button, so we want to
+                // call this before we might change that lbSummaryPrev button's visibility below.
+                ShowSummary();
+
                 // check if template does not allow updating the saved registration, if so hide the back button on the summary screen
                 if ( !RegistrationTemplate.AllowExternalRegistrationUpdates )
                 {
                     lbSummaryPrev.Visible = false;
                 }
-
-                ShowSummary();
             }
             else
             {
@@ -3266,7 +3570,7 @@ namespace RockWeb.Blocks.Event
 
                     ShowWaitingListNotice();
 
-                    SetPanel( 0 );
+                    SetPanel( PanelIndex.PanelHowMany );
                 }
                 else
                 {
@@ -3276,7 +3580,7 @@ namespace RockWeb.Blocks.Event
 
                     SetRegistrantState( MinRegistrants );
 
-                    ShowRegistrant( true, false );
+                    ShowRegistrationAttributesStart( true );
                 }
             }
         }
@@ -3344,7 +3648,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( CurrentRegistrantIndex >= RegistrationState.RegistrantCount )
                 {
-                    ShowSummary();
+                    ShowRegistrationAttributesEnd( true );
                 }
                 else
                 {
@@ -3372,7 +3676,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( CurrentRegistrantIndex < 0 )
                 {
-                    ShowHowMany();
+                    ShowRegistrationAttributesStart( false );
                 }
                 else
                 {
@@ -3442,6 +3746,11 @@ namespace RockWeb.Blocks.Event
                     nbType.NotificationBoxType = registrant.OnWaitList ? NotificationBoxType.Warning : NotificationBoxType.Success;
 
                     decimal currentStep = ( FormCount * CurrentRegistrantIndex ) + CurrentFormIndex + 1;
+                    if ( this.RegistrationAttributeIdsBeforeRegistrants.Any() )
+                    {
+                        currentStep++;
+                    }
+
                     PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
                     pnlRegistrantProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
 
@@ -3528,7 +3837,7 @@ namespace RockWeb.Blocks.Event
                         pnlFamilyMembers.Visible = ddlFamilyMembers.Items.Count > 0;
                     }
 
-                    SetPanel( 1 );
+                    SetPanel( PanelIndex.PanelRegistrant );
                 }
             }
         }
@@ -3539,10 +3848,20 @@ namespace RockWeb.Blocks.Event
         private void ShowSummary()
         {
             decimal currentStep = ( FormCount * RegistrationState.RegistrantCount ) + 1;
+            if ( this.RegistrationAttributeIdsBeforeRegistrants.Any() )
+            {
+                currentStep++;
+            }
+
+            if ( this.RegistrationAttributeIdsAfterRegistrants.Any() )
+            {
+                currentStep++;
+            }
+
             PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
             pnlSummaryAndPaymentProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
 
-            SetPanel( 2 );
+            SetPanel( PanelIndex.PanelSummary );
         }
 
         /// <summary>
@@ -3551,10 +3870,21 @@ namespace RockWeb.Blocks.Event
         private void ShowPayment()
         {
             decimal currentStep = ( FormCount * RegistrationState.RegistrantCount ) + 2;
+
+            if ( this.RegistrationAttributeIdsBeforeRegistrants.Any() )
+            {
+                currentStep++;
+            }
+
+            if ( this.RegistrationAttributeIdsAfterRegistrants.Any() )
+            {
+                currentStep++;
+            }
+
             PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
             pnlSummaryAndPaymentProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
 
-            SetPanel( 3 );
+            SetPanel( PanelIndex.PanelPayment );
 
             if ( ( rblSavedCC.Items.Count == 0 || ( rblSavedCC.SelectedValueAsInt() ?? 0 ) == 0 ) &&
                 RegistrationTemplate != null &&
@@ -3594,6 +3924,17 @@ namespace RockWeb.Blocks.Event
         private void ShowSuccess( int registrationId )
         {
             decimal currentStep = ( FormCount * RegistrationState.RegistrantCount ) + ( Using3StepGateway ? 3 : 2 );
+
+            if ( this.RegistrationAttributeIdsBeforeRegistrants.Any() )
+            {
+                currentStep++;
+            }
+
+            if ( this.RegistrationAttributeIdsAfterRegistrants.Any() )
+            {
+                currentStep++;
+            }
+
             PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
             pnlSuccessProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
 
@@ -3659,47 +4000,49 @@ namespace RockWeb.Blocks.Event
                 ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
             }
 
-            SetPanel( 4 );
+            SetPanel( PanelIndex.PanelSuccess );
         }
 
         /// <summary>
         /// Creates the dynamic controls, and shows correct panel
         /// </summary>
-        /// <param name="currentPanel">The current panel.</param>
-        private void SetPanel( int currentPanel )
+        /// <param name="currentPanelIndex">Index of the current panel.</param>
+        private void SetPanel( PanelIndex currentPanelIndex )
         {
-            CurrentPanel = currentPanel;
+            CurrentPanel = currentPanelIndex;
 
-            if ( CurrentPanel == 2 )
+            if ( CurrentPanel == PanelIndex.PanelSummary )
             {
                 AutoApplyDiscounts();
             }
 
-            pnlRegistrarInfoPrompt.Visible = CurrentPanel == 2;
+            pnlRegistrarInfoPrompt.Visible = CurrentPanel == PanelIndex.PanelSummary;
 
             CreateDynamicControls( true );
 
             pnlHowMany.Visible = CurrentPanel <= 0;
-            pnlRegistrant.Visible = CurrentPanel == 1;
+            pnlRegistrationAttributesStart.Visible = CurrentPanel == PanelIndex.PanelRegistrationAttributesStart;
+            pnlRegistrant.Visible = CurrentPanel == PanelIndex.PanelRegistrant;
+            pnlRegistrationAttributesEnd.Visible = CurrentPanel == PanelIndex.PanelRegistrationAttributesEnd;
 
-            pnlSummaryAndPayment.Visible = CurrentPanel == 2 || CurrentPanel == 3;
+            pnlSummaryAndPayment.Visible = CurrentPanel == PanelIndex.PanelSummary || CurrentPanel == PanelIndex.PanelPayment;
 
-            pnlRegistrantsReview.Visible = CurrentPanel == 2;
-            if ( currentPanel != 2 )
+            pnlRegistrantsReview.Visible = CurrentPanel == PanelIndex.PanelSummary;
+            if ( CurrentPanel != PanelIndex.PanelSummary )
             {
                 pnlCostAndFees.Visible = false;
             }
 
-            lbSummaryPrev.Visible = CurrentPanel == 2;
-            lbSummaryNext.Visible = CurrentPanel == 2;
+            lbSummaryPrev.Visible = CurrentPanel == PanelIndex.PanelSummary;
+            lbSummaryNext.Visible = CurrentPanel == PanelIndex.PanelSummary;
 
-            lbPaymentPrev.Visible = CurrentPanel == 3;
-            aStep2Submit.Visible = currentPanel == 3;
+            lbPaymentPrev.Visible = CurrentPanel == PanelIndex.PanelPayment;
+            aStep2Submit.Visible = CurrentPanel == PanelIndex.PanelPayment;
 
-            pnlSuccess.Visible = CurrentPanel == 4;
+            pnlSuccess.Visible = CurrentPanel == PanelIndex.PanelSuccess;
 
-            lSummaryAndPaymentTitle.Text = ( currentPanel == 2 && RegistrationTemplate != null ) ? "Review " + RegistrationTemplate.RegistrationTerm : "Payment Method";
-            lPaymentInfoTitle.Text = currentPanel == 2 ? "<h4>Payment Method</h4>" : string.Empty;
+            lSummaryAndPaymentTitle.Text = ( CurrentPanel == PanelIndex.PanelSummary && RegistrationTemplate != null ) ? "Review " + RegistrationTemplate.RegistrationTerm : "Payment Method";
+            lPaymentInfoTitle.Text = CurrentPanel == PanelIndex.PanelSummary ? "<h4>Payment Method</h4>" : string.Empty;
         }
 
         /// <summary>
@@ -3983,14 +4326,14 @@ namespace RockWeb.Blocks.Event
         {
             switch ( CurrentPanel )
             {
-                case 1:
+                case PanelIndex.PanelRegistrant:
                     if ( CurrentFormIndex <= FormCount )
                     {
                         CreateRegistrantControls( setValues );
                     }
 
                     break;
-                case 2:
+                case PanelIndex.PanelSummary:
                     CreateSummaryControls( setValues );
                     break;
             }
@@ -4003,14 +4346,14 @@ namespace RockWeb.Blocks.Event
         {
             switch ( CurrentPanel )
             {
-                case 1:
+                case PanelIndex.PanelRegistrant:
                     if ( CurrentFormIndex < FormCount )
                     {
                         ParseRegistrantControls();
                     }
 
                     break;
-                case 2:
+                case PanelIndex.PanelSummary:
                     ParseSummaryControls();
                     break;
             }
@@ -4117,6 +4460,8 @@ namespace RockWeb.Blocks.Event
                 // If the current form, is the last one, add any fee controls
                 if ( FormCount - 1 == CurrentFormIndex && !registrant.OnWaitList )
                 {
+                    List<RegistrantInfo> otherRegistrants = RegistrationState.Registrants.Where( a => a != registrant ).ToList();
+
                     foreach ( var fee in RegistrationTemplate.Fees.Where( f => f.IsActive == true ).OrderBy( o => o.Order ) )
                     {
                         var feeValues = new List<FeeInfo>();
@@ -4125,7 +4470,7 @@ namespace RockWeb.Blocks.Event
                             feeValues = registrant.FeeValues[fee.Id];
                         }
 
-                        fee.AddFeeControl( phFees, this.RegistrationInstanceState, setValues, feeValues );
+                        fee.AddFeeControl( phFees, this.RegistrationInstanceState, setValues, feeValues, otherRegistrants );
                     }
                 }
             }
@@ -4483,7 +4828,8 @@ namespace RockWeb.Blocks.Event
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void CreateSummaryControls( bool setValues )
         {
-            lRegistrationTerm.Text = RegistrationTerm;
+            lRegistrationTermPrompt.Text = RegistrationTerm;
+            lRegistrationTermLoggedInPerson.Text = RegistrationTerm;
             lDiscountCodeLabel.Text = DiscountCodeTerm;
 
             if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
@@ -4555,7 +4901,12 @@ namespace RockWeb.Blocks.Event
                     {
                         // If UseLoggedInPerson is enabled, only prompt for Email, and only if it is isn't known
                         pnlRegistrarInfoPrompt.Visible = false;
-                        pnlRegistrarInfoUseLoggedInPerson.Visible = CurrentPerson.Email.IsNullOrWhiteSpace();
+                        pnlRegistrarInfoUseLoggedInPerson.Visible = true;
+                        lUseLoggedInPersonFirstName.Text = CurrentPerson.NickName;
+                        lUseLoggedInPersonLastName.Text = CurrentPerson.LastName;
+                        lUseLoggedInPersonEmail.Text = CurrentPerson.Email;
+                        lUseLoggedInPersonEmail.Visible = !CurrentPerson.Email.IsNullOrWhiteSpace();
+                        tbUseLoggedInPersonEmail.Visible = CurrentPerson.Email.IsNullOrWhiteSpace();
                     }
                     else
                     {
@@ -4662,7 +5013,14 @@ namespace RockWeb.Blocks.Event
                             costSummary.Cost = registrant.Cost;
                             if ( RegistrationState.DiscountPercentage > 0.0m && registrant.DiscountApplies )
                             {
-                                costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
+                                if ( RegistrationState.DiscountPercentage >= 1.0m )
+                                {
+                                    costSummary.DiscountedCost = 0.0m;
+                                }
+                                else
+                                {
+                                    costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
+                                }
                             }
                             else
                             {
@@ -4699,7 +5057,14 @@ namespace RockWeb.Blocks.Event
 
                                 if ( RegistrationState.DiscountPercentage > 0.0m && templateFee != null && templateFee.DiscountApplies && registrant.DiscountApplies )
                                 {
-                                    costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
+                                    if ( RegistrationState.DiscountPercentage >= 1.0m )
+                                    {
+                                        costSummary.DiscountedCost = 0.0m;
+                                    }
+                                    else
+                                    {
+                                        costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
+                                    }
                                 }
                                 else
                                 {
@@ -4736,6 +5101,10 @@ namespace RockWeb.Blocks.Event
                     if ( RegistrationState.DiscountAmount > 0.0m )
                     {
                         decimal totalDiscount = 0.0m - ( RegistrationState.Registrants.Where( r => r.DiscountApplies ).Count() * RegistrationState.DiscountAmount );
+                        if ( costs.Sum( c => c.Cost ) + totalDiscount < 0 )
+                        {
+                            totalDiscount = 0.0m - costs.Sum( c => c.Cost );
+                        }
                         costs.Add( new RegistrationCostSummaryInfo
                         {
                             Type = RegistrationCostSummaryType.Discount,
@@ -4979,7 +5348,7 @@ namespace RockWeb.Blocks.Event
                     RegistrationState.ConfirmationEmail = CurrentPerson.Email;
                     if ( pnlRegistrarInfoUseLoggedInPerson.Visible )
                     {
-                        RegistrationState.ConfirmationEmail = cbUseLoggedInPersonEmail.Text;
+                        RegistrationState.ConfirmationEmail = tbUseLoggedInPersonEmail.Text;
                     }
                 }
                 else
