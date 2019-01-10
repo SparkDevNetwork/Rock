@@ -552,7 +552,7 @@ namespace Rock.Reporting
         /// <param name="filterField">The filter field.</param>
         public static void RegisterJavascriptInclude( FilterField filterField )
         {
-            ScriptManager.RegisterClientScriptInclude( filterField, filterField.GetType(), "reporting-include", filterField.RockBlock().RockPage.ResolveRockUrl( "~/Scripts/Rock/reportingInclude.js", true ) );
+            //ScriptManager.RegisterClientScriptInclude( filterField, filterField.GetType(), "reporting-include", filterField.RockBlock().RockPage.ResolveRockUrl( "~/Scripts/Rock/reportingInclude.js", true ) );
         }
 
         #region FilterInfo Helpers
