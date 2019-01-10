@@ -9,7 +9,6 @@
 
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" )%>"></script>
-    <script src="<%# ResolveRockUrl("~/Scripts/fastclick.js" ) %>" ></script>
 
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -26,6 +25,5 @@
     <form id="form1" runat="server">
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
     </form>
-    <script>window.addEventListener('load', function () { new FastClick(document.body); }, false);</script>
 </body>
 </html>
