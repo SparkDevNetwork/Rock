@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( addTransactionPage != null )
             {
                 // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
-                var personKey = this.Person.GetImpersonationToken( DateTime.Now.AddMinutes( this.GetAttributeValue( "PersonTokenExpireMinutes" ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( "PersonTokenUsageLimit" ).AsIntegerOrNull(), addTransactionPage.PageId );
+                var personKey = this.Person.GetImpersonationToken( RockDateTime.Now.AddMinutes( this.GetAttributeValue( "PersonTokenExpireMinutes" ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( "PersonTokenUsageLimit" ).AsIntegerOrNull(), addTransactionPage.PageId );
                 Response.Redirect( string.Format( "~/AddTransaction?Person={0}", personKey ) );
             }
         }

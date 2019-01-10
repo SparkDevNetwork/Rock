@@ -386,8 +386,17 @@ namespace Rock.Web.UI.Controls
             var postBackScript = this.NumberUpdated != null ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "NumberUpdated" ), true ) : "";
             postBackScript = postBackScript.Replace( '\'', '"' );
 
-            string disabledMinCss = Value <= Minimum ? "disabled " : "";
-            writer.AddAttribute( HtmlTextWriterAttribute.Onclick, string.Format("Rock.controls.numberUpDown.adjust( this, -1, '{0}' );", postBackScript ) );
+            string disabledMinCss;
+            if ( this.Enabled )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Onclick, string.Format( "Rock.controls.numberUpDown.adjust( this, -1, '{0}' );", postBackScript ) );
+                disabledMinCss = Value <= Minimum ? "disabled " : "";
+            }
+            else
+            {
+                disabledMinCss = "disabled ";
+            }
+
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-number-down numberincrement-down " + disabledMinCss );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-minus " );
@@ -398,8 +407,17 @@ namespace Rock.Web.UI.Controls
             _lblNumber.CssClass = "js-number-up-down-lbl numberincrement-value ";
             _lblNumber.RenderControl( writer );
 
-            string disabledMaxCss = Value >= Maximum ? "disabled " : "";
-            writer.AddAttribute( HtmlTextWriterAttribute.Onclick, string.Format( "Rock.controls.numberUpDown.adjust( this, 1, '{0}' );", postBackScript ) );
+            string disabledMaxCss =  Value >= Maximum ? "disabled " : "";
+            if ( this.Enabled )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Onclick, string.Format( "Rock.controls.numberUpDown.adjust( this, 1, '{0}' );", postBackScript ) );
+                disabledMaxCss = Value >= Maximum ? "disabled " : "";
+            }
+            else
+            {
+                disabledMaxCss = "disabled ";
+            }
+
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-number-up numberincrement-up " + disabledMaxCss );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-plus " );

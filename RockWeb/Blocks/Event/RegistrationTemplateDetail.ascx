@@ -89,6 +89,7 @@
                                             <asp:ListItem Value="0" Text="Prompt For Registrar" />
                                             <asp:ListItem Value="1" Text="Pre-fill First Registrant" />
                                             <asp:ListItem Value="2" Text="Use First Registrant" />
+                                            <asp:ListItem Value="3" Text="Use Logged In Person" />
                                         </Rock:RockDropDownList>
                                     </div>
                                 </div>
@@ -143,6 +144,8 @@
                                         Help="The cost per registrant." />
                                     <Rock:CurrencyBox ID="cbMinimumInitialPayment" runat="server" Label="Minimum Initial Payment"
                                         Help="The minimum amount required per registrant. Leave value blank if full amount is required." />
+                                    <Rock:CurrencyBox ID="cbDefaultPaymentAmount" runat="server" Label="Default Payment Amount"
+                                        Help="The default payment amount per registrant. Leave value blank to default to the full amount. NOTE: This requires that a Minimum Initial Payment is defined." />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:FinancialGatewayPicker ID="fgpFinancialGateway" runat="server" Label="Financial Gateway"
@@ -348,12 +351,13 @@
                         <div class="col-md-6">
                             <Rock:RockLiteral ID="lCost" runat="server" Label="Cost" />
                             <Rock:RockLiteral ID="lMinimumInitialPayment" runat="server" Label="Minimum Initial Payment" />
+                            <Rock:RockLiteral ID="lDefaultPaymentAmount" runat="server" Label="Default Payment Amount" />
                             <Rock:RockControlWrapper ID="rcwFees" runat="server" Label="Fees">
                                 <asp:Repeater ID="rFees" runat="server">
                                     <ItemTemplate>
                                         <div class="row">
                                             <div class="col-xs-4"><%# Eval("Name") %></div>
-                                            <div class="col-xs-8"><%# FormatFeeCost( Eval("CostValue").ToString() ) %></div>
+                                            <div class="col-xs-8"><%# FormatFeeItems( Eval("FeeItems") as ICollection<Rock.Model.RegistrationTemplateFeeItem> ) %></div>
                                         </div>
                                     </ItemTemplate>
                                 </asp:Repeater>
@@ -473,8 +477,30 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockRadioButtonList ID="rblFeeType" runat="server" Label="Options" ValidationGroup="Fee" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="rblFeeType_SelectedIndexChanged" />
-                        <Rock:CurrencyBox ID="cCost" runat="server" Label="Cost" ValidationGroup="Fee" />
-                        <Rock:KeyValueList ID="kvlMultipleFees" runat="server" Label="Costs" ValidationGroup="Fee" KeyPrompt="Option" ValuePrompt="Cost" />
+                        <Rock:RockControlWrapper ID="rcwFeeItemsSingle" runat="server" Label="">
+                            <asp:HiddenField ID="hfFeeItemSingleGuid" runat="server" />
+                            <Rock:CurrencyBox ID="cbFeeItemSingleCost" runat="server" Label="Cost" ValidationGroup="Fee" />
+                            <Rock:NumberBox ID="nbFeeItemSingleMaximumUsageCount" runat="server" Label="Maximum Available" Help="The maximum number of times this fee can be used per registration instance." ValidationGroup="Fee" />
+                        </Rock:RockControlWrapper>
+                        <Rock:RockControlWrapper ID="rcwFeeItemsMultiple" runat="server" Label="Costs" Help="Enter the name, cost, and the maximum number of times this fee can be used per registration instance.">
+                            <asp:Repeater id="rptFeeItemsMultiple" runat="server" OnItemDataBound="rptFeeItemsMultiple_ItemDataBound">
+                                <ItemTemplate>
+                                    <div class="controls controls-row form-control-group margin-b-sm">
+                                        <asp:HiddenField ID="hfFeeItemGuid" runat="server" />
+                                        <asp:Panel ID="pnlFeeItemNameContainer" runat="server">
+                                            <Rock:NotificationBox ID="nbFeeItemWarning" runat="server" NotificationBoxType="Default" />
+                                            <Rock:RockTextBox ID="tbFeeItemName" runat="server" CssClass="input-width-md" Placeholder="Option" ValidationGroup="Fee" Required="true"/>
+                                        </asp:Panel>
+                                        <Rock:CurrencyBox ID="cbFeeItemCost" runat="server" CssClass="input-width-md"  Placeholder="Cost" ValidationGroup="Fee" NumberType="Currency" Required="false" />
+                                        <Rock:NumberBox ID="nbMaximumUsageCount" runat="server" CssClass="input-width-md" Placeholder="Max Available" ValidationGroup="Fee" Required="false" NumberType="Integer" />
+                                        <asp:LinkButton ID="btnDeleteFeeItem" runat="server" CssClass="btn btn-danger btn-sm" OnClick="btnDeleteFeeItem_Click"><i class="fa fa-times"></i></asp:LinkButton>
+                                    </div>
+                                </ItemTemplate>
+                            </asp:Repeater>
+                        </Rock:RockControlWrapper>
+                        <div class="actions">
+                            <asp:LinkButton ID="btnAddFeeItem" runat="server" CssClass="btn btn-action btn-sm" OnClick="btnAddFeeItem_Click"><i class="fa fa-plus-circle"></i></asp:LinkButton>
+                        </div>
                     </div>
                     <div class="col-md-3">
                         <Rock:RockCheckBox ID="cbAllowMultiple" runat="server" Label="Enable Quantity" ValidationGroup="Fee" Text="Yes" Help="Should registrants be able to select more than one of this item?" CssClass="form-check" />

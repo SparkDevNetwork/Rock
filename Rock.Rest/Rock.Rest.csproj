@@ -123,6 +123,7 @@
     <Compile Include="Controllers\CodeGenerated\NoteWatchesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSearchKeysController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSignalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFeeItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ServiceJobHistoriesController.cs" />
     <Compile Include="Controllers\CodeGenerated\SignalTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\NcoaHistoriesController.cs" />

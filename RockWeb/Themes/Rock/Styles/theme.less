@@ -248,7 +248,7 @@ textarea,
 
 .has-error .form-control,
 .has-error .input-group-addon {
-  box-shadow: 0;
+  box-shadow: none;
 }
 
 .has-error .form-control:focus {
@@ -293,9 +293,11 @@ textarea,
 .grid .table > thead > tr > th {
   padding: 18px 0 18px 12px;
   vertical-align: middle;
-  // &:last-child {
-  //   border-right: 1px solid @table-border-color;
-  // }
+
+  // Remove padding offset on center
+  &[align="center"] {
+    padding: 18px 6px;
+  }
 }
 
 .grid .table > thead > tr.grid-header-bold > th {
@@ -334,10 +336,6 @@ textarea,
   .btn {
     width: 33px;
     padding: 5px 7px;
-    &.fa-clone {
-      width: 33px;
-      padding: 8px 8px 8px 7px;
-    }
   }
 }
 
@@ -361,7 +359,7 @@ textarea,
 // 3. Rock Overrides         */
 // -------------------------
 
-.rollover-item {
+.panel-heading .rollover-item {
   > a {
     color: @gray;
 
@@ -1258,7 +1256,7 @@ body.navbar-side-open {
       padding: 0 @padding-base-horizontal;
     }
 
-    .btn {
+    .login .btn {
       display: block;
       width: 100%;
       margin: 18px 0 0;

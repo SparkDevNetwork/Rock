@@ -30,6 +30,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -502,12 +503,28 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="GetRecipientMergeFieldsEventArgs"/> instance containing the event data.</param>
         protected void gGroupMembers_GetRecipientMergeFields( object sender, GetRecipientMergeFieldsEventArgs e )
         {
-            GroupMember groupMember = e.DataItem as GroupMember;
-            if ( groupMember != null )
+            GroupMember groupMemberRow = e.DataItem as GroupMember;
+
+            if ( groupMemberRow == null )
             {
-                e.MergeValues.Add( "GroupRole", groupMember.GroupRole );
-                e.MergeValues.Add( "GroupMemberStatus", ( ( GroupMemberStatus ) groupMember.GroupMemberStatus ).ConvertToString() );
+                return;
             }
+
+            var groupMember = new GroupMemberService( new RockContext() ).Get( groupMemberRow.Id );
+            groupMember.LoadAttributes();
+
+            var mergefields = e.MergeValues;
+            e.MergeValues.Add( "GroupRole", groupMemberRow.GroupRole );
+            e.MergeValues.Add( "GroupMemberStatus", groupMemberRow.GroupMemberStatus.ConvertToString() );
+            e.MergeValues.Add( "GroupName", groupMember.Group.Name );
+
+            dynamic dynamicAttributeCarrier = new RockDynamic();
+            foreach ( var attributeKeyValue in groupMember.AttributeValues )
+            {
+                dynamicAttributeCarrier[attributeKeyValue.Key] = attributeKeyValue.Value.Value;
+            }
+
+            e.MergeValues.Add( "GroupMemberAttributes", dynamicAttributeCarrier );
         }
 
         /// <summary>
