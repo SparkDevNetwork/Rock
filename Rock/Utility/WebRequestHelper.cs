@@ -23,6 +23,9 @@ using System.Web;
 
 namespace Rock.Utility
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class WebRequestHelper
     {
 

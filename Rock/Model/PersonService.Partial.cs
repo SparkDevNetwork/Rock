@@ -1865,7 +1865,6 @@ namespace Rock.Model
         /// person in the case of duplicate records.
         /// </summary>
         /// <param name="phoneNumber">The phone number.</param>
-        /// <param name="numberTypeValueId">The number type value identifier.</param>
         /// <returns></returns>
         public Person GetPersonFromMobilePhoneNumber( string phoneNumber )
         {

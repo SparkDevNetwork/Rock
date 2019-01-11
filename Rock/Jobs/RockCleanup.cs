@@ -401,6 +401,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="relationshipGroupType">Type of the relationship group.</param>
         /// <param name="ownerRoleGuid">The owner role unique identifier.</param>
+        /// <param name="commandTimeout">The command timeout.</param>
         private static void AddMissingRelationshipGroups( GroupTypeCache relationshipGroupType, Guid ownerRoleGuid, int commandTimeout )
         {
             if ( relationshipGroupType != null )

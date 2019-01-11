@@ -10,8 +10,7 @@ namespace Rock.Utility.EntityCoding.Processors
     /// <summary>
     /// Handle processing of Workflow Type entities.
     /// </summary>
-    /// <seealso cref="EntityCoding.EntityProcessor{Rock.Model.WorkflowType}" />
-    class WorkflowTypeProcessor : EntityProcessor<WorkflowType>
+    public class WorkflowTypeProcessor : EntityProcessor<WorkflowType>
     {
         /// <summary>
         /// The unique identifier for this entity processor. This is used to identify the correct

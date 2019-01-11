@@ -7,6 +7,10 @@ using Rock.Model;
 
 namespace Rock.Utility.EntityCoding
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.Utility.EntityCoding.CodingHelper" />
     public class EntityDecoder : CodingHelper
     {
         #region Properties

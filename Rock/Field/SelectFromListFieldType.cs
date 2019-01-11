@@ -36,6 +36,10 @@ namespace Rock.Field.Types
 
         #region Configuration
 
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
         public override List<string> ConfigurationKeys()
         {
             List<string> configKeys = new List<string>();
