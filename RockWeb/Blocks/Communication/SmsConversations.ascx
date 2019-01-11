@@ -2,10 +2,14 @@
 
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
-        <div class="panel panel-block">
+        <Rock:NotificationBox ID="nbNoNumbers" runat="server" NotificationBoxType="Warning" Text='No "SMS Phone Numbers" are available to view. Either there are none configured our you do not have access to them.' Visible="false"></Rock:NotificationBox>
+
+        <div class="panel panel-block" runat="server" id="divMain" visible="false">
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-comments"></i> SMS Conversations</h1>
+                <Rock:RockDropDownList ID="ddlSmsNumbers" runat="server" Label="" AutoPostBack="true" OnSelectedIndexChanged="ddlSmsNumbers_SelectedIndexChanged" CssClass="input-sm" />
+
                 <div class="panel-labels"> <!--  style="position:absolute;right:15px;top:10px;" -->
                     <a href="#" onclick="$('.js-sms-configuration').toggle()">
                         <i class="fa fa-cog"></i>
@@ -20,14 +24,12 @@
                         <Rock:Toggle ID="tglShowRead" runat="server" Label="Show Read Messages" OnCheckedChanged="tglShowRead_CheckedChanged" OnText="Yes" OffText="No" Checked="true" ButtonSizeCssClass="btn-sm" />
                     </div>
                     <div class="col-md-3">
-                        <Rock:RockDropDownList ID="ddlSmsNumbers" runat="server" Label="SMS Number" AutoPostBack="true" OnSelectedIndexChanged="ddlSmsNumbers_SelectedIndexChanged" CssClass="input-sm" />
-                        <asp:Label ID="lblSelectedSmsNumber" runat="server" visible="false" />
                     </div></div>
                 </div>
 
             </div>
 
-            <Rock:NotificationBox ID="nbNoNumbers" runat="server" NotificationBoxType="Warning" Text="No SMS numbers are available to view." Visible="false"></Rock:NotificationBox>
+            <%--<Rock:NotificationBox ID="nbNoNumbers" runat="server" NotificationBoxType="Warning" Text="No SMS numbers are available to view." Visible="false"></Rock:NotificationBox>--%>
 
             <div class="sms-conversations-container">
                 <div class="conversation-list">
