@@ -39,8 +39,8 @@ namespace Rock.Plugin.HotFixes
             //UpdateIsSystemForCategories();
             //FixTypeInTemplate();
             //FixPageRouteForContentPage();
-            AddExportAPIsMaxItemsPerPageGlobalAttribute();
-            SetRestActionAuthSecurityForExportAPIs();
+            //AddExportAPIsMaxItemsPerPageGlobalAttribute();
+            //SetRestActionAuthSecurityForExportAPIs();
         }
 
         /// <summary>
