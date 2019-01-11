@@ -100,6 +100,11 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnPreview_Click( object sender, EventArgs e )
         {
+
+            // Clean-up UI
+            gPreview.Visible = true;
+            ltImportResults.Text = string.Empty;
+
             RockContext rockContext = new RockContext();
             var workflowTypeService = new WorkflowTypeService( rockContext );
             var workflowType = workflowTypeService.Get( wtpExport.SelectedValueAsId().Value );
@@ -167,6 +172,8 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbImport_Click( object sender, EventArgs e )
         {
+            gPreview.Visible = false;
+
             if ( !fuImport.BinaryFileId.HasValue || !cpImportCategory.SelectedValueAsId().HasValue )
             {
                 return;
