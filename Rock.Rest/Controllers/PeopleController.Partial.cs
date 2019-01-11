@@ -24,6 +24,7 @@ using System.Text;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.OData;
+using Rock.BulkExport;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -234,7 +235,7 @@ namespace Rock.Rest.Controllers
             /// <value>
             /// The birth month.
             /// </value>
-            public int? BirthMonth { get; set;  }
+            public int? BirthMonth { get; set; }
 
             /// <summary>
             /// Gets or sets the birth day.
@@ -456,6 +457,7 @@ namespace Rock.Rest.Controllers
             if ( person != null )
             {
                 GetPersonSearchDetails( personSearchResult, person );
+
                 // Generate the HTML for the ConnectionStatus; "label-success" matches the default config of the
                 // connection status badge on the Bio bar, but I think label-default works better here.
                 string connectionStatusHtml = string.IsNullOrWhiteSpace( personSearchResult.ConnectionStatus ) ? string.Empty : string.Format( "<span class='label label-default pull-right'>{0}</span>", personSearchResult.ConnectionStatus );
@@ -810,6 +812,8 @@ namespace Rock.Rest.Controllers
 
         #endregion
 
+        #region Delete Override
+
         /// <summary>
         /// DELETE endpoint for a Person Record. NOTE: Person records can not be deleted using REST, so this will always return a 405
         /// </summary>
@@ -820,6 +824,58 @@ namespace Rock.Rest.Controllers
             // we don't want to support DELETE on a Person in ROCK (especially from REST).  So, return a MethodNotAllowed.
             throw new HttpResponseException( System.Net.HttpStatusCode.MethodNotAllowed );
         }
+
+        #endregion
+
+        #region Export
+
+        /// <summary>
+        /// Exports Person Records
+        /// </summary>
+        /// <param name="page">The page being requested (where first page is 1).</param>
+        /// <param name="pageSize">The number of records to provide per page. NOTE: This is limited to the 'API Max Items Per Page' global attribute.</param>
+        /// <param name="sortBy">Optional field to sort by. This must be a mapped property on the Person model.</param>
+        /// <param name="sortDirection">The sort direction (1 = Ascending, 0 = Descending). Default is 1 (Ascending).</param>
+        /// <param name="dataViewId">The optional data view to use for filtering.</param>
+        /// <param name="modifiedSince">The optional date/time to filter to only get newly updated items.</param>
+        /// <param name="attributeKeys">Optional comma-delimited list of attribute keys for the attribute values that should be included with each exported record, or specify 'all' to include all attributes.</param>
+        /// <param name="attributeReturnType">Raw/Formatted (default is Raw)</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/Export" )]
+        public PeopleExport Export(
+            int page,
+            int pageSize,
+            string sortBy = null,
+            System.Web.UI.WebControls.SortDirection sortDirection = System.Web.UI.WebControls.SortDirection.Ascending,
+            int? dataViewId = null,
+            DateTime? modifiedSince = null,
+            string attributeKeys = null,
+            AttributeReturnType attributeReturnType = AttributeReturnType.Raw
+            )
+        {
+            // limit to 'API Max Items Per Page' global attribute
+            int maxPageSize = GlobalAttributesCache.Get().GetValue( "core_ExportAPIsMaxItemsPerPage" ).AsIntegerOrNull() ?? 1000;
+            var actualPageSize = Math.Min( pageSize, maxPageSize );
+
+            ExportOptions exportOptions = new ExportOptions
+            {
+                SortBy = sortBy,
+                SortDirection = sortDirection,
+                DataViewId = dataViewId,
+                ModifiedSince = modifiedSince,
+                AttributeList = AttributesExport.GetAttributesFromAttributeKeys<Person>( attributeKeys ),
+                AttributeReturnType = attributeReturnType
+            };
+
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+
+            return personService.GetPeopleExport( page, actualPageSize, exportOptions );
+        }
+
+        #endregion
     }
 
     /// <summary>

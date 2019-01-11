@@ -488,6 +488,16 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="BulkExport\AttributesExport.cs" />
+    <Compile Include="BulkExport\FinancialTransactionExport.cs" />
+    <Compile Include="BulkExport\FinancialTransactionExportOptions.cs" />
+    <Compile Include="BulkExport\FinancialTransactionsExport.cs" />
+    <Compile Include="BulkExport\ModelExport.cs" />
+    <Compile Include="BulkExport\ExportOptions.cs" />
+    <Compile Include="BulkExport\LocationExport.cs" />
+    <Compile Include="BulkExport\ExportResult.cs" />
+    <Compile Include="BulkExport\PeopleExport.cs" />
+    <Compile Include="BulkExport\PersonExport.cs" />
     <Compile Include="CheckIn\CheckInEditFamilyBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
