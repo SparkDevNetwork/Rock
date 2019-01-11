@@ -180,11 +180,13 @@ namespace RockWeb.Blocks.Communication
                 if ( LoadPhoneNumbers() )
                 {
                     nbNoNumbers.Visible = false;
+                    divMain.Visible = true;
                     LoadResponseListing();
                 }
                 else
                 {
                     nbNoNumbers.Visible = true;
+                    divMain.Visible = false;
                 }
             }
             else
@@ -207,8 +209,7 @@ namespace RockWeb.Blocks.Communication
             // First load up all of the available numbers
             var smsNumbers = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() )
                 .DefinedValues
-                .Where( v => v.GetAttributeValue( "EnableMobileConversations" ).AsBoolean( true ) == false )
-                ;//.ToList();// probably do this last, keep here for testing
+                .Where( v => v.GetAttributeValue( "EnableMobileConversations" ).AsBoolean( true ) == false );
 
             var selectedNumberGuids = GetAttributeValue( "AllowedSMSNumbers" ).SplitDelimitedValues( true ).AsGuidList();
             if ( selectedNumberGuids.Any() )
@@ -233,17 +234,16 @@ namespace RockWeb.Blocks.Communication
                 ddlSmsNumbers.DataSource = smsNumbers.Select( v => new
                 {
                     v.Id,
-                    Description = string.IsNullOrWhiteSpace( v.Description ) ? v.Value : v.Description.Truncate( 100 ),
+                    Description = string.IsNullOrWhiteSpace( v.Description )
+                    ? PhoneNumber.FormattedNumber( "", v.Value.Replace("+", string.Empty) )
+                    : v.Description.Truncate( 100 ),
                 });
 
+                ddlSmsNumbers.Visible = smsNumbers.Count() > 0;
                 ddlSmsNumbers.DataValueField = "Id";
                 ddlSmsNumbers.DataTextField = "Description";
                 ddlSmsNumbers.DataBind();
-
-                lblSelectedSmsNumber.Text = "SMS Number: " + ddlSmsNumbers.SelectedItem.Text.Truncate(25);
-                lblSelectedSmsNumber.Visible = smsNumbers.Count() == 1;
-                ddlSmsNumbers.Visible = smsNumbers.Count() > 1;
-
+                
                 string keyPrefix = string.Format( "sms-conversations-{0}-", this.BlockId );
 
                 string smsNumberUserPref = this.GetUserPreference( keyPrefix + "smsNumber" ) ?? string.Empty;
@@ -550,11 +550,13 @@ namespace RockWeb.Blocks.Communication
             if ( LoadPhoneNumbers() )
             {
                 nbNoNumbers.Visible = false;
+                divMain.Visible = true;
                 LoadResponseListing();
             }
             else
             {
                 nbNoNumbers.Visible = true;
+                divMain.Visible = false;
             }
         }
 
