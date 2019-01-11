@@ -10,8 +10,7 @@ namespace Rock.Utility.EntityCoding.Processors
     /// <summary>
     /// Handles processing of WorkflowActionForm entities.
     /// </summary>
-    /// <seealso cref="EntityCoding.EntityProcessor{Rock.Model.WorkflowActionForm}" />
-    class WorkflowActionFormProcessor : EntityProcessor<WorkflowActionForm>
+    public class WorkflowActionFormProcessor : EntityProcessor<WorkflowActionForm>
     {
         /// <summary>
         /// The unique identifier for this entity processor. This is used to identify the correct

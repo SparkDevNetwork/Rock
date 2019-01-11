@@ -28,12 +28,18 @@ namespace Rock.Utility
                 return _InstancePropertyInfo;
             }
         }
+
         PropertyInfo[] _InstancePropertyInfo;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockDynamic"/> class.
+        /// </summary>
         public RockDynamic()
         {
             Instance = this;
             InstanceType = GetType();
         }
+
         /// <summary>
         /// Provides the implementation for operations that get member values. Classes derived from the <see cref="T:System.Dynamic.DynamicObject" /> class can override this method to specify dynamic behavior for operations such as getting a value for a property.
         /// </summary>

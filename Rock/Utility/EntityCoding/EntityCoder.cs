@@ -57,8 +57,9 @@ namespace Rock.Utility.EntityCoding
         /// encodes all entities, generates new Guids for any entities that need them,
         /// and then maps all references to the new Guids.
         /// </summary>
-        /// <param name="guidEvaluation">A function that is called for each entity to determine if it needs a new Guid or not.</param>
-        /// <returns>A DataContainer that is ready for JSON export.</returns>
+        /// <returns>
+        /// A DataContainer that is ready for JSON export.
+        /// </returns>
         public ExportedEntitiesContainer GetExportedEntities()
         {
             var container = new ExportedEntitiesContainer();
@@ -96,8 +97,10 @@ namespace Rock.Utility.EntityCoding
         /// Export the given entity into an EncodedEntity object. This can be used later to
         /// reconstruct the entity.
         /// </summary>
-        /// <param name="entity">The entity to be exported.</param>
-        /// <returns>The exported data that can be imported.</returns>
+        /// <param name="queuedEntity">The queued entity.</param>
+        /// <returns>
+        /// The exported data that can be imported.
+        /// </returns>
         protected EncodedEntity Export( QueuedEntity queuedEntity )
         {
             EncodedEntity encodedEntity = new EncodedEntity();

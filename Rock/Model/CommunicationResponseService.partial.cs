@@ -163,6 +163,12 @@ namespace Rock.Model
             Rock.Data.DbService.ExecuteCommand( sql, CommandType.Text, sqlParams );
         }
 
+        /// <summary>
+        /// Updates the person alias by message key.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="messageKey">The message key.</param>
+        /// <param name="personAliasType">Type of the person alias.</param>
         public void UpdatePersonAliasByMessageKey( int personAliasId, string messageKey, PersonAliasType personAliasType )
         {
             string sql = string.Empty;
@@ -207,6 +213,11 @@ namespace Rock.Model
             Rock.Data.DbService.ExecuteCommand( sql, CommandType.Text, sqlParams );
         }
 
+        /// <summary>
+        /// Gets the communications and response recipients.
+        /// </summary>
+        /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
+        /// <returns></returns>
         public DataSet GetCommunicationsAndResponseRecipients( int relatedSmsFromDefinedValueId )
         {
             var sqlParams = new Dictionary<string, object>
@@ -258,6 +269,12 @@ namespace Rock.Model
             return Rock.Data.DbService.GetDataSet( sql, CommandType.Text, sqlParams );
         }
 
+        /// <summary>
+        /// Gets the response recipients.
+        /// </summary>
+        /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
+        /// <param name="showReadMessages">if set to <c>true</c> [show read messages].</param>
+        /// <returns></returns>
         public DataSet GetResponseRecipients( int relatedSmsFromDefinedValueId, bool showReadMessages )
         {
             var sqlParams = new Dictionary<string, object>
@@ -297,9 +314,19 @@ namespace Rock.Model
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public enum PersonAliasType
     {
+        /// <summary>
+        /// From person alias
+        /// </summary>
         FromPersonAlias = 0,
+
+        /// <summary>
+        /// To person alias
+        /// </summary>
         ToPersonAlias = 1
     }
 }

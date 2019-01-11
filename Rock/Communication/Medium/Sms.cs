@@ -183,11 +183,14 @@ namespace Rock.Communication.Medium
         /// </summary>
         /// <param name="fromPersonAliasId">From person alias identifier.</param>
         /// <param name="fromPersonName">Name of from person.</param>
+        /// <param name="messageKey">The message key.</param>
         /// <param name="toPersonAliasId">To person alias identifier.</param>
         /// <param name="message">The message to send.</param>
+        /// <param name="plainMessage">The plain message.</param>
         /// <param name="rockSmsFromPhoneDv">From phone.</param>
         /// <param name="responseCode">The reponseCode to use for tracking the conversation.</param>
         /// <param name="rockContext">A context to use for database calls.</param>
+        /// <param name="errorMessage">The error message.</param>
         private void CreateCommunication( int? fromPersonAliasId, string fromPersonName, string messageKey, int? toPersonAliasId, string message, string plainMessage, DefinedValueCache rockSmsFromPhoneDv, string responseCode, Rock.Data.RockContext rockContext, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -262,6 +265,7 @@ namespace Rock.Communication.Medium
         /// </summary>
         /// <param name="fromPersonAliasId">From person alias identifier.</param>
         /// <param name="fromPersonName">Name of from person.</param>
+        /// <param name="messageKey">The message key.</param>
         /// <param name="toPersonAliasId">To person alias identifier.</param>
         /// <param name="message">The message.</param>
         /// <param name="rockSmsFromPhoneDv">From phone.</param>
@@ -300,7 +304,7 @@ namespace Rock.Communication.Medium
         /// Gets the latest communication ID for the SMSFromDefinedValueId to the recipient within daysPastToSearch to present
         /// </summary>
         /// <param name="fromPhone">From phone.</param>
-        /// <param name="toPersonAliasId">To person alias identifier.</param>
+        /// <param name="fromPersonAliasId">From person alias identifier.</param>
         /// <param name="daysPastToSearch">The days past to search.</param>
         /// <returns></returns>
         private int? GetCommunicationId( DefinedValueCache fromPhone, int fromPersonAliasId, int daysPastToSearch )

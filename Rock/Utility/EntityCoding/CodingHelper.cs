@@ -9,6 +9,9 @@ using Rock.Data;
 
 namespace Rock.Utility.EntityCoding
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public abstract class CodingHelper
     {
         #region Properties
@@ -164,8 +167,10 @@ namespace Rock.Utility.EntityCoding
         /// Attempt to load an entity from the database based on it's Guid and entity type.
         /// </summary>
         /// <param name="entityType">The type of entity to load.</param>
-        /// <param name="guid">The unique identifier of the entity.</param>
-        /// <returns>The loaded entity or null if not found.</returns>
+        /// <param name="id">The identifier.</param>
+        /// <returns>
+        /// The loaded entity or null if not found.
+        /// </returns>
         public IEntity GetExistingEntity( string entityType, int id )
         {
             var service = Reflection.GetServiceForEntityType( FindEntityType( entityType ), RockContext );

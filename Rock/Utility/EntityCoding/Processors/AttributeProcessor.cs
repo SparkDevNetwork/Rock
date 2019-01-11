@@ -8,8 +8,7 @@ namespace Rock.Utility.EntityCoding.Processors
     /// <summary>
     /// Handles processing of Attribute entities.
     /// </summary>
-    /// <seealso cref="EntityCoding.EntityProcessor{Rock.Model.Attribute}" />
-    class AttributeProcessor : EntityProcessor<Rock.Model.Attribute>
+    public class AttributeProcessor : EntityProcessor<Rock.Model.Attribute>
     {
         /// <summary>
         /// The unique identifier for this entity processor. This is used to identify the correct
