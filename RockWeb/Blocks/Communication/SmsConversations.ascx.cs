@@ -61,6 +61,7 @@ namespace RockWeb.Blocks.Communication
         key: "EnableSmsSend" )]
     [CodeEditorField( "Person Info Lava Template",
         description: "A Lava template to display person information about the selected Communication Recipient.",
+        defaultValue: "{{ Person.FullName }}",
         mode: CodeEditorMode.Lava,
         theme: CodeEditorTheme.Rock,
         height: 300,
@@ -236,7 +237,7 @@ namespace RockWeb.Blocks.Communication
                     v.Id,
                     Description = string.IsNullOrWhiteSpace( v.Description )
                     ? PhoneNumber.FormattedNumber( "", v.Value.Replace("+", string.Empty) )
-                    : v.Description.Truncate( 100 ),
+                    : v.Description.LeftWithEllipsis( 25 ),
                 });
 
                 ddlSmsNumbers.Visible = smsNumbers.Count() > 0;
@@ -401,11 +402,6 @@ namespace RockWeb.Blocks.Communication
             {
                 // We don't have a person to do the lava merge so just display the formatted phone number
                 html = PhoneNumber.FormattedNumber( "", messageKey.Value ) + unknownPerson;
-                litSelectedRecipientDescription.Text = html;
-            }
-            else if ( lava.IsNullOrWhiteSpace() )
-            {
-                // We have a person but no lava to merge so display the name
                 litSelectedRecipientDescription.Text = html;
             }
             else
