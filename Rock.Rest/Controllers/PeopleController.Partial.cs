@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.OData;
@@ -873,6 +874,49 @@ namespace Rock.Rest.Controllers
             var personService = new PersonService( rockContext );
 
             return personService.GetPeopleExport( page, actualPageSize, exportOptions );
+        }
+
+        #endregion
+
+        #region VCard
+
+        /// <summary>
+        /// Returns VCard for person.
+        /// </summary>
+        /// <param name="personGuid">The person Guid.</param>
+        /// <returns></returns>
+        [HttpGet]
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/People/VCard/{personGuid}" )]
+        public HttpResponseMessage GetVCard( Guid personGuid )
+        {
+            var rockContext = ( Rock.Data.RockContext ) Service.Context;
+
+            var person = new PersonService( rockContext ).Get( personGuid );
+            if ( person == null )
+            {
+                throw new HttpResponseException( new System.Net.Http.HttpResponseMessage( HttpStatusCode.NotFound ) );
+            }
+
+            string fileName = person.FullName + ".vcf";
+            HttpResponseMessage result = new HttpResponseMessage( HttpStatusCode.OK );
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, GetPerson() );
+            mergeFields.Add( "Person", person );
+            string vCard = GlobalAttributesCache.Value( "VCardFormat" ).ResolveMergeFields( mergeFields ).Trim();
+
+            // remove empty lines (the vcard spec is very picky)
+            vCard = Regex.Replace( vCard, @"^\s+$[\r\n]*", "", RegexOptions.Multiline );
+
+            var inputEncoding = Encoding.Default;
+            var outputEncoding = Encoding.GetEncoding( 28591 );
+            var cardBytes = inputEncoding.GetBytes( vCard );
+            var outputBytes = Encoding.Convert( inputEncoding, outputEncoding, cardBytes );
+            result.Content = new ByteArrayContent( outputBytes );
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( "text/vcard" );
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue( "attachment" );
+            result.Content.Headers.ContentDisposition.FileName = fileName;
+            return result;
         }
 
         #endregion
