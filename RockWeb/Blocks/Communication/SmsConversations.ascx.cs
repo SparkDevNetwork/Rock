@@ -59,6 +59,11 @@ namespace RockWeb.Blocks.Communication
         defaultValue: true,
         order: 4,
         key: "EnableSmsSend" )]
+    [IntegerField( name:"Show Conversations From Months Ago",
+        description:"Limits the conversations shown in the left pane to those of X months ago or newer. This does not affect the actual messages shown on the right.",
+        defaultValue: 6,
+        order: 5,
+        key: "ShowConversationsFromMonthsAgo")]
     [CodeEditorField( "Person Info Lava Template",
         description: "A Lava template to display person information about the selected Communication Recipient.",
         defaultValue: "{{ Person.FullName }}",
@@ -66,7 +71,7 @@ namespace RockWeb.Blocks.Communication
         theme: CodeEditorTheme.Rock,
         height: 300,
         required: false,
-        order: 5,
+        order: 6,
         key: "PersonInfoLavaTemplate" )]
     //Start here to build the person description lit field after selecting recipient.
     public partial class SmsConversations : RockBlock
@@ -285,15 +290,16 @@ namespace RockWeb.Blocks.Communication
                 var communicationResponseService = new CommunicationResponseService( rockContext );
 
                 DataSet responses = null;
+                int months = GetAttributeValue( "ShowConversationsFromMonthsAgo" ).AsInteger();
 
                 if ( tglShowRead.Checked )
                 {
-                    responses = communicationResponseService.GetCommunicationsAndResponseRecipients( smsPhoneDefinedValueId.Value );
+                    responses = communicationResponseService.GetCommunicationsAndResponseRecipients( smsPhoneDefinedValueId.Value, months );
                 }
                 else
                 {
                     // Since communications sent from Rock are always considered "Read" we don't need them included in the list if we are not showing "Read" messages.
-                    responses = communicationResponseService.GetResponseRecipients( smsPhoneDefinedValueId.Value, false );
+                    responses = communicationResponseService.GetResponseRecipients( smsPhoneDefinedValueId.Value, false, months );
                 }
 
                 var responseListItems = responses.Tables[0].AsEnumerable()

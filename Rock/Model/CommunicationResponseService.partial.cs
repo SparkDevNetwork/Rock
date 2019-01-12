@@ -218,13 +218,15 @@ namespace Rock.Model
         /// </summary>
         /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
         /// <returns></returns>
-        public DataSet GetCommunicationsAndResponseRecipients( int relatedSmsFromDefinedValueId )
+        public DataSet GetCommunicationsAndResponseRecipients( int relatedSmsFromDefinedValueId, int conversationAgeInMonths = 0 )
         {
             var sqlParams = new Dictionary<string, object>
             {
                 { "@releatedSmsFromDefinedValueId", relatedSmsFromDefinedValueId },
                 { "@smsMediumEntityTypeId", EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS ).Id }
             };
+
+            string filterDate = conversationAgeInMonths == 0 ? string.Empty : $" AND cr.[CreatedDateTime] > DATEADD(month, -{conversationAgeInMonths}, GETDATE())";
 
             string sql = $@"
                 ;WITH cte AS (
@@ -240,21 +242,23 @@ namespace Rock.Model
                     LEFT JOIN [Person] p ON pa.[PersonId] = p.[Id]
                     WHERE cr.[RelatedSmsFromDefinedValueId] = @releatedSmsFromDefinedValueId
                         AND cr.[RelatedMediumEntityTypeId] = @smsMediumEntityTypeId
+                        {filterDate}
                     UNION
                     SELECT 
-	                       rec.[PersonAliasId] AS FromPersonAliasId
+	                       cr.[PersonAliasId] AS FromPersonAliasId
 	                    , COALESCE( pn.[CountryCode], '1' ) + pn.[Number] AS MessageKey
 	                    , COALESCE(p.[NickName], p.[FirstName]) + ' ' + p.LastName AS FullName
 	                    , c.[CreatedDateTime]
 	                    , c.[SMSMessage] 
 	                    , CONVERT(bit, 1) -- Communications from Rock are always considered read
                     FROM [Communication] c
-                    JOIN [CommunicationRecipient] rec ON c.[Id] = rec.[CommunicationId]
-                    JOIN [PersonAlias] pa ON rec.[PersonAliasId] = pa.[Id]
+                    JOIN [CommunicationRecipient] cr ON c.[Id] = cr.[CommunicationId]
+                    JOIN [PersonAlias] pa ON cr.[PersonAliasId] = pa.[Id]
                     JOIN [Person] p ON pa.[PersonId] = p.[Id]
                     JOIN [PhoneNumber] pn on pn.PersonId = p.Id
                     WHERE c.[SMSFromDefinedValueId] = @releatedSmsFromDefinedValueId
 	                    AND pn.IsMessagingEnabled = 1
+                        {filterDate}
                     )
 
                     -- Lets do our grouping here since we are returning a dataset.
@@ -275,7 +279,7 @@ namespace Rock.Model
         /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
         /// <param name="showReadMessages">if set to <c>true</c> [show read messages].</param>
         /// <returns></returns>
-        public DataSet GetResponseRecipients( int relatedSmsFromDefinedValueId, bool showReadMessages )
+        public DataSet GetResponseRecipients( int relatedSmsFromDefinedValueId, bool showReadMessages, int conversationAgeInMonths = 0 )
         {
             var sqlParams = new Dictionary<string, object>
             {
@@ -283,6 +287,7 @@ namespace Rock.Model
                 { "@smsMediumEntityTypeId", EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS ).Id }
             };
             string showRead = !showReadMessages ? " AND cr.[IsRead] = 0 " : string.Empty;
+            string filterDate = conversationAgeInMonths == 0 ? string.Empty : $" AND cr.[CreatedDateTime] > DATEADD(month, -{conversationAgeInMonths}, GETDATE())";
 
             string sql = $@"
                 ;WITH cte AS (
@@ -298,6 +303,7 @@ namespace Rock.Model
                     LEFT JOIN [Person] p ON pa.[PersonId] = p.[Id]
                     WHERE cr.[RelatedSmsFromDefinedValueId] = @releatedSmsFromDefinedValueId
                         AND cr.[RelatedMediumEntityTypeId] = @smsMediumEntityTypeId
+                        {filterDate}
                         {showRead}
                     )
 
