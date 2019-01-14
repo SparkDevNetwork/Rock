@@ -79,17 +79,17 @@ namespace Rock.Model
 	                AND cr.[FromPersonAliasId] = @personAliasId
                 UNION
                 SELECT 
-	                    c.[SenderPersonAliasId] AS FromPersonAliasId
+	                  c.[SenderPersonAliasId] AS FromPersonAliasId
 	                , '' AS MessageKey
 	                , COALESCE(p.[NickName], p.[FirstName]) + ' ' + p.LastName AS FullName
 	                , c.[CreatedDateTime]
-	                , c.[SMSMessage] 
+	                , COALESCE( cr.[SentMessage], c.[SMSMessage])
 	                , CONVERT(bit, 1) -- Communications from Rock are always considered read
                 FROM [Communication] c
                 JOIN [PersonAlias] pa ON c.[SenderPersonAliasId] = pa.[Id]
                 JOIN [Person] p ON pa.[PersonId] = p.[Id]
+                JOIN [CommunicationRecipient] cr ON cr.[PersonAliasId] = @personAliasId AND cr.CommunicationId = c.Id
                 WHERE c.[SMSFromDefinedValueId] = @releatedSmsFromDefinedValueId
-	                AND c.[Id] IN ( SELECT CommunicationId FROM [CommunicationRecipient] WHERE [PersonAliasId] = @personAliasId)
                 ORDER BY CreatedDateTime ASC";
 
             var set = Rock.Data.DbService.GetDataSet( sql, CommandType.Text, sqlParams );
@@ -265,7 +265,7 @@ namespace Rock.Model
 	                    , COALESCE( pn.[CountryCode], '1' ) + pn.[Number] AS MessageKey
 	                    , COALESCE(p.[NickName], p.[FirstName]) + ' ' + p.LastName AS FullName
 	                    , c.[CreatedDateTime]
-	                    , c.[SMSMessage] 
+	                    , cr.[SentMessage] 
 	                    , CONVERT(bit, 1) -- Communications from Rock are always considered read
                     FROM [Communication] c
                     JOIN [CommunicationRecipient] cr ON c.[Id] = cr.[CommunicationId]

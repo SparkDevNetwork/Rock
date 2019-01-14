@@ -129,9 +129,7 @@ namespace Rock.Communication.Medium
                     }
                 }
 
-                // as of now the sms from number no longer has to have a person assigned to it.
-                //if ( fromPerson != null && toPerson != null && fromPerson.PrimaryAliasId.HasValue && toPerson.PrimaryAliasId.HasValue )
-                //if ( fromPerson != null && fromPerson.PrimaryAliasId.HasValue )
+                // As of 9.0 the sms from number no longer has to have a person assigned to it.
                 if ( rockSmsFromPhoneDv != null )
                 {
                     string plainMessage = message;
@@ -221,11 +219,9 @@ namespace Rock.Communication.Medium
             {
                 CreateCommunicationMobile( fromPersonAliasId.Value, fromPersonName, toPersonAliasId.Value, message, rockSmsFromPhoneDv, responseCode, rockContext  );
             }
-            else
-            {
-                // To and from person can be null and the response linked to a person later.
-                CreateCommunicationResponse( fromPersonAliasId, fromPersonName, messageKey, toPersonAliasId, plainMessage, rockSmsFromPhoneDv, responseCode, rockContext );
-            }
+
+            // To and from person can be null and the response linked to a person later.
+            CreateCommunicationResponse( fromPersonAliasId, fromPersonName, messageKey, toPersonAliasId, plainMessage, rockSmsFromPhoneDv, responseCode, rockContext );
         }
 
         /// <summary>
@@ -377,6 +373,7 @@ namespace Rock.Communication.Medium
             recipient.PersonAliasId = toPersonAliasId;
             recipient.ResponseCode = responseCode;
             recipient.MediumEntityTypeId = EntityTypeCache.Get( "Rock.Communication.Medium.Sms" ).Id;
+            recipient.SentMessage = message;
             communication.Recipients.Add( recipient );
 
             var communicationService = new Rock.Model.CommunicationService( rockContext );
