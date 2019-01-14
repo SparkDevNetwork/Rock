@@ -97,14 +97,21 @@ namespace Rock.Communication.Medium
                 fromPhone = fromPhone.Replace( "+", "" );
                 toPhone = toPhone.Replace( "+", "" );
 
+                // CountryCode can be NULL so we have to try and match without it
+                string fromPhoneNoCountryCode = fromPhone;
+                if (fromPhone.Length > 10)
+                {
+                    fromPhoneNoCountryCode = fromPhone.Right( 10 );
+                }
+
                 // Get the person who sent the message. Filter to any matching phone number, regardless
                 // of type. Then order by those with a matching number and SMS enabled; then further order
                 // by matching number with type == mobile; finally order by person Id to get the oldest
                 // person to get the oldest person in the case of duplicate records.
                 var fromPerson = new PersonService( rockContext ).Queryable()
-                    .Where( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == fromPhone ) )
-                    .OrderByDescending( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == fromPhone && n.IsMessagingEnabled ) )
-                    .ThenByDescending( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == fromPhone && n.NumberTypeValueId == mobilePhoneNumberValueId ) )
+                    .Where( p => p.PhoneNumbers.Any( n => ( n.Number ) == fromPhoneNoCountryCode ) )
+                    .OrderByDescending( p => p.PhoneNumbers.Any( n => ( n.Number ) == fromPhoneNoCountryCode && n.IsMessagingEnabled ) )
+                    .ThenByDescending( p => p.PhoneNumbers.Any( n => ( n.Number ) == fromPhoneNoCountryCode && n.NumberTypeValueId == mobilePhoneNumberValueId ) )
                     .ThenBy( p => p.Id )
                     .FirstOrDefault();
 
