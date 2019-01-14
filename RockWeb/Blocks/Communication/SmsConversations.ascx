@@ -8,10 +8,12 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-comments"></i> SMS Conversations</h1>
-                <Rock:RockDropDownList ID="ddlSmsNumbers" runat="server" Label="" AutoPostBack="true" OnSelectedIndexChanged="ddlSmsNumbers_SelectedIndexChanged" CssClass="input-sm" />
+
 
                 <div class="panel-labels"> <!--  style="position:absolute;right:15px;top:10px;" -->
-                    <a href="#" onclick="$('.js-sms-configuration').toggle()">
+                <Rock:RockDropDownList ID="ddlSmsNumbers" runat="server" Label="" AutoPostBack="true" OnSelectedIndexChanged="ddlSmsNumbers_SelectedIndexChanged" CssClass="pull-left input-width-lg input-xs" />
+
+                    <a href="#" class="btn btn-xs btn-default pull-left margin-l-sm" onclick="$('.js-sms-configuration').toggle()">
                         <i class="fa fa-cog"></i>
                     </a>
                 </div>
@@ -28,8 +30,6 @@
                 </div>
 
             </div>
-
-            <%--<Rock:NotificationBox ID="nbNoNumbers" runat="server" NotificationBoxType="Warning" Text="No SMS numbers are available to view." Visible="false"></Rock:NotificationBox>--%>
 
             <div class="sms-conversations-container">
                 <div class="conversation-list">
@@ -100,6 +100,43 @@
 
             </div>
 
+            <script>
+                Sys.Application.add_load(function () {
+                    var objDiv = $(".messages-outer-container")[0];
+                    objDiv.scrollTop = objDiv.scrollHeight;
+
+                    $("#<%=upConversation.ClientID %> .js-back").click(function() {
+                        $('#<%=upConversation.ClientID %>').removeClass("has-focus");
+                        return false;
+                    });
+                });
+
+                function clearActiveDialog() {
+                    $('#<%=hfActiveDialog.ClientID %>').val('');
+                }
+
+                var yPos;
+                var prm = Sys.WebForms.PageRequestManager.getInstance();
+
+                function BeginRequestHandler(sender, args) {
+                    if ($('#<%=upRecipients.ClientID %>') != null) {
+                        // Get X and Y positions of scrollbar before the partial postback
+                        yPos = $('#<%=upRecipients.ClientID %>').scrollTop();
+                    }
+                }
+
+                function EndRequestHandler(sender, args) {
+                    if ($('#<%=upRecipients.ClientID %>') != null) {
+                        // Set X and Y positions back to the scrollbar
+                        // after partial postback
+                        $('#<%=upRecipients.ClientID %>').scrollTop(yPos);
+                        $('#<%=tbNewMessage.ClientID %>').focus();
+                    }
+                }
+
+                prm.add_beginRequest(BeginRequestHandler);
+                prm.add_endRequest(EndRequestHandler);
+            </script>
         </div> <%-- End panel-block --%>
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
@@ -169,43 +206,5 @@
 
             </Content>
         </Rock:ModalDialog>
-
-        <script>
-            Sys.Application.add_load(function () {
-                var objDiv = $(".messages-outer-container")[0];
-                objDiv.scrollTop = objDiv.scrollHeight;
-
-                $("#<%=upConversation.ClientID %> .js-back").click(function() {
-                    $('#<%=upConversation.ClientID %>').removeClass("has-focus");
-                    return false;
-                });
-            });
-
-            function clearActiveDialog() {
-                $('#<%=hfActiveDialog.ClientID %>').val('');
-            }
-
-            var yPos;
-            var prm = Sys.WebForms.PageRequestManager.getInstance();
-
-            function BeginRequestHandler(sender, args) {
-                if ($('#<%=upRecipients.ClientID %>') != null) {
-                    // Get X and Y positions of scrollbar before the partial postback
-                    yPos = $('#<%=upRecipients.ClientID %>').scrollTop();
-                }
-            }
-
-            function EndRequestHandler(sender, args) {
-                if ($('#<%=upRecipients.ClientID %>') != null) {
-                    // Set X and Y positions back to the scrollbar
-                    // after partial postback
-                    $('#<%=upRecipients.ClientID %>').scrollTop(yPos);
-                    $('#<%=tbNewMessage.ClientID %>').focus();
-                }
-            }
-
-            prm.add_beginRequest(BeginRequestHandler);
-            prm.add_endRequest(EndRequestHandler);
-        </script>
     </ContentTemplate>
 </asp:UpdatePanel>
