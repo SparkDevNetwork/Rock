@@ -846,8 +846,8 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/People/Export" )]
         public PeopleExport Export(
-            int page,
-            int pageSize,
+            int page = 1,
+            int pageSize = 1000,
             string sortBy = null,
             System.Web.UI.WebControls.SortDirection sortDirection = System.Web.UI.WebControls.SortDirection.Ascending,
             int? dataViewId = null,
