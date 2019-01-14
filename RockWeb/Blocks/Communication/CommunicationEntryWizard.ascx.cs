@@ -498,7 +498,11 @@ namespace RockWeb.Blocks.Communication
             ddlSMSFrom.Items.Add( new ListItem() );
             foreach ( var item in smsDefinedValues )
             {
-                ddlSMSFrom.Items.Add( new ListItem( item.Description, item.Id.ToString() ) );
+                var description = string.IsNullOrWhiteSpace( item.Description )
+                    ? PhoneNumber.FormattedNumber( "", item.Value.Replace( "+", string.Empty ) )
+                    : item.Description.LeftWithEllipsis( 25 );
+
+                ddlSMSFrom.Items.Add( new ListItem( description, item.Id.ToString() ) );
             }
 
             ddlSMSFrom.SelectedIndex = -1;
