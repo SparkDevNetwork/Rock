@@ -298,7 +298,8 @@ namespace RockWeb
             // clean up list
             contentFileTypeBlackList = contentFileTypeBlackList.Select( a => a.ToLower().TrimStart( new char[] { '.', ' ' } ) );
 
-            string fileExtension = Path.GetExtension( uploadedFile.FileName ).ToLower().TrimStart( new char[] { '.' } );
+            // Get file extension and then trim any trailing spaces (to catch any nefarious stuff).
+            string fileExtension = Path.GetExtension( uploadedFile.FileName ).ToLower().TrimStart( new char[] { '.' } ).Trim();
             if ( contentFileTypeBlackList.Contains( fileExtension ) )
             {
                 throw new Rock.Web.FileUploadException( "Filetype not allowed", System.Net.HttpStatusCode.NotAcceptable );
