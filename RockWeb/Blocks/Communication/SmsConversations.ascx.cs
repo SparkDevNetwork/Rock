@@ -215,7 +215,7 @@ namespace RockWeb.Blocks.Communication
             // First load up all of the available numbers
             var smsNumbers = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() )
                 .DefinedValues
-                .Where( v => v.GetAttributeValue( "EnableMobileConversations" ).AsBoolean( true ) == false );
+                .Where( v => v.GetAttributeValue( "EnableResponseRecipientForwarding" ).AsBoolean( true ) == false );
 
             var selectedNumberGuids = GetAttributeValue( "AllowedSMSNumbers" ).SplitDelimitedValues( true ).AsGuidList();
             if ( selectedNumberGuids.Any() )

@@ -208,9 +208,9 @@ namespace Rock.Communication.Medium
             }
             
             // See if this should go to a phone or to the DB. Default is to the phone so if for some reason we get a null here then just send it to the phone.
-            var enableMobileConversations = rockSmsFromPhoneDv.GetAttributeValue( "EnableMobileConversations" ).AsBooleanOrNull() ?? true;
+            var enableResponseRecipientForwarding = rockSmsFromPhoneDv.GetAttributeValue( "EnableResponseRecipientForwarding" ).AsBooleanOrNull() ?? true;
 
-            if ( enableMobileConversations )
+            if ( enableResponseRecipientForwarding )
             {
                 CreateCommunicationMobile( fromPersonAliasId.Value, fromPersonName, toPersonAliasId.Value, message, rockSmsFromPhoneDv, responseCode, rockContext  );
             }
