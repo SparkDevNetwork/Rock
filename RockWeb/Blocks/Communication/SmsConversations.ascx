@@ -144,7 +144,11 @@
         <Rock:ModalDialog ID="mdNewMessage" runat="server" Title="New Message" OnSaveClick="mdNewMessage_SaveClick" OnCancelScript="clearActiveDialog();" SaveButtonText="Send" ValidationGroup="vgMobileTextEditor">
             <Content>
                 <asp:ValidationSummary ID="vsMobileTextEditor" runat="server" HeaderText="Please correct the following:" ValidationGroup="vgMobileTextEditor" CssClass="alert alert-validation" />
-                <asp:Label ID="lblMdNewMessageSendingSMSNumber" runat="server" />
+                <div class="form-group">
+                    <label runat="server" id="lblFromNumber" class="control-label">From Number</label>
+                    <div><asp:Label ID="lblMdNewMessageSendingSMSNumber" runat="server" /></div>
+                </div>
+
                 <%-- person picker --%>
                 <Rock:PersonPicker ID="ppRecipient" runat="server" Label="Recipient" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Please select an SMS recipient." Required="true" />
 
