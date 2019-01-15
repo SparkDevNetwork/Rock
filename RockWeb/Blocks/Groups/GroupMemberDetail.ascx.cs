@@ -772,16 +772,16 @@ namespace RockWeb.Blocks.Groups
 
             if ( editableAttributes.Any() )
             {
+                phAttributes.Visible = true;
                 var excludeKeys = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
                 Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, true, string.Empty, excludeKeys );
-                phAttributes.Visible = true;
             }
 
             if ( viewableAttributes.Any() )
             {
+                phAttributesReadOnly.Visible = true;
                 var excludeKeys = groupMember.Attributes.Where( a => !viewableAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
                 Rock.Attribute.Helper.AddDisplayControls( groupMember, phAttributesReadOnly, excludeKeys, false, false );
-                phAttributesReadOnly.Visible = true;
             }
 
             var groupHasRequirements = group.GetGroupRequirements( rockContext ).Any();
