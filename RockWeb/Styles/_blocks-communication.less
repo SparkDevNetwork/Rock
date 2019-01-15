@@ -190,23 +190,18 @@ iframe.email-body {
     -ms-flex-positive: 1;
   }
 
+  .header {
+    padding: 12px 16px;
+    min-height: 49px;
+    font-weight: 700;
+    border-bottom: 1px solid @panel-border;
+  }
+
   .message-truncate {
     overflow: hidden;
     color: rgba(0, 0, 0, .5);
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  .btn-new-message {
-    padding: 12px 16px;
-    background: #fff;
-    color: @link-color;
-    border: 0;
-    border-bottom: 1px solid @panel-border;
-    &:hover {
-      color: @link-hover-color;
-      background-color: darken(@btn-default-bg, 3%);
-    }
   }
 
   .conversation-list {
@@ -222,6 +217,12 @@ iframe.email-body {
 
     @media (min-width: @screen-md-min) {
       min-width: 360px;
+    }
+
+    .header {
+      padding: 7px 16px;
+      height: 49px;
+      text-align: center;
     }
 
     .overflow-scroll {
@@ -285,13 +286,6 @@ iframe.email-body {
     flex-grow: 1;
     padding: 15px;
     overflow-y: auto;
-  }
-
-  .header {
-    padding: 12px 16px;
-    min-height: 49px;
-    font-weight: 700;
-    border-bottom: 1px solid @panel-border;
   }
 
   .footer {
