@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\002_OverrideButton.cs" />
     <Compile Include="Migrations\001_PagerWorkflowAndPages.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Workflow\Action\Checkin\SaveAttendanceAndPagerNumber.cs" />
