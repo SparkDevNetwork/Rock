@@ -34,7 +34,7 @@
             <div class="sms-conversations-container">
                 <div class="conversation-list">
                 <div class="header">
-                    <asp:LinkButton ID="btnCreateNewMessage" runat="server" CssClass="btn btn-primary btn-sm" OnClick="btnCreateNewMessage_Click"><i class="fa fa-comments"></i>&nbsp;New Message</asp:LinkButton>
+                    <asp:LinkButton ID="btnCreateNewMessage" runat="server" CssClass="btn btn-default btn-sm btn-square" OnClick="btnCreateNewMessage_Click" ToolTip="New Message"><i class="fa fa-edit"></i></asp:LinkButton>
                 </div>
                     <asp:UpdatePanel ID="upRecipients" runat="server" class="overflow-scroll">
                         <ContentTemplate>
