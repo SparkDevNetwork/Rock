@@ -320,34 +320,40 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
-        private void LoadResponsesForRecipient( int recipientId )
+        private string LoadResponsesForRecipient( int recipientId )
         {
             int? smsPhoneDefinedValueId = ddlSmsNumbers.SelectedValue.AsIntegerOrNull();
 
             if ( smsPhoneDefinedValueId == null )
             {
-                return;
+                return string.Empty;
             }
 
             var communicationResponseService = new CommunicationResponseService( new RockContext() );
             var responses = communicationResponseService.GetConversation( recipientId, smsPhoneDefinedValueId.Value );
 
             BindConversationRepeater( responses );
+
+            DataRow row = responses.Tables[0].AsEnumerable().Last();
+            return row["SMSMessage"].ToString();
         }
 
-        private void LoadResponsesForRecipient( string messageKey )
+        private string LoadResponsesForRecipient( string messageKey )
         {
             int? smsPhoneDefinedValueId = ddlSmsNumbers.SelectedValue.AsIntegerOrNull();
 
             if ( smsPhoneDefinedValueId == null )
             {
-                return;
+                return string.Empty;
             }
 
             var communicationResponseService = new CommunicationResponseService( new RockContext() );
             var responses = communicationResponseService.GetConversation( messageKey, smsPhoneDefinedValueId.Value );
 
             BindConversationRepeater( responses );
+
+            DataRow row = responses.Tables[0].AsEnumerable().Last();
+            return row["SMSMessage"].ToString();
         }
 
         private void BindConversationRepeater( DataSet responses )
@@ -536,6 +542,30 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
+        /// <summary>
+        /// Updates the message part for the grid row with the selected message key with the provided message string.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        private void UpdateMessagePart( string message )
+        {
+            foreach( GridViewRow row in gRecipients.Rows )
+            {
+                if ( row.RowType != DataControlRowType.DataRow )
+                {
+                    continue;
+                }
+
+                var messageKeyHiddenField = ( HiddenFieldWithClass ) row.FindControl( "hfMessageKey" );
+                if ( messageKeyHiddenField.Value == hfSelectedMessageKey.Value )
+                {
+                    // This is our row, update the lit
+                    Literal literal = ( Literal ) row.FindControl( "litMessagePart" );
+                    literal.Text = message;
+                    break;
+                }
+            }
+        }
+
         #endregion private/protected Methods
 
         #region Control Events
@@ -595,6 +625,7 @@ namespace RockWeb.Blocks.Communication
             SendMessage( toPersonAliasId, message );
             tbNewMessage.Text = string.Empty;
             LoadResponsesForRecipient( toPersonAliasId );
+            UpdateMessagePart( message );
         }
 
         protected void mdNewMessage_SaveClick( object sender, EventArgs e )
@@ -622,16 +653,19 @@ namespace RockWeb.Blocks.Communication
             var recipientId = ( HiddenField ) e.Row.FindControl( "hfRecipientId" );
             var messageKey = ( HiddenField ) e.Row.FindControl( "hfMessageKey" );
 
+            // Since we can get newer messages when a selected let's also update the message part on the response recipients grid.
+            var litMessagePart = ( Literal ) e.Row.FindControl( "litMessagePart" );
+
             hfSelectedRecipientId.Value = recipientId.Value;
             hfSelectedMessageKey.Value = messageKey.Value;
 
             if (recipientId.Value == "-1")
             {
-                LoadResponsesForRecipient( messageKey.Value );
+                litMessagePart.Text = LoadResponsesForRecipient( messageKey.Value );
             }
             else
             {
-                LoadResponsesForRecipient( recipientId.ValueAsInt() );
+                litMessagePart.Text = LoadResponsesForRecipient( recipientId.ValueAsInt() );
             }
 
             UpdateReadProperty( messageKey.Value );
