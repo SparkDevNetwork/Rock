@@ -133,7 +133,7 @@ namespace Rock.Communication.Medium
                 if ( rockSmsFromPhoneDv != null )
                 {
                     string plainMessage = message;
-                    if ( toPerson != null && toPerson.Id == fromPerson.Id ) // message from the medium recipient
+                    if ( toPerson != null && fromPerson != null && toPerson.Id == fromPerson.Id ) // message from the medium recipient
                     {
                         // look for response code in the message
                         Match match = Regex.Match( message, @"@\d{3,5}" );
