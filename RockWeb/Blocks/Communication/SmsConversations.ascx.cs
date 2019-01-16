@@ -472,7 +472,7 @@ namespace RockWeb.Blocks.Communication
             {
                 case "MDNEWMESSAGE":
                     mdNewMessage.Show();
-                    lblMdNewMessageSendingSMSNumber.Text = PhoneNumber.FormattedNumber( "", ddlSmsNumbers.SelectedItem.Text );
+                    lblMdNewMessageSendingSMSNumber.Text = ddlSmsNumbers.SelectedItem.Text;
                     break;
                 case "MDLINKCONVERSATION":
                     mdLinkConversation.Show();
