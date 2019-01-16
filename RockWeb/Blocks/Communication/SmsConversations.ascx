@@ -147,7 +147,7 @@
             <Content>
                 <asp:ValidationSummary ID="vsMobileTextEditor" runat="server" HeaderText="Please correct the following:" ValidationGroup="vgMobileTextEditor" CssClass="alert alert-validation" />
                 <div class="form-group">
-                    <label runat="server" id="lblFromNumber" class="control-label">From Number</label>
+                    <label runat="server" id="lblFromNumber" class="control-label">From</label>
                     <div><asp:Label ID="lblMdNewMessageSendingSMSNumber" runat="server" /></div>
                 </div>
 
