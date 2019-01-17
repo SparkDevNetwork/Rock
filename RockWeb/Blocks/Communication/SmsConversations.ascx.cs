@@ -59,11 +59,11 @@ namespace RockWeb.Blocks.Communication
         defaultValue: true,
         order: 4,
         key: "EnableSmsSend" )]
-    [IntegerField( name:"Show Conversations From Months Ago",
-        description:"Limits the conversations shown in the left pane to those of X months ago or newer. This does not affect the actual messages shown on the right.",
+    [IntegerField( name: "Show Conversations From Months Ago",
+        description: "Limits the conversations shown in the left pane to those of X months ago or newer. This does not affect the actual messages shown on the right.",
         defaultValue: 6,
         order: 5,
-        key: "ShowConversationsFromMonthsAgo")]
+        key: "ShowConversationsFromMonthsAgo" )]
     [CodeEditorField( "Person Info Lava Template",
         description: "A Lava template to display person information about the selected Communication Recipient.",
         defaultValue: "{{ Person.FullName }}",
@@ -78,7 +78,11 @@ namespace RockWeb.Blocks.Communication
     {
         #region Control Overrides
 
-        protected override void OnPreRender( EventArgs e)
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
         {
             base.OnPreRender( e );
 
@@ -146,15 +150,19 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
             HtmlMeta preventPhoneMetaTag = new HtmlMeta
-                {
-                    Name = "format-detection",
-                    Content = "telephone=no"
-                };
+            {
+                Name = "format-detection",
+                Content = "telephone=no"
+            };
             RockPage.AddMetaTag( this.Page, preventPhoneMetaTag );
 
             this.BlockUpdated += Block_BlockUpdated;
@@ -175,6 +183,10 @@ namespace RockWeb.Blocks.Communication
             rblNewPersonGender.Items.Add( new ListItem( Gender.Unknown.ConvertToString(), Gender.Unknown.ConvertToInt().ToString() ) );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -210,6 +222,11 @@ namespace RockWeb.Blocks.Communication
         #endregion Control Overrides
 
         #region private/protected Methods
+
+        /// <summary>
+        /// Loads the phone numbers.
+        /// </summary>
+        /// <returns></returns>
         private bool LoadPhoneNumbers()
         {
             // First load up all of the available numbers
@@ -239,15 +256,15 @@ namespace RockWeb.Blocks.Communication
                 {
                     v.Id,
                     Description = string.IsNullOrWhiteSpace( v.Description )
-                    ? PhoneNumber.FormattedNumber( "", v.Value.Replace("+", string.Empty) )
+                    ? PhoneNumber.FormattedNumber( "", v.Value.Replace( "+", string.Empty ) )
                     : v.Description.LeftWithEllipsis( 25 ),
-                });
+                } );
 
                 ddlSmsNumbers.Visible = smsNumbers.Count() > 0;
                 ddlSmsNumbers.DataValueField = "Id";
                 ddlSmsNumbers.DataTextField = "Description";
                 ddlSmsNumbers.DataBind();
-                
+
                 string keyPrefix = string.Format( "sms-conversations-{0}-", this.BlockId );
 
                 string smsNumberUserPref = this.GetUserPreference( keyPrefix + "smsNumber" ) ?? string.Empty;
@@ -271,6 +288,9 @@ namespace RockWeb.Blocks.Communication
             return true;
         }
 
+        /// <summary>
+        /// Loads the response listing.
+        /// </summary>
         private void LoadResponseListing()
         {
             // NOTE: The FromPersonAliasId is the person who sent a text from a mobile device to Rock.
@@ -303,13 +323,13 @@ namespace RockWeb.Blocks.Communication
                 var responseListItems = responses.Tables[0].AsEnumerable()
                     .Select( r => new ResponseListItem
                     {
-                        RecipientId = r.Field<int?>("FromPersonAliasId"),
-                        MessageKey = r.Field<string>("MessageKey"),
-                        FullName = r.Field<string>("FullName"),
-                        CreatedDateTime = r.Field<DateTime>("CreatedDateTime"),
+                        RecipientId = r.Field<int?>( "FromPersonAliasId" ),
+                        MessageKey = r.Field<string>( "MessageKey" ),
+                        FullName = r.Field<string>( "FullName" ),
+                        CreatedDateTime = r.Field<DateTime>( "CreatedDateTime" ),
                         HumanizedCreatedDateTime = HumanizeDateTime( r.Field<DateTime>( "CreatedDateTime" ) ),
-                        SMSMessage = r.Field<string>("SMSMessage"),
-                        IsRead = r.Field<bool>("IsRead")
+                        SMSMessage = r.Field<string>( "SMSMessage" ),
+                        IsRead = r.Field<bool>( "IsRead" )
                     } )
                     .ToList();
 
@@ -320,6 +340,11 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
+        /// <summary>
+        /// Loads the responses for recipient.
+        /// </summary>
+        /// <param name="recipientId">The recipient identifier.</param>
+        /// <returns></returns>
         private string LoadResponsesForRecipient( int recipientId )
         {
             int? smsPhoneDefinedValueId = ddlSmsNumbers.SelectedValue.AsIntegerOrNull();
@@ -338,6 +363,11 @@ namespace RockWeb.Blocks.Communication
             return row["SMSMessage"].ToString();
         }
 
+        /// <summary>
+        /// Loads the responses for recipient.
+        /// </summary>
+        /// <param name="messageKey">The message key.</param>
+        /// <returns></returns>
         private string LoadResponsesForRecipient( string messageKey )
         {
             int? smsPhoneDefinedValueId = ddlSmsNumbers.SelectedValue.AsIntegerOrNull();
@@ -356,6 +386,10 @@ namespace RockWeb.Blocks.Communication
             return row["SMSMessage"].ToString();
         }
 
+        /// <summary>
+        /// Binds the conversation repeater.
+        /// </summary>
+        /// <param name="responses">The responses.</param>
         private void BindConversationRepeater( DataSet responses )
         {
             var communicationItems = responses.Tables[0].AsEnumerable()
@@ -366,8 +400,8 @@ namespace RockWeb.Blocks.Communication
                     FullName = r.Field<string>( "FullName" ),
                     CreatedDateTime = r.Field<DateTime>( "CreatedDateTime" ),
                     HumanizedCreatedDateTime = HumanizeDateTime( r.Field<DateTime>( "CreatedDateTime" ) ),
-                    SMSMessage = r.Field<string>("SMSMessage"),
-                    IsRead = r.Field<bool>("IsRead")
+                    SMSMessage = r.Field<string>( "SMSMessage" ),
+                    IsRead = r.Field<bool>( "IsRead" )
                 } )
                 .ToList();
 
@@ -399,6 +433,10 @@ namespace RockWeb.Blocks.Communication
             return Humanizer.DateHumanizeExtensions.Humanize( dateTime, true, dtCompare, null );
         }
 
+        /// <summary>
+        /// Populates the person lava.
+        /// </summary>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         private void PopulatePersonLava( RowEventArgs e )
         {
             var recipientId = ( HiddenField ) e.Row.FindControl( "hfRecipientId" );
@@ -428,9 +466,13 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
-            litSelectedRecipientDescription.Text = string.Format("<div class='header-lava pull-left'>{0}</div>", html);
+            litSelectedRecipientDescription.Text = string.Format( "<div class='header-lava pull-left'>{0}</div>", html );
         }
 
+        /// <summary>
+        /// Updates the read property.
+        /// </summary>
+        /// <param name="messageKey">The message key.</param>
         private void UpdateReadProperty( string messageKey )
         {
             int? smsPhoneDefinedValueId = ddlSmsNumbers.SelectedValue.AsIntegerOrNull();
@@ -504,6 +546,9 @@ namespace RockWeb.Blocks.Communication
             hfActiveDialog.Value = string.Empty;
         }
 
+        /// <summary>
+        /// Saves the settings.
+        /// </summary>
         private void SaveSettings()
         {
             string keyPrefix = string.Format( "sms-conversations-{0}-", this.BlockId );
@@ -512,28 +557,21 @@ namespace RockWeb.Blocks.Communication
             this.SetUserPreference( keyPrefix + "showRead", tglShowRead.Checked.ToString(), false );
         }
 
+        /// <summary>
+        /// Sends the message.
+        /// </summary>
+        /// <param name="toPersonAliasId">To person alias identifier.</param>
+        /// <param name="message">The message.</param>
         private void SendMessage( int toPersonAliasId, string message )
         {
             using ( var rockContext = new RockContext() )
             {
-                // default the sender to the logged in user. Only used if a ResponseRecipient is not defined for the SMS From number.
+                // The sender is the logged in user.
                 int fromPersonAliasId = CurrentUser.Person.PrimaryAliasId.Value;
                 string fromPersonName = CurrentUser.Person.FullName;
 
                 // The sending phone is the selected one
                 DefinedValueCache fromPhone = DefinedValueCache.Get( ddlSmsNumbers.SelectedValue.AsInteger() );
-
-                var responseRecipientGuid = fromPhone.GetAttributeValue( "ResponseRecipient" ).AsGuidOrNull();
-                if ( responseRecipientGuid.HasValue )
-                {
-                    var fromPerson = new PersonAliasService( rockContext )
-                        .Queryable().Where( p => p.Guid.Equals( responseRecipientGuid.Value ) )
-                        .Select( p => p.Person )
-                        .FirstOrDefault();
-
-                    fromPersonAliasId = fromPerson.PrimaryAliasId.Value;
-                    fromPersonName = fromPerson.FullName;
-                }
 
                 string responseCode = Rock.Communication.Medium.Sms.GenerateResponseCode( rockContext );
 
@@ -548,7 +586,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="message">The message.</param>
         private void UpdateMessagePart( string message )
         {
-            foreach( GridViewRow row in gRecipients.Rows )
+            foreach ( GridViewRow row in gRecipients.Rows )
             {
                 if ( row.RowType != DataControlRowType.DataRow )
                 {
@@ -590,28 +628,53 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbLinkConversation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbLinkConversation_Click( object sender, EventArgs e )
         {
             ShowDialog( "mdLinkConversation" );
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlSmsNumbers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlSmsNumbers_SelectedIndexChanged( object sender, EventArgs e )
         {
             SaveSettings();
             LoadResponseListing();
         }
 
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglShowRead control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglShowRead_CheckedChanged( object sender, EventArgs e )
         {
             SaveSettings();
             LoadResponseListing();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnCreateNewMessage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCreateNewMessage_Click( object sender, EventArgs e )
         {
             ShowDialog( "mdNewMessage" );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSend control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSend_Click( object sender, EventArgs e )
         {
             string message = tbNewMessage.Text.Trim();
@@ -628,6 +691,11 @@ namespace RockWeb.Blocks.Communication
             UpdateMessagePart( message );
         }
 
+        /// <summary>
+        /// Handles the SaveClick event of the mdNewMessage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdNewMessage_SaveClick( object sender, EventArgs e )
         {
             string message = tbSMSTextMessage.Text.Trim();
@@ -643,6 +711,11 @@ namespace RockWeb.Blocks.Communication
             HideDialog();
         }
 
+        /// <summary>
+        /// Handles the RowSelected event of the gRecipients control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gRecipients_RowSelected( object sender, RowEventArgs e )
         {
             if ( e.Row.RowType != DataControlRowType.DataRow )
@@ -659,7 +732,7 @@ namespace RockWeb.Blocks.Communication
             hfSelectedRecipientId.Value = recipientId.Value;
             hfSelectedMessageKey.Value = messageKey.Value;
 
-            if (recipientId.Value == "-1")
+            if ( recipientId.Value == "-1" )
             {
                 litMessagePart.Text = LoadResponsesForRecipient( messageKey.Value );
             }
@@ -672,7 +745,7 @@ namespace RockWeb.Blocks.Communication
             tbNewMessage.Visible = true;
             btnSend.Visible = true;
 
-            upConversation.Attributes.Add("class","conversation-panel has-focus");
+            upConversation.Attributes.Add( "class", "conversation-panel has-focus" );
 
             foreach ( GridViewRow row in gRecipients.Rows )
             {
@@ -693,9 +766,14 @@ namespace RockWeb.Blocks.Communication
             PopulatePersonLava( e );
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gRecipients control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gRecipients_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            if (e.Row.RowType != DataControlRowType.DataRow)
+            if ( e.Row.RowType != DataControlRowType.DataRow )
             {
                 return;
             }
@@ -706,9 +784,33 @@ namespace RockWeb.Blocks.Communication
                 e.Row.AddCssClass( "unread" );
             }
         }
+
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptConversation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptConversation_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                var messageKey = ( HiddenFieldWithClass ) e.Item.FindControl( "hfCommunicationMessageKey" );
+                if ( messageKey.Value != string.Empty )
+                {
+                    var divCommunication = ( HtmlGenericControl ) e.Item.FindControl( "divCommunication" );
+                    divCommunication.RemoveCssClass( "outbound" );
+                    divCommunication.AddCssClass( "inbound" );
+                }
+            }
+        }
+
         #endregion Control Events
 
         #region Link Conversation Modal
+        /// <summary>
+        /// Sets the active tab.
+        /// </summary>
         private void SetActiveTab()
         {
             if ( hfActiveTab.Value == "Existing" )
@@ -727,6 +829,11 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
+        /// <summary>
+        /// Handles the SaveClick event of the mdLinkConversation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdLinkConversation_SaveClick( object sender, EventArgs e )
         {
             // Do some validation on entering a new person/family first
@@ -872,19 +979,5 @@ namespace RockWeb.Blocks.Communication
         }
 
         #endregion Link Conversation Modal
-
-        protected void rptConversation_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
-            {
-                var messageKey = ( HiddenFieldWithClass ) e.Item.FindControl( "hfCommunicationMessageKey" );
-                if (messageKey.Value != string.Empty )
-                {
-                    var divCommunication = ( HtmlGenericControl ) e.Item.FindControl( "divCommunication" );
-                    divCommunication.RemoveCssClass( "outbound" );
-                    divCommunication.AddCssClass( "inbound" );
-                }
-            }
-        }
     }
 }
