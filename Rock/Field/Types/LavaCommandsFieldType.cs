@@ -31,9 +31,9 @@ namespace Rock.Field.Types
     [Serializable]
     public class LavaCommandsFieldType : FieldType
     {
-        private const string REPEAT_COLUMNS = "repeatColumns";
-
         #region Configuration
+
+        private const string REPEAT_COLUMNS = "repeatColumns";
 
         /// <summary>
         /// Returns a list of the configuration keys

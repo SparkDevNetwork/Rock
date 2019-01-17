@@ -24,11 +24,10 @@ using System.Web;
 namespace Rock.Utility
 {
     /// <summary>
-    /// 
+    /// Helper Class to do a couple of handy things from a HttpContext
     /// </summary>
     public static class WebRequestHelper
     {
-
         /// <summary>
         /// Get the host name from request
         /// </summary>
