@@ -233,6 +233,7 @@ namespace Rock.Model
         /// Gets the communications and response recipients.
         /// </summary>
         /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
+        /// <param name="conversationAgeInMonths">The conversation age in months.</param>
         /// <returns></returns>
         public DataSet GetCommunicationsAndResponseRecipients( int relatedSmsFromDefinedValueId, int conversationAgeInMonths = 0 )
         {
@@ -294,6 +295,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
         /// <param name="showReadMessages">if set to <c>true</c> [show read messages].</param>
+        /// <param name="conversationAgeInMonths">The conversation age in months.</param>
         /// <returns></returns>
         public DataSet GetResponseRecipients( int relatedSmsFromDefinedValueId, bool showReadMessages, int conversationAgeInMonths = 0 )
         {

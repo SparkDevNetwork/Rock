@@ -100,6 +100,10 @@ namespace Rock.Lava.Shortcodes
             base.Initialize( tagName, markup, tokens );
         }
 
+        /// <summary>
+        /// Parses the specified tokens.
+        /// </summary>
+        /// <param name="tokens">The tokens.</param>
         protected override void Parse( List<string> tokens )
         {
             // Get the block markup. The list of tokens contains all of the lava from the start tag to
@@ -342,9 +346,10 @@ namespace Rock.Lava.Shortcodes
         }
 
 
-        /// <summary>Loads the block merge fields.</summary>
+        /// <summary>
+        /// Loads the block merge fields.
+        /// </summary>
         /// <param name="context">The context.</param>
-        /// <param name="parms">The parms.</param>
         /// <returns></returns>
         private Dictionary<string, object> LoadBlockMergeFields( Context context )
         {
