@@ -756,14 +756,14 @@ namespace RockWeb.Blocks.Groups
 
             if ( editableAttributes.Any() )
             {
-				phAttributes.Visible = true;
+                avcAttributes.Visible = true;
                 avcAttributes.AddEditControls( groupMember );
                 avcAttributes.ExcludedAttributes = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) ).Select( a => a.Value ).ToArray();
             }
 
             if ( viewableAttributes.Any() )
             {
-                phAttributesReadOnly.Visible = true;
+                avcAttributesReadOnly.Visible = true;
                 var excludeKeys = groupMember.Attributes.Where( a => !viewableAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
                 avcAttributesReadOnly.AddDisplayControls( groupMember );
             }
