@@ -34,6 +34,10 @@ namespace Rock.Field.Types
     {
         private const string REPEAT_COLUMNS = "repeatColumns";
 
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
         public override List<string> ConfigurationKeys()
         {
             List<string> configKeys = base.ConfigurationKeys();

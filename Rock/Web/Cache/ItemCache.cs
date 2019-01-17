@@ -32,6 +32,10 @@ namespace Rock.Web.Cache
         where T : IItemCache
     {
         private const string _AllRegion = "AllItems";
+
+        /// <summary>
+        /// All string
+        /// </summary>
         protected static readonly string AllString = "All";
 
         // This static field will be different for each generic type. See (https://www.jetbrains.com/help/resharper/2018.1/StaticMemberInGenericType.html)
