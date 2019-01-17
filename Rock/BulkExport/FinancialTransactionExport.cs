@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -27,6 +28,7 @@ namespace Rock.BulkExport
     /// 
     /// </summary>
     /// <seealso cref="Rock.BulkExport.ModelExport" />
+    [RockClientInclude( "Export result from ~/api/FinancialTransactions/Export" )]
     public class FinancialTransactionExport : ModelExport
     {
         private FinancialTransaction _financialTransaction;
@@ -291,6 +293,7 @@ namespace Rock.BulkExport
     /// <summary>
     /// 
     /// </summary>
+    [RockClientInclude( "Export result from ~/api/FinancialTransactions/Export" )]
     public class FinancialTransactionDetailExport
     {
         /// <summary>
