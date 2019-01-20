@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -49,7 +50,8 @@ namespace Rock.Lava.Shortcodes
         <p>Let's take a look at some of the parameters and options that are available.</p>
 
         <ul>
-            <li><strong>scheduleid</strong> - The schedule id to use for determining if the content should be displayed.</li>
+            <li><strong>scheduleid</strong> - The schedule id to use for determining if the content should be displayed. This can be a single schedule or a comma-separated list of schedules.</li>
+            <li><strong>schedulecategoryid</strong> - The schedule category id to use for determining if the content should be displayed. All schedules in the category will be considered.</li>
             <li><strong>showwhen</strong> (live) - Determines when the content should be displayed. Valid values are 'live', 'notlive' and 'both'.</li>
             <li><strong>roleid</strong> - An optional parameter to limit the display to only people in a specified role (actually, any group id will work.)</li>
             <li><strong>lookaheaddays</strong> (30)- The number of days to look ahead to find the next occurrence.</li>
@@ -77,6 +79,7 @@ namespace Rock.Lava.Shortcodes
         const string SCHEDULE_ID = "scheduleid";
         const string ROLE_ID = "roleid";
         const string LOOK_AHEAD_DAYS = "lookaheaddays";
+        const string SCHEDULE_CATEGORY_ID = "schedulecategoryid";
 
         /// <summary>
         /// Method that will be run at Rock startup
@@ -181,36 +184,62 @@ namespace Rock.Lava.Shortcodes
 
             using ( TextWriter writer = new StringWriter() )
             {
+                bool filterProvided = false;
+
                 var now = RockDateTime.Now;
 
                 base.Render( context, writer );
 
                 var parms = ParseMarkup( _markup, context );
-
-                var scheduleId = parms[ SCHEDULE_ID ].AsIntegerOrNull();
                 var lookAheadDays = parms[ LOOK_AHEAD_DAYS ].AsInteger();
+                var scheduleCategoryId = parms[ SCHEDULE_CATEGORY_ID ].AsIntegerOrNull();
 
-                if ( !scheduleId.HasValue )
+                var scheduleIds = new List<int>();
+
+                var requestedSchedules = parms[SCHEDULE_ID].StringToIntList();
+
+                var schedulesQry = new ScheduleService( rockContext ).Queryable().AsNoTracking()
+                    .Where( s => s.IsActive == true );
+
+                if ( requestedSchedules.Count() > 0 )
+                {
+                    schedulesQry = schedulesQry.Where( s => requestedSchedules.Contains( s.Id ) );
+                    filterProvided = true;
+                }
+
+                if ( scheduleCategoryId.HasValue )
+                {
+                    schedulesQry = schedulesQry.Where( s => s.CategoryId == scheduleCategoryId.Value );
+                    filterProvided = true;
+                }
+
+                // If neither a schedule id nor a schedule category id was provided stop
+                if ( !filterProvided )
                 {
                     return;
                 }
 
-                var schedule = new ScheduleService( rockContext ).GetNoTracking( scheduleId.Value );
+                // Get the schedules are order them by the next start time
+                var schedules = schedulesQry.ToList()
+                                .Where( s => s.GetNextStartDateTime( now ) != null )
+                                .OrderBy( s => s.GetNextStartDateTime( now ) );
 
-                if ( schedule.IsNull() || !schedule.IsActive )
+                if ( schedules.Count() == 0 )
                 {
                     return;
                 }
 
-                var nextStartDateTime = schedule.GetNextStartDateTime( now );
+                var nextSchedule = schedules.FirstOrDefault();
+
+                var nextStartDateTime = nextSchedule.GetNextStartDateTime( now );
                 var isLive = false;
                 DateTime? occurrenceEndDateTime = null;
 
                 // Determine if we're live
-                if ( schedule.WasScheduleActive( now ) )
+                if ( nextSchedule.WasScheduleActive( now ) )
                 {
                     isLive = true;
-                    var occurrences = schedule.GetOccurrences( now, now.AddDays( lookAheadDays ) ).Take(2);
+                    var occurrences = nextSchedule.GetOccurrences( now, now.AddDays( lookAheadDays ) ).Take(2);
                     var activeOccurrence = occurrences.FirstOrDefault();
                     occurrenceEndDateTime = (DateTime) activeOccurrence.Period.EndTime.Value;
 
@@ -328,6 +357,7 @@ namespace Rock.Lava.Shortcodes
             parms.Add( ROLE_ID, "" );
             parms.Add( SHOW_WHEN, "live" );
             parms.Add( LOOK_AHEAD_DAYS, "30" );
+            parms.Add( SCHEDULE_CATEGORY_ID, "" );
 
             var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
