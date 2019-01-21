@@ -115,7 +115,9 @@
                                                         <img src='<%# PersonPhotoUrl( Eval( "PersonAlias.Person.PhotoUrl" ).ToString() ) %>&width=50' class="img-circle" />
                                                     </div>
                                                     <div style="width: 100%;">
-                                                        <div class='rating rating-<%# Eval("Rating")%> pull-left margin-r-sm'></div>
+                                                        <div class="rating text-center margin-b-sm" style="color:#ffc870;">
+                                                            <%#  FormatRating((int)Eval("Rating")) %>
+                                                        </div>
                                                         <strong><%# Eval("PersonAlias.Person.FullName")%></strong>
                                                         <p class="margin-b-lg">
                                                             <%# FormatReviewText(Eval("Review").ToString())%>
@@ -135,7 +137,9 @@
                                             <ItemTemplate>
                                                 <div class="clearfix">
                                                     <h4 style="float: left;" class="margin-r-sm"><%# Eval("VersionLabel")%></h4>
-                                                    <div class='rating rating-<%# GetRating((int)Eval("Id")) %> pull-left margin-t-sm'></div>
+                                                    <div class="rating  pull-left margin-b-sm" style="color:#ffc870;">
+                                                            <%#  FormatRating(Convert.ToInt32( GetRating((int)Eval("Id")))) %>
+                                                    </div>
                                                 </div>
 
                                                 <p class="margin-b-lg">
