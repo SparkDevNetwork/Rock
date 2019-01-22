@@ -432,6 +432,7 @@
     <Compile Include="Plugin\HotFixes\054_MigrationRollupsForV8_2.cs" />
     <Compile Include="Plugin\HotFixes\053_DuplicateDataIntegrityReports.cs" />
     <Compile Include="Plugin\HotFixes\058_CheckinRegistration.cs" />
+    <Compile Include="Plugin\HotFixes\062_MigrationRollupsForV8_7.cs" />
     <Compile Include="Plugin\HotFixes\061_MigrationRollupsForV8_6_2.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
