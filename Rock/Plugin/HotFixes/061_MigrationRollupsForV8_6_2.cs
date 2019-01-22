@@ -29,11 +29,11 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            DeleteAllAuthForTaggedItemsControllerAndTagsController();
-            RemoveAllUserAuthInternalCalendar();
-            AddAuthToPeopleVCardController();
-            UpdateStatementGeneratorInstallerLocation();
-            ReAddMissingVisitorConnectionStatus();
+            //DeleteAllAuthForTaggedItemsControllerAndTagsController();
+            //RemoveAllUserAuthInternalCalendar();
+            //AddAuthToPeopleVCardController();
+            //UpdateStatementGeneratorInstallerLocation();
+            //ReAddMissingVisitorConnectionStatus();
         }
 
         /// <summary>
@@ -41,9 +41,9 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Down()
         {
-            RestoreAllAuthForTaggedItemsControllerAndTagsController();
-            RestoreCalendarAuth();
-            UndoAddAuthToPeopleVCardController();
+            //RestoreAllAuthForTaggedItemsControllerAndTagsController();
+            //RestoreCalendarAuth();
+            //UndoAddAuthToPeopleVCardController();
         }
 
         /// <summary>

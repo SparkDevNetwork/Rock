@@ -29,8 +29,8 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            FixWordCloudShortCodeUp();
-            FixParallaxShortCodeUp();
+            //FixWordCloudShortCodeUp();
+            //FixParallaxShortCodeUp();
         }
 
         /// <summary>
