@@ -180,9 +180,9 @@
     <Compile Include="Migrations\201901141627393_SMSConversations1.Designer.cs">
       <DependentUpon>201901141627393_SMSConversations1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201901181932199_AddControlItemCountToFinancialBatch.cs" />
-    <Compile Include="Migrations\201901181932199_AddControlItemCountToFinancialBatch.Designer.cs">
-      <DependentUpon>201901181932199_AddControlItemCountToFinancialBatch.cs</DependentUpon>
+    <Compile Include="Migrations\201901222204456_Rollup_0122.cs" />
+    <Compile Include="Migrations\201901222204456_Rollup_0122.Designer.cs">
+      <DependentUpon>201901222204456_Rollup_0122.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
@@ -560,8 +560,8 @@
     <EmbeddedResource Include="Migrations\201901141627393_SMSConversations1.resx">
       <DependentUpon>201901141627393_SMSConversations1.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201901181932199_AddControlItemCountToFinancialBatch.resx">
-      <DependentUpon>201901181932199_AddControlItemCountToFinancialBatch.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201901222204456_Rollup_0122.resx">
+      <DependentUpon>201901222204456_Rollup_0122.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
