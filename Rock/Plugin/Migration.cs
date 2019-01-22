@@ -51,12 +51,12 @@ namespace Rock.Plugin
         /// <summary>
         /// The commands to run to migrate plugin to the specific version
         /// </summary>
-        public abstract void Up();
+        //public abstract void Up();
 
-        /// <summary>
-        /// The commands to undo a migration from a specific version
-        /// </summary>
-        public abstract void Down();
+        ///// <summary>
+        ///// The commands to undo a migration from a specific version
+        ///// </summary>
+        //public abstract void Down();
 
 
         /// <summary>
