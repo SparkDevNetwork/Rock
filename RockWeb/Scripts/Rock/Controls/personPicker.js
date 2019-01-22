@@ -10,6 +10,8 @@
             this.restDetailUrl = options.restDetailUrl;
             this.defaultText = options.defaultText || '';
             this.iScroll = null;
+            this.$pickerControl = $('#' + this.controlId);
+            this.$pickerScrollContainer = this.$pickerControl.find('.js-personpicker-scroll-container');
         };
 
         PersonPicker.prototype.initializeEventHandlers = function () {
@@ -18,26 +20,83 @@
                 restDetailUrl = this.restDetailUrl || (Rock.settings.get('baseUrl') + 'api/People/GetSearchDetails'),
                 defaultText = this.defaultText;
 
-            var includeBusinesses = $('#' + controlId).find('.js-include-businesses').val() == '1' ? 'true' : 'false';
+            var $pickerControl = this.$pickerControl;
+            var $searchFields = $pickerControl.find('.js-personpicker-search-field input');
+            var $searchFieldName = $pickerControl.find('.js-personpicker-search-name input');
+            var $searchFieldAddress = $pickerControl.find('.js-personpicker-search-address input');
+            var $searchFieldPhone = $pickerControl.find('.js-personpicker-search-phone input');
+            var $searchFieldEmail = $pickerControl.find('.js-personpicker-search-email input');
+            var $searchResults = $pickerControl.find('.js-personpicker-searchresults');
+            var $pickerToggle = $pickerControl.find('.js-personpicker-toggle');
+            var $pickerMenu = $pickerControl.find('.js-personpicker-menu');
+            var $pickerSelect = $pickerControl.find('.js-personpicker-select');
+            var $pickerSelectNone = $pickerControl.find('.js-picker-select-none');
+            var $pickerPersonId = $pickerControl.find('.js-person-id');
+            var $pickerPersonName = $pickerControl.find('.js-person-name');
+            var $pickerCancel = $pickerControl.find('.js-personpicker-cancel');
+            var $pickerToggleAdditionalSearchFields = $pickerControl.find('.js-toggle-additional-search-fields');
+            var $pickerAdditionalSearchFields = $pickerControl.find('.js-personpicker-additional-search-fields');
+            var $pickerExpandSearchFields = $pickerControl.find('.js-expand-search-fields');
+
+            var includeBusinesses = $pickerControl.find('.js-include-businesses').val() == '1' ? 'true' : 'false';
+            var includeDeceased = $pickerControl.find('.js-include-deceased').val() == '1' ? 'true' : 'false';
+            var includeDetails = 'false';
 
             var promise = null;
             var lastSelectedPersonId = null;
 
-            $('#' + controlId + '_personPicker').autocomplete({
+            var autoCompletes = $searchFields.autocomplete({
                 source: function (request, response) {
+
+                    var search = {
+                        name: $searchFieldName.val(),
+                        address: $searchFieldAddress.val(),
+                        phone: $searchFieldPhone.val(),
+                        email: $searchFieldEmail.val()
+                    };
+
+                    // make sure that at least one of the search fields has 3 chars in it
+                    if ((search.name.length < 3) && (search.address.length < 3) && (search.phone.length < 3) && (search.email.length < 3)) {
+                        console.log('min length 3')
+                        return;
+                    }
 
                     // abort any searches that haven't returned yet, so that we don't get a pile of results in random order
                     if (promise && promise.state() === 'pending') {
                         promise.abort();
                     }
 
+                    var searchParams = [];
+                    if (search.name) {
+                        searchParams.push("name=" + encodeURIComponent(search.name));
+                    }
+
+                    // also search additional search fields if they are visible
+                    if (search.address && $searchFieldAddress.is(':visible')) {
+                        searchParams.push("address=" + encodeURIComponent(search.address));
+                    }
+
+                    if (search.phone && $searchFieldPhone.is(':visible')) {
+                        searchParams.push("phone=" + encodeURIComponent(search.phone));
+                    }
+
+                    if (search.email && $searchFieldEmail.is(':visible')) {
+                        searchParams.push("email=" + encodeURIComponent(search.email));
+                    }
+
+                    var searchQuery = "?" + searchParams.join("&");
+
                     promise = $.ajax({
-                        url: restUrl + "?name=" + encodeURIComponent(request.term) + "&includeHtml=false&includeDetails=false&includeBusinesses=" + includeBusinesses + "&includeDeceased=true",
+                        url: restUrl
+                            + searchQuery
+                            + "&includeDetails=" + includeDetails
+                            + "&includeBusinesses=" + includeBusinesses
+                            + "&includeDeceased=" + includeDeceased,
                         dataType: 'json'
                     });
 
                     promise.done(function (data) {
-                        $('#' + controlId + '_personPickerItems').first().html('');
+                        $searchResults.html('');
                         response($.map(data, function (item) {
                             return item;
                         }));
@@ -49,21 +108,24 @@
                         console.log(status + ' [' + error + ']: ' + xhr.responseText);
                         var errorCode = xhr.status;
                         if (errorCode == 401) {
-                            $('#' + controlId + '_personPickerItems').first().html("<li class='text-danger'>Sorry, you're not authorized to search.</li>");
+                            $searchResults.html("<li class='text-danger'>Sorry, you're not authorized to search.</li>");
                         }
                     });
                 },
-                minLength: 3,
+                // set minLength to 0, but check that at least one field as 3 chars before fetching from REST
+                minLength: 0,
                 html: true,
-                appendTo: '#' + controlId + '_personPickerItems',
+                appendTo: $searchResults,
                 pickerControlId: controlId,
                 messages: {
                     noResults: function () { },
                     results: function () { }
                 }
-            }).data('ui-autocomplete')._renderItem = function ($ul, item) {
+            });
+
+            var autoCompleteCustomRenderItem = function ($ul, item) {
                 if (this.options.html) {
-                    // override jQueryUI autocomplete's _renderItem so that we can do Html for the listitems
+                    // override jQueryUI autocomplete's _renderItem so that we can do HTML for the ListItems
                     // derived from http://github.com/scottgonzalez/jquery-ui-extensions
 
                     var inactiveWarning = "";
@@ -102,7 +164,7 @@
                             .prependTo($label),
 
                         $li = $('<li/>')
-                            .addClass('picker-select-item')
+                            .addClass('picker-select-item js-picker-select-item')
                             .attr('data-person-id', item.Id)
                             .attr('data-person-name', item.Name)
                             .html($div),
@@ -114,7 +176,7 @@
                     }
                     else {
                         var $itemDetailsDiv = $('<div/>')
-                            .addClass('picker-select-item-details clearfix')
+                            .addClass('picker-select-item-details js-picker-select-item-details clearfix')
                             .attr('data-has-details', false)
                             .hide();
 
@@ -133,18 +195,28 @@
                         .append($('<a></a>').text(item.label))
                         .appendTo($ul);
                 }
-            };
+            }
 
-            $('#' + controlId + ' a.picker-label').click(function (e) {
+            // each search field has its own autocomplete object, so we'll need override with our custom _renderItem to each
+            $.each(autoCompletes, function (a, b, c) {
+                var autoComplete = $(autoCompletes[a]).data('ui-autocomplete');
+
+                // Debugging: override close to prevent it canceling when loosing focus when debugging
+                // autoComplete.close = function () { };
+
+                autoComplete._renderItem = autoCompleteCustomRenderItem;
+            });
+
+            $pickerToggle.click(function (e) {
                 e.preventDefault();
                 $(this).toggleClass("active");
-                $('#' + controlId).find('.picker-menu').first().toggle(0, function () {
+                $pickerMenu.toggle(0, function () {
                     exports.personPickers[controlId].updateScrollbar();
                     $(this).find('.picker-search').focus();
                 });
             });
 
-            $('#' + controlId + ' .picker-select').on('click', '.picker-select-item', function (e) {
+            $pickerControl.on('click', '.js-picker-select-item', function (e) {
                 if (e.type == 'click' && $(e.target).is(':input') == false) {
                     // only process the click event if it has bubbled up to the input tag
                     return;
@@ -152,8 +224,8 @@
 
                 e.stopPropagation();
 
-                var $selectedItem = $(this).closest('.picker-select-item');
-                var $itemDetails = $selectedItem.find('.picker-select-item-details');
+                var $selectedItem = $(this).closest('.js-picker-select-item');
+                var $itemDetails = $selectedItem.find('.js-picker-select-item-details');
 
                 var selectedPersonId = $selectedItem.attr('data-person-id');
 
@@ -161,7 +233,7 @@
 
                     if (selectedPersonId == lastSelectedPersonId && e.type == 'click') {
                         // if they are clicking the same person twice in a row (and the details are done expanding), assume that's the one they want to pick
-                        $('#' + controlId + '_btnSelect').get(0).click();
+                        $pickerSelect[0].click();
                     } else {
 
                         // if it is already visible but isn't the same one twice, just leave it open
@@ -169,9 +241,9 @@
                 }
 
                 // hide other open details
-                $('#' + controlId + ' .picker-select-item-details').filter(':visible').each(function () {
+                $('.js-picker-select-item-details', $pickerControl).filter(':visible').each(function () {
                     var $el = $(this),
-                        currentPersonId = $el.closest('.picker-select-item').attr('data-person-id');
+                        currentPersonId = $el.closest('.js-picker-select-item').attr('data-person-id');
 
                     if (currentPersonId != selectedPersonId) {
                         $el.slideUp();
@@ -190,7 +262,7 @@
                     $.get(restDetailUrl + '?Id=' + selectedPersonId, function (responseText, textStatus, jqXHR) {
                         $itemDetails.attr('data-has-details', true);
 
-                        // hide then set the html so that we can get the slideDown effect
+                        // hide then set the HTML so that we can get the slideDown effect
                         $itemDetails.stop().hide().html(responseText);
                         showItemDetails($itemDetails);
 
@@ -209,68 +281,89 @@
                 }
             }
 
-            $('#' + controlId).hover(
+            $pickerControl.hover(
                 function () {
 
-                    // only show the X if there there is something picked
-                    if ($('#' + controlId + '_hfPersonId').val() || '0' !== '0') {
-                        $('#' + controlId + '_btnSelectNone').stop().show();
+                    // only show the X if there is something picked
+                    if ($pickerPersonId.val() || '0' !== '0') {
+                        $pickerSelectNone.stop().show();
                     }
                 },
                 function () {
-                    $('#' + controlId + '_btnSelectNone').fadeOut(500);
+                    $pickerSelectNone.fadeOut(500);
                 });
 
-            $('#' + controlId + '_btnCancel').click(function () {
-                $(this).closest('.picker-menu').slideUp(function () {
+            $pickerCancel.click(function () {
+                $pickerMenu.slideUp(function () {
                     exports.personPickers[controlId].updateScrollbar();
                 });
             });
 
-            $('#' + controlId + '_btnSelectNone').click(function (e) {
+            $pickerSelectNone.click(function (e) {
 
                 var selectedValue = '0',
-                    selectedText = defaultText,
-                    $selectedItemLabel = $('#' + controlId + '_selectedItemLabel'),
-                    $hiddenItemId = $('#' + controlId + '_hfPersonId'),
-                    $hiddenItemName = $('#' + controlId + '_hfPersonName');
+                    selectedText = defaultText;
 
-                $hiddenItemId.val(selectedValue);
-                $hiddenItemName.val(selectedText);
-                $selectedItemLabel.val(selectedValue);
-                $selectedItemLabel.text(selectedText);
+                $pickerPersonId.val(selectedValue);
+                $pickerPersonName.val(selectedText);
             });
 
             var setSelectedPerson = function (selectedValue, selectedText) {
-                var selectedPersonLabel = $('#' + controlId + '_selectedPersonLabel'),
-                    hiddenPersonId = $('#' + controlId + '_hfPersonId'),
-                    hiddenPersonName = $('#' + controlId + '_hfPersonName');
+                var selectedPersonLabel = $pickerControl.find('.js-personpicker-selectedperson-label');
 
-                hiddenPersonId.val(selectedValue);
-                hiddenPersonName.val(selectedText);
+                $pickerPersonId.val(selectedValue);
+                $pickerPersonName.val(selectedText);
 
                 selectedPersonLabel.val(selectedValue);
                 selectedPersonLabel.text(selectedText);
 
-                $('#' + controlId).find('.picker-menu').slideUp();
+                $pickerMenu.slideUp();
             }
 
-            $('#' + controlId + '_btnSelect').click(function () {
-                var radInput = $('#' + controlId).find('input:checked'),
-                    selectedValue = radInput.val(),
-                    selectedText = radInput.closest('.picker-select-item').attr('data-person-name');
+            $pickerSelect.click(function () {
+                var $radInput = $pickerControl.find('input:checked'),
+                    selectedValue = $radInput.val(),
+                    selectedText = $radInput.closest('.js-picker-select-item').attr('data-person-name');
 
                 setSelectedPerson(selectedValue, selectedText);
             });
 
-            $('#' + controlId + ' .js-select-self').on('click', function () {
-                var selectedValue = $('#' + controlId + ' .js-self-person-id').val(),
-                    selectedText = $('#' + controlId + ' .js-self-person-name').val();
+            var toggleSearchFields = function () {
+                var expanded = $pickerExpandSearchFields.val();
+                if (expanded == 1) {
+                    $pickerAdditionalSearchFields.slideDown();
+                }
+                else {
+                    $pickerAdditionalSearchFields.slideUp();
+                }
+
+                $pickerToggleAdditionalSearchFields.toggleClass('active', expanded == 1);
+            };
+
+            toggleSearchFields();
+
+            $pickerToggleAdditionalSearchFields.on('click', function () {
+                var expanded = $pickerExpandSearchFields.val();
+                if (expanded == 1) {
+                    expanded = 0;
+                }
+                else {
+                    expanded = 1;
+                }
+
+                $pickerExpandSearchFields.val(expanded);
+
+                toggleSearchFields();
+            });
+
+            $('.js-select-self', $pickerControl).on('click', function () {
+                var selectedValue = $('.js-self-person-id', $pickerControl).val(),
+                    selectedText = $('.js-self-person-name', $pickerControl).val();
 
                 setSelectedPerson(selectedValue, selectedText);
 
                 // fire the postBack of the btnSelect if there is one
-                var postBackUrl = $('#' + controlId + '_btnSelect').prop('href');
+                var postBackUrl = $pickerSelect.prop('href');
                 if (postBackUrl) {
                     window.location = postBackUrl;
                 }
@@ -281,9 +374,8 @@
             var self = this;
 
             // first, update this control's scrollbar, then the modal's
-            var $container = $('#' + this.controlId).find('.scroll-container')
 
-            if ($container.is(':visible')) {
+            if (self.$pickerScrollContainer.is(':visible')) {
                 if (self.iScroll) {
                     self.iScroll.refresh();
                 }
@@ -295,10 +387,10 @@
 
         PersonPicker.prototype.initialize = function () {
 
-            this.iScroll = new IScroll('#personpicker-scroll-container_' + this.controlId + ' .viewport', {
+            this.iScroll = new IScroll($('.viewport', this.$pickerControl)[0], {
                 mouseWheel: true,
                 indicators: {
-                    el: '#personpicker-scroll-container_' + this.controlId + ' .track',
+                    el: $('.track', this.$pickerScrollContainer)[0],
                     interactive: true,
                     resize: false,
                     listenY: true,
