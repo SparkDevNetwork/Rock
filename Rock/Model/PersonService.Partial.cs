@@ -917,6 +917,126 @@ namespace Rock.Model
                 .ToList();
         }
 
+        #region Search related
+
+        /// <summary>
+        /// Person Search parameters for <see cref="Search(PersonSearchOptions)"/>
+        /// </summary>
+        public class PersonSearchOptions
+        {
+            /// <summary>
+            /// The Name search term
+            /// </summary>
+            /// <value>
+            /// The name search.
+            /// </value>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [allow first name only].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [allow first name only]; otherwise, <c>false</c>.
+            /// </value>
+            public bool AllowFirstNameOnly { get; set; }
+
+            /// <summary>
+            /// Gets or sets the email.
+            /// </summary>
+            /// <value>
+            /// The email.
+            /// </value>
+            public string Email { get; set; }
+
+            /// <summary>
+            /// Gets or sets the address.
+            /// </summary>
+            /// <value>
+            /// The address.
+            /// </value>
+            public string Address { get; set; }
+
+            /// <summary>
+            /// Gets or sets the phone.
+            /// </summary>
+            /// <value>
+            /// The phone.
+            /// </value>
+            public string Phone { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [include businesses].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [include businesses]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IncludeBusinesses { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [include deceased].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [include deceased]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IncludeDeceased { get; set; }
+        }
+
+        /// <summary>
+        /// Returns a Queryable of person doing a partial term search using the search terms provided
+        /// </summary>
+        /// <param name="personSearchOptions">The person search options.</param>
+        /// <returns></returns>
+        public IQueryable<Person> Search( PersonSearchOptions personSearchOptions )
+        {
+            bool sortByFullNameReversed = false;
+            IQueryable<Person> personSearchQry = null;
+            if ( personSearchOptions.Name.IsNotNullOrWhiteSpace() )
+            {
+                personSearchQry = this.GetByFullName( personSearchOptions.Name, true, personSearchOptions.IncludeBusinesses, personSearchOptions.AllowFirstNameOnly, out sortByFullNameReversed );
+            }
+            else
+            {
+                personSearchQry = this.Queryable( personSearchOptions.IncludeDeceased, personSearchOptions.IncludeBusinesses );
+            }
+
+            if ( personSearchOptions.Email.IsNotNullOrWhiteSpace() )
+            {
+                personSearchQry = personSearchQry.Where( p => p.Email.Contains( personSearchOptions.Email ) ).OrderBy( p => p.Email );
+            }
+
+            if ( personSearchOptions.Phone.IsNotNullOrWhiteSpace() )
+            {
+                string numericPhone = personSearchOptions.Phone.AsNumeric();
+                personSearchQry = personSearchQry.Where( p => p.PhoneNumbers.Any( n => n.Number.Contains( numericPhone ) ) );
+            }
+
+            if ( personSearchOptions.Address.IsNotNullOrWhiteSpace() )
+            {
+                var rockContext = this.Context as RockContext;
+                var groupMemberService = new GroupMemberService( rockContext );
+                int groupTypeIdFamilyOrBusiness = GroupTypeCache.GetFamilyGroupType().Id;
+
+                var personIdAddressQry = groupMemberService.Queryable()
+                    .Where( m => m.Group.GroupTypeId == groupTypeIdFamilyOrBusiness )
+                    .Where( m => m.Group.GroupLocations.Any( gl => gl.Location.Street1.Contains( personSearchOptions.Address ) ) )
+                    .Select( a => a.PersonId );
+
+                personSearchQry = personSearchQry.Where( a => personIdAddressQry.Contains( a.Id ) );
+            }
+
+            if ( sortByFullNameReversed )
+            {
+                personSearchQry = personSearchQry.OrderBy( p => p.LastName ).ThenBy( p => p.NickName );
+            }
+            else
+            {
+                personSearchQry = personSearchQry.OrderBy( p => p.NickName ).ThenBy( p => p.LastName );
+            }
+
+            return personSearchQry;
+
+        }
+
         /// <summary>
         /// Gets the full name of the by.
         /// </summary>
@@ -1114,7 +1234,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the by full name ordered.
         /// </summary>
-        /// <param name="fullName">The full name.</param>
+        /// <param name="fullName">The full name search term.</param>
         /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
         /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
         /// <param name="allowFirstNameOnly">if set to true, a single value in fullName will also search for matching first names.</param>
@@ -1235,6 +1355,27 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets an queryable collection of <see cref="Rock.Model.Person"/> entities where their phone number partially matches the provided value.
+        /// </summary>
+        /// <param name="partialPhoneNumber">A <see cref="System.String"/> containing a partial phone number to match.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
+        /// included, otherwise <c>false</c>.</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
+        /// <returns>
+        /// An queryable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
+        /// </returns>
+        public IQueryable<Person> GetByPhonePartial( string partialPhoneNumber, bool includeDeceased = false, bool includeBusinesses = false )
+        {
+            string numericPhone = partialPhoneNumber.AsNumeric();
+
+            return Queryable( includeDeceased, includeBusinesses )
+                .Where( p =>
+                    p.PhoneNumbers.Any( n => n.Number.Contains( numericPhone ) ) );
+        }
+
+        #endregion search related
+
+        /// <summary>
         /// Gets the businesses sorted by name
         /// </summary>
         /// <param name="personId">The person identifier.</param>
@@ -1254,25 +1395,6 @@ namespace Rock.Model
                             o.GroupRole.Guid.Equals( ownerGuid ) ) )
                 .Select( m => m.Person )
                 .OrderBy( b => b.LastName );
-        }
-
-        /// <summary>
-        /// Gets an queryable collection of <see cref="Rock.Model.Person"/> entities where their phone number partially matches the provided value.
-        /// </summary>
-        /// <param name="partialPhoneNumber">A <see cref="System.String"/> containing a partial phone number to match.</param>
-        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
-        /// included, otherwise <c>false</c>.</param>
-        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
-        /// <returns>
-        /// An queryable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
-        /// </returns>
-        public IQueryable<Person> GetByPhonePartial( string partialPhoneNumber, bool includeDeceased = false, bool includeBusinesses = false )
-        {
-            string numericPhone = partialPhoneNumber.AsNumeric();
-
-            return Queryable( includeDeceased, includeBusinesses )
-                .Where( p =>
-                    p.PhoneNumbers.Any( n => n.Number.Contains( numericPhone ) ) );
         }
 
         /// <summary>

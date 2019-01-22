@@ -59,7 +59,7 @@
                                         style="position: relative; top: -58px; left: 10px"></span>
 
                                     <div>
-                                        <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" FormGroupCssClass="pull-left" Help="Select a new person to match to the bank account." IncludeBusinesses="true" OnSelectPerson="ppSelectNew_SelectPerson" />
+                                        <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" FormGroupCssClass="pull-left" Help="Select a new person to match to the bank account." IncludeBusinesses="true" OnSelectPerson="ppSelectNew_SelectPerson" ExpandSearchOptions="true" />
                                         <Rock:RockControlWrapper ID="rcwEnvelope" runat="server" Label="Envelope #" Help="Select a person based on their assigned envelope number">
                                             <Rock:RockTextBox ID="tbEnvelopeNumber" runat="server" CssClass="input-width-sm pull-left" />
                                             <asp:LinkButton ID="btnFindByEnvelopeNumber" runat="server" CssClass="btn btn-default margin-l-sm" Text="Find" OnClick="btnFindByEnvelopeNumber_Click" />
