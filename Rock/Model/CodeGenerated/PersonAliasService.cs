@@ -1156,12 +1156,6 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<Group>( Context ).Queryable().Any( a => a.GroupAdministratorPersonAliasId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Group.FriendlyTypeName );
-                return false;
-            }  
- 
             if ( new Service<Group>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Group.FriendlyTypeName );

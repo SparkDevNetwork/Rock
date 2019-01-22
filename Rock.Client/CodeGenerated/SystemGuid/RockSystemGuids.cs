@@ -869,7 +869,6 @@ namespace Rock.Client.SystemGuid
         public const string SEND_PHOTO_REQUESTS = "B64D0429-488C-430E-8C32-5C7F32589F73";
         public const string SITES = "7596D389-4EAB-4535-8BEE-229737F46F44";
         public const string SMS_FROM_VALUES = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
-        public const string SMS_PHONE_NUMBERS = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
         public const string SQL_COMMAND = "03C49950-9C4C-4668-9C65-9A0DF43D1B33";
         public const string SUCCESS = "E08230B8-35A4-40D6-A0BB-521418314DA9";
         public const string SUPPORT_PAGES_INTERNAL_HOMEPAGE = "936C90C4-29CF-4665-A489-7C687217F7B8";
