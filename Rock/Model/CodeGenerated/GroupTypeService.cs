@@ -124,7 +124,6 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this GroupType target, GroupType source )
         {
             target.Id = source.Id;
-            target.AdministratorTerm = source.AdministratorTerm;
             target.AllowedScheduleTypes = source.AllowedScheduleTypes;
             target.AllowGroupSync = source.AllowGroupSync;
             target.AllowMultipleLocations = source.AllowMultipleLocations;
@@ -160,7 +159,6 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Order = source.Order;
             target.SendAttendanceReminder = source.SendAttendanceReminder;
-            target.ShowAdministrator = source.ShowAdministrator;
             target.ShowConnectionStatus = source.ShowConnectionStatus;
             target.ShowInGroupList = source.ShowInGroupList;
             target.ShowInNavigation = source.ShowInNavigation;
