@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class AddControlItemCountToFinancialBatch : IMigrationMetadata
+    public sealed partial class Rollup_0122 : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(AddControlItemCountToFinancialBatch));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(Rollup_0122));
         
         string IMigrationMetadata.Id
         {
-            get { return "201901181932199_AddControlItemCountToFinancialBatch"; }
+            get { return "201901222204456_Rollup_0122"; }
         }
         
         string IMigrationMetadata.Source
