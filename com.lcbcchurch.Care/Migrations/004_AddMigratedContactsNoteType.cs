@@ -33,6 +33,14 @@ namespace com.lcbcchurch.Care.Migrations
             RockMigrationHelper.AddSecurityAuthForNoteType( "59DD19B4-C7C1-4575-AF70-05EDE1290B82", 2, Rock.Security.Authorization.VIEW, false, null, (int)Rock.Model.SpecialRole.AllUsers, "B3B0BD2E-BA33-461D-8B7B-EE880B566DA4" ); // [All Users] - Deny
             RockMigrationHelper.AddSecurityAuthForNoteType( "59DD19B4-C7C1-4575-AF70-05EDE1290B82", 1, Rock.Security.Authorization.VIEW, true, "2C112948-FF4C-46E7-981A-0257681EADF4", (int)Rock.Model.SpecialRole.None, "4A4C741C-3793-4822-A0D1-5D13D892656A" );  // [RSR - Staff Workers] - Allow
             RockMigrationHelper.AddSecurityAuthForNoteType( "59DD19B4-C7C1-4575-AF70-05EDE1290B82", 0, Rock.Security.Authorization.VIEW, true, "628C51A8-4613-43ED-A18D-4A6FB999273E", (int)Rock.Model.SpecialRole.None, "29FD9EF0-85ED-4471-84FE-7682B65F9851" );  // [RSR - Rock Administration] - Allow
+
+            // 'Migrated Contacts' needs to be User Selectable and Allow Note Replies
+            Sql( @"
+UPDATE [NoteType]
+SET [UserSelectable] = 1, [AllowsReplies] = 1
+WHERE [Name] = 'Migrated Contacts'
+" );
+
         }
         public override void Down()
         {
