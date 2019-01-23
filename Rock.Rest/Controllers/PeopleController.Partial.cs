@@ -651,7 +651,7 @@ namespace Rock.Rest.Controllers
                 {
                     var phoneType = DefinedValueCache.Get( phoneNumber.NumberTypeValueId ?? 0 );
                     phoneNumberList += string.Format(
-                        "<li>{0} <small>{1}</small></li>",
+                        "<li x-ms-format-detection='none'>{0} <small>{1}</small></li>",
                         phoneNumber.IsUnlisted ? "Unlisted" : phoneNumber.NumberFormatted,
                         phoneType != null ? phoneType.Value : string.Empty );
                 }
