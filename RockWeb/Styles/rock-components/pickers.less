@@ -2,6 +2,8 @@
 // Pickers - used to pick complex data types
 // --------------------------------------------------
 
+@picker-menu-padding: 8px;
+
 .picker {
   .clearfix();
 
@@ -11,6 +13,9 @@
   }
 
   .toggle-additional-search-fields {
+    display: block;
+    font-size: 14px;
+
     &.active {
       background-color: darken(@btn-default-bg, 10%);
     }
@@ -55,6 +60,13 @@
     }
   }
 
+  .input-group-sm {
+    > .form-control,
+    > .input-group-addon {
+      .input-size((@input-height-xs + 4px); (@padding-xs-vertical + 2px); @padding-xs-horizontal; @font-size-small; @line-height-small; @input-border-radius-small);
+    }
+  }
+
   .picker-select-none {
     display: block;
     float: left;
@@ -72,6 +84,9 @@
     }
 
     .scrollbar {
+      width: 5px;
+      height: 380px;
+      max-height: ~"calc(100vh - 210px)";
       margin-top: 10px;
     }
   }
@@ -81,19 +96,21 @@
   }
 
   hr {
-    margin-top: 12px;
-    margin-bottom: 12px;
+    margin-top: 8px;
+    margin-right: -@picker-menu-padding;
+    margin-bottom: 4px;
+    margin-left: -@picker-menu-padding;
   }
 
   h4 {
-    margin: 0 0 4px;
+    margin: 0;
     font-size: 14px;
     font-weight: @font-weight-semibold;
   }
 
   .picker-menu {
     width: 400px;
-    padding: 10px;
+    padding: @picker-menu-padding;
 
     h4:first-child {
       margin-top: 0;
@@ -113,8 +130,8 @@
   }
 
   .picker-actions {
-    padding: 10px;
-    margin: 10px -10px -10px -10px;
+    padding: @picker-menu-padding;
+    margin: @picker-menu-padding -@picker-menu-padding -@picker-menu-padding -@picker-menu-padding;
     background-color: @picker-action-bg;
     border-top: 1px solid darken(@picker-action-bg, 10%);
     border-radius: 0 0 @border-radius-base @border-radius-base;
@@ -122,6 +139,14 @@
 
   .picker-select-item {
     margin-left: 3px;
+
+    .radio {
+      margin-right: 0;
+    }
+
+    label {
+      display: block;
+    }
 
     .label-text {
       display: block;
@@ -150,6 +175,8 @@
       width: 70px;
       height: 70px;
       margin-right: 8px;
+      background-position: 50%;
+      background-size: cover;
       border: 1px solid @photo-border;
     }
 
@@ -206,19 +233,19 @@
     width: 370px;
     max-width: 100%;
   }
-}
 
-.picker.picker-lg {
-  @media @sm {
-    position: relative;
-    width: 350px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
-  }
+  &.picker-lg {
+    @media @sm {
+      position: relative;
+      width: 350px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
+    }
 
-  .picker-label {
-    width: 325px;
+    .picker-label {
+      width: 325px;
 
-    span {
-      width: 240px;
+      span {
+        width: 240px;
+      }
     }
   }
 }
