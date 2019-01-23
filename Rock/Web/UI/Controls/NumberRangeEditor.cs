@@ -134,14 +134,8 @@ namespace Rock.Web.UI.Controls
         ]
         public bool Required
         {
-            get { return ViewState["Required"] as bool? ?? false; }
-            set 
-            { 
-                ViewState["Required"] = value;
-                EnsureChildControls();
-                _tbLowerValue.Required = value;
-                _tbUpperValue.Required = value;
-            }
+            get => ViewState["Required"] as bool? ?? false;
+            set => ViewState["Required"] = value;
         }
 
         /// <summary>
@@ -155,14 +149,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _tbLowerValue.RequiredErrorMessage;
+                return CustomValidator.ErrorMessage;
             }
 
             set
             {
                 EnsureChildControls();
-                _tbLowerValue.RequiredErrorMessage = value;
-                _tbUpperValue.RequiredErrorMessage = value;
+                CustomValidator.ErrorMessage = value;
             }
         }
 
@@ -176,15 +169,17 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                EnsureChildControls();
-                return _tbLowerValue.ValidationGroup;
+                return ViewState["ValidationGroup"] as string;
             }
 
             set
             {
-                EnsureChildControls();
-                _tbLowerValue.ValidationGroup = value;
-                _tbUpperValue.ValidationGroup = value;
+                ViewState["ValidationGroup"] = value;
+
+                if ( CustomValidator != null )
+                {
+                    CustomValidator.ValidationGroup = value;
+                }
             }
         }
 
@@ -240,6 +235,14 @@ namespace Rock.Web.UI.Controls
         /// The upper value edit box
         /// </summary>
         private NumberBox _tbUpperValue;
+
+        /// <summary>
+        /// Gets or sets the custom validator.
+        /// </summary>
+        /// <value>
+        /// The custom validator.
+        /// </value>
+        public CustomValidator CustomValidator { get; set; }
 
         #endregion
 
@@ -356,6 +359,7 @@ namespace Rock.Web.UI.Controls
         public NumberRangeEditor()
             : base()
         {
+            CustomValidator = new CustomValidator();
             HelpBlock = new HelpBlock();
             WarningBlock = new WarningBlock();
         }
@@ -381,6 +385,16 @@ namespace Rock.Web.UI.Controls
             _tbUpperValue.ID = this.ID + "_upper";
             _tbUpperValue.CssClass = "input-width-md js-number-range-upper";
             Controls.Add( _tbUpperValue );
+
+            // add custom validator
+            CustomValidator.ID = this.ID + "_cfv";
+            CustomValidator.ClientValidationFunction = "Rock.controls.numberRangeEditor.clientValidate";
+            CustomValidator.ErrorMessage = ( this.Label != string.Empty ? this.Label : string.Empty ) + " is required.";
+            CustomValidator.CssClass = "validation-error help-inline";
+            CustomValidator.Enabled = true;
+            CustomValidator.Display = ValidatorDisplay.Dynamic;
+            CustomValidator.ValidationGroup = ValidationGroup;
+            Controls.Add( CustomValidator );
         }
 
         /// <summary>
@@ -402,15 +416,23 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl(HtmlTextWriter writer)
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control-group " + this.CssClass );
+            this.FormGroupCssClass += " js-numberrangeeditor";
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control-group js-numberrangeeditor " + this.CssClass );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
+            writer.AddAttribute( "data-required", this.Required.ToTrueFalse().ToLower() );
+            writer.AddAttribute( "data-itemlabel", this.Label );
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _tbLowerValue.RenderControl( writer );
             writer.Write( "<span class='to'> " + this.RangeLabel + " </span>" );
             _tbUpperValue.RenderControl( writer );
 
-            writer.RenderEndTag();
+            CustomValidator.RenderControl( writer );
+
+            // closing div for form-control-group and id
+            writer.RenderEndTag(); 
         }
 
         /// <summary>

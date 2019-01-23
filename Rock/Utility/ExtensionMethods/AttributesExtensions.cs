@@ -168,7 +168,7 @@ namespace Rock
         /// <param name="value">The value.</param>
         public static void SetAttributeValue( this IHasAttributes entity, string key, DateTime? value )
         {
-            entity.SetAttributeValue(key, value?.ToString("o") ?? string.Empty);
+            entity.SetAttributeValue( key, value?.ToString( "o" ) ?? string.Empty );
         }
 
         /// <summary>
@@ -178,11 +178,12 @@ namespace Rock
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public static Dictionary<string, AttributeCache> GetAuthorizedAttributes ( this IHasAttributes entity, string action, Person person)
+        public static Dictionary<string, AttributeCache> GetAuthorizedAttributes( this IHasAttributes entity, string action, Person person )
         {
             var authorizedAttributes = new Dictionary<string, AttributeCache>();
 
-            if (entity == null) return authorizedAttributes;
+            if ( entity == null )
+                return authorizedAttributes;
 
             foreach ( var item in entity.Attributes )
             {
@@ -200,7 +201,19 @@ namespace Rock
         /// </summary>
         /// <param name="attributeQuery">The attribute query.</param>
         /// <returns></returns>
+        [Obsolete( "Use ToAttributeCacheList instead" )]
+        [RockObsolete( "1.9" )]
         public static List<AttributeCache> ToCacheAttributeList( this IQueryable<Rock.Model.Attribute> attributeQuery )
+        {
+            return attributeQuery.ToAttributeCacheList();
+        }
+
+        /// <summary>
+        /// Selects just the Id from the Attribute Query and reads the Ids into a list of AttributeCache
+        /// </summary>
+        /// <param name="attributeQuery">The attribute query.</param>
+        /// <returns></returns>
+        public static List<AttributeCache> ToAttributeCacheList( this IQueryable<Rock.Model.Attribute> attributeQuery )
         {
             return attributeQuery.AsNoTracking().Select( a => a.Id ).ToList().Select( a => AttributeCache.Get( a ) ).ToList().Where( a => a != null ).ToList();
         }

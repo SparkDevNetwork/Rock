@@ -151,6 +151,15 @@ namespace Rock.Web.Cache
         public bool IsIndexingEnabled { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether attributes of this entity type support a Pre-HTML and Post-HTML option.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [attributes support pre post HTML]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AttributesSupportPrePostHtml { get; private set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is indexing supported.
         /// </summary>
         /// <value>
@@ -390,6 +399,7 @@ namespace Rock.Web.Cache
             SingleValueFieldTypeId = entityType.SingleValueFieldTypeId;
             MultiValueFieldTypeId = entityType.MultiValueFieldTypeId;
             IsIndexingEnabled = entityType.IsIndexingEnabled;
+            AttributesSupportPrePostHtml = entityType.AttributesSupportPrePostHtml;
             IsIndexingSupported = entityType.IsIndexingSupported;
             IndexResultTemplate = entityType.IndexResultTemplate;
             IndexDocumentUrl = entityType.IndexDocumentUrl;

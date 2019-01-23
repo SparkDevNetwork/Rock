@@ -25,7 +25,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Control used by registration template detail block to edit forms
+    /// Control used by registration template detail block to edit registrant forms
     /// </summary>
     [ToolboxData( "<{0}:RegistrationTemplateFormEditor runat=server></{0}:RegistrationTemplateFormEditor>" )]
     public class RegistrationTemplateFormEditor : CompositeControl, IHasValidationGroup
