@@ -566,7 +566,7 @@ namespace Rock.Web.UI.Controls
             _tbSearchName = new RockTextBox();
             _tbSearchName.ID = "tbSearchName";
             _tbSearchName.PrependText = "Name";
-            _tbSearchName.CssClass = "js-personpicker-search-name js-personpicker-search-field personpicker-search-field";
+            _tbSearchName.CssClass = "input-group-sm js-personpicker-search-name js-personpicker-search-field personpicker-search-field";
             _searchPanel.Controls.Add( _tbSearchName );
 
             var additionalSearchFieldsPanel = new Panel();
@@ -576,19 +576,19 @@ namespace Rock.Web.UI.Controls
             _tbSearchAddress = new RockTextBox();
             _tbSearchAddress.ID = "tbSearchAddress";
             _tbSearchAddress.PrependText = "Address";
-            _tbSearchAddress.CssClass = "js-personpicker-search-address js-personpicker-search-field personpicker-search-field";
+            _tbSearchAddress.CssClass = "input-group-sm js-personpicker-search-address js-personpicker-search-field personpicker-search-field";
             additionalSearchFieldsPanel.Controls.Add( _tbSearchAddress );
 
             _tbSearchPhone = new RockTextBox();
             _tbSearchPhone.ID = "tbSearchPhone";
             _tbSearchPhone.PrependText = "Phone";
-            _tbSearchPhone.CssClass = "js-personpicker-search-phone js-personpicker-search-field personpicker-search-field";
+            _tbSearchPhone.CssClass = "input-group-sm js-personpicker-search-phone js-personpicker-search-field personpicker-search-field";
             additionalSearchFieldsPanel.Controls.Add( _tbSearchPhone );
 
             _tbSearchEmail = new RockTextBox();
             _tbSearchEmail.ID = "tbSearchEmail";
             _tbSearchEmail.PrependText = "Email";
-            _tbSearchEmail.CssClass = "js-personpicker-search-email js-personpicker-search-field personpicker-search-field";
+            _tbSearchEmail.CssClass = "input-group-sm js-personpicker-search-email js-personpicker-search-field personpicker-search-field";
             additionalSearchFieldsPanel.Controls.Add( _tbSearchEmail );
 
             #endregion search fields
@@ -671,13 +671,13 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 // column1
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-6" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( "<h4>Search</h4>" );
                 writer.RenderEndTag();
 
                 // column2
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-6" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 // actions div
