@@ -10,6 +10,16 @@
     width: 250px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
   }
 
+  .toggle-additional-search-fields {
+    &.active {
+      background-color: darken(@btn-default-bg, 10%);
+    }
+
+    i {
+      margin: 0 3px;
+    }
+  }
+
   .picker-mode-options {
     margin-bottom: 12px;
   }
@@ -58,6 +68,7 @@
     .viewport {
       width: ~"calc(100% - 15px)";
       height: 380px;
+      max-height: ~"calc(100vh - 200px)";
     }
 
     .scrollbar {
@@ -65,7 +76,17 @@
     }
   }
 
+  dl {
+    margin-bottom: 4px;
+  }
+
+  hr {
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+
   h4 {
+    margin: 0 0 4px;
     font-size: 14px;
     font-weight: @font-weight-semibold;
   }
@@ -107,6 +128,17 @@
     }
   }
 
+  .personpicker-search-panel {
+    .input-group {
+      margin-bottom: 4px;
+    }
+
+    .input-group-addon {
+      min-width: 85px;
+      text-align: left;
+    }
+  }
+
   // details used for pickers like person picker to show the details of the selected item
   .picker-select-item-details {
     @media (min-width: @screen-sm-min) {
@@ -127,8 +159,8 @@
     }
 
     .contents {
-      width: ~"calc(100% - 78px)";
       float: left;
+      width: ~"calc(100% - 78px)";
 
       h5 {
         margin-bottom: 2px;
