@@ -512,6 +512,7 @@
     <Compile Include="Jobs\PostV84DataMigrations.cs" />
     <Compile Include="Lava\Shortcodes\Scripturize.cs" />
     <Compile Include="Lava\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
+    <Compile Include="Model\GroupLocationHistoricalService.Partial.cs" />
     <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
     <Compile Include="Plugin\HotFixes\060_MigrationRollupsForV8_6.cs" />
     <Compile Include="Plugin\HotFixes\059_MigrationRollupsForV8_5_2.cs" />

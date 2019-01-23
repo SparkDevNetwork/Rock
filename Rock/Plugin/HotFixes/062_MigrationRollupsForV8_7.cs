@@ -31,6 +31,7 @@ namespace Rock.Plugin.HotFixes
         {
             FixWordCloudShortCodeUp();
             FixParallaxShortCodeUp();
+            DropConstraintGroupLocationHistorical_GroupLocationId();
         }
 
         /// <summary>
@@ -161,5 +162,20 @@ SET [Markup] = '{{ ''https://cdnjs.cloudflare.com/ajax/libs/jarallax/1.9.2/jaral
 WHERE [Guid] = '4B6452EF-6FEA-4A66-9FB9-1A7CCE82E7A4'" );
         }
 
+        /// <summary>
+        /// ISSUE #3499 ⁃ Unable to remove a group's location when Enable Group History checked
+        /// Remove the FK Constraint on 
+        /// </summary>
+        private void DropConstraintGroupLocationHistorical_GroupLocationId()
+        {
+            Sql( @"
+                IF (OBJECT_ID('FK_dbo.GroupLocationHistorical_dbo.GroupLocation_GroupLocationId') IS NOT NULL)
+                BEGIN
+                    ALTER TABLE [GroupLocationHistorical]
+	                DROP CONSTRAINT [FK_dbo.GroupLocationHistorical_dbo.GroupLocation_GroupLocationId]
+                END
+
+                ALTER TABLE [GroupLocationHistorical] ALTER COLUMN GroupLocationId INT NULL" );
+        }
     }
 }
