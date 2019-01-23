@@ -51,12 +51,6 @@ namespace Rock.Model
         public bool CanDelete( GroupLocation item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<GroupLocationHistorical>( Context ).Queryable().Any( a => a.GroupLocationId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupLocation.FriendlyTypeName, GroupLocationHistorical.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
