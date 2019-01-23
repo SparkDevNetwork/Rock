@@ -325,7 +325,7 @@ namespace Rock.Reporting
                             qryAttributes = qryAttributes.Where( a => string.IsNullOrEmpty( a.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( a.EntityTypeQualifierValue ) );
                         }
 
-                        cacheAttributeList = qryAttributes.ToCacheAttributeList();
+                        cacheAttributeList = qryAttributes.ToAttributeCacheList();
                     }
                 }
 

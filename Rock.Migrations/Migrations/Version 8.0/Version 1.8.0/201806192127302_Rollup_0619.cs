@@ -177,7 +177,7 @@ namespace Rock.Migrations
 	{% assign videoEmbed = Item | Attribute:'VideoEmbed' %}
 	{% assign audioLink = Item | Attribute:'AudioLink','RawValue' %}
 
-	<artcile class=""message-detail"">
+	<article class=""message-detail"">
 
 		{% if videoEmbed != '' %}
 			{{ videoEmbed }}
