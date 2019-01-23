@@ -148,9 +148,7 @@ namespace Rock.Utility.SparkDataApi
                         {
                             File.AppendAllText( filePath, $"{data.ToString().TrimEnd( '&' )}{Environment.NewLine}Status Code: {response.StatusCode}{Environment.NewLine}Response: {response.Content.ToStringSafe()}{Environment.NewLine}" );
                         }
-                        catch
-                        {
-                        }
+                        catch { }
 
                         if ( response.StatusCode != HttpStatusCode.OK )
                         {
