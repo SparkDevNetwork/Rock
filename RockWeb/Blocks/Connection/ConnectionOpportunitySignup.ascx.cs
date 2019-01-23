@@ -279,13 +279,6 @@ namespace RockWeb.Blocks.Connection
                     return;
                 }
 
-                if ( !opportunity.IsActive )
-                {
-                    pnlSignup.Visible = false;
-                    ShowError( "Inactive Opportunity Type", "The opportunity is not currently active." );
-                    return;
-                }
-
                 // load campus dropdown
                 var campuses = CampusCache.All().Where( c => ( c.IsActive ?? false ) && opportunity.ConnectionOpportunityCampuses.Any( o => o.CampusId == c.Id ) ).ToList();
                 cpCampus.Campuses = campuses;

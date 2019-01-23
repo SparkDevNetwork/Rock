@@ -294,7 +294,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var orderedAttributeList = new AttributeService( new RockContext() ).GetByCategoryId( category.Id, false )
                         .OrderBy( a => a.Order )
                         .ThenBy( a => a.Name )
-                        .ToAttributeCacheList();
+                        .ToCacheAttributeList();
 
                     foreach ( int attributeId in orderOverride )
                     {

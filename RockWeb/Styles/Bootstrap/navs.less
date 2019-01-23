@@ -1,5 +1,3 @@
-// stylelint-disable selector-no-qualifying-type, selector-max-type
-
 //
 // Navs
 // --------------------------------------------------
@@ -9,8 +7,8 @@
 // --------------------------------------------------
 
 .nav {
-  padding-left: 0; // Override default ul/ol
   margin-bottom: 0;
+  padding-left: 0; // Override default ul/ol
   list-style: none;
   &:extend(.clearfix all);
 
@@ -37,8 +35,8 @@
       &:focus {
         color: @nav-disabled-link-hover-color;
         text-decoration: none;
-        cursor: @cursor-disabled;
         background-color: transparent;
+        cursor: @cursor-disabled;
       }
     }
   }
@@ -99,10 +97,10 @@
       &:hover,
       &:focus {
         color: @nav-tabs-active-link-hover-color;
-        cursor: default;
         background-color: @nav-tabs-active-link-hover-bg;
         border: 1px solid @nav-tabs-active-link-hover-border-color;
         border-bottom-color: transparent;
+        cursor: default;
       }
     }
   }
@@ -165,8 +163,8 @@
   > li {
     float: none;
     > a {
-      margin-bottom: 5px;
       text-align: center;
+      margin-bottom: 5px;
     }
   }
 

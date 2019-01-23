@@ -19,12 +19,10 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
-using System.Web;
 using System.Web.UI;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -145,7 +143,7 @@ Path: {2}",
 
                     url = string.Format( "http{0}://{1}:{2}{3}",
                         ( Request.IsSecureConnection ) ? "s" : "",
-                        WebRequestHelper.GetHostNameFromRequest( HttpContext.Current ),
+                        Request.Url.Host,
                         Request.Url.Port,
                         ResolveRockUrl( new PageReference( page.Id ).BuildUrl() ) );
 

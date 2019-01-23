@@ -291,28 +291,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the registration template identifier.
-        /// NOTE: this is needed so that Registration Attributes can have a RegistrationTemplateId qualifier
-        /// </summary>
-        /// <value>
-        /// The registration template identifier.
-        /// </value>
-        [NotMapped]
-        [LavaInclude]
-        public virtual int? RegistrationTemplateId
-        {
-            get
-            {
-                if ( this.RegistrationInstance == null )
-                {
-                    return new RegistrationInstanceService( new RockContext() ).GetSelect( this.RegistrationInstanceId, a => a.RegistrationTemplateId );
-                }
-
-                return this.RegistrationInstance.RegistrationTemplateId;
-            }
-        }
-
-        /// <summary>
         /// Gets the payments.
         /// </summary>
         /// <value>
@@ -1014,7 +992,7 @@ Registration By: {0} Total Cost/Fees:{1}
         public Dictionary<int, FieldValueObject> FieldValues { get; set; }
 
         /// <summary>
-        /// Gets or sets a dictionary of FeeValues (key is RegistrationTemplateFeeId)
+        /// Gets or sets the fee values.
         /// </summary>
         /// <value>
         /// The fee values.
@@ -1315,7 +1293,7 @@ Registration By: {0} Total Cost/Fees:{1}
                                 break;
                             }
 
-                        case RegistrationFieldSource.RegistrantAttribute:
+                        case RegistrationFieldSource.RegistrationAttribute:
                             {
                                 if ( registrant != null )
                                 {

@@ -91,14 +91,14 @@ namespace RockWeb.Blocks.Core
             var rockContext = new RockContext();
             var lavaShortCodeService = new LavaShortcodeService( rockContext );
 
-            int lavaShortCode = hfLavaShortcodeId.ValueAsInt();
-
-            if ( lavaShortCodeService.Queryable().Any( a => a.TagName == tbTagName.Text && a.Id != lavaShortCode ) )
+            if ( lavaShortCodeService.Queryable().Any( a => a.TagName == tbTagName.Text ) && hfOriginalTagName.Value != tbTagName.Text )
             {
                 Page.ModelState.AddModelError( "DuplicateTag", "Tag with the same name is already in use." );
                 return;
             }
-            
+
+            int lavaShortCode = hfLavaShortcodeId.ValueAsInt();
+
             if ( lavaShortCode == 0 )
             {
                 lavaShortcode = new LavaShortcode();

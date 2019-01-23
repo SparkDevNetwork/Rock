@@ -185,7 +185,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateDiscount.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateFee.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateFeeItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateForm.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateFormField.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Report.cs" />

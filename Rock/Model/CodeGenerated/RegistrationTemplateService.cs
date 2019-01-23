@@ -122,8 +122,6 @@ namespace Rock.Model
             target.RegistrantsSameFamily = source.RegistrantsSameFamily;
             target.RegistrantTerm = source.RegistrantTerm;
             target.RegistrarOption = source.RegistrarOption;
-            target.RegistrationAttributeTitleEnd = source.RegistrationAttributeTitleEnd;
-            target.RegistrationAttributeTitleStart = source.RegistrationAttributeTitleStart;
             target.RegistrationInstructions = source.RegistrationInstructions;
             target.RegistrationTerm = source.RegistrationTerm;
             target.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;

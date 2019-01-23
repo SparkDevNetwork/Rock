@@ -23,8 +23,6 @@ using System.Web.Routing;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Transactions;
-using System.Web;
-using Rock.Utility;
 
 namespace Rock.Web
 {
@@ -57,7 +55,7 @@ namespace Rock.Web
                 bool isSiteMatch = false;
 
                 var parms = new Dictionary<string, string>();
-                var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
+
                 // Pages using the default routing URL will have the page id in the RouteData.Values collection
                 if ( requestContext.RouteData.Values["PageId"] != null )
                 {
@@ -68,7 +66,6 @@ namespace Rock.Web
                 // Pages that use a custom URL route will have the page id in the RouteDate.DataTokens collection
                 else if ( requestContext.RouteData.DataTokens["PageRoutes"] != null )
                 {
-                    
                     var pageAndRouteIds = requestContext.RouteData.DataTokens["PageRoutes"] as List<PageAndRouteId>;
                     if ( pageAndRouteIds != null && pageAndRouteIds.Count > 0 )
                     {
@@ -92,7 +89,7 @@ namespace Rock.Web
                             // Then check to see if site can be determined by domain
                             if ( site == null )
                             {
-                                site = SiteCache.GetSiteByDomain( host );
+                                site = SiteCache.GetSiteByDomain( httpRequest.Url.Host );
                             }
 
                             // Then check the last site
@@ -126,11 +123,11 @@ namespace Rock.Web
                         parms.Add( routeParm.Key, (string)routeParm.Value );
                     }
                 }
-                
+
                 // If page has not been specified get the site by the domain 
                 if ( string.IsNullOrEmpty( pageId ) || !isSiteMatch )
                 {
-                    SiteCache site = SiteCache.GetSiteByDomain( host );
+                    SiteCache site = SiteCache.GetSiteByDomain( httpRequest.Url.Host );
                     if ( site == null )
                     {
                         // Use last site
@@ -271,7 +268,7 @@ namespace Rock.Web
                 if ( page == null )
                 {
                     // try to get site's 404 page
-                    SiteCache site = SiteCache.GetSiteByDomain( host );
+                    SiteCache site = SiteCache.GetSiteByDomain( httpRequest.Url.Host );
                     if ( site == null )
                     {
                         // Use last site

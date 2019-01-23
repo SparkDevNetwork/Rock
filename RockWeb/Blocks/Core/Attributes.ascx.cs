@@ -105,6 +105,7 @@ namespace RockWeb.Blocks.Core
                 ddlEntityType.EntityTypes = entityTypeList;
                 ddlAttrEntityType.EntityTypes = entityTypeList;
                 ddlEntityType.SetValue( _entityTypeId );
+
             }
 
             _entityQualifierColumn = GetAttributeValue( "EntityQualifierColumn" );
@@ -498,17 +499,6 @@ namespace RockWeb.Blocks.Core
         {
             edtAttribute.AttributeEntityTypeId = ddlAttrEntityType.SelectedValueAsInt( false );
             edtAttribute.CategoryIds = new List<int>();
-        }
-
-        /// <summary>
-        /// Handles the TextChanged event of the tbAttrQualifier control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void tbAttrQualifier_TextChanged( object sender, EventArgs e )
-        {
-            edtAttribute.AttributeEntityTypeQualifierColumn = tbAttrQualifierField.Text;
-            edtAttribute.AttributeEntityTypeQualifierValue = tbAttrQualifierValue.Text;
         }
 
         /// <summary>

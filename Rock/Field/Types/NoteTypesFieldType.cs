@@ -35,74 +35,12 @@ namespace Rock.Field.Types
     {
         private const string REPEAT_COLUMNS = "repeatColumns";
 
-        #region Configuration
-
         public override List<string> ConfigurationKeys()
         {
             List<string> configKeys = new List<string>();
             configKeys.Add( REPEAT_COLUMNS );
             return configKeys;
         }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            List<Control> controls = base.ConfigurationControls();
-
-            var tbRepeatColumns = new NumberBox();
-            tbRepeatColumns.Label = "Columns";
-            tbRepeatColumns.Help = "Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space.";
-            tbRepeatColumns.MinimumValue = "0";
-            tbRepeatColumns.AutoPostBack = true;
-            tbRepeatColumns.TextChanged += OnQualifierUpdated;
-            controls.Add( tbRepeatColumns );
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
-
-            string description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
-            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue("Repeat Columns", description, string.Empty ) );
-
-            // NOTE: Indicies 0-2 come from the base class CategoryFieldType.
-            if ( controls != null && controls.Count > 3 )
-            {
-                var tbRepeatColumns = controls[3] as NumberBox;
-                configurationValues[REPEAT_COLUMNS].Value = tbRepeatColumns.Visible ? tbRepeatColumns.Text : string.Empty;
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            base.SetConfigurationValues( controls, configurationValues );
-
-            // NOTE: Indicies 0-2 come from the base class CategoryFieldType.
-            if ( controls != null && controls.Count > 3 && configurationValues != null )
-            {
-                var tbRepeatColumns = controls[3] as NumberBox;
-                tbRepeatColumns.Text = configurationValues.ContainsKey( REPEAT_COLUMNS ) ? configurationValues[REPEAT_COLUMNS].Value : string.Empty;
-            }
-        }
-
-        #endregion Configuration
 
         #region Formatting
 

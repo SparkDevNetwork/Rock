@@ -13,8 +13,7 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <h4 class="js-checkin-person-name">
-            <asp:Literal ID="lName" runat="server"></asp:Literal></h4>
+        <h4 class="js-checkin-person-name"><asp:Literal ID="lName" runat="server"></asp:Literal></h4>
 
         <div class="row margin-b-sm">
             <div class="col-sm-4 col-md-3 col-lg-2">
@@ -24,22 +23,19 @@
             <div class="col-sm-8 col-md-9 col-lg-10">
                 <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
                 <ul class="list-unstyled">
-                    <li>
-                        <asp:Literal ID="lGender" runat="server" /></li>
-                    <li>
-                        <asp:Literal ID="lAge" runat="server" /></li>
-                    <li>
-                        <asp:Literal ID="lGrade" runat="server" /></li>
+                    <li><asp:Literal ID="lGender" runat="server" /></li>
+                    <li><asp:Literal ID="lAge" runat="server" /></li>
+                    <li><asp:Literal ID="lGrade" runat="server" /></li>
                 </ul>
                 <Rock:RockControlWrapper ID="rcwPhone" runat="server" Label="Phone(s)">
                     <ul class="list-unstyled list-horizontal">
                         <asp:Repeater ID="rptrPhones" runat="server">
                             <ItemTemplate>
-                                <li><a class="btn btn-default" href='tel:<%# Eval("Number") %>'><i class="fa fa-phone-square"></i><%# Eval("NumberFormatted") %> <small>(<%# Eval("NumberTypeValue.Value") %>)</small></a></li>
-                            </ItemTemplate>
+                                <li><a class="btn btn-default" href='tel:<%# Eval("Number") %>' ><i class="fa fa-phone-square"></i> <%# Eval("NumberFormatted") %> <small>(<%# Eval("NumberTypeValue.Value") %>)</small></a></li>                            </ItemTemplate>
                         </asp:Repeater>
                     </ul>
                 </Rock:RockControlWrapper>
+
                 <Rock:RockControlWrapper ID="rcwTextMessage" runat="server" Visible="true" Label="Text Message">
                     <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" Dismissable="true" />
                     <!-- Initiates entry -->
@@ -59,28 +55,17 @@
             <ul class="list-unstyled list-horizontal">
                 <asp:Repeater ID="rptrFamily" runat="server" OnItemDataBound="rptrFamily_ItemDataBound">
                     <ItemTemplate>
-                        <li><a class="btn btn-action" href='<%# Eval("Url") %>'>
-                            <asp:Literal ID="lFamilyIcon" runat="server" />
-                            <%# Eval("FullName") %> <small><%# Eval("Note") %></small></a> </li>
+                        <li><a class="btn btn-action" href='<%# Eval("Url") %>' ><asp:Literal ID="lFamilyIcon" runat="server" /> <%# Eval("FullName") %> <small><%# Eval("Note") %></small></a> </li>
                     </ItemTemplate>
                 </asp:Repeater>
             </ul>
         </Rock:RockControlWrapper>
-        <Rock:HtmlGenericContainer ID="pnlAdultFields" runat="server">
-            <h4> Adult Attributes</h4>
-            <Rock:AttributeValuesContainer ID="avcAdultAttributes" runat="server" ShowCategoryLabel="true" />
-        </Rock:HtmlGenericContainer>
-        <Rock:HtmlGenericContainer ID="pnlChildFields" runat="server">
-            <h4> Child Attributes</h4>
-            <Rock:AttributeValuesContainer ID="avcChildAttributes" runat="server" ShowCategoryLabel="false" />
-        </Rock:HtmlGenericContainer>
+
         <Rock:RockControlWrapper ID="rcwRelationships" runat="server" Label="Related People" CssClass="list-unstyled">
             <ul class="list-unstyled list-horizontal">
                 <asp:Repeater ID="rptrRelationships" runat="server" OnItemDataBound="rptrRelationships_ItemDataBound">
                     <ItemTemplate>
-                        <li><a class="btn btn-action" href='<%# Eval("Url") %>'>
-                            <asp:Literal ID="lRelationshipsIcon" runat="server" />
-                            <%# Eval("FullName") %> <small><%# Eval("Note") %></small></a> </li>
+                        <li><a class="btn btn-action" href='<%# Eval("Url") %>' ><asp:Literal ID="lRelationshipsIcon" runat="server" /> <%# Eval("FullName") %> <small><%# Eval("Note") %></small></a> </li>
                     </ItemTemplate>
                 </asp:Repeater>
             </ul>
@@ -93,7 +78,7 @@
                         <ItemTemplate>
                             <%# ((DateTime)Eval("Date")).ToShortDateString() %><br />
                             <%# Eval("Schedule") %>
-                            <asp:Literal ID="lWhoCheckedIn" runat="server"></asp:Literal>
+                            <asp:Literal id="lWhoCheckedIn" runat="server"></asp:Literal>
                         </ItemTemplate>
                     </Rock:RockTemplateField>
                     <Rock:RockTemplateField HeaderText="Where">
@@ -104,7 +89,7 @@
                     </Rock:RockTemplateField>
                     <Rock:RockTemplateField HeaderText="Code">
                         <ItemTemplate>
-                            <asp:Literal ID="lActive" runat="server"></asp:Literal><br />
+                            <asp:Literal id="lActive" runat="server"></asp:Literal><br />
                             <%# Eval("Code") %>
                         </ItemTemplate>
                     </Rock:RockTemplateField>
@@ -113,7 +98,7 @@
             </Rock:Grid>
         </Rock:RockControlWrapper>
 
-        <%-- Ensures that a blank SMS cannot be sent --%>
+		<%-- Ensures that a blank SMS cannot be sent --%>
         <script type="text/javascript">
             function setSmsSendDisabled(boolean) {
                 $('.js-btn-send').attr('disabled', boolean);

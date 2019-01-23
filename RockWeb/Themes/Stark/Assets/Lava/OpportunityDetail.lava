@@ -18,14 +18,9 @@
         {% endfor %}
 
         <p class="margin-t-lg">
-          {% if LinkedPages.SignupPage != '' %}
-          {% if Opportunity.IsActive %}
-          <a href="{{ LinkedPages.SignupPage }}?OpportunityId={{ Opportunity.Id }}" class="btn btn-primary">Connect</a>
-          {% else %}
-          <a href="#" class="btn btn-primary disabled">Connect</a>
-          <div class="alert alert-info">This opportunity is no longer available.</div>
-          {% endif %}
-          {% endif %}
+	        {% if LinkedPages.SignupPage != '' %}
+		        <a href="{{ LinkedPages.SignupPage }}?OpportunityId={{ Opportunity.Id }}" class="btn btn-primary">Connect</a>
+	        {% endif %}
         </p>
 
     </div>

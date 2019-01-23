@@ -262,9 +262,9 @@ namespace Rock.Model
                 zScores.AddOrReplace( spiritualGiftDefinedValue, zScore );
             }
 
-            testResults.DominantGifts = zScores.Where( a => a.Value >= minDominantGiftScore ).OrderByDescending(a=>a.Value).Select( a => a.Key ).ToList();
-            testResults.SupportiveGifts = zScores.Where( a => a.Value >= minSupportiveGiftScore && a.Value <= maxSupportiveGiftScore ).OrderByDescending( a => a.Value ).Select( a => a.Key ).ToList();
-            testResults.OtherGifts = zScores.Where( a => a.Value <= maxOtherGiftScore ).OrderByDescending( a => a.Value ).Select( a => a.Key ).ToList();
+            testResults.DominantGifts = zScores.Where( a => a.Value >= minDominantGiftScore ).Select( a => a.Key ).ToList();
+            testResults.SupportiveGifts = zScores.Where( a => a.Value >= minSupportiveGiftScore && a.Value <= maxSupportiveGiftScore ).Select( a => a.Key ).ToList();
+            testResults.OtherGifts = zScores.Where( a => a.Value <= maxOtherGiftScore ).Select( a => a.Key ).ToList();
             return testResults;
         }
 

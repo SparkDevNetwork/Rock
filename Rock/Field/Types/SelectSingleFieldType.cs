@@ -62,24 +62,24 @@ namespace Rock.Field.Types
         {
             List<Control> controls = new List<Control>();
 
-            var tbValues = new RockTextBox();
-            tbValues.TextMode = TextBoxMode.MultiLine;
-            tbValues.Rows = 3;
-            tbValues.AutoPostBack = true;
-            tbValues.TextChanged += OnQualifierUpdated;
-            tbValues.Label = "Values";
-            tbValues.Help = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.";
-            controls.Add( tbValues );
+            var tb = new RockTextBox();
+            tb.TextMode = TextBoxMode.MultiLine;
+            tb.Rows = 3;
+            tb.AutoPostBack = true;
+            tb.TextChanged += OnQualifierUpdated;
+            tb.Label = "Values";
+            tb.Help = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.";
+            controls.Add( tb );
 
-            var ddlFieldType = new RockDropDownList();
-            ddlFieldType.Items.Add( new ListItem( "Drop Down List", "ddl" ) );
-            ddlFieldType.Items.Add( new ListItem( "Drop Down List (Enhanced for Long Lists)", "ddl_enhanced" ) );
-            ddlFieldType.Items.Add( new ListItem( "Radio Buttons", "rb" ) );
-            ddlFieldType.AutoPostBack = true;
-            ddlFieldType.SelectedIndexChanged += OnQualifierUpdated;
-            ddlFieldType.Label = "Control Type";
-            ddlFieldType.Help = "The type of control to use for selecting a single value from the list.";
-            controls.Add( ddlFieldType );
+            var ddl = new RockDropDownList();
+            ddl.Items.Add( new ListItem( "Drop Down List", "ddl" ) );
+            ddl.Items.Add( new ListItem( "Drop Down List (Enhanced for Long Lists)", "ddl_enhanced" ) );
+            ddl.Items.Add( new ListItem( "Radio Buttons", "rb" ) );
+            ddl.AutoPostBack = true;
+            ddl.SelectedIndexChanged += OnQualifierUpdated;
+            ddl.Label = "Control Type";
+            ddl.Help = "The type of control to use for selecting a single value from the list.";
+            controls.Add( ddl );
 
             var tbRepeatColumns = new NumberBox();
             tbRepeatColumns.Label = "Columns";
@@ -110,17 +110,22 @@ namespace Rock.Field.Types
             description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
             configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue( "Repeat Columns", description, string.Empty ) );
 
-            if ( controls != null && controls.Count > 2 )
+            if ( controls != null )
             {
-                var tbValues = controls[0] as RockTextBox;
-                var ddlFieldType = controls[1] as RockDropDownList;
-                var tbRepeatColumns = controls[2] as NumberBox;
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is TextBox )
+                {
+                    configurationValues[VALUES_KEY].Value = ( (TextBox)controls[0] ).Text;
+                }
 
-                tbRepeatColumns.Visible = ddlFieldType.SelectedValue == "rb" ? true : false;
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is DropDownList )
+                {
+                    configurationValues[FIELDTYPE_KEY].Value = ( (DropDownList)controls[1] ).SelectedValue;
+                }
 
-                configurationValues[VALUES_KEY].Value = tbValues.Text;
-                configurationValues[FIELDTYPE_KEY].Value = ddlFieldType.SelectedValue;
-                configurationValues[REPEAT_COLUMNS].Value = tbRepeatColumns.Visible ? tbRepeatColumns.Text : string.Empty;
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is NumberBox )
+                {
+                    configurationValues[REPEAT_COLUMNS].Value = ( ( NumberBox ) controls[2] ).Text;
+                }
             }
 
             return configurationValues;
@@ -133,18 +138,22 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            base.SetConfigurationValues( controls, configurationValues );
-
-            if ( controls != null && controls.Count > 2 && configurationValues != null)
+            if ( controls != null && configurationValues != null)
             {
-                var tbValues = controls[0] as RockTextBox;
-                var ddlFieldType = controls[1] as RockDropDownList;
-                var tbRepeatColumns = controls[2] as NumberBox;
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey( VALUES_KEY ) )
+                {
+                    ( (TextBox)controls[0] ).Text = configurationValues[VALUES_KEY].Value;
+                }
 
-                tbValues.Text = configurationValues.ContainsKey( VALUES_KEY ) ? configurationValues[VALUES_KEY].Value : string.Empty;
-                ddlFieldType.SelectedValue = configurationValues.ContainsKey( FIELDTYPE_KEY ) ? configurationValues[FIELDTYPE_KEY].Value : ddlFieldType.SelectedValue;
-                tbRepeatColumns.Text = configurationValues.ContainsKey( REPEAT_COLUMNS ) ? configurationValues[REPEAT_COLUMNS].Value : string.Empty;
-                tbRepeatColumns.Visible = ddlFieldType.SelectedValue == "rb" ? true : false;
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is DropDownList && configurationValues.ContainsKey( FIELDTYPE_KEY ) )
+                {
+                    ( (DropDownList)controls[1] ).SelectedValue = configurationValues[FIELDTYPE_KEY].Value;
+                }
+
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is NumberBox && configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+                {
+                    ( ( NumberBox ) controls[2] ).Text = configurationValues[REPEAT_COLUMNS].Value;
+                }
             }
         }
 

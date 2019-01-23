@@ -108,7 +108,7 @@ namespace Rock.Model
                 content = content.Where( c => c.BlockId == blockId );
             }
 
-            return content.OrderByDescending( c => c.Version ).ThenByDescending( c => c.ApprovedDateTime ).FirstOrDefault();
+            return content.OrderByDescending( c => c.Version ).FirstOrDefault();
         }
 
         /// <summary>

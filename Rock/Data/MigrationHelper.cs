@@ -1010,7 +1010,7 @@ namespace Rock.Data
         #region Category Methods
 
         /// <summary>
-        /// Updates the category or adds if it doesn't already exist (based on Guid) and marks it as IsSystem
+        /// Updates the category or adds if it doesn't already exist (based on Guid)
         /// </summary>
         /// <param name="entityTypeGuid">The entity type unique identifier.</param>
         /// <param name="name">The name.</param>
@@ -2284,132 +2284,6 @@ BEGIN
                     defaultValue.Replace( "'", "''" ),
                     guid )
             );
-        }
-
-        /// <summary>
-        /// Adds the defined type attribute, or updates it if it already exists.
-        /// This method allows the attribute guid to be updated but not the key, which is used as a reference.
-        /// To update the key using the guid use the method UpdateDefinedTypeAttribute
-        /// </summary>
-        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
-        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="order">The order.</param>
-        /// <param name="isGridColumn">if set to <c>true</c> [is grid column].</param>
-        /// <param name="defaultValue">The default value.</param>
-        /// <param name="isMultiValue">if set to <c>true</c> [is multi value].</param>
-        /// <param name="isRequired">if set to <c>true</c> [is required].</param>
-        /// <param name="guid">The unique identifier.</param>
-        public void AddDefinedTypeAttribute( string definedTypeGuid, string fieldTypeGuid, string name, string key, string description, int order, bool isGridColumn, string defaultValue, bool isMultiValue, bool isRequired, string guid )
-        {
-            key = key.IsNullOrWhiteSpace() ? name.Replace( " ", string.Empty ) : key;
-            description = description.Replace( "'", "''" );
-            defaultValue = defaultValue.Replace( "'", "''" );
-
-            Migration.Sql( $@"
-
-                DECLARE @DefinedTypeId INT = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{definedTypeGuid}')
-                DECLARE @FieldTypeId INT = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{fieldTypeGuid}')
-                DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.DefinedValue')
-
-                IF NOT EXISTS (
-                    SELECT [Id]
-                    FROM [Attribute]
-                    WHERE [EntityTypeId] = @EntityTypeId
-                    AND [EntityTypeQualifierColumn] = 'DefinedTypeId'
-                    AND [EntityTypeQualifierValue] = CAST(@DefinedTypeId as varchar)
-                    AND [Key] = '{key}' )
-                BEGIN
-
-                    INSERT INTO [Attribute] (
-                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
-                        [Key],[Name],[Description],
-                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
-                        [Guid])
-                    VALUES(
-                        1,@FieldTypeId, @EntityTypeId,'DefinedTypeId',CAST(@DefinedTypeId as varchar),
-                        '{key}','{name}','{description}',
-                        {order},{isGridColumn.Bit()},'{defaultValue}',{isMultiValue.Bit()},{isRequired.Bit()},
-                        '{guid}')
-
-                END
-                ELSE
-                BEGIN
-
-                    UPDATE [Attribute] SET
-                        [IsSystem] = 1,
-                        [FieldTypeId] = @FieldTypeId,
-                        [Name] = '{name}',
-                        [Description] = '{description}',
-                        [Order] = {order},
-                        [IsGridColumn] = '{isGridColumn.Bit()}',
-                        [DefaultValue] = '{defaultValue}',
-                        [IsMultiValue] = {isMultiValue.Bit()},
-                        [IsRequired] = {isRequired.Bit()},
-                        [Guid] = '{guid}'
-                    WHERE [EntityTypeId] = @EntityTypeId
-                    AND [EntityTypeQualifierColumn] = 'DefinedTypeId'
-                    AND [EntityTypeQualifierValue] = CAST(@DefinedTypeId as varchar)
-                    AND [Key] = '{key}'  
-
-                END" );
-        }
-
-        /// <summary>
-        /// Updates the defined type attribute if it already exists.
-        /// This method allows the attribute key to be updated but not the guid, which is used as a reference.
-        /// To update the guid using the key use the method AddDefinedTypeAttribute
-        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
-        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="order">The order.</param>
-        /// <param name="isGridColumn">if set to <c>true</c> [is grid column].</param>
-        /// <param name="defaultValue">The default value.</param>
-        /// <param name="isMultiValue">if set to <c>true</c> [is multi value].</param>
-        /// <param name="isRequired">if set to <c>true</c> [is required].</param>
-        /// <param name="guid">The unique identifier.</param>
-        public void UpdateDefinedTypeAttribute( string definedTypeGuid, string fieldTypeGuid, string name, string key, string description, int order, bool isGridColumn, string defaultValue, bool isMultiValue, bool isRequired, string guid )
-        {
-            key = key.IsNullOrWhiteSpace() ? name.Replace( " ", string.Empty ) : key;
-            description = description.Replace( "'", "''" );
-            defaultValue = defaultValue.Replace( "'", "''" );
-
-            Migration.Sql( $@"
-
-                DECLARE @DefinedTypeId INT = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{definedTypeGuid}')
-                DECLARE @FieldTypeId INT = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{fieldTypeGuid}')
-                DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.DefinedValue')
-
-                IF EXISTS (
-                    SELECT [Id]
-                    FROM [Attribute]
-                    WHERE [EntityTypeId] = @EntityTypeId
-                    AND [EntityTypeQualifierColumn] = 'DefinedTypeId'
-                    AND [EntityTypeQualifierValue] = CAST(@DefinedTypeId as varchar)
-                    AND [guid] = '{guid}' )
-                BEGIN
-
-                    UPDATE [Attribute] SET
-                        [IsSystem] = 1,
-                        [FieldTypeId] = @FieldTypeId,
-                        [Name] = '{name}',
-                        [Description] = '{description}',
-                        [Order] = {order},
-                        [IsGridColumn] = '{isGridColumn.Bit()}',
-                        [DefaultValue] = '{defaultValue}',
-                        [IsMultiValue] = {isMultiValue.Bit()},
-                        [IsRequired] = {isRequired.Bit()},
-                        [Key] = '{key}'
-                    WHERE [EntityTypeId] = @EntityTypeId
-                    AND [EntityTypeQualifierColumn] = 'DefinedTypeId'
-                    AND [EntityTypeQualifierValue] = CAST(@DefinedTypeId as varchar)
-                    AND [guid] = '{guid}'  
-
-                END" );
         }
 
         #endregion
@@ -4412,20 +4286,7 @@ END
         }
 
         /// <summary>
-        /// Adds or Updates the registration attribute category.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="iconCssClass">The icon CSS class.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="guid">The unique identifier.</param>
-        /// <param name="order">The order.</param>
-        public void UpdateRegistrationAttributeCategory( string name, string iconCssClass, string description, string guid, int order = 0 )
-        {
-            UpdateEntityAttributeCategory( "Rock.Model.Registration", name, iconCssClass, description, guid, order );
-        }
-
-        /// <summary>
-        /// Adds or Updates the person attribute category.
+        /// Updates the person attribute category.
         /// </summary>
         /// <param name="entityTypeName">The fully qualified entity name as found in the EntityType table.</param>
         /// <param name="name">The name.</param>

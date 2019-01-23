@@ -242,9 +242,8 @@ namespace Rock.Model
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         /// <param name="feeValues">The fee values.</param>
         /// <param name="registrationInstance">The registration instance.</param>
-        /// <param name="otherRegistrants">The other registrants that have been registered so far in this registration</param>
         /// <returns></returns>
-        private Control GetFeeMultipleOptionSingleQuantityControl( bool setValues, List<FeeInfo> feeValues, RegistrationInstance registrationInstance, List<RegistrantInfo> otherRegistrants )
+        private Control GetFeeMultipleOptionSingleQuantityControl( bool setValues, List<FeeInfo> feeValues, RegistrationInstance registrationInstance )
         {
             var fee = this;
             var ddl = new RockDropDownList();
@@ -259,7 +258,7 @@ namespace Rock.Model
             ddl.Items.Add( new ListItem() );
             foreach ( var feeItem in fee.FeeItems )
             {
-                int? usageCountRemaining = feeItem.GetUsageCountRemaining( registrationInstance, otherRegistrants );
+                int? usageCountRemaining = feeItem.GetUsageCountRemaining( registrationInstance );
                 var listItem = new ListItem( string.Format( "{0} ({1})", feeItem.Name, feeItem.Cost.FormatAsCurrency() ), feeItem.Id.ToString() );
                 if ( usageCountRemaining.HasValue )
                 {
@@ -293,16 +292,13 @@ namespace Rock.Model
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         /// <param name="feeValues">The fee values.</param>
         /// <param name="registrationInstance">The registration instance.</param>
-        /// <param name="otherRegistrants">The other registrants that have been registered so far in this registration</param>
         /// <returns></returns>
-        private Control GetFeeMultipleOptionMultipleQuantityControl( bool setValues, List<FeeInfo> feeValues, RegistrationInstance registrationInstance, List<RegistrantInfo> otherRegistrants )
+        private Control GetFeeMultipleOptionMultipleQuantityControl( bool setValues, List<FeeInfo> feeValues, RegistrationInstance registrationInstance )
         {
             var fee = this;
             var numberUpDownGroup = new NumberUpDownGroup();
-            numberUpDownGroup.ID = "fee_" + fee.Id.ToString();
             numberUpDownGroup.Label = fee.Name;
             numberUpDownGroup.Required = fee.IsRequired;
-            numberUpDownGroup.Controls.Clear();
 
             foreach ( var feeItem in fee.FeeItems )
             {
@@ -313,7 +309,7 @@ namespace Rock.Model
                     Minimum = 0
                 };
 
-                int? usageCountRemaining = feeItem.GetUsageCountRemaining( registrationInstance, otherRegistrants );
+                int? usageCountRemaining = feeItem.GetUsageCountRemaining( registrationInstance );
 
                 if ( usageCountRemaining.HasValue )
                 {
@@ -345,28 +341,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the fee control with a null for otherRegistrants.
-        /// </summary>
-        /// <param name="phFees">The ph fees.</param>
-        /// <param name="registrationInstance">The registration instance.</param>
-        /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        /// <param name="feeValues">The fee values.</param>
-        [RockObsolete("1.8")]
-        [Obsolete("Use the override that has otherRegistrants instead.")]
-        public void AddFeeControl( PlaceHolder phFees, RegistrationInstance registrationInstance, bool setValues, List<FeeInfo> feeValues )
-        {
-            AddFeeControl( phFees, registrationInstance, setValues, feeValues, null );
-        }
-
-        /// <summary>
         /// Adds the fee control.
         /// </summary>
         /// <param name="phFees">The ph fees.</param>
         /// <param name="registrationInstance">The registration instance.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         /// <param name="feeValues">The fee values.</param>
-        /// <param name="otherRegistrants">The other registrants that have been registered so far in this registration. Set to NULL if editing a single registrant.</param>
-        public void AddFeeControl( PlaceHolder phFees, RegistrationInstance registrationInstance, bool setValues, List<FeeInfo> feeValues, List<RegistrantInfo> otherRegistrants )
+        public void AddFeeControl( PlaceHolder phFees, RegistrationInstance registrationInstance, bool setValues, List<FeeInfo> feeValues )
         {
             RegistrationTemplateFee fee = this;
             Control feeControl = null;
@@ -375,7 +356,7 @@ namespace Rock.Model
                 var feeItem = fee.FeeItems.FirstOrDefault();
                 if ( feeItem != null )
                 {
-                    int? usageCountRemaining = feeItem.GetUsageCountRemaining( registrationInstance, otherRegistrants );
+                    int? usageCountRemaining = feeItem.GetUsageCountRemaining( registrationInstance );
 
                     if ( fee.AllowMultiple )
                     {
@@ -415,11 +396,11 @@ namespace Rock.Model
             {
                 if ( fee.AllowMultiple )
                 {
-                    feeControl = GetFeeMultipleOptionMultipleQuantityControl( setValues, feeValues, registrationInstance, otherRegistrants );
+                    feeControl = GetFeeMultipleOptionMultipleQuantityControl( setValues, feeValues, registrationInstance );
                 }
                 else
                 {
-                    feeControl = GetFeeMultipleOptionSingleQuantityControl( setValues, feeValues, registrationInstance, otherRegistrants );
+                    feeControl = GetFeeMultipleOptionSingleQuantityControl( setValues, feeValues, registrationInstance );
                 }
             }
 

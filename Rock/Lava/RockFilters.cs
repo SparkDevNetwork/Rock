@@ -3965,8 +3965,7 @@ namespace Rock.Lava
 
                     case "Host":
                         {
-                            var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
-                            return host;
+                            return HttpContext.Current.Request.Url.Host;
                         }
 
                     case "Path":

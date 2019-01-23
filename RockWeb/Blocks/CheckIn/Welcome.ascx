@@ -49,9 +49,7 @@
                 var $CountdownTimer = $('.countdown-timer');
 
                 if ($ActiveWhen.text() != '') {
-                    // Ensure date is parsed as local timezone
-                    var tc = $ActiveWhen.text().split(/\D/);
-                    var timeActive = new Date(tc[0], tc[1]-1, tc[2], tc[3], tc[4], tc[5]);
+                    var timeActive = new Date($ActiveWhen.text());
                     $CountdownTimer.countdown({
                         until: timeActive,
                         compact: true,

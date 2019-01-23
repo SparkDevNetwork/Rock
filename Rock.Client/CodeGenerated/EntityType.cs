@@ -38,9 +38,6 @@ namespace Rock.Client
         public string AssemblyName { get; set; }
 
         /// <summary />
-        public bool AttributesSupportPrePostHtml { get; set; }
-
-        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -93,7 +90,6 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AssemblyName = source.AssemblyName;
-            this.AttributesSupportPrePostHtml = source.AttributesSupportPrePostHtml;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.FriendlyName = source.FriendlyName;

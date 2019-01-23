@@ -75,7 +75,6 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         </div>
     </div>
 {% endif %}", "", 3 )]
-    [LinkedPage( "Export Workflows Page", "Page used to export workflows.", false, "", "", 4 )]
     public partial class WorkflowTypeDetail : RockBlock
     {
         #region Properties
@@ -168,7 +167,6 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
             LoadDropDowns();
 
-            btnExport.Visible = GetAttributeValue( "ExportWorkflowsPage" ).IsNotNullOrWhiteSpace();
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the workflows of this type!');", WorkflowType.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.WorkflowType ) ).Id;
         }
@@ -521,18 +519,6 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             var qryParams = new Dictionary<string, string>();
             qryParams.Add( "WorkflowTypeId", hfWorkflowTypeId.Value );
             NavigateToLinkedPage( "ManageWorkflowsPage", qryParams );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnExport control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnExport_Click( object sender, EventArgs e )
-        {
-            var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "WorkflowTypeId", hfWorkflowTypeId.Value );
-            NavigateToLinkedPage( "ExportWorkflowsPage", qryParams );
         }
 
         /// <summary>

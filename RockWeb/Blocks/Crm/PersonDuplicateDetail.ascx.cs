@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Crm
     [DecimalField( "Confidence Score Low", "The maximum confidence score required to be considered an unlikely match. Values lower than this will not be shown in the grid.", true, 40.00, order: 1 )]
     [BooleanField( "Include Inactive", "Set to true to also include potential matches when both records are inactive.", false, order: 2 )]
     [BooleanField( "Include Businesses", "Set to true to also include potential matches when either record is a Business.", false, order: 3 )]
-    public partial class PersonDuplicateDetail : RockBlock, ICustomGridColumns
+    public partial class PersonDuplicateDetail : RockBlock
     {
         #region Base Control Methods
 
