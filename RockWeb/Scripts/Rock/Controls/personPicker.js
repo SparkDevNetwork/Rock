@@ -212,7 +212,7 @@
                 $(this).toggleClass("active");
                 $pickerMenu.toggle(0, function () {
                     exports.personPickers[controlId].updateScrollbar();
-                    $(this).find('.picker-search').focus();
+                    $searchFieldName.focus();
                 });
             });
 
