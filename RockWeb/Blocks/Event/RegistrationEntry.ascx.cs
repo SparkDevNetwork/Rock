@@ -4676,7 +4676,7 @@ namespace RockWeb.Blocks.Event
 
                 case RegistrationPersonFieldType.Grade:
                     var gpGrade = phRegistrantControls.FindControl( "gpGrade" ) as GradePicker;
-                    return gpGrade != null ? Person.GraduationYearFromGradeOffset( gpGrade.SelectedValueAsInt() ) : null;
+                    return gpGrade != null ? Person.GraduationYearFromGradeOffset( gpGrade.SelectedValueAsInt( false ) ) : null;
 
                 case RegistrationPersonFieldType.Gender:
                     var ddlGender = phRegistrantControls.FindControl( "ddlGender" ) as RockDropDownList;

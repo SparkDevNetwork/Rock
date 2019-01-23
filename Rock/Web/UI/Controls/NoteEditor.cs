@@ -444,6 +444,7 @@ namespace Rock.Web.UI.Controls
             string validationGroup = $"vgNoteEdit_{this.ID}";
 
             _vsEditNote = new ValidationSummary();
+            _vsEditNote.ID = this.ID + "_vsEditNote";
             _vsEditNote.ValidationGroup = validationGroup;
             _vsEditNote.CssClass = "alert alert-validation";
             _vsEditNote.HeaderText = "Please correct the following:";

@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -63,17 +79,17 @@ namespace Rock.Model
 	                AND cr.[FromPersonAliasId] = @personAliasId
                 UNION
                 SELECT 
-	                    c.[SenderPersonAliasId] AS FromPersonAliasId
+	                  c.[SenderPersonAliasId] AS FromPersonAliasId
 	                , '' AS MessageKey
 	                , COALESCE(p.[NickName], p.[FirstName]) + ' ' + p.LastName AS FullName
 	                , c.[CreatedDateTime]
-	                , c.[SMSMessage] 
+	                , COALESCE( cr.[SentMessage], c.[SMSMessage])
 	                , CONVERT(bit, 1) -- Communications from Rock are always considered read
                 FROM [Communication] c
                 JOIN [PersonAlias] pa ON c.[SenderPersonAliasId] = pa.[Id]
                 JOIN [Person] p ON pa.[PersonId] = p.[Id]
+                JOIN [CommunicationRecipient] cr ON cr.[PersonAliasId] = @personAliasId AND cr.CommunicationId = c.Id
                 WHERE c.[SMSFromDefinedValueId] = @releatedSmsFromDefinedValueId
-	                AND c.[Id] IN ( SELECT CommunicationId FROM [CommunicationRecipient] WHERE [PersonAliasId] = @personAliasId)
                 ORDER BY CreatedDateTime ASC";
 
             var set = Rock.Data.DbService.GetDataSet( sql, CommandType.Text, sqlParams );
@@ -163,6 +179,12 @@ namespace Rock.Model
             Rock.Data.DbService.ExecuteCommand( sql, CommandType.Text, sqlParams );
         }
 
+        /// <summary>
+        /// Updates the person alias by message key.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="messageKey">The message key.</param>
+        /// <param name="personAliasType">Type of the person alias.</param>
         public void UpdatePersonAliasByMessageKey( int personAliasId, string messageKey, PersonAliasType personAliasType )
         {
             string sql = string.Empty;
@@ -207,13 +229,21 @@ namespace Rock.Model
             Rock.Data.DbService.ExecuteCommand( sql, CommandType.Text, sqlParams );
         }
 
-        public DataSet GetCommunicationsAndResponseRecipients( int relatedSmsFromDefinedValueId )
+        /// <summary>
+        /// Gets the communications and response recipients.
+        /// </summary>
+        /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
+        /// <param name="conversationAgeInMonths">The conversation age in months.</param>
+        /// <returns></returns>
+        public DataSet GetCommunicationsAndResponseRecipients( int relatedSmsFromDefinedValueId, int conversationAgeInMonths = 0 )
         {
             var sqlParams = new Dictionary<string, object>
             {
                 { "@releatedSmsFromDefinedValueId", relatedSmsFromDefinedValueId },
                 { "@smsMediumEntityTypeId", EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS ).Id }
             };
+
+            string filterDate = conversationAgeInMonths == 0 ? string.Empty : $" AND cr.[CreatedDateTime] > DATEADD(month, -{conversationAgeInMonths}, GETDATE())";
 
             string sql = $@"
                 ;WITH cte AS (
@@ -229,21 +259,23 @@ namespace Rock.Model
                     LEFT JOIN [Person] p ON pa.[PersonId] = p.[Id]
                     WHERE cr.[RelatedSmsFromDefinedValueId] = @releatedSmsFromDefinedValueId
                         AND cr.[RelatedMediumEntityTypeId] = @smsMediumEntityTypeId
+                        {filterDate}
                     UNION
                     SELECT 
-	                       rec.[PersonAliasId] AS FromPersonAliasId
+	                       cr.[PersonAliasId] AS FromPersonAliasId
 	                    , COALESCE( pn.[CountryCode], '1' ) + pn.[Number] AS MessageKey
 	                    , COALESCE(p.[NickName], p.[FirstName]) + ' ' + p.LastName AS FullName
 	                    , c.[CreatedDateTime]
-	                    , c.[SMSMessage] 
+	                    , cr.[SentMessage] 
 	                    , CONVERT(bit, 1) -- Communications from Rock are always considered read
                     FROM [Communication] c
-                    JOIN [CommunicationRecipient] rec ON c.[Id] = rec.[CommunicationId]
-                    JOIN [PersonAlias] pa ON rec.[PersonAliasId] = pa.[Id]
+                    JOIN [CommunicationRecipient] cr ON c.[Id] = cr.[CommunicationId]
+                    JOIN [PersonAlias] pa ON cr.[PersonAliasId] = pa.[Id]
                     JOIN [Person] p ON pa.[PersonId] = p.[Id]
                     JOIN [PhoneNumber] pn on pn.PersonId = p.Id
                     WHERE c.[SMSFromDefinedValueId] = @releatedSmsFromDefinedValueId
 	                    AND pn.IsMessagingEnabled = 1
+                        {filterDate}
                     )
 
                     -- Lets do our grouping here since we are returning a dataset.
@@ -258,7 +290,14 @@ namespace Rock.Model
             return Rock.Data.DbService.GetDataSet( sql, CommandType.Text, sqlParams );
         }
 
-        public DataSet GetResponseRecipients( int relatedSmsFromDefinedValueId, bool showReadMessages )
+        /// <summary>
+        /// Gets the response recipients.
+        /// </summary>
+        /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
+        /// <param name="showReadMessages">if set to <c>true</c> [show read messages].</param>
+        /// <param name="conversationAgeInMonths">The conversation age in months.</param>
+        /// <returns></returns>
+        public DataSet GetResponseRecipients( int relatedSmsFromDefinedValueId, bool showReadMessages, int conversationAgeInMonths = 0 )
         {
             var sqlParams = new Dictionary<string, object>
             {
@@ -266,6 +305,7 @@ namespace Rock.Model
                 { "@smsMediumEntityTypeId", EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS ).Id }
             };
             string showRead = !showReadMessages ? " AND cr.[IsRead] = 0 " : string.Empty;
+            string filterDate = conversationAgeInMonths == 0 ? string.Empty : $" AND cr.[CreatedDateTime] > DATEADD(month, -{conversationAgeInMonths}, GETDATE())";
 
             string sql = $@"
                 ;WITH cte AS (
@@ -281,6 +321,7 @@ namespace Rock.Model
                     LEFT JOIN [Person] p ON pa.[PersonId] = p.[Id]
                     WHERE cr.[RelatedSmsFromDefinedValueId] = @releatedSmsFromDefinedValueId
                         AND cr.[RelatedMediumEntityTypeId] = @smsMediumEntityTypeId
+                        {filterDate}
                         {showRead}
                     )
 
@@ -297,9 +338,19 @@ namespace Rock.Model
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public enum PersonAliasType
     {
+        /// <summary>
+        /// From person alias
+        /// </summary>
         FromPersonAlias = 0,
+
+        /// <summary>
+        /// To person alias
+        /// </summary>
         ToPersonAlias = 1
     }
 }
