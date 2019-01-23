@@ -2847,76 +2847,7 @@ Sys.Application.add_load(function () {
         /// <returns></returns>
         public static string GetClientIpAddress()
         {
-            return GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current.Request ) );
-        }
-
-        /// <summary>
-        /// Gets the client ip address.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns></returns>
-        public static string GetClientIpAddress( HttpRequestBase request )
-        { 
-            string ipAddress = request.ServerVariables["HTTP_X_FORWARDED_FOR"];
-
-            if ( String.IsNullOrWhiteSpace( ipAddress ) )
-            {
-                ipAddress = request.ServerVariables["REMOTE_ADDR"];
-            }
-
-            if ( string.IsNullOrWhiteSpace( ipAddress ) )
-            {
-                ipAddress = request.UserHostAddress;
-            }
-
-            if ( string.IsNullOrWhiteSpace( ipAddress ) || ipAddress.Trim() == "::1" )
-            {
-                ipAddress = string.Empty;
-            }
-
-            if ( string.IsNullOrWhiteSpace( ipAddress ) )
-            {
-                string stringHostName = System.Net.Dns.GetHostName();
-                if ( !string.IsNullOrWhiteSpace( stringHostName ) )
-                {
-                    try
-                    {
-                        var ipHostEntries = System.Net.Dns.GetHostEntry( stringHostName );
-                        if ( ipHostEntries != null )
-                        {
-                            try
-                            {
-                                var arrIpAddress = ipHostEntries.AddressList.FirstOrDefault( i => !i.IsIPv6LinkLocal );
-                                if ( arrIpAddress != null )
-                                {
-                                    ipAddress = arrIpAddress.ToString();
-                                }
-                            }
-                            catch
-                            {
-                                try
-                                {
-                                    var arrIpAddress = System.Net.Dns.GetHostAddresses( stringHostName ).FirstOrDefault( i => !i.IsIPv6LinkLocal );
-                                    if ( arrIpAddress != null )
-                                    {
-                                        ipAddress = arrIpAddress.ToString();
-                                    }
-                                }
-                                catch
-                                {
-                                    ipAddress = "127.0.0.1";
-                                }
-                            }
-                        }
-                    }
-                    catch ( System.Net.Sockets.SocketException ex )
-                    {
-                        ExceptionLogService.LogException( ex );
-                    }
-                }
-            }
-
-            return ipAddress;
+            return WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current.Request ) );
         }
 
         #region User Preferences
