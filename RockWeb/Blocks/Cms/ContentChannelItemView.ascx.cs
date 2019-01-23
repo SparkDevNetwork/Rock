@@ -828,7 +828,7 @@ Guid - ContentChannelItem Guid
                                             ) )
                                         .OrderByDescending( a => a.EntityTypeQualifierColumn )
                                         .ThenBy( a => a.Order )
-                                        .ToAttributeCacheList();
+                                        .ToCacheAttributeList();
             }
 
             RockDropDownList[] attributeDropDowns = new RockDropDownList[]

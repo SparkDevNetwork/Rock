@@ -258,7 +258,9 @@ namespace RockWeb.Blocks.CheckIn.Config
                     nbLabelHeight.Text = heightRounded.ToString();
                 }
             }
-            catch { }
+            catch
+            {
+            }
         }
 
         private void SetLabelImage()

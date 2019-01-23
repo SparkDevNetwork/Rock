@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -124,24 +123,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the usage count remaining.
+        /// If this fee has a <see cref="MaximumUsageCount"/>, returns the number of allowed usages remaining for the specified <see cref="RegistrationInstance"/>
         /// </summary>
         /// <param name="registrationInstance">The registration instance.</param>
         /// <returns></returns>
-        [RockObsolete("1.8")]
-        [Obsolete("Use the override that includes otherRegistrant instead.")]
         public int? GetUsageCountRemaining( RegistrationInstance registrationInstance )
-        {
-            return GetUsageCountRemaining( registrationInstance, null );
-        }
-
-        /// <summary>
-        /// If this fee has a <see cref="MaximumUsageCount" />, returns the number of allowed usages remaining for the specified <see cref="RegistrationInstance" />
-        /// </summary>
-        /// <param name="registrationInstance">The registration instance.</param>
-        /// <param name="otherRegistrants">The other registrants that have been registered so far in this registration</param>
-        /// <returns></returns>
-        public int? GetUsageCountRemaining( RegistrationInstance registrationInstance, List<RegistrantInfo> otherRegistrants )
         {
             if ( !this.MaximumUsageCount.HasValue || registrationInstance == null )
             {
@@ -153,14 +139,7 @@ namespace Rock.Model
             var registrationInstanceFeesQuery = new RegistrationRegistrantFeeService( new RockContext() ).Queryable().Where( a => a.RegistrationRegistrant.Registration.RegistrationInstanceId == registrationInstanceId );
 
             var feeUsedCount = registrationInstanceFeesQuery.Where( a => a.RegistrationTemplateFeeItemId == this.Id ).Sum( a => ( int? ) a.Quantity ) ?? 0;
-
-            // get a list of fees that the other registrants in this registrant entry have incurred so far
-            List<FeeInfo> otherRegistrantsFees = otherRegistrants?.SelectMany( a => a.FeeValues ).Where( a => a.Value != null && a.Key == this.RegistrationTemplateFeeId ).SelectMany( a => a.Value ).ToList();
-
-            // get the count of fees of this same fee item for other registrants
-            int otherRegistrantsUsedCount = otherRegistrantsFees?.Where( a => a.RegistrationTemplateFeeItemId == this.Id ).Sum( f => f.Quantity ) ?? 0;
-
-            usageCountRemaining = this.MaximumUsageCount.Value - feeUsedCount - otherRegistrantsUsedCount;
+            usageCountRemaining = this.MaximumUsageCount.Value - feeUsedCount;
             return usageCountRemaining;
         }
 

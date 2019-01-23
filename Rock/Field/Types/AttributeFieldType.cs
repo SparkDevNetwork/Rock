@@ -302,7 +302,7 @@ namespace Rock.Field.Types
                             attributeQuery = attributeService.GetByEntityTypeId( entityType.Id, true );
                         }
 
-                        List<AttributeCache> attributeList = attributeQuery.ToAttributeCacheList();
+                        List<AttributeCache> attributeList = attributeQuery.ToCacheAttributeList();
 
                         if ( attributeList.Any() )
                         {

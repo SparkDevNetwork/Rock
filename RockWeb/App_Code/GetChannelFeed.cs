@@ -27,7 +27,6 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 using System.Collections.Generic;
-using Rock.Utility;
 
 namespace RockWeb
 {
@@ -104,7 +103,7 @@ namespace RockWeb
 
                         Dictionary<string, object> requestObjects = new Dictionary<string, object>();
                         requestObjects.Add( "Scheme", request.Url.Scheme );
-                        requestObjects.Add( "Host", WebRequestHelper.GetHostNameFromRequest( context ) );
+                        requestObjects.Add( "Host", request.Url.Host );
                         requestObjects.Add( "Authority", request.Url.Authority );
                         requestObjects.Add( "LocalPath", request.Url.LocalPath );
                         requestObjects.Add( "AbsoluteUri", request.Url.AbsoluteUri );

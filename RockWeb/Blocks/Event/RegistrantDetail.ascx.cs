@@ -40,11 +40,11 @@ using Attribute = Rock.Model.Attribute;
 namespace RockWeb.Blocks.Event
 {
     /// <summary>
-    /// Displays interface for editing the registrant attribute values and fees for a given registrant.
+    /// Displays interface for editing the registration attribute values and fees for a given registrant.
     /// </summary>
     [DisplayName( "Registrant Detail" )]
     [Category( "Event" )]
-    [Description( "Displays interface for editing the registrant attribute values and fees for a given registrant." )]
+    [Description( "Displays interface for editing the registration attribute values and fees for a given registrant." )]
 
     public partial class RegistrantDetail : RockBlock
     {
@@ -377,7 +377,7 @@ namespace RockWeb.Blocks.Event
                     foreach ( var field in TemplateState.Forms
                         .SelectMany( f => f.Fields
                             .Where( t =>
-                                t.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
+                                t.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
                                 t.AttributeId.HasValue ) ) )
                     {
                         var attribute = AttributeCache.Get( field.AttributeId.Value );
@@ -741,7 +741,7 @@ namespace RockWeb.Blocks.Event
 
                 foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
                 {
-                    if ( field.FieldSource == RegistrationFieldSource.RegistrantAttribute )
+                    if ( field.FieldSource == RegistrationFieldSource.RegistrationAttribute )
                     {
                         if ( field.AttributeId.HasValue )
                         {
@@ -796,7 +796,7 @@ namespace RockWeb.Blocks.Event
                 foreach ( var fee in TemplateState.Fees.OrderBy( f => f.Order ) )
                 {
                     var feeValues = GetFeeValues( fee );
-                    fee.AddFeeControl( phFees, registrationInstance, true, feeValues, null );
+                    fee.AddFeeControl( phFees, registrationInstance, true, feeValues );
                 }
             }
             else
@@ -834,7 +834,7 @@ namespace RockWeb.Blocks.Event
                     {
                         foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
                         {
-                            if ( field.FieldSource == RegistrationFieldSource.RegistrantAttribute )
+                            if ( field.FieldSource == RegistrationFieldSource.RegistrationAttribute )
                             {
                                 object value = null;
 

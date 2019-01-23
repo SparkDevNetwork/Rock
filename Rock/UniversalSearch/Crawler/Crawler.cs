@@ -422,7 +422,9 @@ namespace Rock.UniversalSearch.Crawler
                     return GetWebText( requestURL );
                 }
             }
-            catch { }
+            catch
+            {
+            }
 
             return string.Empty;
         }

@@ -849,7 +849,7 @@ namespace RockWeb.Blocks.Groups
                     .Where( a => a.IsGridColumn )
                     .OrderByDescending( a => a.EntityTypeQualifierColumn )
                     .ThenBy( a => a.Order )
-                    .ThenBy( a => a.Name ).ToAttributeCacheList() )
+                    .ThenBy( a => a.Name ).ToCacheAttributeList() )
                 {
                     if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {

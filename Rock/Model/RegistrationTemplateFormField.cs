@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -33,7 +32,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Model
 {
     /// <summary>
-    /// Form Field for Registrant Fields
+    /// 
     /// </summary>
     [RockDomain( "Event" )]
     [Table( "RegistrationTemplateFormField" )]
@@ -107,7 +106,7 @@ namespace Rock.Model
         public bool ShowCurrentValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the Pre-HTML.
+        /// Gets or sets the pre text.
         /// </summary>
         /// <value>
         /// The pre text.
@@ -116,7 +115,7 @@ namespace Rock.Model
         public string PreText { get; set; }
 
         /// <summary>
-        /// Gets or sets the Post-HTML.
+        /// Gets or sets the post text.
         /// </summary>
         /// <value>
         /// The post text.
@@ -561,17 +560,9 @@ namespace Rock.Model
         GroupMemberAttribute = 2,
 
         /// <summary>
-        /// Registrant attribute
-        /// </summary>
-        RegistrantAttribute = 4,
-
-        /// <summary>
         /// Registration attribute
-        /// NOTE: Put obsolete Enums AFTER the one that replaces it so that enum.ConvertToString() returns the non-obsolete name
         /// </summary>
-        [Obsolete( "Use RegistrantAttribute instead" )]
-        [RockObsolete( "1.9" )]
-        RegistrationAttribute = RegistrantAttribute,
+        RegistrationAttribute = 4
     }
 
     /// <summary>

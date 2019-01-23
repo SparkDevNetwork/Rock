@@ -874,8 +874,7 @@ namespace Rock.Web.UI
 
                 // check if page should have been loaded via ssl
                 Page.Trace.Warn( "Checking for SSL request" );
-                bool isSecureConnectionLoadBalancer = String.Equals( Request.ServerVariables["HTTP_X_FORWARDED_PROTO"], "https", StringComparison.OrdinalIgnoreCase );
-                if ( !( HttpContext.Current.Request.IsSecureConnection || isSecureConnectionLoadBalancer ) && ( _pageCache.RequiresEncryption || Site.RequiresEncryption ) )
+                if ( !Request.IsSecureConnection && (_pageCache.RequiresEncryption || Site.RequiresEncryption) )
                 {
                     string redirectUrl = Request.Url.ToString().Replace( "http:", "https:" );
                     Response.Redirect( redirectUrl, false );

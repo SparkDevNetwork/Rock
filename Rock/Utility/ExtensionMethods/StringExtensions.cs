@@ -422,17 +422,6 @@ namespace Rock
         }
 
         /// <summary>
-        /// Truncates from char 0 to the length and then add an ellipsis character char 8230.
-        /// </summary>
-        /// <param name="str">The string.</param>
-        /// <param name="length">The length.</param>
-        /// <returns></returns>
-        public static string LeftWithEllipsis( this string str, int length )
-        {
-            return Left( str, length ) + (char)8230;
-        }
-
-        /// <summary>
         /// Returns a substring of a string. Uses an empty string for any part that doesn't exist and will return a partial substring if the string isn't long enough for the requested length (The built-in method would throw an exception in these cases).
         /// </summary>
         /// <param name="str">The string.</param>

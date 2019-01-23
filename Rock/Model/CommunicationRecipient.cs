@@ -179,14 +179,6 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Gets or sets the message as it was sent to the recipient (i.e. after lava merge).
-        /// </summary>
-        /// <value>
-        /// The sent message.
-        /// </value>
-        [DataMember]
-        public string SentMessage { get; set; }
         #endregion
 
         #region Virtual Properties

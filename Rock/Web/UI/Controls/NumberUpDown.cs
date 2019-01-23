@@ -383,13 +383,8 @@ namespace Rock.Web.UI.Controls
             _hfMax.RenderControl( writer );
             _hfNumber.RenderControl( writer );
 
-            string postBackScript = string.Empty;
-            if ( this.NumberUpdated != null )
-            {
-                ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( this );
-                postBackScript = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "NumberUpdated" ), true );
-                postBackScript = postBackScript.Replace( '\'', '"' );
-            }
+            var postBackScript = this.NumberUpdated != null ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "NumberUpdated" ), true ) : "";
+            postBackScript = postBackScript.Replace( '\'', '"' );
 
             string disabledMinCss;
             if ( this.Enabled )

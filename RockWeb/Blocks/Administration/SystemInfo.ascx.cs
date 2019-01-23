@@ -24,7 +24,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Text;
-using System.Threading;
 using System.Web;
 using System.Web.UI;
 
@@ -38,7 +37,7 @@ using Rock.VersionInfo;
 namespace RockWeb.Blocks.Administration
 {
     /// <summary>
-    /// Displays system information on the installed version of Rock.
+    /// 
     /// </summary>
     [DisplayName( "System Information" )]
     [Category( "Administration" )]
@@ -85,7 +84,6 @@ namespace RockWeb.Blocks.Administration
 
             lCacheOverview.Text = GetCacheInfo();
             lRoutes.Text = GetRoutesInfo();
-            lThreads.Text = GetThreadInfo();
 
             // register btnDumpDiagnostics as a PostBackControl since it is returning a File download
             ScriptManager scriptManager = ScriptManager.GetCurrent( Page );
@@ -193,7 +191,6 @@ namespace RockWeb.Blocks.Administration
             ResponseWrite( "Migrations:", GetLastMigrationData().Replace( "<br />", Environment.NewLine.ToString() ), response );
             ResponseWrite( "Cache:", lCacheOverview.Text.Replace( "<br />", Environment.NewLine.ToString() ), response ); ;
             ResponseWrite( "Routes:", lRoutes.Text.Replace( "<br />", Environment.NewLine.ToString() ), response );
-            ResponseWrite( "Threads:", lThreads.Text.Replace( "<br />", Environment.NewLine.ToString() ), response );
 
             // Last and least...
             ResponseWrite( "Server Variables:", "", response );
@@ -298,37 +295,6 @@ namespace RockWeb.Blocks.Administration
 
             sb.AppendFormat( "</table>" );
             return sb.ToString();
-        }
-
-        /// <summary>
-        /// Gets thread pool details such as the number of threads in use and the maximum number of threads.
-        /// </summary>
-        /// <returns></returns>
-        private string GetThreadInfo()
-        {
-            int maxWorkerThreads = 0;
-            int maxIoThreads = 0;
-            int availWorkerThreads = 0;
-            int availIoThreads = 0;
-
-            ThreadPool.GetMaxThreads( out maxWorkerThreads, out maxIoThreads );
-            ThreadPool.GetAvailableThreads( out availWorkerThreads, out availIoThreads );
-            var workerThreadsInUse = maxWorkerThreads - availWorkerThreads;
-            var pctUse = ( ( float ) workerThreadsInUse / ( float ) maxWorkerThreads );
-            string badgeType = string.Empty;
-            if ( pctUse > .1 )
-            {
-                if ( pctUse < .3 )
-                {
-                    badgeType = "badge badge-warning";
-                }
-                else
-                {
-                    badgeType = "badge badge-danger";
-                }
-            }
-
-            return string.Format( "<span class='{0}'>{1}</span> out of {2} worker threads in use ({3}%)", badgeType, workerThreadsInUse, maxWorkerThreads, ( int ) Math.Ceiling( pctUse * 100 ) );
         }
 
         private string GetDbInfo()

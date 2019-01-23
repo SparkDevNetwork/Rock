@@ -42,11 +42,11 @@ namespace Rock.Web.UI.Controls
                 Guid? dataValueAsGuid = null;
                 if ( dataValue is int )
                 {
-                    dataValueAsInt = ( int ) dataValue;
+                    dataValueAsInt = (int)dataValue;
                 }
                 else if ( dataValue is Guid )
                 {
-                    dataValueAsGuid = ( Guid ) dataValue;
+                    dataValueAsGuid = (Guid)dataValue;
                 }
                 else if ( dataValue is string )
                 {
@@ -68,7 +68,9 @@ namespace Rock.Web.UI.Controls
 
                 return base.FormatDataValue( dataValue, encode );
             }
-            catch { }
+            catch
+            {
+            }
 
             return string.Empty;
         }

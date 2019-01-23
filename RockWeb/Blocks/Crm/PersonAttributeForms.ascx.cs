@@ -570,8 +570,8 @@ namespace RockWeb.Blocks.Crm
                     form.Fields.Add( field );
                 }
 
-                field.PreHtml = ceAttributePreHtml.Text;
-                field.PostHtml = ceAttributePostHtml.Text;
+                field.PreText = ceAttributePreText.Text;
+                field.PostText = ceAttributePostText.Text;
 
                 field.AttributeId = ddlPersonAttributes.SelectedValueAsInt();
                 field.ShowCurrentValue = cbUsePersonCurrentValue.Checked;
@@ -688,9 +688,9 @@ namespace RockWeb.Blocks.Crm
                         .Where( f => f.AttributeId.HasValue )
                         .OrderBy( f => f.Order ) )
                     {
-                        if ( !string.IsNullOrWhiteSpace( field.PreHtml ) )
+                        if ( !string.IsNullOrWhiteSpace( field.PreText ) )
                         {
-                            phContent.Controls.Add( new LiteralControl( field.PreHtml.ResolveMergeFields( mergeFields ) ) );
+                            phContent.Controls.Add( new LiteralControl( field.PreText.ResolveMergeFields( mergeFields ) ) );
                         }
 
                         string value = null;
@@ -701,9 +701,9 @@ namespace RockWeb.Blocks.Crm
                         var attribute = AttributeCache.Get( field.AttributeId.Value );
                         attribute.AddControl( phContent.Controls, value, BlockValidationGroup, setValues, true, field.IsRequired, null, string.Empty );
 
-                        if ( !string.IsNullOrWhiteSpace( field.PostHtml ) )
+                        if ( !string.IsNullOrWhiteSpace( field.PostText ) )
                         {
-                            phContent.Controls.Add( new LiteralControl( field.PostHtml.ResolveMergeFields( mergeFields ) ) );
+                            phContent.Controls.Add( new LiteralControl( field.PostText.ResolveMergeFields( mergeFields ) ) );
                         }
                     }
                 }
@@ -882,8 +882,8 @@ namespace RockWeb.Blocks.Crm
                     field.IsRequired = false;
                 }
 
-                ceAttributePreHtml.Text = field.PreHtml;
-                ceAttributePostHtml.Text = field.PostHtml;
+                ceAttributePreText.Text = field.PreText;
+                ceAttributePostText.Text = field.PostText;
 
                 ddlPersonAttributes.Items.Clear();
                 var person = new Person();
@@ -1665,9 +1665,9 @@ $('.template-form > .panel-body').on('validation-error', function() {
 
         public int Order { get; set; }
 
-        public string PreHtml{ get; set; }
+        public string PreText { get; set; }
 
-        public string PostHtml { get; set; }
+        public string PostText { get; set; }
 
         [Newtonsoft.Json.JsonIgnore]
         public AttributeCache Attribute

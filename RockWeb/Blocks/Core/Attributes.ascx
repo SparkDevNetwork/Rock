@@ -84,10 +84,10 @@
                     <Rock:EntityTypePicker ID="ddlAttrEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlAttrEntityType_SelectedIndexChanged" EnhanceForLongLists="true" />
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" AutoPostBack="true" OnTextChanged="tbAttrQualifier_TextChanged"/>
+                            <Rock:RockTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" AutoPostBack="true" OnTextChanged="tbAttrQualifier_TextChanged"/>
+                            <Rock:RockTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" />
                         </div>
                     </div>
                 </asp:panel>

@@ -186,7 +186,7 @@ namespace Rock
                 DateTime now = RockDateTime.Now;
 
                 string nowText = "just now";
-                string format = "{0} ago";
+                string format = "{0} ago"; ;
                 TimeSpan timeSpan = now - dateTime;
                 if ( dateTime > now )
                 {
@@ -412,54 +412,6 @@ namespace Rock
             }
 
             return dateTime.ToString( "ddd, dd MMM yyyy HH:mm:ss " + timeZone.PadRight( 5, '0' ) );
-        }
-
-        /// <summary>
-        /// Gets the age.
-        /// </summary>
-        /// <param name="dateTime">The date time.</param>
-        /// <returns></returns>
-        public static string GetFormattedAge( this DateTime dateTime )
-        {
-            DateTime today = RockDateTime.Today;
-            int age = today.Year - dateTime.Year;
-            if ( dateTime > today.AddYears( -age ) )
-            {
-                // their birthdate is after today's date, so they aren't a year older yet
-                age--;
-            }
-
-            if ( age > 0 )
-            {
-                return age + ( age == 1 ? " yr" : " yrs" );
-            }
-            else if ( age < -1 )
-            {
-                return string.Empty;
-            }
-
-            int months = today.Month - dateTime.Month;
-            if ( dateTime.Year < today.Year )
-            {
-                months = months + 12;
-            }
-            if ( dateTime.Day > today.Day )
-            {
-                months--;
-            }
-            if ( months > 0 )
-            {
-                return months + ( months == 1 ? " mo" : " mos" );
-            }
-
-            int days = today.Day - dateTime.Day;
-            if ( days < 0 )
-            {
-                // Add the number of days in the birth month
-                var birthMonth = new DateTime( dateTime.Year, dateTime.Month, 1 );
-                days = days + birthMonth.AddMonths( 1 ).AddDays( -1 ).Day;
-            }
-            return days + ( days == 1 ? " day" : " days" );
         }
 
         #endregion DateTime Extensions

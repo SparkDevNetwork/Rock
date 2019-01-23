@@ -142,12 +142,6 @@ namespace Rock.Client
         public Rock.Client.Enums.RegistrarOption RegistrarOption { get; set; }
 
         /// <summary />
-        public string RegistrationAttributeTitleEnd { get; set; }
-
-        /// <summary />
-        public string RegistrationAttributeTitleStart { get; set; }
-
-        /// <summary />
         public string RegistrationInstructions { get; set; }
 
         /// <summary />
@@ -272,8 +266,6 @@ namespace Rock.Client
             this.RegistrantsSameFamily = source.RegistrantsSameFamily;
             this.RegistrantTerm = source.RegistrantTerm;
             this.RegistrarOption = source.RegistrarOption;
-            this.RegistrationAttributeTitleEnd = source.RegistrationAttributeTitleEnd;
-            this.RegistrationAttributeTitleStart = source.RegistrationAttributeTitleStart;
             this.RegistrationInstructions = source.RegistrationInstructions;
             this.RegistrationTerm = source.RegistrationTerm;
             this.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;

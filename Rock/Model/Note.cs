@@ -27,7 +27,6 @@ using System.Runtime.Serialization;
 using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Security;
-using Newtonsoft.Json;
 
 namespace Rock.Model
 {
@@ -211,7 +210,6 @@ namespace Rock.Model
         /// The parent note.
         /// </value>
         [DataMember]
-        [JsonIgnore]
         public virtual Note ParentNote { get; set; }
 
         /// <summary>
@@ -423,6 +421,18 @@ namespace Rock.Model
             {
                 var noteType = NoteTypeCache.Get( this.NoteTypeId );
                 return noteType ?? base.ParentAuthority;
+            }
+        }
+
+        /// <summary>
+        /// An optional additional parent authority.  (i.e for Notes, the NoteType is main parent
+        /// authority, but parent note is an additional parent authority )
+        /// </summary>
+        public override ISecured ParentAuthorityPre
+        {
+            get
+            {
+                return this.ParentNote ?? base.ParentAuthorityPre;
             }
         }
 
