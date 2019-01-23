@@ -583,12 +583,14 @@ namespace Rock.Web.UI.Controls
             _tbSearchPhone.ID = "tbSearchPhone";
             _tbSearchPhone.PrependText = "Phone";
             _tbSearchPhone.CssClass = "input-group-sm js-personpicker-search-phone js-personpicker-search-field personpicker-search-field";
+            _tbSearchPhone.Attributes["type"] = "tel";
             additionalSearchFieldsPanel.Controls.Add( _tbSearchPhone );
 
             _tbSearchEmail = new RockTextBox();
             _tbSearchEmail.ID = "tbSearchEmail";
             _tbSearchEmail.PrependText = "Email";
             _tbSearchEmail.CssClass = "input-group-sm js-personpicker-search-email js-personpicker-search-field personpicker-search-field";
+            _tbSearchEmail.Attributes["type"] = "email";
             additionalSearchFieldsPanel.Controls.Add( _tbSearchEmail );
 
             #endregion search fields
@@ -713,8 +715,6 @@ namespace Rock.Web.UI.Controls
 
                 writer.Write( @"
              <hr />
-
-             <h4>Results</h4>
 
              <div class='js-personpicker-scroll-container scroll-container scroll-container-vertical scroll-container-picker'>
                 <div class='scrollbar'>
