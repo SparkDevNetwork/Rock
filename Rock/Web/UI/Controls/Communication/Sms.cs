@@ -128,7 +128,7 @@ namespace Rock.Web.UI.Controls.Communication
             dvpFrom = new DefinedValuePicker();
             dvpFrom.ID = string.Format( "dvpFrom_{0}", this.ID );
             dvpFrom.Label = "From";
-            dvpFrom.Help = "The number to originate message from (configured under Admin Tools > General Settings > Defined Types > SMS From Values).";
+            dvpFrom.Help = "The number to originate message from (configured under Admin Tools > Communications > SMS Phone Numbers).";
             if ( selectedNumberGuids.Any() )
             {
                 dvpFrom.SelectedIndex = -1;

@@ -2358,9 +2358,8 @@ BEGIN
         }
 
         /// <summary>
-        /// Updates the defined type attribute if it already exists.
-        /// This method allows the attribute key to be updated but not the guid, which is used as a reference.
-        /// To update the guid using the key use the method AddDefinedTypeAttribute
+        /// Updates the defined type attribute.
+        /// </summary>
         /// <param name="definedTypeGuid">The defined type unique identifier.</param>
         /// <param name="fieldTypeGuid">The field type unique identifier.</param>
         /// <param name="name">The name.</param>

@@ -493,6 +493,7 @@ namespace RockWeb.Blocks.Groups
             groupType.Description = tbDescription.Text;
             groupType.GroupTerm = tbGroupTerm.Text;
             groupType.GroupMemberTerm = tbGroupMemberTerm.Text;
+            groupType.AdministratorTerm = tbAdministratorTerm.Text;
             groupType.ShowInGroupList = cbShowInGroupList.Checked;
             groupType.ShowInNavigation = cbShowInNavigation.Checked;
             groupType.ShowConnectionStatus = cbShowConnectionStatus.Checked;
@@ -502,6 +503,7 @@ namespace RockWeb.Blocks.Groups
             groupType.GroupTypeColor = cpGroupTypeColor.Text;
             groupType.TakesAttendance = cbTakesAttendance.Checked;
             groupType.GroupsRequireCampus = cbGroupsRequireCampus.Checked;
+            groupType.ShowAdministrator = cbShowAdministrator.Checked;
             groupType.GroupAttendanceRequiresLocation = cbGroupAttendanceRequiresLocation.Checked;
             groupType.GroupAttendanceRequiresSchedule = cbGroupAttendanceRequiresSchedule.Checked;
             groupType.AttendanceCountsAsWeekendService = cbWeekendService.Checked;
@@ -784,6 +786,9 @@ namespace RockWeb.Blocks.Groups
             tbGroupMemberTerm.ReadOnly = groupType.IsSystem;
             tbGroupMemberTerm.Text = groupType.GroupMemberTerm;
 
+            tbAdministratorTerm.ReadOnly = groupType.IsSystem;
+            tbAdministratorTerm.Text = groupType.AdministratorTerm;
+
             dvpGroupTypePurpose.Enabled = !groupType.IsSystem;
             dvpGroupTypePurpose.SetValue( groupType.GroupTypePurposeValueId );
 
@@ -797,7 +802,7 @@ namespace RockWeb.Blocks.Groups
             BindChildGroupTypesGrid();
 
             cbGroupsRequireCampus.Checked = groupType.GroupsRequireCampus;
-
+            cbShowAdministrator.Checked = groupType.ShowAdministrator;
             // Display
             cbShowInGroupList.Checked = groupType.ShowInGroupList;
             cbShowInNavigation.Checked = groupType.ShowInNavigation;

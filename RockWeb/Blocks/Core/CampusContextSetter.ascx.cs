@@ -105,10 +105,9 @@ namespace RockWeb.Blocks.Core
             {
                 var campusId = campusIdString.AsInteger();
 
-                if ( currentCampus == null || currentCampus.Id != campusId )
-                {
-                    currentCampus = SetCampusContext( campusId, false );
-                }
+                // if there is a query parameter, ensure that the Campus Context cookie is set (and has an updated expiration)
+                // note, the Campus Context might already match due to the query parameter, but has a different cookie context, so we still need to ensure the cookie context is updated
+                currentCampus = SetCampusContext( campusId, false );
             }
 
             if ( currentCampus == null && GetAttributeValue( "DefaultToCurrentUser" ).AsBoolean() && CurrentPerson != null )

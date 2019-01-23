@@ -122,6 +122,12 @@ namespace Rock.Address
             return result;
         }
 
+        /// <summary>
+        /// Gets the location from postal code.
+        /// </summary>
+        /// <param name="postalCode">The postal code.</param>
+        /// <param name="resultMsg">The result MSG.</param>
+        /// <returns></returns>
         public MapCoordinate GetLocationFromPostalCode( string postalCode, out string resultMsg )
         {
             MapCoordinate result = null;

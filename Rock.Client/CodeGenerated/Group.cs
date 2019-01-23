@@ -184,6 +184,12 @@ namespace Rock.Client
         public Campus Campus { get; set; }
 
         /// <summary />
+        public PersonAlias GroupAdministratorPersonAlias { get; set; }
+
+        /// <summary />
+        public int? GroupAdministratorPersonAliasId { get; set; }
+
+        /// <summary />
         public ICollection<GroupLocation> GroupLocations { get; set; }
 
         /// <summary />

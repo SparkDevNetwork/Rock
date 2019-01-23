@@ -89,6 +89,8 @@
                                 <Rock:RockCheckBox ID="cbGroupsRequireCampus" runat="server" Label="Groups Require a Campus" Text="Yes"
                                     Help="This setting will require that all groups of this type have a campus when adding and editing." />
                                 <Rock:RockDropDownList ID="ddlGroupStatusDefinedType" runat="server" Label="Group Status Defined Type" Help="Select the defined type to use when setting the group's status. Leave this blank if you don't want groups to prompt for group status." EnhanceForLongLists="true" />
+                                <Rock:RockCheckBox ID="cbShowAdministrator" runat="server" Label="Show Administrator" Text="Yes"
+                                    Help="This setting determines if groups of this type support assigning an administrator for each group." />
                             </div>
                             <div class="col-md-6">
                                 <div class="row">
@@ -361,6 +363,8 @@
                                     Help="The term to use for groups of this group type." />
                                 <Rock:DataTextBox ID="tbGroupMemberTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="GroupMemberTerm" Required="true"
                                     Help="The term to use for members in groups of this group type." />
+                                <Rock:DataTextBox ID="tbAdministratorTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="AdministratorTerm" Required="true"
+                                    Help="This setting allows you to customize the term used for the administrator of the group." />
                                 <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="IconCssClass"
                                     Help="The Font Awesome icon class to use when displaying groups of this group type." />
                                 <Rock:ColorPicker ID="cpGroupTypeColor" runat="server" Label="Group Type Color" 
