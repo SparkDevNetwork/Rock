@@ -248,7 +248,7 @@ namespace RockWeb.Blocks.Administration
                     var attributeList = new AttributeService( new RockContext() ).GetByCategoryId( category.Id, false )
                         .OrderBy( a => a.Order )
                         .ThenBy( a => a.Name )
-                        .ToCacheAttributeList();
+                        .ToAttributeCacheList();
 
                     attributeList.ForEach( a => AttributeList.Add( a.Id ) );
                 }

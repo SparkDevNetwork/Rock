@@ -182,34 +182,13 @@
                                 PersonIdField="PersonAlias.PersonId" CssClass="js-grid-registration" ExportSource="ColumnOutput">
                                 <Columns>
                                     <Rock:SelectField ItemStyle-Width="48px" />
-                                    <Rock:RockTemplateField HeaderText="Registered By">
-                                        <ItemTemplate>
-                                            <asp:Literal ID="lRegisteredBy" runat="server"></asp:Literal>
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateField>
+                                    <Rock:RockLiteralField ID="lRegisteredBy" HeaderText="Registered By" />
                                     <Rock:RockBoundField DataField="ConfirmationEmail" HeaderText="Confirmation Email" ExcelExportBehavior="AlwaysInclude" Visible="false" />
-                                    <Rock:RockTemplateField HeaderText="Registrants">
-                                        <ItemTemplate>
-                                            <asp:Literal ID="lRegistrants" runat="server"></asp:Literal>
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateField>
+                                    <Rock:RockLiteralField ID="lRegistrants" HeaderText="Registrants" />
                                     <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="When" SortExpression="CreatedDateTime" />
-                                    <Rock:RockTemplateField HeaderText="Discount Code" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" SortExpression="DiscountCode" Visible="false">
-                                        <ItemTemplate>
-                                            <asp:Label ID="lDiscount" runat="server" CssClass="label label-default" />
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateField>
-                                    <Rock:RockTemplateField HeaderText="Total Cost"  HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="TotalCost">
-                                        <ItemTemplate>
-                                            <asp:Label ID="lCost" runat="server" CssClass="label label-info"></asp:Label>
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateField>
-                                    <Rock:RockTemplateField HeaderText="Balance Due"  HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="BalanceDue">
-                                        <ItemTemplate>
-                                            <Rock:HiddenFieldWithClass ID="hfHasPayments" runat="server" CssClass="js-has-payments" />
-                                            <asp:Label ID="lBalance" runat="server" CssClass="label"></asp:Label>
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateField>
+                                    <Rock:RockLiteralField ID="lDiscount" HeaderText="Discount Code" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" SortExpression="DiscountCode" Visible="false" />
+                                    <Rock:RockLiteralField ID="lRegistrationCost" HeaderText="Total Cost"  HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="TotalCost" />
+                                    <Rock:RockLiteralField ID="lBalance" HeaderText="Balance Due"  HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="BalanceDue" />
                                     <Rock:DeleteField OnClick="gRegistrations_Delete" />
                                 </Columns>
                             </Rock:Grid>

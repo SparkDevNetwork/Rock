@@ -58,7 +58,7 @@
         // first disable the no ASP.Net message
         lNoScripting.Visible = false;
 
-        string version = "2_8_0";
+        string version = "2_9_0";
         bool isDebug = false;
 
         // prepare redirect links

@@ -1,6 +1,7 @@
 @import "_rock-variables";
 
 @import "rock-components/picker-date.less";
+
 /*
   Used to style the check-in screens
 
@@ -28,11 +29,11 @@
 
 @fa-theme-weight: 900;
 @fa-theme-weight-name: 'solid';
-.fa-font-face( @fa-theme-weight-name );
+.fa-font-face(@fa-theme-weight-name);
 
 select.form-control {
   // Fix for iOS not trimming border-radius
-  border-radius: 4px
+  border-radius: 4px;
 }
 
 h1,
@@ -107,7 +108,7 @@ a.help {
 }
 
 .btn-dimmed {
-  opacity: .33;  // todo does this look good JME
+  opacity: .33; // todo does this look good JME
 }
 
 // set page background
@@ -214,9 +215,9 @@ body {
   }
 
   .btn-primary {
-      padding: 14px 26px;
-      font-size: 28px;
-    }
+    padding: 14px 26px;
+    font-size: 28px;
+  }
 }
 
 // time select checkbox
@@ -251,7 +252,8 @@ body {
   width: 265px;
 
   a {
-    &:focus, &:active {
+    &:focus,
+    &:active {
       background-color: @btn-default-bg;
     }
 
@@ -279,8 +281,8 @@ body {
   z-index: @zindex-popover;
 
   .modal-content {
-    background-color: @modal-body-bg;
     color: @modal-body-text-color;
+    background-color: @modal-body-bg;
   }
 
   .modal-footer {
@@ -371,8 +373,8 @@ input.namesearch {
 
 // checkin summary page
 .checkin-summary {
-  list-style-type: none;
   padding: 0;
+  list-style-type: none;
 
   li {
     margin-bottom: 18px;
@@ -421,8 +423,6 @@ input.namesearch {
   .button-variant(@btn-action-color; @btn-action-bg; @btn-action-border);
 }
 
-
-
 .value-list-rows .controls-row {
   margin-bottom: 6px;
 
@@ -443,7 +443,7 @@ input.namesearch {
 
 .toggle-container {
   margin-top: @line-height-computed + 6px;
-  margin-bottom:  @form-group-margin-bottom;
+  margin-bottom: @form-group-margin-bottom;
 
   &.form-group {
     margin-top: 0;
@@ -452,29 +452,29 @@ input.namesearch {
   .btn-group {
     display: -ms-flexbox;
     display: flex;
-    border-radius: 50px;
     height: @input-height-base;
+    border-radius: 50px;
 
     > .btn {
       width: 100%;
-      border-radius: 50px;
       margin-bottom: 0;
+      border-radius: 50px;
 
       &:active {
         -webkit-box-shadow: none;
         box-shadow: none;
 
         &:focus {
+          color: #fff;
           background-color: fade(#76c24e, 75%);
-          color: #ffffff;
         }
       }
     }
 
     > .btn-default {
       color: #a09fa0;
+      background-color: #fff;
       border-color: #dad8d6;
-      background-color: #ffffff;
     }
 
     > .active,
@@ -497,7 +497,6 @@ input.namesearch {
   border-bottom: 1px solid @table-border-color;
 }
 
-
 // highlight required fields
 .form-group.required {
   .control-label::after {
@@ -512,6 +511,7 @@ input.namesearch {
 }
 
 //
+
 // 6. Scroll Container
 // --------------------------------------
 
@@ -541,7 +541,7 @@ input.namesearch {
   -o-transform: translateZ(0);
   transform: translateZ(0);
 
-  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   -webkit-touch-callout: none;
   -moz-text-size-adjust: none;
   -o-text-size-adjust: none;
@@ -576,6 +576,7 @@ input.namesearch {
 }
 
 //
+
 // 7. Kiosk Manager
 // --------------------------------------
 

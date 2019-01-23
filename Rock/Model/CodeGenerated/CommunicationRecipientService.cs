@@ -98,6 +98,7 @@ namespace Rock.Model
             target.PersonAliasId = source.PersonAliasId;
             target.ResponseCode = source.ResponseCode;
             target.SendDateTime = source.SendDateTime;
+            target.SentMessage = source.SentMessage;
             target.Status = source.Status;
             target.StatusNote = source.StatusNote;
             target.TransportEntityTypeName = source.TransportEntityTypeName;
