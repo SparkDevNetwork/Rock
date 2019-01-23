@@ -611,7 +611,7 @@ namespace Rock.Model
         public Person FindPerson( PersonMatchQuery personMatchQuery, bool updatePrimaryEmail, bool includeDeceased = false, bool includeBusinesses = false )
         {
             var matches = this.FindPersons( personMatchQuery, includeDeceased, includeBusinesses ).ToList();
-            
+
             var match = matches.FirstOrDefault();
 
             // Check if we care about updating the person's primary email
@@ -1768,6 +1768,26 @@ namespace Rock.Model
                     .FirstOrDefault();
             }
             return null;
+        }
+
+        /// <summary>
+        /// Get the person associated with the phone number. Filter to any matching phone number, regardless
+        /// of type. Then order by those with a matching number and SMS enabled; then further order
+        /// by matching number with type == mobile; finally order by person Id to get the oldest
+        /// person in the case of duplicate records.
+        /// </summary>
+        /// <param name="phoneNumber">The phone number.</param>
+        /// <param name="numberTypeValueId">The number type value identifier.</param>
+        /// <returns></returns>
+        public Person GetPersonFromMobilePhoneNumber( string phoneNumber )
+        {
+            int numberTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+            return Queryable()
+                .Where( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == phoneNumber ) )
+                .OrderByDescending( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == phoneNumber && n.IsMessagingEnabled ) )
+                .ThenByDescending( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == phoneNumber && n.NumberTypeValueId == numberTypeValueId ) )
+                .ThenBy( p => p.Id )
+                .FirstOrDefault();
         }
 
         #endregion
@@ -2998,11 +3018,11 @@ namespace Rock.Model
 
             if ( personId.HasValue )
             {
-                personQuery = personService.AsNoFilter().Where( a => a.Id == personId );
+                personQuery = personService.AsNoFilter().Where( a => a.Id == personId && !a.IsDeceased);
             }
             else
             {
-                personQuery = personService.Queryable( includeDeceased: true, includeBusinesses: false );
+                personQuery = personService.Queryable( includeDeceased: false, includeBusinesses: false );
             }
 
             // get the min birthdate of people 18 and younger;
@@ -3028,7 +3048,7 @@ namespace Rock.Model
                         ||
                         familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).All( f => f.GroupRoleId == groupRoleChildId )
                     ) );
-            
+
             // update records that aren't marked as Adult but now should be
             int updatedAdultCount = rockContext.BulkUpdate(
                 adultBasedOnBirthdateOrFamilyRole.Where( a => a.AgeClassification != AgeClassification.Adult && !a.IsLockedAsChild ),

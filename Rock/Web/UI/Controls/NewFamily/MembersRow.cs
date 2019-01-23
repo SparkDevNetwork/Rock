@@ -485,6 +485,8 @@ namespace Rock.Web.UI.Controls
 
             _dvpConnectionStatus.CssClass = "form-control";
             _dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ).Id;
+            _dvpConnectionStatus.Required = true;
+            _dvpConnectionStatus.RequiredErrorMessage = "Connection Status is required for all group members";
 
             _rblGender.RepeatDirection = RepeatDirection.Vertical;
             _rblGender.RequiredErrorMessage = "Gender is required for all group members";

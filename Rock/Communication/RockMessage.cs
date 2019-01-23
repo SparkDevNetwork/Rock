@@ -262,7 +262,7 @@ namespace Rock.Communication
                         if ( medium != null )
                         {
                             medium.Send( this, out errorMessages );
-                            return errorMessages.Any();
+                            return !errorMessages.Any();
                         }
                     }
 

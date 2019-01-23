@@ -657,10 +657,7 @@ namespace Rock.Utility
                             }
                         }
                     }
-                    catch
-                    {
-
-                    }
+                    catch { }
                 }
             }
 
@@ -718,10 +715,7 @@ namespace Rock.Utility
                             return isCloseToCampus;
                         }
                     }
-                    catch
-                    {
-
-                    }
+                    catch { }
                 }
             }
 

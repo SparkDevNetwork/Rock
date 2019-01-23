@@ -73,13 +73,21 @@ namespace Rock.Field
             foreach ( var fieldVisibilityRule in fieldVisibilityRules.Where( a => a.ComparedToAttributeGuid.HasValue ) )
             {
                 var filterValues = new List<string>();
+
+                var comparedToAttribute = AttributeCache.Get( fieldVisibilityRule.ComparedToAttributeGuid.Value );
+
+                // if this is a TextFieldType, In-Memory LINQ is case-sensitive but LinqToSQL is not, so lets compare values using ToLower()
+                if ( comparedToAttribute.FieldType.Field is Rock.Field.Types.TextFieldType )
+                {
+                    fieldVisibilityRule.ComparedToValue = fieldVisibilityRule.ComparedToValue?.ToLower();
+                }
+
                 filterValues.Add( fieldVisibilityRule.ComparisonType.ConvertToString( false ) );
                 filterValues.Add( fieldVisibilityRule.ComparedToValue );
                 Expression entityCondition;
 
                 ParameterExpression parameterExpression = Expression.Parameter( typeof( Rock.Model.AttributeValue ) );
 
-                var comparedToAttribute = AttributeCache.Get( fieldVisibilityRule.ComparedToAttributeGuid.Value );
                 entityCondition = comparedToAttribute.FieldType.Field.AttributeFilterExpression( comparedToAttribute.QualifierValues, filterValues, parameterExpression );
                 if ( entityCondition is NoAttributeFilterExpression )
                 {
@@ -89,6 +97,12 @@ namespace Rock.Field
                 var conditionLambda = Expression.Lambda<Func<Rock.Model.AttributeValue, bool>>( entityCondition, parameterExpression );
                 var conditionFunc = conditionLambda.Compile();
                 var comparedToAttributeValue = attributeValues.GetValueOrNull( comparedToAttribute.Id )?.Value;
+
+                // if this is a TextFieldType, In-Memory LINQ is case-sensitive but LinqToSQL is not, so lets compare values using ToLower()
+                if ( comparedToAttribute.FieldType.Field is Rock.Field.Types.TextFieldType )
+                {
+                    comparedToAttributeValue = comparedToAttributeValue?.ToLower();
+                }
 
                 // create an instance of an AttributeValue to run the expressions against
                 var attributeValueToEvaluate = new Rock.Model.AttributeValue

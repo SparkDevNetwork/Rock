@@ -255,32 +255,16 @@ namespace Rock.Storage.AssetStorage
                 request.Delimiter = "/";
 
                 var assets = new List<Asset>();
-                var subFolders = new HashSet<string>();
 
-                ListObjectsV2Response response;
-
-                // S3 will only return 1,000 keys per response and sets IsTruncated = true, the do-while loop will run and fetch keys until IsTruncated = false.
-                do
+                // All "folders" will be in the CommonPrefixes property. There is no need to loop through truncated responses like there is for files.
+                ListObjectsV2Response response = client.ListObjectsV2( request );
+                foreach ( string subFolder in response.CommonPrefixes )
                 {
-                    response = client.ListObjectsV2( request );
-
-                    foreach ( string subFolder in response.CommonPrefixes )
+                    if ( subFolder.IsNotNullOrWhiteSpace() )
                     {
-                        if ( subFolder.IsNotNullOrWhiteSpace() )
-                        {
-                            subFolders.Add( subFolder );
-                        }
+                        var subFolderAsset = CreateAssetFromCommonPrefix( subFolder, client.Config.RegionEndpoint.SystemName, bucketName );
+                        assets.Add( subFolderAsset );
                     }
-
-                    request.ContinuationToken = response.NextContinuationToken;
-
-                } while ( response.IsTruncated );
-
-                // Add the subfolders to the asset collection
-                foreach ( string subFolder in subFolders )
-                {
-                    var subFolderAsset = CreateAssetFromCommonPrefix( subFolder, client.Config.RegionEndpoint.SystemName, bucketName );
-                    assets.Add( subFolderAsset );
                 }
 
                 return assets;
