@@ -399,6 +399,7 @@
     <Compile Include="Model\CodeGenerated\RegistrationTemplateFeeItemService.cs" />
     <Compile Include="Model\CommunicationResponse.cs" />
     <Compile Include="Model\CommunicationResponseService.partial.cs" />
+    <Compile Include="Model\GroupLocationHistoricalService.Partial.cs" />
     <Compile Include="Model\NoteAttachment.cs" />
     <Compile Include="Model\RegistrationTemplateFeeItem.cs" />
     <Compile Include="Model\SpiritualGiftsService.cs" />

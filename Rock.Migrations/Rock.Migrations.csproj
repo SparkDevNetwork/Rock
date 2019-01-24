@@ -188,6 +188,10 @@
     <Compile Include="Migrations\201901240230348_AutomatedPayments.Designer.cs">
       <DependentUpon>201901240230348_AutomatedPayments.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201901241553484_GroupLocationDeleteFix.cs" />
+    <Compile Include="Migrations\201901241553484_GroupLocationDeleteFix.Designer.cs">
+      <DependentUpon>201901241553484_GroupLocationDeleteFix.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -569,6 +573,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201901240230348_AutomatedPayments.resx">
       <DependentUpon>201901240230348_AutomatedPayments.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201901241553484_GroupLocationDeleteFix.resx">
+      <DependentUpon>201901241553484_GroupLocationDeleteFix.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
