@@ -279,7 +279,11 @@ namespace Rock.Attribute
                             category.Order = 0;
                         }
                         attribute.Categories.Add( category );
+                        
                     }
+
+                    // Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime just in case they were changed
+                    attribute.ModifiedDateTime = RockDateTime.Now;
                 }
 
                 foreach ( var qualifier in attribute.AttributeQualifiers.ToList() )
@@ -736,6 +740,9 @@ namespace Rock.Attribute
             {
                 attribute.Categories.Add( categoryService.Get( category.Id ) );
             }
+
+            // Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime just in case Categories changed
+            attribute.ModifiedDateTime = RockDateTime.Now;
 
             attribute.EntityTypeId = entityTypeId;
             attribute.EntityTypeQualifierColumn = entityTypeQualifierColumn;
