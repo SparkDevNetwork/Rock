@@ -14,18 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using Rock.Model;
 
 namespace Rock.Financial
 {
     /// <summary>
-    /// Base class for financial provider components. 
+    /// Describes a financial provider component that is setup to handle a three step payment process (typically involving an iFrame)
     /// </summary>
-    [RockObsolete( "1.9" )]
-    [Obsolete( "Use IThreeStepGatewayComponent instead.", false )]
-    public abstract class ThreeStepGatewayComponent : GatewayComponent, IThreeStepGatewayComponent
+    public interface IThreeStepGatewayComponent
     {
         /// <summary>
         /// Gets the step2 form URL.
@@ -33,14 +30,14 @@ namespace Rock.Financial
         /// <value>
         /// The step2 form URL.
         /// </value>
-        public abstract string Step2FormUrl { get; }
+        string Step2FormUrl { get; }
 
         /// <summary>
         /// Gets the financial transaction parameters that are passed to step 1
         /// </summary>
         /// <param name="redirectUrl">The redirect URL.</param>
         /// <returns></returns>
-        public abstract Dictionary<string, string> GetStep1Parameters( string redirectUrl );
+        Dictionary<string, string> GetStep1Parameters( string redirectUrl );
 
         /// <summary>
         /// Performs the first step of a three-step charge
@@ -49,7 +46,7 @@ namespace Rock.Financial
         /// <param name="paymentInfo">The payment information.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public abstract string ChargeStep1( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage );
+        string ChargeStep1( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage );
 
         /// <summary>
         /// Performs the final step of a three-step charge.
@@ -58,7 +55,7 @@ namespace Rock.Financial
         /// <param name="resultQueryString">The result query string from step 2.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public abstract FinancialTransaction ChargeStep3( FinancialGateway financialGateway, string resultQueryString, out string errorMessage );
+        FinancialTransaction ChargeStep3( FinancialGateway financialGateway, string resultQueryString, out string errorMessage );
 
         /// <summary>
         /// Performs the first step of adding a new payment schedule
@@ -68,7 +65,7 @@ namespace Rock.Financial
         /// <param name="paymentInfo">The payment information.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public abstract string AddScheduledPaymentStep1( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage );
+        string AddScheduledPaymentStep1( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage );
 
         /// <summary>
         /// Performs the third step of adding a new payment schedule
@@ -77,6 +74,6 @@ namespace Rock.Financial
         /// <param name="resultQueryString">The result query string from step 2.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public abstract FinancialScheduledTransaction AddScheduledPaymentStep3( FinancialGateway financialGateway, string resultQueryString, out string errorMessage );
+        FinancialScheduledTransaction AddScheduledPaymentStep3( FinancialGateway financialGateway, string resultQueryString, out string errorMessage );
     }
 }
