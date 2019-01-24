@@ -325,13 +325,15 @@ namespace Rock.Financial
 
             if ( _financialPersonSavedAccount == null && _automatedPaymentArgs.FinancialPersonSavedAccountId.HasValue )
             {
-                errorMessage = string.Format( "The saved account '{0}' does not exist for the person", _automatedPaymentArgs.FinancialPersonSavedAccountId.Value );
+                errorMessage = string.Format(
+                    "The saved account '{0}' is not valid for the person or gateway",
+                    _automatedPaymentArgs.FinancialPersonSavedAccountId.Value );
                 return false;
             }
 
             if ( _financialPersonSavedAccount == null )
             {
-                errorMessage = string.Format( "The given person does not have a saved account" );
+                errorMessage = string.Format( "The given person does not have a saved account for this gateway" );
                 return false;
             }
 
@@ -460,12 +462,15 @@ namespace Rock.Financial
                 _financialAccounts = _financialAccountService.GetByIds( accountIds ).AsNoTracking().ToDictionary( fa => fa.Id, fa => fa );
             }
 
-            if ( _authorizedPerson != null && _financialPersonSavedAccount == null )
+            if ( _authorizedPerson != null && _financialPersonSavedAccount == null && _financialGateway != null )
             {
                 // Pick the correct saved account based on args or default for the user
+                var financialGatewayId = _financialGateway.Id;
+
                 var savedAccountQry = _financialPersonSavedAccountService
                     .GetByPersonId( _authorizedPerson.Id )
                     .AsNoTracking()
+                    .Where( sa => sa.FinancialGatewayId == financialGatewayId )
                     .Include( sa => sa.FinancialPaymentDetail );
 
                 if ( _automatedPaymentArgs.FinancialPersonSavedAccountId.HasValue )

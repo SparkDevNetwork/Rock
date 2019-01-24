@@ -208,32 +208,27 @@ namespace Rock.Model
         /// <returns></returns>
         public ReferencePaymentInfo GetReferencePayment()
         {
+            var reference = new ReferencePaymentInfo();
+            reference.TransactionCode = this.TransactionCode;
+            reference.ReferenceNumber = this.ReferenceNumber;
+            reference.GatewayPersonIdentifier = this.GatewayPersonIdentifier;
+
             if ( this.FinancialPaymentDetail != null )
             {
-                var reference = new ReferencePaymentInfo();
-                reference.TransactionCode = this.TransactionCode;
-                reference.ReferenceNumber = this.ReferenceNumber;
-                reference.GatewayPersonIdentifier = this.GatewayPersonIdentifier;
-
-                if ( this.FinancialPaymentDetail != null )
+                reference.MaskedAccountNumber = this.FinancialPaymentDetail.AccountNumberMasked;
+                if ( this.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
                 {
-                    reference.MaskedAccountNumber = this.FinancialPaymentDetail.AccountNumberMasked;
-                    if ( this.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
+                    reference.InitialCurrencyTypeValue = DefinedValueCache.Get( this.FinancialPaymentDetail.CurrencyTypeValueId.Value );
+                    if ( reference.InitialCurrencyTypeValue != null &&
+                        reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) &&
+                        this.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
                     {
-                        reference.InitialCurrencyTypeValue = DefinedValueCache.Get( this.FinancialPaymentDetail.CurrencyTypeValueId.Value );
-                        if ( reference.InitialCurrencyTypeValue != null &&
-                            reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) &&
-                            this.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
-                        {
-                            reference.InitialCreditCardTypeValue = DefinedValueCache.Get( this.FinancialPaymentDetail.CreditCardTypeValueId.Value );
-                        }
+                        reference.InitialCreditCardTypeValue = DefinedValueCache.Get( this.FinancialPaymentDetail.CreditCardTypeValueId.Value );
                     }
                 }
-
-                return reference;
             }
 
-            return null;
+            return reference;
         }
 
         #endregion
