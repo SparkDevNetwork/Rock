@@ -1792,7 +1792,7 @@ namespace RockWeb.Blocks.Event
             if ( RegistrationTemplate != null &&
                 RegistrationTemplate.FinancialGateway != null )
             {
-                var threeStepGateway = RegistrationTemplate.FinancialGateway.GetGatewayComponent() as ThreeStepGatewayComponent;
+                var threeStepGateway = RegistrationTemplate.FinancialGateway.GetGatewayComponent() as IThreeStepGatewayComponent;
                 Using3StepGateway = threeStepGateway != null;
                 if ( Using3StepGateway )
                 {
@@ -3403,10 +3403,10 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private bool ProcessStep1( out string errorMessage )
         {
-            ThreeStepGatewayComponent gateway = null;
+            IThreeStepGatewayComponent gateway = null;
             if ( RegistrationTemplate != null && RegistrationTemplate.FinancialGateway != null )
             {
-                gateway = RegistrationTemplate.FinancialGateway.GetGatewayComponent() as ThreeStepGatewayComponent;
+                gateway = RegistrationTemplate.FinancialGateway.GetGatewayComponent() as IThreeStepGatewayComponent;
             }
 
             if ( gateway == null )
@@ -3470,13 +3470,16 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private bool ProcessStep3( RockContext rockContext, Registration registration, string resultQueryString, out string errorMessage )
         {
-            ThreeStepGatewayComponent gateway = null;
+            GatewayComponent gateway = null;
+            IThreeStepGatewayComponent threeStepGatewayComponent = null;
+
             if ( RegistrationTemplate != null && RegistrationTemplate.FinancialGateway != null )
             {
-                gateway = RegistrationTemplate.FinancialGateway.GetGatewayComponent() as ThreeStepGatewayComponent;
+                gateway = RegistrationTemplate.FinancialGateway.GetGatewayComponent();
+                threeStepGatewayComponent = gateway as IThreeStepGatewayComponent;
             }
 
-            if ( gateway == null )
+            if ( threeStepGatewayComponent == null )
             {
                 errorMessage = "There was a problem creating the payment gateway information";
                 return false;
@@ -3488,7 +3491,7 @@ namespace RockWeb.Blocks.Event
                 return false;
             }
 
-            var transaction = gateway.ChargeStep3( RegistrationTemplate.FinancialGateway, resultQueryString, out errorMessage );
+            var transaction = threeStepGatewayComponent.ChargeStep3( RegistrationTemplate.FinancialGateway, resultQueryString, out errorMessage );
             return SaveTransaction( gateway, registration, transaction, null, rockContext );
         }
 

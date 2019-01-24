@@ -390,6 +390,10 @@
     <Compile Include="Field\Types\AssetFieldType.cs" />
     <Compile Include="Field\Types\AssetStorageProviderFieldType.cs" />
     <Compile Include="Lava\Shortcodes\ScheduledContent.cs" />
+    <Compile Include="Financial\AutomatedPaymentProcessor.cs" />
+    <Compile Include="Financial\AutomatedPaymentArgs.cs" />
+    <Compile Include="Financial\IAutomatedGatewayComponent.cs" />
+    <Compile Include="Financial\IThreeStepGatewayComponent.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationResponseService.cs" />
     <Compile Include="Model\CodeGenerated\NoteAttachmentService.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationTemplateFeeItemService.cs" />
@@ -467,6 +471,7 @@
     <Compile Include="Utility\EntityCoding\QueuedEntity.cs" />
     <Compile Include="Utility\EntityCoding\Reference.cs" />
     <Compile Include="Utility\EntityCoding\WorkflowTypeExporter.cs" />
+    <Compile Include="Utility\ExtensionMethods\DictionaryExtensions.cs" />
     <Compile Include="Utility\RockObsolete.cs" />
     <Compile Include="SystemGuid\SystemSetting.cs" />
     <Compile Include="SystemKey\GroupTypeAttributeKey.cs" />
@@ -2165,6 +2170,7 @@
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestConnector.cs" />
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestStatus.cs" />
     <Compile Include="Workflow\Action\Connections\TransferConnectionRequest.cs" />
+    <Compile Include="Workflow\Action\Finance\ProcessPayment.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestAdd.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestAddDocument.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestSetAttribute.cs" />
