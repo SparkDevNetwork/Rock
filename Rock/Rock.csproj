@@ -501,6 +501,7 @@
     <Compile Include="CheckIn\CheckInEditFamilyBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="CheckIn\CheckInMessage.cs" />
     <Compile Include="CheckIn\CheckInSearchBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
