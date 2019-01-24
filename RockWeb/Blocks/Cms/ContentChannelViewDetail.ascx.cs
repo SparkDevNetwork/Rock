@@ -1,4 +1,8 @@
-﻿// <copyright>
+﻿/////
+///// IMPORTANT NOTE:  This block was renamed ContentChannelItemView in develop. If there are fixes in any 1.8.x hotfixes, you'll have to manually make the same changes in ContentChannelItemView when merging
+/////
+
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
