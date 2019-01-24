@@ -1776,6 +1776,9 @@ namespace Rock.Web.UI.Controls
                 new CategoryService( new RockContext() ).Queryable().Where( c => this.CategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>
                     attribute.Categories.Add( c ) );
 
+                // Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime just in case Categories changed
+                attribute.ModifiedDateTime = RockDateTime.Now;
+
                 attribute.AttributeQualifiers.Clear();
                 foreach ( var qualifier in AttributeQualifiers )
                 {
