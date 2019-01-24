@@ -27,20 +27,6 @@ namespace Rock
         #region Dictionary<TKey, TValue> extension methods
 
         /// <summary>
-        /// Gets the value associated with the key or the default of the value's type (typically null)
-        /// </summary>
-        /// <typeparam name="TK">The key type</typeparam>
-        /// <typeparam name="TV">The value type</typeparam>
-        /// <param name="dictionary">The dictionary in use</param>
-        /// <param name="key">The key to use to retrieve a value from the dictionary</param>
-        /// <param name="defaultValue">The value to return if the key does not exist</param>
-        /// <returns></returns>
-        public static TV GetValueOrDefault<TK, TV>( this IDictionary<TK, TV> dictionary, TK key, TV defaultValue = default( TV ) )
-        {
-            return dictionary.TryGetValue( key, out TV value ) ? value : defaultValue;
-        }
-
-        /// <summary>
         /// Adds or replaces an item in a Dictionary.
         /// </summary>
         /// <typeparam name="TKey">The type of the key.</typeparam>

@@ -203,7 +203,7 @@ namespace Rock.Rest.Controllers
             var schedulesWithMostRecentTransaction = schedules.Select( s => new
             {
                 Schedule = s,
-                MostRecentTransaction = mostRecentTransactions.GetValueOrDefault( s.Id )
+                MostRecentTransaction = mostRecentTransactions.GetValueOrNull( s.Id )
             } ).ToList();
 
             var response = ControllerContext.Request.CreateResponse( HttpStatusCode.OK, schedulesWithMostRecentTransaction );
