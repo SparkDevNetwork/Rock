@@ -75,6 +75,9 @@ namespace Rock.Financial
         /// </summary>
         public string BatchNamePrefix { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public class AutomatedPaymentDetailArgs
         {
             /// <summary>
