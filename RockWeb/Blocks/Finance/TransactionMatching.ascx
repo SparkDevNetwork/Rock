@@ -54,7 +54,7 @@
                         <div class="col-md-6">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:RockDropDownList ID="ddlIndividual" runat="server" Label="Individual" Help="Select a person that has previously been matched to the bank account. If the person isn't in this list, use the 'Assign to New' to select the matching person." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
+                                    <Rock:RockDropDownList ID="ddlIndividual" runat="server" EnhanceForLongLists="true" Label="Individual" Help="Select a person that has previously been matched to the bank account. If the person isn't in this list, use the 'Assign to New' to select the matching person." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
                                     <span id="badgeIndividualCount" runat="server" class="pull-right badge badge-danger"
                                         style="position: relative; top: -58px; left: 10px"></span>
 
