@@ -15,12 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Web;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -110,43 +108,50 @@ namespace Rock.Model
 
             using ( SqlDataReader reader = cmd.EndExecuteReader( asyncResult ) )
             {
-                BinaryFile binaryFile = new BinaryFile();
-
-                // Columns must be read in Sequential Order (see stored procedure spCore_BinaryFileGet)
-                reader.Read();
-                binaryFile.Id = reader["Id"] as int? ?? 0;
-                binaryFile.IsTemporary = ( (bool)reader["IsTemporary"] );
-                binaryFile.IsSystem = (bool)reader["IsSystem"];
-                binaryFile.BinaryFileTypeId = reader["BinaryFileTypeId"] as int?;
-
-                // return requiresViewSecurity to let caller know that security needs to be checked on this binaryFile before viewing
-                requiresViewSecurity = (bool)reader["RequiresViewSecurity"];
-
-                binaryFile.FileName = reader["FileName"] as string;
-                binaryFile.MimeType = reader["MimeType"] as string;
-                binaryFile.ModifiedDateTime = reader["ModifiedDateTime"] as DateTime?;
-                binaryFile.Description = reader["Description"] as string;
-                int? storageEntityTypeId = reader["StorageEntityTypeId"] as int?;
-                binaryFile.SetStorageEntityTypeId( storageEntityTypeId );
-                var guid = reader["Guid"];
-                if ( guid is Guid )
+                if ( reader.Read() )
                 {
-                    binaryFile.Guid = (Guid)guid;
-                }
-                binaryFile.StorageEntitySettings = reader["StorageEntitySettings"] as string;
-                binaryFile.Path = reader["Path"] as string;
-                binaryFile.FileSize = reader["FileSize"] as long?;
-                binaryFile.DatabaseData = new BinaryFileData();
+                    BinaryFile binaryFile = new BinaryFile();
 
-                // read the fileContent from the database just in case it's stored in the database, otherwise, the Provider will get it
-                // TODO do as a stream instead
-                var content = reader["Content"] as byte[];
-                if ( content != null )
+                    // Columns must be read in Sequential Order (see stored procedure spCore_BinaryFileGet)
+                    binaryFile.Id = reader["Id"] as int? ?? 0;
+                    binaryFile.IsTemporary = ( (bool)reader["IsTemporary"] );
+                    binaryFile.IsSystem = (bool)reader["IsSystem"];
+                    binaryFile.BinaryFileTypeId = reader["BinaryFileTypeId"] as int?;
+
+                    // return requiresViewSecurity to let caller know that security needs to be checked on this binaryFile before viewing
+                    requiresViewSecurity = (bool)reader["RequiresViewSecurity"];
+
+                    binaryFile.FileName = reader["FileName"] as string;
+                    binaryFile.MimeType = reader["MimeType"] as string;
+                    binaryFile.ModifiedDateTime = reader["ModifiedDateTime"] as DateTime?;
+                    binaryFile.Description = reader["Description"] as string;
+                    int? storageEntityTypeId = reader["StorageEntityTypeId"] as int?;
+                    binaryFile.SetStorageEntityTypeId( storageEntityTypeId );
+                    var guid = reader["Guid"];
+                    if ( guid is Guid )
+                    {
+                        binaryFile.Guid = (Guid)guid;
+                    }
+                    binaryFile.StorageEntitySettings = reader["StorageEntitySettings"] as string;
+                    binaryFile.Path = reader["Path"] as string;
+                    binaryFile.FileSize = reader["FileSize"] as long?;
+                    binaryFile.DatabaseData = new BinaryFileData();
+
+                    // read the fileContent from the database just in case it's stored in the database, otherwise, the Provider will get it
+                    // TODO do as a stream instead
+                    var content = reader["Content"] as byte[];
+                    if ( content != null )
+                    {
+                        binaryFile.DatabaseData.Content = content;
+                    }
+
+                    return binaryFile;
+                }
+                else
                 {
-                    binaryFile.DatabaseData.Content = content;
+                    requiresViewSecurity = false;
+                    return null;
                 }
-
-                return binaryFile;
             }
         }
     }
