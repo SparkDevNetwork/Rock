@@ -315,6 +315,13 @@ namespace RockWeb.Blocks.Core
 
                 block.SaveAttributeValues( rockContext );
 
+                // If this is a page menu block then we need to also flush the LavaTemplateCache for the block ID
+                if ( block.BlockType.Guid == Rock.SystemGuid.BlockType.PAGE_MENU.AsGuid() )
+                {
+                    var cacheKey = string.Format( "Rock:PageMenu:{0}", block.Id );
+                    LavaTemplateCache.Remove( cacheKey );
+                }
+
                 StringBuilder scriptBuilder = new StringBuilder();
 
                 if ( reloadPage )

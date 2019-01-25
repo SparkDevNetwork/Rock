@@ -48,9 +48,66 @@ namespace Rock.Attribute
         public CodeEditorFieldAttribute( string name, string description = "", CodeEditorMode mode = CodeEditorMode.Text, CodeEditorTheme theme = CodeEditorTheme.Rock, int height = 200, bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.CodeEditorFieldType ).FullName )
         {
-            FieldConfigurationValues.Add(EDITOR_MODE, new Field.ConfigurationValue(mode.ToString()));
-            FieldConfigurationValues.Add(EDITOR_THEME, new Field.ConfigurationValue(theme.ToString()));
-            FieldConfigurationValues.Add(EDITOR_HEIGHT, new Field.ConfigurationValue(height.ToString()));
+            EditorMode = mode;
+            EditorTheme = theme;
+            EditorHeight = height;
+        }
+
+        /// <summary>
+        /// Gets or sets the editor mode.
+        /// </summary>
+        /// <value>
+        /// The editor mode.
+        /// </value>
+        public CodeEditorMode EditorMode
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( EDITOR_MODE ).ConvertToEnumOrNull<CodeEditorMode>() ?? CodeEditorMode.Text;
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( EDITOR_MODE, new Field.ConfigurationValue( value.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the editor theme.
+        /// </summary>
+        /// <value>
+        /// The editor theme.
+        /// </value>
+        public CodeEditorTheme EditorTheme
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( EDITOR_MODE ).ConvertToEnumOrNull<CodeEditorTheme>() ?? CodeEditorTheme.Rock;
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( EDITOR_MODE, new Field.ConfigurationValue( value.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the height of the editor.
+        /// </summary>
+        /// <value>
+        /// The height of the editor.
+        /// </value>
+        public int EditorHeight
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( EDITOR_MODE ).AsIntegerOrNull() ?? 200;
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( EDITOR_MODE, new Field.ConfigurationValue( value.ToString() ) );
+            }
         }
     }
 }

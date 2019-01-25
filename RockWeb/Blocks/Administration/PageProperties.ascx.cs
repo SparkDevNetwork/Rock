@@ -941,12 +941,26 @@ namespace RockWeb.Blocks.Administration
         private void LoadLayouts( RockContext rockContext, SiteCache site )
         {
             LayoutService.RegisterLayouts( Request.MapPath( "~" ), site );
+            string currentValue = null;
+            if ( ddlLayout.SelectedItem != null )
+            {
+                currentValue = ddlLayout.SelectedItem.Text;
+            }
 
             ddlLayout.Items.Clear();
-            var layoutService = new LayoutService( rockContext );
-            foreach ( var layout in layoutService.GetBySiteId( site.Id ) )
+            var layouts = new LayoutService( rockContext ).GetBySiteId( site.Id );
+            foreach ( var layout in layouts )
             {
                 ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
+            }
+
+            if ( currentValue.IsNotNullOrWhiteSpace() )
+            {
+                var selectedLayout = layouts.FirstOrDefault( a => a.Name.Equals( currentValue, StringComparison.OrdinalIgnoreCase ) );
+                if ( selectedLayout != null )
+                {
+                    ddlLayout.SetValue( selectedLayout.Id );
+                }
             }
         }
 

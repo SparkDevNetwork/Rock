@@ -136,7 +136,7 @@ textarea,
         right: 24px;
         bottom: 0;
         left: 24px;
-        height:0;
+        height: 0;
         content: " ";
         opacity: 0;
         transition: height 300ms ease-in-out, opacity 300ms ease-in-out;
@@ -1212,7 +1212,7 @@ body.navbar-side-open {
         font-family: @fa-font-face;
         font-size: 80%;
         font-weight: 600;
-        content: "@{breadcrumb-separator}"
+        content: "@{breadcrumb-separator}";
       }
     }
   }
@@ -1353,7 +1353,9 @@ body.navbar-side-open {
   display: block;
   min-height: 19px;
   padding-left: 28px;  // Not sure if needed
-  margin: 7px 16px 7px 0 !important;
+  margin-top: 7px;
+  margin-right: 16px;
+  margin-bottom: 7px;
 
   label { // Override forms.less
     padding-left: 0;
