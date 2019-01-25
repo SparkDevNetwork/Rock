@@ -753,8 +753,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
             }
 
-            if ( isValid )
-        {
+            if ( !isValid )
+            {
+                if ( validationMessages.Any() )
+                {
+                    nbAddPerson.Text = "<ul><li>" + validationMessages.AsDelimited( "</li><li>" ) + "</li></lu>";
+                    nbAddPerson.Visible = true;
+                }
+
+                return;
+            }
+
             if ( hfActiveTab.Value == "Existing" )
             {
                 if ( ppPerson.PersonId.HasValue )
@@ -822,15 +831,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
 
                 DateTime? birthdate = dpNewPersonBirthDate.SelectedDate;
-                //if ( birthdate.HasValue )
-                //{
-                //    // If setting a future birthdate, subtract a century until birthdate is not greater than today.
-                //    var today = RockDateTime.Today;
-                //    while ( birthdate.Value.CompareTo( today ) > 0 )
-                //    {
-                //        birthdate = birthdate.Value.AddYears( -100 );
-                //    }
-                //}
 
                 groupMember.BirthDate = birthdate;
                 groupMember.GradeOffset = ddlGradePicker.SelectedValueAsInt();
@@ -860,15 +860,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             modalAddPerson.Hide();
 
             BindMembers();
-        }
-            else
-            {
-                if ( validationMessages.Any() )
-                {
-                    nbAddPerson.Text = "<ul><li>" + validationMessages.AsDelimited( "</li><li>" ) + "</li></lu>";
-                    nbAddPerson.Visible = true;
-                }
-            }
+
         }
 
         #endregion

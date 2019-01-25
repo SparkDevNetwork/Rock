@@ -105,6 +105,12 @@ namespace Rock.Client
         /// <summary />
         public int Order { get; set; }
 
+        /// <summary />
+        public string PostHtml { get; set; }
+
+        /// <summary />
+        public string PreHtml { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -161,6 +167,8 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Order = source.Order;
+            this.PostHtml = source.PostHtml;
+            this.PreHtml = source.PreHtml;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

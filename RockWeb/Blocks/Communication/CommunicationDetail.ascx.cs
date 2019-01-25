@@ -595,7 +595,8 @@ namespace RockWeb.Blocks.Communication
         private void ShowDetail( Rock.Model.Communication communication )
         {
             ShowStatus( communication );
-            lTitle.Text = ( communication.Name ?? communication.Subject ?? "Communication" ).FormatAsHtmlTitle();
+            // lTitle.Text = ( communication.Name ?? communication.Subject ?? "Communication" ).FormatAsHtmlTitle();
+            lTitle.Text = (string.IsNullOrEmpty( communication.Name ) ? ( string.IsNullOrEmpty( communication.Subject ) ? communication.PushTitle : communication.Subject ) : communication.Name).FormatAsHtmlTitle();
             pdAuditDetails.SetEntity( communication, ResolveRockUrl( "~" ) );
 
             SetPersonDateValue( lCreatedBy, communication.CreatedByPersonAlias, communication.CreatedDateTime, "Created By" );

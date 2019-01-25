@@ -29,14 +29,14 @@ using Rock.Web.Cache;
 namespace Rock.Financial
 {
     /// <summary>
-    /// PayFlowPro Payment Gateway
+    /// Test Payment Gateway
     /// </summary>
     [Description( "Test Payment Gateway" )]
     [Export( typeof( GatewayComponent ) )]
     [ExportMetadata( "ComponentName", "TestGateway" )]
 
     [TextField( "Declined Card Numbers", "Enter partial card numbers that you wish to be declined separated by commas. Any card number that ends with a number matching a value entered here will be declined.", false, "", "", 0 )]
-    public class TestGateway : GatewayComponent
+    public class TestGateway : GatewayComponent, IAutomatedGatewayComponent
     {
 
         #region Gateway Component Implementation
@@ -85,6 +85,19 @@ namespace Rock.Financial
         public override bool PromptForBillingAddress( FinancialGateway financialGateway )
         {
             return false;
+        }
+
+        /// <summary>
+        /// Handle a payment from a REST endpoint or other automated means. This payment can only be made with a saved account.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment info.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public FinancialTransaction AutomatedCharge( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            return Charge( financialGateway, paymentInfo, out errorMessage );
         }
 
         /// <summary>

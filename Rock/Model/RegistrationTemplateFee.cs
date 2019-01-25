@@ -345,13 +345,27 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Adds the fee control with a null for otherRegistrants.
+        /// </summary>
+        /// <param name="phFees">The ph fees.</param>
+        /// <param name="registrationInstance">The registration instance.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        /// <param name="feeValues">The fee values.</param>
+        [RockObsolete("1.8")]
+        [Obsolete("Use the override that has otherRegistrants instead.")]
+        public void AddFeeControl( PlaceHolder phFees, RegistrationInstance registrationInstance, bool setValues, List<FeeInfo> feeValues )
+        {
+            AddFeeControl( phFees, registrationInstance, setValues, feeValues, null );
+        }
+
+        /// <summary>
         /// Adds the fee control.
         /// </summary>
         /// <param name="phFees">The ph fees.</param>
         /// <param name="registrationInstance">The registration instance.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         /// <param name="feeValues">The fee values.</param>
-        /// <param name="otherRegistrants">The other registrants that have been registered so far in this registration</param>
+        /// <param name="otherRegistrants">The other registrants that have been registered so far in this registration. Set to NULL if editing a single registrant.</param>
         public void AddFeeControl( PlaceHolder phFees, RegistrationInstance registrationInstance, bool setValues, List<FeeInfo> feeValues, List<RegistrantInfo> otherRegistrants )
         {
             RegistrationTemplateFee fee = this;

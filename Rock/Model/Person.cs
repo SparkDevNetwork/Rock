@@ -625,6 +625,17 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Determines whether the <see cref="RecordTypeValue"/> of this Person is Business
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance is business; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsBusiness()
+        {
+            return IsBusiness( this.RecordTypeValueId );
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is business.
         /// </summary>
         /// <value>
@@ -2196,7 +2207,8 @@ namespace Rock.Model
         /// <returns></returns>
         public PhoneNumber GetPhoneNumber( Guid phoneType )
         {
-            return PhoneNumbers.FirstOrDefault( n => n.NumberTypeValue.Guid == phoneType );
+            int numberTypeValueId = DefinedValueCache.GetId( phoneType ) ?? 0;
+            return PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == numberTypeValueId );
         }
 
         #endregion
@@ -2608,7 +2620,7 @@ namespace Rock.Model
                     {
                         using ( var rockContext = new RockContext() )
                         {
-                            ageClassification = new PersonService( rockContext ).Queryable( true ).Where( a => a.Id == personId ).Select( a => ( AgeClassification? ) a.AgeClassification ).FirstOrDefault();
+                            ageClassification = new PersonService( rockContext ).GetSelect( personId.Value, s => s.AgeClassification );
                         }
                     }
 
