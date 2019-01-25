@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -102,50 +103,70 @@ namespace Rock.Workflow.Action.CheckIn
 
                                 foreach ( var location in group.GetLocations( true ) )
                                 {
+                                    bool isCheckedIntoLocation = false;
                                     foreach ( var schedule in location.GetSchedules( true ) )
                                     {
                                         var startDateTime = schedule.CampusCurrentDateTime;
-                                        if (GetAttributeValue( action, "EnforceStrictLocationThreshold" ).AsBoolean() && location.Location.SoftRoomThreshold.HasValue)
+
+                                        // If we're enforcing strict location thresholds, then before we create an attendance record
+                                        // we need to check the location-schedule's current count.
+                                        if ( GetAttributeValue( action, "EnforceStrictLocationThreshold" ).AsBoolean() && location.Location.SoftRoomThreshold.HasValue )
                                         {
-                                            var currentOccurence = GetCurrentOccurence( currentOccurences, location, schedule, startDateTime );
-                                            var totalAttended = attendanceService.GetByDateOnLocationAndSchedule( startDateTime, location.Location.Id, schedule.Schedule.Id ).Count()
-                                                + (currentOccurence == null ? 0 : currentOccurence.Count);
+                                            var currentOccurence = GetCurrentOccurence( currentOccurences, location, schedule, startDateTime.Date );
 
-                                            if (totalAttended >= location.Location.SoftRoomThreshold.Value)
-                                            {
-                                                person.Selected = false;
-                                                group.Selected = false;
-                                                groupType.Selected = false;
-                                                location.Selected = false;
-                                                schedule.Selected = false;
-                                                var message = new CheckInMessage()
-                                                {
-                                                    MessageType = MessageType.Warning
-                                                };
+                                            // The totalAttended is the number of people still checked in (not people who have been checked-out)
+                                            // not counting the current person who may already be checked in,
+                                            // + the number of people we have checked in so far (but haven't been saved yet).
+                                            var attendanceQry = attendanceService.GetByDateOnLocationAndSchedule( startDateTime.Date, location.Location.Id, schedule.Schedule.Id )
+                                                .AsNoTracking()
+                                                .Where( a => a.EndDateTime == null );
 
-                                                var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null );
-                                                mergeFields.Add( "Person", person.Person );
-                                                mergeFields.Add( "Group", group.Group );
-                                                mergeFields.Add( "Location", location.Location );
-                                                mergeFields.Add( "Schedule", schedule.Schedule );
-                                                message.MessageText = GetAttributeValue( action, "NotChecked-InMessageFormat" ).ResolveMergeFields( mergeFields );
-                                                continue;
-                                            }
-                                            else
+                                            // only process if the current person is NOT already checked-in to this location and schedule
+                                            if ( !attendanceQry.Where( a => a.PersonAlias.PersonId == person.Person.Id ).Any() )
                                             {
-                                                if (currentOccurence == null)
+                                                var totalAttended = attendanceQry.Count() + ( currentOccurence == null ? 0 : currentOccurence.Count );
+
+                                                // If over capacity, remove the schedule and add a warning message.
+                                                if ( totalAttended >= location.Location.SoftRoomThreshold.Value )
                                                 {
-                                                    currentOccurence = new OccurenceRecord()
+                                                    // Unselect the schedule since the location was full for this schedule.  
+                                                    location.Schedules.Remove( schedule );
+
+                                                    var message = new CheckInMessage()
                                                     {
-                                                        Date = startDateTime.Date,
-                                                        LocationId = location.Location.Id,
-                                                        ScheduleId = schedule.Schedule.Id
+                                                        MessageType = MessageType.Warning
                                                     };
-                                                    currentOccurences.Add( currentOccurence );
+
+                                                    var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null );
+                                                    mergeFields.Add( "Person", person.Person );
+                                                    mergeFields.Add( "Group", group.Group );
+                                                    mergeFields.Add( "Location", location.Location );
+                                                    mergeFields.Add( "Schedule", schedule.Schedule );
+                                                    message.MessageText = GetAttributeValue( action, "NotChecked-InMessageFormat" ).ResolveMergeFields( mergeFields );
+
+                                                    // Now add it to the check-in state message list for others to see.
+                                                    checkInState.Messages.Add( message );
+                                                    continue;
                                                 }
-                                                currentOccurence.Count += 1;
+                                                else
+                                                {
+                                                    // Keep track of anyone who was checked in so far.
+                                                    if ( currentOccurence == null )
+                                                    {
+                                                        currentOccurence = new OccurenceRecord()
+                                                        {
+                                                            Date = startDateTime.Date,
+                                                            LocationId = location.Location.Id,
+                                                            ScheduleId = schedule.Schedule.Id
+                                                        };
+                                                        currentOccurences.Add( currentOccurence );
+                                                    }
+
+                                                    currentOccurence.Count += 1;
+                                                }
                                             }
                                         }
+
                                         // Only create one attendance record per day for each person/schedule/group/location
                                         var attendance = attendanceService.Get( startDateTime, location.Location.Id, schedule.Schedule.Id, group.Group.Id, person.Person.Id );
                                         if ( attendance == null )
@@ -174,6 +195,13 @@ namespace Rock.Workflow.Action.CheckIn
                                         attendance.Note = group.Notes;
 
                                         KioskLocationAttendance.AddAttendance( attendance );
+                                        isCheckedIntoLocation = true;
+                                    }
+
+                                    // If the person was NOT checked into the location for any schedule then unselect the location
+                                    if ( ! isCheckedIntoLocation )
+                                    {
+                                        group.Locations.Remove( location );
                                     }
                                 }
                             }
@@ -188,6 +216,14 @@ namespace Rock.Workflow.Action.CheckIn
             return false;
         }
 
+        /// <summary>
+        /// Gets the current occurence from the given list for the matching location, schedule and startDateTime.
+        /// </summary>
+        /// <param name="currentOccurences">The current occurences.</param>
+        /// <param name="location">The location.</param>
+        /// <param name="schedule">The schedule.</param>
+        /// <param name="startDateTime">The start date time.</param>
+        /// <returns></returns>
         private OccurenceRecord GetCurrentOccurence( List<OccurenceRecord> currentOccurences, CheckInLocation location, CheckInSchedule schedule, DateTime startDateTime )
         {
             return currentOccurences
