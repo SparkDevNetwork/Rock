@@ -213,13 +213,8 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Attendance"/> entities for a specific date and location.</returns>
         public IQueryable<Attendance> GetByDateOnLocationAndSchedule( DateTime date, int locationId, int scheduleId )
         {
-            return Queryable( "Occurrence.Group,Occurrence.Schedule,PersonAlias.Person" )
-                .Where( a =>
-                    a.Occurrence.OccurrenceDate == date.Date &&
-                    a.Occurrence.LocationId == locationId &&
-                    a.Occurrence.ScheduleId == scheduleId &&
-                    a.DidAttend.HasValue &&
-                    a.DidAttend.Value );
+            return GetByDateAndLocation( date, locationId )
+                .Where( a => a.Occurrence.ScheduleId == scheduleId );
         }
 
         /// <summary>
