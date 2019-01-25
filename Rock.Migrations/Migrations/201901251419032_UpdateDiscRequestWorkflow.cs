@@ -18,8 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    using Rock.Model;
-    using System.Linq;
+
     /// <summary>
     ///
     /// </summary>
@@ -357,6 +356,7 @@ BEGIN
   );
         END" );
         }
+
 
         /// <summary>
         /// Operations to be performed during the downgrade process.
