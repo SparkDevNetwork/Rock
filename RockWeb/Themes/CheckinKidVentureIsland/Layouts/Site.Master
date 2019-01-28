@@ -1,0 +1,46 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+
+<html class="no-js">
+<head runat="server">
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" )%>"></script>
+
+    <!-- Set the viewport width to device width for mobile -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+	<!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/checkin-theme.css", true) %>"/>
+
+    <script src="<%# ResolveRockUrl("~/Scripts/fastclick.js" ) %>" ></script>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+</head>
+<body runat="server" id="body">
+    <form id="form1" runat="server">
+
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+    </form>
+
+    <script>
+        window.addEventListener('load', function () {
+            new FastClick(document.body);
+        }, false);
+
+        // add quick fade-in effect to the page
+        $(document).ready(function () {
+            $("body").rockFadeIn();
+        });
+    </script>
+
+
+</body>
+</html>
