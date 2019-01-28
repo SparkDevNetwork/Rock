@@ -196,6 +196,10 @@
     <Compile Include="Migrations\201901251419032_UpdateDiscRequestWorkflow.Designer.cs">
       <DependentUpon>201901251419032_UpdateDiscRequestWorkflow.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201901282220368_Rollup_0128.cs" />
+    <Compile Include="Migrations\201901282220368_Rollup_0128.Designer.cs">
+      <DependentUpon>201901282220368_Rollup_0128.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -583,6 +587,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201901251419032_UpdateDiscRequestWorkflow.resx">
       <DependentUpon>201901251419032_UpdateDiscRequestWorkflow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201901282220368_Rollup_0128.resx">
+      <DependentUpon>201901282220368_Rollup_0128.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
