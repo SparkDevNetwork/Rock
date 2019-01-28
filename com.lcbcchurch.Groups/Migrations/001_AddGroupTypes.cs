@@ -28,6 +28,9 @@ namespace com.lcbcchurch.Groups.Migrations
     {
         public override void Up()
         {
+            // Delete Hours Serving Attribute
+            RockMigrationHelper.DeleteAttribute( "9DD24AE7-966C-47C3-B6D5-E52B24A0AADF" );
+
             // Add Group Types
             RockMigrationHelper.AddGroupType( "Campus Group", "", "Group", "Member", false, true, true, "", 0, "", 0, "", "EB306DC0-C9FD-4672-84C3-7BB02ECF484A" );
             RockMigrationHelper.AddGroupType( "Ministry Group", "", "Group", "Member", false, true, true, "", 0, "", 0, "", "F12057FA-F0CE-41A7-A199-7C7754E01E10" );
