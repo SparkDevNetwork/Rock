@@ -741,6 +741,58 @@ namespace Rock.Tests.Rock.Lava
 
         #endregion
 
+        #region Where
+
+        /// <summary>
+        /// For use in Lava -- should extract a single element form array
+        /// </summary>
+        [Fact]
+        public void Where_ByInt()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", (int)1 } },
+               new Dictionary<string, object> { { "Id", (int)2 } }
+            };
+            var output = RockFilters.Where( input, "Id", 1 );
+            Assert.Single( ( List<object> ) output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should extract a single element form array. Simulates a | FromJSON input.
+        /// </summary>
+        [Fact]
+        public void Where_ByLong()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", (long)1 } },
+               new Dictionary<string, object> { { "Id", (long)2 } }
+            };
+            var output = RockFilters.Where( input, "Id", (int)1 );
+            Assert.Single( ( List<object> ) output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should extract a single element form array
+        /// </summary>
+        [Fact]
+        public void Where_ByString()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", "1" } },
+               new Dictionary<string, object> { { "Id", "2" } }
+            };
+
+            var output = RockFilters.Where( input, "Id", "1" );
+            Assert.Single( ( List<object> ) output );
+        }
+
+
+
+        #endregion
+
         #endregion
 
         #region Date Filters

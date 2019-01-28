@@ -4332,7 +4332,7 @@ namespace Rock.Lava
                     else if (value is IDictionary<string, object>)
                     {
                         var dictionaryObject = value as IDictionary<string, object>;
-                        if ( dictionaryObject.ContainsKey( filterKey ) && dictionaryObject[filterKey].Equals( filterValue ) )
+                        if ( dictionaryObject.ContainsKey( filterKey ) && (dynamic) dictionaryObject[filterKey] == (dynamic) filterValue )
                         {
                             result.Add( dictionaryObject );
                         }
