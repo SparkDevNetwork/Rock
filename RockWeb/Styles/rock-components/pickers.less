@@ -15,6 +15,7 @@
   .toggle-additional-search-fields {
     display: block;
     font-size: 14px;
+    float: right;
 
     &.active {
       background-color: darken(@btn-default-bg, 10%);
@@ -87,7 +88,6 @@
       width: 5px;
       height: 380px;
       max-height: ~"calc(100vh - 210px)";
-      margin-top: 10px;
     }
   }
 
@@ -103,7 +103,7 @@
   }
 
   h4 {
-    margin: 0;
+    margin: 0 0 10px;
     font-size: 14px;
     font-weight: @font-weight-semibold;
   }
@@ -250,14 +250,14 @@
   }
 }
 
-#dialog .scroll-container-picker {
-  width: 360px;
+// #dialog .scroll-container-picker {
+//   width: 360px;
 
-  .viewport {
-    width: 340px;
-    height: 190px;
-  }
-}
+//   .viewport {
+//     width: 340px;
+//     height: 190px;
+//   }
+// }
 
 // date time picker
 .date-time-picker {
