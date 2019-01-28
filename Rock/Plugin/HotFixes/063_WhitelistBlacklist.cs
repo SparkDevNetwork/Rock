@@ -81,7 +81,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         private void CreateContentWhiteList()
         {
-            RockMigrationHelper.AddGlobalAttribute( "9C204CD0-1233-41C5-818A-C5DA439445AA", "", "", "Content Filetype Whitelist", "A comma or semicolon separated list of file types that are allowed to be uploaded to the file system. If left blank then all files are allowed unless they are in \"Content Filetype Blacklist\". Filetypes in this list have a lower preference then the ones in \"Content Filetype Blacklist\". i.e. if a file type exists in both lists then it will not be allowed. This list does not prevent files from uploading as a binary file type which is saved to the database.", 0, "", SystemGuid.Attribute.CONTENT_FILETYPE_WHITELIST, key: "ContentFiletypeWhitelist" );
+            RockMigrationHelper.AddGlobalAttribute( "9C204CD0-1233-41C5-818A-C5DA439445AA", "", "", "Content Filetype Whitelist", "A comma or semicolon separated list of file types that are allowed to be uploaded to the file system. If left blank then all files are allowed unless they are in \"Content Filetype Blacklist\". Filetypes in this list have a lower preference then the ones in \"Content Filetype Blacklist\". i.e. if a file type exists in both lists then it will not be allowed. This list does not prevent files from uploading as a binary file type which is saved to the database.", 0, "", SystemGuid.Attribute.CONTENT_FILETYPE_WHITELIST, "ContentFiletypeWhitelist", false );
 
             // Add the Content Filetype Whitelist to the config category
             Sql( @"
