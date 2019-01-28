@@ -30,7 +30,9 @@ If ( (Get-WebAppPoolState -Name $Site.applicationPool).Value -eq "Started" ) {
 }
 
 # wait for 10 seconds before continuing
-Start-Sleep 10
+write-output "$(Get-Date -Format G) Waiting 10 seconds for IIS to shutdown..."
+Start-Sleep -s 10
+write-output "$(Get-Date -Format G) Continuing on..."
 
 # backup web.config file
 If (Test-Path "$webroot\web.config"){
