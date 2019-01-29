@@ -93,11 +93,22 @@ namespace Rock.Financial
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="paymentInfo">The payment info.</param>
         /// <param name="errorMessage">The error message.</param>
+        /// <param name="metadata">Optional. Metadata key value pairs to send to the gateway</param>
         /// <returns></returns>
-        public FinancialTransaction AutomatedCharge( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage )
+        public Payment AutomatedCharge( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage, Dictionary<string, string> metadata = null )
         {
             errorMessage = string.Empty;
-            return Charge( financialGateway, paymentInfo, out errorMessage );
+            var transaction = Charge( financialGateway, paymentInfo, out errorMessage );
+
+            if ( transaction == null || !string.IsNullOrEmpty( errorMessage ) )
+            {
+                return null;
+            }
+
+            return new Payment
+            {
+                TransactionCode = transaction.TransactionCode
+            };
         }
 
         /// <summary>

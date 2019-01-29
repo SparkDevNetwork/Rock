@@ -690,8 +690,6 @@ namespace Rock.Tests.Rock.Lava
 
         #endregion
 
-        #region Array filters
-
         #region Index
 
         /// <summary>
