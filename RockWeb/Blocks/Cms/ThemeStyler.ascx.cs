@@ -582,7 +582,7 @@ $('.js-panel-toggle').on('click', function (e) {
                     AddControl( panelClose, true );
                 }
 
-                if ( phThemeControls.Controls.Count == 0 )
+                if ( phThemeControls.Controls.Count == 0 && !pnlFontAwesomeSettings.Visible )
                 {
                     btnSave.Visible = false;
                     nbMessages.Text = "This theme does not define any variables for editing.";
