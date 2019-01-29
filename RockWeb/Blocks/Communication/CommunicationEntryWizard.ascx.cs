@@ -1453,6 +1453,7 @@ namespace RockWeb.Blocks.Communication
                         var sendTestToPerson = new PersonService( rockContext ).Get( CurrentPerson.Id );
                         if ( mediumEntityTypeId == EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Id )
                         {
+                            testCommunication.Subject = string.Format( "[Test] {0}", communication.Subject );
                             if ( sendTestToPerson.Email != tbTestEmailAddress.Text )
                             {
                                 sendTestToPerson.Email = tbTestEmailAddress.Text;
@@ -1460,6 +1461,7 @@ namespace RockWeb.Blocks.Communication
                         }
                         else if ( mediumEntityTypeId == EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ).Id )
                         {
+                            testCommunication.SMSMessage = string.Format( "[Test] {0}", communication.SMSMessage );
                             var smsPhoneNumber = sendTestToPerson.PhoneNumbers.FirstOrDefault( a => a.IsMessagingEnabled == true );
                             if ( smsPhoneNumber == null )
                             {
