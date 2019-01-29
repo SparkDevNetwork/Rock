@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     var rockContext = new RockContext();
                     var group = new GroupService( rockContext ).Get( ddlGroup.SelectedValueAsId().Value );
-                    var person = new PersonService( rockContext ).Get( hfPersonId.ValueAsInt() );
+                    var person = new PersonService( rockContext ).Get( hfPersonGuid.Value.AsGuid() );
                     if ( person != null && group != null )
                     {
                         // Person Attributes
@@ -150,6 +150,9 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
+        /// <summary>
+        /// Binds the families.
+        /// </summary>
         private void BindFamilies()
         {
             ddlGroup.DataSource = CurrentPerson.GetFamilies().ToList();
@@ -170,7 +173,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEditPerson_Click( object sender, EventArgs e )
         {
-            ShowEditPersonDetails( CurrentPerson.Id );
+            ShowEditPersonDetails( CurrentPerson.Guid );
         }
 
         /// <summary>
@@ -220,8 +223,9 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rptGroupMembers_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
-            int personId = e.CommandArgument.ToString().AsInteger();
-            ShowEditPersonDetails( personId );
+            // the grid's value should be bound to the person's GUID.
+            var personGuid = e.CommandArgument.ToString().AsGuid();
+            ShowEditPersonDetails( personGuid );
         }
 
         /// <summary>
@@ -233,7 +237,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( ddlGroup.SelectedValueAsId().HasValue )
             {
-                ShowEditPersonDetails( 0 );
+                ShowEditPersonDetails( Guid.Empty );
             }
         }
 
@@ -354,8 +358,8 @@ namespace RockWeb.Blocks.Cms
                     {
                         var personService = new PersonService( rockContext );
 
-                        var personId = hfPersonId.Value.AsInteger();
-                        if ( personId == 0 )
+                        var personGuid = hfPersonGuid.Value.AsGuid();
+                        if ( personGuid == Guid.Empty )
                         {
                             var groupMemberService = new GroupMemberService( rockContext );
                             var groupMember = new GroupMember() { Person = new Person(), Group = group, GroupId = group.Id };
@@ -416,10 +420,10 @@ namespace RockWeb.Blocks.Cms
 
                             groupMemberService.Add( groupMember );
                             rockContext.SaveChanges();
-                            personId = groupMember.PersonId;
+                            personGuid = groupMember.Person.Guid;
                         }
 
-                        var person = personService.Get( personId );
+                        var person = personService.Get( personGuid );
                         if ( person != null )
                         {
                             int? orphanedPhotoId = null;
@@ -564,7 +568,7 @@ namespace RockWeb.Blocks.Cms
                                         }
                                     }
 
-                                    // if they used the ImageEditor, and cropped it, the uncropped file is still in BinaryFile. So clean it up
+                                    // if they used the ImageEditor, and cropped it, the un-cropped file is still in BinaryFile. So clean it up
                                     if ( imgPhoto.CropBinaryFileId.HasValue )
                                     {
                                         if ( imgPhoto.CropBinaryFileId != person.PhotoId )
@@ -857,7 +861,7 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            hfPersonId.Value = string.Empty;
+            hfPersonGuid.Value = Guid.Empty.ToString();
             pnlEdit.Visible = false;
             pnlView.Visible = true;
         }
@@ -865,9 +869,8 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Shows the edit person details.
         /// </summary>
-        /// <param name="personId">The person identifier.</param>
-        /// <param name="groupId">The group identifier.</param>
-        private void ShowEditPersonDetails( int personId )
+        /// <param name="personGuid">The person's global unique identifier.</param>
+        private void ShowEditPersonDetails( Guid personGuid )
         {
             var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
 
@@ -878,9 +881,9 @@ namespace RockWeb.Blocks.Cms
                 if ( group != null )
                 {
                     RoleType = null;
-                    hfPersonId.Value = personId.ToString();
+                    hfPersonGuid.Value = personGuid.ToString();
                     var person = new Person();
-                    if ( personId == 0 )
+                    if ( personGuid == Guid.Empty )
                     {
                         rblRole.DataSource = group.GroupType.Roles.OrderBy( r => r.Order ).ToList();
                         rblRole.DataBind();
@@ -889,7 +892,7 @@ namespace RockWeb.Blocks.Cms
                     }
                     else
                     {
-                        person = new PersonService( rockContext ).Get( personId );
+                        person = new PersonService( rockContext ).Get( personGuid );
                     }
 
                     if ( ddlGroup.SelectedValueAsId().HasValue )
@@ -950,7 +953,7 @@ namespace RockWeb.Blocks.Cms
 
                             // Person Attributes
                             var displayedAttributeGuids = GetPersonAttributeGuids( person.Id );
-                            if ( !displayedAttributeGuids.Any() || personId == 0 )
+                            if ( !displayedAttributeGuids.Any() || personGuid == Guid.Empty )
                             {
                                 pnlPersonAttributes.Visible = false;
                             }
@@ -1094,8 +1097,7 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Display Person Attribute on the Basis of Role
         /// </summary>
-        /// <param name="personId">The person identifier.</param>
-        /// <param name="groupId">The group identifier.</param>
+        /// <param name="selectedId">The id of the selected group identifier.</param>
         private void DisplayPersonAttributeOnRoleType( int? selectedId )
         {
             GroupTypeRoleService groupTypeRoleService = new GroupTypeRoleService( new RockContext() );
@@ -1136,8 +1138,9 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="displayedAttributeGuids">The displayed attribute guids.</param>
-        /// <param name="phAttributes">The ph attributes.</param>
+        /// <param name="phAttributes">The place holder attributes.</param>
         /// <param name="pnlAttributes">The PNL attributes.</param>
+        /// <param name="setValue">a boolean that determines if the value should be pre-set.</param>
         private void DisplayEditAttributes( IHasAttributes item, List<Guid> displayedAttributeGuids, PlaceHolder phAttributes, Panel pnlAttributes, bool setValue )
         {
             phAttributes.Controls.Clear();
