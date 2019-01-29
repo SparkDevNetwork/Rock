@@ -56,6 +56,7 @@
     <Compile Include="Migrations\003_AddFtgNotificationJob.cs" />
     <Compile Include="Migrations\002_AddAbsenteePage.cs" />
     <Compile Include="Migrations\001_AddAssimilationPage.cs" />
+    <Compile Include="Migrations\005_RemoveExtraServiceTimeSchedules.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
