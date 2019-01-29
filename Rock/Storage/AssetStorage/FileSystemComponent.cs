@@ -38,7 +38,6 @@ namespace Rock.Storage.AssetStorage
     [ExportMetadata( "ComponentName", "ServerFileSystem" )]
 
     [TextField( name: "Root Folder", description: "", required: true, defaultValue: "~/", category: "", order: 0, key: "RootFolder" )]
-
     public class FileSystemComponent : AssetStorageComponent
     {
         #region Properties
@@ -337,6 +336,14 @@ namespace Rock.Storage.AssetStorage
         public override bool RenameAsset( AssetStorageProvider assetStorageProvider, Asset asset, string newName )
         {
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
+            
+            if ( !IsFileTypeAllowedByBlackAndWhiteLists( newName ) )
+            {
+                string ext = System.IO.Path.GetExtension( asset.Key );
+                var ex = new Rock.Web.FileUploadException( $"Filetype {ext} is not allowed.", System.Net.HttpStatusCode.NotAcceptable );
+                ExceptionLogService.LogException( ex );
+                throw ex;
+            }
 
             try
             {
@@ -370,6 +377,14 @@ namespace Rock.Storage.AssetStorage
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
 
             asset.Key = FixKey( asset, rootFolder );
+
+            if ( !IsFileTypeAllowedByBlackAndWhiteLists( asset.Key ) )
+            {
+                string ext = System.IO.Path.GetExtension( asset.Key );
+                var ex = new Rock.Web.FileUploadException( $"Filetype {ext} is not allowed.", System.Net.HttpStatusCode.NotAcceptable );
+                ExceptionLogService.LogException( ex );
+                throw ex;
+            }
 
             try
             {
