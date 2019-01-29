@@ -25,8 +25,10 @@ namespace Rock.Attribute
     /// Field Attribute for selecting checkbox options from an enum.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class EnumsFieldAttribute : FieldAttribute
+    public class EnumsFieldAttribute : SelectFieldAttribute
     {
+        private const string VALUES = "values";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="EnumFieldAttribute" /> class.
         /// </summary>
@@ -44,11 +46,11 @@ namespace Rock.Attribute
             var list = new List<string>();
             foreach ( var value in Enum.GetValues( enumSourceType ) )
             {
-                list.Add( string.Format( "{0}^{1}", (int)value, value ) );
+                list.Add( string.Format( "{0}^{1}", (int)value, value.ToString().SplitCase() ) );
             }
             
             var listSource = string.Join( ",", list );
-            FieldConfigurationValues.Add( "values", new Field.ConfigurationValue( listSource ) );
+            FieldConfigurationValues.Add( VALUES, new Field.ConfigurationValue( listSource ) );
         }
     }
 }

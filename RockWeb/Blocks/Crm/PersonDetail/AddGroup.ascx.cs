@@ -204,12 +204,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
                 cpCampus.Required = campusRequired;
 
-                ddlMaritalStatus.Visible = true;
-                ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
+                dvpMaritalStatus.Visible = true;
+                dvpMaritalStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
                 var adultMaritalStatus = DefinedValueCache.Get( GetAttributeValue( "AdultMaritalStatus" ).AsGuid() );
                 if ( adultMaritalStatus != null )
                 {
-                    ddlMaritalStatus.SetValue( adultMaritalStatus.Id );
+                    dvpMaritalStatus.SetValue( adultMaritalStatus.Id );
                 }
 
                 _childRoleId = _groupType.Roles
@@ -226,7 +226,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 divGroupName.Visible = true;
                 tbGroupName.Label = _groupTypeName + " Name";
                 cpCampus.Visible = false;
-                ddlMaritalStatus.Visible = false;
+                dvpMaritalStatus.Visible = false;
             }
 
             nfmMembers.ShowGrade = _isFamilyGroupType && GetAttributeValue( "Grade" ) != "None";
@@ -275,7 +275,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }}
             }}
       }});",
-      ddlMaritalStatus.ClientID );
+      dvpMaritalStatus.ClientID );
 
                 ScriptManager.RegisterStartupScript( btnNext, btnNext.GetType(), "confirm-marital-status", script, true );
             }
@@ -338,7 +338,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( _isFamilyGroupType )
             {
                 var adults = GroupMembers.Where( m => m.GroupRoleId != _childRoleId ).ToList();
-                ddlMaritalStatus.Visible = adults.Any();
+                dvpMaritalStatus.Visible = adults.Any();
             }
 
             base.OnPreRender( e );
@@ -1015,7 +1015,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 childMaritalStatusId = childMaritalStatus.Id;
             }
 
-            int? adultMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
+            int? adultMaritalStatusId = dvpMaritalStatus.SelectedValueAsInt();
 
             int recordTypePersonId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             int recordStatusActiveId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;

@@ -120,6 +120,86 @@
     <Compile Include="Migrations\201810161814574_Rollup_1016.Designer.cs">
       <DependentUpon>201810161814574_Rollup_1016.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201810301818354_Rollup_1030.cs" />
+    <Compile Include="Migrations\201810301818354_Rollup_1030.Designer.cs">
+      <DependentUpon>201810301818354_Rollup_1030.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201810312001375_MissingPluginMigrations.cs" />
+    <Compile Include="Migrations\201810312001375_MissingPluginMigrations.Designer.cs">
+      <DependentUpon>201810312001375_MissingPluginMigrations.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201811062035033_AddCheckinFilterGroupsByDataView.cs" />
+    <Compile Include="Migrations\201811062035033_AddCheckinFilterGroupsByDataView.Designer.cs">
+      <DependentUpon>201811062035033_AddCheckinFilterGroupsByDataView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201811131729209_Rollup_1113.cs" />
+    <Compile Include="Migrations\201811131729209_Rollup_1113.Designer.cs">
+      <DependentUpon>201811131729209_Rollup_1113.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201811192004486_RegistrationFieldVisibilityRules.cs" />
+    <Compile Include="Migrations\201811192004486_RegistrationFieldVisibilityRules.Designer.cs">
+      <DependentUpon>201811192004486_RegistrationFieldVisibilityRules.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201811221702005_AddEngagementStrengthToChannel.cs" />
+    <Compile Include="Migrations\201811221702005_AddEngagementStrengthToChannel.Designer.cs">
+      <DependentUpon>201811221702005_AddEngagementStrengthToChannel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201811271852316_Rollup_1127.cs" />
+    <Compile Include="Migrations\201811271852316_Rollup_1127.Designer.cs">
+      <DependentUpon>201811271852316_Rollup_1127.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201811272108424_RegistrationTemplateFeeItem.cs" />
+    <Compile Include="Migrations\201811272108424_RegistrationTemplateFeeItem.Designer.cs">
+      <DependentUpon>201811272108424_RegistrationTemplateFeeItem.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201812111901295_Rollup_1211.cs" />
+    <Compile Include="Migrations\201812111901295_Rollup_1211.Designer.cs">
+      <DependentUpon>201812111901295_Rollup_1211.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201812262333000_RegistrationAttributes.cs" />
+    <Compile Include="Migrations\201812262333000_RegistrationAttributes.Designer.cs">
+      <DependentUpon>201812262333000_RegistrationAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201901042316288_SMSConversations.cs" />
+    <Compile Include="Migrations\201901042316288_SMSConversations.Designer.cs">
+      <DependentUpon>201901042316288_SMSConversations.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201901082226453_Rollup_0108.cs" />
+    <Compile Include="Migrations\201901082226453_Rollup_0108.Designer.cs">
+      <DependentUpon>201901082226453_Rollup_0108.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201901101747023_AddAdministratorForGroup.cs" />
+    <Compile Include="Migrations\201901101747023_AddAdministratorForGroup.Designer.cs">
+      <DependentUpon>201901101747023_AddAdministratorForGroup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201901112105117_Rollup_0111.cs" />
+    <Compile Include="Migrations\201901112105117_Rollup_0111.Designer.cs">
+      <DependentUpon>201901112105117_Rollup_0111.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201901141627393_SMSConversations1.cs" />
+    <Compile Include="Migrations\201901141627393_SMSConversations1.Designer.cs">
+      <DependentUpon>201901141627393_SMSConversations1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201901222204456_Rollup_0122.cs" />
+    <Compile Include="Migrations\201901222204456_Rollup_0122.Designer.cs">
+      <DependentUpon>201901222204456_Rollup_0122.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201901240230348_AutomatedPayments.cs" />
+    <Compile Include="Migrations\201901240230348_AutomatedPayments.Designer.cs">
+      <DependentUpon>201901240230348_AutomatedPayments.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201901241553484_GroupLocationDeleteFix.cs" />
+    <Compile Include="Migrations\201901241553484_GroupLocationDeleteFix.Designer.cs">
+      <DependentUpon>201901241553484_GroupLocationDeleteFix.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201901251419032_UpdateDiscRequestWorkflow.cs" />
+    <Compile Include="Migrations\201901251419032_UpdateDiscRequestWorkflow.Designer.cs">
+      <DependentUpon>201901251419032_UpdateDiscRequestWorkflow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201901282220368_Rollup_0128.cs" />
+    <Compile Include="Migrations\201901282220368_Rollup_0128.Designer.cs">
+      <DependentUpon>201901282220368_Rollup_0128.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -451,6 +531,66 @@
     <EmbeddedResource Include="Migrations\201810161814574_Rollup_1016.resx">
       <DependentUpon>201810161814574_Rollup_1016.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201810301818354_Rollup_1030.resx">
+      <DependentUpon>201810301818354_Rollup_1030.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201810312001375_MissingPluginMigrations.resx">
+      <DependentUpon>201810312001375_MissingPluginMigrations.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201811062035033_AddCheckinFilterGroupsByDataView.resx">
+      <DependentUpon>201811062035033_AddCheckinFilterGroupsByDataView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201811131729209_Rollup_1113.resx">
+      <DependentUpon>201811131729209_Rollup_1113.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201811192004486_RegistrationFieldVisibilityRules.resx">
+      <DependentUpon>201811192004486_RegistrationFieldVisibilityRules.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201811221702005_AddEngagementStrengthToChannel.resx">
+      <DependentUpon>201811221702005_AddEngagementStrengthToChannel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201811271852316_Rollup_1127.resx">
+      <DependentUpon>201811271852316_Rollup_1127.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201811272108424_RegistrationTemplateFeeItem.resx">
+      <DependentUpon>201811272108424_RegistrationTemplateFeeItem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201812111901295_Rollup_1211.resx">
+      <DependentUpon>201812111901295_Rollup_1211.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201812262333000_RegistrationAttributes.resx">
+      <DependentUpon>201812262333000_RegistrationAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201901042316288_SMSConversations.resx">
+      <DependentUpon>201901042316288_SMSConversations.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201901082226453_Rollup_0108.resx">
+      <DependentUpon>201901082226453_Rollup_0108.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201901101747023_AddAdministratorForGroup.resx">
+      <DependentUpon>201901101747023_AddAdministratorForGroup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201901112105117_Rollup_0111.resx">
+      <DependentUpon>201901112105117_Rollup_0111.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201901141627393_SMSConversations1.resx">
+      <DependentUpon>201901141627393_SMSConversations1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201901222204456_Rollup_0122.resx">
+      <DependentUpon>201901222204456_Rollup_0122.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201901240230348_AutomatedPayments.resx">
+      <DependentUpon>201901240230348_AutomatedPayments.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201901241553484_GroupLocationDeleteFix.resx">
+      <DependentUpon>201901241553484_GroupLocationDeleteFix.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201901251419032_UpdateDiscRequestWorkflow.resx">
+      <DependentUpon>201901251419032_UpdateDiscRequestWorkflow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201901282220368_Rollup_0128.resx">
+      <DependentUpon>201901282220368_Rollup_0128.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
     </EmbeddedResource>
@@ -701,6 +841,18 @@
     </Content>
     <Content Include="Migrations\201810161814574_Rollup_1016_spCrm_FamilyAnalyticsFirstVisitsAttributeUpdate.sql">
       <DependentUpon>201810161814574_Rollup_1016.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201810301818354_Rollup_1030_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>201810301818354_Rollup_1030.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Down.sql">
+      <DependentUpon>201811271852316_Rollup_1127.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Up.sql">
+      <DependentUpon>201811271852316_Rollup_1127.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201812111901295_Rollup_1211_FixChartShortcode.sql">
+      <DependentUpon>201812111901295_Rollup_1211.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.sql">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

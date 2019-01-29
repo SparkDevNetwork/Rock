@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Configuration;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
@@ -264,12 +263,20 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Pres the save changes.
+        /// Actions to perform prior to saving the changes to the GroupMember object in the context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
+            string errorMessage = string.Empty;
+            if ( !ValidateGroupMembership( ( RockContext ) dbContext, out errorMessage ) )
+            {
+                var ex = new GroupMemberValidationException( errorMessage );
+                ExceptionLogService.LogException( ex );
+                throw ex;
+            }
+
             var changeTransaction = new Rock.Transactions.GroupMemberChangeTransaction( entry );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( changeTransaction );
 
@@ -468,7 +475,7 @@ namespace Rock.Model
                         historyItem.GroupId = historyItem.Group?.Id;
                     }
 
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_GROUP_MEMBERSHIP.AsGuid(),
+                    HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_GROUP_MEMBERSHIP.AsGuid(),
                         personId, historyItem.PersonHistoryChangeList, historyItem.Caption, typeof( Group ), historyItem.GroupId, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
 
                     HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( GroupMember ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(),
@@ -477,6 +484,18 @@ namespace Rock.Model
             }
 
             base.PostSaveChanges( dbContext );
+
+            // if this is a GroupMember record on a Family, ensure that AgeClassification, PrimaryFamily is updated
+            // NOTE: This is also done on Person.PostSaveChanges in case Birthdate changes
+            var groupTypeFamilyRoleIds = GroupTypeCache.GetFamilyGroupType()?.Roles?.Select( a => a.Id ).ToList();
+            if ( groupTypeFamilyRoleIds?.Any() == true )
+            {
+                if ( groupTypeFamilyRoleIds.Contains( this.GroupRoleId ) )
+                {
+                    PersonService.UpdatePersonAgeClassification( this.PersonId, dbContext as RockContext );
+                    PersonService.UpdatePrimaryFamily( this.PersonId, dbContext as RockContext );
+                }
+            }
         }
 
         /// <summary>
@@ -523,33 +542,26 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Validates the group membership.
+        /// Validates the group member does not already exist based on GroupId, GroupRoleId, and PersonId
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="groupType">Type of the group.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        private bool ValidateGroupMembership( RockContext rockContext, out string errorMessage )
+        private bool ValidateGroupMemberDuplicateMember( RockContext rockContext, GroupTypeCache groupType, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            // load group including members to save queries in group member validation
             var groupService = new GroupService( rockContext );
-            var group = this.Group ?? new GroupService( rockContext ).Queryable( "Members" ).Where( g => g.Id == this.GroupId ).FirstOrDefault();
+            var group = this.Group ?? groupService.Queryable().AsNoTracking().Where( g => g.Id == this.GroupId ).FirstOrDefault();
 
-            var groupType = GroupTypeCache.Get( group.GroupTypeId );
-            var groupRole = groupType.Roles.First( a => a.Id == this.GroupRoleId );
-
-            var existingGroupMembership = group.Members.Where( m => m.PersonId == this.PersonId );
-
-            // check to see if the person is already a member of the group/role
-            bool allowDuplicateGroupMembers = groupService.AllowsDuplicateMembers( group );
-
-            if ( !allowDuplicateGroupMembers )
+            if ( !groupService.AllowsDuplicateMembers( group ) )
             {
-                if ( existingGroupMembership.Any( a => a.GroupRoleId == this.GroupRoleId && a.Id != this.Id ) )
+                var groupMember = new GroupMemberService( rockContext ).GetByGroupIdAndPersonIdAndGroupRoleId( this.GroupId, this.PersonId, this.GroupRoleId );
+                if ( groupMember != null && groupMember.Id != this.Id )
                 {
                     var person = this.Person ?? new PersonService( rockContext ).Get( this.PersonId );
 
+                    var groupRole = groupType.Roles.First( a => a.Id == this.GroupRoleId );
                     errorMessage = string.Format(
                         "{0} already belongs to the {1} role for this {2}, and cannot be added again with the same role",
                         person,
@@ -560,14 +572,43 @@ namespace Rock.Model
                 }
             }
 
+            return true;
+        }
+
+        /// <summary>
+        /// Validates the group membership.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private bool ValidateGroupMembership( RockContext rockContext, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            var groupService = new GroupService( rockContext );
+            var group = this.Group ?? new GroupService( rockContext ).Queryable().AsNoTracking().Where( g => g.Id == this.GroupId ).FirstOrDefault();
+
+            var groupType = GroupTypeCache.Get( group.GroupTypeId );
+            var groupRole = groupType.Roles.First( a => a.Id == this.GroupRoleId );
+
+            // Verify duplicate role/person
+            if ( !groupService.AllowsDuplicateMembers( group ) )
+            {
+                if ( !ValidateGroupMemberDuplicateMember( rockContext, groupType, out errorMessage ) )
+                {
+                    return false;
+                }
+            }
+
+            // Verify max group role membership
             if ( groupRole.MaxCount.HasValue && this.GroupMemberStatus == GroupMemberStatus.Active )
             {
                 int memberCountInRole = group.Members
-                                            .Where( m =>
-                                                m.GroupRoleId == this.GroupRoleId
-                                                && m.GroupMemberStatus == GroupMemberStatus.Active )
-                                            .Where( m => m != this )
-                                            .Count();
+                        .Where( m =>
+                            m.GroupRoleId == this.GroupRoleId
+                            && m.GroupMemberStatus == GroupMemberStatus.Active )
+                        .Where( m => m != this )
+                        .Count();
 
                 bool roleMembershipAboveMax = false;
 
@@ -597,11 +638,11 @@ namespace Rock.Model
                 if ( roleMembershipAboveMax )
                 {
                     errorMessage = string.Format(
-                "The number of {0} for this {1} is above its maximum allowed limit of {2:N0} active {3}.",
-                groupRole.Name.Pluralize().ToLower(),
-                groupType.GroupTerm.ToLower(),
-                groupRole.MaxCount,
-                groupType.GroupMemberTerm.Pluralize( groupRole.MaxCount == 1 ) ).ToLower();
+                        "The number of {0} for this {1} is above its maximum allowed limit of {2:N0} active {3}.",
+                        groupRole.Name.Pluralize().ToLower(),
+                        groupType.GroupTerm.ToLower(),
+                        groupRole.MaxCount,
+                        groupType.GroupMemberTerm.Pluralize( groupRole.MaxCount == 1 ) ).ToLower();
                     return false;
                 }
             }
@@ -626,17 +667,21 @@ namespace Rock.Model
             }
 
             // check group capacity
-            if ( groupType.GroupCapacityRule == GroupCapacityRule.Hard && group.GroupCapacity.HasValue )
+            if ( groupType.GroupCapacityRule == GroupCapacityRule.Hard && group.GroupCapacity.HasValue && this.GroupMemberStatus == GroupMemberStatus.Active )
             {
                 var currentActiveGroupMemberCount = group.ActiveMembers().Count();
+                var existingGroupMembershipForPerson = group.Members.Where( m => m.PersonId == this.PersonId );
 
                 // check if this would be adding an active group member (new active group member or changing existing group member status to active)
-                if (
-                    ( this.Id.Equals( 0 ) && this.GroupMemberStatus == GroupMemberStatus.Active )
-                    || ( !this.Id.Equals( 0 )
-                            && existingGroupMembership.Where( m => m.Id == this.Id && m.GroupMemberStatus != GroupMemberStatus.Active ).Any()
-                            && this.GroupMemberStatus == GroupMemberStatus.Active )
-                   )
+                if ( this.Id == 0 )
+                {
+                    if ( currentActiveGroupMemberCount + 1 > group.GroupCapacity )
+                    {
+                        errorMessage = "Adding this individual would put the group over capacity.";
+                        return false;
+                    }
+                }
+                else if ( existingGroupMembershipForPerson.Where( m => m.Id == this.Id && m.GroupMemberStatus != GroupMemberStatus.Active ).Any() )
                 {
                     if ( currentActiveGroupMemberCount + 1 > group.GroupCapacity )
                     {

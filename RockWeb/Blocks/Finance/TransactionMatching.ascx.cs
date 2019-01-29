@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -45,6 +45,8 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Add Business Link", "Select the page where a new business can be added. If specified, a link will be shown which will open in a new window when clicked", false, "", "", 3 )]
     [LinkedPage( "Batch Detail Page", "Select the page for displaying batch details", false, "", "", 3)]
     [LinkedPage( "Transaction Detail Page", "Select the page to return to, if this block was being used to edit a single transaction.", false, "", "", 4 )]
+
+    [BooleanField( "Expand Person Search Options", "When selecting a person, expand the additional search options by default.", defaultValue: true, order: 5 )]
     public partial class TransactionMatching : RockBlock, IDetailBlock
     {
         #region Properties
@@ -104,9 +106,9 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
             string script = string.Format( @"
     $('.transaction-image-thumbnail').click( function() {{
@@ -286,6 +288,8 @@ namespace RockWeb.Blocks.Finance
             string temp = this.GetAttributeValue( "AddFamilyLink" );
             string addFamilyUrl = this.LinkedPageUrl( "AddFamilyLink" );
             string addBusinessUrl = this.LinkedPageUrl( "AddBusinessLink" );
+
+            ppSelectNew.ExpandSearchOptions = this.GetAttributeValue( "ExpandPersonSearchOptions" ).AsBoolean();
 
             rcwAddNewFamily.Visible = !string.IsNullOrWhiteSpace( addFamilyUrl );
             if ( rcwAddNewFamily.Visible )

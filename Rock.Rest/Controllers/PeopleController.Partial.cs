@@ -21,9 +21,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.OData;
+using Rock.BulkExport;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -192,7 +194,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class DuplicatePersonInfo
         {
@@ -234,7 +236,7 @@ namespace Rock.Rest.Controllers
             /// <value>
             /// The birth month.
             /// </value>
-            public int? BirthMonth { get; set;  }
+            public int? BirthMonth { get; set; }
 
             /// <summary>
             /// Gets or sets the birth day.
@@ -388,19 +390,35 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Returns results to the Person Picker
         /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="includeHtml">if set to <c>true</c> [include HTML].</param>
-        /// <param name="includeDetails">if set to <c>true</c> [include details].</param>
-        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
-        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="name">The search parameter for the person's name.</param>
+        /// <param name="includeDetails">Set to <c>true</c> details will be included instead of lazy loaded.</param>
+        /// <param name="includeBusinesses">Set to <c>true</c> to also search businesses.</param>
+        /// <param name="includeDeceased">Set to <c>true</c> to include deceased people.</param>
+        /// <param name="address">The search parameter for the person's address.</param>
+        /// <param name="phone">The search parameter for the person's phone.</param>
+        /// <param name="email">The search parameter for the person's name email.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/Search" )]
-        public IQueryable<PersonSearchResult> Search( string name, bool includeHtml, bool includeDetails, bool includeBusinesses = false, bool includeDeceased = false )
+        public IQueryable<PersonSearchResult> Search(
+            string name = null,
+            bool includeDetails = false,
+            bool includeBusinesses = false,
+            bool includeDeceased = false,
+            string address = null,
+            string phone = null,
+            string email = null
+            )
         {
+            if ( name.IsNullOrWhiteSpace() && address.IsNullOrWhiteSpace() && phone.IsNullOrWhiteSpace() && email.IsNullOrWhiteSpace() )
+            {
+                // no search terms specified
+                return null;
+            }
+
             int count = GlobalAttributesCache.Value( "core.PersonPickerFetchCount" ).AsIntegerOrNull() ?? 60;
-            bool showFullNameReversed;
+            bool sortbyFullNameReversed = false;
             bool allowFirstNameOnly = false;
 
             var searchComponent = Rock.Search.SearchContainer.GetComponent( typeof( Rock.Search.Person.Name ).FullName );
@@ -409,20 +427,38 @@ namespace Rock.Rest.Controllers
                 allowFirstNameOnly = searchComponent.GetAttributeValue( "FirstNameSearch" ).AsBoolean();
             }
 
+            var rockContext = this.Service.Context as RockContext;
+
             var activeRecordStatusValue = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
             int activeRecordStatusValueId = activeRecordStatusValue != null ? activeRecordStatusValue.Id : 0;
 
-            IQueryable<Person> sortedPersonQry = ( this.Service as PersonService )
-                .GetByFullNameOrdered( name, true, includeBusinesses, allowFirstNameOnly, out showFullNameReversed ).Take( count );
+            var personService = this.Service as PersonService;
+
+            var personSearchOptions = new PersonService.PersonSearchOptions
+            {
+                Name = name,
+                Address = address,
+                Phone = phone,
+                Email = email,
+                AllowFirstNameOnly = allowFirstNameOnly,
+                IncludeBusinesses = includeBusinesses,
+                IncludeDeceased = includeDeceased
+            };
+
+            IQueryable<Person> personSearchQry = personService.Search( personSearchOptions );
+
+            // limit to count
+            personSearchQry = personSearchQry.Take( count );
+
+            // make sure we don't use EF ChangeTracking
+            personSearchQry = personSearchQry.AsNoTracking();
 
             if ( includeDetails == false )
             {
-                var personService = this.Service as PersonService;
-
-                var simpleResult = sortedPersonQry.AsNoTracking().ToList().Select( a => new PersonSearchResult
+                var simpleResult = personSearchQry.ToList().Select( a => new PersonSearchResult
                 {
                     Id = a.Id,
-                    Name = showFullNameReversed
+                    Name = sortbyFullNameReversed
                     ? Person.FormatFullNameReversed( a.LastName, a.NickName, a.SuffixValueId, a.RecordTypeValueId )
                     : Person.FormatFullName( a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId ),
                     IsActive = a.RecordStatusValueId.HasValue && a.RecordStatusValueId == activeRecordStatusValueId,
@@ -436,7 +472,7 @@ namespace Rock.Rest.Controllers
             }
             else
             {
-                List<PersonSearchResult> searchResult = SearchWithDetails( sortedPersonQry, showFullNameReversed );
+                List<PersonSearchResult> searchResult = SearchWithDetails( personSearchQry, sortbyFullNameReversed );
                 return searchResult.AsQueryable();
             }
         }
@@ -456,6 +492,7 @@ namespace Rock.Rest.Controllers
             if ( person != null )
             {
                 GetPersonSearchDetails( personSearchResult, person );
+
                 // Generate the HTML for the ConnectionStatus; "label-success" matches the default config of the
                 // connection status badge on the Bio bar, but I think label-default works better here.
                 string connectionStatusHtml = string.IsNullOrWhiteSpace( personSearchResult.ConnectionStatus ) ? string.Empty : string.Format( "<span class='label label-default pull-right'>{0}</span>", personSearchResult.ConnectionStatus );
@@ -517,14 +554,6 @@ namespace Rock.Rest.Controllers
             var rockContext = this.Service.Context as Rock.Data.RockContext;
 
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-            string itemDetailFormat = @"
-<div class='picker-select-item-details clearfix' style='display: none;'>
-	{0}
-	<div class='contents'>
-        {1}
-	</div>
-</div>
-";
 
             var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             int adultRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
@@ -547,115 +576,106 @@ namespace Rock.Rest.Controllers
             personSearchResult.Email = person.Email;
 
             string imageHtml = string.Format(
-                "<div class='person-image' style='background-image:url({0}&width=65);background-size:cover;background-position:50%'></div>",
+                "<div class='person-image' style='background-image:url({0}&width=65);'></div>",
                 Person.GetPersonPhotoUrl( person, 200, 200 ) );
 
-            string personInfoHtml = string.Empty;
-            Guid matchLocationGuid;
-            bool isBusiness;
-            if ( recordTypeValueGuid.HasValue && recordTypeValueGuid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
+            StringBuilder personInfoHtmlBuilder = new StringBuilder();
+            int? groupLocationTypeValueId;
+            bool isBusiness = person.IsBusiness();
+            if ( isBusiness )
             {
-                isBusiness = true;
-                matchLocationGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
+                groupLocationTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() );
             }
             else
             {
-                isBusiness = false;
-                matchLocationGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
+                groupLocationTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
             }
-
-            var familyGroupMember = groupMemberService.Queryable()
-                .Where( a => a.PersonId == person.Id )
-                .Where( a => a.Group.GroupTypeId == groupTypeFamilyId )
-                .OrderBy( a => a.GroupOrder ?? int.MaxValue )
-                .Select( s => new
-                {
-                    s.GroupRoleId,
-                    GroupLocation = s.Group.GroupLocations.Where( a => a.GroupLocationTypeValue.Guid == matchLocationGuid ).Select( a => a.Location ).FirstOrDefault()
-                } ).FirstOrDefault();
 
             int? personAge = person.Age;
 
-            if ( familyGroupMember != null )
+            if ( isBusiness )
             {
-                if ( isBusiness )
-                {
-                    personInfoHtml += "Business";
-                }
-                else
-                {
-                    personInfoHtml += "<div class='role'>" + familyGroupType.Roles.First( a => a.Id == familyGroupMember.GroupRoleId ).Name + "</div>";
-                }
-
-                if ( personAge != null )
-                {
-                    personInfoHtml += " <em class='age'>(" + person.FormatAge() + " old)</em>";
-                }
-
-                if ( familyGroupMember.GroupRoleId == adultRoleId )
-                {
-                    var personService = this.Service as PersonService;
-                    var spouse = personService.GetSpouse( person, a => new
-                    {
-                        a.Person.NickName,
-                        a.Person.LastName,
-                        a.Person.SuffixValueId
-                    } );
-
-                    if ( spouse != null )
-                    {
-                        string spouseFullName = Person.FormatFullName( spouse.NickName, spouse.LastName, spouse.SuffixValueId );
-                        personInfoHtml += "<p class='spouse'><strong>Spouse:</strong> " + spouseFullName + "</p>";
-                        personSearchResult.SpouseName = spouseFullName;
-                    }
-                }
+                personInfoHtmlBuilder.Append( "Business" );
             }
-            else
+            else if ( person.AgeClassification != AgeClassification.Unknown )
             {
-                if ( personAge != null )
+                personInfoHtmlBuilder.Append( "<span class='role'>" + person.AgeClassification.ConvertToString() + "</span>" );
+            }
+
+            if ( personAge != null )
+            {
+                personInfoHtmlBuilder.Append( " <em class='age'>(" + person.FormatAge() + " old)</em>" );
+            }
+
+            if ( person.AgeClassification == AgeClassification.Adult )
+            {
+                var personService = this.Service as PersonService;
+                var spouse = personService.GetSpouse( person, a => new
                 {
-                    personInfoHtml += personAge.ToString() + " yrs old";
+                    a.Person.NickName,
+                    a.Person.LastName,
+                    a.Person.SuffixValueId
+                } );
+
+                if ( spouse != null )
+                {
+                    string spouseFullName = Person.FormatFullName( spouse.NickName, spouse.LastName, spouse.SuffixValueId );
+                    personInfoHtmlBuilder.Append( "<p class='spouse'><strong>Spouse:</strong> " + spouseFullName + "</p>" );
+                    personSearchResult.SpouseName = spouseFullName;
                 }
             }
 
-            if ( familyGroupMember != null )
-            {
-                var location = familyGroupMember.GroupLocation;
+            var primaryLocation = groupMemberService.Queryable()
+                .Where( a => a.PersonId == person.Id )
+                .Where( a => a.Group.GroupTypeId == groupTypeFamilyId )
+                .OrderBy( a => a.GroupOrder ?? int.MaxValue )
+                .Select( s => s.Group.GroupLocations.Where( a => a.GroupLocationTypeValueId == groupLocationTypeValueId ).Select( a => a.Location ).FirstOrDefault()
+                ).AsNoTracking().FirstOrDefault();
 
-                if ( location != null )
-                {
-                    string addressHtml = "<div class='address'><h5>Address</h5>" + location.GetFullStreetAddress().ConvertCrLfToHtmlBr() + "</div>";
-                    personSearchResult.Address = location.GetFullStreetAddress();
-                    personInfoHtml += addressHtml;
-                }
+            if ( primaryLocation != null )
+            {
+                var fullStreetAddress = primaryLocation.GetFullStreetAddress();
+                string addressHtml = $"<dl class='address'><dt>Address</dt><dd>{fullStreetAddress.ConvertCrLfToHtmlBr()}</dd></dl>";
+                personSearchResult.Address = fullStreetAddress;
+                personInfoHtmlBuilder.Append( addressHtml );
             }
 
             // Generate the HTML for Email and PhoneNumbers
             if ( !string.IsNullOrWhiteSpace( person.Email ) || person.PhoneNumbers.Any() )
             {
-                string emailAndPhoneHtml = "<div class='margin-t-sm'>";
-                emailAndPhoneHtml += "<span class='email'>" + person.Email + "</span>";
-                string phoneNumberList = "<div class='phones'>";
+                StringBuilder sbEmailAndPhoneHtml = new StringBuilder();
+                sbEmailAndPhoneHtml.Append( "<div class='margin-t-sm'>" );
+                sbEmailAndPhoneHtml.Append( "<span class='email'>" + person.Email + "</span>" );
+                string phoneNumberList = "<ul class='phones list-unstyled'>";
                 foreach ( var phoneNumber in person.PhoneNumbers )
                 {
                     var phoneType = DefinedValueCache.Get( phoneNumber.NumberTypeValueId ?? 0 );
                     phoneNumberList += string.Format(
-                        "<br>{0} <small>{1}</small>",
+                        "<li x-ms-format-detection='none'>{0} <small>{1}</small></li>",
                         phoneNumber.IsUnlisted ? "Unlisted" : phoneNumber.NumberFormatted,
                         phoneType != null ? phoneType.Value : string.Empty );
                 }
 
-                emailAndPhoneHtml += phoneNumberList + "</div></div>";
+                sbEmailAndPhoneHtml.Append( phoneNumberList + "</ul></div>" );
 
-                personInfoHtml += emailAndPhoneHtml;
+                personInfoHtmlBuilder.Append( sbEmailAndPhoneHtml.ToString() );
             }
 
-            // force the link to open a new scrollable,resizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
-            personInfoHtml += $"<p class='margin-t-sm'><small><a class='cursor-pointer' onclick=\"javascript: window.open('/person/{person.Id}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;\" data-toggle=\"tooltip\" title=\"View Profile\">View Profile</a></small></p>";
+            // force the link to open a new scrollable, re-sizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
+            personInfoHtmlBuilder.Append( $"<p class='margin-t-sm'><small><a href='/person/{person.Id}' class='cursor-pointer' onclick=\"javascript: window.open('/person/{person.Id}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;\" data-toggle=\"tooltip\" title=\"View Profile\">View Profile</a></small></p>" );
 
             personSearchResult.PickerItemDetailsImageHtml = imageHtml;
-            personSearchResult.PickerItemDetailsPersonInfoHtml = personInfoHtml;
-            personSearchResult.PickerItemDetailsHtml = string.Format( itemDetailFormat, imageHtml, personInfoHtml );
+            personSearchResult.PickerItemDetailsPersonInfoHtml = personInfoHtmlBuilder.ToString();
+            string itemDetailHtml = $@"
+<div class='picker-select-item-details js-picker-select-item-details clearfix' style='display: none;'>
+	{imageHtml}
+	<div class='contents'>
+        {personSearchResult.PickerItemDetailsPersonInfoHtml}
+	</div>
+</div>
+";
+
+            personSearchResult.PickerItemDetailsHtml = itemDetailHtml;
         }
 
         /// <summary>
@@ -797,6 +817,8 @@ namespace Rock.Rest.Controllers
 
         #endregion
 
+        #region Delete Override
+
         /// <summary>
         /// DELETE endpoint for a Person Record. NOTE: Person records can not be deleted using REST, so this will always return a 405
         /// </summary>
@@ -807,6 +829,101 @@ namespace Rock.Rest.Controllers
             // we don't want to support DELETE on a Person in ROCK (especially from REST).  So, return a MethodNotAllowed.
             throw new HttpResponseException( System.Net.HttpStatusCode.MethodNotAllowed );
         }
+
+        #endregion
+
+        #region Export
+
+        /// <summary>
+        /// Exports Person Records
+        /// </summary>
+        /// <param name="page">The page being requested (where first page is 1).</param>
+        /// <param name="pageSize">The number of records to provide per page. NOTE: This is limited to the 'API Max Items Per Page' global attribute.</param>
+        /// <param name="sortBy">Optional field to sort by. This must be a mapped property on the Person model.</param>
+        /// <param name="sortDirection">The sort direction (1 = Ascending, 0 = Descending). Default is 1 (Ascending).</param>
+        /// <param name="dataViewId">The optional data view to use for filtering.</param>
+        /// <param name="modifiedSince">The optional date/time to filter to only get newly updated items.</param>
+        /// <param name="attributeKeys">Optional comma-delimited list of attribute keys for the attribute values that should be included with each exported record, or specify 'all' to include all attributes.</param>
+        /// <param name="attributeReturnType">Raw/Formatted (default is Raw)</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/Export" )]
+        public PeopleExport Export(
+            int page = 1,
+            int pageSize = 1000,
+            string sortBy = null,
+            System.Web.UI.WebControls.SortDirection sortDirection = System.Web.UI.WebControls.SortDirection.Ascending,
+            int? dataViewId = null,
+            DateTime? modifiedSince = null,
+            string attributeKeys = null,
+            AttributeReturnType attributeReturnType = AttributeReturnType.Raw
+            )
+        {
+            // limit to 'API Max Items Per Page' global attribute
+            int maxPageSize = GlobalAttributesCache.Get().GetValue( "core_ExportAPIsMaxItemsPerPage" ).AsIntegerOrNull() ?? 1000;
+            var actualPageSize = Math.Min( pageSize, maxPageSize );
+
+            ExportOptions exportOptions = new ExportOptions
+            {
+                SortBy = sortBy,
+                SortDirection = sortDirection,
+                DataViewId = dataViewId,
+                ModifiedSince = modifiedSince,
+                AttributeList = AttributesExport.GetAttributesFromAttributeKeys<Person>( attributeKeys ),
+                AttributeReturnType = attributeReturnType
+            };
+
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+
+            return personService.GetPeopleExport( page, actualPageSize, exportOptions );
+        }
+
+        #endregion
+
+        #region VCard
+
+        /// <summary>
+        /// Returns VCard for person.
+        /// </summary>
+        /// <param name="personGuid">The person Guid.</param>
+        /// <returns></returns>
+        [HttpGet]
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/People/VCard/{personGuid}" )]
+        public HttpResponseMessage GetVCard( Guid personGuid )
+        {
+            var rockContext = ( Rock.Data.RockContext ) Service.Context;
+
+            var person = new PersonService( rockContext ).Get( personGuid );
+            if ( person == null )
+            {
+                throw new HttpResponseException( new System.Net.Http.HttpResponseMessage( HttpStatusCode.NotFound ) );
+            }
+
+            string fileName = person.FullName + ".vcf";
+            HttpResponseMessage result = new HttpResponseMessage( HttpStatusCode.OK );
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, GetPerson() );
+            mergeFields.Add( "Person", person );
+            string vCard = GlobalAttributesCache.Value( "VCardFormat" ).ResolveMergeFields( mergeFields ).Trim();
+
+            // remove empty lines (the vcard spec is very picky)
+            vCard = Regex.Replace( vCard, @"^\s+$[\r\n]*", "", RegexOptions.Multiline );
+
+            var inputEncoding = Encoding.Default;
+            var outputEncoding = Encoding.GetEncoding( 28591 );
+            var cardBytes = inputEncoding.GetBytes( vCard );
+            var outputBytes = Encoding.Convert( inputEncoding, outputEncoding, cardBytes );
+            result.Content = new ByteArrayContent( outputBytes );
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( "text/vcard" );
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue( "attachment" );
+            result.Content.Headers.ContentDisposition.FileName = fileName;
+            return result;
+        }
+
+        #endregion
     }
 
     /// <summary>

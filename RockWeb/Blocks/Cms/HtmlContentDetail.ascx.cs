@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Cms
             base.OnInit( e );
 
             this.BlockUpdated += HtmlContentDetail_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlHtmlContent );
+            this.AddConfigurationUpdateTrigger( upnlHtmlContentEdit );
 
             // Disable QuickEdit for v7
             //RegisterScript();
@@ -406,7 +406,7 @@ namespace RockWeb.Blocks.Cms
 
 //                if ( GetAttributeValue( "QuickEdit" ) == "AIREDIT" )
 //                {
-//                    RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/summernote/summernote.min.js" ), true );
+//                    RockPage.AddScriptLink( Page, "~/Scripts/summernote/summernote.min.js", true );
 
 //                    script = string.Format( @"
 //    Sys.Application.add_load( function () {{
@@ -433,9 +433,9 @@ namespace RockWeb.Blocks.Cms
 //            }
 //        }
 
-        /// <summary>
-        /// Binds the grid.
-        /// </summary>
+/// <summary>
+/// Binds the grid.
+/// </summary>
         private void BindGrid()
         {
             var htmlContentService = new HtmlContentService( new RockContext() );
@@ -473,7 +473,7 @@ namespace RockWeb.Blocks.Cms
             pnlEdit.Visible = true;
             pnlVersionGrid.Visible = false;
             pnlEditModel.Visible = true;
-            upnlHtmlContent.Update();
+            upnlHtmlContentEdit.Update();
             mdEdit.Show();
 
             bool useCodeEditor = GetAttributeValue( "UseCodeEditor" ).AsBoolean();
@@ -646,7 +646,8 @@ namespace RockWeb.Blocks.Cms
         {
             mdEdit.Hide();
             pnlEditModel.Visible = false;
-            upnlHtmlContent.Update();
+            upnlHtmlContentEdit.Update();
+            upnlHtmlContentView.Update();
 
             // prevent htmlEditor from using viewstate when not needed
             pnlEdit.EnableViewState = false;
@@ -762,7 +763,7 @@ namespace RockWeb.Blocks.Cms
                     lHtmlContent.Visible = visible;
 
                     // upnlHtmlContent has UpdateMode=Conditional so tell it to update if Visible changed 
-                    upnlHtmlContent.Update();
+                    upnlHtmlContentView.Update();
                 }
             }
         }

@@ -99,6 +99,7 @@ namespace Rock.Model
             target.ConfirmationFromName = source.ConfirmationFromName;
             target.ConfirmationSubject = source.ConfirmationSubject;
             target.Cost = source.Cost;
+            target.DefaultPayment = source.DefaultPayment;
             target.DiscountCodeTerm = source.DiscountCodeTerm;
             target.FeeTerm = source.FeeTerm;
             target.FinancialGatewayId = source.FinancialGatewayId;
@@ -121,6 +122,8 @@ namespace Rock.Model
             target.RegistrantsSameFamily = source.RegistrantsSameFamily;
             target.RegistrantTerm = source.RegistrantTerm;
             target.RegistrarOption = source.RegistrarOption;
+            target.RegistrationAttributeTitleEnd = source.RegistrationAttributeTitleEnd;
+            target.RegistrationAttributeTitleStart = source.RegistrationAttributeTitleStart;
             target.RegistrationInstructions = source.RegistrationInstructions;
             target.RegistrationTerm = source.RegistrationTerm;
             target.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;

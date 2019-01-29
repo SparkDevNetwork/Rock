@@ -112,6 +112,9 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
+            #pragma warning disable 612, 618
+            target.IconCssWeight = source.IconCssWeight;
+            #pragma warning restore 612, 618
             target.IndexStartingLocation = source.IndexStartingLocation;
             target.IsIndexEnabled = source.IsIndexEnabled;
             target.IsSystem = source.IsSystem;

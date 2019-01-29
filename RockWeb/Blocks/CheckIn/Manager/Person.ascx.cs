@@ -42,8 +42,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
     [LinkedPage("Manager Page", "Page used to manage check-in locations", true, "", "", 0)]
     [BooleanField("Show Related People", "Should anyone who is allowed to check-in the current person also be displayed with the family members?", false, "", 1)]
-    [DefinedValueField(Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "Send SMS From", "The phone number SMS messages should be sent from", false, false, key: SMS_FROM_KEY )]
-
+    [DefinedValueField(Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "Send SMS From", "The phone number SMS messages should be sent from", false, false, order:2, key: SMS_FROM_KEY )]
+    [AttributeCategoryField( "Child Attribute Category", "The children Attribute Category to display attributes from.", false, "Rock.Model.Person", false, "", "", 3 )]
+    [AttributeCategoryField( "Adult Attribute Category", "The adult Attribute Category to display attributes from.", false, "Rock.Model.Person", false, "", "", 4 )]
     public partial class Person : Rock.Web.UI.RockBlock
     {
         private const string SMS_FROM_KEY = "SMSFrom";
@@ -352,6 +353,22 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     lEmail.Visible = !string.IsNullOrWhiteSpace( person.Email );
                     lEmail.Text = person.GetEmailTag( ResolveRockUrl( "/" ), "btn btn-default", "<i class='fa fa-envelope'></i>" );
 
+                    var adultCategoryGuid = GetAttributeValue( "AdultAttributeCategory" ).AsGuidOrNull();
+                    var childCategoryGuid = GetAttributeValue( "ChildAttributeCategory" ).AsGuidOrNull();
+                    var isAdult = person.AgeClassification != AgeClassification.Child;
+
+                    pnlAdultFields.Visible = isAdult && adultCategoryGuid.HasValue;
+                    pnlChildFields.Visible = !isAdult && childCategoryGuid.HasValue;
+                    if ( isAdult && adultCategoryGuid.HasValue)
+                    {
+                        avcAdultAttributes.IncludedCategoryNames = new string[] { CategoryCache.Get( adultCategoryGuid.Value ).Name };
+                        avcAdultAttributes.AddDisplayControls( person );
+                    }
+                    else
+                    {
+                        avcChildAttributes.IncludedCategoryNames = new string[] { CategoryCache.Get( childCategoryGuid.Value ).Name };
+                        avcChildAttributes.AddDisplayControls( person );
+                    }
                     // Text Message
                     var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.IsMessagingEnabled && n.Number.IsNotNullOrWhiteSpace() );
                     if ( GetAttributeValue( SMS_FROM_KEY ).IsNotNullOrWhiteSpace() && phoneNumber != null )

@@ -34,8 +34,8 @@ DECLARE @AdultRoleId int = (SELECT TOP 1 [Id] FROM [GroupTypeRole] WHERE [Guid] 
 DECLARE @ChildRoleId int = (SELECT TOP 1 [Id] FROM [GroupTypeRole] WHERE [Guid] = 'C8B1814F-6AA7-4055-B2D7-48FE20429CB9')
 
 -- clean up any empty attribute values
-DELETE FROM [AttributeValue] WHERE [Value] = '' AND AttributeId = @FirstVisitAttributeId
-DELETE FROM [AttributeValue] WHERE [Value] = '' AND AttributeId = @SecondVisitAttributeId
+DELETE FROM [AttributeValue] WHERE ([Value] = '' OR [Value] IS NULL) AND AttributeId = @FirstVisitAttributeId
+DELETE FROM [AttributeValue] WHERE ([Value] = '' OR [Value] IS NULL) AND AttributeId = @SecondVisitAttributeId
 
 --
 -- FIRST VISIT DATES
@@ -45,7 +45,7 @@ IF @FirstVisitAttributeId IS NOT NULL
 BEGIN
 	INSERT INTO [AttributeValue]
 	([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime])
-	SELECT 1, @FirstVisitAttributeId, p.Id, a.FirstVisit, newid(), getdate()
+	SELECT 1, @FirstVisitAttributeId, p.Id, CONVERT(varchar(50), a.FirstVisit, 126), newid(), getdate()
 	FROM [Person] p
 	CROSS APPLY ( 
 		SELECT 
@@ -66,7 +66,7 @@ BEGIN
 	-- next process adults (they look at the first visit of anyone in the family)
 	INSERT INTO [AttributeValue]
 	([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime])
-	SELECT 1, @FirstVisitAttributeId, p.Id, MIN(a.FirstVisit), newid(), getdate()
+	SELECT 1, @FirstVisitAttributeId, p.Id, MIN(CONVERT(varchar(50), a.FirstVisit, 126)), newid(), getdate()
 	FROM [Person] p
 	INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id] AND gm.[GroupRoleId] = @AdultRoleId
 	CROSS APPLY ( 
@@ -94,7 +94,7 @@ IF @SecondVisitAttributeId IS NOT NULL
 BEGIN
 	INSERT INTO [AttributeValue]
 	([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime])
-	SELECT 1, @SecondVisitAttributeId, p.Id, a.[SecondVisit], newid(), getdate()
+	SELECT 1, @SecondVisitAttributeId, p.Id, CONVERT(varchar(50), a.[SecondVisit], 126), newid(), getdate()
 	FROM [Person] p
 	CROSS APPLY ( 
 		SELECT 
@@ -118,7 +118,7 @@ BEGIN
 	-- next process adults (they look at the first visit of anyone in the family)
 	INSERT INTO [AttributeValue]
 	([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime])
-	SELECT 1, @SecondVisitAttributeId, p.[Id], MIN(a.[SecondVisit]), newid(), getdate()
+	SELECT 1, @SecondVisitAttributeId, p.[Id], MIN(CONVERT(varchar(50), a.[SecondVisit], 126)), newid(), getdate()
 	FROM [Person] p
 	INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id] AND gm.[GroupRoleId] = @AdultRoleId
 	CROSS APPLY ( 

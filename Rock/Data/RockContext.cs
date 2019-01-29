@@ -429,6 +429,14 @@ namespace Rock.Data
         public DbSet<CommunicationRecipient> CommunicationRecipients { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication responses.
+        /// </summary>
+        /// <value>
+        /// The communication responses.
+        /// </value>
+        public DbSet<CommunicationResponse> CommunicationResponses { get; set; }
+
+        /// <summary>
         /// Gets or sets the communication template attachment.
         /// </summary>
         /// <value>
@@ -1427,6 +1435,14 @@ namespace Rock.Data
         /// The registration template fees.
         /// </value>
         public DbSet<RegistrationTemplateFee> RegistrationTemplateFees { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration template fee items.
+        /// </summary>
+        /// <value>
+        /// The registration template fee items.
+        /// </value>
+        public DbSet<RegistrationTemplateFeeItem> RegistrationTemplateFeeItems { get; set; }
 
         /// <summary>
         /// Gets or sets the registration template forms.

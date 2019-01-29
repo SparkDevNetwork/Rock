@@ -17,7 +17,7 @@
             <Rock:Lava ID="HeaderImage" runat="server">
                 {%- assign headerImageId = CurrentPage | Attribute:'HeaderImage','Id' -%}
                 {%- if headerImageId != '' -%}
-                    <div class="col-lg-6 col-md-12" style="background: url('/GetImage.ashx?Id={{ headerImageId }}&maxWidth=2500') center center no-repeat; background-size: cover; min-height: 100vh;"></div>
+                    <div class="col-lg-6 col-md-12" style="background: url('{{ '~' | ResolveRockUrl }}GetImage.ashx?Id={{ headerImageId }}&maxWidth=2500') center center no-repeat; background-size: cover; min-height: 100vh;"></div>
                 {%- else -%}
                     <div class="col-lg-6 col-md-12"></div>
                 {%- endif -%}

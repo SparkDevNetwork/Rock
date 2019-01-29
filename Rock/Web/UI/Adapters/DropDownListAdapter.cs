@@ -91,6 +91,11 @@ namespace Rock.Web.UI.Adapters
             }
         }
 
+        /// <summary>
+        /// Renders the option group begin tag.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="writer">The writer.</param>
         private void RenderOptionGroupBeginTag( string name, HtmlTextWriter writer )
         {
             writer.WriteBeginTag( "optgroup" );
@@ -99,12 +104,21 @@ namespace Rock.Web.UI.Adapters
             writer.WriteLine();
         }
 
+        /// <summary>
+        /// Renders the option group end tag.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
         private void RenderOptionGroupEndTag( HtmlTextWriter writer )
         {
             writer.WriteEndTag( "optgroup" );
             writer.WriteLine();
         }
 
+        /// <summary>
+        /// Renders the list item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="writer">The writer.</param>
         private void RenderListItem( ListItem item, HtmlTextWriter writer )
         {
             writer.WriteBeginTag( "option" );
@@ -112,6 +126,11 @@ namespace Rock.Web.UI.Adapters
             if ( item.Selected )
             {
                 writer.WriteAttribute( "selected", "selected", false );
+            }
+
+            if ( !item.Enabled )
+            {
+                writer.WriteAttribute( "disabled", string.Empty );
             }
 
             foreach ( string key in item.Attributes.Keys )

@@ -244,9 +244,11 @@ namespace Rock.Field.Types
                         return category.Guid.ToString();
                     }
                 }
+
+                return string.Empty;
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>

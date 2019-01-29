@@ -15,19 +15,12 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-
 using Rock;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Utility
 {
@@ -38,8 +31,16 @@ namespace RockWeb.Blocks.Utility
     [Category( "Utility" )]
     [Description( "Template block for developers to use to start a new detail block that supports dynamic attributes." )]
 
-    [CodeEditorField( "Lava Template", "The Lava Template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true,
-        @"
+    #region Block Attributes
+
+    [CodeEditorField( "Lava Template",
+        Key = AttributeKey.LavaTemplate,
+        Description = "The Lava Template",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = true,
+        DefaultValue = @"
 <strong>Additional Attributes can be defined for this block type. These can be configured in <code>Home / CMS Configuration / Block Types</code> and will show up in block settings</strong>
 
 <ul>
@@ -48,11 +49,27 @@ namespace RockWeb.Blocks.Utility
     <li>{{ attribute.AttributeKey }}</li>
     {% endif %}
 {% endfor %}
-</ul>
+</ul>",
+        Order = 0 )]
 
-", order: 0 )]
+    #endregion #region Block Attributes
     public partial class StarkDynamicAttributes : Rock.Web.UI.RockBlock, Rock.Web.UI.IDynamicAttributesBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        protected static class AttributeKey
+        {
+            /// <summary>
+            /// AttributeKey for Lava Template
+            /// </summary>
+            public const string LavaTemplate = "LavaTemplate";
+        }
+
+        #endregion Attribute Keys
+
         #region Fields
 
         // used for private variables

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -54,6 +55,15 @@ namespace Rock.Model
                 ValueAsDateTime = value.AsDateTime(),
                 ValueAsNumeric = value.AsDecimalOrNull()
             };
+
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                using ( var rockContext = new RockContext())
+                {
+                    attributeValue.ValueAsPersonId = new PersonAliasService( rockContext).Queryable().Where( a => a.Guid.Equals( guid.Value ) ).Select( a => a.PersonId).FirstOrDefault();
+                }
+            }
 
             return attributeValue;
         }
@@ -104,12 +114,14 @@ namespace Rock.Model
             {
                 return _value ?? string.Empty;
             }
+
             set
             {
                 _value = value;
             }
         }
-        string _value = string.Empty;
+
+        private string _value = string.Empty;
 
         #endregion
 
@@ -143,7 +155,7 @@ namespace Rock.Model
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [LavaIgnore]
-        public DateTime? ValueAsDateTime { get; private set; }
+        public DateTime? ValueAsDateTime { get; internal set; }
 
         /// <summary>
         /// Gets the value as boolean (computed column)
@@ -154,7 +166,7 @@ namespace Rock.Model
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [LavaIgnore]
-        public bool? ValueAsBoolean { get; private set; }
+        public bool? ValueAsBoolean { get; internal set; }
 
         /// <summary>
         /// Gets a person alias guid value as a PersonId (ComputedColumn).
@@ -183,7 +195,6 @@ namespace Rock.Model
         {
             get
             {
-
                 Rock.Field.IFieldType result = null;
                 Rock.Web.Cache.AttributeCache attribute = Rock.Web.Cache.AttributeCache.Get( this.AttributeId );
                 if ( attribute != null )
@@ -234,6 +245,7 @@ namespace Rock.Model
                 {
                     return attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, this.EntityId, Value, attribute.QualifierValues, false );
                 }
+
                 return Value;
             }
         }
@@ -258,6 +270,7 @@ namespace Rock.Model
                 {
                     return attribute.Name;
                 }
+
                 return string.Empty;
             }
         }
@@ -282,6 +295,7 @@ namespace Rock.Model
                 {
                     return attribute.Key;
                 }
+
                 return string.Empty;
             }
         }
@@ -306,10 +320,10 @@ namespace Rock.Model
                 {
                     return attribute.IsGridColumn;
                 }
+
                 return false;
             }
         }
-
 
         /// <summary>
         /// Gets or sets the history changes to be saved in PostSaveChanges
@@ -349,7 +363,6 @@ namespace Rock.Model
 
         #endregion
 
-
         #region Public Methods
 
         /// <summary>
@@ -362,49 +375,19 @@ namespace Rock.Model
             var attributeCache = AttributeCache.Get( this.AttributeId );
             if ( attributeCache != null )
             {
-                // Check to see if this attribute value if for a Field or Image field type 
-                // ( we don't want BinaryFileFieldType as that type of attribute's file can be used by more than one attribute )
+                // Check to see if this attribute value if for a File, Image, or BackgroundCheck field type.
+                // If so then delete the old binary file for UPDATE and DELETE and make sure new binary files are not temporary
+                // This path needs to happen for FieldTypes that actually upload/create a file but not for FieldTypes that consist of already existing files.
+                // This attribute value should not effect a file that anything could be using.
+                // The Label field type is a list of existing labels so should not be included, but the image field type uploads a new file so we do want it included.
+                // Don't use BinaryFileFieldType as that type of attribute's file can be used by more than one attribute
                 var field = attributeCache.FieldType.Field;
                 if ( field != null && (
-                    field is Rock.Field.Types.FileFieldType ||
-                    field is Rock.Field.Types.ImageFieldType ) )
+                    field is Field.Types.FileFieldType ||
+                    field is Field.Types.ImageFieldType ||
+                    field is Field.Types.BackgroundCheckFieldType ) )
                 {
-                    Guid? newBinaryFileGuid = null;
-                    Guid? oldBinaryFileGuid = null;
-
-                    if ( entry.State == System.Data.Entity.EntityState.Added ||
-                        entry.State == System.Data.Entity.EntityState.Modified )
-                    {
-                        newBinaryFileGuid = Value.AsGuidOrNull();
-                    }
-
-                    if ( entry.State == System.Data.Entity.EntityState.Modified ||
-                        entry.State == System.Data.Entity.EntityState.Deleted )
-                    {
-                        if ( entry.OriginalValues["Value"] != null )
-                        {
-                            oldBinaryFileGuid = entry.OriginalValues["Value"].ToString().AsGuidOrNull();
-                        }
-                    }
-
-                    if ( oldBinaryFileGuid.HasValue )
-                    {
-                        if ( !newBinaryFileGuid.HasValue || !newBinaryFileGuid.Value.Equals( oldBinaryFileGuid.Value ) )
-                        {
-                            var transaction = new Rock.Transactions.DeleteAttributeBinaryFile( oldBinaryFileGuid.Value );
-                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-                        }
-                    }
-
-                    if ( newBinaryFileGuid.HasValue )
-                    {
-                        BinaryFileService binaryFileService = new BinaryFileService( ( RockContext ) dbContext );
-                        var binaryFile = binaryFileService.Get( newBinaryFileGuid.Value );
-                        if ( binaryFile != null && binaryFile.IsTemporary )
-                        {
-                            binaryFile.IsTemporary = false;
-                        }
-                    }
+                    PreSaveBinaryFile( dbContext, entry );
                 }
 
                 // Check to see if this attribute is for a person or group, and if so, save to history table
@@ -414,82 +397,7 @@ namespace Rock.Model
 
                 if ( saveToHistoryTable || attributeCache.EnableHistory )
                 {
-                    string oldValue = string.Empty;
-                    string newValue = string.Empty;
-
-                    HistoryEntityTypeId = attributeCache.EntityTypeId.Value;
-                    HistoryEntityId = EntityId;
-
-                    switch ( entry.State )
-                    {
-                        case System.Data.Entity.EntityState.Added:
-                            {
-                                newValue = Value;
-                                break;
-                            }
-
-                        case System.Data.Entity.EntityState.Modified:
-                            {
-                                oldValue = entry.OriginalValues["Value"].ToStringSafe();
-                                newValue = Value;
-                                break;
-                            }
-
-                        case System.Data.Entity.EntityState.Deleted:
-                            {
-                                HistoryEntityId = entry.OriginalValues["EntityId"].ToStringSafe().AsIntegerOrNull();
-                                oldValue = entry.OriginalValues["Value"].ToStringSafe();
-                                return;
-                            }
-                    }
-
-                    this.PostSaveAttributeValueHistoryCurrent = false;
-
-                    if ( oldValue != newValue )
-                    {
-                        var formattedOldValue = oldValue.IsNotNullOrWhiteSpace() ? attributeCache.FieldType.Field.FormatValue( null, oldValue, attributeCache.QualifierValues, true ) : string.Empty;
-                        var formattedNewValue = newValue.IsNotNullOrWhiteSpace() ? attributeCache.FieldType.Field.FormatValue( null, newValue, attributeCache.QualifierValues, true ) : string.Empty;
-
-                        if ( saveToHistoryTable )
-                        {
-                            HistoryChanges = new History.HistoryChangeList();
-                            History.EvaluateChange( HistoryChanges, attributeCache.Name, formattedOldValue, formattedNewValue );
-                        }
-
-                        if ( attributeCache.EnableHistory )
-                        {
-                            // value changed and attribute.EnableHistory = true, so flag PostSaveAttributeValueHistoryCurrent
-                            this.PostSaveAttributeValueHistoryCurrent = true;
-
-                            var attributeValueHistoricalService = new AttributeValueHistoricalService( dbContext as RockContext );
-
-                            if ( this.Id > 0 )
-                            {
-                                // this is an existing AttributeValue, so fetch the AttributeValue that is currently marked as CurrentRow for this attribute value (if it exists)
-                                bool hasAttributeValueHistoricalCurrentRow = attributeValueHistoricalService.Queryable().Where( a => a.AttributeValueId == this.Id && a.CurrentRowIndicator == true ).Any();
-
-                                if ( !hasAttributeValueHistoricalCurrentRow )
-                                {
-                                    // this is an existing AttributeValue but there isn't a CurrentRow AttributeValueHistorical for this AttributeValue yet, so create it off of the OriginalValues
-                                    AttributeValueHistorical attributeValueHistoricalPreviousCurrentRow = new AttributeValueHistorical
-                                    {
-                                        AttributeValueId = this.Id,
-                                        Value = oldValue,
-                                        ValueFormatted = formattedOldValue,
-                                        ValueAsNumeric = entry.OriginalValues["ValueAsNumeric"] as decimal?,
-                                        ValueAsDateTime = entry.OriginalValues["ValueAsDateTime"] as DateTime?,
-                                        ValueAsBoolean = entry.OriginalValues["ValueAsBoolean"] as bool?,
-                                        ValueAsPersonId = entry.OriginalValues["ValueAsPersonId"] as int?,
-                                        EffectiveDateTime = entry.OriginalValues["ModifiedDateTime"] as DateTime? ?? RockDateTime.Now,
-                                        CurrentRowIndicator = true,
-                                        ExpireDateTime = HistoricalTracking.MaxExpireDateTime
-                                    };
-
-                                    attributeValueHistoricalService.Add( attributeValueHistoricalPreviousCurrentRow );
-                                }
-                            }
-                        }
-                    }
+                    SaveToHistoryTable( dbContext, entry, attributeCache, saveToHistoryTable );
                 }
             }
 
@@ -534,6 +442,15 @@ namespace Rock.Model
                 rockContext.SaveChanges();
             }
 
+            // If this a Person Attribute, Update the ModifiedDateTime on the Person that this AttributeValue is associated with
+            if ( this.EntityId.HasValue && AttributeCache.Get( this.AttributeId )?.EntityTypeId == EntityTypeCache.Get<Rock.Model.Person>().Id )
+            {
+                var currentDateTime = RockDateTime.Now;
+                int personId = this.EntityId.Value;
+                var qryPersonsToUpdate = new PersonService( rockContext ).Queryable( true, true ).Where( a => a.Id == personId );
+                rockContext.BulkUpdate( qryPersonsToUpdate, p => new Person { ModifiedDateTime = currentDateTime, ModifiedByPersonAliasId = this.ModifiedByPersonAliasId } );
+            }
+
             base.PostSaveChanges( dbContext );
         }
 
@@ -548,7 +465,138 @@ namespace Rock.Model
             return this.Value;
         }
 
-        #endregion
+        #endregion  Public Methods
+
+        #region Protected Methods
+
+        /// <summary>
+        /// Delete the old binary file for UPDATE and DELETE and make sure new binary files are not temporary
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        protected void PreSaveBinaryFile( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        {
+            Guid? newBinaryFileGuid = null;
+            Guid? oldBinaryFileGuid = null;
+
+            if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
+            {
+                newBinaryFileGuid = Value.AsGuidOrNull();
+            }
+
+            if ( entry.State == EntityState.Modified || entry.State == EntityState.Deleted )
+            {
+                oldBinaryFileGuid = entry.OriginalValues["Value"]?.ToString().AsGuidOrNull();
+            }
+
+            if ( oldBinaryFileGuid.HasValue )
+            {
+                if ( !newBinaryFileGuid.HasValue || !newBinaryFileGuid.Value.Equals( oldBinaryFileGuid.Value ) )
+                {
+                    var transaction = new Rock.Transactions.DeleteAttributeBinaryFile( oldBinaryFileGuid.Value );
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                }
+            }
+
+            if ( newBinaryFileGuid.HasValue )
+            {
+                BinaryFileService binaryFileService = new BinaryFileService( ( RockContext ) dbContext );
+                var binaryFile = binaryFileService.Get( newBinaryFileGuid.Value );
+                if ( binaryFile != null && binaryFile.IsTemporary )
+                {
+                    binaryFile.IsTemporary = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Saves to history table.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        /// <param name="attributeCache">The attribute cache.</param>
+        /// <param name="saveToHistoryTable">if set to <c>true</c> [save to history table].</param>
+        protected void SaveToHistoryTable( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry, AttributeCache attributeCache, bool saveToHistoryTable )
+        {
+            string oldValue = string.Empty;
+            string newValue = string.Empty;
+
+            HistoryEntityTypeId = attributeCache.EntityTypeId.Value;
+            HistoryEntityId = EntityId;
+
+            switch ( entry.State )
+            {
+                case EntityState.Added:
+                    newValue = Value;
+                    break;
+
+                case EntityState.Modified:
+                    oldValue = entry.OriginalValues["Value"].ToStringSafe();
+                    newValue = Value;
+                    break;
+
+                case EntityState.Deleted:
+                    HistoryEntityId = entry.OriginalValues["EntityId"].ToStringSafe().AsIntegerOrNull();
+                    oldValue = entry.OriginalValues["Value"].ToStringSafe();
+                    return;
+            }
+
+            this.PostSaveAttributeValueHistoryCurrent = false;
+
+            if ( oldValue == newValue )
+            {
+                return;
+            }
+
+            var formattedOldValue = oldValue.IsNotNullOrWhiteSpace() ? attributeCache.FieldType.Field.FormatValue( null, oldValue, attributeCache.QualifierValues, true ) : string.Empty;
+            var formattedNewValue = newValue.IsNotNullOrWhiteSpace() ? attributeCache.FieldType.Field.FormatValue( null, newValue, attributeCache.QualifierValues, true ) : string.Empty;
+
+            if ( saveToHistoryTable )
+            {
+                HistoryChanges = new History.HistoryChangeList();
+                History.EvaluateChange( HistoryChanges, attributeCache.Name, formattedOldValue, formattedNewValue );
+            }
+
+            if ( !attributeCache.EnableHistory )
+            {
+                return;
+            }
+
+            // value changed and attribute.EnableHistory = true, so flag PostSaveAttributeValueHistoryCurrent
+            this.PostSaveAttributeValueHistoryCurrent = true;
+
+            var attributeValueHistoricalService = new AttributeValueHistoricalService( dbContext as RockContext );
+
+            if ( this.Id < 1 )
+            {
+                return;
+            }
+
+            // this is an existing AttributeValue, so fetch the AttributeValue that is currently marked as CurrentRow for this attribute value (if it exists)
+            bool hasAttributeValueHistoricalCurrentRow = attributeValueHistoricalService.Queryable().Where( a => a.AttributeValueId == this.Id && a.CurrentRowIndicator == true ).Any();
+
+            if ( !hasAttributeValueHistoricalCurrentRow )
+            {
+                // this is an existing AttributeValue but there isn't a CurrentRow AttributeValueHistorical for this AttributeValue yet, so create it off of the OriginalValues
+                AttributeValueHistorical attributeValueHistoricalPreviousCurrentRow = new AttributeValueHistorical
+                {
+                    AttributeValueId = this.Id,
+                    Value = oldValue,
+                    ValueFormatted = formattedOldValue,
+                    ValueAsNumeric = entry.OriginalValues["ValueAsNumeric"] as decimal?,
+                    ValueAsDateTime = entry.OriginalValues["ValueAsDateTime"] as DateTime?,
+                    ValueAsBoolean = entry.OriginalValues["ValueAsBoolean"] as bool?,
+                    ValueAsPersonId = entry.OriginalValues["ValueAsPersonId"] as int?,
+                    EffectiveDateTime = entry.OriginalValues["ModifiedDateTime"] as DateTime? ?? RockDateTime.Now,
+                    CurrentRowIndicator = true,
+                    ExpireDateTime = HistoricalTracking.MaxExpireDateTime
+                };
+
+                attributeValueHistoricalService.Add( attributeValueHistoricalPreviousCurrentRow );
+            }
+        }
+
+        #endregion Protected Methods
 
         #region ICacheable
 
@@ -584,6 +632,10 @@ namespace Rock.Model
                 {
                     entityType.FlushCachedItem( this.EntityId.Value );
                 }
+                else if ( cacheAttribute.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Device>())
+                {
+                    Rock.CheckIn.KioskDevice.FlushItem( this.EntityId.Value );
+                }
             }
 
             if ( ( !cacheAttribute.EntityTypeId.HasValue || cacheAttribute.EntityTypeId.Value == 0 ) && string.IsNullOrEmpty( cacheAttribute.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( cacheAttribute.EntityTypeQualifierValue ) )
@@ -594,7 +646,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -614,5 +665,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

@@ -38,6 +38,7 @@ namespace Rock.Field.Types
 
         private const string VALUES_KEY = "values";
         private const string ENHANCED_SELECTION_KEY = "enhancedselection";
+        private const string REPEAT_COLUMNS = "repeatColumns";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -48,6 +49,7 @@ namespace Rock.Field.Types
             List<string> configKeys = new List<string>();
             configKeys.Add( VALUES_KEY );
             configKeys.Add( ENHANCED_SELECTION_KEY );
+            configKeys.Add( REPEAT_COLUMNS );
             return configKeys;
         }
 
@@ -59,23 +61,31 @@ namespace Rock.Field.Types
         {
             List<Control> controls = new List<Control>();
 
-            var tb = new RockTextBox();
-            controls.Add( tb );
-            tb.TextMode = TextBoxMode.MultiLine;
-            tb.Rows = 3;
-            tb.AutoPostBack = true;
-            tb.TextChanged += OnQualifierUpdated;
-            tb.Label = "Values";
-            tb.Help = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.";
+            var tbValues = new RockTextBox();
+            tbValues.TextMode = TextBoxMode.MultiLine;
+            tbValues.Rows = 3;
+            tbValues.AutoPostBack = true;
+            tbValues.TextChanged += OnQualifierUpdated;
+            tbValues.Label = "Values";
+            tbValues.Help = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.";
+            controls.Add( tbValues );
 
             // option for Displaying an enhanced 'chosen' value picker
-            var cbEnanced = new RockCheckBox();
-            controls.Add( cbEnanced );
-            cbEnanced.AutoPostBack = true;
-            cbEnanced.CheckedChanged += OnQualifierUpdated;
-            cbEnanced.Label = "Enhance For Long Lists";
-            cbEnanced.Text = "Yes";
-            cbEnanced.Help = "When set, will render a searchable selection of options.";
+            var cbEnhanced = new RockCheckBox();
+            cbEnhanced.AutoPostBack = true;
+            cbEnhanced.CheckedChanged += OnQualifierUpdated;
+            cbEnhanced.Label = "Enhance For Long Lists";
+            cbEnhanced.Text = "Yes";
+            cbEnhanced.Help = "When set, will render a searchable selection of options.";
+            controls.Add( cbEnhanced );
+
+            var tbRepeatColumns = new NumberBox();
+            tbRepeatColumns.Label = "Columns";
+            tbRepeatColumns.Help = "Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space.";
+            tbRepeatColumns.MinimumValue = "0";
+            tbRepeatColumns.AutoPostBack = true;
+            tbRepeatColumns.TextChanged += OnQualifierUpdated;
+            controls.Add( tbRepeatColumns );
 
             return controls;
         }
@@ -87,23 +97,28 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( VALUES_KEY, new ConfigurationValue( "Values", 
-                "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.", string.Empty ) );
-            configurationValues.Add( ENHANCED_SELECTION_KEY, new ConfigurationValue( "Enhance For Long Lists", 
-                "When set, will render a searchable selection of options.", string.Empty ) );
+            Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
 
-            if ( controls != null )
+            string description = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.";
+            configurationValues.Add( VALUES_KEY, new ConfigurationValue( "Values", description, string.Empty ) );
+
+            description = "When set, will render a searchable selection of options.";
+            configurationValues.Add( ENHANCED_SELECTION_KEY, new ConfigurationValue( "Enhance For Long Lists", description, string.Empty ) );
+
+            description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
+            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue("Repeat Columns", description, string.Empty ) );
+
+            if ( controls != null && controls.Count > 2 )
             {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is TextBox )
-                {
-                    configurationValues[VALUES_KEY].Value = ( (TextBox)controls[0] ).Text;
-                }
+                var tbValues = controls[0] as RockTextBox;
+                var cbEnhanced = controls[1] as RockCheckBox;
+                var tbRepeatColumns = controls[2] as NumberBox;
 
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is CheckBox )
-                {
-                    configurationValues[ENHANCED_SELECTION_KEY].Value = ( (CheckBox)controls[1] ).Checked.ToString();
-                }
+                tbRepeatColumns.Visible = !cbEnhanced.Checked;
+
+                configurationValues[VALUES_KEY].Value = tbValues.Text;
+                configurationValues[ENHANCED_SELECTION_KEY].Value = cbEnhanced.Checked.ToString();
+                configurationValues[REPEAT_COLUMNS].Value = tbRepeatColumns.Visible ? tbRepeatColumns.Text : string.Empty;
             }
 
             return configurationValues;
@@ -116,17 +131,18 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && configurationValues != null )
-            {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey( VALUES_KEY ) )
-                {
-                    ( (TextBox)controls[0] ).Text = configurationValues[VALUES_KEY].Value;
-                }
+            base.SetConfigurationValues( controls, configurationValues );
 
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is CheckBox && configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) )
-                {
-                    ( (CheckBox)controls[1] ).Checked = configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean();
-                }
+            if ( controls != null && controls.Count > 2 && configurationValues != null )
+            {
+                var tbValues = controls[0] as RockTextBox;
+                var cbEnhanced = controls[1] as RockCheckBox;
+                var tbRepeatColumns = controls[2] as NumberBox;
+
+                tbValues.Text = configurationValues.ContainsKey( VALUES_KEY ) ? configurationValues[VALUES_KEY].Value : string.Empty;
+                cbEnhanced.Checked = configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) ? configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean() : cbEnhanced.Checked;
+                tbRepeatColumns.Text = configurationValues.ContainsKey( REPEAT_COLUMNS ) ? configurationValues[REPEAT_COLUMNS].Value : string.Empty;
+                tbRepeatColumns.Visible = !cbEnhanced.Checked;
             }
         }
 
@@ -185,6 +201,11 @@ namespace Rock.Field.Types
                 {
                     editControl = new RockCheckBoxList { ID = id };
                     ( (RockCheckBoxList)editControl ).RepeatDirection = RepeatDirection.Horizontal;
+
+                    if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+                    {
+                        ( ( RockCheckBoxList ) editControl ).RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
+                    }
                 }
 
                 foreach( var keyVal in Helper.GetConfiguredValues( configurationValues ))
@@ -354,6 +375,14 @@ namespace Rock.Field.Types
 
                 // should be either "Contains" or "Not Contains"
                 ComparisonType comparisonType = filterValues[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains );
+
+                // No comparison value was specified, so we can filter if the Comparison Type using no value still makes sense
+                if ( ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
+                {
+                    // Just checking if IsBlank or IsNotBlank, so let ComparisonExpression do its thing
+                    MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
+                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( string.Empty ) );
+                }
 
                 List<string> selectedValues = filterValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
 

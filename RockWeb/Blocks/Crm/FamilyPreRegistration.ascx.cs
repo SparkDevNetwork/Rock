@@ -807,8 +807,8 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             dvpSuffix1.Required = isRequired;
             hfSuffixRequired.Value = isRequired.ToStringSafe();
             var suffixDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() );
-            dvpSuffix1.BindToDefinedType( suffixDt, true );
-            dvpSuffix2.BindToDefinedType( suffixDt, true );
+            dvpSuffix1.DefinedTypeId = suffixDt.Id;
+            dvpSuffix2.DefinedTypeId = suffixDt.Id;
 
             // Adult Gender
             isRequired = SetControl( ADULT_GENDER_KEY, pnlGender1, pnlGender2 );
@@ -826,9 +826,9 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             isRequired = SetControl( ADULT_MARTIAL_STATUS_KEY, pnlMaritalStatus1, pnlMaritalStatus2 );
             dvpMaritalStatus1.Required = isRequired;
             hfMaritalStatusRequired.Value = isRequired.ToStringSafe();
-            var MaritalStatusDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
-            dvpMaritalStatus1.BindToDefinedType( MaritalStatusDt, true );
-            dvpMaritalStatus2.BindToDefinedType( MaritalStatusDt, true );
+            var maritalStatusDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
+            dvpMaritalStatus1.DefinedTypeId = maritalStatusDt.Id;
+            dvpMaritalStatus2.DefinedTypeId = maritalStatusDt.Id;
 
             // Adult Email
             isRequired = SetControl( ADULT_EMAIL_KEY, pnlEmail1, pnlEmail2 );
@@ -1435,7 +1435,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         /// <returns></returns>
         private List<AttributeCache> GetCategoryAttributeList( string attributeKey )
         {
-            var AttributeList = new List<AttributeCache>();
+            var attributeList = new List<AttributeCache>();
             foreach ( Guid categoryGuid in GetAttributeValue( attributeKey ).SplitDelimitedValues( false ).AsGuidList() )
             {
                 var category = CategoryCache.Get( categoryGuid );
@@ -1445,13 +1445,13 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     {
                         if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                         {
-                            AttributeList.Add( AttributeCache.Get( attribute ) );
+                            attributeList.Add( AttributeCache.Get( attribute ) );
                         }
                     }
                 }
             }
 
-            return AttributeList;
+            return attributeList;
         }
 
         /// <summary>
@@ -1461,17 +1461,17 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         /// <returns></returns>
         private List<AttributeCache> GetAttributeList( string attributeKey )
         {
-            var AttributeList = new List<AttributeCache>();
+            var attributeList = new List<AttributeCache>();
             foreach ( Guid attributeGuid in GetAttributeValue( attributeKey ).SplitDelimitedValues( false ).AsGuidList() )
             {
                 var attribute = AttributeCache.Get( attributeGuid );
                 if ( attribute != null && attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
-                    AttributeList.Add( attribute );
+                    attributeList.Add( attribute );
                 }
             }
 
-            return AttributeList;
+            return attributeList;
         }
 
         /// <summary>

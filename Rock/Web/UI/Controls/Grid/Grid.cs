@@ -1968,7 +1968,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 {
                     // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
                     var getMethod = prop.GetGetMethod();
-                    if ( getMethod.IsVirtual && !getMethod.IsFinal && prop.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() == 0 )
+                    if ( getMethod == null || ( getMethod.IsVirtual && !getMethod.IsFinal && prop.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() == 0 ) )
                     {
                         continue;
                     }
@@ -2505,7 +2505,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 {
                     // limit to non-virtual methods to prevent lazy loading issues
                     var getMethod = property.GetGetMethod();
-                    if ( !getMethod.IsVirtual || getMethod.IsFinal || ( property.GetCustomAttribute<PreviewableAttribute>() != null ) )
+                    if ( ( getMethod != null && ( !getMethod.IsVirtual || getMethod.IsFinal ) ) || ( property.GetCustomAttribute<PreviewableAttribute>() != null ) )
                     {
                         if ( property.Name != "Id" )
                         {
@@ -3103,9 +3103,11 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             }
 
             string entityIdColumn;
+            bool isPersonEntityType = false;
             if ( entityTypeId.HasValue && entityTypeId.Value == EntityTypeCache.GetId<Model.Person>() )
             {
                 entityIdColumn = this.PersonIdField ?? "Id";
+                isPersonEntityType = true;
             }
             else
             {
@@ -3116,7 +3118,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
             // first try to get the SelectedKeys from the SelectField (if there is one)
             HashSet<int> selectedKeys = new HashSet<int>( this.SelectedKeys.Select( a => a as int? ).Where( a => a.HasValue ).Select( a => a.Value ).Distinct().ToList() );
-            if ( selectedKeys == null || !selectedKeys.Any() )
+            if ( selectedKeys == null || !selectedKeys.Any() || isPersonEntityType )
             {
                 if ( entityTypeId.HasValue && dataSourceObjectType is IEntity )
                 {

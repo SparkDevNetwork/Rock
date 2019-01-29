@@ -816,9 +816,6 @@ namespace Rock.Tests.Rock.Lava
             Assert.Equal( "Test new sermon (7/3/16)", ( ( IDictionary<string, object> ) output.First() )["Title"] );
         }
 
-
-
-
         /// <summary>
         /// For use in Lava -- sort by DateTime
         /// </summary>
@@ -848,7 +845,6 @@ namespace Rock.Tests.Rock.Lava
             var output = ( List<object> ) StandardFilters.Sort( input, null, "desc" );
             Assert.Equal( new DateTime().AddDays( 1 ), output[0] );
         }
-
 
         /// <summary>
         /// For use in Lava -- sort by int
@@ -924,7 +920,6 @@ namespace Rock.Tests.Rock.Lava
             var output = ( List<object> ) StandardFilters.Sort( input, "Id", "desc" );
             Assert.Equal( "2", ( ( Dictionary<string, object> ) output[0] )["Value"] );
         }
-
 
         /// <summary>
         /// For use in Lava -- sort arbitrary by int
@@ -1075,6 +1070,54 @@ namespace Rock.Tests.Rock.Lava
             };
             var output = ( List<object> ) StandardFilters.Sort( input, "NickName", "desc" );
             Assert.Equal( "2", ( ( Person ) output[0] ).NickName );
+        }
+
+        #region Where
+
+        /// <summary>
+        /// For use in Lava -- should extract a single element form array
+        /// </summary>
+        [Fact]
+        public void Where_ByInt()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", (int)1 } },
+               new Dictionary<string, object> { { "Id", (int)2 } }
+            };
+            var output = RockFilters.Where( input, "Id", 1 );
+            Assert.Single( ( List<object> ) output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should extract a single element form array. Simulates a | FromJSON input.
+        /// </summary>
+        [Fact]
+        public void Where_ByLong()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", (long)1 } },
+               new Dictionary<string, object> { { "Id", (long)2 } }
+            };
+            var output = RockFilters.Where( input, "Id", (int)1 );
+            Assert.Single( ( List<object> ) output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should extract a single element form array
+        /// </summary>
+        [Fact]
+        public void Where_ByString()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", "1" } },
+               new Dictionary<string, object> { { "Id", "2" } }
+            };
+
+            var output = RockFilters.Where( input, "Id", "1" );
+            Assert.Single( ( List<object> ) output );
         }
 
         #endregion

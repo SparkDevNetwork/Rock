@@ -281,6 +281,9 @@
 @input-focus-box-shadow:      ~"0 0 0 3px @{input-focus-rgba}";
 @input-focus-transition:      ~"border-color .15s ease-in-out, box-shadow .15s ease-in-out";
 
+//** Small `.form-control` height
+@input-height-xs:             (floor(@font-size-small * @line-height-small) + (@padding-xs-vertical * 2) + 2);
+
 // Wizard Styles { Used on pages like 'Calendar' and 'Event Registration' to help guide the user through a complex series of screens. }
 @wizard-bg:                             @gray-lighter;
 @wizard-item-bar-color:                 #bbb;
@@ -358,6 +361,10 @@
 @alert-danger-link-border-bottom:       1px dotted @alert-danger-text;
 
 @zindex-dropdown: 1050;
+
+// Checkbox & Radio Input Columns
+@checkbox-columns-gap: 8px;
+@checkbox-columns-width: 130px;
 
 // Helper Variables
 // -------------------------

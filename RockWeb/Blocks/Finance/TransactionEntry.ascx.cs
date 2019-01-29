@@ -1175,7 +1175,7 @@ TransactionAccountDetails: [
                 var gatewayComponent = gateway.GetGatewayComponent();
                 if ( gatewayComponent != null )
                 {
-                    var threeStepGateway = gatewayComponent as ThreeStepGatewayComponent;
+                    var threeStepGateway = gatewayComponent as IThreeStepGatewayComponent;
                     if ( threeStepGateway != null )
                     {
                         _using3StepGateway = true;
@@ -1200,6 +1200,7 @@ TransactionAccountDetails: [
                 // Get the saved accounts for the currently logged in user
                 var savedAccounts = new FinancialPersonSavedAccountService( rockContext )
                     .GetByPersonId( _targetPerson.Id )
+                    .Where( a => !a.IsSystem )
                     .ToList();
 
                 // Find the saved accounts that are valid for the selected CC gateway
@@ -2339,7 +2340,7 @@ TransactionAccountDetails: [
 
             bool isACHTxn = hfPaymentTab.Value == "ACH";
             var financialGateway = isACHTxn ? _achGateway : _ccGateway;
-            var gateway = ( isACHTxn ? _achGatewayComponent : _ccGatewayComponent ) as ThreeStepGatewayComponent;
+            var gateway = ( isACHTxn ? _achGatewayComponent : _ccGatewayComponent ) as IThreeStepGatewayComponent;
 
             if ( gateway == null )
             {
@@ -2641,9 +2642,10 @@ TransactionAccountDetails: [
 
             bool isACHTxn = hfPaymentTab.Value == "ACH";
             var financialGateway = isACHTxn ? _achGateway : _ccGateway;
-            var gateway = ( isACHTxn ? _achGatewayComponent : _ccGatewayComponent ) as ThreeStepGatewayComponent;
+            var gateway = isACHTxn ? _achGatewayComponent : _ccGatewayComponent;
+            var threeStepGateway = gateway as IThreeStepGatewayComponent;
 
-            if ( gateway == null )
+            if ( threeStepGateway == null )
             {
                 errorMessage = "There was a problem creating the payment gateway information";
                 return false;
@@ -2706,7 +2708,7 @@ TransactionAccountDetails: [
             FinancialPaymentDetail paymentDetail = null;
             if ( schedule != null )
             {
-                var scheduledTransaction = gateway.AddScheduledPaymentStep3( financialGateway, resultQueryString, out errorMessage );
+                var scheduledTransaction = threeStepGateway.AddScheduledPaymentStep3( financialGateway, resultQueryString, out errorMessage );
                 if ( scheduledTransaction == null )
                 {
                     return false;
@@ -2717,7 +2719,7 @@ TransactionAccountDetails: [
             }
             else
             {
-                var transaction = gateway.ChargeStep3( financialGateway, resultQueryString, out errorMessage );
+                var transaction = threeStepGateway.ChargeStep3( financialGateway, resultQueryString, out errorMessage );
                 if ( transaction == null || !string.IsNullOrWhiteSpace( errorMessage ) )
                 {
                     return false;
@@ -2817,11 +2819,20 @@ TransactionAccountDetails: [
             changeSummary.AppendFormat( " {0}", paymentInfo.MaskedNumber );
             changeSummary.AppendLine();
 
+            var transactionEntity = this.GetTransactionEntity();
+
             foreach ( var account in SelectedAccounts.Where( a => a.Amount > 0 ) )
             {
                 var transactionDetail = new FinancialScheduledTransactionDetail();
                 transactionDetail.Amount = account.Amount;
                 transactionDetail.AccountId = account.Id;
+
+                if ( transactionEntity != null )
+                {
+                    transactionDetail.EntityTypeId = transactionEntity.TypeId;
+                    transactionDetail.EntityId = transactionEntity.Id;
+                }
+
                 scheduledTransaction.ScheduledTransactionDetails.Add( transactionDetail );
                 changeSummary.AppendFormat( "{0}: {1}", account.Name, account.Amount.FormatAsCurrency() );
                 changeSummary.AppendLine();
@@ -3134,7 +3145,7 @@ TransactionAccountDetails: [
         /// </summary>
         private void RegisterScript()
         {
-            RockPage.AddScriptLink( ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
+            RockPage.AddScriptLink( "~/Scripts/jquery.creditCardTypeDetector.js" );
 
             int oneTimeFrequencyId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
 

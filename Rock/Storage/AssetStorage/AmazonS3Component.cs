@@ -141,7 +141,7 @@ namespace Rock.Storage.AssetStorage
                     request.ContinuationToken = response.NextContinuationToken;
                 } while ( response.IsTruncated );
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -208,7 +208,7 @@ namespace Rock.Storage.AssetStorage
 
                 } while ( response.IsTruncated );
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -255,35 +255,19 @@ namespace Rock.Storage.AssetStorage
                 request.Delimiter = "/";
 
                 var assets = new List<Asset>();
-                var subFolders = new HashSet<string>();
 
-                ListObjectsV2Response response;
-
-                // S3 will only return 1,000 keys per response and sets IsTruncated = true, the do-while loop will run and fetch keys until IsTruncated = false.
-                do
+                // All "folders" will be in the CommonPrefixes property. There is no need to loop through truncated responses like there is for files.
+                ListObjectsV2Response response = client.ListObjectsV2( request );
+                foreach ( string subFolder in response.CommonPrefixes )
                 {
-                    response = client.ListObjectsV2( request );
-
-                    foreach ( string subFolder in response.CommonPrefixes )
+                    if ( subFolder.IsNotNullOrWhiteSpace() )
                     {
-                        if ( subFolder.IsNotNullOrWhiteSpace() )
-                        {
-                            subFolders.Add( subFolder );
-                        }
+                        var subFolderAsset = CreateAssetFromCommonPrefix( subFolder, client.Config.RegionEndpoint.SystemName, bucketName );
+                        assets.Add( subFolderAsset );
                     }
-
-                    request.ContinuationToken = response.NextContinuationToken;
-
-                } while ( response.IsTruncated );
-
-                // Add the subfolders to the asset collection
-                foreach ( string subFolder in subFolders )
-                {
-                    var subFolderAsset = CreateAssetFromCommonPrefix( subFolder, client.Config.RegionEndpoint.SystemName, bucketName );
-                    assets.Add( subFolderAsset );
                 }
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -306,8 +290,9 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Returns an asset with the stream of the specified file with the option to create a thumbnail.
         /// </summary>
-        /// <param name="assetStorageProvider"></param>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="asset">The asset.</param>
+        /// <param name="createThumbnail">if set to <c>true</c> [create thumbnail].</param>
         /// <returns></returns>
         public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset, bool createThumbnail )
         {
@@ -588,7 +573,7 @@ namespace Rock.Storage.AssetStorage
                     assets.Add( subFolderAsset );
                 }
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -597,6 +582,14 @@ namespace Rock.Storage.AssetStorage
             }
         }
 
+        /// <summary>
+        /// Gets the thumbnail image for the provided Asset key. If one does not exist it will be created. If one exists but is older than the file
+        /// a new thumbnail is created and the old one overwritten.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="assetKey">The asset key.</param>
+        /// <param name="lastModifiedDateTime">The last modified date time.</param>
+        /// <returns></returns>
         public override string GetThumbnail( AssetStorageProvider assetStorageProvider, string assetKey, DateTime? lastModifiedDateTime )
         {
             string name = GetNameFromKey( assetKey );
@@ -630,6 +623,12 @@ namespace Rock.Storage.AssetStorage
             return virtualThumbPath;
         }
 
+        /// <summary>
+        /// Deletes the image thumbnail for the provided Asset. If the asset is a file then the singel thumbnail
+        /// is deleted. If the asset is a directory then a recurrsive delete is done.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="asset">The asset.</param>
         protected override void DeleteImageThumbnail( AssetStorageProvider assetStorageProvider, Asset asset )
         {
             base.DeleteImageThumbnail( assetStorageProvider, asset );
@@ -691,6 +690,7 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Creates the asset from the AWS S3Object.
         /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="s3Object">The s3 object.</param>
         /// <param name="regionEndpoint">The region endpoint.</param>
         /// <returns></returns>
@@ -706,7 +706,6 @@ namespace Rock.Storage.AssetStorage
                 Key = s3Object.Key,
                 Uri = $"https://{s3Object.BucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
                 Type = assetType,
-                //IconPath = GetFileTypeIcon( s3Object.Key ),
                 IconPath = assetType == AssetType.Folder ? string.Empty : GetThumbnail(assetStorageProvider, s3Object.Key, s3Object.LastModified ),
                 FileSize = s3Object.Size,
                 LastModifiedDateTime = s3Object.LastModified,
@@ -717,8 +716,10 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Creates the asset from AWS S3 Client GetObjectResponse.
         /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="response">The response.</param>
         /// <param name="regionEndpoint">The region endpoint.</param>
+        /// <param name="createThumbnail">if set to <c>true</c> [create thumbnail].</param>
         /// <returns></returns>
         private Asset CreateAssetFromGetObjectResponse( AssetStorageProvider assetStorageProvider, GetObjectResponse response, string regionEndpoint, bool createThumbnail )
         {

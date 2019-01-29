@@ -104,7 +104,7 @@ namespace Rock.Field.Types
         public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             PagePicker ppPage = control as PagePicker;
-            string result = null;
+            string result = string.Empty;
 
             if ( ppPage != null )
             {
@@ -132,9 +132,11 @@ namespace Rock.Field.Types
                         }
                     }
                 }
+
+                return result;
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>
