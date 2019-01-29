@@ -507,7 +507,7 @@ namespace Rock.Jobs
             var workflowService = new WorkflowService( workflowContext );
 
             var completedWorkflows = workflowService.Queryable()
-                .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && w.Status.Equals( "Completed" ) )
+                .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && ( w.Status.Equals( "Completed" ) || w.CompletedDateTime.HasValue) )
                 .ToList();
 
             foreach ( var workflow in completedWorkflows )
