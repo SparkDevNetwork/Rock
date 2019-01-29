@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using Rock.Model;
 
 namespace Rock.Financial
@@ -28,8 +29,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="paymentInfo">The payment info.</param>
+        /// <param name="metadata">Optional. Additional key value pairs to send to the gateway</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        FinancialTransaction AutomatedCharge( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage );
+        Payment AutomatedCharge( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage, Dictionary<string, string> metadata = null );
     }
 }

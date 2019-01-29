@@ -108,9 +108,9 @@ namespace Rock.Model
         /// A <see cref="System.Decimal"/> representing the fee amount of the transaction detail.
         /// </value>
         [DataMember]
-        [BoundFieldTypeAttribute(typeof(Rock.Web.UI.Controls.CurrencyField))]
+        [BoundFieldType(typeof(Rock.Web.UI.Controls.CurrencyField))]
         [IncludeAsEntityProperty]
-        public decimal FeeAmount { get; set; }
+        public decimal? FeeAmount { get; set; }
 
         #endregion
 
