@@ -40,6 +40,7 @@ namespace Rock.Plugin.HotFixes
             UpdateContentBlackList();
             CreateContentWhiteList();
             DeleteAllAuthForTagggedItemsControllerAndTagsController();
+            RemoveAllUserAuthInternalCalendar();
         }
 
         /// <summary>
@@ -107,5 +108,18 @@ namespace Rock.Plugin.HotFixes
 	        Sql( "DELETE FROM [Auth] WHERE [Guid] = '6212376F-B47B-46E1-B5DC-47B317BEC5F5'" );
         }
 
+        /// <summary>
+        /// NA: Remove auth for all users from Internal Calendar by overriding global default inherited
+        /// This method in this class is unique to 7.6
+        /// </summary>
+        public void RemoveAllUserAuthInternalCalendar()
+        {
+            // Add View Auth for internal calendar
+            RockMigrationHelper.AddSecurityAuthForCalendar( "8C7F7F4E-1C51-41D3-9AC3-02B3F4054798", 0, "View", true, "2C112948-FF4C-46E7-981A-0257681EADF4", Model.SpecialRole.None, "0D6136B4-CCCC-473D-843E-BBBDEEE9BC5B" ); // RSR - Staff Workers
+            RockMigrationHelper.AddSecurityAuthForCalendar( "8C7F7F4E-1C51-41D3-9AC3-02B3F4054798", 1, "View", true, "300BA2C8-49A3-44BA-A82A-82E3FD8C3745", Model.SpecialRole.None, "093536A0-CCCC-4B27-AE97-CF123F0ED29E" ); // RSR - Staff Like Workers
+            RockMigrationHelper.AddSecurityAuthForCalendar( "8C7F7F4E-1C51-41D3-9AC3-02B3F4054798", 2, "View", true, "628C51A8-4613-43ED-A18D-4A6FB999273E", Model.SpecialRole.None, "067631D6-CCCC-40E1-A8BD-6AEC733E9104" ); // RSR - Rock Administration
+            // All Users - View - Deny
+            RockMigrationHelper.AddSecurityAuthForCalendar( "8C7F7F4E-1C51-41D3-9AC3-02B3F4054798", 3, "View", false, null, Model.SpecialRole.AllUsers, "099A70A5-CCCC-4B02-8444-2504E6630CA1" ); // All Users
+        }
     }
 }
