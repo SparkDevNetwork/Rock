@@ -17,7 +17,7 @@ namespace Rock.Tests.Rock.Lava
 {
     public class RockFiltersTest
     {
-        // A fake webroot Content folder for any tests that use the HTTP Context simulator
+        // A fake web-root Content folder for any tests that use the HTTP Context simulator
         private static string webContentFolder = string.Empty;
 
         private static readonly Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
@@ -176,13 +176,13 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- should concat two strings.
+        /// For use in Lava -- should concatenate two strings.
         /// </summary>
         [Fact]
         public void PlusStrings()
         {
-            var output = RockFilters.Plus( "Foo", "Bar" );
-            Assert.Equal( "FooBar", output );
+            var output = RockFilters.Plus( "Food", "Bar" );
+            Assert.Equal( "FoodBar", output );
         }
 
         #endregion
@@ -245,8 +245,8 @@ namespace Rock.Tests.Rock.Lava
         [Fact]
         public void TimesStringAndInt()
         {
-            var expectedOutput = Enumerable.Repeat( "Foo", 2 );
-            var output = RockFilters.Times( "Foo", 2 );
+            var expectedOutput = Enumerable.Repeat( "Food", 2 );
+            var output = RockFilters.Times( "Food", 2 );
             Assert.Equal( expectedOutput, output );
         }
 
@@ -747,31 +747,55 @@ namespace Rock.Tests.Rock.Lava
         #region Sort
 
         /// <summary>
-        /// For use in Lava -- sort from JSON
+        /// For use in Lava -- sort objects (from JSON) by an int property
+        /// </summary>
+        [Fact]
+        public void Sort_FromJson_Int()
+        {
+            var expected = new List<string>() { "A", "B", "C", "D" };
+
+            var json = @"[{
+		""Title"": ""D"",
+        ""Order"": 4
+    }, {
+		""Title"": ""A"",
+		""Order"": 1
+    }, {
+		""Title"": ""C"",
+		""Order"": 3
+    }, {
+		""Title"": ""B"",
+		""Order"": 2
+    }]";
+
+            var converter = new ExpandoObjectConverter();
+            var input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) StandardFilters.Sort( input, "Order" );
+            var sortedTitles = output.Cast<dynamic>().Select( x => x.Title );
+            Assert.Equal( expected, sortedTitles );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort from JSON. NOTE: Dates really should be in ISO 8601 for guaranteed sort-ability.
         /// </summary>
         [Fact]
         public void Sort_FromJson()
         {
             var json = @"[{
 		""Title"": ""Hallelujah!( 6 / 12 / 16 )"",
-        ""StartDateTime"": ""6/12/2016 12:00:00 AM""
-
+        ""StartDateTime"": ""2016-06-12T12:00:00""
     }, {
 		""Title"": ""Are You Dealing With Insecurity? (6/19/16)"",
-		""StartDateTime"": ""6/19/2016 12:00:00 AM""
-
+		""StartDateTime"": ""2016-06-19T12:00:00""
     }, {
 		""Title"": ""Woman's Infirmity Healed (6/5/16)"",
-		""StartDateTime"": ""6/5/2016 12:00:00 AM""
-
+		""StartDateTime"": ""2016-06-05T12:00:00""
     }, {
 		""Title"": ""Test new sermon (5/29/16)"",
-		""StartDateTime"": ""5/29/2016 12:00:00 AM""
-
+		""StartDateTime"": ""2016-05-29T12:00:00""
     }, {
 		""Title"": ""Test new sermon (7/3/16)"",
-		""StartDateTime"": ""7/3/2016 12:00:00 AM""
-
+		""StartDateTime"": ""2016-07-03T12:00:00""
     }]";
             var converter = new ExpandoObjectConverter();
             object input = null;
@@ -781,31 +805,26 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- sort from JSON
+        /// For use in Lava -- sort from JSON. NOTE: Dates must be in ISO 8601 for guaranteed sort-ability.
         /// </summary>
         [Fact]
         public void Sort_FromJsonDesc()
         {
             var json = @"[{
-		""Title"": ""Hallelujah!( 6/12/16 )"",
-        ""StartDateTime"": ""6/12/2016 12:00:00 AM""
-
+		""Title"": ""Hallelujah!(6/12/16 )"",
+        ""StartDateTime"": ""2016-06-12T12:00:00""
     }, {
 		""Title"": ""Are You Dealing With Insecurity? (6/19/16)"",
-		""StartDateTime"": ""6/19/2016 12:00:00 AM""
-
+		""StartDateTime"": ""2016-06-19T12:00:00""
     }, {
 		""Title"": ""Woman's Infirmity Healed (6/5/16)"",
-		""StartDateTime"": ""6/5/2016 12:00:00 AM""
-
+		""StartDateTime"": ""2016-06-05T12:00:00""
     }, {
 		""Title"": ""Test new sermon (5/29/16)"",
-		""StartDateTime"": ""5/29/2016 12:00:00 AM""
-
+		""StartDateTime"": ""2016-05-29T12:00:00""
     }, {
 		""Title"": ""Test new sermon (7/3/16)"",
-		""StartDateTime"": ""7/3/2016 12:00:00 AM""
-
+		""StartDateTime"": ""2016-07-03T12:00:00""
     }]";
             var converter = new ExpandoObjectConverter();
             object input = null;
@@ -1145,7 +1164,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding days (d param) to a given date should be equal.
+        /// For use in Lava -- adding days (d parameter) to a given date should be equal.
         /// </summary>
         [Fact]
         public void DateAdd_AddDaysIntervalToGivenDate()
@@ -1155,7 +1174,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding hours (h param) to a given date should be equal.
+        /// For use in Lava -- adding hours (h parameter) to a given date should be equal.
         /// </summary>
         [Fact]
         public void DateAdd_AddHoursIntervalToGivenDate()
@@ -1165,7 +1184,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding minutes (m param) to a given date should be equal.
+        /// For use in Lava -- adding minutes (m parameter) to a given date should be equal.
         /// </summary>
         [Fact]
         public void DateAdd_AddMinutesIntervalToGivenDate()
@@ -1175,7 +1194,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding seconds (s param) to a given date should be equal.
+        /// For use in Lava -- adding seconds (s parameter) to a given date should be equal.
         /// </summary>
         [Fact]
         public void DateAdd_AddSecondsIntervalToGivenDate()
@@ -1185,7 +1204,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding years (y param) to a given date should be equal.
+        /// For use in Lava -- adding years (y parameter) to a given date should be equal.
         /// </summary>
         [Fact]
         public void DateAdd_AddYearsIntervalToGivenDate()
@@ -1195,7 +1214,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding years (y param) to a given leap-year date should be equal.
+        /// For use in Lava -- adding years (y parameter) to a given leap-year date should be equal.
         /// </summary>
         [Fact]
         public void DateAdd_AddYearsIntervalToGivenLeapDate()
@@ -1205,7 +1224,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding months (M param) to a given date should be equal.
+        /// For use in Lava -- adding months (M parameter) to a given date should be equal.
         /// </summary>
         [Fact]
         public void DateAdd_AddMonthsIntervalToGivenDate()
@@ -1215,7 +1234,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding months (M param) to a given date with more days in the month
+        /// For use in Lava -- adding months (M parameter) to a given date with more days in the month
         /// should be equal to the month's last day.
         /// </summary>
         [Fact]
@@ -1226,7 +1245,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding weeks (w param) to a given date should be equal.
+        /// For use in Lava -- adding weeks (w parameter) to a given date should be equal.
         /// </summary>
         [Fact]
         public void DateAdd_AddWeeksIntervalToGivenDate()
