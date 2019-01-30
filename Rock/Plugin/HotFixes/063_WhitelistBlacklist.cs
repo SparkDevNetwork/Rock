@@ -26,6 +26,7 @@ namespace Rock.Plugin.HotFixes
 
     /// <summary>
     /// This hotfix update is to address security concerns in the file uploader and is being retroactivly applied to v7.6 and >.
+    /// The file for 7.6 has some additional migrations and should not be merged into later versions.
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
     [MigrationNumber( 63, "1.7.5" )]
@@ -38,6 +39,7 @@ namespace Rock.Plugin.HotFixes
         {
             UpdateContentBlackList();
             CreateContentWhiteList();
+            DeleteAllAuthForTagggedItemsControllerAndTagsController();
         }
 
         /// <summary>
@@ -92,5 +94,18 @@ namespace Rock.Plugin.HotFixes
                 INSERT INTO [AttributeCategory] ([AttributeId], [CategoryId])
                 VALUES(@attributeId, 5)" );
         }
+
+
+        /// <summary>
+        /// NA: Remove auth for all users from TaggedItemsController and TagsController
+        /// This method in this class is unique to 7.6
+        /// </summary>
+        public void DeleteAllAuthForTagggedItemsControllerAndTagsController()
+        {
+            Sql( "DELETE FROM [Auth] WHERE [Guid] = '9D921716-A946-4DEF-9EF9-40A5CD3FFAA4'" );
+	        Sql( "DELETE FROM [Auth] WHERE [Guid] = 'A9576D72-A98B-42AE-8A04-DEDCEEEF0671'" );
+	        Sql( "DELETE FROM [Auth] WHERE [Guid] = '6212376F-B47B-46E1-B5DC-47B317BEC5F5'" );
+        }
+
     }
 }
