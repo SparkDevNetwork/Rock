@@ -176,7 +176,7 @@ namespace Rock.Financial
                         .AsNoTracking()
                         .Count( t => t.ScheduledTransactionId == _financialScheduledTransaction.Id );
                 }
-                
+
                 if ( _currentNumberOfPaymentsForSchedule.Value >= _financialScheduledTransaction.NumberOfPayments.Value )
                 {
                     errorMessage = string.Format( "The scheduled transaction already has the maximum number of occurence. {0}", instructionsToIgnore );
@@ -516,7 +516,7 @@ namespace Rock.Financial
             if ( _financialSource == null )
             {
                 _financialSource = DefinedValueCache.Get( _automatedPaymentArgs.FinancialSourceGuid ?? SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE.AsGuid() );
-            }            
+            }
         }
 
         /// <summary>
@@ -543,8 +543,8 @@ namespace Rock.Financial
                 StatusMessage = _payment.StatusMessage,
                 SettledDate = _payment.SettledDate,
                 ForeignKey = _payment.ForeignKey
-            };            
-            
+            };
+
             financialTransaction.FinancialPaymentDetail = new FinancialPaymentDetail
             {
                 AccountNumberMasked = _payment.AccountNumberMasked,
@@ -555,7 +555,7 @@ namespace Rock.Financial
                 ForeignKey = _payment.ForeignKey
             };
 
-            if (_payment.CurrencyTypeValue != null)
+            if ( _payment.CurrencyTypeValue != null )
             {
                 financialTransaction.FinancialPaymentDetail.CurrencyTypeValueId = _payment.CurrencyTypeValue.Id;
             }
@@ -567,32 +567,18 @@ namespace Rock.Financial
 
             financialTransaction.FinancialPaymentDetail.SetFromPaymentInfo( _referencePaymentInfo, _automatedGatewayComponent, _rockContext );
 
-            var hasFeeInfo = _payment.FeeAmount.HasValue;
-            var totalFeeRemaining = _payment.FeeAmount;
-            var numberOfDetails = _automatedPaymentArgs.AutomatedPaymentDetails.Count;
-            
-            for ( var i = 0; i < numberOfDetails; i++ )
+            foreach ( var detailArgs in _automatedPaymentArgs.AutomatedPaymentDetails )
             {
-                var detailArgs = _automatedPaymentArgs.AutomatedPaymentDetails[i];
-
                 var transactionDetail = new FinancialTransactionDetail
                 {
                     Amount = detailArgs.Amount,
                     AccountId = detailArgs.AccountId
                 };
 
-                if ( hasFeeInfo )
-                {
-                    var isLastDetail = ( i + 1 ) == numberOfDetails;
-                    var percentOfTotal = detailArgs.Amount / _payment.Amount;
-                    var apportionedFee = Math.Round( percentOfTotal * _payment.FeeAmount.Value, 2 );
-
-                    transactionDetail.FeeAmount = isLastDetail ? totalFeeRemaining : apportionedFee;
-                    totalFeeRemaining = totalFeeRemaining - transactionDetail.FeeAmount;
-                }
-
                 financialTransaction.TransactionDetails.Add( transactionDetail );
             }
+
+            financialTransaction.SetApportionedFeesOnDetails( _payment.FeeAmount );
 
             var batch = _financialBatchService.Get(
                 _automatedPaymentArgs.BatchNamePrefix ?? "Online Giving",

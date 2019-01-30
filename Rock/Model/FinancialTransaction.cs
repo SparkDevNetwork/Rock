@@ -803,6 +803,58 @@ namespace Rock.Model
                 return refundTransaction;
             }
         }
+
+        /// <summary>
+        /// Distributes a total fee amount among the details of a transaction according to each detail's
+        /// percent of the total transaction amount.
+        /// For example, consider a $10 transaction has two details, one for $1 and another for $9.
+        /// If this method were called with a $1 fee, that fee would be distributed as 10 cents and
+        /// 90 cents respectively.
+        /// </summary>
+        /// <param name="transaction"></param>
+        /// <param name="totalFee">The total fee for the transaction</param>
+        public static void SetApportionedFeesOnDetails( this FinancialTransaction transaction, decimal? totalFee )
+        {
+            if ( transaction.TransactionDetails == null || !transaction.TransactionDetails.Any() )
+            {
+                return;
+            }
+
+            if ( !totalFee.HasValue )
+            {
+                foreach ( var detail in transaction.TransactionDetails )
+                {
+                    detail.FeeAmount = null;
+                }
+
+                return;
+            }
+
+            var totalAmount = transaction.TransactionDetails.Sum( d => d.Amount );
+            var totalFeeRemaining = totalFee.Value;
+            var numberOfDetailsRemaining = transaction.TransactionDetails.Count;
+
+            foreach ( var detail in transaction.TransactionDetails )
+            {
+                numberOfDetailsRemaining--;
+                var isLastDetail = numberOfDetailsRemaining == 0;
+
+                if ( isLastDetail )
+                {
+                    // Ensure that the full fee value is retained and some part of it
+                    // is not lost because of rounding
+                    detail.FeeAmount = totalFeeRemaining;
+                }
+                else
+                {
+                    var percentOfTotal = detail.Amount / totalAmount;
+                    var apportionedFee = Math.Round( percentOfTotal * totalFee.Value, 2 );
+
+                    detail.FeeAmount = apportionedFee;
+                    totalFeeRemaining -= apportionedFee;
+                }
+            }
+        }
     }
 
     #endregion
