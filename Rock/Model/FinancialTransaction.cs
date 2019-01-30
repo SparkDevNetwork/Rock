@@ -793,7 +793,7 @@ namespace Rock.Model
             using ( var rockContext = new RockContext() )
             {
                 var service = new FinancialTransactionService( rockContext );
-                var refundTransaction = service.ProcessRefund( transaction, null, null, string.Empty, true, string.Empty, out errorMessage );
+                var refundTransaction = service.ProcessRefund( transaction, amount, reasonValueId, summary, process, batchNameSuffix, out errorMessage );
 
                 if ( refundTransaction != null )
                 {
