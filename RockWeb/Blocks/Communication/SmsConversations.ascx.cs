@@ -709,6 +709,7 @@ namespace RockWeb.Blocks.Communication
             ppRecipient.SelectedValue = null;
             tbSMSTextMessage.Text = string.Empty;
             HideDialog();
+            LoadResponseListing();
         }
 
         /// <summary>
