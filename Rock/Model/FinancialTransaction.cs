@@ -426,6 +426,31 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the total fee amount.
+        /// </summary>
+        /// <value>
+        /// The total amount.
+        /// </value>
+        [LavaInclude]
+        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        public virtual decimal? TotalFeeAmount
+        {
+            get
+            {
+                var hasFeeInfo = false;
+                var totalFee = 0m;
+
+                foreach ( var detail in TransactionDetails )
+                {
+                    hasFeeInfo |= detail.FeeAmount.HasValue;
+                    totalFee += detail.FeeAmount ?? 0m;
+                }
+
+                return hasFeeInfo ? totalFee : ( decimal? ) null;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the history changes.
         /// </summary>
         /// <value>
@@ -830,7 +855,7 @@ namespace Rock.Model
                 return;
             }
 
-            var totalAmount = transaction.TransactionDetails.Sum( d => d.Amount );
+            var totalAmount = transaction.TotalAmount;
             var totalFeeRemaining = totalFee.Value;
             var numberOfDetailsRemaining = transaction.TransactionDetails.Count;
 
