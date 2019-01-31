@@ -95,6 +95,7 @@ namespace Rock.Communication.Transport
                         }
 
                         CommunicationRecipient communicationRecipient = null;
+
                         using ( var rockContext = new RockContext() )
                         {
                             CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
@@ -106,16 +107,29 @@ namespace Rock.Communication.Transport
 
                             string message = ResolveText( smsMessage.Message, smsMessage.CurrentPerson, communicationRecipient, smsMessage.EnabledLavaCommands, recipientData.MergeFields, smsMessage.AppRoot, smsMessage.ThemeRoot );
 
-                            if ( communicationRecipient != null )
+                            // Create the communication record and send using that.
+                            if ( rockMessage.CreateCommunicationRecord )
                             {
+                                Person recipientPerson = ( Person ) recipientData.MergeFields.GetValueOrNull( "Person" );
+                                var communicationService = new CommunicationService( rockContext );
+                                Rock.Model.Communication communication = communicationService.CreateSMSCommunication( smsMessage.CurrentPerson, recipientPerson?.PrimaryAliasId, message, smsMessage.FromNumber, string.Empty, smsMessage.communicationName );
                                 rockContext.SaveChanges();
+                                Send( communication, mediumEntityTypeId, mediumAttributes );
+                                continue;
                             }
-
-                            MessageResource response = SendToTwilio( smsMessage.FromNumber.Value, null, attachmentMediaUrls, message, recipientData.To );
-
-                            if ( response.ErrorMessage.IsNotNullOrWhiteSpace() )
+                            else
                             {
-                                errorMessages.Add( response.ErrorMessage );
+                                MessageResource response = SendToTwilio( smsMessage.FromNumber.Value, null, attachmentMediaUrls, message, recipientData.To );
+
+                                if ( response.ErrorMessage.IsNotNullOrWhiteSpace() )
+                                {
+                                    errorMessages.Add( response.ErrorMessage );
+                                }
+
+                                if ( communicationRecipient != null )
+                                {
+                                    rockContext.SaveChanges();
+                                }
                             }
                         }
                     }
@@ -124,7 +138,7 @@ namespace Rock.Communication.Transport
                         errorMessages.Add( ex.Message );
                         ExceptionLogService.LogException( ex );
                     }
-
+                    
                     if ( throttlingWaitTimeMS.HasValue )
                     {
                         System.Threading.Tasks.Task.Delay( throttlingWaitTimeMS.Value ).Wait();
