@@ -389,7 +389,7 @@
     <Compile Include="Field\FieldVisibilityRules.cs" />
     <Compile Include="Field\Types\AssetFieldType.cs" />
     <Compile Include="Field\Types\AssetStorageProviderFieldType.cs" />
-    <Compile Include="Jobs\PostV90DataMigrations.cs" />
+    <Compile Include="Jobs\PostV90DataMigrationsForDISC.cs" />
     <Compile Include="Financial\IWebhookGatewayComponent.cs" />
     <Compile Include="Lava\Shortcodes\ScheduledContent.cs" />
     <Compile Include="Financial\AutomatedPaymentProcessor.cs" />
