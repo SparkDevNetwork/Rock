@@ -576,7 +576,7 @@ namespace RockWeb.Blocks.Communication
                 string responseCode = Rock.Communication.Medium.Sms.GenerateResponseCode( rockContext );
 
                 // Create and enqueue the communication
-                Rock.Communication.Medium.Sms.CreateCommunicationMobile( fromPersonAliasId, fromPersonName, toPersonAliasId, message, fromPhone, responseCode, rockContext );
+                Rock.Communication.Medium.Sms.CreateCommunicationMobile( CurrentUser.Person, toPersonAliasId, message, fromPhone, responseCode, rockContext );
             }
         }
 
