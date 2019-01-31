@@ -379,13 +379,27 @@ namespace Rock.Storage.AssetStorage
             string virtualPath = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{cleanKey}";
             string physicalPath = FileSystemCompontHttpContext.Server.MapPath( virtualPath );
 
-            if ( asset.Type == AssetType.File )
+            try
             {
-                File.Delete( physicalPath );
+                if ( asset.Type == AssetType.File )
+                {
+                    if ( File.Exists( physicalPath ) )
+                    {
+                        File.Delete( physicalPath );
+                    }
+                }
+                else if ( asset.Type == AssetType.Folder )
+                {
+                    if ( Directory.Exists( physicalPath ) )
+                    {
+                        Directory.Delete( physicalPath, true );
+                    }
+                }
             }
-            else if ( asset.Type == AssetType.Folder )
+            catch ( Exception ex )
             {
-                Directory.Delete( physicalPath, true );
+                ExceptionLogService.LogException( ex );
+                throw;
             }
         }
 

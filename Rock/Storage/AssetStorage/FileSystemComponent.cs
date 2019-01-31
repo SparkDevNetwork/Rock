@@ -143,11 +143,17 @@ namespace Rock.Storage.AssetStorage
 
                 if ( asset.Type == AssetType.File )
                 {
-                    File.Delete( Path.Combine( physicalPath ) );
+                    if ( File.Exists( physicalPath ) )
+                    {
+                        File.Delete( physicalPath );
+                    }
                 }
                 else
                 {
-                    Directory.Delete( physicalPath, true );
+                    if ( Directory.Exists( physicalPath ) )
+                    {
+                        Directory.Delete( physicalPath, true );
+                    }
                 }
             }
             catch ( Exception ex )
