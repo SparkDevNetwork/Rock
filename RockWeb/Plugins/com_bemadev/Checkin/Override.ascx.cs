@@ -57,24 +57,16 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
+            if ( CurrentCheckInState != null )
             {
-                if ( CurrentCheckInState != null )
-                {
 
-                    bool isOverrideAllowed = CurrentCheckInState.Kiosk.Device.GetAttributeValue( "AllowOverrideOnStart" ).AsBoolean( false );
+                bool isOverrideAllowed = CurrentCheckInState.Kiosk.Device.GetAttributeValue( "AllowOverrideOnStart" ).AsBoolean( false );
 
-                    btnOverrideCustom.Visible = ( CurrentCheckInState != null && isOverrideAllowed );
+                btnOverrideCustom.Visible = ( CurrentCheckInState != null && isOverrideAllowed );
 
 
-                }
-                
             }
-            else
-            {
-                btnOverrideCustom.Visible = false;
-            }
-           
+               
         }
 
 
