@@ -270,6 +270,12 @@ namespace Rock.Model
             return testResults;
         }
 
+        /// <summary>
+        /// Evaluate the adaptive score for the given Key and count.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="count">The count.</param>
+        /// <returns>returns a adaptive score value</returns>
         public static int GetAdaptiveScoreValue( string key, int count )
         {
             var discConst = constructData[key];
@@ -281,14 +287,26 @@ namespace Rock.Model
         {
             decimal percent;
             if ( scoreValue > 3.0 )
+            {
                 percent = 100;
+            }
             else if ( scoreValue < -3.0 )
+            {
                 percent = 0;
+            }
             else
+            {
                 percent = Convert.ToDecimal( zScoreToPercentage[scoreValue] );
+            }
             return percent;
         }
 
+        /// <summary>
+        /// Evaluate the natural score for the given Key and count.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="count">The count.</param>
+        /// <returns>returns a natural score value</returns>
         public static int GetNaturalScoreValue( string key, int count )
         {
             int nb = 30 - count;

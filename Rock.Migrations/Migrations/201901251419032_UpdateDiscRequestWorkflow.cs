@@ -330,7 +330,7 @@ namespace Rock.Migrations
             Sql( @"IF NOT EXISTS (
   SELECT[Id]
   FROM[ServiceJob]
-  WHERE[Class] = 'Rock.Jobs.PostV90DataMigrations'
+  WHERE[Class] = 'Rock.Jobs.PostV90DataMigrationsForDISC'
    AND[Guid] = 'A839DFEC-B1A3-499C-9BB3-03241E8E5305'
   )
 BEGIN
@@ -347,9 +347,9 @@ BEGIN
  VALUES(
   0
   ,1
-  ,'Data Migrations for v9.0'
+  ,'Rock Update Helper v9.0 - DISC'
   ,'This job will take care of any data migrations that need to occur after updating to v9.0. After all the operations are done, this job will delete itself.'
-  ,'Rock.Jobs.PostV90DataMigrations'
+  ,'Rock.Jobs.PostV90DataMigrationsForDISC'
   ,'0 0 21 1/1 * ? *'
   ,1
   ,'A839DFEC-B1A3-499C-9BB3-03241E8E5305'
