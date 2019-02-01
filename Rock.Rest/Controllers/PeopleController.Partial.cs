@@ -319,7 +319,17 @@ namespace Rock.Rest.Controllers
             }
 
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
-            PersonService.SaveNewPerson( person, ( Rock.Data.RockContext ) Service.Context, null, false );
+
+            var rockContext = ( Rock.Data.RockContext ) Service.Context;
+
+            var matchPerson = new PersonService( rockContext ).FindPerson( new PersonService.PersonMatchQuery( person.FirstName, person.LastName, person.Email, null, person.Gender, person.BirthDate, person.SuffixValueId ), false);
+
+            if (matchPerson != null)
+            {
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.OK, matchPerson.Id );
+            }
+
+            PersonService.SaveNewPerson( person, rockContext, null, false );
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
         }
