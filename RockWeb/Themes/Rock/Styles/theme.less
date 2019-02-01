@@ -61,10 +61,16 @@ textarea,
   background-clip: padding-box;
   -webkit-box-shadow: none;
   box-shadow: none;
+}
 
+.picker-label,
+input[type="text"],
+textarea,
+.form-control {
   &:focus {
     border: 1px solid @input-border-focus;
     box-shadow: @input-focus-box-shadow;
+    outline: none;
   }
 }
 
@@ -1482,6 +1488,14 @@ body.navbar-side-open {
     &:checked ~ .label-text::after {
       background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3E%3Ccircle r='3' fill='%23ffffff'/%3E%3C/svg%3E");
     }
+  }
+}
+
+// Override fix for checkbox wrapping when in-columns from forms.less
+.in-columns {
+  .checkbox-inline:first-child,
+  .radio-inline:first-child {
+    padding-left: 30px;
   }
 }
 
