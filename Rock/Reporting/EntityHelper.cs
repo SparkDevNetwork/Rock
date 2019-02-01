@@ -87,12 +87,8 @@ namespace Rock.Reporting
                         ( p.GetGetMethod() != null && !p.GetGetMethod().IsVirtual ) ||
 
                         // Properties with a Get and are virtual but also final
-                        ( p.GetGetMethod() != null && ( p.GetGetMethod().IsVirtual && p.GetGetMethod().IsFinal ) ) ||
-                        
-                        // Then get the properties that meet specific conditions.
-                        p.GetCustomAttributes( typeof( IncludeForReportingAttribute ), true ).Any() ||
-                        ( p.Name == "Order" && p.GetCustomAttribute( typeof( NotMappedAttribute ), true) == null ) ||
-                        ( p.Name == "IsActive" && p.GetCustomAttribute( typeof( NotMappedAttribute ), true ) == null ) )
+                        ( p.GetGetMethod() != null && ( p.GetGetMethod().IsVirtual && p.GetGetMethod().IsFinal ) )
+                    )
                     )
                 .ToList();
 
