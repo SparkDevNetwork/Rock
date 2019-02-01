@@ -591,7 +591,7 @@
 
                     <a id="LavaCommandsPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:LavaCommandsPicker ID="pLavaCommandsPicker" runat="server" Label="LavaCommandsPicker" />
+                        <Rock:LavaCommandsPicker ID="pLavaCommandsPicker" runat="server" Label="Rock:LavaCommandsPicker" />
                     </div>
 
                     <a id="MergeFieldPicker"></a>
@@ -603,14 +603,14 @@
                     <a id="MergeTemplatePicker"></a>
                     <h2>Merge Fields Templates</h2>
                     <div runat="server" class="r-example">
-                        <Rock:MergeTemplatePicker ID="pMergeTemplatePicker" runat="server" Label="MergeTemplatePicker" />
+                        <Rock:MergeTemplatePicker ID="pMergeTemplatePicker" runat="server" Label="Rock:MergeTemplatePicker" />
                     </div>
 
                     <h2>Reporting</h2>
 
                     <a id="DataViewItemPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:DataViewItemPicker ID="dvpDataViewPicker" runat="server" Label="DataViewItemPicker for Person Dataviews" EntityTypeId="15" />
+                        <Rock:DataViewItemPicker ID="dvpDataViewPicker" runat="server" Label="Rock:DataViewItemPicker for Person Dataviews" EntityTypeId="15" />
                     </div>
 
                     <a id="DataViewsPicker"></a>
@@ -620,7 +620,7 @@
 
                     <a id="ReportPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:ReportPicker ID="rpReports" runat="server" Label="ReportPicker for Person Reports" EntityTypeId="15" />
+                        <Rock:ReportPicker ID="rpReports" runat="server" Label="Rock:ReportPicker for Person Reports" EntityTypeId="15" />
                     </div>
 
                     <a id="MetricCategoryPicker"></a>
