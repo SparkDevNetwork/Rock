@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace Rock
 {
@@ -128,6 +130,25 @@ namespace Rock
                 else
                 {
                     return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the individual enum values of a Flags enumeration value.
+        /// </summary>
+        /// <typeparam name="T">The Enum type of enumValue.</typeparam>
+        /// <param name="enumValue">The enum value whose flags should be retrieved.</param>
+        /// <returns>An enumerable collection of the individual flag values.</returns>
+        public static IEnumerable<T> GetFlags<T>( this Enum enumValue )
+        {
+            foreach ( var value in Enum.GetValues( enumValue.GetType() ).Cast<T>() )
+            {
+                Enum flag = ( Enum ) Enum.Parse( typeof( T ), value.ToString() );
+
+                if ( enumValue.HasFlag( flag ) )
+                {
+                    yield return value;
                 }
             }
         }
