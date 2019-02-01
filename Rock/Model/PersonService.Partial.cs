@@ -365,9 +365,9 @@ namespace Rock.Model
             /// <param name="mobilePhone">The mobile phone.</param>
             public PersonMatchQuery( string firstName, string lastName, string email, string mobilePhone )
             {
-                FirstName = firstName ?? string.Empty;
-                LastName = lastName ?? string.Empty;
-                Email = email ?? string.Empty;
+                FirstName = firstName.IsNotNullOrWhiteSpace() ? firstName.Trim() : string.Empty;
+                LastName = lastName.IsNotNullOrWhiteSpace() ? lastName.Trim() : string.Empty;
+                Email = email.IsNotNullOrWhiteSpace() ? email.Trim() : string.Empty;
                 MobilePhone = mobilePhone.IsNotNullOrWhiteSpace() ? PhoneNumber.CleanNumber( mobilePhone ) : string.Empty;
                 Gender = null;
                 BirthDate = null;
@@ -388,9 +388,9 @@ namespace Rock.Model
             /// <param name="suffixValueId">The suffix value identifier.</param>
             public PersonMatchQuery( string firstName, string lastName, string email, string mobilePhone, Gender? gender = null, int? birthMonth = null, int? birthDay = null, int? birthYear = null, int? suffixValueId = null )
             {
-                FirstName = firstName ?? string.Empty;
-                LastName = lastName ?? string.Empty;
-                Email = email ?? string.Empty;
+                FirstName = firstName.IsNotNullOrWhiteSpace() ? firstName.Trim() : string.Empty;
+                LastName = lastName.IsNotNullOrWhiteSpace() ? lastName.Trim() : string.Empty;
+                Email = email.IsNotNullOrWhiteSpace() ? email.Trim() : string.Empty;
                 MobilePhone = mobilePhone.IsNotNullOrWhiteSpace() ? PhoneNumber.CleanNumber( mobilePhone ) : string.Empty;
                 Gender = gender;
                 BirthDate = birthDay.HasValue && birthMonth.HasValue ? new DateTime( birthYear ?? DateTime.MinValue.Year, birthMonth.Value, birthDay.Value ) : ( DateTime? ) null;
@@ -409,9 +409,9 @@ namespace Rock.Model
             /// <param name="suffixValueId">The suffix value identifier.</param>
             public PersonMatchQuery( string firstName, string lastName, string email, string mobilePhone, Gender? gender = null, DateTime? birthDate = null, int? suffixValueId = null )
             {
-                FirstName = firstName ?? string.Empty;
-                LastName = lastName ?? string.Empty;
-                Email = email ?? string.Empty;
+                FirstName = firstName.IsNotNullOrWhiteSpace() ? firstName.Trim() : string.Empty;
+                LastName = lastName.IsNotNullOrWhiteSpace() ? lastName.Trim() : string.Empty;
+                Email = email.IsNotNullOrWhiteSpace() ? email.Trim() : string.Empty;
                 MobilePhone = mobilePhone.IsNotNullOrWhiteSpace() ? PhoneNumber.CleanNumber( mobilePhone ) : string.Empty;
                 Gender = gender;
                 BirthDate = birthDate;
@@ -537,6 +537,11 @@ namespace Rock.Model
                     if ( LastNameMatched )
                     {
                         total += 15;
+                    }
+
+                    if ( PreviousNameMatched && !LastNameMatched )
+                    {
+                        total += 12;
                     }
 
                     if ( MobileMatched || EmailMatched )
