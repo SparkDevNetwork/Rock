@@ -278,7 +278,7 @@ namespace Rock.Field.Types
 
             if ( control != null )
             {
-                tvf.Filter = value.FromJsonOrNull<CompoundFilterExpression>();
+                tvf.Filter = ( CompoundFilterExpression ) FilterExpression.FromJsonOrNull( value );
             }
         }
 

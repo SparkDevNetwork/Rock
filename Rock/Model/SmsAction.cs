@@ -31,7 +31,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "SmsAction" )]
     [DataContract]
-    public class SmsAction : Model<SmsAction>
+    public class SmsAction : Model<SmsAction>, IOrdered
     {
         #region Entity Properties
 
