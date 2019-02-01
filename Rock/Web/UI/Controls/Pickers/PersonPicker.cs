@@ -567,6 +567,10 @@ namespace Rock.Web.UI.Controls
             _tbSearchName.ID = "tbSearchName";
             _tbSearchName.PrependText = "Name";
             _tbSearchName.CssClass = "input-group-sm js-personpicker-search-name js-personpicker-search-field personpicker-search-field";
+            _tbSearchName.Attributes["autocapitalize"] = "off";
+            _tbSearchName.Attributes["autocomplete"] = "off";
+            _tbSearchName.Attributes["autocorrect"] = "off";
+            _tbSearchName.Attributes["spellcheck"] = "false";
             _searchPanel.Controls.Add( _tbSearchName );
 
             var additionalSearchFieldsPanel = new Panel();
@@ -577,6 +581,7 @@ namespace Rock.Web.UI.Controls
             _tbSearchAddress.ID = "tbSearchAddress";
             _tbSearchAddress.PrependText = "Address";
             _tbSearchAddress.CssClass = "input-group-sm js-personpicker-search-address js-personpicker-search-field personpicker-search-field";
+            _tbSearchAddress.Attributes["spellcheck"] = "false";
             additionalSearchFieldsPanel.Controls.Add( _tbSearchAddress );
 
             _tbSearchPhone = new RockTextBox();
