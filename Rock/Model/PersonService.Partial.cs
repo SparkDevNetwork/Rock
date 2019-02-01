@@ -206,7 +206,7 @@ namespace Rock.Model
             // Check for a DOB match here ignoring year and we award higher points if the year *does* match later, this allows for two tiers of scoring for birth dates
             if ( searchParameters.BirthDate.HasValue )
             {
-                query = query.Where( a => ( a.BirthMonth == searchParameters.BirthDate.Value.Month && a.BirthDay == searchParameters.BirthDate.Value.Day ) || a.BirthDate == null );
+                query = query.Where( a => ( a.BirthMonth == searchParameters.BirthDate.Value.Month && a.BirthDay == searchParameters.BirthDate.Value.Day ) || a.BirthMonth == null || a.BirthDay == null );
             }
 
             if ( searchParameters.Gender.HasValue )
@@ -220,6 +220,7 @@ namespace Rock.Model
                 {
                     Id = p.Id,
                     FirstName = p.FirstName,
+                    LastName = p.LastName,
                     NickName = p.NickName,
                     Gender = p.Gender,
                     BirthDate = p.BirthDate,
@@ -246,13 +247,14 @@ namespace Rock.Model
                 Queryable( includeDeceased, includeBusinesses )
                     .AsNoTracking()
                     .Where(
-                        p => p.Email != String.Empty && p.Email != null && p.Email == searchParameters.Email ||
+                        p => (p.Email != String.Empty && p.Email != null && p.Email == searchParameters.Email) ||
                         previousEmailQry.Any( a => a.PersonAlias.PersonId == p.Id && a.SearchValue == searchParameters.Email && a.SearchTypeValueId == searchTypeValueId )
                     )
                     .Select( p => new PersonSummary()
                     {
                         Id = p.Id,
                         FirstName = p.FirstName,
+                        LastName = p.LastName,
                         NickName = p.NickName,
                         Gender = p.Gender,
                         BirthDate = p.BirthDate,
@@ -286,6 +288,7 @@ namespace Rock.Model
                 {
                     Id = n.PersonAlias.Person.Id,
                     FirstName = n.PersonAlias.Person.FirstName,
+                    LastName = n.PersonAlias.Person.LastName,
                     NickName = n.PersonAlias.Person.NickName,
                     Gender = n.PersonAlias.Person.Gender,
                     BirthDate = n.PersonAlias.Person.BirthDate,
@@ -319,6 +322,7 @@ namespace Rock.Model
                     {
                         Id = n.Person.Id,
                         FirstName = n.Person.FirstName,
+                        LastName = n.Person.LastName,
                         NickName = n.Person.NickName,
                         Gender = n.Person.Gender,
                         BirthDate = n.Person.BirthDate,
@@ -490,6 +494,7 @@ namespace Rock.Model
             {
                 PersonId = person.Id;
                 FirstNameMatched = ( person.FirstName != null && person.FirstName != String.Empty && person.FirstName.Equals(query.FirstName, StringComparison.CurrentCultureIgnoreCase) ) || ( person.NickName != null && person.NickName != String.Empty && person.NickName.Equals(query.FirstName, StringComparison.CurrentCultureIgnoreCase) );
+                LastNameMatched = person.LastName != null && person.LastName != String.Empty && person.LastName.Equals( query.LastName, StringComparison.CurrentCultureIgnoreCase );
                 SuffixMatched = query.SuffixValueId.HasValue && person.SuffixValueId != null && query.SuffixValueId == person.SuffixValueId;
                 GenderMatched = query.Gender.HasValue & query.Gender == person.Gender;
 
@@ -580,6 +585,8 @@ namespace Rock.Model
         {
             public int Id { get; set; }
             public string FirstName { get; set; }
+
+            public string LastName { get; set; }
 
             public string NickName { get; set; }
 
