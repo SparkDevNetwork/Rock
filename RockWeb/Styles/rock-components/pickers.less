@@ -39,19 +39,19 @@
     background-color: transparent;
     border: 1px solid @input-border;
     border-radius: @border-radius-base;
+    &:hover {
+      text-decoration: none;
+    }
 
     i {
-      float: left;
-      margin-top: 2px;
       margin-right: 6px;
     }
 
     span {
-      float: left;
       width: 140px;
       margin-right: 6px;
       overflow: hidden;
-      line-height: 18px;
+      line-height: @line-height-computed;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
