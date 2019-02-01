@@ -23,6 +23,10 @@
 
                 <asp:LinkButton ID="btnFilter" runat="server" CssClass="btn btn-xs btn-default pull-right margin-l-sm" OnClick="btnFilter_Click"><i class="fa fa-gear" title="Filter Accounts"></i></asp:LinkButton>
 
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" Visible="false"  />
+                </div>
+
                 <Rock:RockControlWrapper ID="rcwAddNewBusiness" runat="server" Visible="false">
                     <a id="hlAddNewBusiness" class="btn btn-default btn-xs margin-r-sm pull-right" runat="server" href="#">Add Business</a>
                 </Rock:RockControlWrapper>
@@ -162,6 +166,8 @@
                         </div>
                         <div class="col-sm-6">
                             <Rock:CampusPicker ID="cpAccounts" runat="server" Label="Campus" Help="Only display selected accounts that are associated with this campus (or not associated with a campus)." />
+                            <Rock:RockCheckBox ID="cbIncludeChildAccounts" runat="server" Label="Include Child Accounts" Help="Checking this option will include all child and descendant accounts under all the selected accounts." />
+                            <Rock:RockCheckBox ID="cbFilterAccountsByBatchsCampus" runat="server" Label="Filter Accounts By Batch Campus" Help="If checked, only accounts that have the same campus as the batch will be shown." />
                         </div>
                     </div>
                 </Content>
