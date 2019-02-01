@@ -35,13 +35,15 @@ namespace Rock.Model
         {
             SmsMessage response = null;
 
-            var smsActions = SmsActionCache.All();
+            var smsActions = SmsActionCache.All()
+                .OrderBy( a => a.Order )
+                .OrderBy( a => a.Id );
 
             foreach ( var smsAction in smsActions )
             {
                 if ( smsAction.SmsActionComponent != null )
                 {
-                    var result = smsAction.SmsActionComponent.ProcessMessage( message, out SmsMessage actionResponse );
+                    var result = smsAction.SmsActionComponent.ProcessMessage( smsAction, message, out SmsMessage actionResponse );
 
                     if ( result )
                     {

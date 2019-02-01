@@ -37,7 +37,7 @@ namespace Rock.Migrations
                         Title = c.String(),
                         IsActive = c.Boolean(nullable: false),
                         Order = c.Int(nullable: false),
-                        ActionEntityTypeId = c.Int(nullable: false),
+                        SmsActionComponentEntityTypeId = c.Int(nullable: false),
                         ContinueAfterProcessing = c.Boolean(nullable: false),
                         CreatedDateTime = c.DateTime(),
                         ModifiedDateTime = c.DateTime(),

@@ -14,18 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Extension;
+using Rock.Web.Cache;
 
 namespace Rock.Communication.SmsActions
 {
+    [TextValueFilterField( "Phone Numbers", "The phone numbers that this action will run on.", false, order: 0, hideFilterMode: true )]
     public abstract class SmsActionComponent : Component
     {
         /// <summary>
@@ -79,11 +77,26 @@ namespace Rock.Communication.SmsActions
         public override bool IsActive => true;
 
         /// <summary>
+        /// Checks the attributes for this component and determines if the message
+        /// should be processed.
+        /// </summary>
+        /// <param name="action">The action that contains the configuration for this component.</param>
+        /// <param name="message">The message that is to be checked.</param>
+        /// <returns><c>true</c> if the message should be processed.</returns>
+        protected virtual bool ShouldProcessMessage( SmsActionCache action, SmsMessage message )
+        {
+            var filter = Field.Types.ValueFilterFieldType.GetFilterExpression( null, action.GetAttributeValue( "PhoneNumbers" ) );
+
+            return filter != null ? filter.Evaluate( message, "ToNumber" ) : true;
+        }
+
+        /// <summary>
         /// Processes the message that was received from the remote user.
         /// </summary>
+        /// <param name="action">The action that contains the configuration for this component.</param>
         /// <param name="message">The message that was received by Rock.</param>
         /// <param name="response">The optional response to be sent back to the sender.</param>
         /// <returns><c>true</c> if the message was handled by the action.</returns>
-        public abstract bool ProcessMessage( SmsMessage message, out SmsMessage response );
+        public abstract bool ProcessMessage( SmsActionCache action, SmsMessage message, out SmsMessage response );
     }
 }
