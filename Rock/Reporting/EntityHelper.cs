@@ -163,15 +163,11 @@ namespace Rock.Reporting
 
             var filteredEntityProperties = entityProperties
                 .Where( p =>
-                    // Only include attributues that are not flagged as NotMapped to prevent a LINQ to Entity exception.
-                    ( p.GetCustomAttribute( typeof( NotMappedAttribute ), true ) == null ) &&
-                    (
-                        ( p.GetGetMethod() != null && !p.GetGetMethod().IsVirtual ) ||
-                        p.GetCustomAttributes( typeof( IncludeForReportingAttribute ), true ).Any() ||
-                        p.GetCustomAttributes( typeof( IncludeAsEntityProperty ), true ).Any() ||
-                        ( p.Name == "Order" && p.GetCustomAttribute( typeof( NotMappedAttribute ), true) == null ) ||
-                        ( p.Name == "IsActive" && p.GetCustomAttribute( typeof( NotMappedAttribute ), true ) == null ) )
-                    )
+                    ( p.GetGetMethod() != null && !p.GetGetMethod().IsVirtual ) ||
+                    p.GetCustomAttributes( typeof( IncludeForReportingAttribute ), true ).Any() ||
+                    p.GetCustomAttributes( typeof( IncludeAsEntityProperty ), true ).Any() ||
+                    ( p.Name == "Order" && p.GetCustomAttribute( typeof( NotMappedAttribute ), true) == null ) ||
+                    ( p.Name == "IsActive" && p.GetCustomAttribute( typeof( NotMappedAttribute ), true ) == null ) )
                 .ToList();
 
             // Get Properties
