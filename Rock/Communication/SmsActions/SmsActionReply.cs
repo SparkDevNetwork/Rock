@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.Attribute;
+using Rock.Field.Types;
 using Rock.Web.Cache;
 
 namespace Rock.Communication.SmsActions
@@ -87,7 +88,7 @@ namespace Rock.Communication.SmsActions
             //
             // Get the filter expression for the message body.
             //
-            var filter = Field.Types.ValueFilterFieldType.GetFilterExpression( null, action.GetAttributeValue( "Message" ) );
+            var filter = ValueFilterFieldType.GetFilterExpression( null, GetAttributeValue( action, "Message" ) );
 
             //
             // Evaluate the message against the filter and return the match state.
