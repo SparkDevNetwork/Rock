@@ -70,7 +70,7 @@ class TwilioSmsResponseAsync : IAsyncResult
 
     private const bool ENABLE_LOGGING = false;
 
-    public TwilioSmsResponseAsync(AsyncCallback callback, HttpContext context, Object state)
+    public TwilioSmsResponseAsync( AsyncCallback callback, HttpContext context, Object state )
     {
         _callback = callback;
         _context = context;
@@ -96,29 +96,29 @@ class TwilioSmsResponseAsync : IAsyncResult
         }, null );
     }
 
-    private void StartAsyncTask(Object workItemState)
+    private void StartAsyncTask( Object workItemState )
     {
         var request = _context.Request;
         var response = _context.Response;
 
         response.ContentType = "text/plain";
 
-        if (request.HttpMethod != "POST")
+        if ( request.HttpMethod != "POST" )
         {
-            response.Write("Invalid request type.");
+            response.Write( "Invalid request type." );
         }
         else
         {
 
             // determine if we should log
-            if ((!string.IsNullOrEmpty(request.QueryString["Log"]) && request.QueryString["Log"] == "true") || ENABLE_LOGGING)
+            if ( ( !string.IsNullOrEmpty( request.QueryString["Log"] ) && request.QueryString["Log"] == "true" ) || ENABLE_LOGGING )
             {
                 WriteToLog();
             }
 
-            if (request.Form["SmsStatus"] != null)
+            if ( request.Form["SmsStatus"] != null )
             {
-                switch (request.Form["SmsStatus"])
+                switch ( request.Form["SmsStatus"] )
                 {
                     case "received":
                         MessageReceived();
@@ -137,7 +137,7 @@ class TwilioSmsResponseAsync : IAsyncResult
         }
 
         _completed = true;
-        _callback(this);
+        _callback( this );
     }
 
     private void MessageUndelivered()
@@ -152,7 +152,7 @@ class TwilioSmsResponseAsync : IAsyncResult
 
             // get communication from the message side
             RockContext rockContext = new RockContext();
-            CommunicationRecipientService recipientService = new CommunicationRecipientService(rockContext);
+            CommunicationRecipientService recipientService = new CommunicationRecipientService( rockContext );
 
             var communicationRecipient = recipientService.Queryable().Where( r => r.UniqueMessageId == messageSid ).FirstOrDefault();
             if ( communicationRecipient != null )
@@ -174,13 +174,14 @@ class TwilioSmsResponseAsync : IAsyncResult
         var request = _context.Request;
         var response = _context.Response;
 
-        if ( !string.IsNullOrEmpty( request.Form["To"] ) ) {
-            message.FromNumber = request.Form["To"];
+        if ( !string.IsNullOrEmpty( request.Form["To"] ) )
+        {
+            message.ToNumber = request.Form["To"];
         }
 
         if ( !string.IsNullOrEmpty( request.Form["From"] ) )
         {
-            message.ToNumber = request.Form["From"];
+            message.FromNumber = request.Form["From"];
         }
 
         if ( !string.IsNullOrEmpty( request.Form["Body"] ) )
@@ -192,6 +193,15 @@ class TwilioSmsResponseAsync : IAsyncResult
 
         if ( !string.IsNullOrWhiteSpace( message.ToNumber ) && !string.IsNullOrWhiteSpace( message.FromNumber ) )
         {
+            if ( message.FromNumber.StartsWith( "+" ) )
+            {
+                message.FromPerson = new PersonService( new RockContext() ).GetPersonFromMobilePhoneNumber( message.FromNumber.Substring( 1 ) );
+            }
+            else
+            {
+                message.FromPerson = new PersonService( new RockContext() ).GetPersonFromMobilePhoneNumber( message.FromNumber );
+            }
+
             var smsResponse = SmsActionService.ProcessIncomingMessage( message );
             var twilioMessage = new Twilio.TwiML.Message();
 
@@ -218,7 +228,7 @@ class TwilioSmsResponseAsync : IAsyncResult
         }
     }
 
-    private void WriteToLog ()
+    private void WriteToLog()
     {
         var request = _context.Request;
         var formValues = new List<string>();
@@ -258,5 +268,4 @@ class TwilioSmsResponseAsync : IAsyncResult
         }
 
     }
-
 }
