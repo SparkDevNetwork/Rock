@@ -82,6 +82,14 @@ namespace Rock.Communication.SmsActions
         /// </value>
         public override bool IsActive => true;
 
+        /// <summary>
+        /// Gets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public override int Order => 0;
+
         #endregion
 
         #region Methods
