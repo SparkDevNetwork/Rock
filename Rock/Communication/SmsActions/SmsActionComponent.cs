@@ -14,11 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Attribute;
 using Rock.Extension;
+using Rock.Field.Types;
 using Rock.Web.Cache;
 
 namespace Rock.Communication.SmsActions
@@ -26,6 +28,8 @@ namespace Rock.Communication.SmsActions
     [TextValueFilterField( "Phone Numbers", "The phone numbers that this action will run on.", false, order: 0, hideFilterMode: true )]
     public abstract class SmsActionComponent : Component
     {
+        #region Properties
+
         /// <summary>
         /// Gets the component title to be displayed to the user.
         /// </summary>
@@ -69,12 +73,41 @@ namespace Rock.Communication.SmsActions
         public abstract string Description { get; }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is active.
+        /// Gets a value indicating whether this instance is active. The component is
+        /// always active, it is up to the SmsAction entity to decide if the action
+        /// is active or not.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         public override bool IsActive => true;
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Use GetAttributeValue( SmsActionCache action, string key) instead. SmsAction attribute values are 
+        /// specific to the action instance (rather than global).  This method will throw an exception
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">SmsActionComponent attributes are saved specific to the action, which requires that the action is included in order to load or retrieve values. Use the GetAttributeValue( SmsActionCache action, string key ) method instead.</exception>
+        public override string GetAttributeValue( string key )
+        {
+            throw new Exception( "SmsActionComponent attributes are saved specific to the action, which requires that the action is included in order to load or retrieve values. Use the GetAttributeValue( SmsActionCache action, string key ) method instead." );
+        }
+
+        /// <summary>
+        /// Gets the attribute value for the service check type
+        /// </summary>
+        /// <param name="action">The SMS action.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public string GetAttributeValue( SmsActionCache action, string key )
+        {
+            return action.GetAttributeValue( key );
+        }
 
         /// <summary>
         /// Checks the attributes for this component and determines if the message
@@ -85,7 +118,7 @@ namespace Rock.Communication.SmsActions
         /// <returns><c>true</c> if the message should be processed.</returns>
         public virtual bool ShouldProcessMessage( SmsActionCache action, SmsMessage message )
         {
-            var filter = Field.Types.ValueFilterFieldType.GetFilterExpression( null, action.GetAttributeValue( "PhoneNumbers" ) );
+            var filter = ValueFilterFieldType.GetFilterExpression( null, GetAttributeValue( action, "PhoneNumbers" ) );
 
             return filter != null ? filter.Evaluate( message, "ToNumber" ) : true;
         }
@@ -97,5 +130,7 @@ namespace Rock.Communication.SmsActions
         /// <param name="message">The message that was received by Rock.</param>
         /// <returns>An SmsMessage that will be sent as the response or null if no response should be sent.</returns>
         public abstract SmsMessage ProcessMessage( SmsActionCache action, SmsMessage message );
+
+        #endregion
     }
 }

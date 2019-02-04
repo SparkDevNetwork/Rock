@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.Communication
 
                 hfEditActionId.Value = action.Id.ToString();
                 lActionType.Text = component.Title;
-                tbTitle.Text = action.Name;
+                tbName.Text = action.Name;
                 cbActive.Checked = action.IsActive;
                 cbContinue.Checked = action.ContinueAfterProcessing;
 
@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Communication
             var rockContext = new RockContext();
             var action = new SmsActionService( rockContext ).Get( hfEditActionId.Value.AsInteger() );
 
-            action.Name = tbTitle.Text;
+            action.Name = tbName.Text;
             action.IsActive = cbActive.Checked;
             action.ContinueAfterProcessing = cbContinue.Checked;
 
