@@ -14,11 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Rock.Communication.SmsActions;
 using Rock.Web.Cache;
 
@@ -43,16 +39,26 @@ namespace Rock.Model
             {
                 if ( smsAction.SmsActionComponent != null )
                 {
-                    var result = smsAction.SmsActionComponent.ProcessMessage( smsAction, message, out SmsMessage actionResponse );
-
-                    if ( result )
+                    //
+                    // Check if the action wants to process this message.
+                    //
+                    if ( !smsAction.SmsActionComponent.ShouldProcessMessage( smsAction, message ) )
                     {
-                        response = actionResponse ?? response;
+                        continue;
+                    }
 
-                        if ( !smsAction.ContinueAfterProcessing )
-                        {
-                            return response;
-                        }
+                    //
+                    // Process the message and use either the response returned by the action
+                    // or the previous response we already had.
+                    //
+                    response = smsAction.SmsActionComponent.ProcessMessage( smsAction, message ) ?? response;
+
+                    //
+                    // If the action is set to not continue after processing then stop.
+                    //
+                    if ( !smsAction.ContinueAfterProcessing )
+                    {
+                        return response;
                     }
                 }
             }

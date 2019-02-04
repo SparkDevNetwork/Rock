@@ -42,15 +42,6 @@ namespace RockWeb.Blocks.Communication
         #region Base Control Methods
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-        }
-
-        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -112,7 +103,7 @@ namespace RockWeb.Blocks.Communication
                 .Select( a => new
                 {
                     a.Id,
-                    a.Title,
+                    a.Name,
                     a.SmsActionComponentEntityTypeId,
                     a.IsActive,
                     a.ContinueAfterProcessing,
@@ -151,7 +142,7 @@ namespace RockWeb.Blocks.Communication
 
                     var action = new SmsAction
                     {
-                        Title = actionComponent.Title,
+                        Name = actionComponent.Title,
                         IsActive = true,
                         Order = ( lastOrder ?? -1 ) + 1,
                         SmsActionComponentEntityTypeId = actionComponent.TypeId
@@ -182,7 +173,7 @@ namespace RockWeb.Blocks.Communication
 
                 hfEditActionId.Value = action.Id.ToString();
                 lActionType.Text = component.Title;
-                tbTitle.Text = action.Title;
+                tbTitle.Text = action.Name;
                 cbActive.Checked = action.IsActive;
                 cbContinue.Checked = action.ContinueAfterProcessing;
 
@@ -230,7 +221,7 @@ namespace RockWeb.Blocks.Communication
             var rockContext = new RockContext();
             var action = new SmsActionService( rockContext ).Get( hfEditActionId.Value.AsInteger() );
 
-            action.Title = tbTitle.Text;
+            action.Name = tbTitle.Text;
             action.IsActive = cbActive.Checked;
             action.ContinueAfterProcessing = cbContinue.Checked;
 
@@ -285,6 +276,13 @@ namespace RockWeb.Blocks.Communication
 
         #endregion
 
+        #region Test Code
+
+        /// <summary>
+        /// Handles the Click event of the lbSendMessage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSendMessage_Click( object sender, EventArgs e )
         {
             if ( !string.IsNullOrWhiteSpace( tbSendMessage.Text ) )
@@ -321,5 +319,7 @@ namespace RockWeb.Blocks.Communication
                 lResponse.Text = "--Empty Message--";
             }
         }
+
+        #endregion
     }
 }

@@ -14,11 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -36,12 +33,12 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the title of the action.
+        /// Gets or sets the name of the action.
         /// </summary>
         /// <value>
-        /// The title of the action.
+        /// The name of the action.
         /// </value>
-        public string Title { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.

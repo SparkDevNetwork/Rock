@@ -238,6 +238,7 @@
     <Compile Include="CodeGenerated\SignatureDocumentTemplate.cs" />
     <Compile Include="CodeGenerated\Site.cs" />
     <Compile Include="CodeGenerated\SiteDomain.cs" />
+    <Compile Include="CodeGenerated\SmsAction.cs" />
     <Compile Include="CodeGenerated\SystemEmail.cs" />
     <Compile Include="CodeGenerated\SystemGuid\RockSystemGuids.cs" />
     <Compile Include="CodeGenerated\Tag.cs" />
