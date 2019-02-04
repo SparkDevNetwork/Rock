@@ -3,6 +3,7 @@
     .override-btn {
         position: absolute;
         left: 20px;
+        width:72px;
     }
 
 </style>
