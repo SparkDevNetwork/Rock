@@ -34,12 +34,12 @@ namespace Rock.Web.Cache
         #region Properties
 
         /// <summary>
-        /// Gets or sets the title of the action.
+        /// Gets or sets the name of the action.
         /// </summary>
         /// <value>
-        /// The title of the action.
+        /// The name of the action.
         /// </value>
-        public string Title { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.
@@ -117,7 +117,7 @@ namespace Rock.Web.Cache
                 return;
             }
 
-            Title = smsAction.Title;
+            Name = smsAction.Name;
             IsActive = smsAction.IsActive;
             Order = smsAction.Order;
             SmsActionComponentEntityTypeId = smsAction.SmsActionComponentEntityTypeId;
@@ -132,7 +132,7 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return Title;
+            return Name;
         }
 
         #endregion

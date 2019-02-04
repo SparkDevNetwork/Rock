@@ -83,7 +83,7 @@ namespace Rock.Communication.SmsActions
         /// <param name="action">The action that contains the configuration for this component.</param>
         /// <param name="message">The message that is to be checked.</param>
         /// <returns><c>true</c> if the message should be processed.</returns>
-        protected virtual bool ShouldProcessMessage( SmsActionCache action, SmsMessage message )
+        public virtual bool ShouldProcessMessage( SmsActionCache action, SmsMessage message )
         {
             var filter = Field.Types.ValueFilterFieldType.GetFilterExpression( null, action.GetAttributeValue( "PhoneNumbers" ) );
 
@@ -95,8 +95,7 @@ namespace Rock.Communication.SmsActions
         /// </summary>
         /// <param name="action">The action that contains the configuration for this component.</param>
         /// <param name="message">The message that was received by Rock.</param>
-        /// <param name="response">The optional response to be sent back to the sender.</param>
-        /// <returns><c>true</c> if the message was handled by the action.</returns>
-        public abstract bool ProcessMessage( SmsActionCache action, SmsMessage message, out SmsMessage response );
+        /// <returns>An SmsMessage that will be sent as the response or null if no response should be sent.</returns>
+        public abstract SmsMessage ProcessMessage( SmsActionCache action, SmsMessage message );
     }
 }

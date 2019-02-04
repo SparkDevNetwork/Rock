@@ -81,7 +81,7 @@
                                 <ItemTemplate>
                                     <div class="sms-action<%# Eval( "IsActive" ).ToString() == "True" ? "" : " inactive" %><%# Eval( "Id" ).ToString() == hfEditActionId.Value ? " editing" : "" %>">
                                         <i class="<%# Eval( "Component.IconCssClass" ) %>"></i>
-                                        <%# Eval( "Title" ) %>
+                                        <%# Eval( "Name" ) %>
                                         <div class="pull-right">
                                             <asp:LinkButton ID="lbMoveUp" runat="server" CssClass="btn btn-default btn-xs js-move-up" CommandName="MoveUp" CommandArgument='<%# Eval( "Id" ) %>'>
                                                 <i class="fa fa-arrow-up"></i>
@@ -115,7 +115,7 @@
                                 </div>
                             </div>
 
-                            <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.SmsAction" PropertyName="Title" />
+                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.SmsAction" PropertyName="Name" />
 
                             <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
 

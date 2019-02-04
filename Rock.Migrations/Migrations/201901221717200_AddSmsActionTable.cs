@@ -34,7 +34,7 @@ namespace Rock.Migrations
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
-                        Title = c.String(),
+                        Name = c.String(),
                         IsActive = c.Boolean(nullable: false),
                         Order = c.Int(nullable: false),
                         SmsActionComponentEntityTypeId = c.Int(nullable: false),

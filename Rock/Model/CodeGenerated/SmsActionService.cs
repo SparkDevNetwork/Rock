@@ -93,7 +93,7 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.Order = source.Order;
-            target.Title = source.Title;
+            target.Name = source.Name;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
