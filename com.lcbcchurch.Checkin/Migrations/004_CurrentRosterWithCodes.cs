@@ -37,18 +37,43 @@ namespace com.lcbcchurch.Checkin.Migrations
             RockMigrationHelper.AddBlockAttributeValue("7632DC74-0534-4167-A025-93135AF53E38","7146AC24-9250-4FC4-9DF2-9803B9A84299",@"RockEntity,Sql");
             //Add HTML to HTML Block
             RockMigrationHelper.UpdateHtmlContentBlock( "7632DC74-0534-4167-A025-93135AF53E38", @"
-{% assign groupTypeId = PageParameter['GroupTypeId'] %}
+{% assign navPath = CurrentPerson | GetUserPreference:'CurrentNavPath' %}
+{% assign navPaths = navPath | Split:'|' %}
+{% for path in navPaths %}
+	{% assign pathSize = path | Size %}
+	{%if pathSize > 1 %}
+		{% if path contains 'T'%}
+			{% assign groupTypeId = path | Remove:'T' %}
+		{% elseif path contains 'G' %}
+			{% assign groupId = path | Remove:'G' %}
+		{% elseif path contains 'L' %}
+			{% assign locationId = path | Remove:'L' %}
+		{% endif %}
+	{% endif %}
+{% endfor %}
+
 {% assign campusId = PageParameter['CampusId'] %}
-{% sql %} SELECT AC.Code AS Code ,P.NickName + ' ' + P.LastName AS Name ,AV.Value AS Pager ,G.Name AS GroupName
-FROM [Attendance] A INNER JOIN [AttendanceOccurrence] AO ON A.OccurrenceId = AO.Id INNER JOIN [Group] G ON AO.GroupId = G.Id
-INNER JOIN [PersonAlias] PA ON A.PersonAliasId = PA.Id INNER JOIN [Person] P ON PA.PersonId = P.Id
+{% sql %} 
+SELECT 	AC.Code AS Code ,
+		P.NickName + ' ' + P.LastName AS Name,
+		AV.Value AS Pager,
+		G.Name AS GroupName
+FROM [Attendance] A 
+INNER JOIN [AttendanceOccurrence] AO ON A.OccurrenceId = AO.Id 
+INNER JOIN [Group] G ON AO.GroupId = G.Id
+INNER JOIN [PersonAlias] PA ON A.PersonAliasId = PA.Id 
+INNER JOIN [Person] P ON PA.PersonId = P.Id
 LEFT OUTER JOIN [AttendanceCode] AC ON A.AttendanceCodeId = AC.Id
 LEFT OUTER JOIN [Attribute] AT ON AT.Guid = '791A4DC9-BB89-41E6-95E9-D377ED4C2F0B'
 LEFT OUTER JOIN [AttributeValue] AV ON AV.AttributeId = AT.Id AND AV.EntityId = A.Id
 WHERE A.DidAttend = 1 AND DATEDIFF(day, AO.OccurrenceDate, GetDate()) = 0
 AND GetDate() < ISNULL(A.EndDateTime,GetDate()+1)
-AND G.CampusId = {{campusId}} {% if groupTypeId %} AND G.GroupTypeId = {{groupTypeId}} {% endif %}
-ORDER BY G.GroupTypeId, G.Name, P.NickName, P.LastName {% endsql %}
+AND G.CampusId = {{campusId}} 
+{% if groupTypeId %} AND G.GroupTypeId = {{groupTypeId}} {% endif %}
+{% if groupId %} AND G.Id = {{groupId}} {% endif %}
+{% if locationId %} AND AO.LocationId = {{locationId}} {% endif %}
+ORDER BY G.GroupTypeId, G.Name, P.NickName, P.LastName 
+{% endsql %}
 
 <style> body { font-family: Arial, Helvetica, sans-serif; font-size: 14px; padding: .2in; }
 table tr td, table tr th { page-break-inside: avoid; border-bottom: .5px solid black; }
@@ -56,16 +81,40 @@ table tr td, table tr th { page-break-inside: avoid; border-bottom: .5px solid b
 .pagebreak { page-break-before: always; } #container { display: table; width: 50%; }
 #container > div { display: table-cell; width: 10%; } #notes { width: 20%; } </style>
 
-{% assign newGroup = '' %} {% for item in results %} {% if newGroup != item.GroupName %}
-{% if newGroup != '' %} </tbody></table> {% endif %} <table class=""table.table - striped""> <thead> <tr class=""tr - header"">
-<th colspan=""8"" style=""padding - left:15px""> <h3 style=""color: white;"">{{item.GroupName}}</h3> </th> </tr>
-<tr class=""tr - header""> <th>Attendee Name</th> <th>Group Name</th>
-<th>Security Code</th> <th>Pager</th> </tr> </thead> <tbody> {% endif %}
-{% assign newGroup = item.GroupName %} <tr> <td>{{item.Name}}</td>
-<td>{{item.GroupName}}</td> <td>{{item.Code}}</td> <td>{{item.Pager}}</td>
-</tr> {% endfor %} </tbody> </table> <script> $('document').ready(function(){ window.print(); }); </script>
-
-            ", "21263d20-7d72-4381-b490-476728124849" );
+{% assign newGroup = '' %} 
+    {% for item in results %} 
+    	{% if newGroup != item.GroupName %}
+			{% if newGroup != '' %} 
+				</tbody></table> 
+			{% endif %} 
+			<table class='table.table-striped'> 
+				<thead> 
+					<tr class='tr-header'>
+						<th colspan='8' style='padding-left:15px'> 
+							<h3 style='color:white;'>{{item.GroupName}}</h3> 
+						</th> 
+					</tr>
+					<tr class='tr-header'> 
+						<th>Attendee Name</th> 
+						<th>Group Name</th>
+						<th>Security Code</th> 
+						<th>Pager</th> 
+					</tr> 
+				</thead> 
+			<tbody> 
+		{% endif %}
+		{% assign newGroup = item.GroupName %} 
+		<tr> 
+			<td>{{item.Name}}</td>
+			<td>{{item.GroupName}}</td> 
+			<td>{{item.Code}}</td> 
+			<td>{{item.Pager}}</td>
+		</tr> 
+	{% endfor %} 
+	</tbody> 
+</table> 
+<script> $('document').ready(function(){ window.print(); }); </script>
+", "21263d20-7d72-4381-b490-476728124849" );
 
 
 
