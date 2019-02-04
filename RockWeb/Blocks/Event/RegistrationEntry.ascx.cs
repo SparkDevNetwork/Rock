@@ -217,7 +217,11 @@ namespace RockWeb.Blocks.Event
         /// <value>
         /// The step2 i frame URL.
         /// </value>
-        protected string Step2IFrameUrl { get; set; }
+        protected string Step2IFrameUrl
+        {
+            get { return ViewState["Step2IFrameUrl"].ToString(); }
+            set { ViewState["Step2IFrameUrl"] = value; }
+        }
 
         /// <summary>
         /// Gets or sets the minimum payment total after factoring in discounts, fees, and minimum payment amount per registrant
