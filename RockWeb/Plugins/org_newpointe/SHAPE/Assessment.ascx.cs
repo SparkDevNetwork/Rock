@@ -78,7 +78,7 @@ namespace RockWeb.Plugins.org_newpointe.SHAPE
             if (spiritualGiftsQuestions != null)
             {
                 pShapeGifts.Visible = true;
-                rSpiritualGiftsQuestions.DataSource = Rock.Lava.RockFilters.Shuffle( spiritualGiftsQuestions.DefinedValues );
+                rSpiritualGiftsQuestions.DataSource = spiritualGiftsQuestions.DefinedValues.OrderBy(v => v.Order);
                 rSpiritualGiftsQuestions.DataBind();
             }
             else
@@ -90,7 +90,7 @@ namespace RockWeb.Plugins.org_newpointe.SHAPE
             if (abilitiesQuestions != null)
             {
                 pShapeAbilities.Visible = true;
-                rAbilitiesQuestions.DataSource = abilitiesQuestions.DefinedValues;
+                rAbilitiesQuestions.DataSource = abilitiesQuestions.DefinedValues.OrderBy( v => v.Order );
                 rAbilitiesQuestions.DataBind();
             }
             else
@@ -102,7 +102,7 @@ namespace RockWeb.Plugins.org_newpointe.SHAPE
             if (heartCategories != null)
             {
                 pShapeHeart.Visible = true;
-                rcblHeartOptions.DataSource = heartCategories.DefinedValues;
+                rcblHeartOptions.DataSource = heartCategories.DefinedValues.OrderBy( v => v.Order );
                 rcblHeartOptions.DataTextField = "Value";
                 rcblHeartOptions.DataValueField = "Guid";
                 rcblHeartOptions.DataBind();
