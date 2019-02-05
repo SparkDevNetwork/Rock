@@ -18,11 +18,11 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            UpdateCommunicationSettings();
-            UpdatedCheckInSuccessTemplate();
-            UpdatedAttendanceSummaryEmail();
-            UpdateContentChannelView();
-            RemoveDuplicateIndexes();
+            //UpdateCommunicationSettings();
+            //UpdatedCheckInSuccessTemplate();
+            //UpdatedAttendanceSummaryEmail();
+            //UpdateContentChannelView();
+            //RemoveDuplicateIndexes();
         }
 
         /// <summary>
