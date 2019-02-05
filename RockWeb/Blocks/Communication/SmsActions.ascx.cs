@@ -170,6 +170,8 @@ namespace RockWeb.Blocks.Communication
                 rockContext.SaveChanges();
 
                 BindActions();
+
+                SmsActionCache.Clear();
             }
 
             //
@@ -189,6 +191,8 @@ namespace RockWeb.Blocks.Communication
                 rockContext.SaveChanges();
 
                 BindActions();
+
+                SmsActionCache.Clear();
             }
         }
 
