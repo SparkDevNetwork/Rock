@@ -442,6 +442,15 @@ namespace Rock.Model
                 rockContext.SaveChanges();
             }
 
+            // If this a Person Attribute, Update the ModifiedDateTime on the Person that this AttributeValue is associated with
+            if ( this.EntityId.HasValue && AttributeCache.Get( this.AttributeId )?.EntityTypeId == EntityTypeCache.Get<Rock.Model.Person>().Id )
+            {
+                var currentDateTime = RockDateTime.Now;
+                int personId = this.EntityId.Value;
+                var qryPersonsToUpdate = new PersonService( rockContext ).Queryable( true, true ).Where( a => a.Id == personId );
+                rockContext.BulkUpdate( qryPersonsToUpdate, p => new Person { ModifiedDateTime = currentDateTime, ModifiedByPersonAliasId = this.ModifiedByPersonAliasId } );
+            }
+
             base.PostSaveChanges( dbContext );
         }
 

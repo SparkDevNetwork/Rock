@@ -203,7 +203,7 @@ namespace Rock.CodeGeneration
             List<Assembly> rockAssemblyList = new List<Assembly>();
             rockAssemblyList.Add( typeof( Rock.Data.RockContext ).Assembly );
             rockAssemblyList.Add( typeof( Rock.Rest.ApiControllerBase ).Assembly );
-            
+
 
             foreach ( var rockAssembly in rockAssemblyList )
             {
@@ -1073,6 +1073,17 @@ order by [parentTable], [columnName]
                     var enumValues = Enum.GetValues( enumType );
                     foreach ( var enumValueName in Enum.GetNames( enumType ) )
                     {
+                        // mark Obsolete Enum values
+                        object value = Enum.Parse( enumType, enumValueName );
+                        var fieldInfo = value.GetType().GetField( enumValueName );
+                        var obsolete = fieldInfo?.GetCustomAttribute<ObsoleteAttribute>();
+
+                        if ( obsolete != null )
+                        {
+                            sb.AppendLine();
+                            sb.AppendLine( $"        [Obsolete( \"{obsolete.Message}\", {obsolete.IsError.ToTrueFalse().ToLower()} )]" );
+                        }
+
                         int enumValue = ( int ) Convert.ChangeType( Enum.Parse( enumType, enumValueName ), typeof( int ) );
                         string enumValueParam = enumValue >= 0 ? " = 0x" + enumValue.ToString( "x" ) : " = " + enumValue.ToString();
                         sb.AppendFormat( "        {0}{1},", enumValueName, enumValueParam );
@@ -1179,7 +1190,11 @@ order by [parentTable], [columnName]
             var entityProperties = GetEntityProperties( type, true, true ).ToDictionary( k => k.Key, v => v.Value );
 
             // create an instance of the type to detect any autoproperties that have a default value set
-            var typeInstance = Activator.CreateInstance( type );
+            object typeInstance = null;
+            if ( type.GetConstructor( new Type[0] ) != null )
+            {
+                typeInstance = Activator.CreateInstance( type );
+            }
 
             var dataMembers = type.GetProperties().SortByStandardOrder()
                 .Where( a => a.GetCustomAttribute<DataMemberAttribute>() != null )
@@ -1280,7 +1295,7 @@ order by [parentTable], [columnName]
 
                 if ( obsolete != null )
                 {
-                    if ( rockObsolete != null)
+                    if ( rockObsolete != null )
                     {
                         // [RockObsolete( "1.9" )]
                         sb.AppendLine( $"        // Made Obsolete in Rock \"{rockObsolete.Version}\"" );
@@ -1290,7 +1305,11 @@ order by [parentTable], [columnName]
                     sb.AppendLine( $"        [Obsolete( \"{obsolete.Message}\", {obsolete.IsError.ToTrueFalse().ToLower()} )]" );
                 }
 
-                var autoPropertyValue = propertyInfo.GetValue( typeInstance );
+                object autoPropertyValue = null;
+                if ( typeInstance != null )
+                {
+                    autoPropertyValue = propertyInfo.GetValue( typeInstance );
+                }
 
                 sb.Append( $"        public {this.PropertyTypeName( propertyInfo.PropertyType )} {propertyName} {{ get; set; }}" );
 

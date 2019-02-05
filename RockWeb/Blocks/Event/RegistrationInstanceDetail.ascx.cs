@@ -142,8 +142,8 @@ namespace RockWeb.Blocks.Event
 
             ActiveTab = ( ViewState["ActiveTab"] as string ) ?? string.Empty;
             RegistrantFields = ViewState["RegistrantFields"] as List<RegistrantFormField>;
-            RegistrantFields = ViewState["RegistrantFields"] as List<RegistrantFormField>;
             RegistrationTemplateId = ViewState["RegistrationTemplateId"] as int? ?? 0;
+
             // don't set the values if this is a postback from a grid 'ClearFilter'
             bool setValues = this.Request.Params["__EVENTTARGET"] == null || !this.Request.Params["__EVENTTARGET"].EndsWith( "_lbClearFilter" );
             SetUserPreferencePrefix( RegistrationTemplateId.Value );

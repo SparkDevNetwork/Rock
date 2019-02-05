@@ -2,12 +2,18 @@
 
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
-        <div class="panel panel-block">
+        <Rock:NotificationBox ID="nbNoNumbers" runat="server" NotificationBoxType="Warning" Text='No "SMS Phone Numbers" are available to view. Either there are none configured or you do not have access to them.' Visible="false"></Rock:NotificationBox>
+
+        <div class="panel panel-block" runat="server" id="divMain" visible="false">
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-comments"></i> SMS Conversations</h1>
+
+
                 <div class="panel-labels"> <!--  style="position:absolute;right:15px;top:10px;" -->
-                    <a href="#" onclick="$('.js-sms-configuration').toggle()">
+                <Rock:RockDropDownList ID="ddlSmsNumbers" runat="server" Label="" AutoPostBack="true" OnSelectedIndexChanged="ddlSmsNumbers_SelectedIndexChanged" CssClass="pull-left input-width-lg input-xs" />
+
+                    <a href="#" class="btn btn-xs btn-default pull-left margin-l-sm" onclick="$('.js-sms-configuration').toggle()">
                         <i class="fa fa-cog"></i>
                     </a>
                 </div>
@@ -20,18 +26,16 @@
                         <Rock:Toggle ID="tglShowRead" runat="server" Label="Show Read Messages" OnCheckedChanged="tglShowRead_CheckedChanged" OnText="Yes" OffText="No" Checked="true" ButtonSizeCssClass="btn-sm" />
                     </div>
                     <div class="col-md-3">
-                        <Rock:RockDropDownList ID="ddlSmsNumbers" runat="server" Label="SMS Number" AutoPostBack="true" OnSelectedIndexChanged="ddlSmsNumbers_SelectedIndexChanged" CssClass="input-sm" />
-                        <asp:Label ID="lblSelectedSmsNumber" runat="server" visible="false" />
                     </div></div>
                 </div>
 
             </div>
 
-            <Rock:NotificationBox ID="nbNoNumbers" runat="server" NotificationBoxType="Warning" Text="No SMS numbers are available to view." Visible="false"></Rock:NotificationBox>
-
             <div class="sms-conversations-container">
                 <div class="conversation-list">
-                    <asp:LinkButton ID="btnCreateNewMessage" runat="server" CssClass="btn btn-default btn-block btn-new-message" OnClick="btnCreateNewMessage_Click"><i class="fa fa-comments"></i>&nbsp;New Message</asp:LinkButton>
+                <div class="header">
+                    <asp:LinkButton ID="btnCreateNewMessage" runat="server" CssClass="btn btn-default btn-sm btn-square" OnClick="btnCreateNewMessage_Click" ToolTip="New Message"><i class="fa fa-edit"></i></asp:LinkButton>
+                </div>
                     <asp:UpdatePanel ID="upRecipients" runat="server" class="overflow-scroll">
                         <ContentTemplate>
                             <Rock:Grid ID="gRecipients" runat="server" OnRowSelected="gRecipients_RowSelected" OnRowDataBound="gRecipients_RowDataBound" ShowHeader="false" ShowActionRow="false" DisplayType="Light" EnableResponsiveTable="False">
@@ -98,6 +102,43 @@
 
             </div>
 
+            <script>
+                Sys.Application.add_load(function () {
+                    var objDiv = $(".messages-outer-container")[0];
+                    objDiv.scrollTop = objDiv.scrollHeight;
+
+                    $("#<%=upConversation.ClientID %> .js-back").click(function() {
+                        $('#<%=upConversation.ClientID %>').removeClass("has-focus");
+                        return false;
+                    });
+                });
+
+                function clearActiveDialog() {
+                    $('#<%=hfActiveDialog.ClientID %>').val('');
+                }
+
+                var yPos;
+                var prm = Sys.WebForms.PageRequestManager.getInstance();
+
+                function BeginRequestHandler(sender, args) {
+                    if ($('#<%=upRecipients.ClientID %>') != null) {
+                        // Get X and Y positions of scrollbar before the partial postback
+                        yPos = $('#<%=upRecipients.ClientID %>').scrollTop();
+                    }
+                }
+
+                function EndRequestHandler(sender, args) {
+                    if ($('#<%=upRecipients.ClientID %>') != null) {
+                        // Set X and Y positions back to the scrollbar
+                        // after partial postback
+                        $('#<%=upRecipients.ClientID %>').scrollTop(yPos);
+                        $('#<%=tbNewMessage.ClientID %>').focus();
+                    }
+                }
+
+                prm.add_beginRequest(BeginRequestHandler);
+                prm.add_endRequest(EndRequestHandler);
+            </script>
         </div> <%-- End panel-block --%>
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
@@ -105,7 +146,11 @@
         <Rock:ModalDialog ID="mdNewMessage" runat="server" Title="New Message" OnSaveClick="mdNewMessage_SaveClick" OnCancelScript="clearActiveDialog();" SaveButtonText="Send" ValidationGroup="vgMobileTextEditor">
             <Content>
                 <asp:ValidationSummary ID="vsMobileTextEditor" runat="server" HeaderText="Please correct the following:" ValidationGroup="vgMobileTextEditor" CssClass="alert alert-validation" />
-                <asp:Label ID="lblMdNewMessageSendingSMSNumber" runat="server" />
+                <div class="form-group">
+                    <label runat="server" id="lblFromNumber" class="control-label">From</label>
+                    <div><asp:Label ID="lblMdNewMessageSendingSMSNumber" runat="server" /></div>
+                </div>
+
                 <%-- person picker --%>
                 <Rock:PersonPicker ID="ppRecipient" runat="server" Label="Recipient" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Please select an SMS recipient." Required="true" />
 
@@ -167,43 +212,5 @@
 
             </Content>
         </Rock:ModalDialog>
-
-        <script>
-            Sys.Application.add_load(function () {
-                var objDiv = $(".messages-outer-container")[0];
-                objDiv.scrollTop = objDiv.scrollHeight;
-
-                $("#<%=upConversation.ClientID %> .js-back").click(function() {
-                    $('#<%=upConversation.ClientID %>').removeClass("has-focus");
-                    return false;
-                });
-            });
-
-            function clearActiveDialog() {
-                $('#<%=hfActiveDialog.ClientID %>').val('');
-            }
-
-            var yPos;
-            var prm = Sys.WebForms.PageRequestManager.getInstance();
-
-            function BeginRequestHandler(sender, args) {
-                if ($('#<%=upRecipients.ClientID %>') != null) {
-                    // Get X and Y positions of scrollbar before the partial postback
-                    yPos = $('#<%=upRecipients.ClientID %>').scrollTop();
-                }
-            }
-
-            function EndRequestHandler(sender, args) {
-                if ($('#<%=upRecipients.ClientID %>') != null) {
-                    // Set X and Y positions back to the scrollbar
-                    // after partial postback
-                    $('#<%=upRecipients.ClientID %>').scrollTop(yPos);
-                    $('#<%=tbNewMessage.ClientID %>').focus();
-                }
-            }
-
-            prm.add_beginRequest(BeginRequestHandler);
-            prm.add_endRequest(EndRequestHandler);
-        </script>
     </ContentTemplate>
 </asp:UpdatePanel>

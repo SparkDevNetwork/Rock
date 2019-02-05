@@ -226,6 +226,28 @@ namespace Rock
         }
 
         /// <summary>
+        /// Converts a comma delimited string into a List<int>
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static IEnumerable<int> StringToIntList( this string str ) {
+            // https://stackoverflow.com/questions/1763613/convert-comma-separated-string-of-ints-to-int-array
+
+            if ( String.IsNullOrEmpty( str ) )
+            {
+                yield break;
+            }
+
+            foreach(var s in str.Split(',')) {
+                int num;
+                if ( int.TryParse( s, out num ) )
+                {
+                    yield return num;
+                }
+            }
+        }
+
+        /// <summary>
         /// Makes the Int64 hash code from the provided string.
         /// </summary>
         /// <param name="str">The string.</param>
