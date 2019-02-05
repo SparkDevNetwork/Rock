@@ -219,7 +219,7 @@ namespace RockWeb.Blocks.Event
         /// </value>
         protected string Step2IFrameUrl
         {
-            get { return ViewState["Step2IFrameUrl"].ToString(); }
+            get { return ViewState["Step2IFrameUrl"] as string; }
             set { ViewState["Step2IFrameUrl"] = value; }
         }
 
