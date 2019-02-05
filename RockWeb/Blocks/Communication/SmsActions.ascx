@@ -6,23 +6,34 @@
     border: 1px solid #ddd;
     background-color: #eee;
     padding: 12px;
+    margin-bottom: 12px;
 }
-    .sms-container > div {
+    .sms-container .sms-action-component,
+    .sms-container .sms-action {
+        margin-top: 12px;
+    }
+    .sms-container .sms-action-component:first-child,
+    .sms-container .sms-action:first-child {
+        margin-top: 0px;
+    }
+    .sms-container .sms-header {
+        text-align: center;
+        font-weight: bold;
         margin-bottom: 12px;
     }
-    .sms-container > div:last-child {
-        margin-bottom: 0px;
-    }
+
 .sms-action-component
 {
     border: 1px solid #666;
     padding: 6px;
     height: 37px;
+    cursor: move;
 }
     .sms-action-component > .fa {
         border: 1px solid #888;
         padding: 2px;
     }
+
 .sms-action
 {
     border: 1px solid #666;
@@ -32,6 +43,7 @@
 }
     .sms-action.inactive {
         font-style: italic;
+        color: #aaa;
     }
     .sms-action.editing {
         background-color: #cce3e9;
@@ -39,12 +51,6 @@
     .sms-action > .fa {
         border: 1px solid #888;
         padding: 2px;
-    }
-    .sms-action:first-child .js-move-up {
-        display: none;
-    }
-    .sms-action:last-child .js-move-down {
-        display: none;
     }
     .sms-action .js-reorder {
         cursor: move;
@@ -86,39 +92,55 @@
 
             <div class="panel-body">
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-3 col-sm-6">
                         <div class="js-sms-action-components sms-container">
-                        <asp:Repeater ID="rptrComponents" runat="server">
-                            <ItemTemplate>
-                                <div class="sms-action-component" data-component-id="<%# Eval( "Id" ) %>">
-                                    <i class="<%# Eval( "IconCssClass" ) %>"></i>
-                                    <%# Eval( "Title" ) %>
-                                </div>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                        </div>
-                    </div>
+                            <div class="sms-header">
+                                Components
+                            </div>
 
-                    <div class="col-md-4">
-                        <div class="js-sms-actions sms-container">
-                            <asp:Repeater ID="rptrActions" runat="server" OnItemCommand="rptrActions_ItemCommand">
-                                <ItemTemplate>
-                                    <div class="sms-action<%# Eval( "IsActive" ).ToString() == "True" ? "" : " inactive" %><%# Eval( "Id" ).ToString() == hfEditActionId.Value ? " editing" : "" %>">
-                                        <i class="<%# Eval( "Component.IconCssClass" ) %>"></i>
-                                        <%# Eval( "Name" ) %>
-                                        <div class="pull-right">
-                                            <i class="fa fa-bars js-reorder"></i>
-                                            <asp:LinkButton ID="lbEditAction" runat="server" CssClass="js-edit-button hidden" CommandName="EditAction" CommandArgument='<%# Eval( "Id" ) %>' />
+                            <div class="js-drag-container">
+                                <asp:Repeater ID="rptrComponents" runat="server">
+                                    <ItemTemplate>
+                                        <div class="sms-action-component" data-component-id="<%# Eval( "Id" ) %>" data-toggle="tooltip" title="<%# Eval( "Description" ) %>">
+                                            <i class="<%# Eval( "IconCssClass" ) %>"></i>
+                                            <%# Eval( "Title" ) %>
                                         </div>
-                                    </div>
-                                </ItemTemplate>
-                            </asp:Repeater>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-md-5">
+                    <div class="col-md-4 col-sm-6">
+                        <div class="js-sms-actions sms-container">
+                            <div class="sms-header">
+                                Actions
+                            </div>
+
+                            <div class="js-drag-container">
+                                <asp:Repeater ID="rptrActions" runat="server" OnItemCommand="rptrActions_ItemCommand">
+                                    <ItemTemplate>
+                                        <div class="sms-action<%# Eval( "IsActive" ).ToString() == "True" ? "" : " inactive" %><%# Eval( "Id" ).ToString() == hfEditActionId.Value ? " editing" : "" %>">
+                                            <i class="<%# Eval( "Component.IconCssClass" ) %>"></i>
+                                            <%# Eval( "Name" ) %>
+                                            <div class="pull-right">
+                                                <i class="fa fa-bars js-reorder"></i>
+                                                <asp:LinkButton ID="lbEditAction" runat="server" CssClass="js-edit-button hidden" CommandName="EditAction" CommandArgument='<%# Eval( "Id" ) %>' />
+                                            </div>
+                                        </div>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-5 col-sm-12">
                         <asp:Panel ID="pnlEditAction" runat="server" CssClass="js-sms-action-settings sms-container" Visible="false">
                             <asp:HiddenField ID="hfEditActionId" runat="server" />
+
+                            <div class="sms-header">
+                                Action Settings
+                            </div>
 
                             <Rock:RockLiteral ID="lActionType" runat="server" Label="Action Type" />
 
@@ -176,12 +198,12 @@
 
 <script>
     Sys.Application.add_load(function () {
-        var componentDrake = dragula([$('.js-sms-action-components').get(0), $('.js-sms-actions').get(0)], {
+        var componentDrake = dragula([$('.js-sms-action-components .js-drag-container').get(0), $('.js-sms-actions .js-drag-container').get(0)], {
             moves: function (el, source, handle, sibling) {
                 return $(el).hasClass('sms-action-component');
             },
             accepts: function (el, target, source, sibling) {
-                return $(target).hasClass('js-sms-actions');
+                return $(target).hasClass('js-drag-container');
             },
             copy: true,
             revertOnSpill: true
@@ -195,7 +217,7 @@
         });
 
         var reorderOldIndex = -1;
-        var reorderDrake = dragula([$('.js-sms-actions').get(0), $('.js-sms-actions').get(0)], {
+        var reorderDrake = dragula([$('.js-sms-actions .js-drag-container').get(0), $('.js-sms-actions .js-drag-container').get(0)], {
             moves: function (el, source, handle, sibling) {
                 reorderOldIndex = $(source).children().index(el);
                 return $(handle).hasClass('js-reorder');
@@ -205,9 +227,10 @@
 
         reorderDrake.on('drop', function (el, target, source, sibling) {
             var newIndex = $(target).children().index(el);
-            var postback = "javascript:__doPostBack('<%= lbDragCommand.ClientID %>', 'reorder-action|" + reorderOldIndex + "|" + newIndex + "')";
-            console.log(postback);
-            window.location = postback;
+            if (reorderOldIndex !== newIndex) {
+                var postback = "javascript:__doPostBack('<%= lbDragCommand.ClientID %>', 'reorder-action|" + reorderOldIndex + "|" + newIndex + "')";
+                window.location = postback;
+            }
         });
 
         //
@@ -216,6 +239,16 @@
         $('.sms-action').on('click', function (e) {
             e.preventDefault();
             window.location = $(this).find('.js-edit-button').attr('href');
+        });
+
+        //
+        // Turn on tooltips.
+        //
+        $('.sms-container [data-toggle="tooltip"]').tooltip({
+            delay: {
+                show: 500,
+                hide: 100
+            }
         });
     });
 </script>
