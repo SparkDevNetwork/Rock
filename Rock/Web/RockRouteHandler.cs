@@ -206,7 +206,7 @@ namespace Rock.Web
                                         transaction.UserName = requestContext.HttpContext.User.Identity.Name;
                                     }
                                     transaction.DateViewed = RockDateTime.Now;
-                                    transaction.IPAddress = UI.RockPage.GetClientIpAddress( httpRequest );
+                                    transaction.IPAddress = WebRequestHelper.GetClientIpAddress( httpRequest );
                                     transaction.UserAgent = httpRequest.UserAgent ?? "";
                                     RockQueue.TransactionQueue.Enqueue( transaction );
 

@@ -190,7 +190,12 @@ namespace Rock.Web.UI.Controls
         public override void RenderControl( HtmlTextWriter writer )
         {
             // show a warning if there aren't any fields to choose from
-            _nbNoFieldsAvailable.Visible = !GetSupportedComparableAttributes().Any();
+            // NOTE: The Grid isn't supposed to show the filter button if there are less than 2 attributes,
+            // but there is also the possibility that there is more than one attribute, but less than 2 "filterable" attributes.
+            // In that case, we'll show the warning but hide the _btnAddFilterFieldCriteria.
+            bool hasSupportedComparableAttributes = GetSupportedComparableAttributes().Any();
+            _nbNoFieldsAvailable.Visible = !hasSupportedComparableAttributes;
+            _btnAddFilterFieldCriteria.Visible = hasSupportedComparableAttributes;
 
             ScriptManager.RegisterClientScriptInclude( this, this.GetType(), "reporting-include", this.RockBlock().RockPage.ResolveRockUrl( "~/Scripts/Rock/reportingInclude.js", true ) );
             base.RenderControl( writer );

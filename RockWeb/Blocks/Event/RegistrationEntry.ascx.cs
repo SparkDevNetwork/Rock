@@ -1796,7 +1796,7 @@ namespace RockWeb.Blocks.Event
             if ( RegistrationTemplate != null &&
                 RegistrationTemplate.FinancialGateway != null )
             {
-                var threeStepGateway = RegistrationTemplate.FinancialGateway.GetGatewayComponent() as ThreeStepGatewayComponent;
+                var threeStepGateway = RegistrationTemplate.FinancialGateway.GetGatewayComponent() as IThreeStepGatewayComponent;
                 Using3StepGateway = threeStepGateway != null;
                 if ( Using3StepGateway )
                 {
@@ -3407,10 +3407,10 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private bool ProcessStep1( out string errorMessage )
         {
-            ThreeStepGatewayComponent gateway = null;
+            IThreeStepGatewayComponent gateway = null;
             if ( RegistrationTemplate != null && RegistrationTemplate.FinancialGateway != null )
             {
-                gateway = RegistrationTemplate.FinancialGateway.GetGatewayComponent() as ThreeStepGatewayComponent;
+                gateway = RegistrationTemplate.FinancialGateway.GetGatewayComponent() as IThreeStepGatewayComponent;
             }
 
             if ( gateway == null )
@@ -3474,13 +3474,16 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private bool ProcessStep3( RockContext rockContext, Registration registration, string resultQueryString, out string errorMessage )
         {
-            ThreeStepGatewayComponent gateway = null;
+            GatewayComponent gateway = null;
+            IThreeStepGatewayComponent threeStepGatewayComponent = null;
+
             if ( RegistrationTemplate != null && RegistrationTemplate.FinancialGateway != null )
             {
-                gateway = RegistrationTemplate.FinancialGateway.GetGatewayComponent() as ThreeStepGatewayComponent;
+                gateway = RegistrationTemplate.FinancialGateway.GetGatewayComponent();
+                threeStepGatewayComponent = gateway as IThreeStepGatewayComponent;
             }
 
-            if ( gateway == null )
+            if ( threeStepGatewayComponent == null )
             {
                 errorMessage = "There was a problem creating the payment gateway information";
                 return false;
@@ -3492,7 +3495,7 @@ namespace RockWeb.Blocks.Event
                 return false;
             }
 
-            var transaction = gateway.ChargeStep3( RegistrationTemplate.FinancialGateway, resultQueryString, out errorMessage );
+            var transaction = threeStepGatewayComponent.ChargeStep3( RegistrationTemplate.FinancialGateway, resultQueryString, out errorMessage );
             return SaveTransaction( gateway, registration, transaction, null, rockContext );
         }
 
@@ -5166,11 +5169,24 @@ namespace RockWeb.Blocks.Event
                         RegistrationState.PaymentAmount.Value < minimumPayment.Value ||
                         RegistrationState.PaymentAmount.Value > balanceDue )
                     {
-                        if ( defaultPayment.HasValue && ( defaultPayment >= minimumPayment && defaultPayment <= balanceDue ) )
+                        if ( defaultPayment.HasValue )
                         {
-                            // if there is defaultPayment set, make that the payment amount as long it is more than the minimumPayment and not more than the balanceDue
                             // NOTE: if the configured 'Minimum Initial Payment' is null, the minimumPayment is the full amount, so the 'Default Payment Amount' option would be ignored
-                            RegistrationState.PaymentAmount = defaultPayment;
+                            if ( defaultPayment >= minimumPayment && defaultPayment <= balanceDue )
+                            {
+                                // default Payment is more than min and less than balance due, so we can use it
+                                RegistrationState.PaymentAmount = defaultPayment;
+                            }
+                            else if (defaultPayment <= minimumPayment)
+                            {
+                                // default Payment is less than min, so use min instead
+                                RegistrationState.PaymentAmount = minimumPayment;
+                            }
+                            else if (defaultPayment >= balanceDue)
+                            {
+                                // default Payment is more than balance due, so use balance due
+                                RegistrationState.PaymentAmount = balanceDue;
+                            }
                         }
                         else
                         {

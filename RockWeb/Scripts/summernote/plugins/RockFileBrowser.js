@@ -11,6 +11,7 @@
             iframeUrl += "?rootFolder=" + encodeURIComponent(context.options.rockFileBrowserOptions.documentFolderRoot);
             iframeUrl += "&browserMode=doc";
             iframeUrl += "&fileTypeBlackList=" + encodeURIComponent(context.options.rockFileBrowserOptions.fileTypeBlackList);
+            iframeUrl += "&fileTypeWhiteList=" + encodeURIComponent(context.options.rockFileBrowserOptions.fileTypeWhiteList);
             iframeUrl += "&theme=" + context.options.rockTheme;
             iframeUrl += "&modalMode=1";
             iframeUrl += "&title=Select%20File";

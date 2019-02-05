@@ -2620,7 +2620,7 @@ namespace Rock.Model
                     {
                         using ( var rockContext = new RockContext() )
                         {
-                            ageClassification = new PersonService( rockContext ).Queryable( true ).Where( a => a.Id == personId ).Select( a => ( AgeClassification? ) a.AgeClassification ).FirstOrDefault();
+                            ageClassification = new PersonService( rockContext ).GetSelect( personId.Value, s => s.AgeClassification );
                         }
                     }
 
