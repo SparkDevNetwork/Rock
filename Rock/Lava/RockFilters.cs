@@ -787,6 +787,25 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Returns matched RegEx string from inputted string
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="expression">The regex expression.</param>
+        /// <returns></returns>
+        public static string RegExMatchValue( string input, string expression )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            Regex regex = new Regex( expression );
+            Match match = regex.Match( input );
+
+            return match.Success ? match.Value : null;
+        }
+
+        /// <summary>
         /// The slice filter returns a substring, starting at the specified index.
         /// </summary>
         /// <param name="input">The input string.</param>
