@@ -30,7 +30,7 @@ namespace Rock.CheckIn
                 switch (key.ToStringSafe())
                 {
                     case "MessageText": return MessageText;
-                    case "MessageType": return MessageType;
+                    case "MessageType": return this.MessageType.ToStringSafe().ToLower();
                     default: return MessageText;
                 }
             }
