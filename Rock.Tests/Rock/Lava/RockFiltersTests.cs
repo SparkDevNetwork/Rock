@@ -62,6 +62,61 @@ namespace Rock.Tests.Rock.Lava
         private static readonly string iCalStringSaturday430 = serializer.SerializeToString( weeklySaturday430 );
         private static readonly string iCalStringFirstSaturdayOfMonth = serializer.SerializeToString( monthlyFirstSaturday );
 
+        #region Text Filters
+
+        /// <summary>
+        /// For use in Lava -- should match the pattern in the string.
+        /// </summary>
+        [Fact]
+        public void Text_RegExMatch_ShouldMatchSimpleString()
+        {
+            var output = RockFilters.RegExMatch( "Group 12345 has 5 members", @"\d\d\d\d\d" );
+            Assert.True( output );
+
+            output = RockFilters.RegExMatch( "Group Decker has 5 members", @"\d\d\d\d\d" );
+            Assert.False( output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should match a valid email address pattern in the string.
+        /// </summary>
+        [Fact]
+        public void Text_RegExMatch_ShouldMatchValidEmailString()
+        {
+            var regexEmail = @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*";
+            var output = RockFilters.RegExMatch( "ted@rocksolidchurchdemo.com", regexEmail );
+            Assert.True( output );
+
+            output = RockFilters.RegExMatch( "ted@rocksolidchurchdemo. com", regexEmail );
+            Assert.False( output );
+
+            output = RockFilters.RegExMatch( "ted(AT)rocksolidchurchdemo.com", regexEmail );
+            Assert.False( output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should return the first matching pattern in the string.
+        /// </summary>
+        [Fact]
+        public void Text_RegExMatchValue_ShouldReturnMatchValue()
+        {
+            var output = RockFilters.RegExMatchValue( "Group 12345 has 54321 members", @"\d+" );
+            Assert.Equal( "12345", output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should not match and should return nothing.
+        /// </summary>
+        [Fact]
+        public void Text_RegExMatchValue_ShouldNotMatchValue()
+        {
+            var output = RockFilters.RegExMatchValue( "Group Decker has no members", @"\d+" );
+            Assert.Null( output );
+        }
+
+
+        #endregion
+
         #region Numeric Filters
 
         #region Minus
