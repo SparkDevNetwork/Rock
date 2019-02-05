@@ -33,7 +33,7 @@ namespace Rock.Model
 
             var smsActions = SmsActionCache.All()
                 .OrderBy( a => a.Order )
-                .OrderBy( a => a.Id );
+                .ThenBy( a => a.Id );
 
             foreach ( var smsAction in smsActions )
             {
