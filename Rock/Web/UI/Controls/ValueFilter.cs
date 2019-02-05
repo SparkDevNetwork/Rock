@@ -732,6 +732,14 @@ Rock.controls.valueFilter.initialize({{
         public string Value { get; set; }
 
         /// <summary>
+        /// Gets or sets the second value of this expression.
+        /// </summary>
+        /// <value>
+        /// The second value of this expression.
+        /// </value>
+        public string Value2 { get; set; }
+
+        /// <summary>
         /// Gets or sets the comparision operation to use when building the expression.
         /// </summary>
         /// <value>
@@ -775,10 +783,15 @@ Rock.controls.valueFilter.initialize({{
         public override Expression GetExpression( MemberExpression property )
         {
             object value = Value.ToLower();
+            object value2 = !string.IsNullOrEmpty( Value2 ) ? Value2.ToLower() : null;
 
             if ( property.Type != typeof( string ) )
             {
                 value = Convert.ChangeType( value, property.Type );
+                if ( value2 != null )
+                {
+                    value2 = Convert.ChangeType( value2, property.Type );
+                }
             }
 
             //
@@ -820,7 +833,7 @@ Rock.controls.valueFilter.initialize({{
                 property = Expression.Property( Expression.Constant( fakeObject ), "Value" );
             }
 
-            return Rock.Reporting.ComparisonHelper.ComparisonExpression( Comparison, property, Expression.Constant( value ) );
+            return Rock.Reporting.ComparisonHelper.ComparisonExpression( Comparison, property, Expression.Constant( value ), value2 != null ? Expression.Constant( value2 ) : null );
         }
 
         /// <summary>
