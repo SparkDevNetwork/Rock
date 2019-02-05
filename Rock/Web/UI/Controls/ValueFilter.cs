@@ -774,20 +774,20 @@ Rock.controls.valueFilter.initialize({{
         /// <returns>A LINQ Expression that will evaluate this comparison.</returns>
         public override Expression GetExpression( MemberExpression property )
         {
-            object value = Value;
+            object value = Value.ToLower();
 
-            if ( property.Member is PropertyInfo propertyInfo )
+            if ( property.Type != typeof( string ) )
             {
-                value = Convert.ChangeType( value, propertyInfo.PropertyType );
-            }
-            else if ( property.Member is FieldInfo fieldInfo )
-            {
-                value = Convert.ChangeType( value, fieldInfo.FieldType );
+                value = Convert.ChangeType( value, property.Type );
             }
 
+            //
+            // Handle processing of Regular Expressions since they are not supported
+            // by the ComparisonHelper.
+            //
             if ( Comparison == Model.ComparisonType.RegularExpression )
             {
-                MemberExpression valueExpression;
+                Expression valueExpression;
 
                 if ( property.Type.IsGenericType && property.Type.GetGenericTypeDefinition() == typeof( Nullable<> ) )
                 {
@@ -799,10 +799,25 @@ Rock.controls.valueFilter.initialize({{
                     valueExpression = property;
                 }
 
+                if ( valueExpression.Type == typeof( string ) )
+                {
+                    var miToLower = typeof( string ).GetMethod( "ToLower", new Type[] { } );
+                    valueExpression = Expression.Call( valueExpression, miToLower );
+                }
+
                 var methodInfo = typeof( System.Text.RegularExpressions.Regex )
                     .GetMethod( "IsMatch", BindingFlags.Static | BindingFlags.Public, null, new[] { typeof( string ), typeof( string ), typeof( System.Text.RegularExpressions.RegexOptions ) }, null );
 
                 return Expression.Call( null, methodInfo, valueExpression, Expression.Constant( value ), Expression.Constant( System.Text.RegularExpressions.RegexOptions.IgnoreCase ) );
+            }
+
+            if ( property.Type == typeof( string ) )
+            {
+                var fakeObject = new
+                {
+                    Value = Expression.Lambda<Func<string>>( property ).Compile()().ToStringSafe().ToLower()
+                };
+                property = Expression.Property( Expression.Constant( fakeObject ), "Value" );
             }
 
             return Rock.Reporting.ComparisonHelper.ComparisonExpression( Comparison, property, Expression.Constant( value ) );
