@@ -42,6 +42,17 @@ namespace RockWeb.Blocks.Communication
         #region Base Control Methods
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            RockPage.AddScriptLink( "~/Scripts/dragula.min.js" );
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -60,6 +71,13 @@ namespace RockWeb.Blocks.Communication
 
                 tbFromNumber.Text = "+15551234567";
                 tbToNumber.Text = "+15559991234";
+            }
+            else
+            {
+                if ( Request["__EVENTTARGET"].ToStringSafe() == lbDragCommand.ClientID )
+                {
+                    ProcessDragEvents();
+                }
             }
 
             base.OnLoad( e );
@@ -115,46 +133,68 @@ namespace RockWeb.Blocks.Communication
             rptrActions.DataBind();
         }
 
+        /// <summary>
+        /// Processes the drag events.
+        /// </summary>
+        private void ProcessDragEvents()
+        {
+            string argument = Request["__EVENTARGUMENT"].ToStringSafe();
+            var segments = argument.SplitDelimitedValues();
+
+            //
+            // Check for the event to add a new action.
+            //
+            if ( segments.Length == 3 && segments[0] == "add-action" )
+            {
+                var actionComponent = SmsActionContainer.GetComponent( segments[1] );
+                var order = segments[2].AsInteger();
+
+                var rockContext = new RockContext();
+                var smsActionService = new SmsActionService( rockContext );
+
+                var action = new SmsAction
+                {
+                    Name = actionComponent.Title,
+                    IsActive = true,
+                    Order = order,
+                    SmsActionComponentEntityTypeId = actionComponent.TypeId
+                };
+
+                smsActionService.Queryable()
+                    .Where( a => a.Order >= order )
+                    .ToList()
+                    .ForEach( a => a.Order += 1 );
+
+                smsActionService.Add( action );
+
+                rockContext.SaveChanges();
+
+                BindActions();
+            }
+
+            //
+            // Check for the event to drag-reorder actions.
+            //
+            else if ( segments.Length == 3 && segments[0] == "reorder-action" )
+            {
+                var rockContext = new RockContext();
+                var smsActionService = new SmsActionService( rockContext );
+
+                var actions = smsActionService.Queryable()
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Id )
+                    .ToList();
+
+                smsActionService.Reorder( actions, segments[1].AsInteger(), segments[2].AsInteger() );
+                rockContext.SaveChanges();
+
+                BindActions();
+            }
+        }
+
         #endregion
 
         #region Event Handlers
-
-        /// <summary>
-        /// Handles the ItemCommand event of the rptrComponents control.
-        /// </summary>
-        /// <param name="source">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void rptrComponents_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            var actionComponent = SmsActionContainer.GetComponent( e.CommandArgument.ToString() );
-
-            if ( actionComponent != null )
-            {
-                if ( e.CommandName == "AddComponent" )
-                {
-                    var rockContext = new RockContext();
-                    var smsActionService = new SmsActionService( rockContext );
-
-                    int? lastOrder = smsActionService.Queryable()
-                        .OrderByDescending( a => a.Order )
-                        .Select( a => a.Order )
-                        .FirstOrDefault();
-
-                    var action = new SmsAction
-                    {
-                        Name = actionComponent.Title,
-                        IsActive = true,
-                        Order = ( lastOrder ?? -1 ) + 1,
-                        SmsActionComponentEntityTypeId = actionComponent.TypeId
-                    };
-
-                    smsActionService.Add( action );
-                    rockContext.SaveChanges();
-
-                    BindActions();
-                }
-            }
-        }
 
         /// <summary>
         /// Handles the ItemCommand event of the rptrActions control.
@@ -180,32 +220,6 @@ namespace RockWeb.Blocks.Communication
                 avcAttributes.AddEditControls( action );
 
                 pnlEditAction.Visible = true;
-
-                BindActions();
-            }
-            else if ( e.CommandName == "MoveUp" )
-            {
-                var actions = smsActionService.Queryable()
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Id )
-                    .ToList();
-                int index = actions.IndexOf( action );
-
-                smsActionService.Reorder( actions, index, index - 1 );
-                rockContext.SaveChanges();
-
-                BindActions();
-            }
-            else if ( e.CommandName == "MoveDown" )
-            {
-                var actions = smsActionService.Queryable()
-                    .OrderBy( a => a.Order )
-                    .OrderBy( a => a.Id )
-                    .ToList();
-                int index = actions.IndexOf( action );
-
-                smsActionService.Reorder( actions, index, index + 1 );
-                rockContext.SaveChanges();
 
                 BindActions();
             }

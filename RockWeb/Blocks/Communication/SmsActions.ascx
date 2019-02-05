@@ -17,7 +17,7 @@
 {
     border: 1px solid #666;
     padding: 6px;
-    height: 43px;
+    height: 37px;
 }
     .sms-action-component > .fa {
         border: 1px solid #888;
@@ -27,7 +27,8 @@
 {
     border: 1px solid #666;
     padding: 6px;
-    height: 43px;
+    height: 37px;
+    cursor: pointer;
 }
     .sms-action.inactive {
         font-style: italic;
@@ -45,10 +46,38 @@
     .sms-action:last-child .js-move-down {
         display: none;
     }
+    .sms-action .js-reorder {
+        cursor: move;
+    }
+
+/* Dragula */
+.gu-mirror {
+  position: fixed !important;
+  margin: 0 !important;
+  z-index: 9999 !important;
+  opacity: 0.8;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+  filter: alpha(opacity=80);
+}
+.gu-hide {
+  display: none !important;
+}
+.gu-unselectable {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+.gu-transit {
+  opacity: 0.2;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
+  filter: alpha(opacity=20);
+}
 </style>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        <asp:LinkButton ID="lbDragCommand" runat="server" CssClass="hidden" />
 
         <div class="panel panel-block">
             <div class="panel-heading">
@@ -59,16 +88,11 @@
                 <div class="row">
                     <div class="col-md-3">
                         <div class="js-sms-action-components sms-container">
-                        <asp:Repeater ID="rptrComponents" runat="server" OnItemCommand="rptrComponents_ItemCommand">
+                        <asp:Repeater ID="rptrComponents" runat="server">
                             <ItemTemplate>
-                                <div class="sms-action-component">
+                                <div class="sms-action-component" data-component-id="<%# Eval( "Id" ) %>">
                                     <i class="<%# Eval( "IconCssClass" ) %>"></i>
                                     <%# Eval( "Title" ) %>
-                                    <div class="pull-right">
-                                        <asp:LinkButton ID="lbAddComponent" runat="server" CssClass="btn btn-primary btn-xs" CommandName="AddComponent" CommandArgument='<%# Eval( "Id" ) %>'>
-                                            <i class="fa fa-plus"></i>
-                                        </asp:LinkButton>
-                                    </div>
                                 </div>
                             </ItemTemplate>
                         </asp:Repeater>
@@ -83,15 +107,8 @@
                                         <i class="<%# Eval( "Component.IconCssClass" ) %>"></i>
                                         <%# Eval( "Name" ) %>
                                         <div class="pull-right">
-                                            <asp:LinkButton ID="lbMoveUp" runat="server" CssClass="btn btn-default btn-xs js-move-up" CommandName="MoveUp" CommandArgument='<%# Eval( "Id" ) %>'>
-                                                <i class="fa fa-arrow-up"></i>
-                                            </asp:LinkButton>
-                                            <asp:LinkButton ID="lbMoveDown" runat="server" CssClass="btn btn-default btn-xs js-move-down" CommandName="MoveDown" CommandArgument='<%# Eval( "Id" ) %>'>
-                                                <i class="fa fa-arrow-down"></i>
-                                            </asp:LinkButton>
-                                            <asp:LinkButton ID="lbEditAction" runat="server" CssClass="btn btn-default btn-xs" CommandName="EditAction" CommandArgument='<%# Eval( "Id" ) %>'>
-                                                <i class="fa fa-pencil"></i>
-                                            </asp:LinkButton>
+                                            <i class="fa fa-bars js-reorder"></i>
+                                            <asp:LinkButton ID="lbEditAction" runat="server" CssClass="js-edit-button hidden" CommandName="EditAction" CommandArgument='<%# Eval( "Id" ) %>' />
                                         </div>
                                     </div>
                                 </ItemTemplate>
@@ -123,7 +140,7 @@
                                 <asp:LinkButton ID="btnSaveActionSettings" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveActionSettings_Click" />
                                 <asp:LinkButton ID="btnCancelActionSettings" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnCancelActionSettings_Click" />
 
-                                <asp:LinkButton ID="btnDeleteAction" runat="server" CssClass="pull-right btn btn-danger" Text="Delete" OnClick="btnDeleteAction_Click" />
+                                <asp:LinkButton ID="btnDeleteAction" runat="server" CssClass="pull-right btn btn-danger" Text="Delete" OnClick="btnDeleteAction_Click" CausesValidation="false" />
                             </div>
                         </asp:Panel>
                     </div>
@@ -158,6 +175,47 @@
 </asp:UpdatePanel>
 
 <script>
-Sys.Application.add_load(function () {
-});
+    Sys.Application.add_load(function () {
+        var componentDrake = dragula([$('.js-sms-action-components').get(0), $('.js-sms-actions').get(0)], {
+            moves: function (el, source, handle, sibling) {
+                return $(el).hasClass('sms-action-component');
+            },
+            accepts: function (el, target, source, sibling) {
+                return $(target).hasClass('js-sms-actions');
+            },
+            copy: true,
+            revertOnSpill: true
+        });
+
+        componentDrake.on('drop', function (el, target, source, sibling) {
+            var component = $(el).data('component-id');
+            var order = $(target).children().index(el);
+            var postback = "javascript:__doPostBack('<%= lbDragCommand.ClientID %>', 'add-action|" + component + "|" + order + "')";
+            window.location = postback;
+        });
+
+        var reorderOldIndex = -1;
+        var reorderDrake = dragula([$('.js-sms-actions').get(0), $('.js-sms-actions').get(0)], {
+            moves: function (el, source, handle, sibling) {
+                reorderOldIndex = $(source).children().index(el);
+                return $(handle).hasClass('js-reorder');
+            },
+            revertOnSpill: true
+        });
+
+        reorderDrake.on('drop', function (el, target, source, sibling) {
+            var newIndex = $(target).children().index(el);
+            var postback = "javascript:__doPostBack('<%= lbDragCommand.ClientID %>', 'reorder-action|" + reorderOldIndex + "|" + newIndex + "')";
+            console.log(postback);
+            window.location = postback;
+        });
+
+        //
+        // Bit of a cheat, probably a safer way to do this.
+        //
+        $('.sms-action').on('click', function (e) {
+            e.preventDefault();
+            window.location = $(this).find('.js-edit-button').attr('href');
+        });
+    });
 </script>
