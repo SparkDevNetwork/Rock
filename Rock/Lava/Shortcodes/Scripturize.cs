@@ -30,7 +30,7 @@ using Rock.Utility;
 namespace Rock.Lava.Shortcodes
 {
     /// <summary>
-    /// Lava shortcode for displaying bootstrap alerts
+    /// Lava shortcode for displaying scripture links
     /// </summary>
     [LavaShortcodeMetadata(
         "Scripturize ",

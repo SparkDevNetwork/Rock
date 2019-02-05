@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -9,6 +25,9 @@ using Rock.Data;
 
 namespace Rock.Utility.EntityCoding
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public abstract class CodingHelper
     {
         #region Properties
@@ -164,8 +183,10 @@ namespace Rock.Utility.EntityCoding
         /// Attempt to load an entity from the database based on it's Guid and entity type.
         /// </summary>
         /// <param name="entityType">The type of entity to load.</param>
-        /// <param name="guid">The unique identifier of the entity.</param>
-        /// <returns>The loaded entity or null if not found.</returns>
+        /// <param name="id">The identifier.</param>
+        /// <returns>
+        /// The loaded entity or null if not found.
+        /// </returns>
         public IEntity GetExistingEntity( string entityType, int id )
         {
             var service = Reflection.GetServiceForEntityType( FindEntityType( entityType ), RockContext );

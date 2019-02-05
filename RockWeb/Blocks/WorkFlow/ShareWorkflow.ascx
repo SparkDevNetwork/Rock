@@ -15,7 +15,7 @@
                     <div class="col-md-6">
                         <Rock:WorkflowTypePicker ID="wtpExport" runat="server" Label="Workflow Type" Help="The workflow type to be exported." Required="true" ValidationGroup="export" />
                         <asp:Button ID="btnExport" runat="server" Text="Export" CssClass="btn btn-primary" OnClick="btnExport_Click" ValidationGroup="export" />
-                        <asp:Button ID="btnPreview" runat="server" Text="Preview" CssClass="btn btn-info" OnClick="btnPreview_Click" ValidationGroup="export" />
+                        <asp:Button ID="btnPreview" runat="server" Text="Preview" CssClass="btn btn-default" OnClick="btnPreview_Click" ValidationGroup="export" />
                     </div>
 
                     <div class="col-md-6">
@@ -29,7 +29,7 @@
                     </div>
                 </div>
 
-                <Rock:Grid ID="gPreview" runat="server" AllowSorting="true" AllowPaging="false" AutoGenerateColumns="false" OnGridRebind="gPreview_GridRebind" DataKeyNames="Guid" CssClass="margin-t-lg">
+                <Rock:Grid ID="gPreview" runat="server" AllowSorting="true" AllowPaging="false" AutoGenerateColumns="false" OnGridRebind="gPreview_GridRebind" DataKeyNames="Guid" CssClass="margin-t-lg" DisplayType="Light">
                     <Columns>
                         <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                         <Rock:RockBoundField DataField="ShortType" HeaderText="Type" SortExpression="ShortType" />

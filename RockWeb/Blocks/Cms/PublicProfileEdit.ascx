@@ -14,7 +14,6 @@
                 <h1 class="panel-title"><i class="fa fa-user"></i>&nbsp;My Account</h1>
             </div>
             <div class="panel-body">
-                <asp:HiddenField ID="hfPersonId" runat="server" />
                 <Rock:NotificationBox ID="nbNotAuthorized" runat="server" Text="You must be logged in to view your account." NotificationBoxType="Danger" Visible="false" />
                 <asp:Panel ID="pnlView" CssClass="panel-view" runat="server">
                     <div class="row">
@@ -135,7 +134,7 @@
                                         </asp:Repeater>
                                     </div>
                                     <div class="row pull-right">
-                                        <asp:LinkButton ID="lbEditGroupMember" runat="server" CssClass="btn btn-primary btn-xs" CommandArgument='<%# Eval("PersonId") %>' CommandName="Update"> Update</asp:LinkButton>
+                                        <asp:LinkButton ID="lbEditGroupMember" runat="server" CssClass="btn btn-primary btn-xs" CommandArgument='<%# Eval("Person.Guid") %>' CommandName="Update"> Update</asp:LinkButton>
                                     </div>
                                 </div>
                             </div>
@@ -147,7 +146,9 @@
                     <asp:LinkButton ID="lbRequestChanges" runat="server" CssClass="btn btn-primary btn-xs" OnClick="lbRequestChanges_Click"> Request Additional Changes</asp:LinkButton>
                 </asp:Panel>
 
-                <asp:Panel ID="pnlEdit" CssClass="panel-edit"  runat="server">
+                <asp:HiddenField ID="hfPersonGuid" runat="server" />
+
+                <asp:Panel ID="pnlEdit" runat="server">
                     <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <div class="row">
 

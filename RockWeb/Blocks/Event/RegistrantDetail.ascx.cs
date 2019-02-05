@@ -757,11 +757,45 @@ namespace RockWeb.Blocks.Event
                                 value = attribute.DefaultValue;
                             }
 
-                            attribute.AddControl( phFields.Controls, value, BlockValidationGroup, setValues, true, field.IsRequired, null, field.Attribute.Description );
+                            FieldVisibilityWrapper fieldVisibilityWrapper = new FieldVisibilityWrapper
+                            {
+                                ID = "_fieldVisibilityWrapper_attribute_" + attribute.Id.ToString(),
+                                AttributeId = attribute.Id,
+                                FieldVisibilityRules = field.FieldVisibilityRules
+                            };
+
+                            fieldVisibilityWrapper.EditValueUpdated += FieldVisibilityWrapper_EditValueUpdated;
+
+                            phFields.Controls.Add( fieldVisibilityWrapper );
+
+                            var editControl = attribute.AddControl( fieldVisibilityWrapper.Controls, value, BlockValidationGroup, setValues, true, field.IsRequired, null, field.Attribute.Description );
+                            fieldVisibilityWrapper.EditControl = editControl;
+
+                            bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.Any( r => r.ComparedToAttributeGuid == attribute.Guid ) );
+
+                            if ( hasDependantVisibilityRule && attribute.FieldType.Field.HasChangeHandler( editControl ) )
+                            {
+                                attribute.FieldType.Field.AddChangeHandler( editControl, () =>
+                                {
+                                    fieldVisibilityWrapper.TriggerEditValueUpdated( editControl, new FieldVisibilityWrapper.FieldEventArgs( attribute, editControl ) );
+                                } );
+                            }
                         }
                     }
                 }
             }
+
+            FieldVisibilityWrapper.ApplyFieldVisibilityRules( phFields );
+        }
+
+        /// <summary>
+        /// Handles the EditValueUpdated event of the FieldVisibilityWrapper control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="args">The <see cref="FieldVisibilityWrapper.FieldEventArgs"/> instance containing the event data.</param>
+        private void FieldVisibilityWrapper_EditValueUpdated( object sender, FieldVisibilityWrapper.FieldEventArgs args )
+        {
+            FieldVisibilityWrapper.ApplyFieldVisibilityRules( phFields );
         }
 
         /// <summary>
