@@ -112,6 +112,12 @@ namespace Rock.Workflow.Action.CheckIn
                                         // we need to check the location-schedule's current count.
                                         if ( GetAttributeValue( action, "EnforceStrictLocationThreshold" ).AsBoolean() && location.Location.SoftRoomThreshold.HasValue )
                                         {
+                                            var thresHold = location.Location.SoftRoomThreshold.Value;
+                                            if ( checkInState.ManagerLoggedIn && location.Location.FirmRoomThreshold.HasValue && location.Location.FirmRoomThreshold.Value > location.Location.SoftRoomThreshold.Value )
+                                            {
+                                                thresHold = location.Location.FirmRoomThreshold.Value;
+                                            }
+
                                             var currentOccurence = GetCurrentOccurence( currentOccurences, location, schedule, startDateTime.Date );
 
                                             // The totalAttended is the number of people still checked in (not people who have been checked-out)
@@ -121,15 +127,15 @@ namespace Rock.Workflow.Action.CheckIn
                                                 .AsNoTracking()
                                                 .Where( a => a.EndDateTime == null );
 
-                                            // only process if the current person is NOT already checked-in to this location and schedule
+                                            // Only process if the current person is NOT already checked-in to this location and schedule
                                             if ( !attendanceQry.Where( a => a.PersonAlias.PersonId == person.Person.Id ).Any() )
                                             {
                                                 var totalAttended = attendanceQry.Count() + ( currentOccurence == null ? 0 : currentOccurence.Count );
 
                                                 // If over capacity, remove the schedule and add a warning message.
-                                                if ( totalAttended >= location.Location.SoftRoomThreshold.Value )
+                                                if ( totalAttended >= thresHold )
                                                 {
-                                                    // Unselect the schedule since the location was full for this schedule.  
+                                                    // Remove the schedule since the location was full for this schedule.  
                                                     location.Schedules.Remove( schedule );
 
                                                     var message = new CheckInMessage()
@@ -176,7 +182,7 @@ namespace Rock.Workflow.Action.CheckIn
                                             {
                                                 attendance = attendanceService.AddOrUpdate( primaryAlias.Id, startDateTime.Date, group.Group.Id,
                                                     location.Location.Id, schedule.Schedule.Id, location.CampusId,
-                                                    checkInState.Kiosk.Device.Id, checkInState.CheckIn.SearchType.Id, 
+                                                    checkInState.Kiosk.Device.Id, checkInState.CheckIn.SearchType.Id,
                                                     checkInState.CheckIn.SearchValue, family.Group.Id, attendanceCode.Id );
 
                                                 attendance.PersonAlias = primaryAlias;
@@ -198,7 +204,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         isCheckedIntoLocation = true;
                                     }
 
-                                    // If the person was NOT checked into the location for any schedule then unselect the location
+                                    // If the person was NOT checked into the location for any schedule then remove the location
                                     if ( ! isCheckedIntoLocation )
                                     {
                                         group.Locations.Remove( location );
@@ -217,9 +223,9 @@ namespace Rock.Workflow.Action.CheckIn
         }
 
         /// <summary>
-        /// Gets the current occurence from the given list for the matching location, schedule and startDateTime.
+        /// Gets the current occurrence from the given list for the matching location, schedule and startDateTime.
         /// </summary>
-        /// <param name="currentOccurences">The current occurences.</param>
+        /// <param name="currentOccurences">The current occurrences.</param>
         /// <param name="location">The location.</param>
         /// <param name="schedule">The schedule.</param>
         /// <param name="startDateTime">The start date time.</param>
