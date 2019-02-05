@@ -126,6 +126,16 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CURRENCY_TYPE_OTHER = "0FDF0BB3-B483-4C0A-9DFF-A35ABE3B688D";
 
+        /// <summary>
+        /// Apple Pay Currency Type
+        /// </summary>
+        public const string CURRENCY_TYPE_APPLE_PAY = "D42C4DF7-1AE9-4DDE-ADA2-774B866B798C";
+
+        /// <summary>
+        /// Android Pay Currency Type
+        /// </summary>
+        public const string CURRENCY_TYPE_ANDROID_PAY = "6151F6E0-3223-46BA-A59E-E091BE4AF75C";
+
         #endregion
 
         #region Financial Transaction Type

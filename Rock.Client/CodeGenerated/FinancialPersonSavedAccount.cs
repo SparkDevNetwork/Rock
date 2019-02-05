@@ -47,7 +47,16 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public string GatewayPersonIdentifier { get; set; }
+
+        /// <summary />
         public int? GroupId { get; set; }
+
+        /// <summary />
+        public bool IsDefault { get; set; }
+
+        /// <summary />
+        public bool IsSystem { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -103,7 +112,10 @@ namespace Rock.Client
             this.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.GatewayPersonIdentifier = source.GatewayPersonIdentifier;
             this.GroupId = source.GroupId;
+            this.IsDefault = source.IsDefault;
+            this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.PersonAliasId = source.PersonAliasId;

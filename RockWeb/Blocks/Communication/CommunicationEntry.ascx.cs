@@ -551,6 +551,8 @@ namespace RockWeb.Blocks.Communication
                         testCommunication.ReviewedDateTime = RockDateTime.Now;
                         testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId;
 
+                        testCommunication.Subject = string.Format( "[Test] {0}", testCommunication.Subject );
+
                         foreach ( var attachment in communication.Attachments )
                         {
                             var cloneAttachment = attachment.Clone( false );

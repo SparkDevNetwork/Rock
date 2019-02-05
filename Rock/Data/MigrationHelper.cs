@@ -2547,6 +2547,69 @@ BEGIN
         }
 
         /// <summary>
+        /// Updates (or Adds) the defined value for the given DefinedType.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type GUID.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="isSystem">if set to <c>true</c> [is system].</param>
+        /// <param name="foreignId">The foreign identifier.</param>
+        /// <param name="foreignKey">The foreign key.</param>
+        /// <param name="order">The order.</param>
+        public void UpdateDefinedValue( string definedTypeGuid, string value, string description, string guid, bool isSystem, int? foreignId, string foreignKey, int order )
+        {
+            Migration.Sql( string.Format( @"
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
+
+                IF EXISTS ( SELECT [Id] FROM [DefinedValue] WHERE [Guid] = '{3}' )
+                BEGIN
+                    UPDATE [DefinedValue]
+                    SET
+                        [IsSystem] = {4}
+                        ,[DefinedTypeId] = @DefinedTypeId
+                        ,[Value] = '{1}'
+                        ,[Description] = '{2}'
+                        ,[ForeignId] = {5}
+                        ,[ForeignKey] = '{6}'
+                        ,[Order] = {7}
+                    WHERE
+                        [Guid] = '{3}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [DefinedValue]
+                        ([IsSystem]
+                        ,[DefinedTypeId]
+                        ,[Order]
+                        ,[Value]
+                        ,[Description]
+                        ,[Guid]
+                        ,[ForeignId]
+                        ,[ForeignKey])
+                    VALUES
+                        ({4}
+                        ,@DefinedTypeId
+                        ,{7}
+                        ,'{1}'
+                        ,'{2}'
+                        ,'{3}'
+                        ,{5}
+                        ,'{6}')
+                END",
+                definedTypeGuid, //0
+                value.Replace( "'", "''" ), //1
+                description.Replace( "'", "''" ), //2
+                guid, //3
+                ( isSystem ? "1" : "0" ), //4
+                foreignId.HasValue ? foreignId.ToString() : "null", //5
+                foreignKey, //6
+                order //7
+                ) );
+        }
+
+        /// <summary>
         /// Updates the name of the defined value by.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type unique identifier.</param>

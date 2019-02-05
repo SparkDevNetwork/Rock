@@ -141,7 +141,7 @@ namespace Rock.Storage.AssetStorage
                     request.ContinuationToken = response.NextContinuationToken;
                 } while ( response.IsTruncated );
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -208,7 +208,7 @@ namespace Rock.Storage.AssetStorage
 
                 } while ( response.IsTruncated );
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -267,7 +267,7 @@ namespace Rock.Storage.AssetStorage
                     }
                 }
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -573,7 +573,7 @@ namespace Rock.Storage.AssetStorage
                     assets.Add( subFolderAsset );
                 }
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -706,7 +706,6 @@ namespace Rock.Storage.AssetStorage
                 Key = s3Object.Key,
                 Uri = $"https://{s3Object.BucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
                 Type = assetType,
-                //IconPath = GetFileTypeIcon( s3Object.Key ),
                 IconPath = assetType == AssetType.Folder ? string.Empty : GetThumbnail(assetStorageProvider, s3Object.Key, s3Object.LastModified ),
                 FileSize = s3Object.Size,
                 LastModifiedDateTime = s3Object.LastModified,

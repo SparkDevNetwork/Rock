@@ -14,6 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
+
 using Rock.Web.Cache;
 
 namespace Rock.Communication
@@ -53,5 +57,40 @@ namespace Rock.Communication
         /// The message.
         /// </value>
         public string Message { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the communication.
+        /// When CreateCommunicationRecord = true this value will insert Communication.Name
+        /// </summary>
+        /// <value>
+        /// The name of the communication.
+        /// </value>
+        public string communicationName { get; set; }
+
+        /// <summary>
+        /// Returs the Person sending the SMS communication.
+        /// Will use the Response Recipient if one exists otherwise the Current Person.
+        /// </summary>
+        /// <returns></returns>
+        public Rock.Model.Person GetSMSFromPerson()
+        {
+            // Try to get a from person
+            Rock.Model.Person person = CurrentPerson;
+
+            // If the response recipient exists use it
+            var fromPersonAliasGuid = FromNumber.GetAttributeValue( "ResponseRecipient" ).AsGuidOrNull();
+            if ( fromPersonAliasGuid.HasValue )
+            {
+                person = new Rock.Model.PersonAliasService( new Data.RockContext() )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( p => p.Guid.Equals( fromPersonAliasGuid.Value ) )
+                    .Select( p => p.Person )
+                    .FirstOrDefault();
+            }
+
+            return person;
+        }
+
     }
 }

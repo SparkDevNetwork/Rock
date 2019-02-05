@@ -297,6 +297,13 @@ namespace RockWeb.Blocks.Communication
             // This person is also referred to as the Recipient because they are responding to a
             // communication from Rock. Restated the response is from the recipient of a communication.
 
+            // This is the person lava field, we want to clear it because reloading this list will deselect the user.
+            litSelectedRecipientDescription.Text = string.Empty;
+            hfSelectedRecipientId.Value = string.Empty;
+            hfSelectedMessageKey.Value = string.Empty;
+            tbNewMessage.Visible = false;
+            btnSend.Visible = false;
+
             int? smsPhoneDefinedValueId = ddlSmsNumbers.SelectedValue.AsIntegerOrNull();
             if ( smsPhoneDefinedValueId == null )
             {
@@ -576,7 +583,7 @@ namespace RockWeb.Blocks.Communication
                 string responseCode = Rock.Communication.Medium.Sms.GenerateResponseCode( rockContext );
 
                 // Create and enqueue the communication
-                Rock.Communication.Medium.Sms.CreateCommunicationMobile( fromPersonAliasId, fromPersonName, toPersonAliasId, message, fromPhone, responseCode, rockContext );
+                Rock.Communication.Medium.Sms.CreateCommunicationMobile( CurrentUser.Person, toPersonAliasId, message, fromPhone, responseCode, rockContext );
             }
         }
 
@@ -709,6 +716,7 @@ namespace RockWeb.Blocks.Communication
             ppRecipient.SelectedValue = null;
             tbSMSTextMessage.Text = string.Empty;
             HideDialog();
+            LoadResponseListing();
         }
 
         /// <summary>

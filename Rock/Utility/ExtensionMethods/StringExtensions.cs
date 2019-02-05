@@ -226,7 +226,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Converts a comma delimited string into a List<int>
+        /// Converts a comma delimited string into a List&lt;int&gt;
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
