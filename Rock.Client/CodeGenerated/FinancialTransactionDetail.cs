@@ -47,7 +47,7 @@ namespace Rock.Client
         public int? EntityTypeId { get; set; }
 
         /// <summary />
-        public decimal FeeAmount { get; set; }
+        public decimal? FeeAmount { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
