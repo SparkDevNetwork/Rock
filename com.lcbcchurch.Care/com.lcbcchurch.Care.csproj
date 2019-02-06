@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\005_NewPRTButtonHTML.cs" />
     <Compile Include="Migrations\003_PrayerPage.cs" />
     <Compile Include="Migrations\002_AddNotificationWorkflow.cs" />
     <Compile Include="Migrations\001_AddCarePages.cs" />
