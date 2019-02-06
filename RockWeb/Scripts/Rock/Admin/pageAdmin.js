@@ -22,7 +22,7 @@
 
                         // Update the new zone
                         getData.Zone = zoneName;
-                        var blockLocation = $('#block-move-Location :checked').val() 
+                        var blockLocation = $('#block-move-Location :checked').val()
 
                         // Set the appropriate parent value (site, layout or page)
                         switch (blockLocation)
@@ -103,7 +103,7 @@
                 // Bind the block configure icon so that edit icons are displayed on hover
                 $(".block-configuration").hover(function (e) {
                     var barWidth = $('.block-configuration-bar', this).outerWidth() + 45 + 'px';
-                    $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '9001' });
+                    $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '1049' });
                 }, function () {
                     $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '1000' });
                 });
@@ -147,7 +147,7 @@
                     // Get a reference to the anchor tag for use in the dialog success function
                     $moveLink = $(this);
 
-                    // Set the dialog's zone selection select box value to the block's current zone 
+                    // Set the dialog's zone selection select box value to the block's current zone
                     $('#block-move-zone').val($(this).attr('data-zone'));
 
                     // Set the dialog's parent option to the current zone's parent (either the page or the layout)
@@ -174,7 +174,7 @@
                 // Bind the zone configure icon so that edit icons are displayed on hover
                 $(".zone-configuration").hover(function () {
                     var barWidth = $('.zone-configuration-bar', this).width() + 45 + 'px';
-                    $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '9001' });
+                    $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '1049' });
                 }, function () {
                     $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '1000' });
                 });

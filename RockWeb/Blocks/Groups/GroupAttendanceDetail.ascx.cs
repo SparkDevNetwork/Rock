@@ -79,7 +79,12 @@ namespace RockWeb.Blocks.Groups
             /// <summary>
             /// Individual Entering Attendance
             /// </summary>
-            IndividualEnteringAttendance = 4
+            IndividualEnteringAttendance = 4,
+
+            /// <summary>
+            /// Group Administrator
+            /// </summary>
+            GroupAdministrator = 5
         }
 
         #endregion
@@ -1074,6 +1079,14 @@ namespace RockWeb.Blocks.Groups
                                 var leaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
                                                 .Where( m => m.GroupId == _group.Id );
                                 recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
+                            }
+                            break;
+                        case SendSummaryEmailType.GroupAdministrator:
+                            {
+                                if ( _group.GroupType.ShowAdministrator && _group.GroupAdministratorPersonAliasId.HasValue && _group.GroupAdministratorPersonAlias.Person.Email.IsNotNullOrWhiteSpace() )
+                                {
+                                    recipients.Add( _group.GroupAdministratorPersonAlias.Person.Email );
+                                }
                             }
                             break;
                         case SendSummaryEmailType.ParentGroupLeaders:
