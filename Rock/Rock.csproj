@@ -388,6 +388,7 @@
     <Compile Include="Field\FieldVisibilityRules.cs" />
     <Compile Include="Field\Types\AssetFieldType.cs" />
     <Compile Include="Field\Types\AssetStorageProviderFieldType.cs" />
+    <Compile Include="Lava\Shortcodes\ScheduledContent.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationResponseService.cs" />
     <Compile Include="Model\CodeGenerated\NoteAttachmentService.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationTemplateFeeItemService.cs" />
@@ -396,6 +397,16 @@
     <Compile Include="Model\NoteAttachment.cs" />
     <Compile Include="Model\RegistrationTemplateFeeItem.cs" />
     <Compile Include="Model\SpiritualGiftsService.cs" />
+    <Compile Include="BulkExport\AttributesExport.cs" />
+    <Compile Include="BulkExport\FinancialTransactionExport.cs" />
+    <Compile Include="BulkExport\FinancialTransactionExportOptions.cs" />
+    <Compile Include="BulkExport\FinancialTransactionsExport.cs" />
+    <Compile Include="BulkExport\ModelExport.cs" />
+    <Compile Include="BulkExport\ExportOptions.cs" />
+    <Compile Include="BulkExport\LocationExport.cs" />
+    <Compile Include="BulkExport\ExportResult.cs" />
+    <Compile Include="BulkExport\PeopleExport.cs" />
+    <Compile Include="BulkExport\PersonExport.cs" />
     <Compile Include="CheckIn\CheckInEditFamilyBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -420,6 +431,8 @@
     <Compile Include="Plugin\HotFixes\054_MigrationRollupsForV8_2.cs" />
     <Compile Include="Plugin\HotFixes\053_DuplicateDataIntegrityReports.cs" />
     <Compile Include="Plugin\HotFixes\058_CheckinRegistration.cs" />
+    <Compile Include="Plugin\HotFixes\062_MigrationRollupsForV8_7.cs" />
+    <Compile Include="Plugin\HotFixes\061_MigrationRollupsForV8_6_2.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

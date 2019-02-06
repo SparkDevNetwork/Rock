@@ -94,13 +94,29 @@ namespace Rock.Communication.Transport
                             recipientData.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
                         }
 
-                        string message = ResolveText( smsMessage.Message, smsMessage.CurrentPerson, smsMessage.EnabledLavaCommands, recipientData.MergeFields, smsMessage.AppRoot, smsMessage.ThemeRoot );
-
-                        MessageResource response = SendToTwilio( smsMessage.FromNumber.Value, null, attachmentMediaUrls, message, recipientData.To );
-
-                        if ( response.ErrorMessage.IsNotNullOrWhiteSpace() )
+                        CommunicationRecipient communicationRecipient = null;
+                        using ( var rockContext = new RockContext() )
                         {
-                            errorMessages.Add( response.ErrorMessage );
+                            CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
+                            int? recipientId = recipientData.CommunicationRecipientId.AsIntegerOrNull();
+                            if ( recipientId != null )
+                            {
+                                communicationRecipient = communicationRecipientService.Get( recipientId.Value );
+                            }
+
+                            string message = ResolveText( smsMessage.Message, smsMessage.CurrentPerson, communicationRecipient, smsMessage.EnabledLavaCommands, recipientData.MergeFields, smsMessage.AppRoot, smsMessage.ThemeRoot );
+
+                            if ( communicationRecipient != null )
+                            {
+                                rockContext.SaveChanges();
+                            }
+
+                            MessageResource response = SendToTwilio( smsMessage.FromNumber.Value, null, attachmentMediaUrls, message, recipientData.To );
+
+                            if ( response.ErrorMessage.IsNotNullOrWhiteSpace() )
+                            {
+                                errorMessages.Add( response.ErrorMessage );
+                            }
                         }
                     }
                     catch ( Exception ex )
@@ -212,7 +228,7 @@ namespace Rock.Communication.Transport
                                             // Create merge field dictionary
                                             var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
 
-                                            string message = ResolveText( communication.SMSMessage, currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
+                                            string message = ResolveText( communication.SMSMessage, currentPerson, recipient, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
 
                                             string twilioNumber = phoneNumber.Number;
                                             if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )

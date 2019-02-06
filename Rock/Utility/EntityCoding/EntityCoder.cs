@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,8 +73,9 @@ namespace Rock.Utility.EntityCoding
         /// encodes all entities, generates new Guids for any entities that need them,
         /// and then maps all references to the new Guids.
         /// </summary>
-        /// <param name="guidEvaluation">A function that is called for each entity to determine if it needs a new Guid or not.</param>
-        /// <returns>A DataContainer that is ready for JSON export.</returns>
+        /// <returns>
+        /// A DataContainer that is ready for JSON export.
+        /// </returns>
         public ExportedEntitiesContainer GetExportedEntities()
         {
             var container = new ExportedEntitiesContainer();
@@ -96,8 +113,10 @@ namespace Rock.Utility.EntityCoding
         /// Export the given entity into an EncodedEntity object. This can be used later to
         /// reconstruct the entity.
         /// </summary>
-        /// <param name="entity">The entity to be exported.</param>
-        /// <returns>The exported data that can be imported.</returns>
+        /// <param name="queuedEntity">The queued entity.</param>
+        /// <returns>
+        /// The exported data that can be imported.
+        /// </returns>
         protected EncodedEntity Export( QueuedEntity queuedEntity )
         {
             EncodedEntity encodedEntity = new EncodedEntity();
