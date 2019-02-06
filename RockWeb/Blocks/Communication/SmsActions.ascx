@@ -124,6 +124,7 @@
                                             <i class="<%# Eval( "Component.IconCssClass" ) %>"></i>
                                             <%# Eval( "Name" ) %>
                                             <div class="pull-right">
+                                                <i class="fa fa-arrow-alt-circle-right<%# Eval( "ContinueAfterProcessing" ).ToString() == "True" ? "" : " hidden" %>"></i>
                                                 <i class="fa fa-bars js-reorder"></i>
                                                 <asp:LinkButton ID="lbEditAction" runat="server" CssClass="js-edit-button hidden" CommandName="EditAction" CommandArgument='<%# Eval( "Id" ) %>' />
                                             </div>
@@ -198,6 +199,9 @@
 
 <script>
     Sys.Application.add_load(function () {
+        //
+        // Setup dragula to allow dragging from components to actions.
+        //
         var componentDrake = dragula([$('.js-sms-action-components .js-drag-container').get(0), $('.js-sms-actions .js-drag-container').get(0)], {
             moves: function (el, source, handle, sibling) {
                 return $(el).hasClass('sms-action-component');
@@ -216,6 +220,9 @@
             window.location = postback;
         });
 
+        //
+        // Setup dragula to allow re-ordering within the actions.
+        //
         var reorderOldIndex = -1;
         var reorderDrake = dragula([$('.js-sms-actions .js-drag-container').get(0), $('.js-sms-actions .js-drag-container').get(0)], {
             moves: function (el, source, handle, sibling) {
