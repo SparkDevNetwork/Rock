@@ -389,6 +389,7 @@
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Communication\SmsActions\SmsActionComponent.cs" />
     <Compile Include="Communication\SmsActions\SmsActionContainer.cs" />
+    <Compile Include="Communication\SmsActions\SmsActionLaunchWorkflow.cs" />
     <Compile Include="Communication\SmsActions\SmsActionReply.cs" />
     <Compile Include="Communication\SmsActions\SmsMessage.cs" />
     <Compile Include="Field\FieldVisibilityRules.cs" />
