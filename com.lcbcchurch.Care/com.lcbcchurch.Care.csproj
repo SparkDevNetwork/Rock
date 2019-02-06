@@ -56,6 +56,7 @@
     <Compile Include="Migrations\002_AddNotificationWorkflow.cs" />
     <Compile Include="Migrations\001_AddCarePages.cs" />
     <Compile Include="Migrations\004_AddMigratedContactsNoteType.cs" />
+    <Compile Include="Migrations\005_NewPRTButtonHTML.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
