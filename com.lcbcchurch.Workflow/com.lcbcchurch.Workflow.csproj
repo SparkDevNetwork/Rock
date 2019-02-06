@@ -51,10 +51,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\001_GeneralContactWorkflow.cs" />
     <Compile Include="Migrations\004_CommitmentWorkflow.cs" />
     <Compile Include="Migrations\003_InterestWorkflow.cs" />
     <Compile Include="Migrations\002_WeekendCommentWorkflow.cs" />
-    <Compile Include="Migrations\001_GeneralContactWorkflow.cs" />
+    <Compile Include="Migrations\005_WorkflowListAddLastUpdated.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
