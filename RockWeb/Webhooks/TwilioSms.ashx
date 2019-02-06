@@ -193,14 +193,7 @@ class TwilioSmsResponseAsync : IAsyncResult
 
         if ( !string.IsNullOrWhiteSpace( message.ToNumber ) && !string.IsNullOrWhiteSpace( message.FromNumber ) )
         {
-            if ( message.FromNumber.StartsWith( "+" ) )
-            {
-                message.FromPerson = new PersonService( new RockContext() ).GetPersonFromMobilePhoneNumber( message.FromNumber.Substring( 1 ) );
-            }
-            else
-            {
-                message.FromPerson = new PersonService( new RockContext() ).GetPersonFromMobilePhoneNumber( message.FromNumber );
-            }
+            message.FromPerson = new PersonService( new RockContext() ).GetPersonFromMobilePhoneNumber( message.FromNumber.Replace( "+", "" ) );
 
             var smsResponse = SmsActionService.ProcessIncomingMessage( message );
             var twilioMessage = new Twilio.TwiML.Message();
