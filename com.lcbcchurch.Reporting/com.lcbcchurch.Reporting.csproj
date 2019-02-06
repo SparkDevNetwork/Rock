@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\006_MoveAssimilationAbsenteePages.cs" />
     <Compile Include="Migrations\004_WeekendAttendanceCheckinConfig.cs" />
     <Compile Include="Migrations\003_AddFtgNotificationJob.cs" />
     <Compile Include="Migrations\002_AddAbsenteePage.cs" />
