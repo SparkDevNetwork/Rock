@@ -713,7 +713,7 @@ namespace RockWeb.Blocks.Communication
 
             int toPersonAliasId = ppRecipient.PersonAliasId.Value;
             SendMessage( toPersonAliasId, message );
-            ppRecipient.SelectedValue = null;
+            ppRecipient.SetValue( null );
             tbSMSTextMessage.Text = string.Empty;
             HideDialog();
             LoadResponseListing();
