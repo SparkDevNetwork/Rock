@@ -1133,22 +1133,6 @@ namespace Rock.Data
         public DbSet<Rock.Model.MetaNickNameLookup> MetaNickNameLookups { get; set; }
 
         /// <summary>
-        /// Gets or sets the meta personicx lifestage clusters.
-        /// </summary>
-        /// <value>
-        /// The meta personicx lifestage clusters.
-        /// </value>
-        public DbSet<Rock.Model.MetaPersonicxLifestageCluster> MetaPersonicxLifestageClusters { get; set; }
-
-        /// <summary>
-        /// Gets or sets the meta personicx lifestage groups.
-        /// </summary>
-        /// <value>
-        /// The meta personicx lifestage groups.
-        /// </value>
-        public DbSet<Rock.Model.MetaPersonicxLifestageGroup> MetaPersonicxLifestageGroups { get; set; }
-
-        /// <summary>
         /// Gets or sets the metaphones.
         /// </summary>
         /// <value>
