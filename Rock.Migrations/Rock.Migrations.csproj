@@ -208,6 +208,10 @@
     <Compile Include="Migrations\201902051933512_Rollup_0205.Designer.cs">
       <DependentUpon>201902051933512_Rollup_0205.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201902061535567_RemovePersonicxLifestage.cs" />
+    <Compile Include="Migrations\201902061535567_RemovePersonicxLifestage.Designer.cs">
+      <DependentUpon>201902061535567_RemovePersonicxLifestage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -604,6 +608,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201902051933512_Rollup_0205.resx">
       <DependentUpon>201902051933512_Rollup_0205.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201902061535567_RemovePersonicxLifestage.resx">
+      <DependentUpon>201902061535567_RemovePersonicxLifestage.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
