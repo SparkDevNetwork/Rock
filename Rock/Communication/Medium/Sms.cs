@@ -202,7 +202,7 @@ namespace Rock.Communication.Medium
 
             try
             {
-                LaunchWorkflow( fromPerson.PrimaryAliasId, messageKey, message, toPersonAliasId, rockSmsFromPhoneDv );
+                LaunchWorkflow( fromPerson?.PrimaryAliasId, messageKey, message, toPersonAliasId, rockSmsFromPhoneDv );
 
             }
             catch ( Exception ex )
@@ -288,7 +288,7 @@ namespace Rock.Communication.Medium
             var communicationResponse = new CommunicationResponse
             {
                 MessageKey = messageKey,
-                FromPersonAliasId = fromPerson.PrimaryAliasId,
+                FromPersonAliasId = fromPerson?.PrimaryAliasId,
                 ToPersonAliasId = toPersonAliasId,
                 IsRead = false,
                 RelatedSmsFromDefinedValueId = rockSmsFromPhoneDv.Id,
