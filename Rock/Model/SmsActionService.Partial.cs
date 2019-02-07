@@ -32,6 +32,7 @@ namespace Rock.Model
             SmsMessage response = null;
 
             var smsActions = SmsActionCache.All()
+                .Where( a => a.IsActive )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Id );
 
