@@ -75,11 +75,12 @@ AND G.CampusId = {{campusId}}
 ORDER BY G.GroupTypeId, G.Name, P.NickName, P.LastName 
 {% endsql %}
 
-<style> body { font-family: Arial, Helvetica, sans-serif; font-size: 14px; padding: .2in; }
+<style>
+body { font-family: Arial, Helvetica, sans-serif; font-size: 14px; padding: .2in; }
 table tr td, table tr th { page-break-inside: avoid; border-bottom: .5px solid black; }
-.tr-header { border: none; background: #2E2E2E; } .tr-header th { border: none !important; color: #fff !important; background: #2E2E2E !important; }
-.pagebreak { page-break-before: always; } #container { display: table; width: 50%; }
-#container > div { display: table-cell; width: 10%; } #notes { width: 20%; } </style>
+.tr-header { border: none; background: #2E2E2E; }
+.tr-header th { border: none !important; color: #fff !important; background: #2E2E2E !important; }
+</style>
 
 {% assign newGroup = '' %} 
     {% for item in results %} 
@@ -87,7 +88,7 @@ table tr td, table tr th { page-break-inside: avoid; border-bottom: .5px solid b
 			{% if newGroup != '' %} 
 				</tbody></table> 
 			{% endif %} 
-			<table class='table.table-striped'> 
+			<table class='table table-striped'> 
 				<thead> 
 					<tr class='tr-header'>
 						<th colspan='8' style='padding-left:15px'> 
