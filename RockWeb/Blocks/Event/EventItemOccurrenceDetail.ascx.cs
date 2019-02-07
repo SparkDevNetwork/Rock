@@ -273,14 +273,6 @@ namespace RockWeb.Blocks.Event
                 eventItemOccurrence.LoadAttributes( rockContext );
                 Helper.GetEditValues( phAttributeEdits, eventItemOccurrence );
 
-                // Remove any linkage no longer in UI
-                Guid uiLinkageGuid = LinkageState != null ? LinkageState.Guid : Guid.Empty;
-                foreach ( var linkage in eventItemOccurrence.Linkages.Where( l => !l.Guid.Equals(uiLinkageGuid)).ToList())
-                {
-                    eventItemOccurrence.Linkages.Remove( linkage );
-                    eventItemOccurrenceGroupMapService.Delete( linkage );
-                }
-
                 // Add/Update linkage in UI
                 if ( !uiLinkageGuid.Equals( Guid.Empty ))
                 {
