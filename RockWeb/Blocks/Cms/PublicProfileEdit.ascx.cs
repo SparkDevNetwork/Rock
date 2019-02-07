@@ -555,6 +555,16 @@ namespace RockWeb.Blocks.Cms
 
                     person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
 
+                    // update campus
+                    if ( cpCampus.Visible )
+                    {
+                        var primaryFamily = person.GetFamily( rockContext );
+                        if ( primaryFamily.CampusId != cpCampus.SelectedCampusId )
+                        {
+                            primaryFamily.CampusId = cpCampus.SelectedCampusId;
+                        }
+                    }
+
                     var phoneNumberTypeIds = new List<int>();
 
                     bool smsSelected = false;
