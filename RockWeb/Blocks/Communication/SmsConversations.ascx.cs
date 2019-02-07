@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
@@ -73,7 +73,8 @@ namespace RockWeb.Blocks.Communication
         required: false,
         order: 6,
         key: "PersonInfoLavaTemplate" )]
-    //Start here to build the person description lit field after selecting recipient.
+
+    // Start here to build the person description lit field after selecting recipient.
     public partial class SmsConversations : RockBlock
     {
         #region Control Overrides
@@ -88,7 +89,8 @@ namespace RockWeb.Blocks.Communication
 
             if ( mdLinkConversation.Visible )
             {
-                string script = string.Format( @"
+                string script = string.Format(
+                    @"
 
     $('#{0}').on('click', function () {{
 
@@ -143,8 +145,7 @@ namespace RockWeb.Blocks.Communication
                     valSummaryAddPerson.ClientID,                                   // {7}
                     divExistingPerson.ClientID,                                     // {8}
                     hfActiveTab.ClientID,                                           // {9}
-                    dpNewPersonBirthDate.ClientID                                   // {10}
-                );
+                    dpNewPersonBirthDate.ClientID );                                // {10}
 
                 ScriptManager.RegisterStartupScript( mdLinkConversation, mdLinkConversation.GetType(), "modaldialog-validation", script, true );
             }
@@ -167,7 +168,7 @@ namespace RockWeb.Blocks.Communication
 
             this.BlockUpdated += Block_BlockUpdated;
 
-            btnCreateNewMessage.Visible = ( this.GetAttributeValue( "EnableSmsSend" ) ).AsBoolean();
+            btnCreateNewMessage.Visible = this.GetAttributeValue( "EnableSmsSend" ).AsBoolean();
             dvpNewPersonTitle.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ).Id;
             dvpNewPersonSuffix.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ).Id;
             dvpNewPersonMaritalStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
@@ -253,7 +254,7 @@ namespace RockWeb.Blocks.Communication
                 smsNumbers = smsNumbers.Where( v => v.GetAttributeValue( "ResponseRecipient" ).IsNullOrWhiteSpace() ).ToList();
             }
 
-            //show only numbers 'tied to the current' individual...unless they have 'Admin rights'.
+            // Show only numbers 'tied to the current' individual...unless they have 'Admin rights'.
             if ( GetAttributeValue( "ShowOnlyPersonalSmsNumber" ).AsBoolean() && !IsUserAuthorized( Authorization.ADMINISTRATE ) )
             {
                 smsNumbers = smsNumbers.Where( v => CurrentPerson.Aliases.Any( a => a.Guid == v.GetAttributeValue( "ResponseRecipient" ).AsGuid() ) ).ToList();
@@ -265,7 +266,7 @@ namespace RockWeb.Blocks.Communication
                 {
                     v.Id,
                     Description = string.IsNullOrWhiteSpace( v.Description )
-                    ? PhoneNumber.FormattedNumber( "", v.Value.Replace( "+", string.Empty ) )
+                    ? PhoneNumber.FormattedNumber( string.Empty, v.Value.Replace( "+", string.Empty ) )
                     : v.Description.LeftWithEllipsis( 25 ),
                 } );
 
@@ -465,7 +466,7 @@ namespace RockWeb.Blocks.Communication
             if ( recipientId.Value.IsNullOrWhiteSpace() || recipientId.Value == "-1" )
             {
                 // We don't have a person to do the lava merge so just display the formatted phone number
-                html = PhoneNumber.FormattedNumber( "", messageKey.Value ) + unknownPerson;
+                html = PhoneNumber.FormattedNumber( string.Empty, messageKey.Value ) + unknownPerson;
                 litSelectedRecipientDescription.Text = html;
             }
             else
@@ -507,11 +508,17 @@ namespace RockWeb.Blocks.Communication
         protected class ResponseListItem
         {
             public int? RecipientId { get; set; }
+
             public string MessageKey { get; set; }
+
             public string FullName { get; set; }
+
             public DateTime? CreatedDateTime { get; set; }
+
             public string HumanizedCreatedDateTime { get; set; }
+
             public string SMSMessage { get; set; }
+
             public bool IsRead { get; set; }
         }
 
@@ -559,7 +566,6 @@ namespace RockWeb.Blocks.Communication
                     break;
                 case "MDLINKCONVERSATION":
                     ppPerson.SetValue( null );
-                    //hfActiveTab.Value = string.Empty;
                     nbAddPerson.Visible = false;
                     dvpNewPersonTitle.ClearSelection();
                     tbNewPersonFirstName.Text = string.Empty;
@@ -806,6 +812,7 @@ namespace RockWeb.Blocks.Communication
             {
                 lbLinkConversation.Visible = false;
             }
+
             PopulatePersonLava( e );
         }
 
@@ -827,7 +834,6 @@ namespace RockWeb.Blocks.Communication
                 e.Row.AddCssClass( "unread" );
             }
         }
-
 
         /// <summary>
         /// Handles the ItemDataBound event of the rptConversation control.
@@ -903,6 +909,7 @@ namespace RockWeb.Blocks.Communication
                     return;
                 }
             }
+
             using ( var rockContext = new RockContext() )
             {
                 int mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
@@ -933,7 +940,7 @@ namespace RockWeb.Blocks.Communication
                             phoneNumber.Number = hfSelectedMessageKey.Value;
                             if ( !hasSmsNumber )
                             {
-                                //if they don't have a number then use this one, otherwise don't do anything
+                                // If they don't have a number then use this one, otherwise don't do anything
                                 phoneNumber.IsMessagingEnabled = true;
                             }
                         }
@@ -954,7 +961,6 @@ namespace RockWeb.Blocks.Communication
                     person.SuffixValueId = dvpNewPersonSuffix.SelectedValueAsId();
                     person.Gender = rblNewPersonGender.SelectedValueAsEnum<Gender>();
                     person.MaritalStatusValueId = dvpNewPersonMaritalStatus.SelectedValueAsInt();
-
 
                     person.PhoneNumbers = new List<PhoneNumber>();
                     var phoneNumber = new PhoneNumber
@@ -1001,7 +1007,6 @@ namespace RockWeb.Blocks.Communication
 
                     Group group = GroupService.SaveNewFamily( rockContext, groupMembers, null, true );
                     hfSelectedRecipientId.Value = person.PrimaryAliasId.ToString();
-
                 }
 
                 new CommunicationResponseService( rockContext ).UpdatePersonAliasByMessageKey( hfSelectedRecipientId.ValueAsInt(), hfSelectedMessageKey.Value, PersonAliasType.FromPersonAlias );
