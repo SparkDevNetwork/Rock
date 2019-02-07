@@ -60,14 +60,18 @@ namespace RockWeb.Blocks.Communication
         {
             if ( !Page.IsPostBack )
             {
+                BindComponents();
+                BindActions();
+
+                //
+                // This must come after BindComponents so that the SmsActionContainer will
+                // have been initialized already and any new attributes created.
+                //
                 var smsActionEntityTypeId = EntityTypeCache.Get( typeof( SmsAction ) ).Id;
                 var attributes = AttributeCache.All()
                     .Where( a => a.EntityTypeId == smsActionEntityTypeId )
                     .Where( a => a.Key == "Order" || a.Key == "Active" );
                 avcAttributes.ExcludedAttributes = attributes.ToArray();
-
-                BindComponents();
-                BindActions();
 
                 tbFromNumber.Text = "+15551234567";
                 tbToNumber.Text = "+15559991234";
