@@ -146,6 +146,7 @@
         <Rock:ModalDialog ID="mdNewMessage" runat="server" Title="New Message" OnSaveClick="mdNewMessage_SaveClick" OnCancelScript="clearActiveDialog();" SaveButtonText="Send" ValidationGroup="vgMobileTextEditor">
             <Content>
                 <asp:ValidationSummary ID="vsMobileTextEditor" runat="server" HeaderText="Please correct the following:" ValidationGroup="vgMobileTextEditor" CssClass="alert alert-validation" />
+                <Rock:NotificationBox ID="nbNoSms" runat="server" Text="The selected person does not have an SMS enabled Phone number." Dismissable="true" Visible="false" NotificationBoxType="Warning"></Rock:NotificationBox>
                 <div class="form-group">
                     <label runat="server" id="lblFromNumber" class="control-label">From</label>
                     <div><asp:Label ID="lblMdNewMessageSendingSMSNumber" runat="server" /></div>

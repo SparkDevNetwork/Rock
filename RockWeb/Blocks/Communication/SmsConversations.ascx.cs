@@ -711,7 +711,17 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
+            nbNoSms.Visible = false;
+
             int toPersonAliasId = ppRecipient.PersonAliasId.Value;
+            var personAliasService = new PersonAliasService( new RockContext() );
+            var toPerson = personAliasService.GetPerson( toPersonAliasId );
+            if ( !toPerson.PhoneNumbers.Where( p => p.IsMessagingEnabled).Any())
+            {
+                nbNoSms.Visible = true;
+                return;
+            }
+
             SendMessage( toPersonAliasId, message );
             ppRecipient.SetValue( null );
             tbSMSTextMessage.Text = string.Empty;
