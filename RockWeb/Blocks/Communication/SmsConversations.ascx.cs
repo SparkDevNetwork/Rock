@@ -191,6 +191,8 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnLoad( e );
 
+            string postbackArgs = Request.Params["__EVENTARGUMENT"] ?? string.Empty;
+
             nbAddPerson.Visible = false;
 
             if ( !IsPostBack )
@@ -209,7 +211,14 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                ShowDialog();
+                if ( postbackArgs == "cancel" )
+                {
+                    HideDialog();
+                }
+                else
+                {
+                    ShowDialog();
+                }
             }
 
             if ( !string.IsNullOrWhiteSpace( hfActiveTab.Value ) )
@@ -543,9 +552,26 @@ namespace RockWeb.Blocks.Communication
             switch ( hfActiveDialog.Value )
             {
                 case "MDNEWMESSAGE":
+                    ppRecipient.SetValue( null );
+                    tbSMSTextMessage.Text = string.Empty;
+
                     mdNewMessage.Hide();
                     break;
                 case "MDLINKCONVERSATION":
+                    ppPerson.SetValue( null );
+                    //hfActiveTab.Value = string.Empty;
+                    nbAddPerson.Visible = false;
+                    dvpNewPersonTitle.ClearSelection();
+                    tbNewPersonFirstName.Text = string.Empty;
+                    tbNewPersonLastName.Text = string.Empty;
+                    dvpNewPersonSuffix.ClearSelection();
+                    dvpNewPersonConnectionStatus.ClearSelection();
+                    rblNewPersonRole.ClearSelection();
+                    rblNewPersonGender.ClearSelection();
+                    dpNewPersonBirthDate.SelectedDate = null;
+                    ddlGradePicker.ClearSelection();
+                    dvpNewPersonMaritalStatus.ClearSelection();
+
                     mdLinkConversation.Hide();
                     break;
             }
@@ -723,8 +749,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             SendMessage( toPersonAliasId, message );
-            ppRecipient.SetValue( null );
-            tbSMSTextMessage.Text = string.Empty;
+            
             HideDialog();
             LoadResponseListing();
         }

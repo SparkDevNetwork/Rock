@@ -114,7 +114,7 @@
                 });
 
                 function clearActiveDialog() {
-                    $('#<%=hfActiveDialog.ClientID %>').val('');
+                    __doPostBack(null,'cancel');
                 }
 
                 var yPos;
