@@ -1043,6 +1043,7 @@ namespace RockWeb.Blocks.Connection
                         GroupRole = r.AssignedGroupMemberRoleId.HasValue ? roles[r.AssignedGroupMemberRoleId.Value] : "",
                         Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
                         LastActivity = FormatActivity( r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault() ),
+                        LastActivityDateTime = r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).Select( a => a.CreatedDateTime ).FirstOrDefault(),
                         LastActivityNote = lastActivityNoteBoundField != null && lastActivityNoteBoundField.Visible ? r.ConnectionRequestActivities.OrderByDescending(
                             a => a.CreatedDateTime ).Select( a => a.Note ).FirstOrDefault() : "",
                         Status = r.ConnectionStatus.Name,
@@ -1056,11 +1057,11 @@ namespace RockWeb.Blocks.Connection
                     {
                         if ( sortProperty.Direction == SortDirection.Descending )
                         {
-                            connectionRequests = connectionRequests.OrderByDescending( a => a.LastActivity ).ToList();
+                            connectionRequests = connectionRequests.OrderByDescending( a => a.LastActivityDateTime ).ToList();
                         }
                         else
                         {
-                            connectionRequests = connectionRequests.OrderBy( a => a.LastActivity ).ToList();
+                            connectionRequests = connectionRequests.OrderBy( a => a.LastActivityDateTime ).ToList();
                         }
                     }
                     gRequests.DataSource = connectionRequests;
