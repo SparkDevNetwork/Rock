@@ -760,6 +760,19 @@ namespace RockWeb.Blocks.Communication
             LoadResponseListing();
         }
 
+        protected void ppRecipient_SelectPerson( object sender, EventArgs e )
+        {
+            nbNoSms.Visible = false;
+
+            int toPersonAliasId = ppRecipient.PersonAliasId.Value;
+            var personAliasService = new PersonAliasService( new RockContext() );
+            var toPerson = personAliasService.GetPerson( toPersonAliasId );
+            if ( !toPerson.PhoneNumbers.Where( p => p.IsMessagingEnabled).Any())
+            {
+                nbNoSms.Visible = true;
+            }
+        }
+
         /// <summary>
         /// Handles the RowSelected event of the gRecipients control.
         /// </summary>
@@ -1027,5 +1040,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         #endregion Link Conversation Modal
+
+
     }
 }
