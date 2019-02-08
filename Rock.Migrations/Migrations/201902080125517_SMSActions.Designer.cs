@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class AddIncomingSMSRouteTable : IMigrationMetadata
+    public sealed partial class SMSActions : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(AddIncomingSMSRouteTable));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(SMSActions));
         
         string IMigrationMetadata.Id
         {
-            get { return "201901221717200_AddIncomingSMSRouteTable"; }
+            get { return "201902080125517_SMSActions"; }
         }
         
         string IMigrationMetadata.Source
