@@ -250,7 +250,7 @@ namespace Rock.Field
         }
 
         /// <summary>
-        /// Determines whether this FieldType supports doing PostBack for the editControl 
+        /// Determines whether this FieldType supports doing PostBack for the editControl
         /// </summary>
         /// <param name="editControl">The edit control.</param>
         /// <returns>
@@ -338,6 +338,7 @@ namespace Rock.Field
             HtmlGenericControl row = new HtmlGenericControl( "div" );
             row.ID = id;
             row.AddCssClass( "row" );
+            row.AddCssClass( "form-row" );
             row.AddCssClass( "field-criteria" );
 
             var compareControl = FilterCompareControl( configurationValues, id, required, filterMode );
@@ -674,7 +675,7 @@ namespace Rock.Field
                                 if ( this.FilterComparisonType.HasFlag( ComparisonType.IsBlank ) && comparisonType == ComparisonType.EqualTo || comparisonType == ComparisonType.NotEqualTo )
                                 {
                                     // if IsBlank is one of the allowed FilterComparisonTypes, and if EqualTo or NotEqualTo specified with blank value, this will get converted is IsBlank/IsNotBlank
-                                    // so we can render this as "Equal To ''" or '"Not Equal To ''" 
+                                    // so we can render this as "Equal To ''" or '"Not Equal To ''"
                                     return string.Format( "{0} {1}", comparisonType.ConvertToString(), filterValueValue );
                                 }
 
