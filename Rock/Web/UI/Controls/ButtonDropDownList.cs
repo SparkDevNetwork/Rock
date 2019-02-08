@@ -28,7 +28,7 @@ namespace Rock.Web.UI.Controls
     /// 
     /// </summary>
     [ToolboxData( "<{0}:ButtonDropDownList runat=server></{0}:ButtonDropDownList>" )]
-    public class ButtonDropDownList : ListControl, IRockControl
+    public class ButtonDropDownList : ListControl, IRockControl, INamingContainer
     {
         #region IRockControl implementation
 
@@ -341,6 +341,7 @@ namespace Rock.Web.UI.Controls
             RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
             HelpBlock = new HelpBlock();
             WarningBlock = new WarningBlock();
+            EnsureChildControls();
         }
 
         /// <summary>
@@ -399,12 +400,12 @@ namespace Rock.Web.UI.Controls
 
             _hfSelectedItemId = new HiddenFieldWithClass();
             _hfSelectedItemId.CssClass = "js-buttondropdown-selected-id";
-            _hfSelectedItemId.ID = $"{this.ClientID}_hfSelectedItemId";
+            _hfSelectedItemId.ID = "_hfSelectedItemId";
 
 
             _btnSelect = new HtmlGenericControl( "button" );
             _childControlWrapper.Controls.Add( _btnSelect );
-            _btnSelect.ID = $"{this.ClientID}_btnSelect";
+            _btnSelect.ID = "_btnSelect";
             _btnSelect.Attributes["type"] = "button";
             _btnSelect.Attributes["class"] = "btn btn-default dropdown-toggle js-buttondropdown-btn-select " + this.CssClass;
             _btnSelect.Attributes["data-toggle"] = "dropdown";
@@ -456,8 +457,9 @@ namespace Rock.Web.UI.Controls
             _btnSelect.Controls.Clear();
             _btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='fa fa-caret-down'></span>", selectedText ) } );
 
-            // only add a postback if there is a SelectionChanged event
-            bool doPostBack = ( SelectionChanged != null );
+            // only add a postback if there is a SelectionChanged event or if AutoPostBack is set to true
+            bool doPostBack = ( SelectionChanged != null || AutoPostBack == true );
+            
             var updatePanel = this.ParentUpdatePanel();
             string postbackControlId;
             if ( updatePanel != null )
@@ -481,7 +483,7 @@ namespace Rock.Web.UI.Controls
                 htmlBuilder.Append( "<li><a " );
                 if ( doPostBack )
                 {
-                    htmlBuilder.Append( $"href=\"javascript:__doPostBack('{postbackControlId}', '{this.ID}={item.Value}')\" " );
+                    htmlBuilder.Append( $"data-postback-script=\"javascript:__doPostBack('{postbackControlId}', '{this.ID}={item.Value}')\" " );
                 }
 
                 htmlBuilder.Append( $" data-id='{item.Value}'>" );
@@ -515,5 +517,21 @@ namespace Rock.Web.UI.Controls
         /// Occurs when [selection changed].
         /// </summary>
         public event EventHandler SelectionChanged;
+
+        /// <summary>
+        /// Occurs when the selection from the list control changes between posts to the server.
+        /// </summary>
+        public new event EventHandler SelectedIndexChanged
+        {
+            add
+            {
+                SelectionChanged += value;
+            }
+
+            remove
+            {
+                SelectionChanged -= value;
+            }
+        }
     }
 }

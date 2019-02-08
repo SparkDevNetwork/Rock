@@ -18,8 +18,9 @@
                 $('.dropdown-menu a', $control).click(function (e) {
                     var $el = $(this);
                     var text = $el.html();
-                    var textHtml = $el.html() + "<span class='fa fa-caret-down' ></span >";
+                    var textHtml = $el.html() + " <span class='fa fa-caret-down' ></span >";
                     var idValue = $el.attr('data-id');
+                    var postbackScript = $el.attr('data-postback-script');
 
                     if (checkmarksEnabled) {
                         $el.closest('.dropdown-menu').find('.js-selectionicon').removeClass('fa-check');
@@ -30,6 +31,10 @@
                     }
 
                     $selectedId.val(idValue);
+
+                    if (postbackScript) {
+                        window.location = postbackScript;
+                    }
                 });
 
             }
