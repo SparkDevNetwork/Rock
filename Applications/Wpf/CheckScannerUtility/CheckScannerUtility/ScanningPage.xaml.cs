@@ -128,7 +128,7 @@ namespace Rock.Apps.CheckScannerUtility
                 + Environment.NewLine
                 + "Click 'Skip' to reject this check."
                 + Environment.NewLine
-                + " Click 'Upload' to upload the check as-is.";
+                + "Click 'Upload' to upload the check as-is.";
                 this.DisplayMessage("Warning", mainMessage: message);
 
                 ShowUploadWarnings(scannedDocInfo);

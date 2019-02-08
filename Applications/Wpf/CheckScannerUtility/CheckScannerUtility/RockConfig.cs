@@ -473,7 +473,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             get
             {
-                return (int) this["DefaultCampusId"];
+                return  this["DefaultCampusId"] == null ? 0: (int) this["DefaultCampusId"] ;
             }
 
             set
