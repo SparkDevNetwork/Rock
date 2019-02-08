@@ -142,6 +142,7 @@ namespace Rock.Communication.SmsActions
                 message.FromNumber.Replace( "+", "" ),
                 message.ToNumber.Replace( "+", "" ),
                 message.Message,
+                message.Attachments,
                 workflowAttributesSettings,
                 out string response );
 
