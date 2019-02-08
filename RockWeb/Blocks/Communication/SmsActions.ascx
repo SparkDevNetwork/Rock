@@ -2,7 +2,6 @@
 
 <style>
 .sms-container {
-    min-height: 25px;
     border: 1px solid #ddd;
     background-color: #eee;
     padding: 12px;
@@ -20,6 +19,9 @@
         text-align: center;
         font-weight: bold;
         margin-bottom: 12px;
+    }
+    .sms-container .js-drag-container {
+        min-height: 25px;
     }
 
 .sms-action-component
