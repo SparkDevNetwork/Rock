@@ -121,7 +121,7 @@ namespace Rock.Utility
                     fromPerson = GetPerson( fromPhone, rockContext );
                 }
 
-                LaunchWorkflow( workflowType, nameTemplate, fromPerson, fromPhone, toPhone, message, matchGroups, workflowAttributesSettings, out response );
+                LaunchWorkflow( workflowType, nameTemplate, fromPerson, fromPhone, toPhone, message, matchGroups, null, workflowAttributesSettings, out response );
 
                 // once we find one match stop processing
                 break;
@@ -137,9 +137,10 @@ namespace Rock.Utility
         /// <param name="fromPhone">The phone number the message came from.</param>
         /// <param name="toPhone">The phone number the message was sent to.</param>
         /// <param name="message">The message text.</param>
+        /// <param name="attachments">The files that were attached to the message.</param>
         /// <param name="workflowAttributesSettings">The workflow attributes to set on the workflow.</param>
         /// <param name="response">The response to be sent back to the user.</param>
-        public static void LaunchWorkflow( WorkflowTypeCache workflowType, string nameTemplate, Person fromPerson, string fromPhone, string toPhone, string message, List<KeyValuePair<string, object>> workflowAttributesSettings, out string response )
+        public static void LaunchWorkflow( WorkflowTypeCache workflowType, string nameTemplate, Person fromPerson, string fromPhone, string toPhone, string message, List<BinaryFile> attachments, List<KeyValuePair<string, object>> workflowAttributesSettings, out string response )
         {
             LaunchWorkflow( workflowType, nameTemplate, fromPerson, fromPhone, toPhone, message, null, workflowAttributesSettings, out response );
         }
@@ -154,9 +155,10 @@ namespace Rock.Utility
         /// <param name="toPhone">The phone number the message was sent to.</param>
         /// <param name="message">The message text.</param>
         /// <param name="matchGroups">The match groups found in the deprecated defined value.</param>
+        /// <param name="attachments">The files that were attached to the message.</param>
         /// <param name="workflowAttributesSettings">The workflow attributes to set on the workflow.</param>
         /// <param name="response">The response to be sent back to the user.</param>
-        private static void LaunchWorkflow( WorkflowTypeCache workflowType, string nameTemplate, Person fromPerson, string fromPhone, string toPhone, string message, List<string> matchGroups, List<KeyValuePair<string, object>> workflowAttributesSettings, out string response )
+        private static void LaunchWorkflow( WorkflowTypeCache workflowType, string nameTemplate, Person fromPerson, string fromPhone, string toPhone, string message, List<string> matchGroups, List<BinaryFile> attachments, List<KeyValuePair<string, object>> workflowAttributesSettings, out string response )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -168,6 +170,8 @@ namespace Rock.Utility
                 {
                     workflow.InitiatorPersonAliasId = fromPerson.PrimaryAliasId;
                 }
+
+                attachments = attachments ?? new List<BinaryFile>();
 
                 // Format the phone number that was received
                 var formattedPhoneNumber = PhoneNumber.CleanNumber( PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), fromPhone ) );
@@ -182,6 +186,7 @@ namespace Rock.Utility
                     { "ReceivedTime", RockDateTime.Now.ToString("HH:mm:ss") },
                     { "ReceivedDate", RockDateTime.Now.ToShortDateString() },
                     { "ReceivedDateTime", RockDateTime.Now.ToString("o") },
+                    { "Attachments", attachments },
                     { "FromPerson", fromPerson }
                 };
 
@@ -193,6 +198,14 @@ namespace Rock.Utility
                 {
                     workflow.SetAttributeValue( attribute.Key,
                         attribute.Value.ToString().ResolveMergeFields( mergeValues ) );
+                }
+
+                //
+                // Set the attachments as workflow attributes as well.
+                //
+                for ( int i = 0; i < attachments.Count; i++ )
+                {
+                    workflow.SetAttributeValue( $"Attachment{ i + 1 }", attachments[i].Guid.ToString() );
                 }
 
                 // Set the workflow name
