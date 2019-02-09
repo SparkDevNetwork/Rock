@@ -100,33 +100,38 @@ namespace Rock.Apps.CheckScannerUtility
 
             rockConfig.Save();
 
-            // restart the scanner so that options will be reloaded
-            if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.RangerApi )
+            switch (rockConfig.ScannerInterfaceType)
             {
-                if ( this.BatchPage.rangerScanner != null )
-                {
-                    this.BatchPage.rangerScanner.ShutDown();
-                    this.BatchPage.rangerScanner.StartUp();
-                }
-                else
-                {
-                    lblScannerDriverError.Visibility = Visibility.Visible;
-                    return;
-                }
-            }
-            else
-            {
-                if ( this.BatchPage.micrImage == null )
-                {
-                    lblScannerDriverError.Visibility = Visibility.Visible;
-                    return;
-                }
+                case RockConfig.InterfaceType.RangerApi:
+                    if (this.BatchPage.rangerScanner != null)
+                    {
+                        this.BatchPage.rangerScanner.ShutDown();
+                        this.BatchPage.rangerScanner.StartUp();
+                    }
+                    else
+                    {
+
+                        lblScannerDriverError.Visibility = Visibility.Visible;
+                        return;
+                    }
+                    break;
+                case RockConfig.InterfaceType.MICRImageRS232:
+                    if (this.BatchPage.micrImage == null)
+                    {
+                        lblScannerDriverError.Visibility = Visibility.Visible;
+                        return;
+                    }
+                    break;
+                case RockConfig.InterfaceType.MagTekImageSafe:
+                    //Do Nothing Uses a Callback Function 
+                    break;
+                default:
+                    break;
             }
 
             if ( rockConfig.CaptureAmountOnScan )
             {
                 this.NavigationService.Navigate( this.BatchPage.CaptureAmountScanningPage );
-
             }
             else
             {
