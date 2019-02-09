@@ -40,7 +40,18 @@ namespace RockWeb.Blocks.Utility
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = true,
-        DefaultValue = @"
+        DefaultValue = LavaTemplateDefaultValue,
+        Order = 0 )]
+
+    #endregion Block Attributes
+    public partial class StarkDynamicAttributes : Rock.Web.UI.RockBlock, Rock.Web.UI.IDynamicAttributesBlock
+    {
+        #region Constants
+
+        /// <summary>
+        /// The Default Value for the LavaTemplate block attribute
+        /// </summary>
+        public const string LavaTemplateDefaultValue = @"
 <strong>Additional Attributes can be defined for this block type. These can be configured in <code>Home / CMS Configuration / Block Types</code> and will show up in block settings</strong>
 
 <ul>
@@ -49,12 +60,10 @@ namespace RockWeb.Blocks.Utility
     <li>{{ attribute.AttributeKey }}</li>
     {% endif %}
 {% endfor %}
-</ul>",
-        Order = 0 )]
+</ul>";
 
-    #endregion #region Block Attributes
-    public partial class StarkDynamicAttributes : Rock.Web.UI.RockBlock, Rock.Web.UI.IDynamicAttributesBlock
-    {
+        #endregion Constants
+
         #region Attribute Keys
 
         /// <summary>
