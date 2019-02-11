@@ -39,6 +39,7 @@ namespace Rock.Migrations.RockStartup
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_74.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_80.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_84.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_90_DISC.AsGuid(),
                 SystemGuid.ServiceJob.MIGRATE_HISTORY_SUMMARY_DATA.AsGuid(),
                 SystemGuid.ServiceJob.MIGRATE_ATTENDANCE_OCCURRENCE.AsGuid(),
                 SystemGuid.ServiceJob.MIGRATE_FAMILY_CHECKIN_IDS.AsGuid(),
