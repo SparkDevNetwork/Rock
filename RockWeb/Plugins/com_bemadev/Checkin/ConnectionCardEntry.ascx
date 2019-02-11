@@ -9,7 +9,7 @@
                 <div class="pull-right">
                     <Rock:HighlightLabel ID="hlCurrentCount" runat="server" LabelType="Info" Text="Current Attendance: 0" />
                 </div>
-                <h3 class="panel-title"><i class="fa fa-calendar-check-o"></i>Rapid Attendance</h3>
+                <h3 class="panel-title"><i class="fa fa-calendar-check-o"></i>Connection Card Entry</h3>
             </div>
 
             <div class="panel-body">
