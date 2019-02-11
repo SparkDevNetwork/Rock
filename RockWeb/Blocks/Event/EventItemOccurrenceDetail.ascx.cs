@@ -273,6 +273,8 @@ namespace RockWeb.Blocks.Event
                 eventItemOccurrence.LoadAttributes( rockContext );
                 Helper.GetEditValues( phAttributeEdits, eventItemOccurrence );
 
+                Guid uiLinkageGuid = LinkageState != null ? LinkageState.Guid : Guid.Empty;
+
                 // Add/Update linkage in UI
                 if ( !uiLinkageGuid.Equals( Guid.Empty ))
                 {
