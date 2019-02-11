@@ -68,7 +68,7 @@ LEFT OUTER JOIN [Attribute] AT ON AT.Guid = '791A4DC9-BB89-41E6-95E9-D377ED4C2F0
 LEFT OUTER JOIN [AttributeValue] AV ON AV.AttributeId = AT.Id AND AV.EntityId = A.Id
 WHERE A.DidAttend = 1 AND DATEDIFF(day, AO.OccurrenceDate, GetDate()) = 0
 AND GetDate() < ISNULL(A.EndDateTime,GetDate()+1)
-AND G.CampusId = {{campusId}} 
+{% if campusId != '' %} AND G.CampusId = {{campusId}} {% endif %}
 {% if groupTypeId %} AND G.GroupTypeId = {{groupTypeId}} {% endif %}
 {% if groupId %} AND G.Id = {{groupId}} {% endif %}
 {% if locationId %} AND AO.LocationId = {{locationId}} {% endif %}
