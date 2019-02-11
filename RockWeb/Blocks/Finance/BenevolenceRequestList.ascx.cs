@@ -354,6 +354,10 @@ namespace RockWeb.Blocks.Finance
                                 hlStatus.Text = "Pending";
                                 hlStatus.LabelType = LabelType.Default;
                                 return;
+                            default:
+                                hlStatus.Text = benevolenceRequest.RequestStatusValue.Value;
+                                hlStatus.LabelType = LabelType.Info;
+                                return;
                         }
                     }
                 }
