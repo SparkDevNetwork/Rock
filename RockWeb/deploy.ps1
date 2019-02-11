@@ -180,8 +180,8 @@ Remove-Item -Path (Join-Path $RootLocation "app_offline.htm") -ErrorAction Silen
 
 $InProgressBackupFile = "$($RootLocation.TrimEnd("/\\")).backup.deploy-in-progress.zip";
 $SuccessBackupFile = "$($RootLocation.TrimEnd("/\\")).backup.zip";
-Remove-Item $SuccessBackupFile;
-Move-Item $InProgressBackupFile $SuccessBackupFile;
+Remove-Item $SuccessBackupFile -Force | Out-Null;
+Move-Item $InProgressBackupFile $SuccessBackupFile -Force;
 
 
 Write-Host "Deployment script finished successfully";

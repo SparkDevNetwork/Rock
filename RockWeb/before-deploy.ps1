@@ -63,7 +63,7 @@ if (Test-Path $InProgressBackupFile) {
 }
 else {
     Write-Host "Creating a deployment backup file (If something fails please run the deployment again)...";
-    Compress-Archive -Path $RootLocation\* -DestinationPath $NewBackupFile;
+    Compress-Archive -Path $RootLocation\* -DestinationPath $InProgressBackupFile;
 }
 
 
@@ -112,11 +112,11 @@ $FilesToSave = "checkin-theme.css","bootstrap.css","theme.css","_css-overrides.l
 $ThemesLocation = Join-Path $RootLocation "Themes";
 foreach ($Theme in Get-ChildItem $ThemesLocation) {
 
-    if (-Not (Test-Path Join-Paths $Theme "Styles" ".nocompile")) {
+    if (-Not (Test-Path (Join-Paths $Theme.Name "Styles" ".nocompile"))) {
 
         foreach($File in $FilesToSave) {
             $LocalPath = Join-Paths "Themes" $Theme.Name "Styles" $File;
-            if (Test-Path Join-Path $RootLocation $LocalPath) {
+            if (Test-Path (Join-Path $RootLocation $LocalPath)) {
                 Backup-RockFile $LocalPath;
             }
         }
