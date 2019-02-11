@@ -161,7 +161,6 @@ namespace Rock.Apps.CheckScannerUtility
 
             if (this.rangerScanner != null)
             {
-                MessageBox.Show("Binding to Ranger...Scanning Page");
                 this.rangerScanner.TransportFeedingState += ScanningPage.rangerScanner_TransportFeedingState;
                 this.rangerScanner.TransportFeedingStopped += ScanningPage.rangerScanner_TransportFeedingStopped;
                 this.rangerScanner.TransportNewItem += ScanningPage.rangerScanner_TransportNewItem;
