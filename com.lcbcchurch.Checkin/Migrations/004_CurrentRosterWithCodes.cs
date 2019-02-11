@@ -53,7 +53,9 @@ namespace com.lcbcchurch.Checkin.Migrations
 {% endfor %}
 
 {% assign campusId = PageParameter['CampusId'] %}
+{% assign areaGuid = PageParameter['Area'] %}
 {% sql %} 
+Declare @ParentGroupTypeId int = (Select Top 1 Id From GroupType Where Guid = '{{areaGuid}}');
 SELECT 	AC.Code AS Code ,
 		P.NickName + ' ' + P.LastName AS Name,
 		AV.Value AS Pager,
@@ -61,8 +63,10 @@ SELECT 	AC.Code AS Code ,
 FROM [Attendance] A 
 INNER JOIN [AttendanceOccurrence] AO ON A.OccurrenceId = AO.Id 
 INNER JOIN [Group] G ON AO.GroupId = G.Id
+INNER JOIN [GroupType] GT ON GT.Id = G.GroupTypeId
 INNER JOIN [PersonAlias] PA ON A.PersonAliasId = PA.Id 
 INNER JOIN [Person] P ON PA.PersonId = P.Id
+{% if areaGuid != '' %} INNER JOIN GroupTypeAssociation GTA ON GT.ID = GTA.ChildGroupTypeId AND GTA.GroupTypeId = @ParentGroupTypeId {% endif %}
 LEFT OUTER JOIN [AttendanceCode] AC ON A.AttendanceCodeId = AC.Id
 LEFT OUTER JOIN [Attribute] AT ON AT.Guid = '791A4DC9-BB89-41E6-95E9-D377ED4C2F0B'
 LEFT OUTER JOIN [AttributeValue] AV ON AV.AttributeId = AT.Id AND AV.EntityId = A.Id
@@ -130,7 +134,8 @@ table tr td, table tr th { page-break-inside: avoid; border-bottom: .5px solid b
                     {% endfor %}
                     {% endpage %}
                     {% assign campusId = Context.Campus.Id %}
-                    <a class=""btn btn-primary"" href=""/page/{{pageId}}/?CampusId={{campusId}}"" target=""_blank"">All Groups Rosters</a>
+                    {% assign checkinArea = PageParameter['Area'] %}
+                    <a class=""btn btn-primary"" href=""/page/{{pageId}}/?CampusId={{campusId}}&Area={{checkinArea}}"" target=""_blank"">All Groups Rosters</a>
             ", "BFAFA6B9-DC18-4E9C-A66D-90D6036F8144" );
 
         }
