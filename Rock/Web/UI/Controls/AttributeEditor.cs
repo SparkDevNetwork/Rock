@@ -291,6 +291,19 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show action title].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show action title]; otherwise, <c>false</c>.
+        ///   defaulted True
+        /// </value>
+        public bool ShowActionTitle
+        {
+            get { return ViewState["ShowActionTitle"] as bool? ?? true; }
+            set { ViewState["ShowActionTitle"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this Attribute is marked as IsSystem=true
         /// </summary>
         /// <value>
@@ -1507,9 +1520,12 @@ namespace Rock.Web.UI.Controls
 
             writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
 
-            writer.RenderBeginTag( HtmlTextWriterTag.Legend );
-            _lAttributeActionTitle.RenderControl( writer );
-            writer.RenderEndTag();
+            if ( ShowActionTitle )
+            {
+                writer.RenderBeginTag( HtmlTextWriterTag.Legend );
+                _lAttributeActionTitle.RenderControl( writer );
+                writer.RenderEndTag();
+            }
 
             var existingKeyNames = new List<string>();
             ReservedKeyNames.ForEach( n => existingKeyNames.Add( n ) );
