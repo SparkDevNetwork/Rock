@@ -231,15 +231,24 @@ namespace ImageSafeInterop
         }
         public static bool OpenDevice()
         {
-
-            ImageSafeHelper.CurrentDeviceName = "ImageSafe.ImageSafe001";
-
-            var status = ImageSafeHelper.MTMICROpenDevice(ImageSafeHelper.CurrentDeviceName);
-            if (status == 0)
+            try
             {
-                return true;
+                ImageSafeHelper.CurrentDeviceName = "ImageSafe.ImageSafe001";
+
+                var status = ImageSafeHelper.MTMICROpenDevice( ImageSafeHelper.CurrentDeviceName );
+                if ( status == 0 )
+                {
+                    return true;
+                }
+                return false;
             }
-            return false;
+            catch 
+            {
+                // if we dont have a imagesafe installed dont throw an exception
+                //just return false
+                return false;  
+            }
+         
         }
 
         public static void CloseDevice()
