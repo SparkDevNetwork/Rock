@@ -91,6 +91,7 @@ namespace Rock.Apps.CheckScannerUtility
                     this.rangerScanner.TransportTrackIsClear += rangerScannerHostPage.rangerScanner_TransportTrackIsClear;
                 }
 
+                UnbindAllEvents();
                 BindDeviceToPage();
             }
             catch
