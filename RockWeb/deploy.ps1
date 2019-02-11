@@ -58,6 +58,22 @@ function Restore-RockPlugin([string] $PluginPackagePath) {
     Remove-Item $PackageTempLocation -Recurse -Force;
 }
 
+function Copy-DirectoryContentsRecursivelyWithSaneLinkHandling([string] $DirectoryToCopy, [string] $Destination) {
+    New-Item -ItemType Directory $Destination -Force | Out-Null;
+    foreach($Child in Get-ChildItem $DirectoryToCopy) {
+        if($Child.LinkType) {
+            $LinkTarget, $OtherTargets = $Child.Target;
+            New-Item -ItemType $Child.LinkType -Path $Destination -Name $Child.Name -Target $LinkTarget -Force | Out-Null;
+        }
+        elseif($Child.PSIsContainer) {
+            Copy-DirectoryContentsRecursivelyWithSaneLinkHandling (Join-Path $DirectoryToCopy $Child.Name) (Join-Path $Destination $Child.Name);
+        }
+        else {
+            Copy-Item (Join-Path $DirectoryToCopy $Child.Name) (Join-Path $Destination $Child.Name) -Force;
+        }
+    }
+}
+
 
 if(Test-Path "env:DEPLOY_DEBUG") {
     Write-Host "================= DEBUG ==================";
@@ -78,7 +94,7 @@ Write-Host "==========================================";
 
 Write-Host "Restoring server-specific files";
 $FileBackupLocation = Join-Path $TempLocation "SavedFiles";
-Copy-Item $FileBackupLocation\* $RootLocation -Recurse -Force;
+Copy-DirectoryContentsRecursivelyWithSaneLinkHandling $FileBackupLocation $RootLocation;
 
 
 # 2. Rewrite templated files

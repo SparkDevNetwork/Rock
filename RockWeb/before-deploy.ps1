@@ -39,6 +39,23 @@ function Backup-RockFile([string] $RockWebFile) {
     }
 }
 
+function Copy-DirectoryContentsRecursivelyWithSaneLinkHandling([string] $DirectoryToCopy, [string] $Destination) {
+    New-Item -ItemType Directory $Destination -Force | Out-Null;
+    foreach($Child in Get-ChildItem $DirectoryToCopy) {
+        if($Child.LinkType) {
+            $LinkTarget, $OtherTargets = $Child.Target;
+            New-Item -ItemType $Child.LinkType -Path $Destination -Name $Child.Name -Target $LinkTarget -Force | Out-Null;
+        }
+        elseif($Child.PSIsContainer) {
+            Copy-DirectoryContentsRecursivelyWithSaneLinkHandling (Join-Path $DirectoryToCopy $Child.Name) (Join-Path $Destination $Child.Name);
+        }
+        else {
+            Copy-Item (Join-Path $DirectoryToCopy $Child.Name) (Join-Path $Destination $Child.Name) -Force;
+        }
+    }
+}
+
+
 if(Test-Path "env:DEPLOY_DEBUG") {
     Write-Host "================= DEBUG ==================";
     Write-Host "Working Directories: $(Get-Location)";
@@ -59,12 +76,11 @@ $InProgressBackupLocation = "$($RootLocation.TrimEnd("/\\")).backup.deploy-in-pr
 if (Test-Path $InProgressBackupLocation) {
     Write-Host "Detected a deployment backup, assuming old deployment failed and restoring...";
     Remove-Item -Recurse -Force $RootLocation\*;
-    Copy-Item $InProgressBackupLocation\* $RootLocation -Recurse -Force;
+    Copy-DirectoryContentsRecursivelyWithSaneLinkHandling $InProgressBackupLocation $RootLocation;
 }
 else {
     Write-Host "Creating a deployment backup (If something fails please run the deployment again)...";
-    New-Item -ItemType Directory $InProgressBackupLocation -Force | Out-Null;
-    Copy-Item $RootLocation\* $InProgressBackupLocation -Recurse -Force;
+    Copy-DirectoryContentsRecursivelyWithSaneLinkHandling $RootLocation $InProgressBackupLocation;
 }
 
 
