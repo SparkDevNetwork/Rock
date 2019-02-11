@@ -3,13 +3,31 @@
 # This script is run by AppVeyor's deploy agent before the deploy
 # --------------------------------------------------
 
+if([string]::IsNullOrWhiteSpace($env:APPLICATION_PATH)) {
+    Write-Error "APPLICATION_PATH is not set, aborting!";
+    exit;
+}
+if([string]::IsNullOrWhiteSpace($env:APPVEYOR_JOB_ID)) {
+    Write-Error "APPVEYOR_JOB_ID is not set, aborting!"
+    exit;
+}
+
 $RootLocation = $env:APPLICATION_PATH;
 $TempLocation = Join-Path $env:Temp $env:APPVEYOR_JOB_ID;
 New-Item $TempLocation -ItemType Directory
 
+function Join-Paths {
+    $path, $parts= $args;
+    foreach ($part in $parts) {
+        $path = Join-Path $path $part;
+    }
+    return $path;
+}
+
+$FileBackupLocation = Join-Path $TempLocation "SavedFiles";
 function Backup-RockFile([string] $RockWebFile) {
     $RockLocation = Join-Path $RootLocation $RockWebFile;
-    $BackupLocation = Join-Path $TempLocation $RockWebFile;
+    $BackupLocation = Join-Path $FileBackupLocation $RockWebFile;
     if (Test-Path $RockLocation) {
         Write-Host "Backing up '$RockWebFile'";
         $BackupParentLocation = Split-Path $BackupLocation;
@@ -35,8 +53,21 @@ Write-Host "Build Number: $env:APPVEYOR_BUILD_VERSION";
 Write-Host "Deploy Location: $RootLocation";
 Write-Host "==========================================";
 
+# 1. Save or restore a backup of the website folder
 
-# 1. Put the app into maintenence mode
+$InProgressBackupFile = "$($RootLocation.TrimEnd("/\\")).backup.deploy-in-progress.zip";
+if (Test-Path $InProgressBackupFile) {
+    Write-Host "Detected a deployment backup file, assuming old deployment failed and restoring...";
+    Remove-Item -Recurse -Force $RootLocation\*;
+    Expand-Archive $InProgressBackupFile $RootLocation -Force
+}
+else {
+    Write-Host "Creating a deployment backup file (If something fails please run the deployment again)...";
+    Compress-Archive -Path $RootLocation\* -DestinationPath $NewBackupFile;
+}
+
+
+# 2. Put the app into maintenence mode
 
 # Apparently just adding an app_offline.htm file isn't enough
 # See: https://web.archive.org/web/20160704222144/http://blog.kurtschindler.net/more-app_offline-htm-woes/
@@ -63,7 +94,7 @@ Set-Content (Join-Path $RootLocation "app_offline-template.htm") @'
 '@
 
 
-# 2. Save server-specifig files like static files, logs, plugin packages, and caches
+# 3. Save server-specifig files like static files, logs, plugin packages, and caches
 
 Write-Host "Saving server-specific files";
 
@@ -75,40 +106,24 @@ Backup-RockFile "App_Data\InstalledStorePackages.json";
 Backup-RockFile "Content";
 Backup-RockFile "wp-content";
 
-# We'll also save the generated theme css since it takes forever to regenerate itself on startup.
-Backup-RockFile "Themes\CheckinAdventureKids\Styles\checkin-theme.css"
-Backup-RockFile "Themes\CheckinAtTheMovies\Styles\checkin-theme.css"
-Backup-RockFile "Themes\CheckinBlueCrystal\Styles\checkin-theme.css"
-Backup-RockFile "Themes\CheckinNewPointeOrange\Styles\checkin-theme.css"
-Backup-RockFile "Themes\CheckinPark\Styles\checkin-theme.css"
-Backup-RockFile "Themes\CheckinPointePark\Styles\checkin-theme.css"
-Backup-RockFile "Themes\DashboardStark\Styles\bootstrap.css"
-Backup-RockFile "Themes\DashboardStark\Styles\theme.css"
-Backup-RockFile "Themes\Flat\Styles\bootstrap.css"
-Backup-RockFile "Themes\Flat\Styles\theme.css"
-Backup-RockFile "Themes\KioskStark\Styles\bootstrap.css"
-Backup-RockFile "Themes\KioskStark\Styles\theme.css"
-Backup-RockFile "Themes\LandingPage\Styles\bootstrap.css"
-Backup-RockFile "Themes\LandingPage\Styles\theme.css"
-Backup-RockFile "Themes\NewFamilyCheckin\Styles\bootstrap.css"
-Backup-RockFile "Themes\NewFamilyCheckin\Styles\theme.css"
-Backup-RockFile "Themes\NewPointeInstitute\Styles\bootstrap.css"
-Backup-RockFile "Themes\NewPointeInstitute\Styles\theme.css"
-Backup-RockFile "Themes\NewpointeLive\Styles\bootstrap.css"
-Backup-RockFile "Themes\NewpointeLive\Styles\theme.css"
-Backup-RockFile "Themes\NewpointeMain\Styles\bootstrap.css"
-Backup-RockFile "Themes\NewpointeMain\Styles\theme.css"
-Backup-RockFile "Themes\PointeBlank\Styles\bootstrap.css"
-Backup-RockFile "Themes\PointeBlank\Styles\theme.css"
-Backup-RockFile "Themes\Rock\Styles\bootstrap.css"
-Backup-RockFile "Themes\Rock\Styles\email-editor.css"
-Backup-RockFile "Themes\Rock\Styles\theme.css"
-Backup-RockFile "Themes\RockOriginal\Styles\bootstrap.css"
-Backup-RockFile "Themes\RockOriginal\Styles\email-editor.css"
-Backup-RockFile "Themes\RockOriginal\Styles\font-awesome.css"
-Backup-RockFile "Themes\RockOriginal\Styles\theme.css"
-Backup-RockFile "Themes\Stark\Styles\bootstrap.css"
-Backup-RockFile "Themes\Stark\Styles\theme.css"
+# Save theme customizations and generated theme css
+$FilesToSave = "checkin-theme.css","bootstrap.css","theme.css","_css-overrides.less","_variable-overrides.less";
+
+$ThemesLocation = Join-Path $RootLocation "Themes";
+foreach ($Theme in Get-ChildItem $ThemesLocation) {
+
+    if (-Not (Test-Path Join-Paths $Theme "Styles" ".nocompile")) {
+
+        foreach($File in $FilesToSave) {
+            $LocalPath = Join-Paths "Themes" $Theme.Name "Styles" $File;
+            if (Test-Path Join-Path $RootLocation $LocalPath) {
+                Backup-RockFile $LocalPath;
+            }
+        }
+
+    }
+
+}
 
 # Done!
 

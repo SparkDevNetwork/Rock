@@ -3,6 +3,15 @@
 # This script is run by AppVeyor's deploy agent after the deploy
 # --------------------------------------------------
 
+if([string]::IsNullOrWhiteSpace($env:APPLICATION_PATH)) {
+    Write-Error "APPLICATION_PATH is not set, aborting!";
+    exit;
+}
+if([string]::IsNullOrWhiteSpace($env:APPVEYOR_JOB_ID)) {
+    Write-Error "APPVEYOR_JOB_ID is not set, aborting!"
+    exit;
+}
+
 $RootLocation = $env:APPLICATION_PATH;
 $TempLocation = Join-Path $env:Temp $env:APPVEYOR_JOB_ID;
 
@@ -80,53 +89,15 @@ Write-Host "Build Number: $env:APPVEYOR_BUILD_VERSION";
 Write-Host "Deploy Location: $RootLocation";
 Write-Host "==========================================";
 
+
+# 1. Restore server-specific files like static files, logs, plugin packages, and caches
+
 Write-Host "Restoring server-specific files";
+$FileBackupLocation = Join-Path $TempLocation "SavedFiles";
+Copy-Item $FileBackupLocation\* $RootLocation -Recurse -Force
 
 
-
-# Restore server-specifig files like static files, logs, plugin packages, and caches
-Restore-RockFile "App_Data\Files";
-Restore-RockFile "App_Data\Logs";
-Restore-RockFile "App_Data\packages";
-Restore-RockFile "App_Data\RockShop";
-Restore-RockFile "App_Data\InstalledStorePackages.json";
-Restore-RockFile "Content";
-Restore-RockFile "wp-content";
-
-# We'll also restore the generated theme css since it takes forever to regenerate itself on startup.
-Restore-RockFile "Themes\CheckinAdventureKids\Styles\checkin-theme.css"
-Restore-RockFile "Themes\CheckinAtTheMovies\Styles\checkin-theme.css"
-Restore-RockFile "Themes\CheckinBlueCrystal\Styles\checkin-theme.css"
-Restore-RockFile "Themes\CheckinNewPointeOrange\Styles\checkin-theme.css"
-Restore-RockFile "Themes\CheckinPark\Styles\checkin-theme.css"
-Restore-RockFile "Themes\CheckinPointePark\Styles\checkin-theme.css"
-Restore-RockFile "Themes\DashboardStark\Styles\bootstrap.css"
-Restore-RockFile "Themes\DashboardStark\Styles\theme.css"
-Restore-RockFile "Themes\Flat\Styles\bootstrap.css"
-Restore-RockFile "Themes\Flat\Styles\theme.css"
-Restore-RockFile "Themes\KioskStark\Styles\bootstrap.css"
-Restore-RockFile "Themes\KioskStark\Styles\theme.css"
-Restore-RockFile "Themes\LandingPage\Styles\bootstrap.css"
-Restore-RockFile "Themes\LandingPage\Styles\theme.css"
-Restore-RockFile "Themes\NewFamilyCheckin\Styles\bootstrap.css"
-Restore-RockFile "Themes\NewFamilyCheckin\Styles\theme.css"
-Restore-RockFile "Themes\NewPointeInstitute\Styles\bootstrap.css"
-Restore-RockFile "Themes\NewPointeInstitute\Styles\theme.css"
-Restore-RockFile "Themes\NewpointeLive\Styles\bootstrap.css"
-Restore-RockFile "Themes\NewpointeLive\Styles\theme.css"
-Restore-RockFile "Themes\NewpointeMain\Styles\bootstrap.css"
-Restore-RockFile "Themes\NewpointeMain\Styles\theme.css"
-Restore-RockFile "Themes\PointeBlank\Styles\bootstrap.css"
-Restore-RockFile "Themes\PointeBlank\Styles\theme.css"
-Restore-RockFile "Themes\Rock\Styles\bootstrap.css"
-Restore-RockFile "Themes\Rock\Styles\email-editor.css"
-Restore-RockFile "Themes\Rock\Styles\theme.css"
-Restore-RockFile "Themes\RockOriginal\Styles\bootstrap.css"
-Restore-RockFile "Themes\RockOriginal\Styles\email-editor.css"
-Restore-RockFile "Themes\RockOriginal\Styles\font-awesome.css"
-Restore-RockFile "Themes\RockOriginal\Styles\theme.css"
-Restore-RockFile "Themes\Stark\Styles\bootstrap.css"
-Restore-RockFile "Themes\Stark\Styles\theme.css"
+# 2. Rewrite templated files
 
 Write-Host "Rewriting Templated Files";
 
@@ -167,6 +138,9 @@ foreach($TemplateFile in $TemplateFiles) {
     Set-Content $TemplateTempLocation $TemplateContents;
 }
 
+
+# 3. Reinstall plugins
+
 Write-Host "Reinstalling Plugin Files";
 
 $InstalledPluginsPath = Join-Paths $RootLocation "App_Data" "RockShop";
@@ -188,11 +162,26 @@ if(Test-Path $InstalledPluginsPath) {
     
 }
 
+
+# 4. Clean up temp folder
+
 Remove-Item $TempLocation -Recurse -Force;
+
+
+# 5. Take the app out of maintenence mode
 
 Write-Host "Taking application out of maintenence mode";
 
 Move-Item -Path (Join-Path $RootLocation "app_offline.htm") -Destination (Join-Path $RootLocation "app_offline-template.htm") -ErrorAction SilentlyContinue;
 Remove-Item -Path (Join-Path $RootLocation "app_offline.htm") -ErrorAction SilentlyContinue;
+
+
+# 6. Move the backup file so we know we completed successfully
+
+$InProgressBackupFile = "$($RootLocation.TrimEnd("/\\")).backup.deploy-in-progress.zip";
+$SuccessBackupFile = "$($RootLocation.TrimEnd("/\\")).backup.zip";
+Remove-Item $SuccessBackupFile;
+Move-Item $InProgressBackupFile $SuccessBackupFile;
+
 
 Write-Host "Deployment script finished successfully";
