@@ -327,32 +327,33 @@ namespace Rock.Web
                  *
                  *
                  * How are we prioritizing them?
-                 * - page id
                  * - If site id or domain (strict matching mode)
+                 *   - domain + page id
                  *   - domain + route
                  *   - domain + shortlink
+                 *   - site id + page id
                  *   - site id + route
                  *   - site id + shortlink
+                 *   - any site + page id + dialog layout
+                 *   - any site + route + dialog layout
                  * - Else (loose matching mode)
+                 *   - any site + page id
                  *   - last site + route
                  *   - last site + shortlink
-                 *   - default site + route
                  *   - default site + shortlink
+                 *   - default site + route
                  *   - any site + route
                  *   - any site + shortlink
                  *
-                 *   Note: page id can't be restricted by matched site because that breaks block properties dialogs
+                 * Note: page id can't be restricted by matched site because that breaks Block Properties dialogs
+                 * Note 2: restricting routes breaks the Child Pages dialog, grrr
+                 * Let's try prioritizing layout type == Dialog
+                 *
                  *
                  */
 
-
-
                 // Get page id
                 var defaultRoutePage = GetPageForDefaultRoute( requestContext );
-
-
-                // page id
-                if ( defaultRoutePage != null ) return GetHandlerForPage( requestContext, defaultRoutePage );
 
 
                 // Get possible routes
@@ -366,6 +367,9 @@ namespace Rock.Web
                 var domainSite = GetSiteByDomainName( requestContext );
                 if ( domainSite != null )
                 {
+
+                    // domain + page id
+                    if ( defaultRoutePage != null && domainSite.Id == defaultRoutePage.SiteId) return GetHandlerForPage( requestContext, defaultRoutePage );
 
                     // domain + route
                     var domainSiteRoutePage = routePages.Where( p => domainSite.Id == p.Page.SiteId ).FirstOrDefault();
@@ -383,6 +387,9 @@ namespace Rock.Web
                 if ( querySite != null )
                 {
 
+                    // site id + page id
+                    if ( defaultRoutePage != null && querySite.Id == defaultRoutePage.SiteId ) return GetHandlerForPage( requestContext, defaultRoutePage );
+
                     // site id + route
                     var querySiteRoutePage = routePages.Where( p => querySite.Id == p.Page.SiteId ).FirstOrDefault();
                     if ( querySiteRoutePage != null ) return GetHandlerForPage( requestContext, querySiteRoutePage.Page, querySiteRoutePage.RouteId );
@@ -393,9 +400,23 @@ namespace Rock.Web
 
                 }
 
+
+                // Match pages and routes with dialog layouts so dialogs still work properly
+
+                // any site + page id + dialog layout
+                if ( defaultRoutePage != null && defaultRoutePage.Layout.Name == "Dialog" ) return GetHandlerForPage( requestContext, defaultRoutePage );
+
+                // any site + route + dialog layout
+                var anySiteRouteDialogPage = routePages.Where( p => p.Page.Layout.Name == "Dialog" ).FirstOrDefault();
+                if ( anySiteRouteDialogPage != null ) return GetHandlerForPage( requestContext, anySiteRouteDialogPage.Page, anySiteRouteDialogPage.RouteId );
+
+
                 // Strict matching for site id or domain matches (We don't want routes from one site to be accessible from all others - It makes a complete mess of SEO)
                 if ( domainSite != null || querySite != null ) return GetHandlerFor404( requestContext, domainSite ?? querySite );
 
+
+                // any site + page id
+                if ( defaultRoutePage != null ) return GetHandlerForPage( requestContext, defaultRoutePage );
 
                 // last site
                 var lastSite = GetSiteFromLastSite( requestContext );
