@@ -126,7 +126,9 @@ namespace Rock.Communication.SmsActions
         /// <returns><c>true</c> if the message should be processed.</returns>
         public virtual bool ShouldProcessMessage( SmsActionCache action, SmsMessage message )
         {
-            var filter = ValueFilterFieldType.GetFilterExpression( null, GetAttributeValue( action, "PhoneNumbers" ) );
+            var attribute = action.Attributes.ContainsKey( "PhoneNumbers" ) ? action.Attributes["PhoneNumbers"] : null;
+            var phoneNumbers = GetAttributeValue( action, "PhoneNumbers" );
+            var filter = ValueFilterFieldType.GetFilterExpression( attribute?.QualifierValues, phoneNumbers );
 
             return filter != null ? filter.Evaluate( message, "ToNumber" ) : true;
         }

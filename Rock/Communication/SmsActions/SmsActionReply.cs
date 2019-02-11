@@ -88,7 +88,9 @@ namespace Rock.Communication.SmsActions
             //
             // Get the filter expression for the message body.
             //
-            var filter = ValueFilterFieldType.GetFilterExpression( null, GetAttributeValue( action, "Message" ) );
+            var attribute = action.Attributes.ContainsKey( "Message" ) ? action.Attributes["Message"] : null;
+            var msg = GetAttributeValue( action, "Message" );
+            var filter = ValueFilterFieldType.GetFilterExpression( attribute?.QualifierValues, msg );
 
             //
             // Evaluate the message against the filter and return the match state.
