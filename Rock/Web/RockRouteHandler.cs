@@ -46,7 +46,7 @@ namespace Rock.Web
             int? routeData_PageId = requestContext.RouteData.Values["PageId"]?.ToString()?.AsIntegerOrNull();
             if ( routeData_PageId.HasValue )
             {
-                return PageCache.Get( routeData_PageId.Value ); ;
+                return PageCache.Get( routeData_PageId.Value );
             }
             else
             {
@@ -210,6 +210,7 @@ namespace Rock.Web
 
         private System.Web.IHttpHandler GetHandlerFor404( RequestContext requestContext, SiteCache site )
         {
+            // If we couldn't match a route because it's the root, use the home page
             if ( site != null && requestContext.HttpContext.Request.Path == "/" ) return GetHandlerForPage( requestContext, site.DefaultPage, site.DefaultPageRouteId ?? 0 );
 
             if ( site != null && site.PageNotFoundPageId.HasValue )
@@ -326,101 +327,116 @@ namespace Rock.Web
                  *
                  *
                  * How are we prioritizing them?
+                 * - page id
                  * - If site id or domain (strict matching mode)
-                 *   - site id + page id
-                 *   - site id + route
-                 *   - site id + shortlink
-                 *   - domain + page id
                  *   - domain + route
                  *   - domain + shortlink
+                 *   - site id + route
+                 *   - site id + shortlink
                  * - Else (loose matching mode)
-                 *   - page id
                  *   - last site + route
                  *   - last site + shortlink
                  *   - default site + route
                  *   - default site + shortlink
-                 *   - route
-                 *   - shortlink
+                 *   - any site + route
+                 *   - any site + shortlink
+                 *
+                 *   Note: page id can't be restricted by matched site because that breaks block properties dialogs
                  *
                  */
 
 
 
+                // Get page id
                 var defaultRoutePage = GetPageForDefaultRoute( requestContext );
+
+
+                // page id
+                if ( defaultRoutePage != null ) return GetHandlerForPage( requestContext, defaultRoutePage );
+
+
+                // Get possible routes
                 var routePages = GetPagesForRoute( requestContext );
+
+                // Get possible shortlinks
                 var routeShortLinks = GetShortLinksForRoute( requestContext );
 
 
+                // domain
                 var domainSite = GetSiteByDomainName( requestContext );
                 if ( domainSite != null )
                 {
 
-                    if ( defaultRoutePage != null && domainSite.Id == defaultRoutePage.SiteId ) return GetHandlerForPage( requestContext, defaultRoutePage );
-
+                    // domain + route
                     var domainSiteRoutePage = routePages.Where( p => domainSite.Id == p.Page.SiteId ).FirstOrDefault();
                     if ( domainSiteRoutePage != null ) return GetHandlerForPage( requestContext, domainSiteRoutePage.Page, domainSiteRoutePage.RouteId );
 
+                    // domain + shortlink
                     var domainSiteRouteShortLink = routeShortLinks.Where( l => domainSite.Id == l.SiteId ).FirstOrDefault();
                     if ( domainSiteRouteShortLink != null ) return GetHandlerForShortLink( requestContext, domainSiteRouteShortLink );
 
                 }
 
 
+                // site id
                 var querySite = GetSiteByQueryString( requestContext );
                 if ( querySite != null )
                 {
 
-                    if ( defaultRoutePage != null && querySite.Id == defaultRoutePage.SiteId ) return GetHandlerForPage( requestContext, defaultRoutePage );
-
+                    // site id + route
                     var querySiteRoutePage = routePages.Where( p => querySite.Id == p.Page.SiteId ).FirstOrDefault();
                     if ( querySiteRoutePage != null ) return GetHandlerForPage( requestContext, querySiteRoutePage.Page, querySiteRoutePage.RouteId );
 
+                    // site id + shortlink
                     var querySiteRouteShortLink = routeShortLinks.Where( l => querySite.Id == l.SiteId ).FirstOrDefault();
                     if ( querySiteRouteShortLink != null ) return GetHandlerForShortLink( requestContext, querySiteRouteShortLink );
 
                 }
 
-
+                // Strict matching for site id or domain matches (We don't want routes from one site to be accessible from all others - It makes a complete mess of SEO)
                 if ( domainSite != null || querySite != null ) return GetHandlerFor404( requestContext, domainSite ?? querySite );
 
 
-                if ( defaultRoutePage != null ) return GetHandlerForPage( requestContext, defaultRoutePage );
-
-
+                // last site
                 var lastSite = GetSiteFromLastSite( requestContext );
                 if ( lastSite != null )
                 {
 
+                    // last site + route
                     var lastSiteRoutePage = routePages.Where( p => lastSite.Id == p.Page.SiteId ).FirstOrDefault();
                     if ( lastSiteRoutePage != null ) return GetHandlerForPage( requestContext, lastSiteRoutePage.Page, lastSiteRoutePage.RouteId );
 
+                    // last site + shortlink
                     var lastSiteRouteShortLink = routeShortLinks.Where( l => lastSite.Id == l.SiteId ).FirstOrDefault();
                     if ( lastSiteRouteShortLink != null ) return GetHandlerForShortLink( requestContext, lastSiteRouteShortLink );
 
                 }
 
 
-
+                // default site
                 var defaultSite = GetDefaultSite();
                 if ( defaultSite != null )
                 {
 
+                    // default site + route
                     var defaultSiteRoutePage = routePages.Where( p => defaultSite.Id == p.Page.SiteId ).FirstOrDefault();
                     if ( defaultSiteRoutePage != null ) return GetHandlerForPage( requestContext, defaultSiteRoutePage.Page, defaultSiteRoutePage.RouteId );
 
+                    // default site + shortlink
                     var defaultSiteRouteShortLink = routeShortLinks.Where( l => defaultSite.Id == l.SiteId ).FirstOrDefault();
                     if ( defaultSiteRouteShortLink != null ) return GetHandlerForShortLink( requestContext, defaultSiteRouteShortLink );
 
                 }
 
-
+                // any site + route
                 var firstRoutePage = routePages.FirstOrDefault();
                 if ( firstRoutePage != null ) return GetHandlerForPage( requestContext, firstRoutePage.Page, firstRoutePage.RouteId );
 
+                // any site + shortlink
                 var firstRouteShortLink = routeShortLinks.FirstOrDefault();
                 if ( firstRouteShortLink != null ) return GetHandlerForShortLink( requestContext, firstRouteShortLink );
 
-
+                // If we got this far without any matches, do a 404
                 return GetHandlerFor404( requestContext, lastSite ?? defaultSite );
                 
             }
