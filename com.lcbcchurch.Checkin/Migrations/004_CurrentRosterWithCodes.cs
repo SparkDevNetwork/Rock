@@ -56,12 +56,35 @@ namespace com.lcbcchurch.Checkin.Migrations
 {% assign areaGuid = PageParameter['Area'] %}
 {% sql %} 
 Declare @ParentGroupTypeId int = (Select Top 1 Id From GroupType Where Guid = '{{areaGuid}}');
+
+{% if campusId != '' %}
+Declare @CampusId int = {{campusId}}
+Declare @CampusLocationId int = (Select LocationId From Campus Where Id = @CampusId)
+Declare @LocationIdTable table(
+LocationId int
+)
+Insert into @LocationIdTable (LocationId) Values (@CampusLocationId);
+
+   WITH CTE AS (
+                    SELECT Id FROM [Location] WHERE [ParentLocationId]=@CampusLocationId
+                    UNION ALL
+                    SELECT [a].Id FROM [Location] [a]
+                    INNER JOIN CTE pcte ON pcte.Id = [a].[ParentLocationId]
+                )
+				Insert Into @LocationIdTable (LocationId) 
+                SELECT L.Id FROM CTE
+                INNER JOIN [Location] L ON L.[Id] = CTE.[Id]
+
+{% endif %}
+
 SELECT 	AC.Code AS Code ,
 		P.NickName + ' ' + P.LastName AS Name,
 		AV.Value AS Pager,
+        L.Name AS LocationName,
 		G.Name AS GroupName
 FROM [Attendance] A 
 INNER JOIN [AttendanceOccurrence] AO ON A.OccurrenceId = AO.Id 
+INNER JOIN [Location] L ON AO.LocationId = L.Id
 INNER JOIN [Group] G ON AO.GroupId = G.Id
 INNER JOIN [GroupType] GT ON GT.Id = G.GroupTypeId
 INNER JOIN [PersonAlias] PA ON A.PersonAliasId = PA.Id 
@@ -72,7 +95,7 @@ LEFT OUTER JOIN [Attribute] AT ON AT.Guid = '791A4DC9-BB89-41E6-95E9-D377ED4C2F0
 LEFT OUTER JOIN [AttributeValue] AV ON AV.AttributeId = AT.Id AND AV.EntityId = A.Id
 WHERE A.DidAttend = 1 AND DATEDIFF(day, AO.OccurrenceDate, GetDate()) = 0
 AND GetDate() < ISNULL(A.EndDateTime,GetDate()+1)
-{% if campusId != '' %} AND G.CampusId = {{campusId}} {% endif %}
+{% if campusId != '' %} AND AO.LocationId in (Select * From @LocationIdTable) {% endif %}
 {% if groupTypeId %} AND G.GroupTypeId = {{groupTypeId}} {% endif %}
 {% if groupId %} AND G.Id = {{groupId}} {% endif %}
 {% if locationId %} AND AO.LocationId = {{locationId}} {% endif %}
@@ -90,13 +113,13 @@ table tr td, table tr th { page-break-inside: avoid; border-bottom: .5px solid b
     {% for item in results %} 
     	{% if newGroup != item.GroupName %}
 			{% if newGroup != '' %} 
-				</tbody></table> 
-			{% endif %} 
+				</tbody></table> <div style=""page -break-after:always;""></div>
+            {% endif %} 
 			<table class='table table-striped'> 
 				<thead> 
 					<tr class='tr-header'>
 						<th colspan='8' style='padding-left:15px'> 
-							<h3 style='color:white;'>{{item.GroupName}}</h3> 
+							<h3 style='color:white;'>{{item.LocationName}}</h3> 
 						</th> 
 					</tr>
 					<tr class='tr-header'> 
@@ -117,9 +140,7 @@ table tr td, table tr th { page-break-inside: avoid; border-bottom: .5px solid b
 		</tr> 
 	{% endfor %} 
 	</tbody> 
-</table> 
-<script> $('document').ready(function(){ window.print(); }); </script>
-", "21263d20-7d72-4381-b490-476728124849" );
+</table>", "21263d20-7d72-4381-b490-476728124849" );
 
 
 
@@ -134,7 +155,10 @@ table tr td, table tr th { page-break-inside: avoid; border-bottom: .5px solid b
                     {% endfor %}
                     {% endpage %}
                     {% assign campusId = Context.Campus.Id %}
-                    {% assign checkinArea = PageParameter['Area'] %}
+                    {% assign checkinArea = 'Global' | PageParameter:'Area' %}
+                    {% if checkinArea == '' or !checkinArea or checkinArea == empty %}
+                        {% assign checkinArea = 'dad0e772-6736-4635-92a0-931f9e94e082' %}
+                    {% endif %}  
                     <a class=""btn btn-primary"" href=""/page/{{pageId}}/?CampusId={{campusId}}&Area={{checkinArea}}"" target=""_blank"">All Groups Rosters</a>
             ", "BFAFA6B9-DC18-4E9C-A66D-90D6036F8144" );
 
