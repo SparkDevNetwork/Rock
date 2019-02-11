@@ -50,10 +50,15 @@ namespace Rock.Apps.CheckScannerUtility
             //rockConfig.WindowCurrentHeight = window.ActualHeight;
             //rockConfig.WindowCurrentWidth = window.ActualWidth;
             //rockConfig.Save();
-
-            ImageSafeHelper.CloseDevice();
-            
-          
+            try
+            {
+                ImageSafeHelper.CloseDevice();
+            }
+            catch 
+            {
+                // if image safe is not loaded then just ignore driver exception.
+   
+            }    
             BatchPage batchPage = null;
             if ( mainWindow.Content is BatchPage )
             {
