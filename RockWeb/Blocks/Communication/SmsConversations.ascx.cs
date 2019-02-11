@@ -561,6 +561,7 @@ namespace RockWeb.Blocks.Communication
                 case "MDNEWMESSAGE":
                     ppRecipient.SetValue( null );
                     tbSMSTextMessage.Text = string.Empty;
+                    nbNoSms.Visible = false;
 
                     mdNewMessage.Hide();
                     break;
