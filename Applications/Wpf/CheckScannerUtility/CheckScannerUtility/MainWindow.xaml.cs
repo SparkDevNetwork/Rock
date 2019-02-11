@@ -58,7 +58,8 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 // if image safe is not loaded then just ignore driver exception.
    
-            }    
+            }
+
             BatchPage batchPage = null;
             if ( mainWindow.Content is BatchPage )
             {
