@@ -15,22 +15,6 @@ if([string]::IsNullOrWhiteSpace($env:APPVEYOR_JOB_ID)) {
 $RootLocation = $env:APPLICATION_PATH;
 $TempLocation = Join-Path $env:Temp $env:APPVEYOR_JOB_ID;
 
-
-function Restore-RockFile([string] $RockWebFile) {
-    $RockLocation = Join-Path $RootLocation $RockWebFile;
-    $BackupLocation = Join-Path $TempLocation $RockWebFile;
-    if (Test-Path $BackupLocation) {
-        Write-Host "Restoring '$RockWebFile'";
-        if(Test-Path $RockLocation) {
-            Remove-Item $RockLocation -Recurse
-        }
-        Move-Item $BackupLocation $RockLocation;
-    }
-    else {
-        Write-Warning "Could not restore '$RockWebFile': Location does not exist.";
-    }
-}
-
 function Join-Paths {
     $path, $parts= $args;
     foreach ($part in $parts) {
@@ -94,7 +78,7 @@ Write-Host "==========================================";
 
 Write-Host "Restoring server-specific files";
 $FileBackupLocation = Join-Path $TempLocation "SavedFiles";
-Copy-Item $FileBackupLocation\* $RootLocation -Recurse -Force
+Copy-Item $FileBackupLocation\* $RootLocation -Recurse -Force;
 
 
 # 2. Rewrite templated files
@@ -176,12 +160,12 @@ Move-Item -Path (Join-Path $RootLocation "app_offline.htm") -Destination (Join-P
 Remove-Item -Path (Join-Path $RootLocation "app_offline.htm") -ErrorAction SilentlyContinue;
 
 
-# 6. Move the backup file so we know we completed successfully
+# 6. Move the backup so we know we completed successfully
 
-$InProgressBackupFile = "$($RootLocation.TrimEnd("/\\")).backup.deploy-in-progress.zip";
-$SuccessBackupFile = "$($RootLocation.TrimEnd("/\\")).backup.zip";
-Remove-Item $SuccessBackupFile -Force | Out-Null;
-Move-Item $InProgressBackupFile $SuccessBackupFile -Force;
+$InProgressBackupLocation = "$($RootLocation.TrimEnd("/\\")).backup.deploy-in-progress";
+$SuccessBackupLocation = "$($RootLocation.TrimEnd("/\\")).backup";
+Remove-Item $SuccessBackupLocation -Recurse -Force | Out-Null;
+Move-Item $InProgressBackupLocation $SuccessBackupLocation -Force;
 
 
 Write-Host "Deployment script finished successfully";

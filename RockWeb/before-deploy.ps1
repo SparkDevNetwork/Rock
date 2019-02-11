@@ -8,13 +8,13 @@ if([string]::IsNullOrWhiteSpace($env:APPLICATION_PATH)) {
     exit;
 }
 if([string]::IsNullOrWhiteSpace($env:APPVEYOR_JOB_ID)) {
-    Write-Error "APPVEYOR_JOB_ID is not set, aborting!"
+    Write-Error "APPVEYOR_JOB_ID is not set, aborting!";
     exit;
 }
 
 $RootLocation = $env:APPLICATION_PATH;
 $TempLocation = Join-Path $env:Temp $env:APPVEYOR_JOB_ID;
-New-Item $TempLocation -ItemType Directory
+New-Item $TempLocation -ItemType Directory | Out-Null;
 
 function Join-Paths {
     $path, $parts= $args;
@@ -55,15 +55,16 @@ Write-Host "==========================================";
 
 # 1. Save or restore a backup of the website folder
 
-$InProgressBackupFile = "$($RootLocation.TrimEnd("/\\")).backup.deploy-in-progress.zip";
-if (Test-Path $InProgressBackupFile) {
-    Write-Host "Detected a deployment backup file, assuming old deployment failed and restoring...";
+$InProgressBackupLocation = "$($RootLocation.TrimEnd("/\\")).backup.deploy-in-progress";
+if (Test-Path $InProgressBackupLocation) {
+    Write-Host "Detected a deployment backup, assuming old deployment failed and restoring...";
     Remove-Item -Recurse -Force $RootLocation\*;
-    Expand-Archive $InProgressBackupFile $RootLocation -Force
+    Copy-Item $InProgressBackupLocation\* $RootLocation -Recurse -Force;
 }
 else {
-    Write-Host "Creating a deployment backup file (If something fails please run the deployment again)...";
-    Compress-Archive -Path $RootLocation\* -DestinationPath $InProgressBackupFile;
+    Write-Host "Creating a deployment backup (If something fails please run the deployment again)...";
+    New-Item -ItemType Directory $InProgressBackupLocation -Force | Out-Null;
+    Copy-Item $RootLocation\* $InProgressBackupLocation -Recurse -Force;
 }
 
 
