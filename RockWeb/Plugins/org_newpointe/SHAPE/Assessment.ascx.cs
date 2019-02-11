@@ -191,7 +191,7 @@ namespace RockWeb.Plugins.org_newpointe.SHAPE
                     }
                 }
 
-                var sortedGifts = spiritualGiftsTally.OrderBy( g => g.Value ).Select( g => g.Key ).ToArray();
+                var sortedGifts = spiritualGiftsTally.OrderBy( g => g.Value ).Reverse().Select( g => g.Key ).ToArray();
 
 
                 var abilitiesTally = new Dictionary<string, int>();
@@ -231,7 +231,7 @@ namespace RockWeb.Plugins.org_newpointe.SHAPE
                     }
                 }
 
-                var sortedAbilities = abilitiesTally.OrderBy( g => g.Value ).Select( g => g.Key ).ToArray();
+                var sortedAbilities = abilitiesTally.OrderBy( g => g.Value ).Reverse().Select( g => g.Key ).ToArray();
 
 
                 var heartCategories = DefinedTypeCache.Get( GetAttributeValue( ATTRIBUTE_KEY__SHAPE_HEART_CATEGORIES ).AsGuid() );
