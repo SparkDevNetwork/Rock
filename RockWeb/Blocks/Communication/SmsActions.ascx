@@ -159,6 +159,12 @@
 
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.SmsAction" PropertyName="Name" />
 
+                            <Rock:AccordionPanel ID="apnlFilters" runat="server" Title="Filters" TitleIcon="fa fa-filter">
+                                <Body>
+                                    <Rock:AttributeValuesContainer ID="avcFilters" runat="server" ShowCategoryLabel="false" />
+                                </Body>
+                            </Rock:AccordionPanel>
+
                             <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
 
                             <div class="actions">
