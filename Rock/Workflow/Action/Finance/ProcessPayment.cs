@@ -107,7 +107,8 @@ namespace Rock.Workflow.Action
                 AutomatedPaymentDetails = new List<AutomatedPaymentArgs.AutomatedPaymentDetailArgs> { detailArgs }
             };
 
-            var automatedPaymentProcessor = new AutomatedPaymentProcessor( null, automatedPaymentArgs, rockContext, false, false );
+            var ignoreRepeatProtection = GetAttributeValue( action, "IgnoreRepeatChargeProtection" ).AsBoolean();
+            var automatedPaymentProcessor = new AutomatedPaymentProcessor( null, automatedPaymentArgs, rockContext, ignoreRepeatProtection, false );
             var transaction = automatedPaymentProcessor.ProcessCharge( out var errorMessage );
 
             if ( !string.IsNullOrEmpty( errorMessage ) )
