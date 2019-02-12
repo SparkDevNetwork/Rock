@@ -150,7 +150,7 @@ namespace RockWeb
             }
 
             /* Scrub the folder path */
-            string scrubedFolderPath = ScrubFileName( untrustedFolderPath );
+            string scrubedFolderPath = ScrubFilePath( untrustedFolderPath );
 
             /* Determine the root upload folder */
 
