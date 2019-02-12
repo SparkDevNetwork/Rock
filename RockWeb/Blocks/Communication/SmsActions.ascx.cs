@@ -72,6 +72,8 @@ namespace RockWeb.Blocks.Communication
                     .Where( a => a.EntityTypeId == smsActionEntityTypeId )
                     .Where( a => a.Key == "Order" || a.Key == "Active" );
                 avcAttributes.ExcludedAttributes = attributes.ToArray();
+                avcAttributes.ExcludedCategoryNames = new string[] { "Filter" };
+                avcFilters.IncludedCategoryNames = new string[] { "Filter" };
 
                 tbFromNumber.Text = "+15551234567";
                 tbToNumber.Text = "+15559991234";
@@ -225,6 +227,7 @@ namespace RockWeb.Blocks.Communication
                 cbActive.Checked = action.IsActive;
                 cbContinue.Checked = action.ContinueAfterProcessing;
 
+                avcFilters.AddEditControls( action );
                 avcAttributes.AddEditControls( action );
 
                 pnlEditAction.Visible = true;
@@ -247,6 +250,7 @@ namespace RockWeb.Blocks.Communication
             action.IsActive = cbActive.Checked;
             action.ContinueAfterProcessing = cbContinue.Checked;
 
+            avcFilters.GetEditValues( action );
             avcAttributes.GetEditValues( action );
 
             rockContext.WrapTransaction( () =>

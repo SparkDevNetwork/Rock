@@ -31,7 +31,7 @@ namespace Rock.Communication.SmsActions
     [Description( "Sends a response to the message." )]
     [Export( typeof( SmsActionComponent ) )]
     [ExportMetadata( "ComponentName", "Reply" )]
-    [TextValueFilterField( "Message", "The message body content that will be filtered on.", false, order: 1 )]
+    [TextValueFilterField( "Message", "The message body content that will be filtered on.", false, order: 1, category: "Filter" )]
     [MemoField( "Response", "The response that will be sent. <span class='tip tip-lava'></span>", true, order: 2 )]
     public class SmsActionReply : SmsActionComponent
     {
