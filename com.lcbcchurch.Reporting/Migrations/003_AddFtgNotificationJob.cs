@@ -107,15 +107,19 @@ namespace com.lcbcchurch.Reporting.Migrations
             RockMigrationHelper.AddActionTypeAttributeValue( "17100485-D8B0-418B-B58E-189AE881E68A", "0C4C13B8-7076-4872-925A-F950886B5E16", @"e1d7119a-fa6a-497d-a5dc-e33f7b332db9" ); // First Time Guest Notification Workflow:Start:Email Link to Form:Send To Email Addresses|Attribute Value
             RockMigrationHelper.AddActionTypeAttributeValue( "17100485-D8B0-418B-B58E-189AE881E68A", "D43C2686-7E02-4A70-8D99-3BCD8ECAFB2F", @"" ); // First Time Guest Notification Workflow:Start:Email Link to Form:Send to Group Role
             RockMigrationHelper.AddActionTypeAttributeValue( "17100485-D8B0-418B-B58E-189AE881E68A", "5D9B13B6-CD96-4C7C-86FA-4512B9D28386", @"New First Time Guest Report" ); // First Time Guest Notification Workflow:Start:Email Link to Form:Subject
+
+            // Need to query for Assimiltation Report Page ID since it won't be the same across Rock instances
+            string assimilationReportPageId = SqlScalar( "SELECT TOP 1 P.Id FROM [Page] P WHERE P.[Guid] = '82A4A145-4E72-41DA-AA05-E4B31A3290FF'" ).ToString().Trim();
             RockMigrationHelper.AddActionTypeAttributeValue( "17100485-D8B0-418B-B58E-189AE881E68A", "4D245B9E-6B03-46E7-8482-A51FBA190E4D", @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture dateRange %}{{Workflow | Attribute:'StartDate'}},{{Workflow | Attribute:'EndDate'}}{% endcapture %}
 <p>{{ Person.FirstName }},</p>
 <p>A new First Time Guest report has been generated:<p>
 <p>
-    <a href='{{ 'Global' | Attribute:'InternalApplicationRoot' }}/page/540?DateRange={{ dateRange | EscapeDataString}}&Visitors=1&GroupRole=3%2c4&CampusIds=14'>First Time Guest Report</a>
+    <a href='{{ 'Global' | Attribute:'InternalApplicationRoot' }}/page/" + assimilationReportPageId + @"?DateRange={{ dateRange | EscapeDataString}}&Visitors=1&GroupRole=3%2c4&CampusIds=14'>First Time Guest Report</a>
 </p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}" ); // First Time Guest Notification Workflow:Start:Email Link to Form:Body
+
             RockMigrationHelper.AddActionTypeAttributeValue( "17100485-D8B0-418B-B58E-189AE881E68A", "C2C7DA55-3018-4645-B9EE-4BCD11855F2C", @"" ); // First Time Guest Notification Workflow:Start:Email Link to Form:Attachment One
             RockMigrationHelper.AddActionTypeAttributeValue( "17100485-D8B0-418B-B58E-189AE881E68A", "FFD9193A-451F-40E6-9776-74D5DCAC1450", @"" ); // First Time Guest Notification Workflow:Start:Email Link to Form:Attachment Two
             RockMigrationHelper.AddActionTypeAttributeValue( "17100485-D8B0-418B-B58E-189AE881E68A", "A059767A-5592-4926-948A-1065AF4E9748", @"" ); // First Time Guest Notification Workflow:Start:Email Link to Form:Attachment Three
