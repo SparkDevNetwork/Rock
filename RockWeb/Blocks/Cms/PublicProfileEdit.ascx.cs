@@ -371,8 +371,8 @@ namespace RockWeb.Blocks.Cms
             }
 
             // Contact Info
-            bool showPhoneNumbers = GetAttributeValue( "ShowPhoneNumbers" ).AsBoolean();
-            if ( showPhoneNumbers )
+            pnlPhoneNumbers.Visible = GetAttributeValue( "ShowPhoneNumbers" ).AsBoolean();
+            if (pnlPhoneNumbers.Visible)
             {
                 if ( person.PhoneNumbers != null )
                 {
@@ -585,73 +585,69 @@ namespace RockWeb.Blocks.Cms
                             primaryFamily.CampusId = cpCampus.SelectedCampusId;
                         }
                     }
+                    
+                    var phoneNumberTypeIds = new List<int>();
 
-                    bool showPhoneNumbers = GetAttributeValue( "ShowPhoneNumbers" ).AsBoolean();
-                    if ( showPhoneNumbers )
+                    bool smsSelected = false;
+
+                    foreach ( RepeaterItem item in rContactInfo.Items )
                     {
-                        var phoneNumberTypeIds = new List<int>();
+                        HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
+                        PhoneNumberBox pnbPhone = item.FindControl( "pnbPhone" ) as PhoneNumberBox;
+                        CheckBox cbUnlisted = item.FindControl( "cbUnlisted" ) as CheckBox;
+                        CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
 
-                        bool smsSelected = false;
-
-                        foreach ( RepeaterItem item in rContactInfo.Items )
+                        if ( hfPhoneType != null &&
+                            pnbPhone != null &&
+                            cbSms != null &&
+                            cbUnlisted != null )
                         {
-                            HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
-                            PhoneNumberBox pnbPhone = item.FindControl( "pnbPhone" ) as PhoneNumberBox;
-                            CheckBox cbUnlisted = item.FindControl( "cbUnlisted" ) as CheckBox;
-                            CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
-
-                            if ( hfPhoneType != null &&
-                                pnbPhone != null &&
-                                cbSms != null &&
-                                cbUnlisted != null )
+                            if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) )
                             {
-                                if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) )
+                                int phoneNumberTypeId;
+                                if ( int.TryParse( hfPhoneType.Value, out phoneNumberTypeId ) )
                                 {
-                                    int phoneNumberTypeId;
-                                    if ( int.TryParse( hfPhoneType.Value, out phoneNumberTypeId ) )
+                                    var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberTypeId );
+                                    string oldPhoneNumber = string.Empty;
+                                    if ( phoneNumber == null )
                                     {
-                                        var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberTypeId );
-                                        string oldPhoneNumber = string.Empty;
-                                        if ( phoneNumber == null )
-                                        {
-                                            phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberTypeId };
-                                            person.PhoneNumbers.Add( phoneNumber );
-                                        }
-                                        else
-                                        {
-                                            oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
-                                        }
-
-                                        phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
-                                        phoneNumber.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
-
-                                        // Only allow one number to have SMS selected
-                                        if ( smsSelected )
-                                        {
-                                            phoneNumber.IsMessagingEnabled = false;
-                                        }
-                                        else
-                                        {
-                                            phoneNumber.IsMessagingEnabled = cbSms.Checked;
-                                            smsSelected = cbSms.Checked;
-                                        }
-
-                                        phoneNumber.IsUnlisted = cbUnlisted.Checked;
-                                        phoneNumberTypeIds.Add( phoneNumberTypeId );
+                                        phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberTypeId };
+                                        person.PhoneNumbers.Add( phoneNumber );
                                     }
+                                    else
+                                    {
+                                        oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
+                                    }
+
+                                    phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
+                                    phoneNumber.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
+
+                                    // Only allow one number to have SMS selected
+                                    if ( smsSelected )
+                                    {
+                                        phoneNumber.IsMessagingEnabled = false;
+                                    }
+                                    else
+                                    {
+                                        phoneNumber.IsMessagingEnabled = cbSms.Checked;
+                                        smsSelected = cbSms.Checked;
+                                    }
+
+                                    phoneNumber.IsUnlisted = cbUnlisted.Checked;
+                                    phoneNumberTypeIds.Add( phoneNumberTypeId );
                                 }
                             }
                         }
+                    }
 
-                        // Remove any blank numbers
-                        var phoneNumberService = new PhoneNumberService( rockContext );
-                        foreach ( var phoneNumber in person.PhoneNumbers
-                            .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
-                            .ToList() )
-                        {
-                            person.PhoneNumbers.Remove( phoneNumber );
-                            phoneNumberService.Delete( phoneNumber );
-                        }
+                    // Remove any blank numbers
+                    var phoneNumberService = new PhoneNumberService( rockContext );
+                    foreach ( var phoneNumber in person.PhoneNumbers
+                        .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
+                        .ToList() )
+                    {
+                        person.PhoneNumbers.Remove( phoneNumber );
+                        phoneNumberService.Delete( phoneNumber );
                     }
 
                     person.Email = tbEmail.Text.Trim();
@@ -895,16 +891,11 @@ namespace RockWeb.Blocks.Cms
             }
 
             // Contact Info
-            bool showPhoneNumbers = GetAttributeValue( "ShowPhoneNumbers" ).AsBoolean();
-            phPhoneDisplay.Visible = showPhoneNumbers;
-            if ( showPhoneNumbers )
+            if ( CurrentPerson.PhoneNumbers != null )
             {
-                if ( CurrentPerson.PhoneNumbers != null )
-                {
-                    var selectedPhoneTypeGuids = GetAttributeValue( "PhoneNumbers" ).Split( ',' ).AsGuidList();
-                    rptPhones.DataSource = CurrentPerson.PhoneNumbers.Where( pn => selectedPhoneTypeGuids.Contains( pn.NumberTypeValue.Guid ) ).ToList();
-                    rptPhones.DataBind();
-                }
+                var selectedPhoneTypeGuids = GetAttributeValue( "PhoneNumbers" ).Split( ',' ).AsGuidList();
+                rptPhones.DataSource = CurrentPerson.PhoneNumbers.Where( pn => selectedPhoneTypeGuids.Contains( pn.NumberTypeValue.Guid ) ).ToList();
+                rptPhones.DataBind();
             }
 
             lEmail.Text = CurrentPerson.Email;
@@ -1188,43 +1179,37 @@ namespace RockWeb.Blocks.Cms
                 pnlAddress.Visible = false;
             }
 
-            bool showPhoneNumbers = GetAttributeValue( "ShowPhoneNumbers" ).AsBoolean();
-            pnlPhoneNumbers.Visible = showPhoneNumbers;
-            if ( showPhoneNumbers )
+            var phoneNumbers = new List<PhoneNumber>();
+            var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
+            var mobilePhoneType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
+            var selectedPhoneTypeGuids = GetAttributeValue( "PhoneNumbers" ).Split( ',' ).AsGuidList();
+
+            if ( phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid ) ).Any() )
             {
-
-                var phoneNumbers = new List<PhoneNumber>();
-                var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
-                var mobilePhoneType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
-                var selectedPhoneTypeGuids = GetAttributeValue( "PhoneNumbers" ).Split( ',' ).AsGuidList();
-
-                if ( phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid ) ).Any() )
+                foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid ) ) )
                 {
-                    foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid ) ) )
+                    var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
+                    if ( phoneNumber == null )
                     {
-                        var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
-                        if ( phoneNumber == null )
-                        {
-                            var numberType = new DefinedValue();
-                            numberType.Id = phoneNumberType.Id;
-                            numberType.Value = phoneNumberType.Value;
-                            numberType.Guid = phoneNumberType.Guid;
+                        var numberType = new DefinedValue();
+                        numberType.Id = phoneNumberType.Id;
+                        numberType.Value = phoneNumberType.Value;
+                        numberType.Guid = phoneNumberType.Guid;
 
-                            phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
-                            phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;
-                        }
-                        else
-                        {
-                            // Update number format, just in case it wasn't saved correctly
-                            phoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number );
-                        }
-
-                        phoneNumbers.Add( phoneNumber );
+                        phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
+                        phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;
+                    }
+                    else
+                    {
+                        // Update number format, just in case it wasn't saved correctly
+                        phoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number );
                     }
 
-                    rContactInfo.DataSource = phoneNumbers;
-                    rContactInfo.DataBind();
+                    phoneNumbers.Add( phoneNumber );
                 }
+
+                rContactInfo.DataSource = phoneNumbers;
+                rContactInfo.DataBind();
             }
 
             pnlView.Visible = false;
