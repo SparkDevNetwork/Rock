@@ -45,6 +45,7 @@
                                     </ul>
                                 </div>
                                 <div class="col-md-6">
+                                    <asp:PlaceHolder ID="phPhoneDisplay" runat="server">
                                     <ul class="phone-list list-unstyled">
                                         <asp:Repeater ID="rptPhones" runat="server">
                                             <ItemTemplate>
@@ -52,6 +53,7 @@
                                             </ItemTemplate>
                                         </asp:Repeater>
                                     </ul>
+                                    </asp:PlaceHolder>
                                     <asp:Literal ID="lEmail" runat="server" />
                                 </div>
                             </div>
