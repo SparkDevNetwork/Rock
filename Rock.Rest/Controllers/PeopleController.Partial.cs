@@ -965,12 +965,13 @@ namespace Rock.Rest.Controllers
             return dataViewGuids;
         }
 
-        #endregion    }
+        #endregion
+    }
 
-        /// <summary>
-        ///
-        /// </summary>
-        public class PersonSearchResult
+    /// <summary>
+    ///
+    /// </summary>
+    public class PersonSearchResult
     {
         /// <summary>
         /// Gets or sets the id.
