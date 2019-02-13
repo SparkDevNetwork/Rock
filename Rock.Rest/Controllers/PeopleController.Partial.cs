@@ -945,7 +945,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [HttpGet]
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/People/DataViews/{personId}" )]
+        [System.Web.Http.Route( "api/People/DataViews/{personId}?categoryGuid={categoryGuid}" )]
         public List<System.Guid> GetDataViewsByPersonId( int personId, System.Guid categoryGuid )
         {
             var rockContext = new RockContext();
