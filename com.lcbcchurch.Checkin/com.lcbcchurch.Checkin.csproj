@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\006_AddRosterPrintToCheckIn.cs" />
     <Compile Include="Migrations\005_ConnectionCardEntry.cs" />
     <Compile Include="Migrations\004_CurrentRosterWithCodes.cs" />
     <Compile Include="Migrations\002_OverrideButton.cs" />
