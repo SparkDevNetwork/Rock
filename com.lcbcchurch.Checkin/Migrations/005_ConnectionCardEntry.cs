@@ -28,7 +28,9 @@ namespace com.lcbcchurch.Checkin.Migrations
     {
         public override void Up()
         {
+            RockMigrationHelper.AddGroupType( "Weekend Gathering", "Holds all the campus weekend gathering groups for attendance purposes.", "Group", "Member", false, true, true, null, 0, null, 0, "4A406CB0-495B-4795-B788-52BDFDE00B01", "85FAEE00-42F3-415E-B921-86712E855B85" );
             var groupTypeId = SqlScalar( @"Select Top 1 Id from GroupType Where [Guid] = '85FAEE00-42F3-415E-B921-86712E855B85'" ).ToString().AsInteger();
+
             // Page: Volunteer Tools
             RockMigrationHelper.AddPage( "98163C8B-5C91-4A68-BB79-6AD948A604CE", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Volunteer Tools", "", "DA9F36C9-0577-42A6-9A52-B72A0995FB67", "" ); // Site:Rock RMS
                                                                                                                                                                                               // Page: Connection Card Entry
