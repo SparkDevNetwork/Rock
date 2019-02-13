@@ -43,16 +43,24 @@ namespace RockWeb.Blocks.Cms
     [BooleanField( "View Only", "Should people be prevented from editing their profile or family records?", false, "", 2 )]
     [BooleanField( "Show Family Members", "Whether family members are shown or not.", true, order: 3 )]
     [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The type of address to be displayed / edited.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", order: 4 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Numbers", "The types of phone numbers to display / edit.", true, true, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, order: 5 )]
-    [BooleanField( "Show Communication Preference", "Show the communication preference and allow it to be edited", true, order: 6 )]
-    [LinkedPage( "Workflow Launch Page", "Page used to launch the workflow to make a profile change request", false, order: 7 )]
-    [TextField( "Request Changes Text", "The text to use for the request changes button (only displayed if there is a 'Workflow Launch Page' configured).", false, "Request Additional Changes", "", 8 )]
-    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "GroupTypeId", Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Family Attributes", "The family attributes that should be displayed / edited.", false, true, order: 9 )]
-    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (adults)", "The person attributes that should be displayed / edited for adults.", false, true, order: 10 )]
-    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (children)", "The person attributes that should be displayed / edited for children.", false, true, order: 11 )]
+    [BooleanField( "Show Phone Numbers", "Allows hiding the phone numbers.", false, order: 5 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Numbers", "The types of phone numbers to display / edit.", false, true, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, order: 6 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Types Required", "The phone numbers that are required.", false, true, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, order: 7 )]
+    [BooleanField( "Show Communication Preference", "Show the communication preference and allow it to be edited", true, order: 8 )]
+    [LinkedPage( "Workflow Launch Page", "Page used to launch the workflow to make a profile change request", false, order: 9 )]
+    [TextField( "Request Changes Text", "The text to use for the request changes button (only displayed if there is a 'Workflow Launch Page' configured).", false, "Request Additional Changes", "", 10 )]
+    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "GroupTypeId", Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Family Attributes", "The family attributes that should be displayed / edited.", false, true, order: 11 )]
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (adults)", "The person attributes that should be displayed / edited for adults.", false, true, order: 12 )]
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (children)", "The person attributes that should be displayed / edited for children.", false, true, order: 13 )]
     [BooleanField( "Show Campus Selector", "Allows selection of primary campus.", false, order: 12 )]
     public partial class PublicProfileEdit : RockBlock
     {
+        #region Fields
+
+        private List<Guid> _RequiredPhoneNumberGuids = new List<Guid>();
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -89,6 +97,12 @@ namespace RockWeb.Blocks.Cms
             lbAddGroupMember.Visible = _canEdit;
 
             lbRequestChanges.Text = GetAttributeValue( "RequestChangesText" );
+
+            if (!string.IsNullOrWhiteSpace( GetAttributeValue( "PhoneTypesRequired" ) ))
+            {
+                _RequiredPhoneNumberGuids = GetAttributeValue( "PhoneTypesRequired" ).Split( ',' ).Select( Guid.Parse ).ToList();
+            }
+            rContactInfo.ItemDataBound += rContactInfo_ItemDataBound;
         }
 
         /// <summary>
@@ -357,11 +371,15 @@ namespace RockWeb.Blocks.Cms
             }
 
             // Contact Info
-            if ( person.PhoneNumbers != null )
+            pnlPhoneNumbers.Visible = GetAttributeValue( "ShowPhoneNumbers" ).AsBoolean();
+            if (pnlPhoneNumbers.Visible)
             {
-                var selectedPhoneTypeGuids = GetAttributeValue( "PhoneNumbers" ).Split( ',' ).AsGuidList();
-                rptGroupMemberPhones.DataSource = person.PhoneNumbers.Where( pn => selectedPhoneTypeGuids.Contains( pn.NumberTypeValue.Guid ) ).ToList();
-                rptGroupMemberPhones.DataBind();
+                if ( person.PhoneNumbers != null )
+                {
+                    var selectedPhoneTypeGuids = GetAttributeValue( "PhoneNumbers" ).Split( ',' ).AsGuidList();
+                    rptGroupMemberPhones.DataSource = person.PhoneNumbers.Where( pn => selectedPhoneTypeGuids.Contains( pn.NumberTypeValue.Guid ) ).ToList();
+                    rptGroupMemberPhones.DataBind();
+                }
             }
 
             // Person Attributes
@@ -801,6 +819,25 @@ namespace RockWeb.Blocks.Cms
             RoleType = selectedId;
         }
 
+        /// <summary>
+        /// Handles the ItemDataBound event of the rContactInfo control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        void rContactInfo_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var pnbPhone = e.Item.FindControl( "pnbPhone" ) as PhoneNumberBox;
+            if (pnbPhone != null)
+            {
+                pnbPhone.ValidationGroup = BlockValidationGroup;
+                var phoneNumber = e.Item.DataItem as PhoneNumber;
+                if (phoneNumber != null)
+                {
+                    pnbPhone.Required = _RequiredPhoneNumberGuids.Contains( phoneNumber.NumberTypeValue.Guid );
+                    pnbPhone.RequiredErrorMessage = string.Format( "{0} phone is required", phoneNumber.NumberTypeValue.Value );
+                }
+            }
+        }
         #endregion
 
         #region Methods
@@ -1157,6 +1194,7 @@ namespace RockWeb.Blocks.Cms
                         var numberType = new DefinedValue();
                         numberType.Id = phoneNumberType.Id;
                         numberType.Value = phoneNumberType.Value;
+                        numberType.Guid = phoneNumberType.Guid;
 
                         phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
                         phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;
