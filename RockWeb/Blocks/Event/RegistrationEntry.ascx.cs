@@ -3586,7 +3586,7 @@ namespace RockWeb.Blocks.Event
                     CurrentFormIndex = 0;
 
                     SetRegistrantState( MinRegistrants );
-
+                    numHowMany.Value = MinRegistrants;
                     ShowRegistrationAttributesStart( true );
                 }
             }
