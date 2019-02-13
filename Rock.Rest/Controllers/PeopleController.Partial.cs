@@ -934,12 +934,43 @@ namespace Rock.Rest.Controllers
         }
 
         #endregion
-    }
 
-    /// <summary>
-    ///
-    /// </summary>
-    public class PersonSearchResult
+        #region DataViewByPerson
+
+        /// <summary>
+        /// Returns a list of dataviews that a person is a part of
+        /// </summary>
+        /// <param name="personId"></param>
+        /// <param name="categoryGuid"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/People/DataViews/{personId}" )]
+        public List<System.Guid> GetDataViewsByPersonId( int personId, System.Guid categoryGuid )
+        {
+            var rockContext = new RockContext();
+
+            // Get the person
+            var person = new PersonService( rockContext ).Get( personId );
+            if ( person == null )
+            {
+                throw new HttpResponseException( new System.Net.Http.HttpResponseMessage( HttpStatusCode.NotFound ) );
+            }
+
+            // Get the data view guids from the DataViewPersistedValues table that the Person Id is a part of
+            var persistedValuesQuery = rockContext.DataViewPersistedValues.Where( a => a.EntityId == person.Id );
+            var dataViewGuids = persistedValuesQuery.Where( v => v.DataView.Category.Guid == categoryGuid ).Select( v => v.DataView.Guid ).ToList();
+
+            // Return the guid (and id?) of each of these dataviews
+            return dataViewGuids;
+        }
+
+        #endregion    }
+
+        /// <summary>
+        ///
+        /// </summary>
+        public class PersonSearchResult
     {
         /// <summary>
         /// Gets or sets the id.
