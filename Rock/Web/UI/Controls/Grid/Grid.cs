@@ -307,6 +307,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [merge template as person].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [merge template as person]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool MergeTemplateAsPerson
+        {
+            get { return this.ViewState["MergeTemplateAsPerson"] as bool? ?? false; }
+            set { ViewState["MergeTemplateAsPerson"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the display type.
         /// </summary>
         /// <value>
@@ -1653,10 +1665,19 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
         /// <exception cref="System.NotImplementedException"></exception>
         protected void Actions_MergeTemplateClick( object sender, EventArgs e )
         {
-            // disable paging if no specific keys where selected (or if no select option is shown)
-            bool selectAll = !SelectedKeys.Any();
-            RebindGrid( e, selectAll, true, false );
-            int? entitySetId = GetEntitySetFromGrid( e );
+            int? entitySetId = null;
+            if ( MergeTemplateAsPerson && PersonIdField.IsNotNullOrWhiteSpace() )
+            {
+                entitySetId = GetPersonEntitySet( e );
+            }
+            else
+            {
+                // disable paging if no specific keys where selected (or if no select option is shown)
+                bool selectAll = !SelectedKeys.Any();
+                RebindGrid( e, selectAll, true, false );
+                entitySetId = GetEntitySetFromGrid( e );
+            }
+
             if ( entitySetId.HasValue )
             {
                 Page.Response.Redirect( string.Format( MergeTemplatePageRoute, entitySetId.Value ), false );

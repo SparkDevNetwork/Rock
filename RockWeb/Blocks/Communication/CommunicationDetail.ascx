@@ -101,7 +101,7 @@
                         <header class="panel-heading clearfix">Failed Recipients</header>
                         <div class="panel-body">
                             <div class="grid grid-panel">
-                                <Rock:Grid ID="gFailed" runat="server" AllowSorting="true">
+                                <Rock:Grid ID="gFailed" runat="server" AllowSorting="true" PersonIdField="PersonAlias.PersonId" MergeTemplateAsPerson="true">
                                     <Columns>
                                         <Rock:SelectField />
                                         <Rock:PersonField HeaderText="Name" DataField="PersonAlias.Person" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
