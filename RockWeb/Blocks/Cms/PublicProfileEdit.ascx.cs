@@ -1202,6 +1202,15 @@ namespace RockWeb.Blocks.Cms
                 pnlAddress.Visible = false;
             }
 
+            BindPhoneNumbers( person );
+
+            pnlView.Visible = false;
+            pnlEdit.Visible = true;
+        }
+        private void BindPhoneNumbers( Person person = null )
+        {
+            if ( person == null ) person = new Person();
+
             bool showPhoneNumbers = GetAttributeValue( "ShowPhoneNumbers" ).AsBoolean();
             pnlPhoneNumbers.Visible = showPhoneNumbers;
             if ( showPhoneNumbers )
@@ -1212,9 +1221,9 @@ namespace RockWeb.Blocks.Cms
                 var mobilePhoneType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
                 var selectedPhoneTypeGuids = GetAttributeValue( "PhoneTypes" ).Split( ',' ).AsGuidList();
 
-                if ( phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid ) ).Any() )
+                if (phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid ) ).Any())
                 {
-                    foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid ) ) )
+                    foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid) ) )
                     {
                         var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
                         if ( phoneNumber == null )
@@ -1241,8 +1250,6 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            pnlView.Visible = false;
-            pnlEdit.Visible = true;
         }
 
         /// <summary>
@@ -1293,11 +1300,17 @@ namespace RockWeb.Blocks.Cms
                 {
                     attributeGuidList = GetAttributeValue( "PersonAttributes(adults)" ).SplitDelimitedValues().AsGuidList();
                     ddlGradePicker.Visible = false;
+                    tbEmail.Required = GetAttributeValue( "RequireAdultEmailAddress" ).AsBoolean();
+                    _IsEditRecordAdult = true;
+                    BindPhoneNumbers();
                 }
                 else
                 {
                     attributeGuidList = GetAttributeValue( "PersonAttributes(children)" ).SplitDelimitedValues().AsGuidList();
                     ddlGradePicker.Visible = true;
+                    tbEmail.Required = false;
+                    _IsEditRecordAdult = false;
+                    BindPhoneNumbers();
                 }
 
                 if ( attributeGuidList.Any() )
