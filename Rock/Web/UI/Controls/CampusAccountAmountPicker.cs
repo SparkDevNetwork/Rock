@@ -44,8 +44,8 @@ namespace Rock.Web.UI.Controls
         // NOTE: we want a stock asp.net TextBox because this will have special styling
         private TextBox _nbAmountAccountSingle;
 
-        private ButtonDropDownList _ddlSingleAccountCampus;
-        private ButtonDropDownList _ddlAccountSingle;
+        private RockDropDownList _ddlSingleAccountCampus;
+        private RockDropDownList _ddlAccountSingle;
 
         #endregion Controls for SingleAccount Mode
 
@@ -53,7 +53,7 @@ namespace Rock.Web.UI.Controls
 
         private Panel _pnlAccountAmountEntryMulti;
         private Repeater _rptPromptForAccountAmountsMulti;
-        private ButtonDropDownList _ddlMultiAccountCampus;
+        private RockDropDownList _ddlMultiAccountCampus;
 
         #endregion Controls for MultiAccount Mode
 
@@ -686,16 +686,15 @@ namespace Rock.Web.UI.Controls
             var pnlSingleCampusDiv = new Panel() { CssClass = "campus-dropdown " };
             _pnlAccountAmountEntrySingle.Controls.Add( pnlSingleCampusDiv );
 
-            _ddlSingleAccountCampus = new ButtonDropDownList();
+            _ddlSingleAccountCampus = new RockDropDownList();
             _ddlSingleAccountCampus.ID = "_ddlSingleAccountCampus";
             _ddlSingleAccountCampus.SelectedIndexChanged += _ddlCampus_SelectedIndexChanged;
-            _ddlSingleAccountCampus.Title = "Select Campus";
             pnlSingleCampusDiv.Controls.Add( _ddlSingleAccountCampus );
 
             var pnlAccountSingleDiv = new Panel() { CssClass = "account-dropdown" };
             _pnlAccountAmountEntrySingle.Controls.Add( pnlAccountSingleDiv );
 
-            _ddlAccountSingle = new ButtonDropDownList();
+            _ddlAccountSingle = new RockDropDownList();
             _ddlAccountSingle.ID = "_ddlAccountSingle";
             _ddlAccountSingle.SelectedIndexChanged += _ddlAccountSingle_SelectedIndexChanged;
             pnlAccountSingleDiv.Controls.Add( _ddlAccountSingle );
@@ -713,10 +712,9 @@ namespace Rock.Web.UI.Controls
             _rptPromptForAccountAmountsMulti.ItemTemplate = new PromptForAccountsMultiTemplate();
             _pnlAccountAmountEntryMulti.Controls.Add( _rptPromptForAccountAmountsMulti );
 
-            _ddlMultiAccountCampus = new ButtonDropDownList();
+            _ddlMultiAccountCampus = new RockDropDownList();
             _ddlMultiAccountCampus.ID = "_ddlMultiAccountCampus";
             _ddlMultiAccountCampus.SelectedIndexChanged += _ddlCampus_SelectedIndexChanged;
-            _ddlMultiAccountCampus.Title = "Select Campus";
             _pnlAccountAmountEntryMulti.Controls.Add( _ddlMultiAccountCampus );
 
             LoadCampuses();
