@@ -60,6 +60,7 @@ namespace RockWeb.Blocks.Security
     [IntegerField( "Minimum Age", "The minimum age allowed to create an account. Warning: The Children's Online Privacy Protection Act disallows children under the age of 13 from giving out personal information without their parents' permission.", false, 13, order: 17 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Types", "The phone numbers to display for editing.", false, true, order: 18 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Types Required", "The phone numbers that are required.", false, true, order: 19 )]
+    [BooleanField( "Show Campus Selector", "Allows selection of primary campus.", false, order: 20 )]
     public partial class AccountEntry : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -123,6 +124,14 @@ namespace RockWeb.Blocks.Security
                 pnlPhoneNumbers.Visible = GetAttributeValue( "ShowPhoneNumbers" ).AsBoolean();
                 acAddress.Required = GetAttributeValue( "AddressRequired" ).AsBoolean();
 
+                // show/hide campus selector
+                bool showCampus = GetAttributeValue("ShowCampusSelector").AsBoolean();
+                cpCampus.Visible = showCampus;
+                if ( showCampus )
+                {
+                    cpCampus.Campuses = CampusCache.All( false );
+                }
+
                 // set birthday picker required if minimum age > 0
                 if ( GetAttributeValue( "MinimumAge" ).AsInteger() > 0 )
                 {
@@ -163,6 +172,7 @@ namespace RockWeb.Blocks.Security
                         rPhoneNumbers.DataSource = phoneNumbers;
                         rPhoneNumbers.DataBind();
                     }
+                    SetCurrentPersonDetails();
                 }
             }
         }
@@ -407,6 +417,82 @@ namespace RockWeb.Blocks.Security
                 {
                     DisplayUserInfo( direction );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Fills the current person's information if it's available (e.g. passed by the person impersonation parameter)
+        /// </summary>
+        private void SetCurrentPersonDetails()
+        {
+            if ( CurrentPerson == null )
+            {
+                return;
+            }
+
+            tbFirstName.Text = CurrentPerson.NickName;
+            tbLastName.Text = CurrentPerson.LastName;
+            tbEmail.Text = CurrentPerson.Email;
+
+            switch ( CurrentPerson.Gender )
+            {
+                case Gender.Male:
+                    ddlGender.SelectedValue = "M";
+                    break;
+                case Gender.Female:
+                    ddlGender.SelectedValue = "F";
+                    break;
+                default:
+                    ddlGender.SelectedValue = "U";
+                    break;
+            }
+
+            bdaypBirthDay.SelectedDate = CurrentPerson.BirthDate;
+
+            var homeGroupTypeLocation = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
+            var familyLocation = CurrentPerson.PrimaryFamily.GroupLocations.Where( gl => gl.IsMailingLocation && gl.GroupLocationTypeValueId == homeGroupTypeLocation.Id ).OrderBy( gl => gl.Order ).FirstOrDefault();
+            if ( familyLocation != null && familyLocation.Location != null )
+            {
+                acAddress.Street1 = familyLocation.Location.Street1;
+                acAddress.Street2 = familyLocation.Location.Street2;
+                acAddress.City = familyLocation.Location.City;
+                acAddress.County = familyLocation.Location.County;
+                acAddress.State = familyLocation.Location.State;
+                acAddress.Country = familyLocation.Location.Country;
+                acAddress.PostalCode = familyLocation.Location.PostalCode;
+            }
+
+            foreach ( RepeaterItem item in rPhoneNumbers.Items )
+            {
+                if ( item.ItemType != ListItemType.Item )
+                {
+                    continue;
+                }
+                var phoneNumberType = ( HiddenField ) item.FindControl( "hfPhoneType" );
+                var phoneNumberBox = ( PhoneNumberBox ) item.FindControl( "pnbPhone" );
+                var cbSms = ( CheckBox ) item.FindControl( "cbSms" );
+                var cbIsUnlisted = ( CheckBox ) item.FindControl( "cbUnlisted" );
+
+                if ( phoneNumberBox == null || phoneNumberType == null || phoneNumberType.Value.IsNullOrWhiteSpace() )
+                {
+                    continue;
+                }
+
+                var phoneNumber = CurrentPerson.PhoneNumbers.FirstOrDefault( pn => pn.NumberTypeValueId.HasValue && pn.NumberTypeValueId.Value == phoneNumberType.ValueAsInt() );
+                if ( phoneNumber == null )
+                {
+                    continue;
+                }
+                phoneNumberBox.Number = phoneNumber.NumberFormatted;
+                phoneNumberBox.CountryCode = phoneNumberBox.CountryCode;
+                cbSms.Checked = phoneNumber.IsMessagingEnabled;
+                cbIsUnlisted.Checked = phoneNumber.IsUnlisted;
+            }
+
+            bool showCampus = GetAttributeValue("ShowCampusSelector").AsBoolean();
+            if ( showCampus )
+            {
+                cpCampus.SetValue( CurrentPerson.GetCampus() );
             }
         }
 
@@ -691,7 +777,13 @@ namespace RockWeb.Blocks.Security
                 }
             }
 
-            PersonService.SaveNewPerson( person, rockContext, null, false );
+            bool showCampus = GetAttributeValue("ShowCampusSelector").AsBoolean();
+            int? campusId = null;
+            if ( showCampus )
+            {
+                campusId = cpCampus.SelectedCampusId;
+            }
+            PersonService.SaveNewPerson( person, rockContext, campusId, false );
 
             // save address
             if ( pnlAddress.Visible )

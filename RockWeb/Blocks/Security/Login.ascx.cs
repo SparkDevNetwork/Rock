@@ -451,12 +451,12 @@ Thank you for logging in, however, we need to confirm the email associated with 
             if ( !string.IsNullOrWhiteSpace( returnUrl ) )
             {
                 string redirectUrl = Server.UrlDecode( returnUrl );
-                Response.Redirect( redirectUrl );
+                Response.Redirect( redirectUrl, false );
                 Context.ApplicationInstance.CompleteRequest();
             }
             else if ( !string.IsNullOrWhiteSpace( redirectUrlSetting ) )
             {
-                Response.Redirect( redirectUrlSetting );
+                Response.Redirect( redirectUrlSetting, false );
                 Context.ApplicationInstance.CompleteRequest();
             }
             else

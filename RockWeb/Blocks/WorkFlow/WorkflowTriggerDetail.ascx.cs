@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.WorkFlow
                     var propertyNames = new List<string>();
                     foreach ( var property in type.GetProperties() )
                     {
-                        if ( !property.GetGetMethod().IsVirtual ||
+                        if ( ( property.GetGetMethod() != null && !property.GetGetMethod().IsVirtual) ||
                             property.GetCustomAttributes( typeof( IncludeAsEntityProperty ) ).Any() ||
                             property.Name == "Id" ||
                             property.Name == "Guid" ||

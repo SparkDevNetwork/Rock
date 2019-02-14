@@ -5,23 +5,30 @@
 <script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v0.4.1/dist/bootstrap-toc.min.js"></script>
 
 <script type="text/javascript">
-Sys.Application.add_load(function () {
-    prettyPrint();
+    Sys.Application.add_load(function () {
+        prettyPrint();
 
-        $(function() {
+        $(function () {
             var navSelector = '#toc';
             var $myNav = $(navSelector);
-            Toc.init($myNav);
+            var $exampleHeaders = $('.r-example-nocodepreview,.r-example').find('h1,h2,h3,h4');
+            Toc.init({
+                $nav: $myNav,
+                $scope: $('h1,h2,h3,h4').not($exampleHeaders)
+            });
             $('body').scrollspy({
                 target: '#toc'
             });
         });
 
-        $(window).on('activate.bs.scrollspy', function (e) {
-            history.replaceState({}, "", $("a[href^='#']", e.target).attr("href"));
+        $(window).on('activate.bs.scrollspy', function (e,f,g) {
+            var href = $("a[href^='#']", e.target).attr("href");
+            if (href && href != '#') {
+                history.replaceState({}, "", href);
+            }
         });
 
-})
+    })
 
 </script>
 <style>
@@ -40,7 +47,10 @@ Sys.Application.add_load(function () {
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title" data-toc-skip><i class="fa fa-magic"></i> Control Gallery</h1>
+                <h1 class="panel-title" data-toc-skip="1">
+                    <i class="fa fa-magic"></i>
+                    Control Gallery
+                </h1>
             </div>
             <div class="panel-body">
             <div class="row">
@@ -159,7 +169,7 @@ Sys.Application.add_load(function () {
                     <div class="alert alert-warning">
                         <p><strong>Warning!</strong></p>
                         If you think you need to control the margin or padding, you might be 'doing it wrong.'
-                        These are for use in those cases when you know what you're doing.</em>
+                        <em>These are for use in those cases when you know what you're doing.</em>
                     </div>
 
                     <h3>Format</h3>
@@ -581,7 +591,7 @@ Sys.Application.add_load(function () {
 
                     <a id="LavaCommandsPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:LavaCommandsPicker ID="pLavaCommandsPicker" runat="server" Label="LavaCommandsPicker" />
+                        <Rock:LavaCommandsPicker ID="pLavaCommandsPicker" runat="server" Label="Rock:LavaCommandsPicker" />
                     </div>
 
                     <a id="MergeFieldPicker"></a>
@@ -593,14 +603,14 @@ Sys.Application.add_load(function () {
                     <a id="MergeTemplatePicker"></a>
                     <h2>Merge Fields Templates</h2>
                     <div runat="server" class="r-example">
-                        <Rock:MergeTemplatePicker ID="pMergeTemplatePicker" runat="server" Label="MergeTemplatePicker" />
+                        <Rock:MergeTemplatePicker ID="pMergeTemplatePicker" runat="server" Label="Rock:MergeTemplatePicker" />
                     </div>
 
                     <h2>Reporting</h2>
 
                     <a id="DataViewItemPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:DataViewItemPicker ID="dvpDataViewPicker" runat="server" Label="DataViewItemPicker for Person Dataviews" EntityTypeId="15" />
+                        <Rock:DataViewItemPicker ID="dvpDataViewPicker" runat="server" Label="Rock:DataViewItemPicker for Person Dataviews" EntityTypeId="15" />
                     </div>
 
                     <a id="DataViewsPicker"></a>
@@ -610,7 +620,7 @@ Sys.Application.add_load(function () {
 
                     <a id="ReportPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:ReportPicker ID="rpReports" runat="server" Label="ReportPicker for Person Reports" EntityTypeId="15" />
+                        <Rock:ReportPicker ID="rpReports" runat="server" Label="Rock:ReportPicker for Person Reports" EntityTypeId="15" />
                     </div>
 
                     <a id="MetricCategoryPicker"></a>
@@ -686,7 +696,7 @@ Sys.Application.add_load(function () {
 
 
                     <a id="Notificationbox"></a>
-                    <h2 runat="server">Rock:Notificationbox</h2>
+                    <h2 runat="server">Rock:NotificationBox</h2>
                     <p>
                         This creates a <a href="http://getbootstrap.com/components/#alerts">Bootstrap alert</a>.  We’ve added the ability to have Details that can be shown.
                     </p>
@@ -778,6 +788,17 @@ Sys.Application.add_load(function () {
                         <Rock:Toggle ID="tglExample8" runat="server" />
                         <Rock:Toggle ID="tglExample9" runat="server" ButtonSizeCssClass="btn-sm" />
                         <Rock:Toggle ID="tglExample10" runat="server" ButtonSizeCssClass="btn-xs" />
+                    </div>
+
+                    <a id="ButtonGroup"></a>
+                    <h2 runat="server">Rock:ButtonGroup</h2>
+                    <div runat="server" class="r-example">
+                        <Rock:ButtonGroup ID="bgExample" runat="server" Label="Favorite Fruit">
+                            <asp:ListItem Text="Apple" Value="1" />
+                            <asp:ListItem Text="Banana" Value="2" />
+                            <asp:ListItem Text="Strawberry" Value="3" />
+                            <asp:ListItem Text="Chicken" Value="4" />
+                        </Rock:ButtonGroup>
                     </div>
 
                     <a id="BootstrapButton"></a>
@@ -876,10 +897,28 @@ Horizontal Rule
                     </div>
 
 
+                    <a id="CampusAccountAmountPicker"></a>
+                    <h2 runat="server">Rock:CampusAccountAmountPicker</h2><span>(SingleAccount Mode)</span>
+                    <div runat="server" class="r-example">
+                        <Rock:CampusAccountAmountPicker ID="caapExampleSingleAccount" runat="server" AmountEntryMode="SingleAccount" AutoPostBack="true" OnAccountChanged="caapExample_Changed" />
+
+                        <hr />
+                        <Rock:RockLiteral ID="lCaapExampleSingleAccountResultAccount" runat="server" Label="Resulting Campus Account" Text="-"/>
+                    </div>
+
+                    <h2 runat="server">Rock:CampusAccountAmountPicker</h2><span>(MultipleAccounts Mode)</span>
+                    <div runat="server" class="r-example">
+                        <Rock:CampusAccountAmountPicker ID="caapExampleMultiAccount" runat="server" AmountEntryMode="MultipleAccounts" OnAccountChanged="caapExample_Changed"/>
+
+                         <hr />
+                        <Rock:RockLiteral ID="lCaapExampleMultiAccountResultAccount" runat="server" Label="Resulting Campus Accounts" Text="-" />
+                    </div>
+
+
                     <a id="CssRollovers"></a>
                     <h2 runat="server">CSS Rollovers</h2>
                     You often run across situations where you would like buttons or links to appear when you hover over a selection of code. Instead of using jQuery toggles you can use the
-                CSS classes below. These classes can be applied to any tags.  In order to support nested rollovers the actions must be direct decendents of their containers.  On touch enabled
+                CSS classes below. These classes can be applied to any tags.  In order to support nested rollovers the actions must be direct descendants of their containers. On touch enabled
                 devices the rollover-items will always be displayed.
                 <div runat="server" class="r-example">
                     <div class="alert alert-info rollover-container">
@@ -892,7 +931,7 @@ Horizontal Rule
                 </div>
 
                     <h2 runat="server">Rock jQuery UI Library</h2>
-                    To help promote consistance we have created a standard Rock jQuery UI Library.  Below are the current functions with their usage patters.
+                    To help promote consistence we have created a standard Rock jQuery UI Library. Below are the current functions with their usage patterns.
 
                 <a id="RockFadeIn"></a>
                     <h3 runat="server">rockFadeIn()</h3>

@@ -345,6 +345,7 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         [NotMapped]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.GroupId instead", false )]
         public int? GroupId
         {
@@ -371,6 +372,7 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         [NotMapped]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.LocationId instead", false )]
         public int? LocationId
         {
@@ -397,6 +399,7 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         [NotMapped]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.ScheduleId instead", false )]
         public int? ScheduleId
         {
@@ -423,6 +426,7 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         [NotMapped]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.DidNotOccur instead", false )]
         public bool? DidNotOccur
         {
@@ -449,6 +453,7 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         [NotMapped]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.SundayDate instead", false )]
         public DateTime SundayDate
         {
@@ -474,6 +479,7 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         [NotMapped]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.Group instead", false )]
         public virtual Group Group
         {
@@ -501,6 +507,7 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         [NotMapped]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.Location instead", false )]
         public virtual Location Location
         {
@@ -527,6 +534,7 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         [NotMapped]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.Schedule instead", false )]
         public virtual Schedule Schedule
         {
@@ -570,6 +578,7 @@ namespace Rock.Model
         /// Processes the obsolete occurrence fields.
         /// </summary>
         /// <param name="entry">The entry.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete]
         private void ProcessObsoleteOccurrenceFields( System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {

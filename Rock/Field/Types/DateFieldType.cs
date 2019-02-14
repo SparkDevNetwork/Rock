@@ -384,6 +384,10 @@ namespace Rock.Field.Types
                 {
                     return datePicker.SelectedDate.Value.ToString( "o" );
                 }
+                else
+                {
+                    return string.Empty;
+                }
             }
             else if ( datePartsPicker != null )
             {
@@ -391,9 +395,13 @@ namespace Rock.Field.Types
                 {
                     return datePartsPicker.SelectedDate.Value.ToString( "o" );
                 }
+                else
+                {
+                    return string.Empty;
+                }
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>
@@ -634,7 +642,7 @@ namespace Rock.Field.Types
                     if ( comparisonType == ComparisonType.Between && filterValueValues.Length > 1 )
                     {
                         var dateRangeText = SlidingDateRangePicker.FormatDelimitedValues( filterValueValues[1] );
-                        return dateRangeText.IsNotNullOrWhiteSpace() ? string.Format( "during '{0}'", dateRangeText ) : null;
+                        return dateRangeText.IsNotNullOrWhiteSpace() ? string.Format( "During '{0}'", dateRangeText ) : null;
                     }
                     else
                     {
@@ -669,7 +677,7 @@ namespace Rock.Field.Types
                 filterValueValues[0] = ParseRelativeValue( filterValueValues[0] );
             
                 string comparisonValue = filterValues[0];
-                if ( comparisonValue != "0" )
+                if ( comparisonValue != "0" && comparisonValue.IsNotNullOrWhiteSpace() )
                 {
                     ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
                     MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
@@ -754,6 +762,12 @@ namespace Rock.Field.Types
             }
 
             ComparisonType? filterComparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
+
+            if (filterComparisonType == null )
+            {
+                return false;
+            }
+
             ComparisonType? equalToCompareValue = GetEqualToCompareValue().ConvertToEnumOrNull<ComparisonType>();
             DateTime? valueAsDateTime = value.AsDateTime();
 

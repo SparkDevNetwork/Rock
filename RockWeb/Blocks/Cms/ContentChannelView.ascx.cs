@@ -34,6 +34,7 @@ using Rock.Field.Types;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -622,7 +623,7 @@ $(document).ready(function() {
                     var context = HttpContext.Current;
                     string channelRssUrl = string.Format( "{0}://{1}{2}{3}{4}",
                                         context.Request.Url.Scheme,
-                                        context.Request.Url.Host,
+                                        WebRequestHelper.GetHostNameFromRequest( context ),
                                         context.Request.Url.Port == 80
                                             ? string.Empty
                                             : ":" + context.Request.Url.Port,
@@ -936,9 +937,27 @@ $(document).ready(function() {
                                 foreach ( string key in PageParameters().Select( p => p.Key ).ToList() )
                                 {
                                     var selection = new List<string>();
-                                    selection.Add( key );
 
-                                    var entityField = Rock.Reporting.EntityHelper.FindFromFilterSelection( contentChannel.GetType(), key );
+                                    // Since there could be many matches by the key name for an attribute we have to construct the unique name used by EntityHelper.FindFromFilterSelection and use that
+                                    var attributeService = new AttributeService( rockContext );
+                                    var attributeGuid = attributeService
+                                        .Queryable()
+                                        .Where( a => a.EntityTypeQualifierColumn == "ContentChannelId" )
+                                        .Where( a => a.EntityTypeQualifierValue == contentChannel.Id.ToString() )
+                                        .Where( a => a.Key == key )
+                                        .Select( a => a.Guid )
+                                        .FirstOrDefault();
+
+                                    string uniqueName = key;
+                                    if( attributeGuid != null )
+                                    {
+                                        uniqueName = string.Format( "Attribute_{0}_{1}", key, attributeGuid.ToString().Replace("-", string.Empty ) );
+                                    }
+
+                                    // Keep using uniquename for attributes since common keys (e.g. "category")will return mutliple values
+                                    selection.Add( uniqueName );
+
+                                    var entityField = Rock.Reporting.EntityHelper.FindFromFilterSelection( itemType, uniqueName, false, false );
                                     if ( entityField != null )
                                     {
                                         string value = PageParameter( key );
@@ -969,7 +988,6 @@ $(document).ready(function() {
                                 }
 
                                 items = itemQry.ToList();
-
                             }
                         }
                     }
@@ -1061,7 +1079,7 @@ $(document).ready(function() {
                                                 ) )
                                             .OrderByDescending( a => a.EntityTypeQualifierColumn )
                                             .ThenBy( a => a.Order )
-                                            .ToCacheAttributeList();
+                                            .ToAttributeCacheList();
 
                     foreach ( var attribute in itemAttributes )
                     {

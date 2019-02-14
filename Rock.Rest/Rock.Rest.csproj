@@ -97,10 +97,10 @@
     </Compile>
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
-    <Compile Include="Controllers\AssetStorageSystemsController.Partial.cs" />
+    <Compile Include="Controllers\AssetStorageProvidersController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsDimCampusController.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsSourceCampusController.cs" />
-    <Compile Include="Controllers\CodeGenerated\AssetStorageProviderController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AssetStorageProvidersController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttendanceOccurrencesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeValueHistoricalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplateAttachmentsController.cs" />
@@ -114,17 +114,18 @@
     <Compile Include="Controllers\CodeGenerated\MetaFirstNameGenderLookupsController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetaLastNameLookupsController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetaNickNameLookupsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\MetaPersonicxLifestageClustersController.cs" />
-    <Compile Include="Controllers\CodeGenerated\MetaPersonicxLifestageGroupsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteWatchesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSearchKeysController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSignalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFeeItemsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ServiceJobHistoriesController.cs" />
     <Compile Include="Controllers\CodeGenerated\SignalTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\NcoaHistoriesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageShortLinksController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonTokensController.cs" />
     <Compile Include="Controllers\ContentChannelItemSlugsController.Partial.cs" />
+    <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
     <Compile Include="Controllers\GroupMemberHistoricalsController.Partial.cs" />
     <Compile Include="Controllers\NotesController.Partial.cs" />
     <Compile Include="Controllers\PbxController.cs" />

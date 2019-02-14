@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
@@ -49,11 +50,14 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var guids = value.SplitDelimitedValues();
-                var categories = new CategoryService( new RockContext() ).Queryable().Where( a => guids.Contains( a.Guid.ToString() ) );
-                if ( categories.Any() )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = string.Join( ", ", ( from category in categories select category.Name ).ToArray() );
+                    var guids = value.SplitDelimitedValues();
+                    var categories = new CategoryService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) );
+                    if ( categories.Any() )
+                    {
+                        formattedValue = string.Join( ", ", ( from category in categories select category.Name ).ToArray() );
+                    }
                 }
             }
 
@@ -113,11 +117,14 @@ namespace Rock.Field.Types
             {
                 var guids = new List<Guid>();
                 var ids = picker.SelectedValuesAsInt();
-                var categories = new CategoryService( new RockContext() ).Queryable().Where( c => ids.Contains( c.Id ) );
-
-                if ( categories.Any() )
+                using ( var rockContext = new RockContext() )
                 {
-                    guids = categories.Select( c => c.Guid ).ToList();
+                    var categories = new CategoryService( rockContext ).Queryable().AsNoTracking().Where( c => ids.Contains( c.Id ) );
+
+                    if ( categories.Any() )
+                    {
+                        guids = categories.Select( c => c.Guid ).ToList();
+                    }
                 }
 
                 result = string.Join( ",", guids );

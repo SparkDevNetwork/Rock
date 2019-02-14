@@ -87,6 +87,7 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( ATTRIBUTE_FIELD_TYPES_KEY, new ConfigurationValue( "Limit Attributes by Field Type", "Optional list of field type classes for limiting selection to attributes using those field types (e.g. 'Rock.Field.Types.PersonFieldType|Rock.Field.Types.GroupFieldType').", "" ) );
+            configurationValues.Add( TEXTBOX_ROWS_KEY, new ConfigurationValue( "Rows", "The number of rows to display (default is 1).", "" ) );
 
             if ( controls != null )
             {
@@ -101,7 +102,7 @@ namespace Rock.Field.Types
                 {
                     if ( controls[1] != null && controls[1] is NumberBox )
                     {
-                        configurationValues[TEXTBOX_ROWS_KEY].Value = ( (NumberBox)controls[0] ).Text;
+                        configurationValues[TEXTBOX_ROWS_KEY].Value = ( (NumberBox)controls[1] ).Text;
                     }
                 }
             }
@@ -232,7 +233,7 @@ namespace Rock.Field.Types
                 return editControl.SelectedValue;
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>

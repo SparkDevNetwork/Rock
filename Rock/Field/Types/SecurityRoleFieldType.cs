@@ -50,10 +50,13 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var group = new GroupService( new RockContext() ).Get( guid.Value );
-                if ( group != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = group.Name;
+                    var group = new GroupService( rockContext ).GetNoTracking( guid.Value );
+                    if ( group != null )
+                    {
+                        formattedValue = group.Name;
+                    }
                 }
             }
 

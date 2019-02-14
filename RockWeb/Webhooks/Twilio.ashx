@@ -120,7 +120,7 @@ class TwilioResponseAsync : IAsyncResult
                 switch (request.Form["SmsStatus"])
                 {
                     case "received":
-                        MessageRecieved();
+                        MessageReceived();
                         break;
                     case "undelivered":
                         MessageUndelivered();
@@ -167,7 +167,7 @@ class TwilioResponseAsync : IAsyncResult
         }
     }
 
-    private void MessageRecieved()
+    private void MessageReceived()
     {
 
         var request = _context.Request;

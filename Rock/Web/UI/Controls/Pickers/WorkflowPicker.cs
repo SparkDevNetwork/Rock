@@ -397,7 +397,7 @@ namespace Rock.Web.UI.Controls
                     .ToList();
                 foreach ( var t in workflowTypes )
                 {
-                    _ddlWorkflowType.Items.Add( new ListItem( string.Format( "{0}:{1}", t.CategoryName, t.Name), t.Id.ToString().ToUpper() ) );
+                    _ddlWorkflowType.Items.Add( new ListItem( string.Format( "{0}: {1}", t.CategoryName, t.Name), t.Id.ToString().ToUpper() ) );
                 }
             }
         }

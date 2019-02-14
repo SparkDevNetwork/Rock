@@ -17,18 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Rock.Client;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -70,8 +60,8 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 btnToggle.IsChecked = btnToggle == btnToggleSelected;
             }
-            
-            var scanningChecks = (Guid)btnToggleSelected.Tag == Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+
+            var scanningChecks = ( Guid ) btnToggleSelected.Tag == Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
             chkDoubleDocDetection.IsChecked = scanningChecks;
             chkEnableSmartScan.Visibility = scanningChecks ? Visibility.Visible : Visibility.Collapsed;
         }
@@ -96,7 +86,7 @@ namespace Rock.Apps.CheckScannerUtility
             rockConfig.EnableDoubleDocDetection = chkDoubleDocDetection.IsChecked == true;
             rockConfig.EnableSmartScan = chkEnableSmartScan.IsChecked == true;
 
-            if (cboTransactionSourceType.SelectedItem == null)
+            if ( cboTransactionSourceType.SelectedItem == null )
             {
                 lblTransactionSourceType.Style = this.FindResource( "labelStyleError" ) as Style;
                 return;
@@ -110,30 +100,43 @@ namespace Rock.Apps.CheckScannerUtility
 
             rockConfig.Save();
 
-            // restart the scanner so that options will be reloaded
-            if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.RangerApi )
+            switch (rockConfig.ScannerInterfaceType)
             {
-                if ( this.BatchPage.rangerScanner != null )
-                {
-                    this.BatchPage.rangerScanner.ShutDown();
-                    this.BatchPage.rangerScanner.StartUp();
-                }
-                else
-                {
-                    lblScannerDriverError.Visibility = Visibility.Visible;
-                    return;
-                }
+                case RockConfig.InterfaceType.RangerApi:
+                    if (this.BatchPage.rangerScanner != null)
+                    {
+                        this.BatchPage.rangerScanner.ShutDown();
+                        this.BatchPage.rangerScanner.StartUp();
+                    }
+                    else
+                    {
+
+                        lblScannerDriverError.Visibility = Visibility.Visible;
+                        return;
+                    }
+                    break;
+                case RockConfig.InterfaceType.MICRImageRS232:
+                    if (this.BatchPage.micrImage == null)
+                    {
+                        lblScannerDriverError.Visibility = Visibility.Visible;
+                        return;
+                    }
+                    break;
+                case RockConfig.InterfaceType.MagTekImageSafe:
+                    //Do Nothing Uses a Callback Function 
+                    break;
+                default:
+                    break;
+            }
+
+            if ( rockConfig.CaptureAmountOnScan )
+            {
+                this.NavigationService.Navigate( this.BatchPage.CaptureAmountScanningPage );
             }
             else
             {
-                if ( this.BatchPage.micrImage == null )
-                {
-                    lblScannerDriverError.Visibility = Visibility.Visible;
-                    return;
-                }
+                this.NavigationService.Navigate( this.BatchPage.ScanningPage );
             }
-
-            this.NavigationService.Navigate( this.BatchPage.ScanningPage );
         }
 
         /// <summary>
@@ -155,6 +158,16 @@ namespace Rock.Apps.CheckScannerUtility
         {
             lblScannerDriverError.Visibility = Visibility.Collapsed;
             RockConfig rockConfig = RockConfig.Load();
+            if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.MagTekImageSafe || rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.MICRImageRS232 )
+            {
+                this.chkPromptToScanRearImage.Visibility = Visibility.Visible;
+                this.spRangerOptions.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                this.chkPromptToScanRearImage.Visibility = Visibility.Hidden;
+                this.spRangerOptions.Visibility = Visibility.Visible;
+            }
 
             spTenderButtons.Children.Clear();
             foreach ( var currency in this.BatchPage.CurrencyValueList.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
@@ -192,6 +205,11 @@ namespace Rock.Apps.CheckScannerUtility
             cboTransactionSourceType.DisplayMemberPath = "Value";
             cboTransactionSourceType.ItemsSource = this.BatchPage.SourceTypeValueListSelectable.OrderBy( a => a.Order ).ThenBy( a => a.Value ).ToList();
             cboTransactionSourceType.SelectedItem = ( cboTransactionSourceType.ItemsSource as List<DefinedValue> ).FirstOrDefault( a => a.Guid == rockConfig.SourceTypeValueGuid.AsGuid() );
+        }
+
+        private void ToggleButton_Checked(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

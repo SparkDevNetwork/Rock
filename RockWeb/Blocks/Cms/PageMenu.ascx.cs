@@ -36,9 +36,10 @@ namespace RockWeb.Blocks.Cms
 {
     [DisplayName( "Page Menu" )]
     [Category( "CMS" )]
-    [Description( "Renders a page menu based on a root page and liquid template." )]
-    [CodeEditorField( "Template", "The liquid template to use for rendering. This template would typically be in the theme's \"Assets/Lava\" folder.",
-        CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, @"{% include '~~/Assets/Lava/PageNav.lava' %}" )]
+    [Description( "Renders a page menu based on a root page and lava template." )]
+    [CodeEditorField( "Template", "The lava template to use for rendering. This template would typically be in the theme's \"Assets/Lava\" folder.",
+        CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, @"{% include '~~/Assets/Lava/PageNav.lava' %}", order: 0)]
+    [LavaCommandsField("Enabled Lava Commands", description: "The Lava commands that should be enabled for this content channel item block.", required: false, order: 1)]
     [LinkedPage( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
     [TextField( "Number of Levels", "Number of parent-child page levels to display. Default 3.", false, "3" )]
     [TextField( "CSS File", "Optional CSS file to add to the page for styling. Example 'Styles/nav.css' would point the stylesheet in the current theme's styles folder.", false, "" )]
@@ -95,10 +96,10 @@ namespace RockWeb.Blocks.Cms
                 PageCache currentPage = PageCache.Get( RockPage.PageId );
                 PageCache rootPage = null;
 
-                Guid? rootPageGuid = GetAttributeValue( ROOT_PAGE ).AsGuidOrNull();
-                if ( rootPageGuid.HasValue && !rootPageGuid.Value.IsEmpty() )
+                var pageRouteValuePair = GetAttributeValue( ROOT_PAGE ).SplitDelimitedValues(false).AsGuidOrNullList();
+                if ( pageRouteValuePair.Any() && pageRouteValuePair[0].HasValue && !pageRouteValuePair[0].Value.IsEmpty() )
                 {
-                    rootPage = PageCache.Get( rootPageGuid.Value );
+                    rootPage = PageCache.Get( pageRouteValuePair[0].Value );
                 }
 
                 // If a root page was not found, use current page
@@ -128,7 +129,7 @@ namespace RockWeb.Blocks.Cms
                     pageHeirarchy = currentPage.GetPageHierarchy().Select( p => p.Id ).ToList();
                 }
 
-                // add context to merge fields
+                // Add context to merge fields
                 var contextEntityTypes = RockPage.GetContextEntityTypes();
                 var contextObjects = new Dictionary<string, object>();
                 foreach ( var conextEntityType in contextEntityTypes )
@@ -142,12 +143,20 @@ namespace RockWeb.Blocks.Cms
                 pageProperties.Add( "Context", contextObjects );
                 pageProperties.Add( "Site", GetSiteProperties( RockPage.Site ) );
                 pageProperties.Add( "IncludePageList", GetIncludePageList() );
+                pageProperties.Add( "CurrentPage", this.PageCache );
 
                 using ( var rockContext = new RockContext() )
                 {
                     pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
                 }
-                string content = GetTemplate().Render( Hash.FromDictionary( pageProperties ) );
+
+                var lavaTemplate = GetTemplate();
+
+                // Apply Enabled Lava Commands
+                var enabledCommands = GetAttributeValue( "EnabledLavaCommands" );
+                lavaTemplate.Registers.AddOrReplace( "EnabledCommands", enabledCommands);
+
+                string content = lavaTemplate.Render( Hash.FromDictionary( pageProperties ) );
 
                 // check for errors
                 if ( content.Contains( "error" ) )

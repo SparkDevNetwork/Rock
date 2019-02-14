@@ -65,13 +65,13 @@ namespace Rock.Client
         public DateTime? InactiveDateTime { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
         public bool IsArchived { get; set; }
 
         /// <summary />
-        public bool IsPublic { get; set; }
+        public bool IsPublic { get; set; } = true;
 
         /// <summary />
         public bool IsSecurityRole { get; set; }
@@ -83,6 +83,11 @@ namespace Rock.Client
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        // Made Obsolete in Rock "1.7"
+        [Obsolete( "This no longer is functional. Please use GroupRequirement.MustMeetRequirementToAddMember instead.", true )]
+        public bool? MustMeetRequirementsToAddMember { get; set; }
 
         /// <summary />
         public string Name { get; set; }
@@ -177,6 +182,12 @@ namespace Rock.Client
 
         /// <summary />
         public Campus Campus { get; set; }
+
+        /// <summary />
+        public PersonAlias GroupAdministratorPersonAlias { get; set; }
+
+        /// <summary />
+        public int? GroupAdministratorPersonAliasId { get; set; }
 
         /// <summary />
         public ICollection<GroupLocation> GroupLocations { get; set; }

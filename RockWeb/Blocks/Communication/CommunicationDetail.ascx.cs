@@ -441,6 +441,7 @@ namespace RockWeb.Blocks.Communication
                     newCommunication.ReviewerPersonAliasId = null;
                     newCommunication.ReviewedDateTime = null;
                     newCommunication.ReviewerNote = string.Empty;
+                    newCommunication.SendDateTime = null;
 
                     communication.Recipients.ToList().ForEach( r =>
                         newCommunication.Recipients.Add( new CommunicationRecipient()
@@ -555,9 +556,9 @@ namespace RockWeb.Blocks.Communication
                 template = templateService.Get(template.Id);
                 if (template != null)
                 {
-                    template.AllowPerson( Authorization.VIEW, CurrentPerson );
-                    template.AllowPerson( Authorization.EDIT, CurrentPerson );
-                    template.AllowPerson( Authorization.ADMINISTRATE, CurrentPerson );
+                    template.MakePrivate( Authorization.VIEW, CurrentPerson, rockContext );
+                    template.MakePrivate( Authorization.EDIT, CurrentPerson, rockContext );
+                    template.MakePrivate( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
 
                     var groupService = new GroupService( rockContext );
                     var communicationAdministrators = groupService.Get( Rock.SystemGuid.Group.GROUP_COMMUNICATION_ADMINISTRATORS.AsGuid() );
@@ -575,6 +576,7 @@ namespace RockWeb.Blocks.Communication
                         template.AllowSecurityRole( Authorization.EDIT, rockAdministrators, rockContext );
                         template.AllowSecurityRole( Authorization.ADMINISTRATE, rockAdministrators, rockContext );
                     }
+
                 }
 
                 nbTemplateCreated.Visible = true;
@@ -593,7 +595,8 @@ namespace RockWeb.Blocks.Communication
         private void ShowDetail( Rock.Model.Communication communication )
         {
             ShowStatus( communication );
-            lTitle.Text = ( communication.Name ?? communication.Subject ?? "Communication" ).FormatAsHtmlTitle();
+            // lTitle.Text = ( communication.Name ?? communication.Subject ?? "Communication" ).FormatAsHtmlTitle();
+            lTitle.Text = (string.IsNullOrEmpty( communication.Name ) ? ( string.IsNullOrEmpty( communication.Subject ) ? communication.PushTitle : communication.Subject ) : communication.Name).FormatAsHtmlTitle();
             pdAuditDetails.SetEntity( communication, ResolveRockUrl( "~" ) );
 
             SetPersonDateValue( lCreatedBy, communication.CreatedByPersonAlias, communication.CreatedDateTime, "Created By" );

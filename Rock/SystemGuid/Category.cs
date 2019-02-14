@@ -181,8 +181,21 @@ namespace Rock.SystemGuid
         /// The Personal Merge Template Category guid
         /// </summary>
         public const string PERSONAL_MERGE_TEMPLATE = "A9F2F544-660B-4176-ACAD-88898416A66E";
-        
+
         #endregion
 
+        #region Registration Attributes
+
+        /// <summary>
+        /// The registration attribute category that indicates Registration Attributes that should be prompted for at the start of the registration process.
+        /// </summary>
+        public const string REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION = "27808664-97E7-432B-A1E7-D02F6DE5977A";
+
+        /// <summary>
+        /// The registration attribute category that indicates Registration Attributes that should be prompted for at the end of the registration process.
+        /// </summary>
+        public const string REGISTRATION_ATTRIBUTE_END_OF_REGISTRATION = "4648196E-CEB8-4D76-8F27-273EBBC35A08";
+
+        #endregion
     }
 }

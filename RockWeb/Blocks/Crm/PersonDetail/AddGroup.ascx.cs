@@ -73,6 +73,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [WorkflowTypeField( "Group Workflow(s)", "The workflow(s) to launch for the group (family) that is added.", true, false, "", "", 27, "GroupWorkflows" )]
     [LinkedPage( "Person Detail Page", "The Page to navigate to after the family has been added. (Note that {GroupId} and {PersonId} can be included in the route). Leave blank to go to the default page of ~/Person/{PersonId}.", false, order: 28 )]
     [BooleanField( "Enable Alternate Identifier", "If enabled, an additional step will be shown for supplying a custom alternate identifier for each person.", false, order: 29 )]
+    [BooleanField( "Generate Alternate Identifier", "If enabled, a custom alternate identifier will be generated for each person.", true, order: 30 )]
     public partial class AddGroup : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -93,6 +94,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private DefinedValueCache _cellPhone = null;
         private string _smsOption = "False";
         private bool _enableAlternateIdentifier = false;
+        private bool _generateAlternateIdentifier = true;
 
         #endregion
 
@@ -202,12 +204,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
                 cpCampus.Required = campusRequired;
 
-                ddlMaritalStatus.Visible = true;
-                ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
+                dvpMaritalStatus.Visible = true;
+                dvpMaritalStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
                 var adultMaritalStatus = DefinedValueCache.Get( GetAttributeValue( "AdultMaritalStatus" ).AsGuid() );
                 if ( adultMaritalStatus != null )
                 {
-                    ddlMaritalStatus.SetValue( adultMaritalStatus.Id );
+                    dvpMaritalStatus.SetValue( adultMaritalStatus.Id );
                 }
 
                 _childRoleId = _groupType.Roles
@@ -224,7 +226,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 divGroupName.Visible = true;
                 tbGroupName.Label = _groupTypeName + " Name";
                 cpCampus.Visible = false;
-                ddlMaritalStatus.Visible = false;
+                dvpMaritalStatus.Visible = false;
             }
 
             nfmMembers.ShowGrade = _isFamilyGroupType && GetAttributeValue( "Grade" ) != "None";
@@ -248,6 +250,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             _cellPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
 
             _enableAlternateIdentifier = GetAttributeValue( "EnableAlternateIdentifier" ).AsBooleanOrNull() ?? false;
+            _generateAlternateIdentifier = GetAttributeValue( "GenerateAlternateIdentifier" ).AsBooleanOrNull() ?? true;
 
             _confirmMaritalStatus = _isFamilyGroupType && GetAttributeValue( "MaritalStatusConfirmation" ).AsBoolean();
             if ( _confirmMaritalStatus )
@@ -272,7 +275,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }}
             }}
       }});",
-      ddlMaritalStatus.ClientID );
+      dvpMaritalStatus.ClientID );
 
                 ScriptManager.RegisterStartupScript( btnNext, btnNext.GetType(), "confirm-marital-status", script, true );
             }
@@ -335,7 +338,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( _isFamilyGroupType )
             {
                 var adults = GroupMembers.Where( m => m.GroupRoleId != _childRoleId ).ToList();
-                ddlMaritalStatus.Visible = adults.Any();
+                dvpMaritalStatus.Visible = adults.Any();
             }
 
             base.OnPreRender( e );
@@ -768,7 +771,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                     else
                     {
-                        advanceInfoRow.AlternateId = PersonSearchKeyService.GenerateRandomAlternateId( true );
+                        if ( _generateAlternateIdentifier )
+                        {
+                            advanceInfoRow.AlternateId = PersonSearchKeyService.GenerateRandomAlternateId( true );
+                        }
                     }
                 }
 
@@ -1009,7 +1015,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 childMaritalStatusId = childMaritalStatus.Id;
             }
 
-            int? adultMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
+            int? adultMaritalStatusId = dvpMaritalStatus.SelectedValueAsInt();
 
             int recordTypePersonId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             int recordStatusActiveId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
@@ -1401,7 +1407,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             attributeControls.ForEach( c => c.Visible = false );
             if ( CurrentPageIndex > startAttributePageIndex - 1 && attributeControls.Count >= ( CurrentPageIndex - ( startAttributePageIndex - 1 ) ) )
             {
-                attributeControls[CurrentPageIndex - 2].Visible = true;
+                int index = _enableAlternateIdentifier ? CurrentPageIndex - 3 : CurrentPageIndex - 2;
+                attributeControls[index].Visible = true;
             }
 
             if ( _confirmMaritalStatus && CurrentPageIndex == 0 )

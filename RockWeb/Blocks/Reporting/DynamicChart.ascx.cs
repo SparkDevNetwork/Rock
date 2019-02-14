@@ -100,21 +100,22 @@ order by YValue desc
             pageReference.QueryString.Add( "TimeStamp", RockDateTime.Now.ToJavascriptMilliseconds().ToString() );
             lcLineChart.DataSourceUrl = pageReference.BuildUrl();
             lcLineChart.ChartHeight = this.GetAttributeValue( "ChartHeight" ).AsIntegerOrNull() ?? 200;
-            lcLineChart.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
             lcLineChart.Options.legend = lcLineChart.Options.legend ?? new Legend();
             lcLineChart.Options.legend.show = this.GetAttributeValue( "ShowLegend" ).AsBooleanOrNull();
             lcLineChart.Options.legend.position = this.GetAttributeValue( "LegendPosition" );
+            // Set chart style after setting options so they are not overwritten.
+            lcLineChart.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
 
             bcBarChart.DataSourceUrl = pageReference.BuildUrl();
             bcBarChart.ChartHeight = this.GetAttributeValue( "ChartHeight" ).AsIntegerOrNull() ?? 200;
-            bcBarChart.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
             bcBarChart.Options.xaxis = new AxisOptions { mode = AxisMode.categories, tickLength = 0 };
             bcBarChart.Options.series.bars.barWidth = 0.6;
             bcBarChart.Options.series.bars.align = "center";
-
             bcBarChart.Options.legend = lcLineChart.Options.legend ?? new Legend();
             bcBarChart.Options.legend.show = this.GetAttributeValue( "ShowLegend" ).AsBooleanOrNull();
             bcBarChart.Options.legend.position = this.GetAttributeValue( "LegendPosition" );
+            // Set chart style after setting options so they are not overwritten.
+            bcBarChart.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
 
             pcPieChart.DataSourceUrl = pageReference.BuildUrl();
             pcPieChart.ChartHeight = this.GetAttributeValue( "ChartHeight" ).AsIntegerOrNull() ?? 200;
@@ -214,16 +215,6 @@ function labelFormatter(label, series) {
             /// The y value.
             /// </value>
             public decimal? YValueTotal { get; set; }
-
-            /// <summary>
-            /// Gets the series identifier (obsolete)
-            /// NOTE: Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name
-            /// </summary>
-            /// <value>
-            /// The series identifier.
-            /// </value>
-            [Obsolete( "Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name" )]
-            public string SeriesId { get; set; }
 
             /// <summary>
             /// Gets or sets the name of the series. This will be the default name of the series if MetricValuePartitionEntityIds can't be resolved

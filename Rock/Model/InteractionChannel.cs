@@ -60,6 +60,15 @@ namespace Rock.Model
         public string ChannelData { get; set; }
 
         /// <summary>
+        /// Gets or sets the engagement strength.
+        /// </summary>
+        /// <value>
+        /// The engagement strength.
+        /// </value>
+        [DataMember]
+        public int? EngagementStrength { get; set; }
+
+        /// <summary>
         /// Gets or sets the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of entity that was modified.
         /// </summary>
         /// <value>

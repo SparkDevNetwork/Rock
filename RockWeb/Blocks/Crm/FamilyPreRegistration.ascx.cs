@@ -72,7 +72,7 @@ the value entered for the Planned Visit Date field if it was displayed.
     [CustomDropdownListField( "Mobile Phone", "How should Mobile Phone be displayed for children?", HIDE_OPTIONAL_REQUIRED, false, "Hide", "Child Fields", 4, CHILD_MOBILE_KEY )]
     [AttributeCategoryField( "Attribute Categories", "The children Attribute Categories to display attributes from.", true, "Rock.Model.Person", false, "", "Child Fields", 5, CHILD_CATEGORIES_KEY )]
 
-    [CustomEnhancedListField( "Known Relationship Types", "The known relationship types that should be displayed as the possible ways that a child can be related to the adult(s).", @"
+    [CustomEnhancedListField( "Relationship Types", "The possible child-to-adult relationships. The value 'Child' will always be included.", @"
 SELECT 
 	R.[Id] AS [Value],
 	R.[Name] AS [Text]
@@ -83,7 +83,7 @@ AND R.[Name] <> 'Child'
 UNION ALL
 SELECT 0, 'Child'
 ORDER BY [Text]", false, "0", "Child Relationship", 0, "Relationships" )]
-    [CustomEnhancedListField( "Same Family Known Relationship Types", "The known relationship types that if selected for a child should just add child to same family as the adult(s) rather than actually creating the know relationship.", @"
+    [CustomEnhancedListField( "Same Immediate Family Relationships", "The relationships which indicate the child is in the same immediate family as the adult(s) rather than creating a new family for the child. In most cases, 'Child' will be the only value included in this list. Any values included in this list that are not in the Relationship Types list will be ignored.", @"
 SELECT 
 	R.[Id] AS [Value],
 	R.[Name] AS [Text]
@@ -94,7 +94,7 @@ AND R.[Name] <> 'Child'
 UNION ALL
 SELECT 0, 'Child'
 ORDER BY [Text]", false, "0", "Child Relationship", 1, "FamilyRelationships" )]
-    [CustomEnhancedListField( "Can Check-in Known Relationship Types", "The known relationship types that if selected for a child should also create the 'Can Check-in' known relationship type.", @"
+    [CustomEnhancedListField( "Can Check-in Relationship", "Any relationships that, if selected, will also create an additional 'Can Check-in' relationship between the adult and the child. This is only necessary if the relationship (selected by the user) does not have the 'Allow Check-in' option.", @"
 SELECT 
 	R.[Id] AS [Value],
 	R.[Name] AS [Text]
@@ -653,7 +653,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                         // Make sure they have another family
                         EnsurePersonInOtherFamily( familyGroupType.Id, primaryFamily.Id, person.Id, person.LastName, childRoleId, newFamilyIds );
 
-                        // If the selected relationship for this person, should also create the can-check in relationship, make sure to add it
+                        // If the selected relationship for this person should also create the can-check in relationship, make sure to add it
                         if ( canCheckinRelationships.Contains( child.RelationshipType ?? -1 ) )
                         {
                             foreach ( var adultId in adultIds )
@@ -807,8 +807,8 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             dvpSuffix1.Required = isRequired;
             hfSuffixRequired.Value = isRequired.ToStringSafe();
             var suffixDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() );
-            dvpSuffix1.BindToDefinedType( suffixDt, true );
-            dvpSuffix2.BindToDefinedType( suffixDt, true );
+            dvpSuffix1.DefinedTypeId = suffixDt.Id;
+            dvpSuffix2.DefinedTypeId = suffixDt.Id;
 
             // Adult Gender
             isRequired = SetControl( ADULT_GENDER_KEY, pnlGender1, pnlGender2 );
@@ -826,9 +826,9 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             isRequired = SetControl( ADULT_MARTIAL_STATUS_KEY, pnlMaritalStatus1, pnlMaritalStatus2 );
             dvpMaritalStatus1.Required = isRequired;
             hfMaritalStatusRequired.Value = isRequired.ToStringSafe();
-            var MaritalStatusDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
-            dvpMaritalStatus1.BindToDefinedType( MaritalStatusDt, true );
-            dvpMaritalStatus2.BindToDefinedType( MaritalStatusDt, true );
+            var maritalStatusDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
+            dvpMaritalStatus1.DefinedTypeId = maritalStatusDt.Id;
+            dvpMaritalStatus2.DefinedTypeId = maritalStatusDt.Id;
 
             // Adult Email
             isRequired = SetControl( ADULT_EMAIL_KEY, pnlEmail1, pnlEmail2 );
@@ -1435,7 +1435,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         /// <returns></returns>
         private List<AttributeCache> GetCategoryAttributeList( string attributeKey )
         {
-            var AttributeList = new List<AttributeCache>();
+            var attributeList = new List<AttributeCache>();
             foreach ( Guid categoryGuid in GetAttributeValue( attributeKey ).SplitDelimitedValues( false ).AsGuidList() )
             {
                 var category = CategoryCache.Get( categoryGuid );
@@ -1445,13 +1445,13 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     {
                         if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                         {
-                            AttributeList.Add( AttributeCache.Get( attribute ) );
+                            attributeList.Add( AttributeCache.Get( attribute ) );
                         }
                     }
                 }
             }
 
-            return AttributeList;
+            return attributeList;
         }
 
         /// <summary>
@@ -1461,17 +1461,17 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         /// <returns></returns>
         private List<AttributeCache> GetAttributeList( string attributeKey )
         {
-            var AttributeList = new List<AttributeCache>();
+            var attributeList = new List<AttributeCache>();
             foreach ( Guid attributeGuid in GetAttributeValue( attributeKey ).SplitDelimitedValues( false ).AsGuidList() )
             {
                 var attribute = AttributeCache.Get( attributeGuid );
                 if ( attribute != null && attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
-                    AttributeList.Add( attribute );
+                    attributeList.Add( attribute );
                 }
             }
 
-            return AttributeList;
+            return attributeList;
         }
 
         /// <summary>

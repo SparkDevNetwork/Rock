@@ -129,7 +129,8 @@ namespace Rock.Communication
         /// <exception cref="System.Exception">
         /// Error sending System Email: Could not read Email Medium Entity Type
         /// </exception>
-        [Obsolete( "Use the RockEmailMessage object and its Send() method to send emails." )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use the RockEmailMessage object and its Send() method to send emails.", true )]
         public static void Send( Guid emailTemplateGuid, List<RecipientData> recipients, string appRoot = "", string themeRoot = "", bool createCommunicationHistory = true )
         {
             using ( var rockContext = new RockContext() )
@@ -160,7 +161,8 @@ namespace Rock.Communication
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">The attachments.</param>
         /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
-        [Obsolete( "Use the RockEmailMessage object and its Send() method to send emails." )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use the RockEmailMessage object and its Send() method to send emails.", true )]
         public static void Send( string fromEmail, string subject, List<string> recipients, string message, string appRoot = "", string themeRoot = "", List<Attachment> attachments = null, bool createCommunicationHistory = true )
         {
             Send( fromEmail, string.Empty, subject, recipients, message, appRoot, themeRoot, attachments, createCommunicationHistory );
@@ -180,7 +182,8 @@ namespace Rock.Communication
         /// <param name="attachments">The attachments.</param>
         /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
         /// <exception cref="System.Exception">Error sending System Email: Could not read Email Medium Entity Type</exception>
-        [Obsolete( "Use the RockEmailMessage object and its Send() method to send emails." )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use the RockEmailMessage object and its Send() method to send emails.", true )]
         public static void Send( string fromEmail, string fromName, string subject, List<string> recipients, string message, string appRoot = "", string themeRoot = "", List<Attachment> attachments = null, bool createCommunicationHistory = true )
         {
             var errorMessages = new List<string>();

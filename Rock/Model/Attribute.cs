@@ -247,6 +247,24 @@ namespace Rock.Model
         [DataMember]
         public bool EnableHistory { get; set; } = false;
 
+        /// <summary>
+        /// Gets or sets any HTML to be rendered before the attribute's edit control 
+        /// </summary>
+        /// <value>
+        /// The pre HTML.
+        /// </value>
+        [DataMember]
+        public string PreHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets any HTML to be rendered after the attribute's edit control 
+        /// </summary>
+        /// <value>
+        /// The post HTML.
+        /// </value>
+        [DataMember]
+        public string PostHtml { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -285,6 +303,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the collection of <see cref="Rock.Model.Category">Categories</see> that this Attribute is associated with.
+        /// NOTE: Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime if Categories are modified.
         /// </summary>
         /// <value>
         /// A collection of <see cref="Rock.Model.Category">Categories</see> that this Attribute is associated with.
@@ -505,6 +524,17 @@ namespace Rock.Model
                         if ( groupTypeId.HasValue )
                         {
                             GroupTypeCache.FlushItem( groupTypeId.Value );
+                        }
+                    }
+                    else if ( entityTypeQualifierColumn.Equals( "GroupTypePurposeValueId", StringComparison.OrdinalIgnoreCase ))
+                    {
+                        int? groupTypePurposeValueId = entityTypeQualifierValue.AsIntegerOrNull();
+                        if ( groupTypePurposeValueId.HasValue )
+                        {
+                            foreach ( var groupTypeId in GroupTypeCache.All().Where( a => a.GroupTypePurposeValueId == groupTypePurposeValueId.Value ).Select( a => a.Id ).ToList() )
+                            {
+                                GroupTypeCache.FlushItem( groupTypeId );
+                            }
                         }
                     }
                 }

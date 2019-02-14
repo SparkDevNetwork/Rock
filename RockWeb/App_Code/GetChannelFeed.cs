@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,18 +15,14 @@
 // </copyright>
 //
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using System.Xml;
-using System.Text;
-using System.Net;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
-using System.Collections.Generic;
 
 namespace RockWeb
 {
@@ -114,7 +110,7 @@ namespace RockWeb
             {
                 dvRssTemplate = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEFAULT_RSS_CHANNEL );
             }
-            
+
             if ( dvRssTemplate.DefinedType.Guid != new Guid( Rock.SystemGuid.DefinedType.LAVA_TEMPLATES ) )
             {
                 response.TrySkipIisCustomErrors = true;
@@ -134,7 +130,7 @@ namespace RockWeb
                 response.ContentType = dvRssTemplate.GetAttributeValue( "MimeType" );
             }
 
-            if (request.HttpMethod == "HEAD")
+            if ( request.HttpMethod == "HEAD" )
             {
                 response.StatusCode = 200;
                 return;
@@ -146,7 +142,7 @@ namespace RockWeb
 
             Dictionary<string, object> requestObjects = new Dictionary<string, object>();
             requestObjects.Add( "Scheme", request.Url.Scheme );
-            requestObjects.Add( "Host", request.Url.Host );
+            requestObjects.Add( "Host", WebRequestHelper.GetHostNameFromRequest( context ) );
             requestObjects.Add( "Authority", request.Url.Authority );
             requestObjects.Add( "LocalPath", request.Url.LocalPath );
             requestObjects.Add( "AbsoluteUri", request.Url.AbsoluteUri );

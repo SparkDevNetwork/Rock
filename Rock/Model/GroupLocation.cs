@@ -45,7 +45,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Group"/> that that is associated with this GroupLocation. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Group"/> that is associated with this GroupLocation. This property is required.
         /// </summary>
         /// <value>
         /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> that this GroupLocation is associated with.
@@ -203,7 +203,7 @@ namespace Rock.Model
                         locationType = locationType.IsNotNullOrWhiteSpace() ? locationType : "Unknown";
                         History.EvaluateChange( GroupHistoryChanges, $"{locationType} Location", (int?)null, Location, LocationId, rockContext );
                         History.EvaluateChange( GroupHistoryChanges, $"{locationType} Is Mailing", false, IsMailingLocation );
-                        History.EvaluateChange( GroupHistoryChanges, $"{locationType} Is Mapp Location", false, IsMappedLocation );
+                        History.EvaluateChange( GroupHistoryChanges, $"{locationType} Is Map Location", false, IsMappedLocation );
 
                         break;
                     }
@@ -224,7 +224,7 @@ namespace Rock.Model
                         }
 
                         History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Mailing", entry.OriginalValues["IsMailingLocation"].ToStringSafe().AsBoolean(), IsMailingLocation );
-                        History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Mapp Location", entry.OriginalValues["IsMappedLocation"].ToStringSafe().AsBoolean(), IsMappedLocation );
+                        History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Map Location", entry.OriginalValues["IsMappedLocation"].ToStringSafe().AsBoolean(), IsMappedLocation );
 
                         break;
                     }
@@ -248,9 +248,22 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
+            var rockContext = dbContext as RockContext;
             if ( GroupHistoryChanges != null && GroupHistoryChanges.Any() )
             {
-                HistoryService.SaveChanges( (RockContext)dbContext, typeof( Group ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(), GroupId, GroupHistoryChanges, true, this.ModifiedByPersonAliasId );
+                HistoryService.SaveChanges( rockContext, typeof( Group ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(), GroupId, GroupHistoryChanges, true, this.ModifiedByPersonAliasId );
+            }
+
+            // If this is a Group of type Family, update the ModifiedDateTime on the Persons that are members of this family (since one of their Addresses changed)
+            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
+            var groupService = new GroupService( rockContext );
+
+            int groupTypeId = groupService.GetSelect( this.GroupId, s => s.GroupTypeId );
+            if ( groupTypeId == groupTypeIdFamily )
+            {
+                var currentDateTime = RockDateTime.Now;
+                var qryPersonsToUpdate = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == this.GroupId ).Select( a => a.Person );
+                rockContext.BulkUpdate( qryPersonsToUpdate, p => new Person { ModifiedDateTime = currentDateTime, ModifiedByPersonAliasId = this.ModifiedByPersonAliasId } );
             }
 
             base.PostSaveChanges( dbContext );

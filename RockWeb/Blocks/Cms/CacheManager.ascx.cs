@@ -223,28 +223,6 @@ namespace RockWeb.Blocks.Cms
 
         #region Redis
 
-        //private string GetValueFromWebConfig( string key )
-        //{
-        //    return ConfigurationManager.AppSettings[key] ?? string.Empty;
-        //}
-
-        //private void SetValueToWebConfig( string key, string value )
-        //{
-        //    try
-        //    {
-        //        if ( ConfigurationManager.AppSettings[key] != null )
-        //        {
-        //            Configuration rockWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration( "~" );
-        //            rockWebConfig.AppSettings.Settings[key].Value = value;
-        //            rockWebConfig.Save();
-        //        }
-        //    }
-        //    catch ( Exception ex )
-        //    {
-        //        LogException( ex );
-        //    }
-        //}
-
         protected void PopulateRedisView()
         {
             // clear and hide edit
@@ -254,8 +232,8 @@ namespace RockWeb.Blocks.Cms
 
             redisView.Visible = true;
 
-            bool enabled = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBoolean();
-            if( !enabled )
+            bool enabled = RockCache.IsCacheSerialized;
+            if ( !enabled )
             {
                 DisplayNotification( nbRedisSettings, "Redis is currently not enabled. Review documentation for more information on enabling Redis backplane support.", NotificationBoxType.Info );
                 redisEnabled.Visible = false;
@@ -267,7 +245,7 @@ namespace RockWeb.Blocks.Cms
             string redisPassword = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
 
             string serverList = string.Join(
-                "",
+                string.Empty,
                 SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST )
                     .Split( ',' )
                     .Select( s => 
@@ -365,10 +343,6 @@ namespace RockWeb.Blocks.Cms
             settings.Add( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER, tbDatabaseNumber.Text );
 
             SystemSettings.SetValueToWebConfig( settings );
-            //SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER, cbEnabledEdit.Checked.ToString() );
-            //SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENDPOINT_LIST, serverList );
-            //SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.REDIS_PASSWORD, tbPassword.Text );
-            //SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER, tbDatabaseNumber.Text );
 
             Response.Redirect( Request.RawUrl );
         }
@@ -405,7 +379,7 @@ namespace RockWeb.Blocks.Cms
         {
             bool redisEnabled = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBooleanOrNull() ?? false;
 
-            if ( !redisEnabled  )
+            if ( !redisEnabled )
             {
                 spRedisStatus.Visible = false;
                 return;
@@ -562,6 +536,12 @@ namespace RockWeb.Blocks.Cms
         /// </returns>
         private bool IsValid()
         {
+            // Don't need to check for an edited tag as only the description is being changed.
+            if(hfTagId.Value.IsNotNullOrWhiteSpace() )
+            {
+                return true;
+            }
+
             string tagName = tbTagName.Text.Trim();
 
             if ( tagName.IsNullOrWhiteSpace() )
@@ -590,6 +570,19 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void SaveTag()
         {
+            if (hfTagId.Value == string.Empty)
+            {
+                SaveNewTag();
+            }
+            else
+            {
+                UpdateExistingTag( hfTagId.ValueAsInt() );
+                DefinedValueCache.Clear();
+            }
+        }
+
+        private void SaveNewTag()
+        {
             int cachedTagDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
             var rockContext = new RockContext();
             var definedValueService = new DefinedValueService( rockContext );
@@ -612,17 +605,42 @@ namespace RockWeb.Blocks.Cms
             rockContext.SaveChanges();
         }
 
+        private void UpdateExistingTag(int cacheTagId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var definedValueService = new DefinedValueService( rockContext );
+                var cacheTagDefinedValue = definedValueService.Get( cacheTagId );
+                cacheTagDefinedValue.Description = tbTagDescription.Text.Trim();
+                rockContext.SaveChanges();
+            }
+        }
+
         /// <summary>
         /// Clears the and hides modal.
         /// </summary>
         protected void ClearModal()
         {
             tbTagName.Text = string.Empty;
+            tbTagName.Enabled = true;
             tbTagDescription.Text = string.Empty;
+            hfTagId.Value = string.Empty;
             dlgAddTag.Hide();
         }
 
         #endregion
 
+        protected void gCacheTagList_RowSelected( object sender, RowEventArgs e )
+        {
+            var definedValueId = e.RowKeyId;
+            hfTagId.Value = definedValueId.ToString();
+
+            var definedValue = DefinedValueCache.Get( definedValueId );
+
+            tbTagDescription.Text = definedValue.Description;
+            tbTagName.Text = definedValue.Value;
+            tbTagName.Enabled = false;
+            dlgAddTag.Show();
+        }
     }
 }

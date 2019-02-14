@@ -23,6 +23,8 @@ using System.Web.Routing;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Transactions;
+using System.Web;
+using Rock.Utility;
 
 namespace Rock.Web
 {
@@ -52,32 +54,32 @@ namespace Rock.Web
 
                 string pageId = "";
                 int routeId = 0;
+                bool isSiteMatch = false;
 
                 var parms = new Dictionary<string, string>();
-
+                var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
                 // Pages using the default routing URL will have the page id in the RouteData.Values collection
                 if ( requestContext.RouteData.Values["PageId"] != null )
                 {
                     pageId = (string)requestContext.RouteData.Values["PageId"];
+                    isSiteMatch = true;
                 }
 
                 // Pages that use a custom URL route will have the page id in the RouteDate.DataTokens collection
                 else if ( requestContext.RouteData.DataTokens["PageRoutes"] != null )
                 {
+                    
                     var pageAndRouteIds = requestContext.RouteData.DataTokens["PageRoutes"] as List<PageAndRouteId>;
                     if ( pageAndRouteIds != null && pageAndRouteIds.Count > 0 )
                     {
                         // Default to first site/page
                         if ( pageAndRouteIds.Count >= 1 )
                         {
-                            var pageAndRouteId = pageAndRouteIds.First();
-                            pageId = pageAndRouteId.PageId.ToJson();
-                            routeId = pageAndRouteId.RouteId;
-                        }
+                            var pageAndRouteIdDefault = pageAndRouteIds.First();
+                            pageId = pageAndRouteIdDefault.PageId.ToJson();
+                            routeId = pageAndRouteIdDefault.RouteId;
 
-                        // Then check to see if any can be matched by site
-                        if ( pageAndRouteIds.Count > 1 )
-                        {
+                            // Then check to see if any can be matched by site
                             SiteCache site = null;
 
                             // First check to see if site was specified in querystring
@@ -90,7 +92,7 @@ namespace Rock.Web
                             // Then check to see if site can be determined by domain
                             if ( site == null )
                             {
-                                site = SiteCache.GetSiteByDomain( httpRequest.Url.Host );
+                                site = SiteCache.GetSiteByDomain( host );
                             }
 
                             // Then check the last site
@@ -111,6 +113,7 @@ namespace Rock.Web
                                     {
                                         pageId = pageAndRouteId.PageId.ToJson();
                                         routeId = pageAndRouteId.RouteId;
+                                        isSiteMatch = true;
                                         break;
                                     }
                                 }
@@ -123,11 +126,11 @@ namespace Rock.Web
                         parms.Add( routeParm.Key, (string)routeParm.Value );
                     }
                 }
-
+                
                 // If page has not been specified get the site by the domain 
-                if ( string.IsNullOrEmpty( pageId ) )
+                if ( string.IsNullOrEmpty( pageId ) || !isSiteMatch )
                 {
-                    SiteCache site = SiteCache.GetSiteByDomain( httpRequest.Url.Host );
+                    SiteCache site = SiteCache.GetSiteByDomain( host );
                     if ( site == null )
                     {
                         // Use last site
@@ -164,17 +167,34 @@ namespace Rock.Web
                         }
 
                         // Check to see if this is a short link route
+                        string shortlink = null;
                         if ( requestContext.RouteData.Values.ContainsKey( "shortlink" ) )
                         {
-                            pageId = string.Empty;
-                            routeId = 0;
+                            shortlink = requestContext.RouteData.Values["shortlink"].ToString();
+                        }
 
-                            string shortlink = requestContext.RouteData.Values["shortlink"].ToString();
+                        // If shortlink have the same name as route and route's site did not match, then check if shortlink site match.
+                        if ( shortlink.IsNullOrWhiteSpace() && requestContext.RouteData.DataTokens["RouteName"] != null )
+                        {
+                            shortlink = requestContext.RouteData.DataTokens["RouteName"].ToString();
+                        }
+
+                        if ( shortlink.IsNotNullOrWhiteSpace() )
+                        {
                             using ( var rockContext = new Rock.Data.RockContext() )
                             {
                                 var pageShortLink = new PageShortLinkService( rockContext ).GetByToken( shortlink, site.Id );
-                                if ( pageShortLink != null )
+
+                                // Pick url on the following priority order:
+                                // Route match and site match
+                                // ShortLink match and site match
+                                // Route and no site match
+                                // ShortLink with no site match
+                                if ( pageShortLink != null && ( pageShortLink.SiteId == site.Id || requestContext.RouteData.DataTokens["RouteName"] == null  ) )
                                 {
+                                    pageId = string.Empty;
+                                    routeId = 0;
+
                                     string trimmedUrl = pageShortLink.Url.RemoveCrLf().Trim();
 
                                     var transaction = new ShortLinkTransaction();
@@ -186,7 +206,7 @@ namespace Rock.Web
                                         transaction.UserName = requestContext.HttpContext.User.Identity.Name;
                                     }
                                     transaction.DateViewed = RockDateTime.Now;
-                                    transaction.IPAddress = UI.RockPage.GetClientIpAddress( httpRequest );
+                                    transaction.IPAddress = WebRequestHelper.GetClientIpAddress( httpRequest );
                                     transaction.UserAgent = httpRequest.UserAgent ?? "";
                                     RockQueue.TransactionQueue.Enqueue( transaction );
 
@@ -251,7 +271,7 @@ namespace Rock.Web
                 if ( page == null )
                 {
                     // try to get site's 404 page
-                    SiteCache site = SiteCache.GetSiteByDomain( httpRequest.Url.Host );
+                    SiteCache site = SiteCache.GetSiteByDomain( host );
                     if ( site == null )
                     {
                         // Use last site

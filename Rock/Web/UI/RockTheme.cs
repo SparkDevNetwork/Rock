@@ -158,6 +158,7 @@ namespace Rock.Web.UI
             {
                 compiledSuccessfully = false;
                 messages = ex.Message;
+                Rock.Model.ExceptionLogService.LogException( ex );
             }
 
             return compiledSuccessfully;
@@ -191,7 +192,7 @@ namespace Rock.Web.UI
                 if ( !themeSuccess )
                 {
                     allCompiled = false;
-                    messages += string.Format( "Failed to compile the theme {0} ({1}).", theme.Name, themeMessage );
+                    messages += string.Format( "Failed to compile the theme {0} ({1})." + Environment.NewLine, theme.Name, themeMessage );
                 }
             }
 

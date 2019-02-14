@@ -44,11 +44,12 @@ namespace Rock.Rest.Filters
             string controllerClassName = controller.ControllerType.FullName;
             string actionMethod = actionContext.Request.Method.Method;
             string actionPath = actionContext.Request.GetRouteData().Route.RouteTemplate.Replace( "{controller}", controller.ControllerName );
-            
+
             //// find any additional arguments that aren't part of the RouteTemplate that qualified the action method
             //// for example: ~/person/search?name={name}&includeHtml={includeHtml}&includeDetails={includeDetails}&includeBusinesses={includeBusinesses}
-            //// is a different action method than ~/person/search?name={name}
-            var routeQueryParams = actionContext.ActionArguments.Where(a => !actionPath.Contains("{" + a.Key + "}"));
+            //// is a different action method than ~/person/search?name={name}.
+            //// Also exclude any ODataQueryOptions parameters (those don't end up as put of the apiId)
+            var routeQueryParams = actionContext.ActionArguments.Where(a => !actionPath.Contains("{" + a.Key + "}") && !(a.Value is System.Web.Http.OData.Query.ODataQueryOptions) );
             if ( routeQueryParams.Any())
             {
                 var actionPathQueryString = routeQueryParams.Select( a => string.Format( "{0}={{{0}}}", a.Key ) ).ToList().AsDelimited( "&" );
@@ -58,6 +59,7 @@ namespace Rock.Rest.Filters
             ISecured item = RestActionCache.Get( actionMethod + actionPath );
             if ( item == null )
             {
+                // if there isn't a RestAction in the database, use the Controller as the secured item
                 item = RestControllerCache.Get( controllerClassName );
                 if ( item == null )
                 {
@@ -83,7 +85,7 @@ namespace Rock.Rest.Filters
                         if ( userName.StartsWith( "rckipid=" ) )
                         {
                             Rock.Model.PersonService personService = new Model.PersonService( rockContext );
-                            Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( userName.Substring( 8 ), false, null );
+                            Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( userName.Substring( 8 ) );
                             if ( impersonatedPerson != null )
                             {
                                 userLogin = impersonatedPerson.GetImpersonatedUser();

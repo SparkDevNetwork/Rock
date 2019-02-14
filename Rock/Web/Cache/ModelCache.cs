@@ -47,6 +47,7 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete("Use SetFromEntity instead")]
         public virtual void CopyFromModel( Rock.Data.IEntity model )
         {
@@ -348,6 +349,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Reloads the attribute values.
         /// </summary>
+        [RockObsolete( "1.8" )]
         [Obsolete( "No longer needed. The Attributes will get reloaded automatically." )]
         public virtual void ReloadAttributeValues()
         {
@@ -363,6 +365,27 @@ namespace Rock.Web.Cache
                 AttributeValues = model.AttributeValues;
                 Attributes = model.Attributes;
             }
+        }
+
+        /// <summary>
+        /// Loads the attributes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        [RockObsolete( "1.8" )]
+        [Obsolete( "No longer needed on Cached items. The Attributes will get loaded automatically.", true )]
+        public void LoadAttributes( RockContext rockContext )
+        {
+            ReloadAttributeValues();
+        }
+
+        /// <summary>
+        /// Loads the attributes.
+        /// </summary>
+        [RockObsolete( "1.8" )]
+        [Obsolete( "No longer needed on Cached items. The Attributes will get loaded automatically." )]
+        public void LoadAttributes()
+        {
+            ReloadAttributeValues();
         }
 
         #endregion
@@ -484,7 +507,8 @@ namespace Rock.Web.Cache
 
             if ( Attributes == null )
             {
-                this.LoadAttributes();
+                // shouldn't happen
+                return false;
             }
 
             if ( attributeKey.EndsWith( "_unformatted" ) )

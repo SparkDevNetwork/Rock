@@ -30,7 +30,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Cms
 {
     [DisplayName( "Asset Manager" )]
-    [Category( "Core" )]
+    [Category( "CMS" )]
     [Description( "Manage files stored on a remote server or 3rd party cloud storage" )]
     public partial class AssetManager : RockBlock, IPickerBlock
     {
@@ -273,7 +273,7 @@ upnlFiles.ClientID // {2}
                 {
                     var keyControl = file.FindControl( "lbKey" ) as Label;
                     string key = keyControl.Text;
-                    Asset asset = component.GetObject( assetStorageProvider, new Asset { Key = key, Type = AssetType.File } );
+                    Asset asset = component.GetObject( assetStorageProvider, new Asset { Key = key, Type = AssetType.File }, false );
 
                     byte[] bytes = asset.AssetStream.ReadBytesToEnd();
 
@@ -394,7 +394,26 @@ upnlFiles.ClientID // {2}
                 {
                     var keyControl = repeaterItem.FindControl( "lbKey" ) as Label;
                     string key = keyControl.Text;
-                    component.RenameAsset( assetStorageProvider, new Asset { Key = key, Type = AssetType.File }, tbRenameFile.Text );
+                    try
+                    {
+                        component.RenameAsset( assetStorageProvider, new Asset { Key = key, Type = AssetType.File }, tbRenameFile.Text );
+                    }
+                    catch ( Rock.Web.FileUploadException ex )
+                    {
+                        lblRenameFileNotification.InnerText = ex.Detail;
+                        lblRenameFileNotification.Style.Clear();
+                        divRenameFile.Style.Clear();
+                        return;
+                    }
+                    catch ( Exception ex )
+                    {
+                        lblRenameFileNotification.InnerText = ex.Message;
+                        lblRenameFileNotification.Style.Clear();
+                        divRenameFile.Style.Clear();
+                        return;
+                    }
+
+                    break;
                 }
             }
 

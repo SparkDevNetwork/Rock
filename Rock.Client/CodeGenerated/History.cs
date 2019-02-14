@@ -85,6 +85,11 @@ namespace Rock.Client
         public string SourceOfChange { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.8"
+        [Obsolete( "Use SummaryHtml instead to get the Summary, or use HistoryChangeList related functions to log history ", false )]
+        public string Summary { get; set; }
+
+        /// <summary />
         public string ValueName { get; set; }
 
         /// <summary />
@@ -139,6 +144,9 @@ namespace Rock.Client
             this.RelatedEntityId = source.RelatedEntityId;
             this.RelatedEntityTypeId = source.RelatedEntityTypeId;
             this.SourceOfChange = source.SourceOfChange;
+            #pragma warning disable 612, 618
+            this.Summary = source.Summary;
+            #pragma warning restore 612, 618
             this.ValueName = source.ValueName;
             this.Verb = source.Verb;
             this.CreatedDateTime = source.CreatedDateTime;

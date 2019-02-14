@@ -128,6 +128,14 @@ namespace Rock.CheckIn
         public CheckInStatus CheckIn { get; set; }
 
         /// <summary>
+        /// Gets or sets the messages.
+        /// </summary>
+        /// <value>
+        /// The messages.
+        /// </value>
+        public List<CheckInMessage> Messages { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CheckInState" /> class.
         /// </summary>
         /// <param name="deviceId">The device id.</param>
@@ -139,6 +147,7 @@ namespace Rock.CheckIn
             CheckinTypeId = checkinTypeId;
             ConfiguredGroupTypes = configuredGroupTypes;
             CheckIn = new CheckInStatus();
+            Messages = new List<CheckInMessage>();
         }
 
         /// <summary>

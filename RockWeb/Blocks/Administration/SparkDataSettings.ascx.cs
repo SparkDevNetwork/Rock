@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Administration
             dvpNcoaPersonDataView.EntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
 
             var inactiveRecordReasonDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
-            dvpNcoaInactiveRecordReason.BindToDefinedType( inactiveRecordReasonDt, true );
+            dvpNcoaInactiveRecordReason.DefinedTypeId = inactiveRecordReasonDt.Id;
         }
 
         /// <summary>
@@ -262,6 +262,11 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        /// <summary>
+        /// Handles the SaveClick event of the mdRunNcoa control. This is the Start NCOA dialog. Save = Start
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdRunNcoa_SaveClick( object sender, EventArgs e)
         {
             Ncoa ncoa = new Ncoa();

@@ -9,17 +9,17 @@ Our main developer starting point site is [the wiki](https://github.com/SparkDev
 
 ## Learn More
 
-Jump over to our [Rock website](http://www.rockrms.com/) to find out more. Keep up to date by:
+Jump over to our [Rock website](https://www.rockrms.com/) to find out more. Keep up to date by:
 
-* [Reading our blog](http://www.rockrms.com/Rock/Connect)
-* [Following us on Twitter](http://www.twitter.com/therockrms)
-* [Liking us on Facebook](http://www.facebook.com/therockrms)
-* [Reading the community Q & A](http://www.rockrms.com/Rock/Ask)
-* [Subscribing to our newsletter](http://www.rockrms.com/Rock/Subscribe)
+* [Reading our blog](https://www.rockrms.com/Rock/Connect)
+* [Following us on Twitter](https://www.twitter.com/therockrms)
+* [Liking us on Facebook](https://www.facebook.com/therockrms)
+* [Reading the community Q & A](https://www.rockrms.com/Rock/Ask)
+* [Subscribing to our newsletter](https://www.rockrms.com/Rock/Subscribe)
 
 ## License
-Rock released under the [Rock Community License](http://www.rockrms.com/license).
+Rock released under the [Rock Community License](https://www.rockrms.com/license).
 
 ## Crafted By
 
-A community of developers led by the [Spark Development Network](http://www.sparkdevnetwork.com/).
+A community of developers led by the [Spark Development Network](https://www.sparkdevnetwork.com/).
