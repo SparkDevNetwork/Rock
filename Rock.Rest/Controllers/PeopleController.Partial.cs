@@ -57,6 +57,8 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
+            var test = person.ToJson();
+
             return person;
         }
 
@@ -305,6 +307,10 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
+        ///
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "api/People" )]
         public override System.Net.Http.HttpResponseMessage Post( Person person )
         {
             SetProxyCreation( true );
@@ -326,7 +332,7 @@ namespace Rock.Rest.Controllers
 
             if (matchPerson != null)
             {
-                return ControllerContext.Request.CreateResponse( HttpStatusCode.OK, matchPerson.Id );
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.Conflict, matchPerson.Id );
             }
 
             PersonService.SaveNewPerson( person, rockContext, null, false );
