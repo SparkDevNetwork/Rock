@@ -16,9 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Linq.Expressions;
-
+using System.Reflection;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -109,6 +110,32 @@ namespace Rock.Utility
         }
 
         /// <summary>
+        /// Apply the value to the comparison expression and return the result.
+        /// </summary>
+        /// <param name="attributeValueParameterExpression">The attribute value parameter expression.</param>
+        /// <param name="comparisonExpression">The comparison expression.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if the comparison expression result in a true result; otherwise, <c>false</c>.
+        /// </returns>
+        private static bool IsComparedToValue( ParameterExpression attributeValueParameterExpression, Expression comparisonExpression, string value )
+        {
+            // Creates a dummy attribute value that uses the default value
+            AttributeValue attributeValue = AttributeValue.CreateNonPersistedAttributeValue( value );
+
+            // Assign the dummy attribute to the comparison expression
+            Expression assignExpr = Expression.Assign( attributeValueParameterExpression, Expression.Constant( attributeValue ) );
+            BlockExpression blockExpr = Expression.Block(
+                new ParameterExpression[] { attributeValueParameterExpression },
+                assignExpr,
+                comparisonExpression
+                );
+
+            // Execute the comparison expression
+            return Expression.Lambda<Func<bool>>( blockExpr ).Compile()();
+        }
+
+        /// <summary>
         /// Builds an expression for an attribute field
         /// </summary>
         /// <param name="serviceInstance">The service instance.</param>
@@ -152,7 +179,8 @@ namespace Rock.Utility
             ComparisonType? comparisonType = ComparisonType.EqualTo;
             ComparisonType? evaluatedComparisonType = comparisonType;
 
-            if ( values.Count >= 1 )
+            // If Values.Count >= 2, then Values[0] is ComparisonType, and Values[1] is a CompareToValue. Otherwise, Values[0] is a CompareToValue (for example, a SingleSelect attribute)
+            if ( values.Count >= 2 )
             {
                 comparisonType = values[0].ConvertToEnumOrNull<ComparisonType>();
 
@@ -211,7 +239,9 @@ namespace Rock.Utility
 
             if ( attributeCache != null )
             {
-                var comparedToDefault = entityField.FieldType.Field.IsComparedToValue( values, attributeCache.DefaultValue );
+                // Test the default value against the expression filter. If it pass, then we can include all the attribute values with no value.
+                var comparedToDefault = IsComparedToValue( attributeValueParameterExpression, filterExpression, attributeCache.DefaultValue );
+
                 if ( comparedToDefault )
                 {
                     var allAttributeValueIds = service.Queryable().Where( v => v.Attribute.Id == attributeCache.Id && v.EntityId.HasValue && !string.IsNullOrEmpty( v.Value ) ).Select( a => a.EntityId.Value );
@@ -220,6 +250,43 @@ namespace Rock.Utility
                     Expression notContainsExpression = Expression.Not( Expression.Call( typeof( Queryable ), "Contains", new Type[] { typeof( int ) }, allIdsExpression, propertyExpression ) );
 
                     expression = Expression.Or( expression, notContainsExpression );
+                }
+
+                // If there is an EntityTypeQualifierColumn/Value on this attribute, also narrow down the entity query to the ones with matching QualifierColumn/Value
+                if ( attributeCache.EntityTypeQualifierColumn.IsNotNullOrWhiteSpace() && attributeCache.EntityTypeQualifierValue.IsNotNullOrWhiteSpace() )
+                {
+                    Expression qualifierParameterExpression = null;
+                    PropertyInfo qualifierColumnProperty = parameterExpression.Type.GetProperty( attributeCache.EntityTypeQualifierColumn );
+
+                    // make sure the QualifierColumn is an actual mapped property on the Entity
+                    if ( qualifierColumnProperty != null && qualifierColumnProperty.GetCustomAttribute<NotMappedAttribute>() == null )
+                    {
+                        qualifierParameterExpression = parameterExpression;
+                    }
+                    else
+                    {
+                        // Special Case for GroupMember with Qualifier of 'GroupTypeId' (which is really Group.GroupTypeId)
+                        if ( attributeCache.EntityTypeQualifierColumn == "GroupTypeId" && parameterExpression.Type == typeof( Rock.Model.GroupMember ) )
+                        {
+                            qualifierParameterExpression = Expression.Property( parameterExpression, "Group" );
+                        }
+                        else
+                        {
+                            // Unable to determine how the EntityTypeQualiferColumn relates to the Entity. Probably will be OK, but spit out a debug message
+                            System.Diagnostics.Debug.WriteLine( $"Unable to determine how the EntityTypeQualiferColumn {attributeCache.EntityTypeQualifierColumn} on attribute {attributeCache.Name}:{attributeCache.Guid}" );
+                        }
+                    }
+
+                    if ( qualifierParameterExpression != null )
+                    {
+                        // if we figured out the EntityQualifierColumn/Value expression, apply it
+                        // This would effectively add something like 'WHERE [GroupTypeId] = 10' to the WHERE clause
+                        MemberExpression entityQualiferColumnExpression = Expression.Property( qualifierParameterExpression, attributeCache.EntityTypeQualifierColumn );
+                        object entityTypeQualifierValueAsType = Convert.ChangeType( attributeCache.EntityTypeQualifierValue, entityQualiferColumnExpression.Type );
+                        Expression entityQualiferColumnEqualExpression = Expression.Equal( entityQualiferColumnExpression, Expression.Constant( entityTypeQualifierValueAsType, entityQualiferColumnExpression.Type ) );
+
+                        expression = Expression.And( entityQualiferColumnEqualExpression, expression );
+                    }
                 }
             }
 

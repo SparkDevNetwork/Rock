@@ -149,6 +149,12 @@ $('.js-panel-toggle').on('click', function (e) {
 
                 overrideFile.AppendLine( string.Format( "{0} {1};", FontAwesomeHelper.VariableOverridesTokens.FontWeightValueLineStart, selectedPrimaryWeight.WeightValue ) );
                 overrideFile.AppendLine( string.Format( "{0} '{1}';", FontAwesomeHelper.VariableOverridesTokens.FontWeightNameLineStart, selectedPrimaryWeight.WeightName ) );
+
+                if ( FontAwesomeHelper.HasFontAwesomeProKey() )
+                {
+                    overrideFile.AppendLine( "@fa-edition: 'pro';" );
+                }
+
                 overrideFile.AppendLine();
 
                 if ( !selectedPrimaryWeight.IncludedInFree )
@@ -271,7 +277,7 @@ $('.js-panel-toggle').on('click', function (e) {
         public void ShowDetail( string themeName )
         {
             lThemeName.Text = themeName + " Theme";
-            
+
             // Font Awesome stuff
             // TODO: Read LESS files for current setup
 
@@ -455,7 +461,7 @@ $('.js-panel-toggle').on('click', function (e) {
                             //     - if the comments tell us it's a color (#color)
                             //     - it's not a less variable (starts with a @)
                             //     - it's not a less color function
-                            
+
                             // todo check for less color functions
                             if ( variableParts[2].Contains( "#color" ) && !variableParts[1].StartsWith( "@" ) && !lessColorFunctions.Any( x => variableParts[1].StartsWith( x ) ) )
                             {
@@ -576,7 +582,7 @@ $('.js-panel-toggle').on('click', function (e) {
                     AddControl( panelClose, true );
                 }
 
-                if ( phThemeControls.Controls.Count == 0 )
+                if ( phThemeControls.Controls.Count == 0 && !pnlFontAwesomeSettings.Visible )
                 {
                     btnSave.Visible = false;
                     nbMessages.Text = "This theme does not define any variables for editing.";
@@ -633,7 +639,7 @@ $('.js-panel-toggle').on('click', function (e) {
         /// </summary>
         private void LoadCssOverrides()
         {
-            // load the CSS overrides                
+            // load the CSS overrides
             string overrideFile = string.Format( @"{0}Themes/{1}/Styles/_css-overrides.less", Request.PhysicalApplicationPath, _themeName );
             if ( File.Exists( overrideFile ) )
             {
@@ -648,7 +654,7 @@ $('.js-panel-toggle').on('click', function (e) {
         #endregion
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum VariableType
         {

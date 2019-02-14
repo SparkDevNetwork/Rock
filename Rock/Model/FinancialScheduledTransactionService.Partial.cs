@@ -74,19 +74,6 @@ namespace Rock.Model
         /// Gets the by schedule identifier.
         /// </summary>
         /// <param name="scheduleId">The schedule identifier.</param>
-        /// <returns></returns>
-        [Obsolete( "The GetByScheduleId( scheduleId, gatewayId ) method should be used instead." )]
-        public FinancialScheduledTransaction GetByScheduleId( string scheduleId )
-        {
-            return Queryable( "ScheduledTransactionDetails,AuthorizedPersonAlias.Person" )
-                .Where( t => t.GatewayScheduleId == scheduleId.Trim() )
-                .FirstOrDefault();
-        }
-
-        /// <summary>
-        /// Gets the by schedule identifier.
-        /// </summary>
-        /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="gatewayId">The gateway identifier.</param>
         /// <returns></returns>
         public FinancialScheduledTransaction GetByScheduleId( string scheduleId, int gatewayId )
@@ -254,7 +241,8 @@ namespace Rock.Model
         /// <param name="batchUrlFormat">The batch URL format.</param>
         /// <param name="receiptEmail">The receipt email.</param>
         /// <returns></returns>
-        [Obsolete("Use method with failed payment email and workflow type parameters")]
+        [RockObsolete( "1.7" )]
+        [Obsolete("Use method with failed payment email and workflow type parameters", true )]
         public static string ProcessPayments( FinancialGateway gateway, string batchNamePrefix, List<Payment> payments, string batchUrlFormat = "", Guid? receiptEmail = null )
         {
             return ProcessPayments( gateway, batchNamePrefix, payments, batchUrlFormat, receiptEmail, null, null );
@@ -320,21 +308,30 @@ namespace Rock.Model
 
                     var financialTransactionService = new FinancialTransactionService( rockContext );
 
-                    // Find existing payments with same transaction code
                     FinancialTransaction originalTxn = null;
-                    var txns = financialTransactionService
-                        .Queryable( "TransactionDetails" )
-                        .Where( t =>
-                            t.FinancialGatewayId.HasValue &&
-                            t.FinancialGatewayId.Value == gateway.Id &&
-                            t.TransactionCode == payment.TransactionCode )
-                        .ToList();
-                    if ( txns.Any() )
+                    List<FinancialTransaction> txns = null;
+
+                    // Find existing payments with same transaction code as long as it is not blank.
+                    if ( payment.TransactionCode.IsNotNullOrWhiteSpace() )
                     {
-                        originalTxn = txns.OrderBy( t => t.Id ).First();
+                        txns = financialTransactionService
+                          .Queryable( "TransactionDetails" )
+                          .Where( t =>
+                              t.FinancialGatewayId.HasValue &&
+                              t.FinancialGatewayId.Value == gateway.Id &&
+                              t.TransactionCode == payment.TransactionCode )
+                          .ToList();
+
+                        originalTxn = txns.Any() ? txns.OrderBy( t => t.Id ).First() : null;
                     }
 
-                    var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetByScheduleId( payment.GatewayScheduleId, gateway.Id );
+                    FinancialScheduledTransaction scheduledTransaction = null;
+
+                    // We don't want to match a blank schedule ID, so if we don't have one then scheduledTransaction will stay NULL
+                    if ( payment.GatewayScheduleId.IsNotNullOrWhiteSpace() )
+                    {
+                        scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetByScheduleId( payment.GatewayScheduleId, gateway.Id );
+                    }
 
                     // Calculate whether a transaction needs to be added
                     var txnAmount = CalculateTransactionAmount( payment, txns );
@@ -446,6 +443,8 @@ namespace Rock.Model
 
                                 var transactionDetail = new FinancialTransactionDetail();
                                 transactionDetail.AccountId = detail.AccountId;
+                                transactionDetail.EntityTypeId = detail.EntityTypeId;
+                                transactionDetail.EntityId = detail.EntityId;
 
                                 if ( detail.Amount <= remainingAmount )
                                 {

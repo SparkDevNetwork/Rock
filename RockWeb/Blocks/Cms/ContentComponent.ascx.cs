@@ -293,9 +293,11 @@ namespace RockWeb.Blocks.Cms
         /// <returns></returns>
         public List<ContentChannelItem> GetContentChannelItems( string itemCacheKey, int? itemCacheDuration )
         {
+            List<ContentChannelItem> contentChannelItems = null;
+
             if ( itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
             {
-                var contentChannelItems = GetCacheItem( itemCacheKey ) as List<ContentChannelItem>;
+                contentChannelItems = GetCacheItem( itemCacheKey ) as List<ContentChannelItem>;
                 if ( contentChannelItems != null )
                 {
                     return contentChannelItems;
@@ -334,7 +336,15 @@ namespace RockWeb.Blocks.Cms
                 contentChannelItemsQuery = contentChannelItemsQuery.Where( paramExpression, whereExpression, null );
             }
 
-            return contentChannelItemsQuery.ToList();
+            contentChannelItems = contentChannelItemsQuery.ToList();
+
+            if ( contentChannelItems != null && itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
+            {
+                string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+                AddCacheItem( itemCacheKey, contentChannelItems, itemCacheDuration.Value, cacheTags );
+            }
+
+            return contentChannelItems;
         }
 
         /// <summary>
@@ -374,9 +384,35 @@ namespace RockWeb.Blocks.Cms
                 ContentChannelItem contentChannelItem = new ContentChannelItem();
                 contentChannelItem.ContentChannelTypeId = this.ContentChannelTypeId;
                 contentChannelItem.LoadAttributes();
-                phContentChannelItemAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( contentChannelItem, phContentChannelItemAttributes, false, mdContentComponentEditContentChannelItems.ValidationGroup );
+
+                CreateContentChannelItemDynamicControls( contentChannelItem, false );
             }
+        }
+
+        /// <summary>
+        /// Creates the content channel item dynamic controls.
+        /// </summary>
+        /// <param name="contentChannelItem">The content channel item.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        private void CreateContentChannelItemDynamicControls( ContentChannelItem contentChannelItem, bool setValues )
+        {
+            phContentChannelItemAttributes.Controls.Clear();
+
+            List<string> includedAttributeKeys = new List<string>();
+            var contentComponentTemplateValueGuid = this.GetAttributeValue( "ContentComponentTemplate" ).AsGuidOrNull();
+            if ( contentComponentTemplateValueGuid.HasValue )
+            {
+                var contentComponentTemplate = DefinedValueCache.Get( contentComponentTemplateValueGuid.Value );
+                if ( contentComponentTemplate != null )
+                {
+                    var contentChannelItemAttributes = contentChannelItem.Attributes.Select( a => a.Value );
+
+                    // Special case for Content Components: Only show attributes that don't have a Category, or have a Category that has the same name as the Content Component Template
+                    includedAttributeKeys = contentChannelItemAttributes.Where( a => !a.Categories.Any() || a.Categories.Any( c => c.Name == contentComponentTemplate.Value ) ).Select( a => a.Key ).ToList();
+                }
+            }
+
+            Rock.Attribute.Helper.AddEditControls( string.Empty, includedAttributeKeys, contentChannelItem, phContentChannelItemAttributes, mdContentComponentEditContentChannelItems.ValidationGroup, setValues, new List<string>(), 2 );
         }
 
         #endregion Shared Methods
@@ -651,8 +687,7 @@ namespace RockWeb.Blocks.Cms
             htmlContentChannelItemContent.Text = contentChannelItem.Content;
 
             contentChannelItem.LoadAttributes();
-            phContentChannelItemAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( contentChannelItem, phContentChannelItemAttributes, true, mdContentComponentEditContentChannelItems.ValidationGroup );
+            CreateContentChannelItemDynamicControls( contentChannelItem, true );
 
             if ( allowMultipleContentItems )
             {

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -45,6 +45,8 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Add Business Link", "Select the page where a new business can be added. If specified, a link will be shown which will open in a new window when clicked", false, "", "", 3 )]
     [LinkedPage( "Batch Detail Page", "Select the page for displaying batch details", false, "", "", 3)]
     [LinkedPage( "Transaction Detail Page", "Select the page to return to, if this block was being used to edit a single transaction.", false, "", "", 4 )]
+
+    [BooleanField( "Expand Person Search Options", "When selecting a person, expand the additional search options by default.", defaultValue: true, order: 5 )]
     public partial class TransactionMatching : RockBlock, IDetailBlock
     {
         #region Properties
@@ -104,9 +106,9 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
             string script = string.Format( @"
     $('.transaction-image-thumbnail').click( function() {{
@@ -247,7 +249,33 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 // if there are person accounts selected, limit accounts to personal accounts
-                accountQry = accountQry.Where( a => personalAccountGuidList.Contains( a.Guid ) );
+                var selectedAccountQry = accountQry.Where( a => personalAccountGuidList.Contains( a.Guid ) );
+
+                // If include child accounts is selected, then also select all child accounts of the selected accounts.
+                if ( ( this.GetUserPreference( keyPrefix + "include-child-accounts" ) ?? string.Empty ).AsBoolean() )
+                {
+                    var selectedParentIds = selectedAccountQry.Select( a => a.Id ).ToList();
+                    // Now find only those accounts that are descendants of one of the selected (parent) Ids
+                    // OR if it is one of the selected Ids.
+                    accountQry = accountQry.Where( a => a.ParentAccountIds.Any( x => selectedParentIds.Contains( x ) ) || selectedParentIds.Contains( a.Id ) );
+                }
+                else
+                {
+                    accountQry = selectedAccountQry;
+                }
+            }
+            
+            // Show only the accounts that match the batch campus if the corresponding setting is true
+            int? batchId = PageParameter( "BatchId" ).AsIntegerOrNull();
+            if ( ( this.GetUserPreference( keyPrefix + "filter-accounts-batch-campus" ) ?? string.Empty ).AsBoolean() && batchId.HasValue )
+            {
+                // Put a highlight label on this panel that shows the Campus of the Batch being worked on:
+                var batchCampusId = new FinancialBatchService( rockContext ).GetSelect( batchId.Value, a => a.CampusId );
+                hlCampus.Text = "Batch Campus: " + CampusCache.Get( batchCampusId.Value ).Name;
+                hlCampus.Visible = true;
+
+                // Filter out anything that does not match the batch's campus.
+                accountQry = accountQry.Where( a => a.CampusId.HasValue && a.CampusId.Value == batchCampusId );
             }
 
             int? campusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();
@@ -278,6 +306,33 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Gets the campus name from batch id.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="batchId">The batch identifier.</param>
+        /// <returns>
+        /// The campus name or empty string if the batch has no campus.
+        /// </returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private string GetCampusNameFromBatch( RockContext rockContext, int? batchId )
+        {
+            if ( ! batchId.HasValue )
+            {
+                return string.Empty;
+            }
+
+            var name = new FinancialBatchService( rockContext ).Queryable().Where( b => b.Id == batchId.Value ).Select( a=>a.Campus.Name ).FirstOrDefault();
+            if ( name != null )
+            {
+                return name;
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="batchId">The financial batch identifier.</param>
@@ -286,6 +341,8 @@ namespace RockWeb.Blocks.Finance
             string temp = this.GetAttributeValue( "AddFamilyLink" );
             string addFamilyUrl = this.LinkedPageUrl( "AddFamilyLink" );
             string addBusinessUrl = this.LinkedPageUrl( "AddBusinessLink" );
+
+            ppSelectNew.ExpandSearchOptions = this.GetAttributeValue( "ExpandPersonSearchOptions" ).AsBoolean();
 
             rcwAddNewFamily.Visible = !string.IsNullOrWhiteSpace( addFamilyUrl );
             if ( rcwAddNewFamily.Visible )
@@ -744,6 +801,13 @@ namespace RockWeb.Blocks.Finance
             int? campusId = cpAccounts.SelectedCampusId;
             this.SetUserPreference( keyPrefix + "account-campus", campusId.HasValue ? campusId.Value.ToString() : "" );
 
+            bool includeChildAccounts = cbIncludeChildAccounts.Checked;
+            this.SetUserPreference( keyPrefix + "include-child-accounts", cbIncludeChildAccounts.Checked.ToString() );
+
+            bool filterAccountsByBatchCampus = cbFilterAccountsByBatchsCampus.Checked;
+            this.SetUserPreference( keyPrefix + "filter-accounts-batch-campus", cbFilterAccountsByBatchsCampus.Checked.ToString() );
+            hlCampus.Visible = false;
+
             mdAccountsPersonalFilter.Hide();
 
             // load the dropdowns again since account filter may have changed
@@ -799,6 +863,8 @@ namespace RockWeb.Blocks.Finance
             apOptionalPersonalAccounts.SetValues( optionalAccountList );
 
             cbOnlyShowSelectedAccounts.Checked = this.GetUserPreference( keyPrefix + "only-show-selected-accounts" ).AsBoolean();
+            cbIncludeChildAccounts.Checked = this.GetUserPreference( keyPrefix + "include-child-accounts" ).AsBoolean();
+            cbFilterAccountsByBatchsCampus.Checked = this.GetUserPreference( keyPrefix + "filter-accounts-batch-campus" ).AsBoolean();
 
             cpAccounts.Campuses = CampusCache.All();
             cpAccounts.SelectedCampusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();

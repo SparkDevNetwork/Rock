@@ -141,6 +141,44 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Determines whether this FieldType supports doing PostBack for the editControl
+        /// </summary>
+        /// <param name="editControl">The edit control.</param>
+        /// <returns>
+        ///   <c>true</c> if [has change handler] [the specified control]; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool HasChangeHandler( Control editControl )
+        {
+            if ( editControl is ColorPicker )
+            {
+                // The ColorPicker can get stuck in a postback loop if we enable AutoPostback, so disable ChangeHandler support when using the ColorPicker control.
+                return false;
+            }
+            else
+            {
+                return base.HasChangeHandler( editControl );
+            }
+        }
+
+        /// <summary>
+        /// Specifies an action to perform when the EditControl's Value is changed. See also <seealso cref="HasChangeHandler(Control)" />
+        /// </summary>
+        /// <param name="editControl">The edit control.</param>
+        /// <param name="action">The action.</param>
+        public override void AddChangeHandler( Control editControl, Action action )
+        {
+            if ( editControl is ColorPicker )
+            {
+                // The ColorPicker can get stuck in a postback loop if we enable AutoPostback, so disable ChangeHandler support when using the ColorPicker control.
+                return;
+            }
+            else
+            {
+                base.AddChangeHandler( editControl, action );
+            };
+        }
+
+        /// <summary>
         /// Reads new values entered by the user for the field
         /// </summary>
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>

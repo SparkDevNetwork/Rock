@@ -50,7 +50,7 @@ namespace Rock.NMI
     [TextField( "Query API URL", "The URL of the NMI Query API", true, "https://secure.networkmerchants.com/api/query.php", "", 4, "QueryUrl" )]
     [BooleanField( "Prompt for Name On Card", "Should users be prompted to enter name on the card", false, "", 5, "PromptForName" )]
     [BooleanField( "Prompt for Billing Address", "Should users be prompted to enter billing address", false, "", 7, "PromptForAddress" )]
-    public class Gateway : ThreeStepGatewayComponent
+    public class Gateway : GatewayComponent, IThreeStepGatewayComponent
     {
 
         #region Gateway Component Implementation
@@ -61,7 +61,7 @@ namespace Rock.NMI
         /// <value>
         /// The step2 form URL.
         /// </value>
-        public override string Step2FormUrl
+        public string Step2FormUrl
         {
             get
             {
@@ -149,7 +149,7 @@ namespace Rock.NMI
         /// </summary>
         /// <param name="redirectUrl">The redirect URL.</param>
         /// <returns></returns>
-        public override Dictionary<string, string> GetStep1Parameters( string redirectUrl )
+        public Dictionary<string, string> GetStep1Parameters( string redirectUrl )
         {
             var parameters = new Dictionary<string, string>();
             parameters.Add( "redirect-url", redirectUrl );
@@ -179,7 +179,7 @@ namespace Rock.NMI
         /// Url to post the Step2 request to
         /// </returns>
         /// <exception cref="System.ArgumentNullException">paymentInfo</exception>
-        public override string ChargeStep1( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
+        public string ChargeStep1( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -264,7 +264,7 @@ namespace Rock.NMI
         /// <param name="resultQueryString">The result query string from step 2.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public override FinancialTransaction ChargeStep3( FinancialGateway financialGateway, string resultQueryString, out string errorMessage )
+        public FinancialTransaction ChargeStep3( FinancialGateway financialGateway, string resultQueryString, out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -421,7 +421,7 @@ namespace Rock.NMI
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentNullException">paymentInfo</exception>
-        public override string AddScheduledPaymentStep1( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
+        public string AddScheduledPaymentStep1( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -501,7 +501,7 @@ namespace Rock.NMI
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentNullException">tokenId</exception>
-        public override FinancialScheduledTransaction AddScheduledPaymentStep3( FinancialGateway financialGateway, string resultQueryString, out string errorMessage )
+        public FinancialScheduledTransaction AddScheduledPaymentStep3( FinancialGateway financialGateway, string resultQueryString, out string errorMessage )
         {
             errorMessage = string.Empty;
 

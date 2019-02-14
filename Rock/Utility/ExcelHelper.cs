@@ -299,10 +299,16 @@ namespace Rock.Utility
         /// <returns></returns>
         public static string FinalColumnFormat( object exportValue, string defaultFormat )
         {
-            var dateValue = exportValue as DateTime?;
-            if ( dateValue != null && dateValue.Value.TimeOfDay.TotalSeconds > 0 )
+            var dateTimeValue = exportValue as DateTime?;
+            if ( dateTimeValue != null && dateTimeValue.Value.TimeOfDay.TotalSeconds > 0 )
             {
                 return DateTimeFormat;
+            }
+
+            var dateValue = exportValue as DateTime?;
+            if ( dateValue != null && dateTimeValue.Value.TimeOfDay.TotalSeconds == 0 )
+            {
+                return DateFormat;
             }
 
             var numValue = exportValue as decimal?;

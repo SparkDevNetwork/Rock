@@ -38,7 +38,7 @@ namespace Rock.Client
         public string AllowedFrameDomains { get; set; }
 
         /// <summary />
-        public bool AllowIndexing { get; set; }
+        public bool AllowIndexing { get; set; } = true;
 
         /// <summary />
         public int? ChangePasswordPageId { get; set; }
@@ -62,18 +62,13 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
-        public bool EnabledForShortening { get; set; }
+        public bool EnabledForShortening { get; set; } = true;
 
         /// <summary />
         public bool EnableMobileRedirect { get; set; }
 
         /// <summary />
-        public bool EnablePageViews
-        {
-            get { return _EnablePageViews; }
-            set { _EnablePageViews = value; }
-        }
-        private bool _EnablePageViews = true;
+        public bool EnablePageViews { get; set; } = true;
 
         /// <summary />
         public string ErrorPage { get; set; }
@@ -92,6 +87,11 @@ namespace Rock.Client
 
         /// <summary />
         public string GoogleAnalyticsCode { get; set; }
+
+        /// <summary />
+        // Made Obsolete in Rock "1.8"
+        [Obsolete( "Moved to Theme", false )]
+        public Rock.Client.Enums.IconCssWeight IconCssWeight { get; set; }
 
         /// <summary />
         public string IndexStartingLocation { get; set; }
@@ -197,6 +197,9 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
+            #pragma warning disable 612, 618
+            this.IconCssWeight = source.IconCssWeight;
+            #pragma warning restore 612, 618
             this.IndexStartingLocation = source.IndexStartingLocation;
             this.IsIndexEnabled = source.IsIndexEnabled;
             this.IsSystem = source.IsSystem;

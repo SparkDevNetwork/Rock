@@ -155,6 +155,7 @@ namespace Rock
                         {
                             return string.Format( "@{0} {1}({2}) = '{3}'", p.ParameterName, p.SqlDbType, p.Size, p.SqlValue.ToString().Replace( "'", "''" ) );
                         }
+
                         if ( p.SqlDbType == System.Data.SqlDbType.Int )
                         {
                             return string.Format( "@{0} {1} = {2}", p.ParameterName, p.SqlDbType, p.SqlValue ?? "null" );
@@ -162,6 +163,14 @@ namespace Rock
                         else if ( p.SqlDbType == System.Data.SqlDbType.Udt )
                         {
                             return string.Format( "@{0} {1} = '{2}'", p.ParameterName, p.UdtTypeName, p.SqlValue );
+                        }
+                        else if ( p.SqlDbType == System.Data.SqlDbType.Bit )
+                        {
+                            return string.Format( "@{0} {1} = {2}", p.ParameterName, p.SqlDbType, ( ( System.Data.SqlTypes.SqlBoolean ) p.SqlValue ).ByteValue );
+                        }
+                        else if ( p.SqlDbType == System.Data.SqlDbType.Decimal )
+                        {
+                            return string.Format( "@{0} {1} = {2}", p.ParameterName, p.SqlDbType, p.SqlValue ?? "null" );
                         }
                         else
                         {

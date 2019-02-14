@@ -53,7 +53,7 @@ namespace Rock.Client
         public int GroupId { get; set; }
 
         /// <summary />
-        public int GroupLocationId { get; set; }
+        public int? GroupLocationId { get; set; }
 
         /// <summary />
         public string GroupLocationTypeName { get; set; }

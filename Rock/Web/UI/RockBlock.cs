@@ -169,11 +169,11 @@ namespace Rock.Web.UI
 
         /// <summary>
         /// Gets the bread crumbs that were created during the page's oninit.  A block
-        /// can add additional breadcrumbs to this list to be rendered.  Crumb's added 
-        /// this way will not be saved to the current page reference's collection of 
+        /// can add additional breadcrumbs to this list to be rendered.  Crumb's added
+        /// this way will not be saved to the current page reference's collection of
         /// breadcrumbs, so wil not be available when user navigates to another child
         /// page.  Because of this only last-level crumbs should be added this way.  To
-        /// persist breadcrumbs in the session state, override the GetBreadCrumbs 
+        /// persist breadcrumbs in the session state, override the GetBreadCrumbs
         /// method instead.
         /// </summary>
         /// <value>
@@ -391,11 +391,12 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Adds an object with a <see cref="System.Runtime.Caching.CacheItemPolicy"/> to the default <see cref="System.Runtime.Caching.MemoryCache"/> 
+        /// Adds an object with a <see cref="System.Runtime.Caching.CacheItemPolicy"/> to the default <see cref="System.Runtime.Caching.MemoryCache"/>
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the name of the key to differentiate items from same block instance</param>
         /// <param name="value">The <see cref="System.Object"/> to cache.</param>
         /// <param name="cacheItemPolicy">Optional <see cref="System.Runtime.Caching.CacheItemPolicy"/>, defaults to null</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( "AddCacheItem no longer supports a CacheItemPolicy, specify a number of seconds or absolute datetime instead.")]
         protected virtual void AddCacheItem( string key, object value, CacheItemPolicy cacheItemPolicy )
         {
@@ -415,7 +416,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Removes an object from the cache.
         /// </summary>
-        /// <param name="key">A <see cref="System.String"/> representing the key name for the item that will be flushed. This value 
+        /// <param name="key">A <see cref="System.String"/> representing the key name for the item that will be flushed. This value
         /// defaults to an empty string.</param>
         protected virtual void RemoveCacheItem( string key )
         {
@@ -425,8 +426,9 @@ namespace Rock.Web.UI
         /// <summary>
         /// Flushes an object from the cache.
         /// </summary>
-        /// <param name="key">A <see cref="System.String"/> representing the key name for the item that will be flushed. This value 
+        /// <param name="key">A <see cref="System.String"/> representing the key name for the item that will be flushed. This value
         /// defaults to an empty string.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete("Use RemoveCacheItem( string key ) instead.")]
         protected virtual void FlushCacheItem( string key = "" )
         {
@@ -435,10 +437,11 @@ namespace Rock.Web.UI
 
         /// <summary>
         /// Flushes a block from all places in the cache (layouts, pages, etc.).
-        /// NOTE: Retrieving an enumerator for a MemoryCache instance is a resource-intensive and blocking operation. 
+        /// NOTE: Retrieving an enumerator for a MemoryCache instance is a resource-intensive and blocking operation.
         /// Therefore, it should not be used in production applications (if possible).
         /// </summary>
         /// <param name="blockId">An <see cref="System.Int32"/> representing the block item that will be flushed.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Method is no longer supported.")]
         protected virtual void FlushSharedBlock( int blockId )
         {
@@ -503,7 +506,7 @@ namespace Rock.Web.UI
             this.BlockValidationGroup = string.Format( "{0}_{1}", this.GetType().BaseType.Name, BlockCache?.Id );
 
             RockPage.BlockUpdated += Page_BlockUpdated;
-            
+
             if ( this is ICustomGridColumns )
             {
                 AddCustomGridColumns();
@@ -595,7 +598,7 @@ namespace Rock.Web.UI
             UserCanEdit = IsUserAuthorized( Authorization.EDIT );
             UserCanAdministrate = IsUserAuthorized( Authorization.ADMINISTRATE );
         }
-        
+
 
         /// <summary>
         /// Sets the block instance.
@@ -639,7 +642,7 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Returns a <see cref="System.Collections.Generic.List{String}"/> of the current block attribute values for the specified key. If the key is not 
+        /// Returns a <see cref="System.Collections.Generic.List{String}"/> of the current block attribute values for the specified key. If the key is not
         /// found an empty list will be returned.
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the block attribute key</param>
@@ -680,7 +683,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Evaluates if the CurrentPerson is authorized to perform the requested action.
         /// </summary>
-        /// <param name="action">A <see cref="System.String" /> representing the action that the <see cref="Rock.Model.UserLogin"/>/<see cref="CurrentPerson"/> 
+        /// <param name="action">A <see cref="System.String" /> representing the action that the <see cref="Rock.Model.UserLogin"/>/<see cref="CurrentPerson"/>
         /// is requesting to perform.</param>
         /// <returns>A <see cref="System.Boolean"/> that is <c>true</c> if the CurrentPerson is authorized to perform the requested action; otherwise <c>false</c>.</returns>
         public bool IsUserAuthorized( string action )
@@ -715,7 +718,7 @@ namespace Rock.Web.UI
         /// Returns a <see cref="System.Collections.Generic.Dictionary{String, Object}" /> representing all of the <see cref="Rock.Model.Page">page's</see> page parameters.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.Collections.Generic.Dictionary{String, Obejct}"/> containing all the <see cref="Rock.Model.Page">page's</see> page parameters. Each 
+        /// A <see cref="System.Collections.Generic.Dictionary{String, Obejct}"/> containing all the <see cref="Rock.Model.Page">page's</see> page parameters. Each
         /// <see cref="System.Collections.Generic.KeyValuePair{String, Object}"/> consists of the key being a <see cref="System.String"/> representing
         /// the name of the page parameter and the value being an <see cref="System.Object"/> that represents the parameter value.
         /// </returns>
@@ -728,8 +731,8 @@ namespace Rock.Web.UI
         /// Builds and returns the URL for a linked <see cref="Rock.Model.Page"/> from a "linked page attribute" and any necessary query parameters.
         /// </summary>
         /// <param name="attributeKey">A <see cref="System.String"/> representing the name of the linked <see cref="Rock.Model.Page"/> attribute key.</param>
-        /// <param name="queryParams">A <see cref="System.Collections.Generic.Dictionary{String,String}" /> containing the query string parameters to be added to the URL.  
-        /// In each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> the key value is a <see cref="System.String"/> that represents the name of the query string 
+        /// <param name="queryParams">A <see cref="System.Collections.Generic.Dictionary{String,String}" /> containing the query string parameters to be added to the URL.
+        /// In each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> the key value is a <see cref="System.String"/> that represents the name of the query string
         /// parameter, and the value is a <see cref="System.String"/> that represents the query string value..</param>
         /// <returns>A <see cref="System.String"/> representing the URL to the linked <see cref="Rock.Model.Page"/>. </returns>
         public virtual string LinkedPageUrl( string attributeKey, Dictionary<string, string> queryParams = null )
@@ -759,7 +762,7 @@ namespace Rock.Web.UI
         /// Navigate to a linked <see cref="Rock.Model.Page"/>.
         /// </summary>
         /// <param name="attributeKey">A <see cref="System.String"/> representing the name of the linked <see cref="Rock.Model.Page"/> attribute key.</param>
-        /// <param name="queryParams">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked page URL.  
+        /// <param name="queryParams">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked page URL.
         /// Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> the key value is a <see cref="System.String"/> that represents the name of the query string
         /// parameter, and the value is a <see cref="System.String"/> that represents the query string value. This dictionary defaults to a null value.</param>
         public virtual bool NavigateToLinkedPage( string attributeKey, Dictionary<string, string> queryParams = null )
@@ -783,9 +786,9 @@ namespace Rock.Web.UI
         /// <param name="attributeKey">A <see cref="System.String"/> representing the name of the linked <see cref="Rock.Model.Page"/> attribute key.</param>
         /// <param name="itemKey">A <see cref="System.String"/> representing the key name of the item that is being passed to the linked page in the query string. </param>
         /// <param name="itemKeyValue">A <see cref="System.Int32"/> representing the item value that is being passed to the link page in the query string.</param>
-        /// <param name="itemParentKey">A <see cref="System.String"/> representing the key name of the parent item that is being passed to the linked page in the query string. 
+        /// <param name="itemParentKey">A <see cref="System.String"/> representing the key name of the parent item that is being passed to the linked page in the query string.
         /// This value defaults to null.</param>
-        /// <param name="itemParentValue">A <see cref="System.Int32"/> representing the parent item value that is being passed to the linked page in the query string. 
+        /// <param name="itemParentValue">A <see cref="System.Int32"/> representing the parent item value that is being passed to the linked page in the query string.
         /// This value defaults to null.</param>
         public bool NavigateToLinkedPage( string attributeKey, string itemKey, int itemKeyValue, string itemParentKey = null, int? itemParentValue = null )
         {
@@ -838,7 +841,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Navigates/redirects to the parent <see cref="Rock.Model.Page"/>.
         /// </summary>
-        /// <param name="queryString">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked <see cref="Rock.Model.Page"/> URL.  
+        /// <param name="queryString">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked <see cref="Rock.Model.Page"/> URL.
         /// Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> the key value is a <see cref="System.String"/> that represents the name of the query string
         /// parameter, and the value is a <see cref="System.String"/> that represents the query string value. This dictionary defaults to a null value.</param>
         public bool NavigateToParentPage( Dictionary<string, string> queryString = null )
@@ -860,7 +863,7 @@ namespace Rock.Web.UI
         /// Navigates to the <see cref="Rock.Model.Page"/> specified by the provided <see cref="System.Guid"/>.
         /// </summary>
         /// <param name="pageGuid">A <see cref="System.Guid"/> that represents the <see cref="Rock.Model.Page">Page's</see> unique identifier.</param>
-        /// <param name="queryString">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked page URL.  
+        /// <param name="queryString">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked page URL.
         /// Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> the key value is a <see cref="System.String"/> that represents the name of the query string
         /// parameter, and the value is a <see cref="System.String"/> that represents the query string value. This dictionary defaults to a null value.</param>
         public bool NavigateToPage( Guid pageGuid, Dictionary<string, string> queryString )
@@ -869,12 +872,12 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Navigates to the <see cref="Rock.Model.Page"/> specified by the provided <see cref="System.Guid">page Guid</see> using the <see cref="Rock.Model.PageRoute"/> specified by the 
+        /// Navigates to the <see cref="Rock.Model.Page"/> specified by the provided <see cref="System.Guid">page Guid</see> using the <see cref="Rock.Model.PageRoute"/> specified by the
         /// provided <see cref="System.Guid">page route Guid</see>.
         /// </summary>
         /// <param name="pageGuid">A <see cref="System.Guid"/> that represents the <see cref="Rock.Model.Page">Page's</see> unique identifier.</param>
         /// <param name="pageRouteGuid">A <see cref="System.Guid" /> that represents the <see cref="Rock.Model.PageRoute">PageRoute's</see> unique identifier.</param>
-        /// <param name="queryString">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked page URL.  
+        /// <param name="queryString">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked page URL.
         /// Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> the key value is a <see cref="System.String"/> that represents the name of the query string
         /// parameter, and the value is a <see cref="System.String"/> that represents the query string value. This dictionary defaults to a null value.</param>
         public bool NavigateToPage( Guid pageGuid, Guid pageRouteGuid, Dictionary<string, string> queryString )
@@ -964,7 +967,7 @@ namespace Rock.Web.UI
 
                 if ( maxWidth.HasValue || maxHeight.HasValue )
                 {
-                    styleString = string.Format( 
+                    styleString = string.Format(
                         " style='{0}{1}'",
                         maxWidth.HasValue ? "max-width:" + maxWidth.Value.ToString() + "px; " : string.Empty,
                         maxHeight.HasValue ? "max-height:" + maxHeight.Value.ToString() + "px;" : string.Empty );
@@ -991,6 +994,15 @@ namespace Rock.Web.UI
         public void HideSecondaryBlocks( bool hidden )
         {
             RockPage.HideSecondaryBlocks( this, hidden );
+        }
+
+        /// <summary>
+        /// Disables the idle redirect blocks if disable = true, or re-enables them if disable = false
+        /// </summary>
+        /// <param name="disable">if set to <c>true</c> [disable].</param>
+        public void DisableIdleRedirectBlocks( bool disable )
+        {
+            RockPage.DisableIdleRedirectBlocks( this, disable );
         }
 
         /// <summary>
@@ -1103,7 +1115,7 @@ namespace Rock.Web.UI
         /// Returns the user preference value for the current user for a given key
         /// </summary>
         /// <param name="key">A <see cref="System.String" /> representing the key to the user preference.</param>
-        /// <returns>A <see cref="System.String" /> representing the user preference value. If a match for the key is not found, 
+        /// <returns>A <see cref="System.String" /> representing the user preference value. If a match for the key is not found,
         /// an empty string will be returned.</returns>
         public string GetUserPreference( string key )
         {
@@ -1115,9 +1127,9 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="keyPrefix">A <see cref="System.String"/> representing the key preference. Any user preference
         /// for the current user that begins with this value will be returned.</param>
-        /// <returns>A <see cref="System.Collections.Generic.Dictionary{String,String}"/> that contains all user preferences for the current 
-        /// user that begins with the key prefix.  Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> includes 
-        /// a key <see cref="System.String"/> that represents the user preference key and a value <see cref="System.String"/> that 
+        /// <returns>A <see cref="System.Collections.Generic.Dictionary{String,String}"/> that contains all user preferences for the current
+        /// user that begins with the key prefix.  Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> includes
+        /// a key <see cref="System.String"/> that represents the user preference key and a value <see cref="System.String"/> that
         /// represents the user preference value. If no preferences are found, an empty dictionary will be returned.</returns>
         public Dictionary<string, string> GetUserPreferences( string keyPrefix )
         {
@@ -1176,7 +1188,7 @@ namespace Rock.Web.UI
         /// Returns the user preference value for the current user and block for a given key
         /// </summary>
         /// <param name="key">A <see cref="System.String" /> representing the key to the user preference.</param>
-        /// <returns>A <see cref="System.String" /> representing the user preference value. If a match for the key is not found, 
+        /// <returns>A <see cref="System.String" /> representing the user preference value. If a match for the key is not found,
         /// an empty string will be returned.</returns>
         public string GetBlockUserPreference( string key )
         {
@@ -1212,9 +1224,9 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="canConfig">A <see cref="System.Boolean" /> flag that indicates if the user can configure the <see cref="Rock.Model.Block"/> instance.
         /// This value will be <c>true</c> if the user is allowed to configure the <see cref="Rock.Model.Block"/> instance; otherwise <c>false</c>.</param>
-        /// <param name="canEdit">A <see cref="System.Boolean"/> flag that indicates if the user can edit the <see cref="Rock.Model.Block"/> instance. 
+        /// <param name="canEdit">A <see cref="System.Boolean"/> flag that indicates if the user can edit the <see cref="Rock.Model.Block"/> instance.
         /// This value will be <c>true</c> if the user is allowed to edit the <see cref="Rock.Model.Block"/> instance; otherwise <c>false</c>.</param>
-        /// <returns>A <see cref="System.Collections.Generic.List{Control}" /> containing all the icon <see cref="System.Web.UI.Control">controls</see> 
+        /// <returns>A <see cref="System.Collections.Generic.List{Control}" /> containing all the icon <see cref="System.Web.UI.Control">controls</see>
         /// that will be available to the user in the configuration area of the block instance.</returns>
         public virtual List<Control> GetAdministrateControls( bool canConfig, bool canEdit )
         {
@@ -1227,7 +1239,6 @@ namespace Rock.Web.UI
                 aAttributes.ID = "aBlockProperties";
                 aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aAttributes.Attributes.Add( "class", "properties" );
-                aAttributes.Attributes.Add( "height", "500px" );
                 aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t={1}", BlockCache.Id, BlockCache.BlockType.Name ) ) + "')" );
                 aAttributes.Attributes.Add( "title", "Block Properties" );
                 configControls.Add( aAttributes );
@@ -1240,7 +1251,6 @@ namespace Rock.Web.UI
                 aSecureBlock.ID = "aSecureBlock";
                 aSecureBlock.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aSecureBlock.Attributes.Add( "class", "security" );
-                aSecureBlock.Attributes.Add( "height", "500px" );
                 string secureBlockLink = ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security&pb=&sb=Done", EntityTypeCache.Get( typeof( Block ) ).Id, BlockCache.Id ) );
                 aSecureBlock.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + secureBlockLink + "')" );
                 aSecureBlock.Attributes.Add( "title", "Block Security" );
@@ -1350,8 +1360,8 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Sets the validation group. If the validationGroup is a prefix to the existingValidationGroup, the existingValidationGroup is returned, 
-        /// if the existingValidationGroup name is an empty string, the validationGroup is returned; if the names are different a new validation group is 
+        /// Sets the validation group. If the validationGroup is a prefix to the existingValidationGroup, the existingValidationGroup is returned,
+        /// if the existingValidationGroup name is an empty string, the validationGroup is returned; if the names are different a new validation group is
         /// created that combines the two.
         /// </summary>
         /// <param name="existingValidationGroup">A <see cref="System.String"/> representing the name of the existing validation group.</param>

@@ -283,4 +283,28 @@
   <data name="_201809142151587_ContentComponents_SideBySide" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201809142151587_contentcomponents_sidebyside.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201809252117562_Rollup_0925_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201809252117562_rollup_0925_spcrm_familyanalyticseradataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201810021839212_Rollup_1002_spCheckin_BadgeAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201810021839212_rollup_1002_spcheckin_badgeattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201810161814574_Rollup_1016_AddCheck_inLabelToInstallIconFont" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201810161814574_rollup_1016_addcheck-inlabeltoinstalliconfont.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201810161814574_Rollup_1016_spCrm_FamilyAnalyticsFirstVisitsAttributeUpdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201810161814574_rollup_1016_spcrm_familyanalyticsfirstvisitsattributeupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201810301818354_Rollup_1030_spCheckin_AttendanceAnalyticsQuery_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201810301818354_rollup_1030_spcheckin_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Down" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201811271852316_rollup_1127_spfinance_pledgeanalyticsquery_down.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Up" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201811271852316_rollup_1127_spfinance_pledgeanalyticsquery_up.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201812111901295_Rollup_1211_FixChartShortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201812111901295_rollup_1211_fixchartshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

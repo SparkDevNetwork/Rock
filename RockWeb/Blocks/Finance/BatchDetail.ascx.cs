@@ -193,10 +193,10 @@ namespace RockWeb.Blocks.Finance
 
             if ( batch != null )
             {
-                if ( ddlBatchName.Visible )
+                if ( dvpBatchName.Visible )
                 {
-                    History.EvaluateChange( changes, "Batch Name", batch.Name, ddlBatchName.SelectedItem.Text );
-                    batch.Name = ddlBatchName.SelectedItem.Text;
+                    History.EvaluateChange( changes, "Batch Name", batch.Name, dvpBatchName.SelectedItem.Text );
+                    batch.Name = dvpBatchName.SelectedItem.Text;
                 }
                 else
                 {
@@ -545,7 +545,7 @@ namespace RockWeb.Blocks.Finance
             {
                 // if the "BatchNames" configuration setting is set, and this is a new batch present a DropDown of BatchNames instead of a text box
                 var batchNamesDefinedTypeGuid = this.GetAttributeValue( "BatchNames" ).AsGuidOrNull();
-                ddlBatchName.Visible = false;
+                dvpBatchName.Visible = false;
                 tbName.Visible = true;
 
                 if ( batchNamesDefinedTypeGuid.HasValue )
@@ -553,10 +553,10 @@ namespace RockWeb.Blocks.Finance
                     var batchNamesDefinedType = DefinedTypeCache.Get( batchNamesDefinedTypeGuid.Value );
                     if ( batchNamesDefinedType != null )
                     {
-                        ddlBatchName.BindToDefinedType( batchNamesDefinedType, true, false );
+                        dvpBatchName.DefinedTypeId = batchNamesDefinedType.Id;
                         if ( batchNamesDefinedType.DefinedValues.Any( a => !string.IsNullOrWhiteSpace(a.Value) ) )
                         {
-                            ddlBatchName.Visible = true;
+                            dvpBatchName.Visible = true;
                             tbName.Visible = false;
                         }
                     }

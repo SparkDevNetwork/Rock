@@ -8,14 +8,18 @@
 
 <asp:UpdatePanel ID="upnlDevice" runat="server">
     <ContentTemplate>
+
+        <%-- Edit Device Details --%>
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block js-device-panel" runat="server" Visible="false">
 
             <asp:HiddenField ID="hfDeviceId" runat="server" />
             <asp:HiddenField ID="hfTypeId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-desktop"></i>
-                    <asp:Literal ID="lActionTitle" runat="server" /></h1>
+                <h1 class="panel-title">
+                    <i class="fa fa-desktop"></i>
+                    <asp:Literal ID="lActionTitle" runat="server" />
+                </h1>
 
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlInactive" runat="server" CssClass="js-inactivedevice-label" LabelType="Danger" Text="Inactive" />
@@ -52,7 +56,7 @@
                                 Help="What is the IP Address or Hostname of this device? Note: when using Hostname to match a Check-in Kiosk to this device, the 'Enable Kiosk Match By Name' setting on the check-in Admin block must be enabled." LabelTextFromPropertyName="false" Label="IPAddress / Hostname" />
                             <asp:CustomValidator ID="cvIpAddress" runat="server" ControlToValidate="tbIpAddress" Display="None"
                                 OnServerValidate="cvIpAddress_ServerValidate" ErrorMessage="IP address must be unique to the device type." />
-                            <Rock:DataDropDownList ID="ddlDeviceType" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="DeviceTypeValueId" Required="true" Label="Device Type"
+                            <Rock:DefinedValuePicker ID="dvpDeviceType" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="DeviceTypeValueId" Required="true" Label="Device Type"
                                 Help="What type of device is this?" AutoPostBack="true" OnSelectedIndexChanged="ddlDeviceType_SelectedIndexChanged" />
                             <Rock:GeoPicker ID="geopPoint" runat="server" Required="false" Label="Point" DrawingMode="Point" />
                             <Rock:GeoPicker ID="geopFence" runat="server" Required="false" Label="Geo-fence" DrawingMode="Polygon" />
@@ -78,7 +82,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
+                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
                         </div>
                     </div>
 
@@ -101,6 +105,7 @@
 
         </asp:Panel>
 
+        <%-- Location Modal --%>
         <Rock:ModalDialog ID="mdLocationPicker" runat="server" SaveButtonText="Save" OnSaveClick="btnAddLocation_Click" Title="Select Check-in Location" OnCancelScript="clearActiveDialog();" ValidationGroup="Location">
             <Content ID="mdLocationPickerContent">
                 <asp:HiddenField ID="hfAddLocationId" runat="server" />
@@ -108,7 +113,7 @@
             </Content>
         </Rock:ModalDialog>
 
-                <script>
+          <script>
 
             Sys.Application.add_load(function () {
                 function setIsActiveControls(activeCheckbox) {

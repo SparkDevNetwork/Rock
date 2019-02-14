@@ -618,7 +618,7 @@ namespace Rock.Web.UI.Controls
             _ddlSuffix.Label = "Suffix";
             string suffixValue = _ddlSuffix.SelectedValue;
             _ddlSuffix.Items.Clear();
-            _ddlSuffix.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ), true );
+            _ddlSuffix.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ).Id;
             if ( !string.IsNullOrEmpty( suffixValue ) )
             {
                 _ddlSuffix.SelectedValue = suffixValue;
@@ -634,7 +634,7 @@ namespace Rock.Web.UI.Controls
                 _ddlGender.SelectedValue = genderValue;
             }
 
-            _dpBirthdate.RequiredErrorMessage = "Birthdate is required for all children";
+            _dpBirthdate.RequiredErrorMessage = "Birth date is required for all children";
             _dpBirthdate.Label = "Birth Date";
             _dpBirthdate.ShowOnFocus = false;
             _dpBirthdate.StartView = DatePicker.StartViewOption.decade;
@@ -648,7 +648,7 @@ namespace Rock.Web.UI.Controls
 
             _ddlRelationshipType.CssClass = "form-control";
             _ddlRelationshipType.Required = true;
-            _ddlRelationshipType.Label = "Relationship To Adult";
+            _ddlRelationshipType.Label = "Relationship to Adult";
             _ddlRelationshipType.DataValueField = "Key";
             _ddlRelationshipType.DataTextField = "Value";
             string relationshipTypeValue = _ddlRelationshipType.SelectedValue;
@@ -687,6 +687,18 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.H4 );
                 writer.Write( Caption );
                 writer.RenderEndTag();
+
+                // Relationship
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _ddlRelationshipType.RenderControl( writer );
+                writer.RenderEndTag();
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" ); // filler/blocker column
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.RenderEndTag();
+                writer.RenderEndTag(); // end Relationship row
 
                 writer.AddAttribute( "rowid", ID );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "row clearfix" );
@@ -759,18 +771,6 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
-                writer.RenderEndTag();
-
-                // Relationship
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.RenderEndTag();
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _ddlRelationshipType.RenderControl( writer );
-                writer.RenderEndTag();
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Hr );

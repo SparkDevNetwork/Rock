@@ -498,14 +498,29 @@ namespace Rock
         }
 
         /// <summary>
-        /// Binds to the values of a definedType using the definedValue's Id as the listitem value
+        /// Binds to the values of a definedType using the definedValue's Id as the listitem value.
+        /// NOTE: In most cases, instead of using BindToDefinedType, use <see cref="Rock.Web.UI.Controls.DefinedValuePicker"/> instead
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="definedType">Type of the defined.</param>
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
         /// <param name="useDescriptionAsText">if set to <c>true</c> [use description as text].</param>
+        [RockObsolete( "1.9" )]
+        [Obsolete( "Use DefinedValuePicker instead." )]
         public static void BindToDefinedType( this ListControl listControl, DefinedTypeCache definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
         {
+            // For IDefinedValuePicker types: Before this section of code was added, BindToDefinedType did not update DefinedTypeId, because not all ListControls have it.
+            // If BindToDefinedType was used instead of DefinedTypeId, the control did show the defined values and the user was be able to pick it, and save.
+            // However, when the selected value(s) was/were set pragmatically, the list gets re-populated using DefinedTypeId. Because it is not set, the list will be empty except for the selected value(s)
+            // For IDefinedValuePicker DefinedTypeId should be set instead of using BindToDefinedType.
+            if ( listControl is Rock.Web.UI.Controls.IDefinedValuePicker )
+            {
+                Web.UI.Controls.IDefinedValuePicker definedValuePicker = ( Rock.Web.UI.Controls.IDefinedValuePicker ) listControl;
+                definedValuePicker.DefinedTypeId = definedType.Id;
+                definedValuePicker.DisplayDescriptions = useDescriptionAsText;
+                return;
+            }
+
             var ds = definedType.DefinedValues
                 .Select( v => new
                 {

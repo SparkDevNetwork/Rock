@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.CheckIn
         }}
 
         $('a.js-person-select').click( function() {{
-            //$(this).toggleClass('btn-dimmed');
+            $(this).toggleClass('active');
             $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
             var ids = '';
             $('div.checkin-person-list').find('i.fa-check-square').each( function() {{
@@ -163,7 +163,10 @@ namespace RockWeb.Blocks.CheckIn
                     if ( family == null )
                     {
                         GoBack();
+                        return;
                     }
+
+                    lbEditFamily.Visible = CurrentCheckInState.Kiosk.RegistrationModeEnabled;
 
                     lTitle.Text = string.Format( GetAttributeValue( "Title" ), family.ToString() );
                     lCaption.Text = GetAttributeValue( "Caption" );
@@ -462,6 +465,11 @@ namespace RockWeb.Blocks.CheckIn
                 string.Format( "<p>{0}</p>", GetAttributeValue( "NoOptionMessage" ) ) );
         }
 
+        protected string GetSelectedClass( bool selected )
+        {
+            return selected ? "active" : "";
+        }
+
         protected string GetCheckboxClass( bool selected )
         {
             return selected ? "fa fa-check-square fa-3x" : "fa fa-square-o fa-3x";
@@ -668,6 +676,25 @@ namespace RockWeb.Blocks.CheckIn
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbEditFamily control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbEditFamily_Click( object sender, EventArgs e )
+        {
+            if ( CurrentCheckInState == null )
+            {
+                return;
+            }
+
+            var editFamilyBlock = this.RockPage.ControlsOfTypeRecursive<CheckInEditFamilyBlock>().FirstOrDefault();
+            if ( editFamilyBlock != null && CurrentCheckInState.CheckIn.CurrentFamily != null )
+            {
+                editFamilyBlock.ShowEditFamily( CurrentCheckInState.CheckIn.CurrentFamily );
             }
         }
 

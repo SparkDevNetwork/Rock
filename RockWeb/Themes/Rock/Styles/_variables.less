@@ -29,7 +29,7 @@
 @brand-info:                  #009ce3; // #color
 @brand-critical:              #ee7624; // #color
 
-@gray-base:                   #000000; // #color
+@gray-base:                   #000; // #color
 @gray-darker:                 #3d3d3d; // #color
 @gray-dark:                   #484848; // #color
 @gray:                        #767676; // #color
@@ -40,7 +40,7 @@
 @ui-2:                        #f7f7f7;                        // Used for well and picker backgrounds. (Lightest UI Color) #color
 @ui-3:                        #f0f3f6;                        // Modal footer background. #color
 @ui-4:                        #dbdbdb;                        // Table, panel, well, and hr border color. #color
-@ui-5:                        #aaaaaa;                        // Grid action button color. #color
+@ui-5:                        #aaa;                        // Grid action button color. #color
 
 // Text *show in editor*
 @text-selection-background:   #bcd9ea;                      // Text selection background color (used when people select text with the mouse). #color
@@ -270,7 +270,7 @@
 @panel-text:                  @text-color;                    // The text color of the panel.
 @panel-border:                @ui-4;                          // The panel's border color.
 @panel-top-border-color:      @ui-4;                          // Color of the panel's top border often used as an accent color.
-@panel-border-radius:         @border-radius-base;
+@panel-border-radius:         @border-radius-base + 1;        // Panel Border Radius subtracts 1, so set to 1 so there's not invalid CSS
 @panel-subheading:            @ui-2;
 @drawer-bg:                   @panel-subheading;
 //--
@@ -347,7 +347,7 @@
 @pagination-disabled-border:            transparent;
 
 //// Footer
-@grid-footer-bg:                        #ffffff;
+@grid-footer-bg:                        #fff;
 @grid-footer-text-color:                @panel-heading-text-color;
 @grid-footer-font-size:                 10px;
 @grid-footer-font-weight:               300;

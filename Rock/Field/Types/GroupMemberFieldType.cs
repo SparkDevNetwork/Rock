@@ -228,7 +228,7 @@ namespace Rock.Field.Types
                     var groupMemberService = new GroupMemberService( rockContext );
                     foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                     {
-                        var groupMember = groupMemberService.Get( guid );
+                        var groupMember = groupMemberService.GetNoTracking( guid );
                         if ( groupMember != null )
                         {
                             names.Add( groupMember.Person.FullName );
@@ -289,27 +289,22 @@ namespace Rock.Field.Types
 
             int? groupId = configurationValues != null && configurationValues.ContainsKey( GROUP_KEY ) ? configurationValues[GROUP_KEY].Value.AsIntegerOrNull() : null;
 
-            if ( groupId.HasValue )
+            if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean() )
             {
-                if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean() )
+                // Select multiple members
+                editControl = new GroupMembersPicker { ID = id, GroupId = groupId };
+            }
+            else
+            {
+                // Select single member
+                editControl = new GroupMemberPicker { ID = id, GroupId = groupId };
+                if ( configurationValues != null && configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) && configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean() )
                 {
-                    // Select multiple members
-                    editControl = new GroupMembersPicker { ID = id, GroupId = groupId };
+                    ( ( GroupMemberPicker ) editControl ).EnhanceForLongLists = true;
                 }
-                else
-                {
-                    // Select single member
-                    editControl = new GroupMemberPicker { ID = id, GroupId = groupId };
-                    if ( configurationValues != null && configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) && configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean() )
-                    {
-                        ( ( GroupMemberPicker ) editControl ).EnhanceForLongLists = true;
-                    }
-                }
-
-                return editControl;
             }
 
-            return null;
+            return editControl;
         }
 
         /// <summary>
@@ -327,20 +322,23 @@ namespace Rock.Field.Types
                 groupMemberIdList.AddRange( ( ( ListControl ) control ).Items.Cast<ListItem>()
                     .Where( i => i.Selected )
                     .Select( i => i.Value ).AsIntegerList() );
-            }
 
-            var guids = new List<Guid>();
+                var guids = new List<Guid>();
 
-            if ( groupMemberIdList.Any() )
-            {
-                using ( var rockContext = new RockContext() )
+                if ( groupMemberIdList.Any() )
                 {
-                    var groupMemberService = new GroupMemberService( rockContext );
-                    guids = groupMemberService.GetByIds( groupMemberIdList ).Select( a => a.Guid ).ToList();
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var groupMemberService = new GroupMemberService( rockContext );
+                        guids = groupMemberService.Queryable().AsNoTracking().Where( t => groupMemberIdList.Contains( t.Id ) ).Select( a => a.Guid ).ToList();
+                    }
                 }
+
+                return guids.AsDelimited( "," );
             }
 
-            return guids.AsDelimited( "," );
+            return null;
+
         }
 
         /// <summary>
@@ -528,7 +526,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return values.Select( v => "'" + v + "'" ).ToList().AsDelimited( " or " );
+            return AddQuotes( values.ToList().AsDelimited( "' OR '" ) );
         }
 
         /// <summary>

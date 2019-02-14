@@ -215,9 +215,17 @@ namespace Rock.Field.Types
                 if ( guid.HasValue )
                 {
                     entityType = EntityTypeCache.Get( guid.Value );
-                }
 
-                entityTypePicker.SelectedEntityTypeId = entityType?.Id;
+                    // If the guid had a value, but the EntityType is null, it's probably the "None (Global Attributes)" entity.
+                    if ( entityType == null && entityTypePicker.IncludeGlobalOption )
+                    {
+                        entityTypePicker.SelectedEntityTypeId = 0;
+                    }
+                    else
+                    {
+                        entityTypePicker.SelectedEntityTypeId = entityType?.Id;
+                    }
+                }
             }
         }
 

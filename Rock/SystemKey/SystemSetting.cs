@@ -74,6 +74,11 @@ namespace Rock.SystemKey
         public const string DATA_AUTOMATION_UPDATE_FAMILY_STATUS = "core_DataAutomationUpdateFamilyStatus";
 
         /// <summary>
+        /// The default background check provider
+        /// </summary>
+        public const string DEFAULT_BACKGROUND_CHECK_PROVIDER = "core_DefaultBackgroundCheckProvider";
+
+        /// <summary>
         /// The font awesome pro key
         /// </summary>
         public const string FONT_AWESOME_PRO_KEY = "core_FontAwesomeProKey";
@@ -91,6 +96,7 @@ namespace Rock.SystemKey
         /// <summary>
         /// The redis connection string
         /// </summary>
+        [RockObsolete( "1.8" )]
         [Obsolete("Use REDIS_ENDPOINT_LIST, REDIS_PASSWORD, and REDIS_DATABASE_NUMBER instead.")]
         public const string REDIS_CONNECTION_STRING = "RedisConnectionString";
 
@@ -118,5 +124,20 @@ namespace Rock.SystemKey
         /// Settings for Spark Data
         /// </summary>
         public const string SPARK_DATA = "core_SparkData";
+
+        /// <summary>
+        /// Settings for Do Not Disturb Start
+        /// </summary>
+        public const string DO_NOT_DISTURB_START = "core_DoNotDisturbStart";
+
+        /// <summary>
+        /// Settings for Do Not Disturb End
+        /// </summary>
+        public const string DO_NOT_DISTURB_END = "core_DoNotDisturbEnd";
+
+        /// <summary>
+        /// Settings for Do Not Disturb Active
+        /// </summary>
+        public const string DO_NOT_DISTURB_ACTIVE = "core_DoNotDisturbActive";
     }
 }

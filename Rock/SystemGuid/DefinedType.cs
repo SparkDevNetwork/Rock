@@ -272,6 +272,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Protect My Ministry background package types
         /// </summary>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use BACKGROUND_CHECK_TYPES instead")]
         public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
 
@@ -309,6 +310,11 @@ namespace Rock.SystemGuid
         /// Used to manage the topic options for small groups.
         /// </summary>
         public const string SMALL_GROUP_TOPIC = "D4111631-6B42-1CBD-4019-427D6BC6F475";
+
+        /// <summary>
+		/// The Spiritual Gifts
+		/// </summary>
+		public const string SPIRITUAL_GIFTS = "9D9628F0-7FC5-411E-B9DF-740AA17689A0";
 
         /// <summary>
         /// Used to manage the workflows that can be launched via webhook.

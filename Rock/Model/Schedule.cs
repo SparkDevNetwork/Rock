@@ -177,7 +177,8 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this schedule is currently active; otherwise, <c>false</c>.
         /// </value>
-		[Obsolete( "Use WasScheduleActive( DateTime time ) method instead.", false )]
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use WasScheduleActive( DateTime time ) method instead.", false )]
         public virtual bool IsScheduleActive
         {
             get
@@ -192,6 +193,7 @@ namespace Rock.Model
         /// <value>
         ///  A <see cref="System.Boolean"/> that is  <c>true</c> if Check-in is currently active for this Schedule ; otherwise, <c>false</c>.
         /// </value>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use WasCheckInActive( DateTime time ) method instead.", false )]
         public virtual bool IsCheckInActive
         {
@@ -207,6 +209,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is schedule or checkin active; otherwise, <c>false</c>.
         /// </value>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use WasScheduleOrCheckInActive( DateTime time ) method instead.", false )]
         public virtual bool IsScheduleOrCheckInActive
         {
@@ -246,6 +249,7 @@ namespace Rock.Model
         /// <returns></returns>
         [NotMapped]
         [LavaInclude]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use GetNextStartDateTime( DateTime currentDateTime ) instead." )]
         public virtual DateTime? NextStartDateTime
         {
@@ -658,7 +662,7 @@ namespace Rock.Model
 
                         case FrequencyType.Weekly:
 
-                            result = rrule.ByDay.Select( a => a.DayOfWeek.ConvertToString() ).ToList().AsDelimited( "," );
+                            result = rrule.ByDay.Select( a => a.DayOfWeek.ConvertToString().Pluralize() ).ToList().AsDelimited( "," );
                             if ( string.IsNullOrEmpty( result ) )
                             {
                                 // no day selected, so it has an incomplete schedule
@@ -667,7 +671,11 @@ namespace Rock.Model
 
                             if ( rrule.Interval > 1 )
                             {
-                                result += string.Format( " every {0} weeks", rrule.Interval );
+                                result = string.Format( "Every {0} weeks: ", rrule.Interval ) + result;
+                            }
+                            else
+                            {
+                                result = "Weekly: " + result;
                             }
 
                             result += " at " + startTimeText;

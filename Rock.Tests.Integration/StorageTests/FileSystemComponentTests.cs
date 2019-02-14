@@ -278,7 +278,7 @@ namespace Rock.Tests.Integration.StorageTests
                 asset.Type = AssetType.File;
                 asset.Key = "TestFolder/TestFolderA/TestUploadObjectByKeyRenamed.jpg";
 
-                var downloadedAsset = fileSystemComponent.GetObject( assetStorageProvider, asset );
+                var downloadedAsset = fileSystemComponent.GetObject( assetStorageProvider, asset, false );
 
                 using ( FileStream fs = new FileStream( @"C:\temp\TestGetObjectDownloaded.jpg", FileMode.Create ) )
                 using ( downloadedAsset.AssetStream )

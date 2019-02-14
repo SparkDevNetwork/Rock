@@ -1394,10 +1394,18 @@ namespace Rock.SystemGuid
         public const string SITES = "7596D389-4EAB-4535-8BEE-229737F46F44";
 
         /// <summary>
-        /// Gets the SMS From Values page guid
+        /// Gets the SMS Phone Numbers page guid
         /// ParentPage: Communications
         /// </summary>
+        [Obsolete("Use SMS_PHONE_NUMBERS instead")]
+        [RockObsolete("9.0")]
         public const string SMS_FROM_VALUES = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
+
+        /// <summary>
+        /// The SMS phone numbers
+        /// ParentPage: Communications
+        /// </summary>
+        public const string SMS_PHONE_NUMBERS = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
 
         /// <summary>
         /// Gets the SQL Command page guid
@@ -1544,7 +1552,7 @@ namespace Rock.SystemGuid
         public const string WEBSITE = "F7105BFE-B28C-41B6-9CE6-F1018D77DD8F";
 
         /// <summary>
-        /// Gets the Welcome page guid
+        /// Gets the Check-in Welcome page guid
         /// ParentPage: Check-in
         /// </summary>
         public const string WELCOME = "432B615A-75FF-4B14-9C99-3E769F866950";

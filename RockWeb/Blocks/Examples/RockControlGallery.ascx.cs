@@ -57,14 +57,18 @@ namespace RockWeb.Blocks.Examples
             gExample.DataKeyNames = new string[] { "Id" };
             gExample.GridRebind += gExample_GridRebind;
 
-            geopExamplePoint.SelectGeography += geoPicker_SelectGeography;
-            geopExamplePolygon.SelectGeography += geoPicker1_SelectGeography;
+            geopExamplePoint.SelectGeography += geopExamplePoint_SelectGeography;
+            geopExamplePolygon.SelectGeography += geopExamplePolygon_SelectGeography;
             geopExamplePoint.MapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
 
             htmlEditorLight.MergeFields.Add( "GlobalAttribute" );
             htmlEditorLight.MergeFields.Add( "Rock.Model.Person" );
 
             mfpExample.MergeFields.Add( "GlobalAttribute,Rock.Model.Person" );
+
+            var selectableAccountIds = new FinancialAccountService( new RockContext() ).Queryable().Where( a => a.ParentAccountId == null ).Take( 4 ).Select( a => a.Id ).ToArray();
+            caapExampleSingleAccount.SelectableAccountIds = selectableAccountIds;
+            caapExampleMultiAccount.SelectableAccountIds = selectableAccountIds;
 
             List<string> list = ReadExamples();
             int i = -1;
@@ -94,7 +98,7 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         private void InitSyntaxHighlighting()
         {
-            RockPage.AddCSSLink( ResolveUrl( "~/Blocks/Examples/prettify.css" ) );
+            RockPage.AddCSSLink( "~/Blocks/Examples/prettify.css" );
             RockPage.AddScriptLink( "//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js", false );
         }
 
@@ -372,23 +376,23 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
-        /// Handles the SelectGeography event of the geoPicker1 control.
+        /// Handles the SelectGeography event of the geopExamplePolygon control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void geoPicker1_SelectGeography( object sender, EventArgs e )
+        protected void geopExamplePolygon_SelectGeography( object sender, EventArgs e )
         {
-            string debug = geopExamplePoint.SelectedValue.AsText();
+            string debug = geopExamplePolygon.SelectedValue.AsText();
         }
 
         /// <summary>
-        /// Handles the SelectGeography event of the geoPicker control.
+        /// Handles the SelectGeography event of the geopExamplePoint control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void geoPicker_SelectGeography( object sender, EventArgs e )
+        protected void geopExamplePoint_SelectGeography( object sender, EventArgs e )
         {
-            string debug = geopExamplePolygon.SelectedValue.AsText();
+            string debug = geopExamplePoint.SelectedValue.AsText();
         }
 
         /// <summary>
@@ -431,6 +435,18 @@ namespace RockWeb.Blocks.Examples
         protected void btnMarkdownPreview_Click( object sender, EventArgs e )
         {
             lMarkdownHtml.Text = mdMarkdownEditor.Text.ConvertMarkdownToHtml(true);
+        }
+
+        /// <summary>
+        /// Handles the Changed event of the caapExample control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void caapExample_Changed( object sender, EventArgs e )
+        {
+            var financialAccountService = new FinancialAccountService( new RockContext() );
+            lCaapExampleSingleAccountResultAccount.Text = financialAccountService.GetByIds( caapExampleSingleAccount.SelectedAccountIds.ToList() ).Select( a => a.PublicName ).ToList().AsDelimited( ", " );
+            lCaapExampleMultiAccountResultAccount.Text = financialAccountService.GetByIds( caapExampleMultiAccount.SelectedAccountIds.ToList() ).Select( a => a.PublicName ).ToList().AsDelimited( ", " );
         }
     }
 }

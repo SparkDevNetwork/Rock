@@ -104,33 +104,39 @@ namespace Rock.Field.Types
         public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             PagePicker ppPage = control as PagePicker;
-            string result = null;
+            string result = string.Empty;
 
             if ( ppPage != null )
             {
                 //// Value is in format "Page.Guid,PageRoute.Guid"
                 //// If only a Page is specified, this is just a reference to a page without a special route
 
-                if ( ppPage.IsPageRoute )
+                using ( var rockContext = new RockContext() )
                 {
-                    int? pageRouteId = ppPage.PageRouteId;
-                    var pageRoute = new PageRouteService( new RockContext() ).Get( pageRouteId ?? 0 );
-                    if ( pageRoute != null )
+
+                    if ( ppPage.IsPageRoute )
                     {
-                        result = string.Format( "{0},{1}", pageRoute.Page.Guid, pageRoute.Guid );
+                        int? pageRouteId = ppPage.PageRouteId;
+                        var pageRoute = new PageRouteService( rockContext ).GetNoTracking( pageRouteId ?? 0 );
+                        if ( pageRoute != null )
+                        {
+                            result = string.Format( "{0},{1}", pageRoute.Page.Guid, pageRoute.Guid );
+                        }
+                    }
+                    else
+                    {
+                        var page = new PageService( rockContext ).GetNoTracking( ppPage.PageId ?? 0 );
+                        if ( page != null )
+                        {
+                            result = page.Guid.ToString();
+                        }
                     }
                 }
-                else
-                {
-                    var page = new PageService( new RockContext() ).Get( ppPage.PageId ?? 0 );
-                    if ( page != null )
-                    {
-                        result = page.Guid.ToString();
-                    }
-                }
+
+                return result;
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>

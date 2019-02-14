@@ -177,7 +177,8 @@ namespace Rock.Model
         /// <value>
         /// The must meet requirements to add member.
         /// </value>
-        [Obsolete( "This no longer is functional. Please use GroupRequirement.MustMeetRequirementToAddMember instead." )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "This no longer is functional. Please use GroupRequirement.MustMeetRequirementToAddMember instead.", true )]
         [NotMapped]
         public bool? MustMeetRequirementsToAddMember { get; set; }
 
@@ -261,6 +262,15 @@ namespace Rock.Model
         [DefinedValue]
         public int? StatusValueId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group administrator person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The group administrator person alias identifier.
+        /// </value>
+        [DataMember]
+        public virtual int? GroupAdministratorPersonAliasId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -318,6 +328,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual PersonAlias ArchivedByPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group administrator person alias.
+        /// </summary>
+        /// <value>
+        /// The group administrator person alias.
+        /// </value>
+        [DataMember]
+        public virtual PersonAlias GroupAdministratorPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets a collection the Groups that are children of this group.
@@ -505,6 +524,7 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use HistoryChangeList instead" )]
         public virtual List<string> HistoryChanges { get; set; }
 
@@ -651,7 +671,8 @@ namespace Rock.Model
         /// <param name="personId">The person identifier.</param>
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
-        [Obsolete( "Use PersonMeetsGroupRequirements(rockContext, personId, groupRoleId) instead " )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use PersonMeetsGroupRequirements(rockContext, personId, groupRoleId) instead", true )]
         public IEnumerable<PersonGroupRequirementStatus> PersonMeetsGroupRequirements( int personId, int? groupRoleId )
         {
             using ( var rockContext = new RockContext() )
@@ -1043,6 +1064,7 @@ namespace Rock.Model
         /// </summary>
         public GroupConfiguration()
         {
+            this.HasOptional( c => c.GroupAdministratorPersonAlias ).WithMany().HasForeignKey( c => c.GroupAdministratorPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ParentGroup ).WithMany( p => p.Groups ).HasForeignKey( p => p.ParentGroupId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.GroupType ).WithMany( p => p.Groups ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );

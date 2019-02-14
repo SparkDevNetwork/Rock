@@ -59,6 +59,11 @@ namespace Rock.Client
         public string BorderColor { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.8"
+        [Obsolete( "No Longer Supported", false )]
+        public string CssClass { get; set; }
+
+        /// <summary />
         public int EntityTypeId { get; set; }
 
         /// <summary />
@@ -146,6 +151,9 @@ namespace Rock.Client
             this.BackgroundColor = source.BackgroundColor;
             this.BinaryFileTypeId = source.BinaryFileTypeId;
             this.BorderColor = source.BorderColor;
+            #pragma warning disable 612, 618
+            this.CssClass = source.CssClass;
+            #pragma warning restore 612, 618
             this.EntityTypeId = source.EntityTypeId;
             this.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             this.EntityTypeQualifierValue = source.EntityTypeQualifierValue;

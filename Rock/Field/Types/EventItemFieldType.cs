@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
@@ -51,7 +52,7 @@ namespace Rock.Field.Types
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var eventItem = new EventItemService( rockContext ).Get( eventItemGuid.Value );
+                    var eventItem = new EventItemService( rockContext ).GetNoTracking( eventItemGuid.Value );
                     if ( eventItem != null )
                     {
                         formattedValue = eventItem.Name;
@@ -97,7 +98,7 @@ namespace Rock.Field.Types
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        itemGuid = new EventItemService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        itemGuid = new EventItemService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
 

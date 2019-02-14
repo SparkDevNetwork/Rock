@@ -65,10 +65,11 @@ namespace RockWeb.Blocks.CheckIn
                         GoBack();
                     }
 
+                    lbEditFamily.Visible = CurrentCheckInState.Kiosk.RegistrationModeEnabled;
                     lTitle.Text = string.Format( GetAttributeValue( "Title" ), family.ToString() );
                     lCaption.Text = GetAttributeValue( "Caption" );
 
-                    if ( family.People.Count == 1 )
+                    if ( family.People.Count == 1 && !CurrentCheckInState.Kiosk.RegistrationModeEnabled )
                     {
                         if ( UserBackedUp )
                         {
@@ -159,5 +160,23 @@ namespace RockWeb.Blocks.CheckIn
                     .Count() <= 0, msg );
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbEditFamily control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbEditFamily_Click( object sender, EventArgs e )
+        {
+            if ( CurrentCheckInState == null )
+            {
+                return;
+            }
+
+            var editFamilyBlock = this.RockPage.ControlsOfTypeRecursive<CheckInEditFamilyBlock>().FirstOrDefault();
+            if ( editFamilyBlock != null && CurrentCheckInState.CheckIn.CurrentFamily != null )
+            {
+                editFamilyBlock.ShowEditFamily( CurrentCheckInState.CheckIn.CurrentFamily );
+            }
+        }
     }
 }

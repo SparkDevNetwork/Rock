@@ -43,6 +43,7 @@ namespace Rock.Reporting
         /// <param name="includeOnlyReportingFields">if set to <c>true</c> [include only reporting fields].</param>
         /// <param name="limitToFilterableFields">if set to <c>true</c> [limit to filterable fields].</param>
         /// <returns></returns>
+        [RockObsolete( "1.9" )]
         [Obsolete( "Use other GetCacheKey" )]
         public static string GetCacheKey( Type entityType, bool includeOnlyReportingFields = true, bool limitToFilterableFields = true )
         {
@@ -162,10 +163,17 @@ namespace Rock.Reporting
 
             var filteredEntityProperties = entityProperties
                 .Where( p =>
-                    ( p.GetGetMethod() != null && !p.GetGetMethod().IsVirtual ) ||
-                    p.GetCustomAttributes( typeof( IncludeForReportingAttribute ), true ).Any() ||
-                    p.GetCustomAttributes( typeof( IncludeAsEntityProperty ), true ).Any() ||
-                    p.Name == "Order" || p.Name == "IsActive" )
+                    // Only include attributues that are not flagged as NotMapped to prevent a LINQ to Entity exception.
+                    ( p.GetCustomAttribute( typeof( NotMappedAttribute ), true ) == null ) ||
+                    ( p.GetCustomAttributes( typeof( HideFromReportingAttribute ), true ) == null ) &&
+                    (
+                        // Properties with a Get and that are not Virtual
+                        ( p.GetGetMethod() != null && !p.GetGetMethod().IsVirtual ) ||
+
+                        // Properties with a Get and are virtual but also final
+                        ( p.GetGetMethod() != null && ( p.GetGetMethod().IsVirtual && p.GetGetMethod().IsFinal ) )
+                    )
+                    )
                 .ToList();
 
             // Get Properties
@@ -323,7 +331,7 @@ namespace Rock.Reporting
                             qryAttributes = qryAttributes.Where( a => string.IsNullOrEmpty( a.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( a.EntityTypeQualifierValue ) );
                         }
 
-                        cacheAttributeList = qryAttributes.ToCacheAttributeList();
+                        cacheAttributeList = qryAttributes.ToAttributeCacheList();
                     }
                 }
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,6 +8,7 @@ using System.Net;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
+using System.Dynamic;
 #if NET35
 using System.Web;
 #endif
@@ -320,19 +321,25 @@ namespace DotLiquid
 		{
 			List<object> ary;
 			if (input is IEnumerable)
-				ary = ((IEnumerable) input).Flatten().Cast<object>().ToList();
+				ary = ((IEnumerable) input).Cast<object>().ToList();
 			else
 				ary = new List<object>(new[] { input });
 			if (!ary.Any())
 				return ary;
 
 			if (string.IsNullOrEmpty(property))
+            {
 				ary.Sort();
-			else if ((ary.All(o => o is IDictionary)) && ((IDictionary) ary.First()).Contains(property))
+                if ( sortOrder.ToLower() == "desc" )
+                {
+                    ary.Reverse();
+                }
+            }
+			else if ((ary.All(o => o is IDictionary<string,object>)) && ((IDictionary<string,object>) ary.First()).ContainsKey(property))
 				if (sortOrder.ToLower() == "desc")
-                    ary.Sort((a, b) => Comparer.Default.Compare(((IDictionary) b)[property], ((IDictionary) a)[property]));
+                    ary.Sort((a, b) => Comparer.Default.Compare(((IDictionary<string, object>) b)[property], ((IDictionary<string, object>) a)[property]));
                 else 
-                    ary.Sort((a, b) => Comparer.Default.Compare(((IDictionary) a)[property], ((IDictionary) b)[property]));
+                    ary.Sort((a, b) => Comparer.Default.Compare(((IDictionary<string, object> ) a)[property], ((IDictionary<string, object> ) b)[property]));
 			else if (ary.All(o => o.RespondTo(property)))
 				if (sortOrder.ToLower() == "desc")
                     ary.Sort((a, b) => Comparer.Default.Compare(b.Send(property), a.Send(property)));

@@ -170,27 +170,4 @@ namespace RockWeb.Blocks.Crm
 
         #endregion
     }
-
-    class PersonBadgeInfo
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public bool IsActive { get; set; }
-        public int Order { get; set; }
-
-        public PersonBadgeInfo(PersonBadgeCache badge)
-        {
-            Id = badge.Id;
-            Name = badge.Name;
-            Description = badge.Description;
-            
-            badge.LoadAttributes();
-
-            IsActive = badge.BadgeComponent != null ? badge.BadgeComponent.IsActive : false;
-            Order = badge.BadgeComponent != null ? badge.BadgeComponent.Order : 0;
-        }
-    }
-
-
 }
