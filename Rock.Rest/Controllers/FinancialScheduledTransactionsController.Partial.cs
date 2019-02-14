@@ -91,7 +91,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialScheduledTransactions/Process/{scheduledTransactionId}" )]
-        public System.Net.Http.HttpResponseMessage ProcessPayment( int scheduledTransactionId, [FromUri]bool ignoreRepeatChargeProtection, [FromUri]bool ignoreScheduleAdherenceProtection )
+        public System.Net.Http.HttpResponseMessage ProcessPayment( int scheduledTransactionId, [FromUri]bool ignoreRepeatChargeProtection = false, [FromUri]bool ignoreScheduleAdherenceProtection = false )
         {
             var financialScheduledTransactionService = Service as FinancialScheduledTransactionService;
             var financialScheduledTransaction = financialScheduledTransactionService.Queryable()
