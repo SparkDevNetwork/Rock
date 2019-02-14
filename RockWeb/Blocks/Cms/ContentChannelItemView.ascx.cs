@@ -237,7 +237,7 @@ Guid - ContentChannelItem Guid
             cblCacheTags.DataSource = definedValueService.GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.CACHE_TAGS.AsGuid() ).Select( v => v.Value ).ToList();
             cblCacheTags.DataBind();
             string[] selectedCacheTags = this.GetAttributeValue( "CacheTags" ).SplitDelimitedValues();
-            foreach( ListItem cacheTag in cblCacheTags.Items )
+            foreach ( ListItem cacheTag in cblCacheTags.Items )
             {
                 cacheTag.Selected = selectedCacheTags.Contains( cacheTag.Value );
             }
@@ -485,8 +485,11 @@ Guid - ContentChannelItem Guid
                 AddHtmlMeta( "twitter:title", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterTitleAttribute" ), contentChannelItem ) );
                 AddHtmlMeta( "twitter:description", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterDescriptionAttribute" ), contentChannelItem ) );
                 AddHtmlMeta( "twitter:image", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterImageAttribute" ), contentChannelItem ) );
-                AddHtmlMeta( "twitter:card", this.GetAttributeValue( "TwitterCard" ) );
-
+                var twitterCard = this.GetAttributeValue( "TwitterCard" );
+                if ( twitterCard.IsNotNullOrWhiteSpace() && twitterCard != "none" )
+                {
+                    AddHtmlMeta( "twitter:card", twitterCard );
+                }
                 string lavaTemplate = this.GetAttributeValue( "LavaTemplate" );
                 string enabledLavaCommands = this.GetAttributeValue( "EnabledLavaCommands" );
                 outputContents = lavaTemplate.ResolveMergeFields( mergeFields, enabledLavaCommands );
@@ -898,7 +901,7 @@ Guid - ContentChannelItem Guid
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cbLogInteractions_CheckedChanged( object sender, EventArgs e )
         {
-            if (cbLogInteractions.Checked)
+            if ( cbLogInteractions.Checked )
             {
                 cbWriteInteractionOnlyIfIndividualLoggedIn.Visible = true;
                 cbWriteInteractionOnlyIfIndividualLoggedIn.Checked = true;
