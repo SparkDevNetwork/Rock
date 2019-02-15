@@ -14,9 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
+
 using System.Linq;
 using System.Web.Http;
+using System.Web.Http.OData;
 
 using Rock.Data;
 using Rock.Model;
@@ -40,6 +41,7 @@ namespace Rock.Rest.Controllers
         /// <param name="categoryId"></param>
         /// <returns></returns>
         [HttpGet]
+        [EnableQuery]
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/DataViews/GetPersistedDataViewsForEntity/{entityTypeId}/{entityId}" )]
         public IQueryable<DataView> GetPersistedDataViewsForEntity( int entityTypeId, int entityId, System.Guid? categoryGuid = null, int categoryId=0 )
