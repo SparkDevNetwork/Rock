@@ -34,7 +34,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Process Payment" )]
 
-    [FinancialGatewayField( "FinancialGateway", "Workflow attribute that indicates the automated financial gateway to use.", true, "", "", 0, null )]
+    [FinancialGatewayField( "Financial Gateway", "Workflow attribute that indicates the automated financial gateway to use.", true, "", "", 0, null )]
     [WorkflowAttribute( "Person", "Workflow attribute that contains the person making the payment.", true, "", "", 1, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [WorkflowAttribute( "Amount", "Workflow attribute that contains the amount to charge.", true, "", "", 2, null, new string[] { "Rock.Field.Types.CurrencyFieldType" } )]
     [WorkflowAttribute( "Account", "Workflow attribute that contains the target account.", true, "", "", 3, null, new string[] { "Rock.Field.Types.AccountFieldType" } )]
