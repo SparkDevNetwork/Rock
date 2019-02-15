@@ -325,7 +325,7 @@ namespace Rock.Web.Cache
                     }
 
                     var value = RockCacheManager<List<string>>.Instance.Cache.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
-                    if ( value.FirstOrDefault( v => v.Contains( key ) ) == null )
+                    if ( !value.Contains(key) )
                     {
                         value.Add( key );
                         RockCacheManager<List<string>>.Instance.AddOrUpdate( cacheTag, CACHE_TAG_REGION_NAME, value );
