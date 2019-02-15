@@ -273,13 +273,13 @@ namespace RockWeb.Blocks.Finance
                 string script = string.Format( @"
     $('#{0}').change(function( e ){{
         var count = $(""#{1} input[id$='_cbSelect_0']:checked"").length;
+        var $ddl = $(this);
         if (count == 0) {{
             $('#{3}').val($ddl.val());                
             window.location = ""javascript:{2}"";
         }}
         else
         {{
-            var $ddl = $(this);
             if ($ddl.val() != '') {{
                 Rock.dialogs.confirm('Are you sure you want to move the selected transactions to a new batch (the control amounts on each batch will be updated to reflect the moved transaction\'s amounts)?', function (result) {{
                     if (result) {{
