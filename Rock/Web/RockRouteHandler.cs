@@ -51,7 +51,12 @@ namespace Rock.Web
         System.Web.IHttpHandler IRouteHandler.GetHttpHandler( RequestContext requestContext )
         {
             // Context cannot be null
-            RouteRequestContext = requestContext ?? throw new ArgumentNullException( "requestContext" );
+            if ( requestContext == null )
+            {
+                throw new ArgumentNullException( "requestContext" );
+            }
+
+            RouteRequestContext = requestContext;
 
             PageId = string.Empty;
             RouteId = 0;
