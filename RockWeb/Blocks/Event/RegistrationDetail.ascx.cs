@@ -332,6 +332,8 @@ namespace RockWeb.Blocks.Event
                         registration.GroupId = ddlGroup.SelectedValueAsInt();
                     }
 
+                    avcEditAttributes.GetEditValues( registration );
+
                     History.EvaluateChange( changes, "Discount Code", registration.DiscountCode, ddlDiscountCode.SelectedValue );
                     registration.DiscountCode = ddlDiscountCode.SelectedValue;
 
@@ -363,6 +365,8 @@ namespace RockWeb.Blocks.Event
                             registration.Id,
                             changes
                         );
+
+                        registration.SaveAttributeValues( rockContext );
                     } );
 
                     if ( newRegistration )
@@ -830,7 +834,7 @@ namespace RockWeb.Blocks.Event
                     lbSubmitPayment.Visible = true;
                     aStep2Submit.Visible = false;
 
-                    var threeStepGateway = component as ThreeStepGatewayComponent;
+                    var threeStepGateway = component as IThreeStepGatewayComponent;
                     bool using3StepGateway = ( threeStepGateway != null );
                     phCCDetails.Visible = !using3StepGateway;
                     if ( using3StepGateway )
@@ -1444,6 +1448,13 @@ namespace RockWeb.Blocks.Event
             }
             ddlGroup.SetValue( registration.Group );
 
+            registration.LoadAttributes();
+
+            // Don't show the Categories, since they will probably be 'Start of Registration' or 'End of Registration';
+            avcEditAttributes.ShowCategoryLabel = false;
+            avcEditAttributes.ExcludedAttributes = registration.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
+            avcEditAttributes.AddEditControls( registration );
+
             ddlDiscountCode.DataSource = discountCodes;
             ddlDiscountCode.DataBind();
             ddlDiscountCode.Items.Insert( 0, new ListItem( "", "" ) );
@@ -1495,6 +1506,13 @@ namespace RockWeb.Blocks.Event
             {
                 lGroup.Visible = false;
             }
+
+            registration.LoadAttributes();
+            avcDisplayAttributes.ExcludedAttributes = registration.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
+
+            // Don't show the Categories, since they will probably be 'Start of Registration' or 'End of Registration';
+            avcDisplayAttributes.ShowCategoryLabel = false;
+            avcDisplayAttributes.AddDisplayControls( registration );
 
             lDiscountCode.Visible = !string.IsNullOrWhiteSpace( registration.DiscountCode );
             lDiscountCode.Text = registration.DiscountCode;
@@ -1749,7 +1767,7 @@ namespace RockWeb.Blocks.Event
                     return false;
                 }
 
-                var threeStepGateway = gateway as ThreeStepGatewayComponent;
+                var threeStepGateway = gateway as IThreeStepGatewayComponent;
 
                 if ( registration == null || registration.RegistrationInstance == null || !registration.RegistrationInstance.AccountId.HasValue || registration.RegistrationInstance.Account == null )
                 {
@@ -1835,7 +1853,7 @@ namespace RockWeb.Blocks.Event
             return transaction;
         }
 
-        private bool ProcessStep1( ThreeStepGatewayComponent gateway, RockContext rockContext, PaymentInfo paymentInfo, decimal amount, History.HistoryChangeList registrationChanges, out string errorMessage )
+        private bool ProcessStep1( IThreeStepGatewayComponent gateway, RockContext rockContext, PaymentInfo paymentInfo, decimal amount, History.HistoryChangeList registrationChanges, out string errorMessage )
         {
             paymentInfo.IPAddress = GetClientIpAddress();
             paymentInfo.AdditionalParameters = gateway.GetStep1Parameters( ResolveRockUrlIncludeRoot( "~/GatewayStep2Return.aspx" ) );
@@ -1852,10 +1870,10 @@ namespace RockWeb.Blocks.Event
 
         private bool ProcessStep3( string resultQueryString, RockContext rockContext, Registration registration, int? personAliasId, decimal amount, out string errorMessage )
         {
-            ThreeStepGatewayComponent gateway = null;
+            IThreeStepGatewayComponent gateway = null;
             if ( RegistrationTemplateState != null && RegistrationTemplateState.FinancialGateway != null )
             {
-                gateway = RegistrationTemplateState.FinancialGateway.GetGatewayComponent() as ThreeStepGatewayComponent;
+                gateway = RegistrationTemplateState.FinancialGateway.GetGatewayComponent() as IThreeStepGatewayComponent;
             }
 
             if ( gateway == null )
@@ -2204,11 +2222,26 @@ namespace RockWeb.Blocks.Event
                         foreach ( var feeInfo in fee.Value )
                         {
                             decimal cost = feeInfo.PreviousCost > 0.0m ? feeInfo.PreviousCost : feeInfo.Cost;
-                            string desc = string.Format( "{0}{1} ({2:N0} @ {3})",
-                                templateFee != null ? templateFee.Name : "(Previous Cost)",
-                                string.IsNullOrWhiteSpace( feeInfo.Option ) ? "" : "-" + feeInfo.Option,
-                                feeInfo.Quantity,
-                                cost.FormatAsCurrency() );
+                            string feeName;
+                            if ( templateFee != null )
+                            {
+                                feeName = templateFee.Name;
+
+                                if ( templateFee.FeeType == RegistrationFeeType.Multiple && feeInfo.FeeLabel.IsNotNullOrWhiteSpace() )
+                                {
+                                    feeName = string.Format( "{0}-{1}", templateFee.Name, feeInfo.FeeLabel );
+                                }
+                            }
+                            else
+                            {
+                                feeName = "(Previous Cost)";
+                                if ( feeInfo.FeeLabel.IsNotNullOrWhiteSpace() )
+                                {
+                                    feeName += "-" + feeInfo.FeeLabel;
+                                }
+                            }
+
+                            string desc = string.Format( "{0} ({1:N0} @ {2})", feeName, feeInfo.Quantity, cost.FormatAsCurrency() );
 
                             var costSummary = new RegistrationCostSummaryInfo();
                             costSummary.Type = RegistrationCostSummaryType.Fee;
@@ -2543,7 +2576,7 @@ namespace RockWeb.Blocks.Event
                             else
                             {
                                 var rlDiscountedFee = new RockLiteral();
-                                rlDiscountedFee.ID = string.Format( "rlDiscountedFee_{0}_{1}_{2}", registrant.Id, templateFee.Id, feeInfo.Option );
+                                rlDiscountedFee.ID = string.Format( "rlDiscountedFee_{0}_{1}_{2}", registrant.Id, templateFee.Id, feeInfo.FeeLabel );
                                 rlDiscountedFee.Label = "Discounted Amount";
                                 rlDiscountedFee.Text = discountedCost.FormatAsCurrency();
 
@@ -2601,12 +2634,13 @@ namespace RockWeb.Blocks.Event
             if ( feeInfo.Quantity > 0 )
             {
                 var rlField = new RockLiteral();
-                rlField.ID = string.Format( "rlFee_{0}_{1}_{2}", registrant.Id, fee.Id, feeInfo.Option );
+                rlField.ID = string.Format( "rlFee_{0}_{1}_{2}", registrant.Id, fee.Id, feeInfo.FeeLabel );
+                
                 rlField.Label = fee.Name;
 
-                if ( !string.IsNullOrWhiteSpace( feeInfo.Option ) )
+                if ( fee.FeeType == RegistrationFeeType.Multiple && feeInfo.FeeLabel.IsNotNullOrWhiteSpace() )
                 {
-                    rlField.Label += " - " + feeInfo.Option;
+                    rlField.Label = string.Format( "{0}-{1}", fee.Name, feeInfo.FeeLabel );
                 }
 
                 if ( feeInfo.Quantity > 1 )

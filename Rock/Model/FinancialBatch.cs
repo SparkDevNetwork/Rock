@@ -127,6 +127,15 @@ namespace Rock.Model
         public decimal ControlAmount { get; set; }
 
         /// <summary>
+        /// Gets or sets the control item count.
+        /// </summary>
+        /// <value>
+        /// The control item count.
+        /// </value>
+        [DataMember]
+        public int? ControlItemCount { get; set; }
+
+        /// <summary>
         /// Gets or sets the note.
         /// </summary>
         /// <value>

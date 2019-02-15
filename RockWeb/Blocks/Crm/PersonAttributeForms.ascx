@@ -141,9 +141,9 @@
                             Help="Should a value for this attribute be required?" />
                     </div>
                 </div>
-                <Rock:CodeEditor ID="ceAttributePreText" runat="server" Label="Pre-Text" EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" ValidationGroup="Field"
+                <Rock:CodeEditor ID="ceAttributePreHtml" runat="server" Label="Pre-HTML" EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" ValidationGroup="Field"
                     Help="Any HTML to display directly above this field <span class='tip tip-lava'></span>." />
-                <Rock:CodeEditor ID="ceAttributePostText" runat="server" Label="Post-Text" EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" ValidationGroup="Field"
+                <Rock:CodeEditor ID="ceAttributePostHtml" runat="server" Label="Post-HTML" EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" ValidationGroup="Field"
                     Help="Any HTML to display directly below this field <span class='tip tip-lava'></span>." />
             </Content>
         </Rock:ModalDialog>

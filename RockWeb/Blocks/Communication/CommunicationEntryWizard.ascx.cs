@@ -488,23 +488,24 @@ namespace RockWeb.Blocks.Communication
 
             var selectedNumberGuids = GetAttributeValue( "AllowedSMSNumbers" ).SplitDelimitedValues( true ).AsGuidList();
             var smsFromDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
+            var smsDefinedValues = smsFromDefinedType.DefinedValues.ToList();
             if ( selectedNumberGuids.Any() )
             {
-                ddlSMSFrom.SelectedIndex = -1;
-                ddlSMSFrom.DataSource = smsFromDefinedType.DefinedValues.Where( v => selectedNumberGuids.Contains( v.Guid ) ).Select( v => new
-                {
-                    v.Description,
-                    v.Id
-                } );
-                ddlSMSFrom.DataTextField = "Description";
-                ddlSMSFrom.DataValueField = "Id";
-                ddlSMSFrom.DataBind();
-                ddlSMSFrom.Items.Insert( 0, new ListItem() );
+                smsDefinedValues = smsDefinedValues.Where( v => selectedNumberGuids.Contains( v.Guid ) ).ToList();
             }
-            else
+
+            ddlSMSFrom.Items.Clear();
+            ddlSMSFrom.Items.Add( new ListItem() );
+            foreach ( var item in smsDefinedValues )
             {
-                ddlSMSFrom.BindToDefinedType( smsFromDefinedType, true, true );
+                var description = string.IsNullOrWhiteSpace( item.Description )
+                    ? PhoneNumber.FormattedNumber( "", item.Value.Replace( "+", string.Empty ) )
+                    : item.Description.LeftWithEllipsis( 25 );
+
+                ddlSMSFrom.Items.Add( new ListItem( description, item.Id.ToString() ) );
             }
+
+            ddlSMSFrom.SelectedIndex = -1;
         }
 
         /// <summary>
@@ -628,6 +629,12 @@ namespace RockWeb.Blocks.Communication
                     {
                         if ( additionalSegmentDataView.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
                         {
+                            if ( commonSegmentDataViewList.Where( v => v.Guid == additionalSegmentDataView.Guid ).Any() )
+                            {
+                                // This was already added so just move along...
+                                continue;
+                            }
+
                             cblCommunicationGroupSegments.Items.Add( new ListItem( additionalSegmentDataView.Name, additionalSegmentDataView.Id.ToString() ) );
                         }
                     }
@@ -1447,6 +1454,7 @@ namespace RockWeb.Blocks.Communication
                         var sendTestToPerson = new PersonService( rockContext ).Get( CurrentPerson.Id );
                         if ( mediumEntityTypeId == EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Id )
                         {
+                            testCommunication.Subject = string.Format( "[Test] {0}", communication.Subject );
                             if ( sendTestToPerson.Email != tbTestEmailAddress.Text )
                             {
                                 sendTestToPerson.Email = tbTestEmailAddress.Text;
@@ -1454,6 +1462,7 @@ namespace RockWeb.Blocks.Communication
                         }
                         else if ( mediumEntityTypeId == EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ).Id )
                         {
+                            testCommunication.SMSMessage = string.Format( "[Test] {0}", communication.SMSMessage );
                             var smsPhoneNumber = sendTestToPerson.PhoneNumbers.FirstOrDefault( a => a.IsMessagingEnabled == true );
                             if ( smsPhoneNumber == null )
                             {

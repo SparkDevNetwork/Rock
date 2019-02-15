@@ -226,6 +226,28 @@ namespace Rock
         }
 
         /// <summary>
+        /// Converts a comma delimited string into a List&lt;int&gt;
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static IEnumerable<int> StringToIntList( this string str ) {
+            // https://stackoverflow.com/questions/1763613/convert-comma-separated-string-of-ints-to-int-array
+
+            if ( String.IsNullOrEmpty( str ) )
+            {
+                yield break;
+            }
+
+            foreach(var s in str.Split(',')) {
+                int num;
+                if ( int.TryParse( s, out num ) )
+                {
+                    yield return num;
+                }
+            }
+        }
+
+        /// <summary>
         /// Makes the Int64 hash code from the provided string.
         /// </summary>
         /// <param name="str">The string.</param>
@@ -419,6 +441,17 @@ namespace Rock
             {
                 return str.Substring( 0, length );
             }
+        }
+
+        /// <summary>
+        /// Truncates from char 0 to the length and then add an ellipsis character char 8230.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="length">The length.</param>
+        /// <returns></returns>
+        public static string LeftWithEllipsis( this string str, int length )
+        {
+            return Left( str, length ) + (char)8230;
         }
 
         /// <summary>

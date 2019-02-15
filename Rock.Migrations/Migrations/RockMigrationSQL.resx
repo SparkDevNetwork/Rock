@@ -298,4 +298,13 @@
   <data name="_201810301818354_Rollup_1030_spCheckin_AttendanceAnalyticsQuery_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201810301818354_rollup_1030_spcheckin_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Down" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201811271852316_rollup_1127_spfinance_pledgeanalyticsquery_down.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Up" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201811271852316_rollup_1127_spfinance_pledgeanalyticsquery_up.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201812111901295_Rollup_1211_FixChartShortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201812111901295_rollup_1211_fixchartshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

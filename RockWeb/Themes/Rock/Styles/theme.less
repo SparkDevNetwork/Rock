@@ -61,10 +61,16 @@ textarea,
   background-clip: padding-box;
   -webkit-box-shadow: none;
   box-shadow: none;
+}
 
+.picker-label,
+input[type="text"],
+textarea,
+.form-control {
   &:focus {
     border: 1px solid @input-border-focus;
     box-shadow: @input-focus-box-shadow;
+    outline: none;
   }
 }
 
@@ -136,7 +142,7 @@ textarea,
         right: 24px;
         bottom: 0;
         left: 24px;
-        height:0;
+        height: 0;
         content: " ";
         opacity: 0;
         transition: height 300ms ease-in-out, opacity 300ms ease-in-out;
@@ -248,7 +254,7 @@ textarea,
 
 .has-error .form-control,
 .has-error .input-group-addon {
-  box-shadow: 0;
+  box-shadow: none;
 }
 
 .has-error .form-control:focus {
@@ -293,9 +299,11 @@ textarea,
 .grid .table > thead > tr > th {
   padding: 18px 0 18px 12px;
   vertical-align: middle;
-  // &:last-child {
-  //   border-right: 1px solid @table-border-color;
-  // }
+
+  // Remove padding offset on center
+  &[align="center"] {
+    padding: 18px 6px;
+  }
 }
 
 .grid .table > thead > tr.grid-header-bold > th {
@@ -334,10 +342,6 @@ textarea,
   .btn {
     width: 33px;
     padding: 5px 7px;
-    &.fa-clone {
-      width: 33px;
-      padding: 8px 8px 8px 7px;
-    }
   }
 }
 
@@ -361,7 +365,7 @@ textarea,
 // 3. Rock Overrides         */
 // -------------------------
 
-.rollover-item {
+.panel-heading .rollover-item {
   > a {
     color: @gray;
 
@@ -513,6 +517,11 @@ td.grid-actions {
 /*#region
 // 4. Theme Styling          */
 // -------------------------
+
+body.nav-open {
+  overflow: hidden;
+}
+
 .page-wrapper {
 
   @media (min-width: @screen-md-min) {
@@ -1214,7 +1223,7 @@ body.navbar-side-open {
         font-family: @fa-font-face;
         font-size: 80%;
         font-weight: 600;
-        content: "@{breadcrumb-separator}"
+        content: "@{breadcrumb-separator}";
       }
     }
   }
@@ -1258,7 +1267,7 @@ body.navbar-side-open {
       padding: 0 @padding-base-horizontal;
     }
 
-    .btn {
+    .login .btn {
       display: block;
       width: 100%;
       margin: 18px 0 0;
@@ -1355,10 +1364,19 @@ body.navbar-side-open {
   display: block;
   min-height: 19px;
   padding-left: 28px;  // Not sure if needed
-  margin: 7px 16px 7px 0 !important;
+  margin-top: 7px;
+  margin-right: 16px;
+  margin-bottom: 7px;
 
   label { // Override forms.less
     padding-left: 0;
+  }
+}
+
+.controls {
+  .checkbox:first-child,
+  .checkbox:last-child {
+    margin-top: 7px;
   }
 }
 
@@ -1475,6 +1493,14 @@ body.navbar-side-open {
     &:checked ~ .label-text::after {
       background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3E%3Ccircle r='3' fill='%23ffffff'/%3E%3C/svg%3E");
     }
+  }
+}
+
+// Override fix for checkbox wrapping when in-columns from forms.less
+.in-columns {
+  .checkbox-inline:first-child,
+  .radio-inline:first-child {
+    padding-left: 30px;
   }
 }
 

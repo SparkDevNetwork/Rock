@@ -111,6 +111,16 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
+        /// Returns the default authorization for a specific action.
+        /// </summary>
+        /// <param name="action">A <see cref="System.String"/> representing the name of the action.</param>
+        /// <returns>A <see cref="System.Boolean"/> that is <c>true</c> if the specified action is allowed by default; otherwise <c>false</c>.</returns>
+        public override bool IsAllowedByDefault( string action )
+        {
+            return false;
+        }
+
+        /// <summary>
         /// Gets the supported actions.
         /// </summary>
         /// <value>

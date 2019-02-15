@@ -203,7 +203,7 @@ namespace Rock.CodeGeneration
             List<Assembly> rockAssemblyList = new List<Assembly>();
             rockAssemblyList.Add( typeof( Rock.Data.RockContext ).Assembly );
             rockAssemblyList.Add( typeof( Rock.Rest.ApiControllerBase ).Assembly );
-            
+
 
             foreach ( var rockAssembly in rockAssemblyList )
             {
@@ -1073,6 +1073,17 @@ order by [parentTable], [columnName]
                     var enumValues = Enum.GetValues( enumType );
                     foreach ( var enumValueName in Enum.GetNames( enumType ) )
                     {
+                        // mark Obsolete Enum values
+                        object value = Enum.Parse( enumType, enumValueName );
+                        var fieldInfo = value.GetType().GetField( enumValueName );
+                        var obsolete = fieldInfo?.GetCustomAttribute<ObsoleteAttribute>();
+
+                        if ( obsolete != null )
+                        {
+                            sb.AppendLine();
+                            sb.AppendLine( $"        [Obsolete( \"{obsolete.Message}\", {obsolete.IsError.ToTrueFalse().ToLower()} )]" );
+                        }
+
                         int enumValue = ( int ) Convert.ChangeType( Enum.Parse( enumType, enumValueName ), typeof( int ) );
                         string enumValueParam = enumValue >= 0 ? " = 0x" + enumValue.ToString( "x" ) : " = " + enumValue.ToString();
                         sb.AppendFormat( "        {0}{1},", enumValueName, enumValueParam );
@@ -1178,6 +1189,13 @@ order by [parentTable], [columnName]
             // make a copy of the EntityProperties since we are deleting some for this method
             var entityProperties = GetEntityProperties( type, true, true ).ToDictionary( k => k.Key, v => v.Value );
 
+            // create an instance of the type to detect any autoproperties that have a default value set
+            object typeInstance = null;
+            if ( type.GetConstructor( new Type[0] ) != null )
+            {
+                typeInstance = Activator.CreateInstance( type );
+            }
+
             var dataMembers = type.GetProperties().SortByStandardOrder()
                 .Where( a => a.GetCustomAttribute<DataMemberAttribute>() != null )
                 .Where( a => a.GetCustomAttribute<ObsoleteAttribute>() == null )
@@ -1257,7 +1275,6 @@ order by [parentTable], [columnName]
                 ObsoleteAttribute obsolete = propertyInfo.GetCustomAttribute<ObsoleteAttribute>();
                 RockObsolete rockObsolete = propertyInfo.GetCustomAttribute<RockObsolete>();
                 var propertyRockClientIncludeAttribute = propertyInfo.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
-                var defaultValueAttribute = propertyInfo.GetCustomAttribute<System.ComponentModel.DefaultValueAttribute>();
                 string propertyComments = null;
 
                 if ( propertyRockClientIncludeAttribute != null )
@@ -1278,38 +1295,61 @@ order by [parentTable], [columnName]
 
                 if ( obsolete != null )
                 {
-                    if ( rockObsolete != null)
+                    if ( rockObsolete != null )
                     {
                         // [RockObsolete( "1.9" )]
-                        sb.AppendLine( $"        [RockObsolete( \"{rockObsolete.Version}\" )]" );
+                        sb.AppendLine( $"        // Made Obsolete in Rock \"{rockObsolete.Version}\"" );
                     }
 
                     //[Obsolete( "Use PreventInactivePeople instead.", true )]
                     sb.AppendLine( $"        [Obsolete( \"{obsolete.Message}\", {obsolete.IsError.ToTrueFalse().ToLower()} )]" );
                 }
 
-                if ( defaultValueAttribute != null )
+                object autoPropertyValue = null;
+                if ( typeInstance != null )
                 {
-                    string defaultValueCode;
-                    if ( defaultValueAttribute.Value is string )
+                    autoPropertyValue = propertyInfo.GetValue( typeInstance );
+                }
+
+                sb.Append( $"        public {this.PropertyTypeName( propertyInfo.PropertyType )} {propertyName} {{ get; set; }}" );
+
+                if ( autoPropertyValue != null )
+                {
+                    string defaultValueCode = null;
+                    if ( autoPropertyValue is string )
                     {
-                        defaultValueCode = $"\"{defaultValueAttribute.Value}\";";
+                        var escapedDefaultValue = ( autoPropertyValue as string ).Replace( "\"", "\"\"" );
+                        defaultValueCode = $"@\"{ escapedDefaultValue}\"";
                     }
-                    else if ( defaultValueAttribute.Value is bool )
+                    else if ( autoPropertyValue is bool )
                     {
-                        defaultValueCode = ( bool ) defaultValueAttribute.Value ? "true" : "false";
+                        if ( ( bool ) autoPropertyValue != false )
+                        {
+                            defaultValueCode = ( bool ) autoPropertyValue ? "true" : "false";
+                        }
                     }
-                    else
+                    else if ( autoPropertyValue is int )
                     {
-                        defaultValueCode = defaultValueAttribute.Value.ToString();
+                        if ( ( int ) autoPropertyValue != 0 )
+                        {
+                            defaultValueCode = autoPropertyValue.ToString();
+                        }
+                    }
+                    else if ( autoPropertyValue.GetType().IsEnum )
+                    {
+                        if ( ( int ) autoPropertyValue != 0 )
+                        {
+                            defaultValueCode = $"Rock.Client.Enums.{autoPropertyValue.GetType().Name}.{autoPropertyValue}";
+                        }
                     }
 
-                    sb.AppendLine( $"        public {this.PropertyTypeName( propertyInfo.PropertyType )} {propertyName} {{ get; set; }} = {defaultValueCode}" );
+                    if ( defaultValueCode != null )
+                    {
+                        sb.Append( $" = {defaultValueCode};" );
+                    }
                 }
-                else
-                {
-                    sb.AppendLine( $"        public {this.PropertyTypeName( propertyInfo.PropertyType )} {propertyName} {{ get; set; }}" );
-                }
+
+                sb.AppendLine( "" );
 
                 sb.AppendLine( "" );
             }

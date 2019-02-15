@@ -25,7 +25,7 @@ namespace Rock.Attribute
     /// Field Attribute to set an integer.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
-    public class LavaCommandsFieldAttribute : FieldAttribute
+    public class LavaCommandsFieldAttribute : SelectFieldAttribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="IntegerFieldAttribute" /> class.

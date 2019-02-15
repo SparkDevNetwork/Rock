@@ -59,10 +59,10 @@ namespace Rock.Client
         public int? ImageBinaryFileId { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
-        public bool? IsPublic { get; set; }
+        public bool? IsPublic { get; set; } = true;
 
         /// <summary />
         public bool IsTaxDeductible { get; set; }

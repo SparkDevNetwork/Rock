@@ -570,8 +570,8 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
 
             _noteEditor = new NoteEditor();
-            _noteEditor.SetNoteOptions( this.NoteOptions );
             _noteEditor.ID = this.ID + "_noteEditor";
+            _noteEditor.SetNoteOptions( this.NoteOptions );
             _noteEditor.CssClass = "note-new";
 
             _noteEditor.CreatedByPersonAlias = ( this.Page as RockPage )?.CurrentPersonAlias;

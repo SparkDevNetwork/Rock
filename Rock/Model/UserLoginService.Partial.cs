@@ -134,7 +134,7 @@ namespace Rock.Model
                 try { identifier = Rock.Security.Encryption.DecryptString( code ); }
                 catch { }
 
-                if ( identifier.StartsWith( "ROCK|" ) )
+                if ( identifier.IsNotNullOrWhiteSpace() && identifier.StartsWith( "ROCK|" ) )
                 {
                     string[] idParts = identifier.Split( '|' );
                     if ( idParts.Length == 4 )

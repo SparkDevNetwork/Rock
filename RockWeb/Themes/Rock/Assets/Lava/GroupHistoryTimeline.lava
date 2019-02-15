@@ -378,12 +378,22 @@
                                                     {%- assign historyValueName = history.ValueName | Downcase | Replace:'location location','location' -%}
                                                     {%- if sameValues and historyValueName == prevHistoryValueName -%}
                                                         <span class='history-verb' title='{{ historySummary.CreatedDateTime }}'>and</span>
-                                                    {%- else -%}
-                                                        <span class='history-valuename'>{{ historyValueName }}</span> to
-                                                    {%- endif -%}
-                                                    {%- if history.NewValue -%}
+                                                        {%- if history.NewValue -%}
                                                             {%- assign historyNewValueSize = history.NewValue | Size -%}
-                                                        <span class='history-oldvalue'><a {% if historyNewValueSize > 80 -%}tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="Full {{ historyValueName }}" data-content="{{ history.NewValue | StripNewlines }}"{%- endif -%}>{{ history.NewValue | Trim | Truncate:80,'...' }}</a></span>{%- endif -%}{%- unless forloop.last -%}{%- if forloop.rindex != 2 -%},{%- else -%},&nbsp;and{%- endif -%}{%- else -%}{%- endunless -%}
+                                                            <span class='history-oldvalue'><a {% if historyNewValueSize > 80 -%}tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="Full {{ historyValueName }}" data-content="{{ history.NewValue | StripNewlines }}"{%- endif -%}>{{ history.NewValue | Trim | Truncate:80,'...' }}</a></span>{{- -}}
+                                                        {%- else -%}
+                                                            removed the <span class='history-valuename'>{{ historyValueName }}</span>
+                                                        {%- endif -%}
+                                                    {%- else -%}
+                                                        {%- if history.NewValue -%}
+                                                            <span class='history-valuename'>{{ historyValueName }}</span> to
+                                                            {%- assign historyNewValueSize = history.NewValue | Size -%}
+                                                            <span class='history-oldvalue'><a {% if historyNewValueSize > 80 -%}tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="Full {{ historyValueName }}" data-content="{{ history.NewValue | StripNewlines }}"{%- endif -%}>{{ history.NewValue | Trim | Truncate:80,'...' }}</a></span>{{- -}}
+                                                        {%- else -%}
+                                                            removed the <span class='history-valuename'>{{ historyValueName }}</span>
+                                                        {%- endif -%}
+                                                    {%- endif -%}
+                                                    {%- unless forloop.last -%}{%- if forloop.rindex != 2 -%},{%- else -%},&nbsp;and{%- endif -%}{%- else -%}{%- endunless -%}
                                                     {%- assign prevHistoryValueName = historyValueName -%}
                                                 {%- endcapture -%}
                                                 {%- assign prevTimelineAction = timelineAction -%}

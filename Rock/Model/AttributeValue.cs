@@ -155,7 +155,7 @@ namespace Rock.Model
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [LavaIgnore]
-        public DateTime? ValueAsDateTime { get; private set; }
+        public DateTime? ValueAsDateTime { get; internal set; }
 
         /// <summary>
         /// Gets the value as boolean (computed column)
@@ -166,7 +166,7 @@ namespace Rock.Model
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [LavaIgnore]
-        public bool? ValueAsBoolean { get; private set; }
+        public bool? ValueAsBoolean { get; internal set; }
 
         /// <summary>
         /// Gets a person alias guid value as a PersonId (ComputedColumn).
@@ -440,6 +440,15 @@ namespace Rock.Model
 
                 attributeValueHistoricalService.Add( attributeValueHistoricalCurrent );
                 rockContext.SaveChanges();
+            }
+
+            // If this a Person Attribute, Update the ModifiedDateTime on the Person that this AttributeValue is associated with
+            if ( this.EntityId.HasValue && AttributeCache.Get( this.AttributeId )?.EntityTypeId == EntityTypeCache.Get<Rock.Model.Person>().Id )
+            {
+                var currentDateTime = RockDateTime.Now;
+                int personId = this.EntityId.Value;
+                var qryPersonsToUpdate = new PersonService( rockContext ).Queryable( true, true ).Where( a => a.Id == personId );
+                rockContext.BulkUpdate( qryPersonsToUpdate, p => new Person { ModifiedDateTime = currentDateTime, ModifiedByPersonAliasId = this.ModifiedByPersonAliasId } );
             }
 
             base.PostSaveChanges( dbContext );

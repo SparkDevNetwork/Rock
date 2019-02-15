@@ -300,39 +300,16 @@ namespace Rock.Web.UI.Controls
             if ( this.RepeatDirection == RepeatDirection.Horizontal )
             {
                 cssClassBuilder.Append( " rockradiobuttonlist-horizontal" );
+
+                if ( this.RepeatColumns > 0 )
+                {
+                    cssClassBuilder.Append( string.Format( " in-columns in-columns-{0}", RepeatColumns ) );
+                }
+
             }
             else
             {
                 cssClassBuilder.Append( " rockradiobuttonlist-vertical" );
-            }
-
-            if ( this.RepeatColumns == 1 )
-            {
-                cssClassBuilder.Append( " in-columns in-columns-1" );
-            }
-            else if( this.RepeatColumns == 2 )
-            {
-                cssClassBuilder.Append( " in-columns in-columns-2" );
-            }
-            else if( this.RepeatColumns == 3 )
-            {
-                cssClassBuilder.Append( " in-columns in-columns-3" );
-            }
-            else if( this.RepeatColumns == 4 )
-            {
-                cssClassBuilder.Append( " in-columns in-columns-4" );
-            }
-            else if( this.RepeatColumns == 5 )
-            {
-                cssClassBuilder.Append( " in-columns in-columns-5" );
-            }
-            else if( this.RepeatColumns == 6 )
-            {
-                cssClassBuilder.Append( " in-columns in-columns-6" );
-            }
-            else if( this.RepeatColumns > 6 )
-            {
-                cssClassBuilder.Append( " in-columns in-columns-6" );
             }
 
             writer.AddAttribute( "class", cssClassBuilder.ToString() );

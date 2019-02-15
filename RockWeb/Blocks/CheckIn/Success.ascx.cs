@@ -44,21 +44,6 @@ namespace RockWeb.Blocks.CheckIn
     [TextField( "Title", "", false, "Checked-in", "Text", 6 )]
     [TextField( "Detail Message", "The message to display indicating person has been checked in. Use {0} for person, {1} for group, {2} for schedule, and {3} for the security code", false,
         "{0} was checked into {1} in {2} at {3}", "Text", 7 )]
-
-
-    [CodeEditorField(
-        "Success Template",
-        "The Lava Template to use when rendering the Success Html",
-        Rock.Web.UI.Controls.CodeEditorMode.Lava,
-        IsRequired = false,
-        DefaultValue = @"
-{% if RegistrationModeEnabled == true %}
-    {{ DetailMessage }}
-{% else %}
-    {{ DetailMessage }}
-{% endif %}
-",
-        Order = 8 )]
     public partial class Success : CheckInBlock
     {
         /// <summary>
@@ -194,6 +179,7 @@ namespace RockWeb.Blocks.CheckIn
                         mergeFields.Add( "CheckinResultList", checkinResultList );
                         mergeFields.Add( "Kiosk", CurrentCheckInState.Kiosk );
                         mergeFields.Add( "RegistrationModeEnabled", CurrentCheckInState.Kiosk.RegistrationModeEnabled );
+                        mergeFields.Add( "Messages", CurrentCheckInState.Messages );
                         if ( CurrentGroupTypeIds != null )
                         {
                             var checkInAreas = CurrentGroupTypeIds.Select( a => Rock.Web.Cache.GroupTypeCache.Get( a ) );

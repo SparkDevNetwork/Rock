@@ -53,7 +53,7 @@ namespace Rock.Client
         public int GroupId { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.GroupMemberStatus GroupMemberStatus { get; set; }
+        public Rock.Client.Enums.GroupMemberStatus GroupMemberStatus { get; set; } = Rock.Client.Enums.GroupMemberStatus.Active;
 
         /// <summary />
         public int? GroupOrder { get; set; }

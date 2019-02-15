@@ -1285,26 +1285,25 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to 
-        ///INSERT INTO BinaryFile(
-        ///	  [IsTemporary]
-        ///	, [IsSystem]
-        ///	, [BinaryFileTypeId]
-        ///	, [FileName]
-        ///	, [MimeType]
-        ///	, [Description]
-        ///	, [StorageEntityTypeId]
-        ///	, [Guid]
-        ///	, [StorageEntitySettings]
-        ///	, [Path]
-        ///	, [FileSize]
-        ///)
-        ///VALUES (
-        ///	  0 --[IsTemporary]
-        ///	, 0 --[IsSystem]
-        ///	, (SELECT [Id] FROM [BinaryFileType] WHERE [Guid] = &apos;DE0E5C50-234B-474C-940C-C571F385E65F&apos;) --[BinaryFileTypeId]
-        ///	, &apos;Install Icon Font on Printer&apos; --[FileName]
-        ///	, &apos;text/plain&apos; --[MimeType]
-        ///	, &apos;This label installs the Rock icon font, [rest of string was truncated]&quot;;.
+        ///IF ( SELECT COUNT([Id]) FROM BinaryFile WHERE [Guid] = &apos;106A393A-6D98-4348-8658-E0F4573477B8&apos; ) = 0
+        ///BEGIN
+        ///    INSERT INTO BinaryFile(
+        ///	      [IsTemporary]
+        ///	    , [IsSystem]
+        ///	    , [BinaryFileTypeId]
+        ///	    , [FileName]
+        ///	    , [MimeType]
+        ///	    , [Description]
+        ///	    , [StorageEntityTypeId]
+        ///	    , [Guid]
+        ///	    , [StorageEntitySettings]
+        ///	    , [Path]
+        ///	    , [FileSize]
+        ///    )
+        ///    VALUES (
+        ///	      0 --[IsTemporary]
+        ///	    , 0 --[IsSystem]
+        ///	    , (SELECT [Id] FROM [BinaryFileType] WHERE [Guid] = &apos;DE0E5C [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201810161814574_Rollup_1016_AddCheck_inLabelToInstallIconFont {
             get {
@@ -1349,6 +1348,77 @@ namespace Rock.Migrations.Migrations {
         public static string _201810301818354_Rollup_1030_spCheckin_AttendanceAnalyticsQuery_NonAttendees {
             get {
                 return ResourceManager.GetString("_201810301818354_Rollup_1030_spCheckin_AttendanceAnalyticsQuery_NonAttendees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///ALTER PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///	  @AccountId int
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmountPledged decimal(18,2) = NULL
+        ///	, @MaxAmountPledged decimal(18,2) = NULL
+        ///	, @MinComplete decimal(18,2) = NULL
+        ///	, @MaxComplete decimal(18,2) = NULL
+        ///	, @MinAmountGiven decimal(18,2) = NULL
+        ///	, @MaxAmountGiven decimal(18,2) = NULL
+        ///	, @IncludeP [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Down {
+            get {
+                return ResourceManager.GetString("_201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Down", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///ALTER PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///	  @AccountId int
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmountPledged decimal(18,2) = NULL
+        ///	, @MaxAmountPledged decimal(18,2) = NULL
+        ///	, @MinComplete decimal(18,2) = NULL
+        ///	, @MaxComplete decimal(18,2) = NULL
+        ///	, @MinAmountGiven decimal(18,2) = NULL
+        ///	, @MaxAmountGiven decimal(18,2) = NULL
+        ///	, @IncludeP [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Up {
+            get {
+                return ResourceManager.GetString("_201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Up", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortCode] 
+        ///SET [Markup] = &apos;{% javascript url:&apos;&apos;~/Scripts/moment.min.js&apos;&apos; id:&apos;&apos;moment&apos;&apos;%}{% endjavascript %}
+        ///{% javascript url:&apos;&apos;~/Scripts/Chartjs/Chart.min.js&apos;&apos; id:&apos;&apos;chartjs&apos;&apos;%}{% endjavascript %}
+        ///
+        ///{% assign id = uniqueid %}
+        ///{% assign curvedlines = curvedlines | AsBoolean %}
+        ///
+        ///{% assign dataitemCount = dataitems | Size -%}
+        ///{% if dataitemCount &gt; 0 -%}
+        ///    {% assign fillColors = dataitems | Map:&apos;&apos;fillcolor&apos;&apos; | Join:&apos;&apos;&quot;, &quot;&apos;&apos; | Prepend:&apos;&apos;[&quot;&apos;&apos; | Append:&apos;&apos;&quot;]&apos;&apos; %}
+        ///    {% assign borderColors = [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201812111901295_Rollup_1211_FixChartShortcode {
+            get {
+                return ResourceManager.GetString("_201812111901295_Rollup_1211_FixChartShortcode", resourceCulture);
             }
         }
     }

@@ -14,7 +14,7 @@
 
                 <div class="actions btn-group">
                     <a href="#" class="btn btn-xs btn-default js-createfolder" title="Create a new folder in the selected folder">
-                        <i class="fa fa-folder"></i> <span class="hidden-xs">Add Folder</span>
+                        <i class="fa fa-folder-plus"></i> <span class="hidden-xs">Add Folder</span>
                     </a>
                     <asp:LinkButton ID="lbDeleteFolder" runat="server" CssClass="btn btn-xs btn-default js-deletefolder" OnClick="lbDeleteFolder_Click" CausesValidation="false" ToolTip="Delete the selected folder" >
                         <i class="fa fa-trash-alt"></i> <span class="hidden-xs">Delete Folder</span>
@@ -76,7 +76,7 @@
                             <asp:LinkButton ID="lbDownload" runat="server" CssClass="btn btn-xs btn-default js-singleselect aspNetDisabled" OnClick="lbDownload_Click" CausesValidation="false" ToolTip="Download selected file"><i class="fa fa-download"></i> <span class="hidden-xs">Download</span></asp:LinkButton>
 
                             <asp:LinkButton ID="lbRename" runat="server" CssClass="btn btn-xs btn-default js-singleselect js-renamefile aspNetDisabled" CausesValidation="false" ToolTip="Rename selected file" OnClientClick="return false;">
-                                <i class="fa fa-exchange"></i> <span class="hidden-xs">Rename</span>
+                                <i class="fa fa-i-cursor"></i> <span class="hidden-xs">Rename</span>
                             </asp:LinkButton>
 
                             <asp:LinkButton ID="lbDelete" runat="server"  CssClass="btn btn-xs btn-default js-minselect aspNetDisabled" OnClick="lbDelete_Click" CausesValidation="false" ToolTip="Delete selected files" OnClientClick="Rock.dialogs.confirmDelete(event, ' file')"><i class="fa fa-trash-alt"></i> <span class="hidden-xs">Delete</span></asp:LinkButton>
@@ -84,7 +84,7 @@
                         <asp:LinkButton ID="lbRefresh" runat="server" CssClass="btn btn-xs btn-default js-assetselect" OnClick="lbRefresh_Click" CausesValidation="false" ToolTip="Refresh"><i class="fa fa-sync"></i></asp:LinkButton>
                     </div>
 
-                    <div class="actions well well-sm js-renamefile-div" id="divRenameFile" style="display: none;">
+                    <div class="actions well well-sm js-renamefile-div" id="divRenameFile" style="display: none;" runat="server">
                         <div class="pull-left">
                             <Rock:RockTextBox ID="tbRenameFile" runat="server" CssClass="js-renamefile-input input-sm"  />
                         </div>
@@ -96,7 +96,7 @@
                         <a id="lbRenameFileCancel" href="#" class="btn btn-xs btn-default js-renamefile-cancel">
                             <i class="fa fa-times"></i> Cancel
                         </a>
-                        <label class="js-renamefile-notification alert alert-warning clearfix" style="display:none"></label>
+                        <label class="js-renamefile-notification alert alert-warning clearfix" style="display:none" runat="server" id="lblRenameFileNotification"></label>
                     </div>
 
                     <table class="table table-striped table-responsive table-no-border assetmanager-files">

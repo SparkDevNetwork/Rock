@@ -41,6 +41,16 @@ namespace Rock.Migrations
                 var analyticsEndDate = new DateTime( RockDateTime.Today.AddYears( 101 ).Year, 1, 1 ).AddDays( -1 );
                 Rock.Model.AnalyticsSourceDate.GenerateAnalyticsSourceDateData( 1, false, analyticsStartDate, analyticsEndDate );
             }
+
+            // MP: Migrate RegistrationTemplateFee.CostValue to RegistrationTemplateFee.FeeItems
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                var registrationTemplateFeeService = new Rock.Model.RegistrationTemplateFeeService( rockContext );
+#pragma warning disable 612, 618
+                registrationTemplateFeeService.MigrateFeeCostValueToFeeItems();
+#pragma warning restore 612, 618
+                rockContext.SaveChanges();
+            }
         }
     }
 }

@@ -253,7 +253,8 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the number of columns to display in the <see cref="T:System.Web.UI.WebControls.CheckBoxList" /> control.
-        /// If RepeatDirection is Horizontal, this will default to 4 columns
+        /// If RepeatDirection is Horizontal, this will default to 4 columns. There is no upper limit in the code so use
+        /// wisely.
         /// </summary>
         public override int RepeatColumns
         {
@@ -390,40 +391,18 @@ namespace Rock.Web.UI.Controls
             if ( this.RepeatDirection == RepeatDirection.Horizontal )
             {
                 cssClassBuilder.Append( " rockcheckboxlist-horizontal" );
+
+                if ( this.RepeatColumns > 0 )
+                {
+                    cssClassBuilder.Append( string.Format(" in-columns in-columns-{0}", RepeatColumns ) );
+                }
+
             }
             else
             {
                 cssClassBuilder.Append( " rockcheckboxlist-vertical" );
             }
 
-            if ( this.RepeatColumns == 1 )
-            {
-                cssClassBuilder.Append( " in-columns in-columns-1" );
-            }
-            else if( this.RepeatColumns == 2 )
-            {
-                cssClassBuilder.Append( " in-columns in-columns-2" );
-            }
-            else if( this.RepeatColumns == 3 )
-            {
-                cssClassBuilder.Append( " in-columns in-columns-3" );
-            }
-            else if( this.RepeatColumns == 4 )
-            {
-                cssClassBuilder.Append( " in-columns in-columns-4" );
-            }
-            else if( this.RepeatColumns == 5 )
-            {
-                cssClassBuilder.Append( " in-columns in-columns-5" );
-            }
-            else if( this.RepeatColumns == 6 )
-            {
-                cssClassBuilder.Append( " in-columns in-columns-6" );
-            }
-            else if( this.RepeatColumns > 6 )
-            {
-                cssClassBuilder.Append( " in-columns in-columns-6" );
-            }
 
             writer.AddAttribute( "class", cssClassBuilder.ToString() );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );

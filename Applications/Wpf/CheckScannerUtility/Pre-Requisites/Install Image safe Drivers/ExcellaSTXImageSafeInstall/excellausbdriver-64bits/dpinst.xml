@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+  <dpinst>
+
+<!-- The following search and subDirectory elements direct
+     DPInst to search all subdirectories (under the DPInst working directory) to locate driver
+     packages. -->
+    <search>
+      <subDirectory>*</subDirectory>
+    </search>
+
+<!-- The following language element localizes its child elements
+     for the English (Standard) language. The child elements
+     customize the text that appears on the DPInst wizard pages. -->
+    <language code="0x0409">
+      <dpinstTitle>MagTek Excella-STX-MDX Device Driver Installation</dpinstTitle>
+      <welcomeTitle>Welcome to the Device Installer!</welcomeTitle>
+      <welcomeIntro>This wizard will walk you through updating the drivers for Excella-STX-MDX device.</welcomeIntro>
+      <installHeaderTitle>Installing the driver for  Excella-STX-MDX device...</installHeaderTitle>
+      <finishTitle>Driver for  Excella-STX-MDX device successfully completes.</finishTitle>
+    </language>
+
+    
+
+</dpinst>

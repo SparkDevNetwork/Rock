@@ -787,6 +787,25 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Returns matched RegEx string from inputted string
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="expression">The regex expression.</param>
+        /// <returns></returns>
+        public static string RegExMatchValue( string input, string expression )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            Regex regex = new Regex( expression );
+            Match match = regex.Match( input );
+
+            return match.Success ? match.Value : null;
+        }
+
+        /// <summary>
         /// The slice filter returns a substring, starting at the specified index.
         /// </summary>
         /// <param name="input">The input string.</param>
@@ -3021,22 +3040,20 @@ namespace Rock.Lava
             var person = GetPerson( input );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
 
-            if ( person != null && numericalGroupTypeId.HasValue )
+            if ( person == null && !numericalGroupTypeId.HasValue )
             {
-                var attendance = new AttendanceService( GetRockContext( context ) ).Queryable( "Group" )
-                    .AsNoTracking()
-                    .Where( a =>
-                        a.Occurrence.Group != null &&
-                        a.Occurrence.Group.GroupTypeId == numericalGroupTypeId &&
-                        a.PersonAlias.PersonId == person.Id &&
-                        a.DidAttend == true )
-                    .OrderByDescending( a => a.StartDateTime )
-                    .FirstOrDefault();
-
-                return attendance;
+                return new Attendance();
             }
 
-            return new Attendance();
+            return new AttendanceService( GetRockContext( context ) ).Queryable()
+                .AsNoTracking()
+                .Where( a =>
+                    a.Occurrence.Group != null &&
+                    a.Occurrence.Group.GroupTypeId == numericalGroupTypeId &&
+                    a.PersonAlias.PersonId == person.Id &&
+                    a.DidAttend == true )
+                .OrderByDescending( a => a.StartDateTime )
+                .FirstOrDefault();
         }
 
         /// <summary>
@@ -3967,7 +3984,8 @@ namespace Rock.Lava
 
                     case "Host":
                         {
-                            return HttpContext.Current.Request.Url.Host;
+                            var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
+                            return host;
                         }
 
                     case "Path":
@@ -4333,7 +4351,7 @@ namespace Rock.Lava
                     else if (value is IDictionary<string, object>)
                     {
                         var dictionaryObject = value as IDictionary<string, object>;
-                        if ( dictionaryObject.ContainsKey( filterKey ) && dictionaryObject[filterKey].Equals( filterValue ) )
+                        if ( dictionaryObject.ContainsKey( filterKey ) && (dynamic) dictionaryObject[filterKey] == (dynamic) filterValue )
                         {
                             result.Add( dictionaryObject );
                         }

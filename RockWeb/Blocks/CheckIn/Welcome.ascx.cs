@@ -105,6 +105,7 @@ namespace RockWeb.Blocks.CheckIn
 
                     CurrentWorkflow = null;
                     CurrentCheckInState.CheckIn = new CheckInStatus();
+                    CurrentCheckInState.Messages = new List<CheckInMessage>();
                     SaveState();
 
                     string familyId = PageParameter( "FamilyId" );
@@ -216,6 +217,7 @@ namespace RockWeb.Blocks.CheckIn
         private void ClearSelection()
         {
             CurrentCheckInState.CheckIn.Families = new List<CheckInFamily>();
+            CurrentCheckInState.Messages = new List<CheckInMessage>();
         }
 
         // TODO: Add support for scanner

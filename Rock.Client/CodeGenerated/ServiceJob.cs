@@ -56,7 +56,7 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public int HistoryCount { get; set; }
+        public int HistoryCount { get; set; } = 100;
 
         /// <summary />
         public bool? IsActive { get; set; }

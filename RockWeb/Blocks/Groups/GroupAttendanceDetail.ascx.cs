@@ -79,7 +79,12 @@ namespace RockWeb.Blocks.Groups
             /// <summary>
             /// Individual Entering Attendance
             /// </summary>
-            IndividualEnteringAttendance = 4
+            IndividualEnteringAttendance = 4,
+
+            /// <summary>
+            /// Group Administrator
+            /// </summary>
+            GroupAdministrator = 5
         }
 
         #endregion
@@ -1030,6 +1035,7 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
                 }
+                _occurrence.Id = occurrence.Id;
             }
 
             return true;
@@ -1042,9 +1048,11 @@ namespace RockWeb.Blocks.Groups
         {
             try
             {
+                var rockContext = new RockContext();
+                var occurrence = new AttendanceOccurrenceService( rockContext ).Get(_occurrence.Id);
                 var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 mergeObjects.Add( "Group", _group );
-                mergeObjects.Add( "AttendanceOccurrence", _occurrence );
+                mergeObjects.Add( "AttendanceOccurrence", occurrence );
                 mergeObjects.Add( "AttendanceNoteLabel", GetAttributeValue( "AttendanceNoteLabel" ) );
 
                 List<string> recipients = new List<string>();
@@ -1071,6 +1079,14 @@ namespace RockWeb.Blocks.Groups
                                 var leaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
                                                 .Where( m => m.GroupId == _group.Id );
                                 recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
+                            }
+                            break;
+                        case SendSummaryEmailType.GroupAdministrator:
+                            {
+                                if ( _group.GroupType.ShowAdministrator && _group.GroupAdministratorPersonAliasId.HasValue && _group.GroupAdministratorPersonAlias.Person.Email.IsNotNullOrWhiteSpace() )
+                                {
+                                    recipients.Add( _group.GroupAdministratorPersonAlias.Person.Email );
+                                }
                             }
                             break;
                         case SendSummaryEmailType.ParentGroupLeaders:

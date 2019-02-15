@@ -108,6 +108,40 @@ namespace Rock.Model
         [DataMember]
         public int? FinancialPaymentDetailId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Gateway Person Identifier.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the Gateway Person Identifier of the account.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string GatewayPersonIdentifier { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this saved account was created by and is a part of the Rock core system/framework.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this saved account is part of the Rock core system/framework, otherwise is <c>false</c>.
+        /// </value>
+        /// <example>
+        /// True
+        /// </example>
+        [DataMember]
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this saved account is the default payment option for the given person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this saved account is the default payment option for the given person, otherwise is <c>false</c>.
+        /// </value>
+        /// <example>
+        /// True
+        /// </example>
+        [DataMember]
+        public bool IsDefault { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -174,31 +208,27 @@ namespace Rock.Model
         /// <returns></returns>
         public ReferencePaymentInfo GetReferencePayment()
         {
+            var reference = new ReferencePaymentInfo();
+            reference.TransactionCode = this.TransactionCode;
+            reference.ReferenceNumber = this.ReferenceNumber;
+            reference.GatewayPersonIdentifier = this.GatewayPersonIdentifier;
+
             if ( this.FinancialPaymentDetail != null )
             {
-                var reference = new ReferencePaymentInfo();
-                reference.TransactionCode = this.TransactionCode;
-                reference.ReferenceNumber = this.ReferenceNumber;
-
-                if ( this.FinancialPaymentDetail != null )
+                reference.MaskedAccountNumber = this.FinancialPaymentDetail.AccountNumberMasked;
+                if ( this.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
                 {
-                    reference.MaskedAccountNumber = this.FinancialPaymentDetail.AccountNumberMasked;
-                    if ( this.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
+                    reference.InitialCurrencyTypeValue = DefinedValueCache.Get( this.FinancialPaymentDetail.CurrencyTypeValueId.Value );
+                    if ( reference.InitialCurrencyTypeValue != null &&
+                        reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) &&
+                        this.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
                     {
-                        reference.InitialCurrencyTypeValue = DefinedValueCache.Get( this.FinancialPaymentDetail.CurrencyTypeValueId.Value );
-                        if ( reference.InitialCurrencyTypeValue != null &&
-                            reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) &&
-                            this.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
-                        {
-                            reference.InitialCreditCardTypeValue = DefinedValueCache.Get( this.FinancialPaymentDetail.CreditCardTypeValueId.Value );
-                        }
+                        reference.InitialCreditCardTypeValue = DefinedValueCache.Get( this.FinancialPaymentDetail.CreditCardTypeValueId.Value );
                     }
                 }
-
-                return reference;
             }
 
-            return null;
+            return reference;
         }
 
         #endregion

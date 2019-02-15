@@ -181,8 +181,8 @@ namespace Rock.Apps.CheckScannerUtility
 
             bool promptForUrl = string.IsNullOrWhiteSpace( rockConfig.RockBaseUrl ) || ForceRockURLVisible;
 
-            lblRockUrl.Visibility = promptForUrl ? Visibility.Visible : Visibility.Collapsed;
-            txtRockUrl.Visibility = promptForUrl ? Visibility.Visible : Visibility.Collapsed;
+           lblRockUrl.Visibility = promptForUrl ? Visibility.Visible : Visibility.Collapsed;
+           txtRockUrl.Visibility = promptForUrl ? Visibility.Visible : Visibility.Collapsed;
 
             txtRockUrl.Text = rockConfig.RockBaseUrl;
             txtUsername.Text = rockConfig.Username;
