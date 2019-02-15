@@ -62,6 +62,7 @@
   <ItemGroup>
     <Compile Include="Migrations\001_AddGroupTypes.cs" />
     <Compile Include="Migrations\002_ModifyKidCrewMemberAttributes.cs" />
+    <Compile Include="Migrations\003_CreateSystemGroups.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
