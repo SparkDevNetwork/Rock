@@ -41,7 +41,7 @@ namespace com.lcbcchurch.Groups.Migrations
             RockMigrationHelper.UpdateGroupTypeRole( "943708E0-170B-4935-AA3A-3DF958D8D2C8", "Member", "", 0, null, null, "AF296AD9-CAC8-4941-8645-30DBDB8B6E4B", false, false, true ); // Workflow Routing > Member
 
             // Add Group Type Member Attributes
-            RockMigrationHelper.AddGroupTypeGroupMemberAttribute( "943708E0-170B-4935-AA3A-3DF958D8D2C8", "69254F91-C97F-4C2D-9ACB-1683B088097B", "Campus", @"", 0, "", "66AE33E8-B374-4F07-BBE3-4096F1CBCE88" );
+            RockMigrationHelper.AddGroupTypeGroupMemberAttribute( "943708E0-170B-4935-AA3A-3DF958D8D2C8", "69254F91-C97F-4C2D-9ACB-1683B088097B", "Campus", @"", 0, "Campus", "66AE33E8-B374-4F07-BBE3-4096F1CBCE88" );
 
             // Create Groups
             RockMigrationHelper.UpdateGroup( null, "15708E27-CC26-435F-B8B8-5E6CC48DDDA6", "System", "", null, 0, "D791D411-2434-4D2B-A9AC-E621BFAEC6E5", false, false, true ); // System
