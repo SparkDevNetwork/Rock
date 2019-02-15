@@ -28,7 +28,7 @@ namespace com.lcbcchurch.Checkin.Migrations
     {
         public override void Up()
         {
-            RockMigrationHelper.AddGroupType( "Weekend Gathering", "Holds all the campus weekend gathering groups for attendance purposes.", "Group", "Member", false, true, true, null, 0, null, 0, "4A406CB0-495B-4795-B788-52BDFDE00B01", "85FAEE00-42F3-415E-B921-86712E855B85" );
+            RockMigrationHelper.AddGroupType( "Weekend Gathering Check-In", "Holds all the campus weekend gathering groups for attendance purposes.", "Group", "Member", false, true, true, null, 0, null, 0, "4A406CB0-495B-4795-B788-52BDFDE00B01", "85FAEE00-42F3-415E-B921-86712E855B85" );
             var groupTypeId = SqlScalar( @"Select Top 1 Id from GroupType Where [Guid] = '85FAEE00-42F3-415E-B921-86712E855B85'" ).ToString().AsInteger();
 
             // Page: Volunteer Tools
