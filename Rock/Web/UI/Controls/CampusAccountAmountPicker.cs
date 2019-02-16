@@ -227,7 +227,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the selected account ids.
+        /// Gets or sets the selected account ids (including the ones where an amount is not specified)
         /// Note: This has special logic. The account(s) that the user selects <seealso cref="SelectedAccountIds"/> will be determined as follows:
         ///   1) If the selected account is not associated with a campus, the Selected Account will be the first matching child account that is associated with the selected campus.
         ///   2) If the selected account is not associated with a campus, but there are no child accounts for the selected campus, the parent account (the one the user sees) will be returned.
@@ -322,6 +322,27 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 _nbAmountAccountSingle.Text = value?.ToString( "N" );
             }
+        }
+
+        /// <summary>
+        /// Determines whether the amount(s) entered is valid
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is valid amount selected]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsValidAmountSelected()
+        {
+            decimal? totalAmount;
+            if ( this.AmountEntryMode == AccountAmountEntryMode.MultipleAccounts )
+            {
+                totalAmount = this.AccountAmounts.Sum( a => a.Amount ?? 0.00M );
+            }
+            else
+            {
+                totalAmount = this.SelectedAmount;
+            }
+
+            return totalAmount.HasValue && totalAmount.Value != 0.00M;
         }
 
         /// <summary>
