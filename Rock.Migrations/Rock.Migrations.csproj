@@ -216,6 +216,10 @@
     <Compile Include="Migrations\201902111543316_AddOldRawValueAndNewRawValueToHistory.Designer.cs">
       <DependentUpon>201902111543316_AddOldRawValueAndNewRawValueToHistory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201902192016143_Rollup_0219.cs" />
+    <Compile Include="Migrations\201902192016143_Rollup_0219.Designer.cs">
+      <DependentUpon>201902192016143_Rollup_0219.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -618,6 +622,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201902111543316_AddOldRawValueAndNewRawValueToHistory.resx">
       <DependentUpon>201902111543316_AddOldRawValueAndNewRawValueToHistory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201902192016143_Rollup_0219.resx">
+      <DependentUpon>201902192016143_Rollup_0219.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
