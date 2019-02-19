@@ -20,9 +20,13 @@ using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Text;
+using System.Web.UI.WebControls;
+
 using Rock;
-using Rock.Web.Cache;
+using Rock.BulkExport;
 using Rock.Data;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Model
 {
@@ -610,7 +614,7 @@ namespace Rock.Model
         public Person FindPerson( PersonMatchQuery personMatchQuery, bool updatePrimaryEmail, bool includeDeceased = false, bool includeBusinesses = false )
         {
             var matches = this.FindPersons( personMatchQuery, includeDeceased, includeBusinesses ).ToList();
-            
+
             var match = matches.FirstOrDefault();
 
             // Check if we care about updating the person's primary email
@@ -754,6 +758,90 @@ namespace Rock.Model
                 .Where( p =>
                     ( p.RecordStatusValueId == recordStatusId || ( recordStatusId == null && p.RecordStatusValueId == null ) ) )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Gets an export of Person Records
+        /// </summary>
+        /// <param name="page">The page being requested (where first page is 1).</param>
+        /// <param name="pageSize">The number of records to provide per page. NOTE: This is limited to the 'API Max Items Per Page' global attribute.</param>
+        /// <param name="exportOptions">The export options.</param>
+        /// <returns></returns>
+        public PeopleExport GetPeopleExport( int page, int pageSize, ExportOptions exportOptions )
+        {
+            IQueryable<Person> personQry;
+            SortProperty sortProperty = exportOptions.SortProperty;
+
+            RockContext rockContext = this.Context as RockContext;
+
+            if ( exportOptions.DataViewId.HasValue )
+            {
+                personQry = ModelExport.QueryFromDataView<Person>( rockContext, exportOptions.DataViewId.Value );
+            }
+            else
+            {
+                personQry = this.Queryable( true, true );
+            }
+
+            if ( sortProperty != null )
+            {
+                personQry = personQry.Sort( sortProperty );
+            }
+
+            if ( exportOptions.ModifiedSince.HasValue )
+            {
+                personQry = personQry.Where( a => a.ModifiedDateTime.HasValue && a.ModifiedDateTime >= exportOptions.ModifiedSince.Value );
+            }
+
+            var skip = ( page - 1 ) * pageSize;
+
+            PeopleExport peopleExport = new PeopleExport();
+            peopleExport.Page = page;
+            peopleExport.PageSize = pageSize;
+            peopleExport.TotalCount = personQry.Count();
+
+            var pagedPersonQry = personQry
+                .Include( a => a.Aliases )
+                .Include( a => a.PhoneNumbers )
+                .AsNoTracking()
+                .Skip( skip )
+                .Take( pageSize );
+
+            var personList = pagedPersonQry.ToList();
+
+            var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+
+            Guid homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
+
+            int homeAddressDefinedValueId = DefinedValueCache.Get( homeAddressGuid ).Id;
+
+            Dictionary<int, Location> personIdHomeLocationsLookup = new GroupMemberService( rockContext ).AsNoFilter()
+                .Where( m => m.Group.GroupTypeId == familyGroupTypeId && pagedPersonQry.Any( p => p.Id == m.PersonId ) )
+                .OrderBy( a => a.PersonId )
+                .Select( m => new
+                {
+                    m.PersonId,
+                    GroupOrder = m.GroupOrder ?? int.MaxValue,
+                    Location = m.Group.GroupLocations.Where( a => a.GroupLocationTypeValueId == homeAddressDefinedValueId && a.IsMailingLocation ).Select( a => a.Location ).FirstOrDefault()
+                } )
+                .AsNoTracking()
+                .ToList()
+                .GroupBy( a => a.PersonId )
+                .Select( a => new
+                {
+                    PersonId = a.Key,
+                    Location = a.OrderBy( v => v.GroupOrder ).Select( s => s.Location ).FirstOrDefault()
+                } )
+                .ToDictionary( k => k.PersonId, v => v.Location );
+
+            var globalAttributes = GlobalAttributesCache.Get();
+            string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+
+            peopleExport.Persons = personList.Select( p => new PersonExport( p, personIdHomeLocationsLookup, publicAppRoot ) ).ToList();
+
+            AttributesExport.LoadAttributeValues( exportOptions, rockContext, peopleExport.Persons, pagedPersonQry );
+
+            return peopleExport;
         }
 
         /// <summary>
@@ -2994,11 +3082,11 @@ namespace Rock.Model
 
             if ( personId.HasValue )
             {
-                personQuery = personService.AsNoFilter().Where( a => a.Id == personId );
+                personQuery = personService.AsNoFilter().Where( a => a.Id == personId && !a.IsDeceased);
             }
             else
             {
-                personQuery = personService.Queryable( includeDeceased: true, includeBusinesses: false );
+                personQuery = personService.Queryable( includeDeceased: false, includeBusinesses: false );
             }
 
             // get the min birthdate of people 18 and younger;
@@ -3024,7 +3112,7 @@ namespace Rock.Model
                         ||
                         familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).All( f => f.GroupRoleId == groupRoleChildId )
                     ) );
-            
+
             // update records that aren't marked as Adult but now should be
             int updatedAdultCount = rockContext.BulkUpdate(
                 adultBasedOnBirthdateOrFamilyRole.Where( a => a.AgeClassification != AgeClassification.Adult && !a.IsLockedAsChild ),

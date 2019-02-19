@@ -392,6 +392,7 @@
     <Compile Include="Attribute\RegistrationInstanceFieldAttribute.cs" />
     <Compile Include="Attribute\RegistrationTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\ReportFieldAttribute.cs" />
+    <Compile Include="Attribute\SelectFieldAttribute.cs" />
     <Compile Include="Attribute\TimeZoneFieldAttribute.cs" />
     <Compile Include="Attribute\FileFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileFieldAttribute.cs" />
@@ -487,6 +488,16 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="BulkExport\AttributesExport.cs" />
+    <Compile Include="BulkExport\FinancialTransactionExport.cs" />
+    <Compile Include="BulkExport\FinancialTransactionExportOptions.cs" />
+    <Compile Include="BulkExport\FinancialTransactionsExport.cs" />
+    <Compile Include="BulkExport\ModelExport.cs" />
+    <Compile Include="BulkExport\ExportOptions.cs" />
+    <Compile Include="BulkExport\LocationExport.cs" />
+    <Compile Include="BulkExport\ExportResult.cs" />
+    <Compile Include="BulkExport\PeopleExport.cs" />
+    <Compile Include="BulkExport\PersonExport.cs" />
     <Compile Include="CheckIn\CheckInEditFamilyBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -502,6 +513,7 @@
     <Compile Include="Lava\Shortcodes\Scripturize.cs" />
     <Compile Include="Lava\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
     <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
+    <Compile Include="Plugin\HotFixes\060_MigrationRollupsForV8_6.cs" />
     <Compile Include="Plugin\HotFixes\059_MigrationRollupsForV8_5_2.cs" />
     <Compile Include="Plugin\HotFixes\057_MigrationRollupsForV8_5.cs" />
     <Compile Include="Plugin\HotFixes\056_MigrationRollupsForV8_4.cs" />
@@ -509,12 +521,15 @@
     <Compile Include="Plugin\HotFixes\054_MigrationRollupsForV8_2.cs" />
     <Compile Include="Plugin\HotFixes\053_DuplicateDataIntegrityReports.cs" />
     <Compile Include="Plugin\HotFixes\058_CheckinRegistration.cs" />
+    <Compile Include="Plugin\HotFixes\061_MigrationRollupsForV8_6_2.cs" />
+    <Compile Include="Plugin\HotFixes\063_WhitelistBlacklist.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
     </Compile>
     <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
+    <Compile Include="Reporting\DataFilter\Person\AttendanceDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasDuplicateEmailFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasDuplicatePhoneFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InteractionDataViewFilter.cs" />
@@ -524,7 +539,9 @@
     <Compile Include="SystemGuid\SystemSetting.cs" />
     <Compile Include="SystemKey\GroupTypeAttributeKey.cs" />
     <Compile Include="Utility\RockColor.cs" />
+    <Compile Include="Utility\RockDynamic.cs" />
     <Compile Include="Utility\Scripturize.cs" />
+    <Compile Include="Utility\WebRequestHelper.cs" />
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentChannelCache.cs" />
@@ -2357,6 +2374,15 @@
     </Content>
     <Content Include="Plugin\HotFixes\059_MigrationRollupsForV8_5_2_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>059_MigrationRollupsForV8_5_2.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\060_MigrationRollupsForV8_6_FixChartShortcode.sql">
+      <DependentUpon>060_MigrationRollupsForV8_6.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\060_MigrationRollupsForV8_6_spFinance_PledgeAnalyticsQuery_Down.sql">
+      <DependentUpon>060_MigrationRollupsForV8_6.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\060_MigrationRollupsForV8_6_spFinance_PledgeAnalyticsQuery_Up.sql">
+      <DependentUpon>060_MigrationRollupsForV8_6.cs</DependentUpon>
     </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />

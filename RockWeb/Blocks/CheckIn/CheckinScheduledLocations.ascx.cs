@@ -318,6 +318,7 @@ namespace RockWeb.Blocks.CheckIn
 
                 if ( schedulesChanged )
                 {
+                    rockContext.SaveChanges();
                     KioskDevice.Clear();
                 }
             }

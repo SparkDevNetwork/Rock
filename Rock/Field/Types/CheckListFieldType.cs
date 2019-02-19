@@ -39,6 +39,8 @@ namespace Rock.Field.Types
         #region Configuration
 
         private const string VALUES_KEY = "listItems";
+        private const string REPEAT_COLUMNS = "repeatColumns";
+
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -48,6 +50,7 @@ namespace Rock.Field.Types
         {
             List<string> configKeys = new List<string>();
             configKeys.Add( VALUES_KEY );
+            configKeys.Add( REPEAT_COLUMNS );
             return configKeys;
         }
 
@@ -60,10 +63,18 @@ namespace Rock.Field.Types
             List<Control> controls = new List<Control>();
 
             var li = new ListItems();
-            controls.Add( li );
             li.Label = "Values";
             li.Help = "The list of the values to display.";
             li.ValueChanged += OnQualifierUpdated;
+
+            var tbRepeatColumns = new NumberBox();
+            tbRepeatColumns.Label = "Columns";
+            tbRepeatColumns.Help = "Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space.";
+            tbRepeatColumns.MinimumValue = "0";
+            tbRepeatColumns.AutoPostBack = true;
+            tbRepeatColumns.TextChanged += OnQualifierUpdated;
+            controls.Add( tbRepeatColumns );
+
             return controls;
         }
 
@@ -84,6 +95,11 @@ namespace Rock.Field.Types
                 {
                     configurationValues[VALUES_KEY].Value = ( ( ListItems ) controls[0] ).Value;
                 }
+
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is NumberBox )
+                {
+                    configurationValues[REPEAT_COLUMNS].Value = ( ( NumberBox ) controls[1] ).Text;
+                }
             }
 
             return configurationValues;
@@ -103,6 +119,10 @@ namespace Rock.Field.Types
                     ( ( ListItems ) controls[0] ).Value = configurationValues[VALUES_KEY].Value;
                 }
 
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is NumberBox && configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+                {
+                    ( ( NumberBox ) controls[1] ).Text = configurationValues[REPEAT_COLUMNS].Value;
+                }
             }
         }
 
@@ -174,6 +194,12 @@ namespace Rock.Field.Types
                 ( ( RockCheckBoxList ) editControl ).DisplayAsCheckList = true;
                 ( ( RockCheckBoxList ) editControl ).RepeatDirection = RepeatDirection.Vertical;
 
+
+                if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+                {
+                    ( ( RockCheckBoxList ) editControl ).RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
+                }
+
                 if ( configurationValues.ContainsKey( VALUES_KEY ) )
                 {
                     var values = JsonConvert.DeserializeObject<List<KeyValuePair>>( configurationValues[VALUES_KEY].Value );
@@ -185,6 +211,7 @@ namespace Rock.Field.Types
                         }
                     }
                 }
+
                 if ( editControl.Items.Count > 0 )
                 {
                     return editControl;

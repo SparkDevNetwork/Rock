@@ -60,7 +60,7 @@ namespace Rock.Utility
                 }
                 else
                 {
-                    scripturizedString.Append( "{" + AddScriptureLinks( token, defaultTranslation, landingSite, cssClass ) + "}" );
+                    scripturizedString.Append( AddScriptureLinks( token, defaultTranslation, landingSite, cssClass ) );
                 }
 
             }

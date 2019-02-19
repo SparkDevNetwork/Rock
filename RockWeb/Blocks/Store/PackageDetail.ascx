@@ -2,18 +2,18 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        
+
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-        
+
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-gift"></i> Store Item Detail</h1>
 
             </div>
             <div class="panel-body">
                 <div class="packagedetail">
-                    
+
                     <asp:Panel ID="pnlPackageDetails" runat="server">
-                        
+
                         <div class="panel-headerimage">
                             <asp:Image ID="imgPackageImage" runat="server" CssClass="packagedetail-image" />
                         </div>
@@ -28,7 +28,7 @@
 
                         <div class="row">
                             <div class="col-md-3">
-                            
+
                                 <asp:Literal ID="lCost" runat="server" />
 
                                 <p>
@@ -37,7 +37,19 @@
                                 </p>
 
                                 <div class="clearfix margin-v-lg">
-                                    <asp:Literal ID="lRatingSummary" runat="server" /> <asp:LinkButton ID="lbRate" Visible="true" runat="server" CssClass="pull-left" OnClick="lbRate_Click">Rate</asp:LinkButton>
+                                    <div class="rating text-center margin-b-sm" style="color:#ffc870;">
+                                        <asp:Literal ID="lRatingSummary" runat="server" />
+                                    </div>
+                                    <asp:LinkButton ID="lbRate" Visible="true" runat="server" CssClass="btn btn-default btn-block" OnClick="lbRate_Click">
+                                        Add a rating
+                                        <span class="rating-bg">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                        </span>
+                                    </asp:LinkButton>
                                 </div>
 
                                 <p>
@@ -177,6 +189,6 @@
 
 
        </asp:Panel>
-        
+
     </ContentTemplate>
 </asp:UpdatePanel>

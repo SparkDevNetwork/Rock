@@ -151,11 +151,11 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                 {%- if note.NoteType.RequiresApprovals and note.ApprovalStatus == 'Approved' -%}
                     {%- assign approver = note.ApprovedByPersonAliasId | PersonByAliasId -%}
                 <a href="#{{ note.NoteAnchorId }}" class="timestamp"{% if note.ApprovedByPersonAliasId %} data-toggle="tooltip" data-placement="top" title="Approved By {{ approver.FullName }} on {{ note.ApprovedDateTime }}"{% endif %}>
-                    <relative-time datetime="{{ note.EditedDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}" title="{{ note.EditedDateTime | Date:'MMMM d, yyyy, h:mm tt' }}">{{ noteDateTimeText }}</relative-time>
+                    <time datetime="{{ note.EditedDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}" title="{{ note.EditedDateTime | Date:'MMMM d, yyyy, h:mm tt' }}">{{ noteDateTimeText }}</time>
                 </a>
                 {%- else -%}
                     <a href="#{{ note.NoteAnchorId }}" class="timestamp">
-                        <relative-time datetime="{{ noteDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}" title="{{ noteDateTime | Date:'MMMM d, yyyy - h:mm tt' }}">{{ noteDateTimeText }}</relative-time>
+                        <time datetime="{{ noteDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}" title="{{ noteDateTime | Date:'MMMM d, yyyy - h:mm tt' }}">{{ noteDateTimeText }}</time>
                     </a>
                 {%- endif -%}
 

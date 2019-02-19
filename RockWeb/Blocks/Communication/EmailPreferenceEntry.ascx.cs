@@ -96,9 +96,7 @@ We have unsubscribed you from the following lists:
                 _communication = new CommunicationService( rockContext ).Get( communicationId.Value );
                 mergeFields.Add( "Communication", _communication );
             }
-
-            LoadDropdowns( mergeFields );
-
+            
             var key = PageParameter( "Person" );
             if ( !string.IsNullOrWhiteSpace( key ) )
             {
@@ -123,6 +121,8 @@ We have unsubscribed you from the following lists:
                 nbEmailPreferenceSuccessMessage.Visible = true;
                 btnSubmit.Visible = false;
             }
+
+            LoadDropdowns( mergeFields );
         }
 
         /// <summary>
@@ -441,7 +441,7 @@ We have unsubscribed you from the following lists:
 
                 // Get a list of all the Active CommunicationLists that the person is an active member of
                 var communicationListQry = groupService.Queryable()
-                    .Where( a => a.GroupTypeId == communicationListGroupTypeId && a.IsActive && a.Members.Any( m => m.PersonId == this.CurrentPersonId && m.GroupMemberStatus == GroupMemberStatus.Active ) );
+                    .Where( a => a.GroupTypeId == communicationListGroupTypeId && a.IsActive && a.Members.Any( m => m.PersonId == _person.Id && m.GroupMemberStatus == GroupMemberStatus.Active ) );
 
                 var categoryGuids = this.GetAttributeValue( "CommunicationListCategories" ).SplitDelimitedValues().AsGuidList();
 

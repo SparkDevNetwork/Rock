@@ -4715,7 +4715,7 @@ namespace RockWeb.Blocks.Event
 
                 case RegistrationPersonFieldType.Grade:
                     var gpGrade = phRegistrantControls.FindControl( "gpGrade" ) as GradePicker;
-                    return gpGrade != null ? Person.GraduationYearFromGradeOffset( gpGrade.SelectedValueAsInt() ) : null;
+                    return gpGrade != null ? Person.GraduationYearFromGradeOffset( gpGrade.SelectedValueAsInt( false ) ) : null;
 
                 case RegistrationPersonFieldType.Gender:
                     var ddlGender = phRegistrantControls.FindControl( "ddlGender" ) as RockDropDownList;
@@ -5120,7 +5120,14 @@ namespace RockWeb.Blocks.Event
                             costSummary.Cost = registrant.Cost;
                             if ( RegistrationState.DiscountPercentage > 0.0m && registrant.DiscountApplies )
                             {
-                                costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
+                                if ( RegistrationState.DiscountPercentage >= 1.0m )
+                                {
+                                    costSummary.DiscountedCost = 0.0m;
+                                }
+                                else
+                                {
+                                    costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
+                                }
                             }
                             else
                             {
@@ -5156,7 +5163,14 @@ namespace RockWeb.Blocks.Event
 
                                 if ( RegistrationState.DiscountPercentage > 0.0m && templateFee != null && templateFee.DiscountApplies && registrant.DiscountApplies )
                                 {
-                                    costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
+                                    if ( RegistrationState.DiscountPercentage >= 1.0m )
+                                    {
+                                        costSummary.DiscountedCost = 0.0m;
+                                    }
+                                    else
+                                    {
+                                        costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
+                                    }
                                 }
                                 else
                                 {
@@ -5187,6 +5201,10 @@ namespace RockWeb.Blocks.Event
                     if ( RegistrationState.DiscountAmount > 0.0m )
                     {
                         decimal totalDiscount = 0.0m - ( RegistrationState.Registrants.Where( r => r.DiscountApplies ).Count() * RegistrationState.DiscountAmount );
+                        if ( costs.Sum( c => c.Cost ) + totalDiscount < 0 )
+                        {
+                            totalDiscount = 0.0m - costs.Sum( c => c.Cost );
+                        }
                         costs.Add( new RegistrationCostSummaryInfo
                         {
                             Type = RegistrationCostSummaryType.Discount,

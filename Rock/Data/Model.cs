@@ -47,7 +47,6 @@ namespace Rock.Data
         /// The created date time.
         /// </value>
         [DataMember]
-        [IncludeForReporting]
         [RockClientInclude( "Leave this as NULL to let Rock set this" )]
         public DateTime? CreatedDateTime { get; set; }
 
@@ -58,7 +57,6 @@ namespace Rock.Data
         /// The modified date time.
         /// </value>
         [DataMember]
-        [IncludeForReporting]
         [RockClientInclude( "This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database." )]
         public DateTime? ModifiedDateTime { get; set; }
 
@@ -69,6 +67,7 @@ namespace Rock.Data
         /// The created by person alias identifier.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         [RockClientInclude( "Leave this as NULL to let Rock set this" )]
         public int? CreatedByPersonAliasId { get; set; }
 
@@ -79,6 +78,7 @@ namespace Rock.Data
         /// The modified by person alias identifier.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         [RockClientInclude( "If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it" )]
         public int? ModifiedByPersonAliasId { get; set; }
 
@@ -109,6 +109,7 @@ namespace Rock.Data
         /// The created by person identifier.
         /// </value>
         [LavaInclude]
+        [HideFromReporting]
         public virtual int? CreatedByPersonId
         {
             get
@@ -128,6 +129,7 @@ namespace Rock.Data
         /// The name of the created by person.
         /// </value>
         [LavaInclude]
+        [HideFromReporting]
         public virtual string CreatedByPersonName
         {
             get
@@ -147,6 +149,7 @@ namespace Rock.Data
         /// The modified by person identifier.
         /// </value>
         [LavaInclude]
+        [HideFromReporting]
         public virtual int? ModifiedByPersonId
         {
             get
@@ -166,6 +169,7 @@ namespace Rock.Data
         /// The name of the modified by person.
         /// </value>
         [LavaInclude]
+        [HideFromReporting]
         public virtual string ModifiedByPersonName
         {
             get

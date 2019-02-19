@@ -175,7 +175,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         FollowingsHelper.SetFollowing( Person.PrimaryAlias, pnlFollow, this.CurrentPerson );
                     }
 
-                    hlVCard.NavigateUrl = ResolveRockUrl( string.Format( "~/GetVCard.ashx?Person={0}", Person.Id ) );
+                    hlVCard.NavigateUrl = ResolveUrl( string.Format( "~/api/People/VCard/{0}", Person.Guid ) );
 
                     var socialCategoryGuid = GetAttributeValue( "SocialMediaCategory" ).AsGuidOrNull();
                     if ( socialCategoryGuid.HasValue )

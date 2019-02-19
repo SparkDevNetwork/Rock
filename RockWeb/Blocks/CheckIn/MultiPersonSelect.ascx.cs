@@ -77,7 +77,7 @@ namespace RockWeb.Blocks.CheckIn
             }}
             else
             {{
-                $('#{0}').button('Loading')
+                $('#{0}').button('loading')
                 $('#{1}').val(ids);
                 return true;
             }}
@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.CheckIn
             }}
             else
             {{
-                $('#{2}').button('Loading')
+                $('#{2}').button('loading')
                 $('#{3}').val(keys);
                 return true;
             }}

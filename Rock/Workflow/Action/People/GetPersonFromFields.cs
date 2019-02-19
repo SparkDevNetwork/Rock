@@ -127,8 +127,8 @@ namespace Rock.Workflow.Action
                     {
                         // Add New Person
                         person = new Person();
-                        person.FirstName = firstName;
-                        person.LastName = lastName;
+                        person.FirstName = firstName.FixCase();
+                        person.LastName = lastName.FixCase();
                         person.IsEmailActive = true;
                         person.Email = email;
                         person.EmailPreference = EmailPreference.EmailAllowed;
