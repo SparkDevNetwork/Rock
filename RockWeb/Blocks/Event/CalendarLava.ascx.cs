@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Renders a particular calendar using Lava." )]
 
-    [EventCalendarField( "Event Calendar", "The event calendar to be displayed", true, "1", order: 0 )]
+    [EventCalendarField( "Event Calendar", "The event calendar to be displayed", true, "8A444668-19AF-4417-9C74-09F842572974", order: 0 )]
     [CustomDropdownListField( "Default View Option", "Determines the default view option", "Day,Week,Month,Year,All", true, "Week", order: 1 )]
     [LinkedPage( "Details Page", "Detail page for events", order: 2 )]
     [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 3 )]
