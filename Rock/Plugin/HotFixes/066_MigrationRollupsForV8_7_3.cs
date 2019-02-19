@@ -18,10 +18,10 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            UpdateStatementGenerator();
-            UpdateCalendarEventField();
-            UpdatePersonTokenCreate();
-            UpdatePersonTokenCreateAttribute();
+            //UpdateStatementGenerator();
+            //UpdateCalendarEventField();
+            //UpdatePersonTokenCreate();
+            //UpdatePersonTokenCreateAttribute();
            
         }
 
