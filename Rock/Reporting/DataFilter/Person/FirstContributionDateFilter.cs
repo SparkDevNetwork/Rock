@@ -119,22 +119,18 @@ function() {
         public override string FormatSelection( Type entityType, string selection )
         {
             SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
-            if ( selectionConfig == null )
-            {
-                return "First Contribution Date";
-            }
 
             string accountNames = string.Empty;
-            if ( selectionConfig.AccountGuids.Any() )
+            if ( selectionConfig.AccountGuids != null && selectionConfig.AccountGuids.Any() )
             {
                 accountNames = new FinancialAccountService( new RockContext() ).GetByGuids( selectionConfig.AccountGuids ).Select( a => a.Name ).ToList().AsDelimited( "," );
             }
 
             string sundayDateString = selectionConfig.UseSundayDate == true ? "Sunday " : string.Empty;
             string accountsString = accountNames.IsNullOrWhiteSpace() ? string.Empty : " to accounts: " + accountNames;
-            string dateRangeString = SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.DelimitedValues );
+            string dateRangeString = $" Date Range: {SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.DelimitedValues )}";
 
-            return $"First contribution {sundayDateString}date{accountsString}. Date Range: {dateRangeString}";
+            return $"First contribution {sundayDateString}date{accountsString}.{dateRangeString}";
         }
 
         /// <summary>
@@ -198,7 +194,7 @@ function() {
             {
                 selectionConfig.AccountGuids = accounts.Select( a => a.Guid ).ToList();
             }
-
+            
             SlidingDateRangePicker slidingDateRangePicker = controls[1] as SlidingDateRangePicker;
             selectionConfig.StartDate = slidingDateRangePicker.DateRangeModeStart;
             selectionConfig.EndDate = slidingDateRangePicker.DateRangeModeEnd;
@@ -305,6 +301,11 @@ function() {
         /// </summary>
         protected class SelectionConfig
         {
+            public SelectionConfig()
+            {
+                AccountGuids = new List<Guid>();
+            }
+
             /// <summary>
             /// Gets or sets the account guids.
             /// </summary>

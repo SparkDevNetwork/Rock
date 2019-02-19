@@ -158,6 +158,7 @@ namespace Rock.Web.UI
             {
                 compiledSuccessfully = false;
                 messages = ex.Message;
+                Rock.Model.ExceptionLogService.LogException( ex );
             }
 
             return compiledSuccessfully;

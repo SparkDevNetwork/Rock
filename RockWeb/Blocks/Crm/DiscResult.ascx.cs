@@ -122,7 +122,7 @@ namespace Rockweb.Blocks.Crm
         {
             // Plot the Natural graph
             DiscService.PlotOneGraph( discNaturalScore_D, discNaturalScore_I, discNaturalScore_S, discNaturalScore_C,
-                savedScores.NaturalBehaviorD, savedScores.NaturalBehaviorI, savedScores.NaturalBehaviorS, savedScores.NaturalBehaviorC, 35 );
+                savedScores.NaturalBehaviorD, savedScores.NaturalBehaviorI, savedScores.NaturalBehaviorS, savedScores.NaturalBehaviorC, 100 );
             ShowExplaination( savedScores.PersonalityType );
 
             hlAssessmentDate.Text = String.Format( "Assessment Date: {0}", savedScores.LastSaveDate.ToShortDateString() );

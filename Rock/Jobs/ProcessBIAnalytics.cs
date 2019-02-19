@@ -270,6 +270,8 @@ namespace Rock.Jobs
             analyticsFieldNames.Add( "ForeignGuid" );
             analyticsFieldNames.Add( "ForeignKey" );
             analyticsFieldNames.Add( "Guid" );
+            analyticsFieldNames.Add( "TypeId" );
+
 
             var currentDatabaseAttributeFields = dataTable.Columns.OfType<DataColumn>().Where( a =>
                 !analyticsFieldNames.Contains( a.ColumnName ) ).ToList();
@@ -436,7 +438,9 @@ UPDATE [{analyticsTableName}]
         /// <param name="dataMap">The data map.</param>
         private void ProcessPersonBIAnalytics( IJobExecutionContext context, JobDataMap dataMap )
         {
-            List<EntityField> analyticsSourcePersonHistoricalFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourcePersonHistorical ), false, false );
+            List<EntityField> analyticsSourcePersonHistoricalFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourcePersonHistorical ), true, false );
+            EntityField typeIdField = analyticsSourcePersonHistoricalFields.Where( f => f.Name == "TypeId" ).FirstOrDefault();
+            analyticsSourcePersonHistoricalFields.Remove( typeIdField );
 
             List<AttributeCache> personAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Person ) )
                 .Where( a => a.FieldKind == FieldKind.Attribute && a.AttributeGuid.HasValue )

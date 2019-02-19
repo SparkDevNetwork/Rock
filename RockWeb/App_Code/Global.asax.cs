@@ -362,9 +362,16 @@ namespace RockWeb
                 Thread.CurrentThread.IsBackground = true;
                 string messages = string.Empty;
                 RockTheme.CompileAll( out messages );
-                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment && messages.IsNotNullOrWhiteSpace() )
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    System.Diagnostics.Debug.WriteLine( "RockTheme.CompileAll messages: " + messages );
+                    if ( messages.IsNullOrWhiteSpace() )
+                    {
+                        System.Diagnostics.Debug.WriteLine( "Less files compiled successfully." );
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine( "RockTheme.CompileAll messages: " + messages );
+                    }
                 }
 
             } ).Start();

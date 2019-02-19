@@ -3103,9 +3103,11 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             }
 
             string entityIdColumn;
+            bool isPersonEntityType = false;
             if ( entityTypeId.HasValue && entityTypeId.Value == EntityTypeCache.GetId<Model.Person>() )
             {
                 entityIdColumn = this.PersonIdField ?? "Id";
+                isPersonEntityType = true;
             }
             else
             {
@@ -3116,7 +3118,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
             // first try to get the SelectedKeys from the SelectField (if there is one)
             HashSet<int> selectedKeys = new HashSet<int>( this.SelectedKeys.Select( a => a as int? ).Where( a => a.HasValue ).Select( a => a.Value ).Distinct().ToList() );
-            if ( selectedKeys == null || !selectedKeys.Any() )
+            if ( selectedKeys == null || !selectedKeys.Any() || isPersonEntityType )
             {
                 if ( entityTypeId.HasValue && dataSourceObjectType is IEntity )
                 {

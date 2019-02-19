@@ -141,7 +141,7 @@ namespace Rock.Storage.AssetStorage
                     request.ContinuationToken = response.NextContinuationToken;
                 } while ( response.IsTruncated );
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -208,7 +208,7 @@ namespace Rock.Storage.AssetStorage
 
                 } while ( response.IsTruncated );
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -255,35 +255,19 @@ namespace Rock.Storage.AssetStorage
                 request.Delimiter = "/";
 
                 var assets = new List<Asset>();
-                var subFolders = new HashSet<string>();
 
-                ListObjectsV2Response response;
-
-                // S3 will only return 1,000 keys per response and sets IsTruncated = true, the do-while loop will run and fetch keys until IsTruncated = false.
-                do
+                // All "folders" will be in the CommonPrefixes property. There is no need to loop through truncated responses like there is for files.
+                ListObjectsV2Response response = client.ListObjectsV2( request );
+                foreach ( string subFolder in response.CommonPrefixes )
                 {
-                    response = client.ListObjectsV2( request );
-
-                    foreach ( string subFolder in response.CommonPrefixes )
+                    if ( subFolder.IsNotNullOrWhiteSpace() )
                     {
-                        if ( subFolder.IsNotNullOrWhiteSpace() )
-                        {
-                            subFolders.Add( subFolder );
-                        }
+                        var subFolderAsset = CreateAssetFromCommonPrefix( subFolder, client.Config.RegionEndpoint.SystemName, bucketName );
+                        assets.Add( subFolderAsset );
                     }
-
-                    request.ContinuationToken = response.NextContinuationToken;
-
-                } while ( response.IsTruncated );
-
-                // Add the subfolders to the asset collection
-                foreach ( string subFolder in subFolders )
-                {
-                    var subFolderAsset = CreateAssetFromCommonPrefix( subFolder, client.Config.RegionEndpoint.SystemName, bucketName );
-                    assets.Add( subFolderAsset );
                 }
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -589,7 +573,7 @@ namespace Rock.Storage.AssetStorage
                     assets.Add( subFolderAsset );
                 }
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -722,7 +706,6 @@ namespace Rock.Storage.AssetStorage
                 Key = s3Object.Key,
                 Uri = $"https://{s3Object.BucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
                 Type = assetType,
-                //IconPath = GetFileTypeIcon( s3Object.Key ),
                 IconPath = assetType == AssetType.Folder ? string.Empty : GetThumbnail(assetStorageProvider, s3Object.Key, s3Object.LastModified ),
                 FileSize = s3Object.Size,
                 LastModifiedDateTime = s3Object.LastModified,

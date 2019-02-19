@@ -48,7 +48,14 @@ namespace Rock.Web.UI.Controls
         /// <param name="attributeValues">The attribute values.</param>
         public void UpdateVisibility( Dictionary<int, AttributeValueCache> attributeValues )
         {
-            this.Visible = FieldVisibilityRules.Evaluate( attributeValues );
+            var visible = FieldVisibilityRules.Evaluate( attributeValues );
+            if ( visible == false && this.Visible )
+            {
+                // if hiding this field, set the value to null since we don't want to save values that aren't shown
+                this.EditValue = null;
+            }
+
+            this.Visible = visible;
         }
 
         /// <summary>
@@ -71,6 +78,12 @@ namespace Rock.Web.UI.Controls
             {
                 var attribute = AttributeCache.Get( this.AttributeId );
                 return attribute?.FieldType.Field.GetEditValue( this.EditControl, attribute.QualifierValues );
+            }
+
+            private set
+            {
+                var attribute = AttributeCache.Get( this.AttributeId );
+                attribute?.FieldType.Field.SetEditValue( this.EditControl, attribute.QualifierValues, value );
             }
         }
 

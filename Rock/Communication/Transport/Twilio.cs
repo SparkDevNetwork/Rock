@@ -94,13 +94,43 @@ namespace Rock.Communication.Transport
                             recipientData.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
                         }
 
-                        string message = ResolveText( smsMessage.Message, smsMessage.CurrentPerson, smsMessage.EnabledLavaCommands, recipientData.MergeFields, smsMessage.AppRoot, smsMessage.ThemeRoot );
+                        CommunicationRecipient communicationRecipient = null;
 
-                        MessageResource response = SendToTwilio( smsMessage.FromNumber.Value, null, attachmentMediaUrls, message, recipientData.To );
-
-                        if ( response.ErrorMessage.IsNotNullOrWhiteSpace() )
+                        using ( var rockContext = new RockContext() )
                         {
-                            errorMessages.Add( response.ErrorMessage );
+                            CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
+                            int? recipientId = recipientData.CommunicationRecipientId.AsIntegerOrNull();
+                            if ( recipientId != null )
+                            {
+                                communicationRecipient = communicationRecipientService.Get( recipientId.Value );
+                            }
+
+                            string message = ResolveText( smsMessage.Message, smsMessage.CurrentPerson, communicationRecipient, smsMessage.EnabledLavaCommands, recipientData.MergeFields, smsMessage.AppRoot, smsMessage.ThemeRoot );
+
+                            // Create the communication record and send using that.
+                            if ( rockMessage.CreateCommunicationRecord )
+                            {
+                                Person recipientPerson = ( Person ) recipientData.MergeFields.GetValueOrNull( "Person" );
+                                var communicationService = new CommunicationService( rockContext );
+                                Rock.Model.Communication communication = communicationService.CreateSMSCommunication( smsMessage.CurrentPerson, recipientPerson?.PrimaryAliasId, message, smsMessage.FromNumber, string.Empty, smsMessage.communicationName );
+                                rockContext.SaveChanges();
+                                Send( communication, mediumEntityTypeId, mediumAttributes );
+                                continue;
+                            }
+                            else
+                            {
+                                MessageResource response = SendToTwilio( smsMessage.FromNumber.Value, null, attachmentMediaUrls, message, recipientData.To );
+
+                                if ( response.ErrorMessage.IsNotNullOrWhiteSpace() )
+                                {
+                                    errorMessages.Add( response.ErrorMessage );
+                                }
+
+                                if ( communicationRecipient != null )
+                                {
+                                    rockContext.SaveChanges();
+                                }
+                            }
                         }
                     }
                     catch ( Exception ex )
@@ -108,7 +138,7 @@ namespace Rock.Communication.Transport
                         errorMessages.Add( ex.Message );
                         ExceptionLogService.LogException( ex );
                     }
-
+                    
                     if ( throttlingWaitTimeMS.HasValue )
                     {
                         System.Threading.Tasks.Task.Delay( throttlingWaitTimeMS.Value ).Wait();
@@ -212,7 +242,7 @@ namespace Rock.Communication.Transport
                                             // Create merge field dictionary
                                             var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
 
-                                            string message = ResolveText( communication.SMSMessage, currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
+                                            string message = ResolveText( communication.SMSMessage, currentPerson, recipient, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
 
                                             string twilioNumber = phoneNumber.Number;
                                             if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )

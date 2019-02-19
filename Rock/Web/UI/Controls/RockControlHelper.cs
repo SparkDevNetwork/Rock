@@ -37,7 +37,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary> 
-        /// Creates the child controls and handles adding the required field validator control.
+        /// Creates the standard RockControl child controls (RequiredFieldValidator, HelpBlock, WarningBlock) and handles adding the required field validator control.
         /// </summary>
         /// <param name="rockControl">The rock control.</param>
         /// <param name="controls">The controls.</param>

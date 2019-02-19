@@ -438,24 +438,6 @@ namespace Rock.Model
         public int? ViewedCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the MetaPersonicxLifestageCluster Id of the <see cref="Rock.Model.MetaPersonicxLifestageCluster"/>.
-        /// </summary>
-        /// <value>
-        /// An <see cref="System.Int32"/> representing a MetaPersonicxLifestageCluster Id of the <see cref="Rock.Model.MetaPersonicxLifestageCluster"/>.
-        /// </value>
-        [DataMember]
-        public int? MetaPersonicxLifestageClusterId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the MetaPersonicxLifestageGroup Id of the <see cref="Rock.Model.MetaPersonicxLifestageGroup"/>.
-        /// </summary>
-        /// <value>
-        /// An <see cref="System.Int32"/> representing a MetaPersonicxLifestageGroup Id of the <see cref="Rock.Model.MetaPersonicxLifestageGroup"/>.
-        /// </value>
-        [DataMember]
-        public int? MetaPersonicxLifestageGroupId { get; set; }
-
-        /// <summary>
         /// Gets or sets the name of the top signal color. This property is used to indicate the icon color
         /// on a person if they have a related signal.
         /// </summary>
@@ -622,6 +604,17 @@ namespace Rock.Model
             {
                 // intentionally blank
             }
+        }
+
+        /// <summary>
+        /// Determines whether the <see cref="RecordTypeValue"/> of this Person is Business
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance is business; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsBusiness()
+        {
+            return IsBusiness( this.RecordTypeValueId );
         }
 
         /// <summary>
@@ -1015,15 +1008,6 @@ namespace Rock.Model
         public virtual Group GivingGroup { get; set; }
 
         /// <summary>
-        /// Gets or sets the metaPersonicxLifestage cluster.
-        /// </summary>
-        /// <value>
-        /// The person.
-        /// </value>
-        [DataMember]
-        public virtual MetaPersonicxLifestageCluster MetaPersonicxLifestageCluster { get; set; }
-
-        /// <summary>
         /// Gets or sets the signals applied to this person.
         /// </summary>
         /// <value>
@@ -1031,15 +1015,6 @@ namespace Rock.Model
         /// </value>
         [LavaIgnore]
         public virtual ICollection<PersonSignal> Signals { get; set; }
-
-        /// <summary>
-        /// Gets or sets the metaPersonicxLifestage group.
-        /// </summary>
-        /// <value>
-        /// The person.
-        /// </value>
-        [DataMember]
-        public virtual MetaPersonicxLifestageGroup MetaPersonicxLifestageGroup { get; set; }
 
         /// <summary>
         /// Gets or sets the primary family.
@@ -2196,7 +2171,8 @@ namespace Rock.Model
         /// <returns></returns>
         public PhoneNumber GetPhoneNumber( Guid phoneType )
         {
-            return PhoneNumbers.FirstOrDefault( n => n.NumberTypeValue.Guid == phoneType );
+            int numberTypeValueId = DefinedValueCache.GetId( phoneType ) ?? 0;
+            return PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == numberTypeValueId );
         }
 
         #endregion
@@ -2608,7 +2584,7 @@ namespace Rock.Model
                     {
                         using ( var rockContext = new RockContext() )
                         {
-                            ageClassification = new PersonService( rockContext ).Queryable( true ).Where( a => a.Id == personId ).Select( a => ( AgeClassification? ) a.AgeClassification ).FirstOrDefault();
+                            ageClassification = new PersonService( rockContext ).GetSelect( personId.Value, s => s.AgeClassification );
                         }
                     }
 
@@ -3018,8 +2994,6 @@ namespace Rock.Model
             this.HasOptional( p => p.TitleValue ).WithMany().HasForeignKey( p => p.TitleValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.GivingGroup ).WithMany().HasForeignKey( p => p.GivingGroupId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.MetaPersonicxLifestageCluster ).WithMany().HasForeignKey( p => p.MetaPersonicxLifestageClusterId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.MetaPersonicxLifestageGroup ).WithMany().HasForeignKey( p => p.MetaPersonicxLifestageGroupId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PrimaryFamily ).WithMany().HasForeignKey( p => p.PrimaryFamilyId ).WillCascadeOnDelete( false );
         }
     }

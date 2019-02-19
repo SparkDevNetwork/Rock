@@ -409,7 +409,7 @@ namespace Rock.StatementGenerator.Rest
                         financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.Where( a => options.TransactionAccountIds.Contains( a.AccountId ) ).ToList();
                     }
 
-                    financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.OrderBy( a => a.Account.Order ).ThenBy( a => a.Account.Name ).ToList();
+                    financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.OrderBy( a => a.Account.Order ).ThenBy( a => a.Account.PublicName ).ToList();
                 }
 
                 var lavaTemplateValue = DefinedValueCache.Get( options.LayoutDefinedValueGuid.Value );
@@ -558,8 +558,29 @@ namespace Rock.StatementGenerator.Rest
                 mergeFields.Add( "TotalContributionAmountNonCash", transactionDetailListNonCash.Sum( a => a.Amount ) );
                 mergeFields.Add( "TotalContributionCountNonCash", transactionDetailListNonCash.Count() );
 
-                mergeFields.Add( "AccountSummary", transactionDetailListCash.GroupBy( t => t.Account.Name ).Select( s => new { AccountName = s.Key, Total = s.Sum( a => a.Amount ), Order = s.Max( a => a.Account.Order ) } ).OrderBy( s => s.Order ) );
-                mergeFields.Add( "AccountSummaryNonCash", transactionDetailListNonCash.GroupBy( t => t.Account.Name ).Select( s => new { AccountName = s.Key, Total = s.Sum( a => a.Amount ), Order = s.Max( a => a.Account.Order ) } ).OrderBy( s => s.Order ) );
+                mergeFields.Add(
+                    "AccountSummary",
+                    transactionDetailListCash
+                        .GroupBy( t => t.Account.PublicName )
+                        .Select( s => new
+                        {
+                            AccountName = s.FirstOrDefault().Account.PublicName ?? s.Key,
+                            Total = s.Sum( a => a.Amount ),
+                            Order = s.Max( a => a.Account.Order )
+                        } )
+                        .OrderBy( s => s.Order ) );
+
+                mergeFields.Add(
+                    "AccountSummaryNonCash",
+                    transactionDetailListNonCash
+                        .GroupBy( t => t.Account.PublicName )
+                        .Select( s => new
+                        {
+                            AccountName = s.FirstOrDefault().Account.PublicName ?? s.Key,
+                            Total = s.Sum( a => a.Amount ),
+                            Order = s.Max( a => a.Account.Order )
+                        } )
+                        .OrderBy( s => s.Order ) );
 
                 if ( options.PledgesAccountIds.Any() )
                 {

@@ -679,7 +679,6 @@ namespace RockWeb.Blocks.Groups
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
             group.IsPublic = cbIsPublic.Checked;
-
             string iCalendarContent = string.Empty;
 
             // If unique schedule option was selected, but a schedule was not defined, set option to 'None'
@@ -767,6 +766,11 @@ namespace RockWeb.Blocks.Groups
             if ( group.ParentGroupId.HasValue )
             {
                 group.ParentGroup = groupService.Get( group.ParentGroupId.Value );
+            }
+
+            if ( group.GroupType.ShowAdministrator )
+            {
+                group.GroupAdministratorPersonAliasId = ppAdministrator.PersonAliasId;
             }
 
             // Check to see if group type is allowed as a child of new parent group.
@@ -1079,6 +1083,7 @@ namespace RockWeb.Blocks.Groups
                 ShowGroupTypeEditDetails( groupType, group, true );
                 BindInheritedAttributes( CurrentGroupTypeId, new AttributeService( new RockContext() ) );
                 BindGroupRequirementsGrid();
+                BindAdministratorPerson( group, groupType );
             }
         }
 
@@ -1400,7 +1405,7 @@ namespace RockWeb.Blocks.Groups
 
             ddlSignatureDocumentTemplate.SetValue( group.RequiredSignatureDocumentTemplateId );
             gpParentGroup.SetValue( group.ParentGroup ?? groupService.Get( group.ParentGroupId ?? 0 ) );
-            
+
 
             // hide sync and requirements panel if no admin access
             bool canAdministrate = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
@@ -1424,7 +1429,7 @@ namespace RockWeb.Blocks.Groups
             BindGroupSyncGrid();
 
             // only Rock admins can alter if the group is a security role
-            cbIsSecurityRole.Visible = groupService.GroupHasMember( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ), CurrentUser.PersonId );           
+            cbIsSecurityRole.Visible = groupService.GroupHasMember( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ), CurrentUser.PersonId );
 
             // GroupType depends on Selected ParentGroup
             ddlParentGroup_SelectedIndexChanged( null, null );
@@ -1472,10 +1477,11 @@ namespace RockWeb.Blocks.Groups
             GroupLocationsState = group.GroupLocations.ToList();
 
             var groupTypeCache = CurrentGroupTypeCache;
+            BindAdministratorPerson( group, groupTypeCache );
             nbGroupCapacity.Visible = groupTypeCache != null && groupTypeCache.GroupCapacityRule != GroupCapacityRule.None;
             SetScheduleControls( groupTypeCache, group );
             ShowGroupTypeEditDetails( groupTypeCache, group, true );
-            
+
             // if this block's attribute limit group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
             if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean() )
             {
@@ -1504,6 +1510,25 @@ namespace RockWeb.Blocks.Groups
             }
 
             BindMemberWorkflowTriggersGrid();
+        }
+
+        /// <summary>
+        /// Bind the administrator person picker.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        private void BindAdministratorPerson( Group group, GroupTypeCache groupType )
+        {
+            var showAdministrator = groupType != null && groupType.ShowAdministrator;
+            ppAdministrator.Visible = showAdministrator;
+            if ( showAdministrator )
+            {
+                ppAdministrator.Label = groupType.AdministratorTerm;
+                ppAdministrator.Help = string.Format( "Provide the person who is the {0} of the group.", groupType.AdministratorTerm );
+                if ( group.GroupAdministratorPersonAliasId.HasValue )
+                {
+                    ppAdministrator.SetValue( group.GroupAdministratorPersonAlias.Person );
+                }
+            }
         }
 
         /// <summary>

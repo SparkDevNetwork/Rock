@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -87,7 +88,7 @@ namespace RockWeb.Blocks.Store
             if ( !Page.IsPostBack )
             {
                 ShowPackage();
-                
+
             }
         }
 
@@ -125,7 +126,7 @@ namespace RockWeb.Blocks.Store
 
         protected void lbRate_Click( object sender, EventArgs e )
         {
-           
+
         }
 
         #endregion
@@ -159,7 +160,23 @@ namespace RockWeb.Blocks.Store
             lVendorName.Text = package.Vendor.Name;
             imgPackageImage.ImageUrl = package.PackageIconBinaryFile.ImageUrl;
             hlPackageLink.NavigateUrl = package.SupportUrl;
-            lRatingSummary.Text = string.Format( "<div class='rating rating-{0} pull-left margin-r-sm'><small></small></div>", package.Rating.ToString().Replace( ".", "" ) );
+
+            var rating = package.Rating.ToString().AsInteger();
+            var starCounter = 0;
+            StringBuilder starMarkup = new StringBuilder();
+
+            for ( int i = 0; i < rating; i++ )
+            {
+                starMarkup.Append( "<i class='fa fa-rating-on'></i>" );
+                starCounter++;
+            }
+
+            for ( int i = starCounter; i < 5; i++ )
+            {
+                starMarkup.Append( "<i class='fa fa-rating-off'></i>" );
+            }
+
+            lRatingSummary.Text = starMarkup.ToString();
 
             lAuthorInfo.Text = string.Format( "<a href='{0}'>{1}</a>", package.Vendor.Url, package.Vendor.Name );
 
@@ -198,7 +215,7 @@ namespace RockWeb.Blocks.Store
                     {
                         lbInstall.Text = "Install";
                         lInstallNotes.Text = string.Format( "<small>Purchased {0}</small>", package.PurchasedDate.ToShortDateString());
-                        
+
                         // set rating link button
                         lbRate.Visible = true;
                         lbRate.PostBackUrl = string.Format( "http://www.rockrms.com/Store/Rate?OrganizationKey={0}&PackageId={1}", storeKey, packageId.ToString());
@@ -248,7 +265,7 @@ namespace RockWeb.Blocks.Store
             {
                 rptScreenshots.DataSource = latestVersion.Screenshots;
                 rptScreenshots.DataBind();
-                
+
                 lLatestVersionLabel.Text = latestVersion.VersionLabel;
                 lLatestVersionDescription.Text = latestVersion.Description;
 
@@ -268,7 +285,7 @@ namespace RockWeb.Blocks.Store
                 }
 
                 lLastUpdate.Text = latestVersion.AddedDate.ToShortDateString();
-                lRequiredRockVersion.Text = string.Format("v{0}.{1}", 
+                lRequiredRockVersion.Text = string.Format("v{0}.{1}",
                                                 latestVersion.RequiredRockSemanticVersion.Minor.ToString(),
                                                 latestVersion.RequiredRockSemanticVersion.Patch.ToString());
                 lDocumenationLink.Text = string.Format( "<a href='{0}' target='_blank'>Documentation Link</a>", latestVersion.DocumentationUrl );
@@ -289,7 +306,7 @@ namespace RockWeb.Blocks.Store
             {
                 // hide install button
                 lbInstall.Visible = false;
-                
+
                 // display info on what Rock version you need to be on to run this package
                 if ( package.Versions.Count > 0 )
                 {
@@ -311,7 +328,7 @@ namespace RockWeb.Blocks.Store
                                                     lastVersion.RequiredRockSemanticVersion.Patch.ToString() );
                     }
                 }
-                
+
             }
         }
 
@@ -339,7 +356,7 @@ namespace RockWeb.Blocks.Store
             {
                 return "0";
             }
-            
+
         }
 
         protected string PersonPhotoUrl( string relativeUrl )
@@ -351,6 +368,13 @@ namespace RockWeb.Blocks.Store
                 url = url.Substring( localPath.Length );
             }
             return "http://www.rockrms.com/" + url;
+        }
+
+        protected string FormatRating( int ratings )
+        {
+            var mergeValues = new Dictionary<string, object>();
+            mergeValues.AddOrIgnore( "Rating", ratings );
+            return "{{ Rating | RatingMarkup }}".ResolveMergeFields( mergeValues );
         }
 
         protected string FormatReviewText(string reviewText )

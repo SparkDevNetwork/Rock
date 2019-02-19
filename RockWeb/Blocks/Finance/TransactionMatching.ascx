@@ -23,6 +23,10 @@
 
                 <asp:LinkButton ID="btnFilter" runat="server" CssClass="btn btn-xs btn-default pull-right margin-l-sm" OnClick="btnFilter_Click"><i class="fa fa-gear" title="Filter Accounts"></i></asp:LinkButton>
 
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" Visible="false"  />
+                </div>
+
                 <Rock:RockControlWrapper ID="rcwAddNewBusiness" runat="server" Visible="false">
                     <a id="hlAddNewBusiness" class="btn btn-default btn-xs margin-r-sm pull-right" runat="server" href="#">Add Business</a>
                 </Rock:RockControlWrapper>
@@ -54,12 +58,12 @@
                         <div class="col-md-6">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:RockDropDownList ID="ddlIndividual" runat="server" Label="Individual" Help="Select a person that has previously been matched to the bank account. If the person isn't in this list, use the 'Assign to New' to select the matching person." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
+                                    <Rock:RockDropDownList ID="ddlIndividual" runat="server" EnhanceForLongLists="true" Label="Individual" Help="Select a person that has previously been matched to the bank account. If the person isn't in this list, use the 'Assign to New' to select the matching person." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
                                     <span id="badgeIndividualCount" runat="server" class="pull-right badge badge-danger"
                                         style="position: relative; top: -58px; left: 10px"></span>
 
                                     <div>
-                                        <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" FormGroupCssClass="pull-left" Help="Select a new person to match to the bank account." IncludeBusinesses="true" OnSelectPerson="ppSelectNew_SelectPerson" />
+                                        <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" FormGroupCssClass="pull-left" Help="Select a new person to match to the bank account." IncludeBusinesses="true" OnSelectPerson="ppSelectNew_SelectPerson" ExpandSearchOptions="true" />
                                         <Rock:RockControlWrapper ID="rcwEnvelope" runat="server" Label="Envelope #" Help="Select a person based on their assigned envelope number">
                                             <Rock:RockTextBox ID="tbEnvelopeNumber" runat="server" CssClass="input-width-sm pull-left" />
                                             <asp:LinkButton ID="btnFindByEnvelopeNumber" runat="server" CssClass="btn btn-default margin-l-sm" Text="Find" OnClick="btnFindByEnvelopeNumber_Click" />
@@ -162,6 +166,8 @@
                         </div>
                         <div class="col-sm-6">
                             <Rock:CampusPicker ID="cpAccounts" runat="server" Label="Campus" Help="Only display selected accounts that are associated with this campus (or not associated with a campus)." />
+                            <Rock:RockCheckBox ID="cbIncludeChildAccounts" runat="server" Label="Include Child Accounts" Help="Checking this option will include all child and descendant accounts under all the selected accounts." />
+                            <Rock:RockCheckBox ID="cbFilterAccountsByBatchsCampus" runat="server" Label="Filter Accounts By Batch Campus" Help="If checked, only accounts that have the same campus as the batch will be shown." />
                         </div>
                     </div>
                 </Content>

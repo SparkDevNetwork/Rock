@@ -25,7 +25,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Control used by registration template detail block to edit forms
+    /// Control used by registration template detail block to edit registrant forms
     /// </summary>
     [ToolboxData( "<{0}:RegistrationTemplateFormEditor runat=server></{0}:RegistrationTemplateFormEditor>" )]
     public class RegistrationTemplateFormEditor : CompositeControl, IHasValidationGroup
@@ -228,11 +228,17 @@ $('.template-form > .panel-body').on('validation-error', function() {
         }
 
         /// <summary>
+        /// The filterable fields count. If there is less than 2, don't show the FilterButton (since there would be no other fields to use as criteria)
+        /// </summary>
+        private int _filterableFieldsCount = 0;
+
+        /// <summary>
         /// Binds the fields grid.
         /// </summary>
         /// <param name="formFields">The fields.</param>
         public void BindFieldsGrid( List<RegistrationTemplateFormField> formFields )
         {
+            _filterableFieldsCount = formFields.Where( a => a.FieldSource != RegistrationFieldSource.PersonField ).Count();
             _gFields.DataSource = formFields.OrderBy( a => a.Order ).ToList();
             _gFields.DataBind();
         }
@@ -390,7 +396,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
 
             if ( field != null && linkButton != null )
             {
-                if ( field.FieldSource == RegistrationFieldSource.PersonField )
+                if ( ( field.FieldSource == RegistrationFieldSource.PersonField ) || _filterableFieldsCount < 2 )
                 {
                     linkButton.Visible = false;
                 }

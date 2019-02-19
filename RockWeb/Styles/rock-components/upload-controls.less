@@ -55,6 +55,11 @@
     border: 1px solid @input-border;
     border-radius: 0 0 @border-radius-base @border-radius-base;
 
+    &:focus-within {
+      box-shadow: @input-focus-box-shadow;
+      border-color: @input-border-focus;
+    }
+
     ::-webkit-file-upload-button {
       cursor: pointer;
     }

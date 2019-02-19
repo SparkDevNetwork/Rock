@@ -679,6 +679,7 @@ namespace RockInstaller
                 conn.Open();
 
                 SqlCommand command = new SqlCommand( sql, conn );
+                command.CommandTimeout = 900; // 15 minutes
                 command.ExecuteNonQuery();
                 
             }

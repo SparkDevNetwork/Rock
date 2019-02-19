@@ -429,6 +429,14 @@ namespace Rock.Data
         public DbSet<CommunicationRecipient> CommunicationRecipients { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication responses.
+        /// </summary>
+        /// <value>
+        /// The communication responses.
+        /// </value>
+        public DbSet<CommunicationResponse> CommunicationResponses { get; set; }
+
+        /// <summary>
         /// Gets or sets the communication template attachment.
         /// </summary>
         /// <value>
@@ -1123,22 +1131,6 @@ namespace Rock.Data
         /// The meta nick name lookups.
         /// </value>
         public DbSet<Rock.Model.MetaNickNameLookup> MetaNickNameLookups { get; set; }
-
-        /// <summary>
-        /// Gets or sets the meta personicx lifestage clusters.
-        /// </summary>
-        /// <value>
-        /// The meta personicx lifestage clusters.
-        /// </value>
-        public DbSet<Rock.Model.MetaPersonicxLifestageCluster> MetaPersonicxLifestageClusters { get; set; }
-
-        /// <summary>
-        /// Gets or sets the meta personicx lifestage groups.
-        /// </summary>
-        /// <value>
-        /// The meta personicx lifestage groups.
-        /// </value>
-        public DbSet<Rock.Model.MetaPersonicxLifestageGroup> MetaPersonicxLifestageGroups { get; set; }
 
         /// <summary>
         /// Gets or sets the metaphones.
