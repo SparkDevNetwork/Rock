@@ -423,6 +423,10 @@ namespace Rock.Web.UI.Controls
             {
                 PersonId = Rock.Constants.None.Id;
                 PersonName = Rock.Constants.None.TextHtml;
+                _tbSearchName.Text = string.Empty;
+                _tbSearchPhone.Text = string.Empty;
+                _tbSearchAddress.Text = string.Empty;
+                _tbSearchEmail.Text = string.Empty;
             }
         }
 

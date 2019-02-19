@@ -359,6 +359,12 @@ textarea,
   border-radius: 50%;
 }
 
+.grid-select-cell .status-list .badge {
+  width: (@line-height-computed - 4px);
+  height: (@line-height-computed - 4px);
+  border-radius: 50%;
+}
+
 /*#endregion */
 
 /*#region
@@ -517,6 +523,11 @@ td.grid-actions {
 /*#region
 // 4. Theme Styling          */
 // -------------------------
+
+body.nav-open {
+  overflow: hidden;
+}
+
 .page-wrapper {
 
   @media (min-width: @screen-md-min) {

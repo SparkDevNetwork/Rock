@@ -1480,30 +1480,6 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<MetaPersonicxLifestageCluster>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, MetaPersonicxLifestageCluster.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<MetaPersonicxLifestageCluster>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, MetaPersonicxLifestageCluster.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<MetaPersonicxLifestageGroup>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, MetaPersonicxLifestageGroup.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<MetaPersonicxLifestageGroup>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, MetaPersonicxLifestageGroup.FriendlyTypeName );
-                return false;
-            }  
- 
             if ( new Service<Metric>( Context ).Queryable().Any( a => a.AdminPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Metric.FriendlyTypeName );

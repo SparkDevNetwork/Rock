@@ -71,7 +71,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/Process" )]
-        public HttpResponseMessage ProcessPayment( [FromBody]AutomatedPaymentArgs automatedPaymentArgs, [FromUri]bool ignoreRepeatChargeProtection, [FromUri]bool ignoreScheduleAdherenceProtection )
+        public HttpResponseMessage ProcessPayment( [FromBody]AutomatedPaymentArgs automatedPaymentArgs, [FromUri]bool ignoreRepeatChargeProtection = false, [FromUri]bool ignoreScheduleAdherenceProtection = false )
         {
             var errorMessage = string.Empty;
             

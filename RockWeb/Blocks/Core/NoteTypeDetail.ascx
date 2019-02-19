@@ -29,7 +29,7 @@
                         <Rock:ColorPicker ID="cpBorderColor" runat="server" Label="Border Color" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbUserSelectable" runat="server" Label="User Selectable" Text="Yes" />
+                        <Rock:RockCheckBox ID="cbUserSelectable" runat="server" Label="User Selectable" Text="Yes" Help="This flag enables notes of this note type to be added from the note entry block" />
                         <Rock:RockCheckBox ID="cbRequiresApprovals" runat="server" Label="Requires Approvals" Text="Yes" />
                         <Rock:RockCheckBox ID="cbSendApprovalNotifications" runat="server" Label="Send Approval Notifications" Text="Yes" />
                         <Rock:RockCheckBox ID="cbAllowsWatching" runat="server" Label="Allows Watching" Text="Yes"  Help="If enabled, an option to watch individual notes will appear, and note watch notifications will be sent on watched notes." />

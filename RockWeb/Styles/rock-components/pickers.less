@@ -14,8 +14,8 @@
 
   .toggle-additional-search-fields {
     display: block;
-    font-size: 14px;
     float: right;
+    font-size: 14px;
 
     &.active {
       background-color: darken(@btn-default-bg, 10%);
@@ -44,10 +44,14 @@
     }
 
     i {
+      float: left;
       margin-right: 6px;
+      line-height: @line-height-computed;
+      vertical-align: bottom;
     }
 
     span {
+      float: left;
       width: 140px;
       margin-right: 6px;
       overflow: hidden;

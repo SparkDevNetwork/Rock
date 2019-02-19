@@ -137,6 +137,8 @@
                             <Rock:AddressControl ID="acAddress" runat="server" RequiredErrorMessage="Your Address is Required" />
                         </fieldset>
                     </asp:Panel>
+
+                <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
             </div>
         
         </div>

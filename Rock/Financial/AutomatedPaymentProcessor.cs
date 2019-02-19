@@ -486,20 +486,25 @@ namespace Rock.Financial
                     var savedAccountId = _automatedPaymentArgs.FinancialPersonSavedAccountId.Value;
                     _financialPersonSavedAccount = savedAccountQry.FirstOrDefault( sa => sa.Id == savedAccountId );
                 }
-                else if ( _financialScheduledTransaction != null )
+                else
                 {
-                    // If there is a schedule and no indicated saved account to use, use payment info associated with the schedule
-                    _financialPersonSavedAccount = savedAccountQry
+                    // If there is a schedule and no indicated saved account to use, try to use payment info associated with the schedule
+                    if ( _financialScheduledTransaction != null )
+                    {
+                        _financialPersonSavedAccount = savedAccountQry
                         .Where( sa =>
+                            ( !string.IsNullOrEmpty( sa.GatewayPersonIdentifier ) && sa.GatewayPersonIdentifier == _financialScheduledTransaction.TransactionCode ) ||
                             ( sa.FinancialPaymentDetailId.HasValue && sa.FinancialPaymentDetailId == _financialScheduledTransaction.FinancialPaymentDetailId ) ||
                             ( !string.IsNullOrEmpty( sa.TransactionCode ) && sa.TransactionCode == _financialScheduledTransaction.TransactionCode )
                         )
                         .FirstOrDefault();
-                }
-                else
-                {
-                    // Use the default or first if no default
-                    _financialPersonSavedAccount = savedAccountQry.FirstOrDefault( sa => sa.IsDefault ) ?? savedAccountQry.FirstOrDefault();
+                    }
+
+                    if ( _financialPersonSavedAccount == null )
+                    {
+                        // Use the default or first if no default
+                        _financialPersonSavedAccount = savedAccountQry.FirstOrDefault( sa => sa.IsDefault ) ?? savedAccountQry.FirstOrDefault();
+                    }
                 }
             }
 

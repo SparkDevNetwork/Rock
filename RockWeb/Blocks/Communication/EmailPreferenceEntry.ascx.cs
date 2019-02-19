@@ -96,12 +96,12 @@ We have unsubscribed you from the following lists:
                 _communication = new CommunicationService( rockContext ).Get( communicationId.Value );
                 mergeFields.Add( "Communication", _communication );
             }
-            
+
             var key = PageParameter( "Person" );
             if ( !string.IsNullOrWhiteSpace( key ) )
             {
                 var service = new PersonService( rockContext );
-                _person = service.GetByUrlEncodedKey( key );
+                _person = service.GetByPersonActionIdentifier( key, "Unsubscribe" );
             }
 
             if ( _person == null && CurrentPerson != null )
@@ -425,7 +425,7 @@ We have unsubscribed you from the following lists:
         /// <param name="mergeObjects">The merge objects.</param>
         private void LoadDropdowns( Dictionary<string, object> mergeObjects )
         {
-            var availableOptions = GetAttributeValue( "AvailableOptions" ).SplitDelimitedValues(false);
+            var availableOptions = GetAttributeValue( "AvailableOptions" ).SplitDelimitedValues( false );
 
             rbUnsubscribe.Visible = availableOptions.Contains( UNSUBSCRIBE );
             rbUnsubscribe.Text = GetAttributeValue( "UnsubscribefromListsText" ).ResolveMergeFields( mergeObjects );

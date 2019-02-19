@@ -696,7 +696,7 @@
 
 
                     <a id="Notificationbox"></a>
-                    <h2 runat="server">Rock:Notificationbox</h2>
+                    <h2 runat="server">Rock:NotificationBox</h2>
                     <p>
                         This creates a <a href="http://getbootstrap.com/components/#alerts">Bootstrap alert</a>.  We’ve added the ability to have Details that can be shown.
                     </p>
@@ -897,10 +897,28 @@ Horizontal Rule
                     </div>
 
 
+                    <a id="CampusAccountAmountPicker"></a>
+                    <h2 runat="server">Rock:CampusAccountAmountPicker</h2><span>(SingleAccount Mode)</span>
+                    <div runat="server" class="r-example">
+                        <Rock:CampusAccountAmountPicker ID="caapExampleSingleAccount" runat="server" AmountEntryMode="SingleAccount" AutoPostBack="true" OnAccountChanged="caapExample_Changed" />
+
+                        <hr />
+                        <Rock:RockLiteral ID="lCaapExampleSingleAccountResultAccount" runat="server" Label="Resulting Campus Account" Text="-"/>
+                    </div>
+
+                    <h2 runat="server">Rock:CampusAccountAmountPicker</h2><span>(MultipleAccounts Mode)</span>
+                    <div runat="server" class="r-example">
+                        <Rock:CampusAccountAmountPicker ID="caapExampleMultiAccount" runat="server" AmountEntryMode="MultipleAccounts" OnAccountChanged="caapExample_Changed"/>
+
+                         <hr />
+                        <Rock:RockLiteral ID="lCaapExampleMultiAccountResultAccount" runat="server" Label="Resulting Campus Accounts" Text="-" />
+                    </div>
+
+
                     <a id="CssRollovers"></a>
                     <h2 runat="server">CSS Rollovers</h2>
                     You often run across situations where you would like buttons or links to appear when you hover over a selection of code. Instead of using jQuery toggles you can use the
-                CSS classes below. These classes can be applied to any tags.  In order to support nested rollovers the actions must be direct decendents of their containers.  On touch enabled
+                CSS classes below. These classes can be applied to any tags.  In order to support nested rollovers the actions must be direct descendants of their containers. On touch enabled
                 devices the rollover-items will always be displayed.
                 <div runat="server" class="r-example">
                     <div class="alert alert-info rollover-container">
@@ -913,7 +931,7 @@ Horizontal Rule
                 </div>
 
                     <h2 runat="server">Rock jQuery UI Library</h2>
-                    To help promote consistance we have created a standard Rock jQuery UI Library.  Below are the current functions with their usage patters.
+                    To help promote consistence we have created a standard Rock jQuery UI Library. Below are the current functions with their usage patterns.
 
                 <a id="RockFadeIn"></a>
                     <h3 runat="server">rockFadeIn()</h3>

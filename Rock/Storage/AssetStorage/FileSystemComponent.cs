@@ -41,6 +41,18 @@ namespace Rock.Storage.AssetStorage
     public class FileSystemComponent : AssetStorageComponent
     {
         #region Properties
+
+        private List<string> HiddenFolders
+        {
+            get
+            {
+                return new List<string>()
+                {
+                    "Content\\ASM_Thumbnails"
+                };
+            }
+        }
+
         /// <summary>
         /// Fixes the root folder syntax if it was entered incorrectly.
         /// </summary>
@@ -267,8 +279,12 @@ namespace Rock.Storage.AssetStorage
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
             asset.Key = FixKey( asset, rootFolder );
             string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
-
-            return GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.TopDirectoryOnly, AssetType.Folder );
+            var assets = new List<Asset>();
+            if ( !HiddenFolders.Any( a => physicalFolder.IndexOf( a, StringComparison.OrdinalIgnoreCase ) > 0 ) )
+            {
+                assets = GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.TopDirectoryOnly, AssetType.Folder );
+            }
+            return assets;
         }
 
         /// <summary>
@@ -493,8 +509,11 @@ namespace Rock.Storage.AssetStorage
 
                 foreach ( var directoryInfo in directoryInfos )
                 {
-                    var asset = CreateAssetFromDirectoryInfo( directoryInfo );
-                    assets.Add( asset );
+                    if ( !HiddenFolders.Any( a => directoryInfo.FullName.IndexOf( a, StringComparison.OrdinalIgnoreCase ) > 0 ) )
+                    {
+                        var asset = CreateAssetFromDirectoryInfo( directoryInfo );
+                        assets.Add( asset );
+                    }
                 }
             }
             else

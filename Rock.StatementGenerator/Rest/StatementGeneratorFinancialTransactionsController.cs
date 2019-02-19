@@ -710,7 +710,7 @@ namespace Rock.StatementGenerator.Rest
             // only include pledges that started *before* the enddate of the statement ( we don't want pledges that start AFTER the statement end date )
             if ( options.EndDate.HasValue )
             {
-                pledgeQry = pledgeQry.Where( p => p.StartDate <= options.EndDate.Value );
+                pledgeQry = pledgeQry.Where( p => p.StartDate < options.EndDate.Value );
             }
 
             // also only include pledges that ended *after* the statement start date ( we don't want pledges that ended BEFORE the statement start date )
