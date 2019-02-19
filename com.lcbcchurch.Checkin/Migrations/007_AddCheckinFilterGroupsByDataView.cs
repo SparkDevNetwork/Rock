@@ -62,7 +62,7 @@ namespace com.lcbcchurch.Checkin.Migrations
         public override void Down()
         {
             // delete workflow action entity attributes
-            RockMigrationHelper.DeleteAttribute( "0B1FF2A0-D0CE-42A5-95BC-C65F02D14399" ); // TODO: Fix these IDs
+            RockMigrationHelper.DeleteAttribute( "0B1FF2A0-D0CE-42A5-95BC-C65F02D14399" );
             RockMigrationHelper.DeleteAttribute( "869473D0-AC93-4F8F-B164-2A332571E779" );
             RockMigrationHelper.DeleteAttribute( "5EE8CC8E-455D-4115-88F4-81D224A30A28" );
 
