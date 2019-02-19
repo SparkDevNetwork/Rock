@@ -52,10 +52,11 @@ namespace com.lcbcchurch.Checkin.Migrations
 	{% endif %}
 {% endfor %}
 
-{% assign campusId = PageParameter['CampusId'] %}
-{% assign areaGuid = PageParameter['Area'] %}
+{% assign campusId = 'Global' | PageParameter:'CampusId' %}
+{% assign locationIds = 'Global' | PageParameter:'LocationIds' %}
+{% assign areaGuid = 'Global' | PageParameter:'Area' %}
 {% sql %} 
-Declare @ParentGroupTypeId int = (Select Top 1 Id From GroupType Where Guid = '{{areaGuid}}');
+{% if areaGuid != '' %} Declare @ParentGroupTypeId int = (Select Top 1 Id From GroupType Where Guid = '{{areaGuid}}');{% endif %}
 
 {% if campusId != '' %}
 Declare @CampusId int = {{campusId}}
@@ -99,7 +100,8 @@ AND GetDate() < ISNULL(A.EndDateTime,GetDate()+1)
 {% if groupTypeId %} AND G.GroupTypeId = {{groupTypeId}} {% endif %}
 {% if groupId %} AND G.Id = {{groupId}} {% endif %}
 {% if locationId %} AND AO.LocationId = {{locationId}} {% endif %}
-ORDER BY G.GroupTypeId, G.Name, P.NickName, P.LastName 
+{% if locationIds != '' %} AND AO.LocationId in ({{locationIds}}){% endif %}
+ORDER BY L.Name, G.GroupTypeId, G.Name, P.NickName, P.LastName 
 {% endsql %}
 
 <style>
@@ -109,29 +111,34 @@ table tr td, table tr th { page-break-inside: avoid; border-bottom: .5px solid b
 .tr-header th { border: none !important; color: #fff !important; background: #2E2E2E !important; }
 </style>
 
-{% assign newGroup = '' %} 
+{% assign newLocation = '' %} 
     {% for item in results %} 
-    	{% if newGroup != item.GroupName %}
-			{% if newGroup != '' %} 
-				</tbody></table> <div style=""page -break-after:always;""></div>
-            {% endif %} 
-			<table class='table table-striped'> 
+    	{% if newLocation != item.LocationName %}
+			{% if newLocation != '' %} 
+				</tbody></table> <div style='page -break-after:always;
+            '></div>
+            {% endif %}
+
+            < table class='table table-striped'> 
 				<thead> 
 					<tr class='tr-header'>
-						<th colspan='8' style='padding-left:15px'> 
-							<h3 style='color:white;'>{{item.LocationName}}</h3> 
+						<th colspan = '8' style='padding-left:15px'> 
+							<h3 style = 'color:white;' >{{item.LocationName
+    }
+}</h3> 
 						</th> 
 					</tr>
 					<tr class='tr-header'> 
-						<th>Attendee Name</th> 
+						<th>Attendee Name</th>
 						<th>Group Name</th>
 						<th>Security Code</th> 
-						<th>Pager</th> 
+						<th>Pager</th>
 					</tr> 
 				</thead> 
 			<tbody> 
-		{% endif %}
-		{% assign newGroup = item.GroupName %} 
+
+        {% endif %}
+		{% assign newLocation = item.LocationName %} 
 		<tr> 
 			<td>{{item.Name}}</td>
 			<td>{{item.GroupName}}</td> 
