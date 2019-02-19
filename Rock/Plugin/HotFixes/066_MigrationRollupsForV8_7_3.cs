@@ -10,7 +10,7 @@ namespace Rock.Plugin.HotFixes
     /// This hotfix update is to address security concerns in the file uploader and is being retroactivly applied to v7.6 and >.
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber(65,"1.8.6")]
+    [MigrationNumber(66,"1.8.6")]
     class MigrationRollupsForV8_7_3 :Migration
     {
         /// <summary>
