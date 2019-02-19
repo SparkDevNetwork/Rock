@@ -65,7 +65,7 @@ namespace com.lcbcchurch.Groups.Migrations
             RockMigrationHelper.UpdateGroup( "4890D767-15C6-465B-9D77-4A6078C59444", "15708E27-CC26-435F-B8B8-5E6CC48DDDA6", "York PRT", "", null, 0, "D78EB9A3-669A-46E0-B63E-3512A93E888A", false, false, true ); // York PRT
 
             RockMigrationHelper.UpdateGroup( "D791D411-2434-4D2B-A9AC-E621BFAEC6E5", "15708E27-CC26-435F-B8B8-5E6CC48DDDA6", "Workflows", "", null, 0, "351E56B1-5ED6-4C38-9D0E-E7EFAFD4DCA9", false, false, true ); // Workflows
-            RockMigrationHelper.UpdateGroup( "351E56B1-5ED6-4C38-9D0E-E7EFAFD4DCA9", "943708E0-170B-4935-AA3A-3DF958D8D2C8", "About You Form Entry Routing", "Group for routing the workflows found on the About You Entry. Mostly Campus Admins.", null, 0, "5579B44A-AA02-4E9B-BAB7-29E702E773BF", false, false, true ); // About You Form Entry Routing
+            RockMigrationHelper.UpdateGroup( "351E56B1-5ED6-4C38-9D0E-E7EFAFD4DCA9", "943708E0-170B-4935-AA3A-3DF958D8D2C8", "Weekend Attendance Entry Routing", "Group for routing the workflows found on the About You Entry. Mostly Campus Admins.", null, 0, "5579B44A-AA02-4E9B-BAB7-29E702E773BF", false, false, true ); // About You Form Entry Routing
             RockMigrationHelper.UpdateGroup( "351E56B1-5ED6-4C38-9D0E-E7EFAFD4DCA9", "943708E0-170B-4935-AA3A-3DF958D8D2C8", "General Contact Routing", "Group to hold people the General Contact Workflow can be assigned to. Mostly Campus Admins.", null, 0, "CDA9CAE4-0674-4CD2-A275-8104F953D5CB", false, false, true ); // General Contact Routing
 
             // Set the attributes as IsGridColumn = true
