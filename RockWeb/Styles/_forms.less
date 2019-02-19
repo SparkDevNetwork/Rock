@@ -14,20 +14,27 @@
 // -------------------------
 
 
+
 .input-xs {
   .input-size(@input-height-xs; @padding-xs-vertical; @padding-xs-horizontal; @font-size-small; @line-height-small; @input-border-radius-small);
 }
 
-input[type=number] {
+// Prevent Toggle Arrows from Displaying on number inputs
+input[type="number"] {
   -moz-appearance: textfield;
 }
 
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
   margin: 0;
+}
+
+// Prevent Text Areas from oversizing beyond 100%
+textarea {
+  resize: vertical;
 }
 
 legend {
@@ -82,6 +89,18 @@ a.aspNetDisabled {
 
   .date-range-picker .input-group {
     margin-bottom: 0;
+  }
+}
+
+.form-inline-all {
+  .form-control {
+    display: inline-block;
+    width: auto;
+    vertical-align: middle;
+  }
+
+  .form-control-static {
+    display: inline-block;
   }
 }
 
@@ -324,16 +343,11 @@ dl:not(.dl-horizontal) {
   color: @brand-danger;
 }
 
-// 5. Custom Controls
+// 6. Custom Controls
 // -------------------------
 .btn-controlaligned {
   margin-top: 24px;
 }
-
-
-// 6. Custom Controls
-// -------------------------
-
 
 // 7. Static Controls
 // -------------------------

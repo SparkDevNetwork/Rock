@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -43,15 +44,26 @@ namespace RockWeb.Blocks.Cms
     [BooleanField( "View Only", "Should people be prevented from editing their profile or family records?", false, "", 2 )]
     [BooleanField( "Show Family Members", "Whether family members are shown or not.", true, order: 3 )]
     [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The type of address to be displayed / edited.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", order: 4 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Numbers", "The types of phone numbers to display / edit.", true, true, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, order: 5 )]
-    [BooleanField( "Show Communication Preference", "Show the communication preference and allow it to be edited", true, order: 6 )]
-    [LinkedPage( "Workflow Launch Page", "Page used to launch the workflow to make a profile change request", false, order: 7 )]
-    [TextField( "Request Changes Text", "The text to use for the request changes button (only displayed if there is a 'Workflow Launch Page' configured).", false, "Request Additional Changes", "", 8 )]
-    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "GroupTypeId", Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Family Attributes", "The family attributes that should be displayed / edited.", false, true, order: 9 )]
-    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (adults)", "The person attributes that should be displayed / edited for adults.", false, true, order: 10 )]
-    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (children)", "The person attributes that should be displayed / edited for children.", false, true, order: 11 )]
+    [BooleanField( "Show Phone Numbers", "Allows hiding the phone numbers.", false, order: 5 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Types", "The types of phone numbers to display / edit.", false, true, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, order: 6 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Required Adult Phone Types", "The phone numbers that are required when editing an adult record.", false, true, order: 7 )]
+    [BooleanField( "Require Adult Email Address", "Require an email address on adult records", true, order: 8 )]
+    [BooleanField( "Show Communication Preference", "Show the communication preference and allow it to be edited", true, order: 9 )]
+    [LinkedPage( "Workflow Launch Page", "Page used to launch the workflow to make a profile change request", false, order: 10 )]
+    [TextField( "Request Changes Text", "The text to use for the request changes button (only displayed if there is a 'Workflow Launch Page' configured).", false, "Request Additional Changes", "", 11 )]
+    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "GroupTypeId", Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Family Attributes", "The family attributes that should be displayed / edited.", false, true, order: 12 )]
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (adults)", "The person attributes that should be displayed / edited for adults.", false, true, order: 13 )]
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (children)", "The person attributes that should be displayed / edited for children.", false, true, order: 14 )]
+    [BooleanField( "Show Campus Selector", "Allows selection of primary campus.", false, order: 12 )]
     public partial class PublicProfileEdit : RockBlock
     {
+        #region Fields
+
+        private List<Guid> _RequiredPhoneNumberGuids = new List<Guid>();
+        private bool _IsEditRecordAdult = false;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -88,6 +100,12 @@ namespace RockWeb.Blocks.Cms
             lbAddGroupMember.Visible = _canEdit;
 
             lbRequestChanges.Text = GetAttributeValue( "RequestChangesText" );
+
+            if (!string.IsNullOrWhiteSpace( GetAttributeValue( "RequiredAdultPhoneTypes" ) ))
+            {
+                _RequiredPhoneNumberGuids = GetAttributeValue( "RequiredAdultPhoneTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
+            }
+            rContactInfo.ItemDataBound += rContactInfo_ItemDataBound;
         }
 
         /// <summary>
@@ -356,11 +374,16 @@ namespace RockWeb.Blocks.Cms
             }
 
             // Contact Info
-            if ( person.PhoneNumbers != null )
+            bool showPhoneNumbers = GetAttributeValue( "ShowPhoneNumbers" ).AsBoolean();
+            if ( showPhoneNumbers )
             {
-                var selectedPhoneTypeGuids = GetAttributeValue( "PhoneNumbers" ).Split( ',' ).AsGuidList();
-                rptGroupMemberPhones.DataSource = person.PhoneNumbers.Where( pn => selectedPhoneTypeGuids.Contains( pn.NumberTypeValue.Guid ) ).ToList();
-                rptGroupMemberPhones.DataBind();
+                if ( person.PhoneNumbers != null )
+                {
+                    var selectedPhoneTypeGuids = GetAttributeValue( "PhoneTypes" ).Split( ',' ).AsGuidList();
+                    rptGroupMemberPhones.DataSource = person.PhoneNumbers.Where( pn => selectedPhoneTypeGuids.Contains( pn.NumberTypeValue.Guid ) ).ToList();
+                    rptGroupMemberPhones.DataBind();
+                    phPhoneDisplay.Visible = true;
+                }
             }
 
             // Person Attributes
@@ -554,68 +577,82 @@ namespace RockWeb.Blocks.Cms
 
                     person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
 
-                    var phoneNumberTypeIds = new List<int>();
-
-                    bool smsSelected = false;
-
-                    foreach ( RepeaterItem item in rContactInfo.Items )
+                    // update campus
+                    if ( cpCampus.Visible )
                     {
-                        HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
-                        PhoneNumberBox pnbPhone = item.FindControl( "pnbPhone" ) as PhoneNumberBox;
-                        CheckBox cbUnlisted = item.FindControl( "cbUnlisted" ) as CheckBox;
-                        CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
-
-                        if ( hfPhoneType != null &&
-                            pnbPhone != null &&
-                            cbSms != null &&
-                            cbUnlisted != null )
+                        var primaryFamily = person.GetFamily( rockContext );
+                        if ( primaryFamily.CampusId != cpCampus.SelectedCampusId )
                         {
-                            if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) )
-                            {
-                                int phoneNumberTypeId;
-                                if ( int.TryParse( hfPhoneType.Value, out phoneNumberTypeId ) )
-                                {
-                                    var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberTypeId );
-                                    string oldPhoneNumber = string.Empty;
-                                    if ( phoneNumber == null )
-                                    {
-                                        phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberTypeId };
-                                        person.PhoneNumbers.Add( phoneNumber );
-                                    }
-                                    else
-                                    {
-                                        oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
-                                    }
-
-                                    phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
-                                    phoneNumber.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
-
-                                    // Only allow one number to have SMS selected
-                                    if ( smsSelected )
-                                    {
-                                        phoneNumber.IsMessagingEnabled = false;
-                                    }
-                                    else
-                                    {
-                                        phoneNumber.IsMessagingEnabled = cbSms.Checked;
-                                        smsSelected = cbSms.Checked;
-                                    }
-
-                                    phoneNumber.IsUnlisted = cbUnlisted.Checked;
-                                    phoneNumberTypeIds.Add( phoneNumberTypeId );
-                                }
-                            }
+                            primaryFamily.CampusId = cpCampus.SelectedCampusId;
                         }
                     }
 
-                    // Remove any blank numbers
-                    var phoneNumberService = new PhoneNumberService( rockContext );
-                    foreach ( var phoneNumber in person.PhoneNumbers
-                        .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
-                        .ToList() )
+                    bool showPhoneNumbers = GetAttributeValue( "ShowPhoneNumbers" ).AsBoolean();
+                    if ( showPhoneNumbers )
                     {
-                        person.PhoneNumbers.Remove( phoneNumber );
-                        phoneNumberService.Delete( phoneNumber );
+                        var phoneNumberTypeIds = new List<int>();
+
+                        bool smsSelected = false;
+
+                        foreach ( RepeaterItem item in rContactInfo.Items )
+                        {
+                            HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
+                            PhoneNumberBox pnbPhone = item.FindControl( "pnbPhone" ) as PhoneNumberBox;
+                            CheckBox cbUnlisted = item.FindControl( "cbUnlisted" ) as CheckBox;
+                            CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
+
+                            if ( hfPhoneType != null &&
+                                pnbPhone != null &&
+                                cbSms != null &&
+                                cbUnlisted != null )
+                            {
+                                if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) )
+                                {
+                                    int phoneNumberTypeId;
+                                    if ( int.TryParse( hfPhoneType.Value, out phoneNumberTypeId ) )
+                                    {
+                                        var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberTypeId );
+                                        string oldPhoneNumber = string.Empty;
+                                        if ( phoneNumber == null )
+                                        {
+                                            phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberTypeId };
+                                            person.PhoneNumbers.Add( phoneNumber );
+                                        }
+                                        else
+                                        {
+                                            oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
+                                        }
+
+                                        phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
+                                        phoneNumber.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
+
+                                        // Only allow one number to have SMS selected
+                                        if ( smsSelected )
+                                        {
+                                            phoneNumber.IsMessagingEnabled = false;
+                                        }
+                                        else
+                                        {
+                                            phoneNumber.IsMessagingEnabled = cbSms.Checked;
+                                            smsSelected = cbSms.Checked;
+                                        }
+
+                                        phoneNumber.IsUnlisted = cbUnlisted.Checked;
+                                        phoneNumberTypeIds.Add( phoneNumberTypeId );
+                                    }
+                                }
+                            }
+                        }
+
+                        // Remove any blank numbers
+                        var phoneNumberService = new PhoneNumberService( rockContext );
+                        foreach ( var phoneNumber in person.PhoneNumbers
+                            .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
+                            .ToList() )
+                        {
+                            person.PhoneNumbers.Remove( phoneNumber );
+                            phoneNumberService.Delete( phoneNumber );
+                        }
                     }
 
                     person.Email = tbEmail.Text.Trim();
@@ -799,6 +836,30 @@ namespace RockWeb.Blocks.Cms
             RoleType = selectedId;
         }
 
+        /// <summary>
+        /// Handles the ItemDataBound event of the rContactInfo control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        void rContactInfo_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var pnbPhone = e.Item.FindControl( "pnbPhone" ) as PhoneNumberBox;
+            if (pnbPhone != null)
+            {
+                pnbPhone.ValidationGroup = BlockValidationGroup;
+                var phoneNumber = e.Item.DataItem as PhoneNumber;
+                if ( _IsEditRecordAdult && ( phoneNumber != null ) )
+                {
+                    pnbPhone.Required = _RequiredPhoneNumberGuids.Contains( phoneNumber.NumberTypeValue.Guid );
+                    if ( pnbPhone.Required )
+                    {
+                        pnbPhone.RequiredErrorMessage = string.Format( "{0} phone is required", phoneNumber.NumberTypeValue.Value );
+                        HtmlGenericControl phoneNumberContainer = (HtmlGenericControl)e.Item.FindControl( "divPhoneNumberContainer" );
+                        phoneNumberContainer.AddCssClass( "required" );
+                    }
+                }
+            }
+        }
         #endregion
 
         #region Methods
@@ -848,11 +909,16 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 // Contact Info
-                if ( CurrentPerson.PhoneNumbers != null )
+                bool showPhoneNumbers = GetAttributeValue( "ShowPhoneNumbers" ).AsBoolean();
+                phPhoneDisplay.Visible = showPhoneNumbers;
+                if ( showPhoneNumbers )
                 {
-                    var selectedPhoneTypeGuids = GetAttributeValue( "PhoneNumbers" ).Split( ',' ).AsGuidList();
-                    rptPhones.DataSource = CurrentPerson.PhoneNumbers.Where( pn => selectedPhoneTypeGuids.Contains( pn.NumberTypeValue.Guid ) ).ToList();
-                    rptPhones.DataBind();
+                    if ( CurrentPerson.PhoneNumbers != null )
+                    {
+                        var selectedPhoneTypeGuids = GetAttributeValue( "PhoneTypes" ).Split( ',' ).AsGuidList();
+                        rptPhones.DataSource = CurrentPerson.PhoneNumbers.Where( pn => selectedPhoneTypeGuids.Contains( pn.NumberTypeValue.Guid ) ).ToList();
+                        rptPhones.DataBind();
+                    }
                 }
 
                 lEmail.Text = CurrentPerson.Email;
@@ -1006,6 +1072,11 @@ namespace RockWeb.Blocks.Cms
                             rblGender.SelectedValue = person.Gender.ConvertToString();
                             if ( group.Members.Where( gm => gm.PersonId == person.Id && gm.GroupRole.Guid == childGuid ).Any() )
                             {
+                                _IsEditRecordAdult = false;
+                                tbEmail.Required = false;
+                                // don't display campus selector to children.
+                                cpCampus.Visible = false;
+
                                 if ( person.GraduationYear.HasValue )
                                 {
                                     ypGraduation.SelectedYear = person.GraduationYear.Value;
@@ -1036,7 +1107,18 @@ namespace RockWeb.Blocks.Cms
                             }
                             else
                             {
+                                _IsEditRecordAdult = true;
+                                bool requireEmail = GetAttributeValue( "RequireAdultEmailAddress" ).AsBoolean();
+                                tbEmail.Required = requireEmail;
                                 ddlGradePicker.Visible = false;
+                                // show/hide campus selector
+                                bool showCampus = GetAttributeValue( "ShowCampusSelector" ).AsBoolean();
+                                cpCampus.Visible = showCampus;
+                                if ( showCampus )
+                                {
+                                    cpCampus.Campuses = CampusCache.All( false );
+                                    cpCampus.SetValue( person.GetCampus() );
+                                }
                             }
                             tbEmail.Text = person.Email;
                             rblEmailPreference.SelectedValue = person.EmailPreference.ConvertToString( false );
@@ -1119,37 +1201,7 @@ namespace RockWeb.Blocks.Cms
                                 pnlAddress.Visible = false;
                             }
 
-                            var mobilePhoneType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
-
-                            var phoneNumbers = new List<PhoneNumber>();
-                            var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
-                            var selectedPhoneTypeGuids = GetAttributeValue( "PhoneNumbers" ).Split( ',' ).AsGuidList();
-                            if ( phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid ) ).Any() )
-                            {
-                                foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid ) ) )
-                                {
-                                    var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
-                                    if ( phoneNumber == null )
-                                    {
-                                        var numberType = new DefinedValue();
-                                        numberType.Id = phoneNumberType.Id;
-                                        numberType.Value = phoneNumberType.Value;
-
-                                        phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
-                                        phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;
-                                    }
-                                    else
-                                    {
-                                        // Update number format, just in case it wasn't saved correctly
-                                        phoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number );
-                                    }
-
-                                    phoneNumbers.Add( phoneNumber );
-                                }
-
-                                rContactInfo.DataSource = phoneNumbers;
-                                rContactInfo.DataBind();
-                            }
+                            BindPhoneNumbers( person );
                         }
                     }
                 }
@@ -1157,6 +1209,50 @@ namespace RockWeb.Blocks.Cms
 
             pnlView.Visible = false;
             pnlEdit.Visible = true;
+        }
+        private void BindPhoneNumbers( Person person = null )
+        {
+            if ( person == null ) person = new Person();
+
+            bool showPhoneNumbers = GetAttributeValue( "ShowPhoneNumbers" ).AsBoolean();
+            pnlPhoneNumbers.Visible = showPhoneNumbers;
+            if ( showPhoneNumbers )
+            {
+
+                var phoneNumbers = new List<PhoneNumber>();
+                var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
+                var mobilePhoneType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
+                var selectedPhoneTypeGuids = GetAttributeValue( "PhoneTypes" ).Split( ',' ).AsGuidList();
+
+                if (phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid ) ).Any())
+                {
+                    foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid) ) )
+                    {
+                        var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
+                        if ( phoneNumber == null )
+                        {
+                            var numberType = new DefinedValue();
+                            numberType.Id = phoneNumberType.Id;
+                            numberType.Value = phoneNumberType.Value;
+                            numberType.Guid = phoneNumberType.Guid;
+
+                            phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
+                            phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;
+                        }
+                        else
+                        {
+                            // Update number format, just in case it wasn't saved correctly
+                            phoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number );
+                        }
+
+                        phoneNumbers.Add( phoneNumber );
+                    }
+
+                    rContactInfo.DataSource = phoneNumbers;
+                    rContactInfo.DataBind();
+                }
+            }
+
         }
 
         /// <summary>
@@ -1207,11 +1303,17 @@ namespace RockWeb.Blocks.Cms
                 {
                     attributeGuidList = GetAttributeValue( "PersonAttributes(adults)" ).SplitDelimitedValues().AsGuidList();
                     ddlGradePicker.Visible = false;
+                    tbEmail.Required = GetAttributeValue( "RequireAdultEmailAddress" ).AsBoolean();
+                    _IsEditRecordAdult = true;
+                    BindPhoneNumbers();
                 }
                 else
                 {
                     attributeGuidList = GetAttributeValue( "PersonAttributes(children)" ).SplitDelimitedValues().AsGuidList();
                     ddlGradePicker.Visible = true;
+                    tbEmail.Required = false;
+                    _IsEditRecordAdult = false;
+                    BindPhoneNumbers();
                 }
 
                 if ( attributeGuidList.Any() )

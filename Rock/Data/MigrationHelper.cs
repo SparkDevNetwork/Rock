@@ -5660,6 +5660,62 @@ END
 
         #endregion
 
+        #region General SQL Methods
+
+        /// <summary>
+        /// Normalizes line endings of the given column so your WHERE clause
+        /// or REPLACE function works as you expect it to.
+        /// 
+        /// Call this on the search _condition column of your WHERE clause
+        /// or on the string_expression in your REPLACE call when you are using
+        /// multi line strings!
+        /// 
+        /// <para>
+        /// NOTE: It does this by first changing CRLF (13 10) to GS (29;group separator),
+        /// then changing LF to CRLF, then changing GS back to CRLF.
+        /// </para>
+        /// 
+        /// <para>
+        /// Example 1:
+        ///     "WHERE " + NormalizeColumnCRLF( "GroupViewLavaTemplate" ) + " LIKE '%...%'"
+        ///
+        /// </para>
+        /// <para>
+        /// Example 2:
+        ///    "REPLACE( " + NormalizeColumnCRLF( "GroupViewLavaTemplate" ) + ", string_pattern, string_replacement )"
+        ///
+        /// </para>
+        /// <para>
+        /// Example 3:
+        ///     var targetColumn = NormalizeColumnCRLF( "GroupViewLavaTemplate" );
+        ///     Sql( $@"
+        ///     UPDATE[GroupType] 
+        ///     SET[GroupViewLavaTemplate] = REPLACE( {targetColumn}, '{lavaTemplate}', '{newLavaTemplate}' )
+        ///     WHERE {targetColumn} NOT LIKE '%{newLavaTemplate}%'"
+        ///     );
+        ///
+        /// </para>
+        /// </summary>
+        /// <param name="column">The un-bracketed column name you want to normalize</param>
+        /// <exception cref="ArgumentNullException">Will be thrown if the given column is null.</exception>
+        public string NormalizeColumnCRLF( string column )
+        {
+            if ( column == null )
+            {
+                throw new ArgumentNullException( "You must provide an column to be normalized." );
+            }
+
+            column = column.Replace( '[', '\0' ).Replace( ']', '\0' );
+            return $@"
+	            REPLACE( 
+		            REPLACE( 
+			            REPLACE( [{column}], CHAR(13)+CHAR(10), CHAR(29) )
+		            , CHAR(10), CHAR(13)+CHAR(10) )
+	            , CHAR(29), CHAR(13)+CHAR(10) )";
+        }
+
+        #endregion
+
         #region Deprecated Methods
 
         /// <summary>

@@ -9,113 +9,142 @@
       Title="ScanningPromptPage"
       Style="{StaticResource pageBackground}"
       Loaded="Page_Loaded">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <StackPanel Margin="8"
+    <Grid  Margin="20" Background="{StaticResource PanelBackgroundBrush}">
+        <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition  Name="rowHeader"    />
+                <RowDefinition  Name="rowBody" Height="Auto"/>
+                <RowDefinition  Name="rowFooter" Height=".2*"/>
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                <StackPanel  Background="{StaticResource PanelBackgroundBrush}">
+                    <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+                        <StackPanel  Name="spBatchDetailCaption"  Background="{StaticResource PanelHeaderBrush}" HorizontalAlignment="Stretch">
+                            <Label Name="lblBatcheDetailCaption"  Content="Scan Settings" HorizontalAlignment="Left" Margin="10" Style="{StaticResource labelStyleCaption}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+                <Grid Grid.Row="0" Margin="20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Margin="8" 
                     Orientation="Horizontal"
                     VerticalAlignment="Center">
-            <ScrollViewer HorizontalScrollBarVisibility="Hidden"
+                        <ScrollViewer HorizontalScrollBarVisibility="Hidden"
                           VerticalScrollBarVisibility="Auto">
-                <StackPanel Orientation="Vertical"
+                            <StackPanel Orientation="Vertical"
                             Name="spTenderButtons"
                             Width="300"
                             HorizontalAlignment="Left">
-                    <ToggleButton Name="btnExample"
+                                <ToggleButton Name="btnExample"
                                   Style="{StaticResource toggleButtonStyle}"
                                   Content="Currency 1"
                                   Margin="0,12,0,0"
                                   Padding="0,12,0,8" />
-                    <ToggleButton Style="{StaticResource toggleButtonStyle}"
+                                <ToggleButton Style="{StaticResource toggleButtonStyle}"
                                   Content="Currency 2"
                                   Margin="0,12,0,0"
                                   Padding="0,12,0,8"
                                   IsChecked="True" />
-                    <ToggleButton Style="{StaticResource toggleButtonStyle}"
+                                <ToggleButton Style="{StaticResource toggleButtonStyle}"
                                   Content="Currency 3"
                                   Margin="0,12,0,0"
                                   Padding="0,12,0,8" />
 
-                </StackPanel>
-            </ScrollViewer>
+                            </StackPanel>
+                        </ScrollViewer>
 
-            <StackPanel Name="spSharedScanSettings"
-                        Margin="20">
-                <StackPanel Name="spRangerScanSettings">
-                    <Label Style="{StaticResource labelStyleLegend}"
-                           Content="Scan Settings"
+                        <StackPanel Name="spSharedScanSettings" 
+                        Margin="40">
+                            <StackPanel Name="spRangerScanSettings">
+                                <Label Margin="0,0,0,10" Style="{StaticResource labelStyleCaption}"
+                           Content="Scan Selection"
                            HorizontalAlignment="Left" />
 
-                    <RadioButton Name="radDoubleSided"
+                                <RadioButton Name="radDoubleSided"
+                                 Style="{StaticResource radioButtonStyle}"
                                  GroupName="grpSided"
                                  Content="Double-sided"
                                  IsChecked="True"
                                  Margin="8,0,0,0" />
-                    <RadioButton Name="radSingleSided"
+                                <RadioButton Name="radSingleSided"
                                  GroupName="grpSided"
                                  Content="Single-sided"
                                  Margin="8,0,0,0" />
 
-                    <CheckBox Name="chkDoubleDocDetection"
-                              Content="Enable Double Document Detection"
-                              Margin="8,8,0,0"
-                              IsChecked="True" />
-                    <CheckBox Name="chkEnableSmartScan"
-                              Content="Enable Smart Scan"
-                              Margin="8,8,0,0"
-                              IsChecked="True" />
-                </StackPanel>
-                <StackPanel Name="spMagTekScanSettings">
-                    <Label Style="{StaticResource labelStyleLegend}"
+                            </StackPanel>
+                            <StackPanel Name="spMagTekScanSettings" Margin="5">
+                                <Label Style="{StaticResource labelStyleCaption}"
                            Content="Scan Settings"
                            HorizontalAlignment="Left" />
 
-                    <CheckBox Name="chkPromptToScanRearImage"
+                                <CheckBox Name="chkPromptToScanRearImage"
                               Content="Prompt to scan the back side."
                               Margin="8"
                               IsChecked="False" />
-                </StackPanel>
+                            </StackPanel>
 
-                <Label Name="lblTransactionSourceType"
-                       Style="{StaticResource labelStyle}"
-                       Margin="6,4,0,0">Transaction Source Type</Label>
-                <ComboBox Name="cboTransactionSourceType"
-                          Margin="8,2,0,0"
-                          Style="{StaticResource textboxStyle}" />
+                            <Label Name="lblTransactionSourceType"
+                       Style="{StaticResource labelStyleCaption}"
+                       Margin="6,20,0,0">Transaction Source</Label>
+                            <ComboBox Name="cboTransactionSourceType"
+                             Style="{DynamicResource ComboBoxCustomStyle}"
+                                      Background="White"
+                          Margin="8,2,0,0"/>
+                            <StackPanel Name="spRangerOptions" Margin="0,25,0,0">
+                                <Label Name="lblOptionsCaption"
+                       Style="{StaticResource labelStyleCaption}"
+                       Margin="6,20,0,0">Options</Label>
+                                <CheckBox Name="chkDoubleDocDetection"
+                              Content="Enable Double Document Detection"
+                              Margin="8,8,0,0"
+                              IsChecked="True" />
+                                <CheckBox Name="chkEnableSmartScan"
+                              Content="Enable Smart Scan"
+                              Margin="8,8,0,0"
+                              IsChecked="True" />
+                            </StackPanel>
+                        </StackPanel>
+
+                    </StackPanel>
+                </Grid>
             </StackPanel>
-        </StackPanel>
-
-        <Grid VerticalAlignment="Bottom"
+            <StackPanel Name="spFooter" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" >
+                <Grid VerticalAlignment="Bottom"
               Grid.Row="1"
               Grid.ColumnSpan="2">
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <Label Name="lblScannerDriverError"
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Label Name="lblScannerDriverError"
                    Style="{StaticResource labelStyleAlertError}"
                    Content="ERROR: Scanner Driver not available"
                    Grid.Row="0"
                    Grid.Column="0"
                    Grid.ColumnSpan="2">
-            </Label>
-            <Button Grid.Row="1"
+                    </Label>
+                    <Button Grid.Row="1"
                     Margin="8"
                     x:Name="btnBack"
-                    Style="{StaticResource buttonStyle}"
+                    Style="{StaticResource buttonStyleSecondary}"
                     Content="Back"
                     IsCancel="True"
                     HorizontalAlignment="Left"
                     Click="btnBack_Click" />
-            <Button Grid.Row="1"
+                    <Button Grid.Row="1"
                     Margin="8"
                     x:Name="btnNext"
                     Style="{StaticResource buttonStylePrimary}"
                     Content="Scan"
                     HorizontalAlignment="Right"
                     Click="btnNext_Click" />
+                </Grid>
+            </StackPanel>
         </Grid>
+        </Border>
     </Grid>
 </Page>
