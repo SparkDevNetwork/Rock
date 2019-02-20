@@ -68,7 +68,7 @@
         </Rock:RockControlWrapper>
         <Rock:HtmlGenericContainer ID="pnlAdultFields" runat="server">
             <h4> Adult Attributes</h4>
-            <Rock:AttributeValuesContainer ID="avcAdultAttributes" runat="server" ShowCategoryLabel="true" />
+            <Rock:AttributeValuesContainer ID="avcAdultAttributes" runat="server" ShowCategoryLabel="false" />
         </Rock:HtmlGenericContainer>
         <Rock:HtmlGenericContainer ID="pnlChildFields" runat="server">
             <h4> Child Attributes</h4>
