@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using Rock.Model;
 
 namespace Rock.Utility
 {
@@ -51,6 +52,75 @@ namespace Rock.Utility
         public static bool IsSecureConnection( HttpContext context )
         {
             return String.Equals( context.Request.ServerVariables["HTTP_X_FORWARDED_PROTO"], "https", StringComparison.OrdinalIgnoreCase ) || context.Request.IsSecureConnection;
+        }
+
+        /// <summary>
+        /// Gets the client ip address.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        public static string GetClientIpAddress( HttpRequestBase request )
+        {
+            string ipAddress = request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+
+            if (String.IsNullOrWhiteSpace( ipAddress ))
+            {
+                ipAddress = request.ServerVariables["REMOTE_ADDR"];
+            }
+
+            if (string.IsNullOrWhiteSpace( ipAddress ))
+            {
+                ipAddress = request.UserHostAddress;
+            }
+
+            if (string.IsNullOrWhiteSpace( ipAddress ) || ipAddress.Trim() == "::1")
+            {
+                ipAddress = string.Empty;
+            }
+
+            if (string.IsNullOrWhiteSpace( ipAddress ))
+            {
+                string stringHostName = System.Net.Dns.GetHostName();
+                if (!string.IsNullOrWhiteSpace( stringHostName ))
+                {
+                    try
+                    {
+                        var ipHostEntries = System.Net.Dns.GetHostEntry( stringHostName );
+                        if (ipHostEntries != null)
+                        {
+                            try
+                            {
+                                var arrIpAddress = ipHostEntries.AddressList.FirstOrDefault( i => !i.IsIPv6LinkLocal );
+                                if (arrIpAddress != null)
+                                {
+                                    ipAddress = arrIpAddress.ToString();
+                                }
+                            }
+                            catch
+                            {
+                                try
+                                {
+                                    var arrIpAddress = System.Net.Dns.GetHostAddresses( stringHostName ).FirstOrDefault( i => !i.IsIPv6LinkLocal );
+                                    if (arrIpAddress != null)
+                                    {
+                                        ipAddress = arrIpAddress.ToString();
+                                    }
+                                }
+                                catch
+                                {
+                                    ipAddress = "127.0.0.1";
+                                }
+                            }
+                        }
+                    }
+                    catch (System.Net.Sockets.SocketException ex)
+                    {
+                        ExceptionLogService.LogException( ex );
+                    }
+                }
+            }
+
+            return ipAddress;
         }
     }
 }

@@ -388,12 +388,19 @@
     <Compile Include="Field\FieldVisibilityRules.cs" />
     <Compile Include="Field\Types\AssetFieldType.cs" />
     <Compile Include="Field\Types\AssetStorageProviderFieldType.cs" />
+    <Compile Include="Jobs\PostV90DataMigrationsForDISC.cs" />
+    <Compile Include="Financial\IWebhookGatewayComponent.cs" />
     <Compile Include="Lava\Shortcodes\ScheduledContent.cs" />
+    <Compile Include="Financial\AutomatedPaymentProcessor.cs" />
+    <Compile Include="Financial\AutomatedPaymentArgs.cs" />
+    <Compile Include="Financial\IAutomatedGatewayComponent.cs" />
+    <Compile Include="Financial\IThreeStepGatewayComponent.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationResponseService.cs" />
     <Compile Include="Model\CodeGenerated\NoteAttachmentService.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationTemplateFeeItemService.cs" />
     <Compile Include="Model\CommunicationResponse.cs" />
     <Compile Include="Model\CommunicationResponseService.partial.cs" />
+    <Compile Include="Model\GroupLocationHistoricalService.Partial.cs" />
     <Compile Include="Model\NoteAttachment.cs" />
     <Compile Include="Model\RegistrationTemplateFeeItem.cs" />
     <Compile Include="Model\SpiritualGiftsService.cs" />
@@ -410,6 +417,7 @@
     <Compile Include="CheckIn\CheckInEditFamilyBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="CheckIn\CheckInMessage.cs" />
     <Compile Include="CheckIn\CheckInSearchBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -433,6 +441,10 @@
     <Compile Include="Plugin\HotFixes\058_CheckinRegistration.cs" />
     <Compile Include="Plugin\HotFixes\062_MigrationRollupsForV8_7.cs" />
     <Compile Include="Plugin\HotFixes\061_MigrationRollupsForV8_6_2.cs" />
+    <Compile Include="Plugin\HotFixes\063_WhitelistBlacklist.cs" />
+    <Compile Include="Plugin\HotFixes\065_ThresholdValue.cs" />
+    <Compile Include="Plugin\HotFixes\064_MigrationRollupsForV8_7_2.cs" />
+    <Compile Include="Plugin\HotFixes\066_MigrationRollupsForV8_7_3.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -466,6 +478,7 @@
     <Compile Include="Utility\EntityCoding\QueuedEntity.cs" />
     <Compile Include="Utility\EntityCoding\Reference.cs" />
     <Compile Include="Utility\EntityCoding\WorkflowTypeExporter.cs" />
+    <Compile Include="Utility\ExtensionMethods\DictionaryExtensions.cs" />
     <Compile Include="Utility\RockObsolete.cs" />
     <Compile Include="SystemGuid\SystemSetting.cs" />
     <Compile Include="SystemKey\GroupTypeAttributeKey.cs" />
@@ -915,8 +928,6 @@
     <Compile Include="Model\CodeGenerated\MetaFirstNameGenderLookupService.cs" />
     <Compile Include="Model\CodeGenerated\MetaLastNameLookupService.cs" />
     <Compile Include="Model\CodeGenerated\MetaNickNameLookupService.cs" />
-    <Compile Include="Model\CodeGenerated\MetaPersonicxLifestageClusterService.cs" />
-    <Compile Include="Model\CodeGenerated\MetaPersonicxLifestageGroupService.cs" />
     <Compile Include="Model\CodeGenerated\NcoaHistoryService.cs" />
     <Compile Include="Model\CodeGenerated\NoteWatchService.cs" />
     <Compile Include="Model\CodeGenerated\PersonalDeviceService.cs" />
@@ -947,8 +958,6 @@
     <Compile Include="Model\MetaFirstNameGenderLookup.cs" />
     <Compile Include="Model\MetaLastNameLookup.cs" />
     <Compile Include="Model\MetaNickNameLookup.cs" />
-    <Compile Include="Model\MetaPersonicxLifestageCluster.cs" />
-    <Compile Include="Model\MetaPersonicxLifestageGroup.cs" />
     <Compile Include="Model\MetricService.Partial.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
     <Compile Include="Model\AttendanceService.Partial.cs" />
@@ -1681,6 +1690,7 @@
     <Compile Include="Web\UI\Adapters\ListControlAdaptor.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Controls\AttributeValuesContainer.cs" />
+    <Compile Include="Web\UI\Controls\CampusAccountAmountPicker.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityWrapper.cs" />
     <Compile Include="Web\UI\Controls\Captcha.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />
@@ -2164,6 +2174,7 @@
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestConnector.cs" />
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestStatus.cs" />
     <Compile Include="Workflow\Action\Connections\TransferConnectionRequest.cs" />
+    <Compile Include="Workflow\Action\Finance\ProcessPayment.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestAdd.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestAddDocument.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestSetAttribute.cs" />
@@ -2381,6 +2392,7 @@
   <ItemGroup>
     <Folder Include="Auth\" />
     <Folder Include="Pbx\Provider\" />
+    <Folder Include="Web\UI\Controls\Finance\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

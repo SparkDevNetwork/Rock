@@ -124,46 +124,46 @@ namespace Rock.Web.UI.Controls
 
             pnlContainer.Controls.Add( _nbNoFieldsAvailable );
 
-            Panel pnlRulesHeaderRow = new Panel { CssClass = "filtervisibilityrules-rulesheader row" };
+            Panel pnlRulesHeaderRow = new Panel { CssClass = "filtervisibilityrules-rulesheader margin-b-sm clearfix" };
             pnlContainer.Controls.Add( pnlRulesHeaderRow );
             Panel pnlRulesList = new Panel { CssClass = "filtervisibilityrules-ruleslist " };
             pnlContainer.Controls.Add( pnlRulesList );
 
             // Filter Type controls
-            _pnlFilterType = new Panel { CssClass = "filtervisibilityrules-type col-md-10" };
+            _pnlFilterType = new Panel { CssClass = "filtervisibilityrules-type form-inline form-inline-all pull-left" };
             pnlRulesHeaderRow.Controls.Add( _pnlFilterType );
 
             _ddlFilterShowHide = new RockDropDownList();
-            _ddlFilterShowHide.CssClass = "input-width-sm pull-left";
+            _ddlFilterShowHide.CssClass = "input-width-sm margin-r-sm";
             _ddlFilterShowHide.ID = this.ID + "_ddlFilterShowHide";
             _ddlFilterShowHide.Items.Add( new ListItem( "Show", "Show" ) );
             _ddlFilterShowHide.Items.Add( new ListItem( "Hide", "Hide" ) );
             _pnlFilterType.Controls.Add( _ddlFilterShowHide );
 
-            Panel pnlFieldNameIf = new Panel { CssClass = "pull-left margin-all-sm" };
+            Panel pnlFieldNameIf = new Panel { CssClass = "form-control-static" };
             _pnlFilterType.Controls.Add( pnlFieldNameIf );
             _lblFieldName = new Label { CssClass = "filtervisibilityrules-fieldname" };
             pnlFieldNameIf.Controls.Add( _lblFieldName );
-            _lblIfSpan = new Label { Text = "if", CssClass = "filtervisibilityrules-if margin-l-sm" };
+            _lblIfSpan = new Label { Text = " if", CssClass = "filtervisibilityrules-if" };
             pnlFieldNameIf.Controls.Add( _lblIfSpan );
 
             _ddlFilterAllAny = new RockDropDownList();
-            _ddlFilterAllAny.CssClass = "input-width-sm pull-left";
+            _ddlFilterAllAny.CssClass = "input-width-sm margin-h-sm";
             _ddlFilterAllAny.ID = this.ID + "_ddlFilterAllAny";
             _ddlFilterAllAny.Items.Add( new ListItem( "All", "All" ) );
             _ddlFilterAllAny.Items.Add( new ListItem( "Any", "Any" ) );
             _pnlFilterType.Controls.Add( _ddlFilterAllAny );
 
-            _lblOfTheFollowingMatchSpan = new Label { Text = "of the following match:", CssClass = "pull-left margin-all-sm" };
+            _lblOfTheFollowingMatchSpan = new Label { Text = "of the following match:", CssClass = "form-control-static" };
             _pnlFilterType.Controls.Add( _lblOfTheFollowingMatchSpan );
 
             // Filter Actions
-            _pnlFilterActions = new Panel { CssClass = "filter-actions col-md-2" };
+            _pnlFilterActions = new Panel { CssClass = "filter-actions pull-right" };
             pnlRulesHeaderRow.Controls.Add( _pnlFilterActions );
 
             _btnAddFilterFieldCriteria = new LinkButton();
             _btnAddFilterFieldCriteria.ID = this.ID + "_btnAddFilterFieldCriteria";
-            _btnAddFilterFieldCriteria.CssClass = "btn btn-xs btn-action add-action pull-right margin-all-sm";
+            _btnAddFilterFieldCriteria.CssClass = "btn btn-xs btn-action add-action pull-right margin-l-sm";
             _btnAddFilterFieldCriteria.Text = "<i class='fa fa-filter'></i> Add Criteria";
             _btnAddFilterFieldCriteria.Click += _btnAddFilterFieldCriteria_Click;
             _pnlFilterActions.Controls.Add( _btnAddFilterFieldCriteria );
@@ -190,7 +190,12 @@ namespace Rock.Web.UI.Controls
         public override void RenderControl( HtmlTextWriter writer )
         {
             // show a warning if there aren't any fields to choose from
-            _nbNoFieldsAvailable.Visible = !GetSupportedComparableAttributes().Any();
+            // NOTE: The Grid isn't supposed to show the filter button if there are less than 2 attributes,
+            // but there is also the possibility that there is more than one attribute, but less than 2 "filterable" attributes.
+            // In that case, we'll show the warning but hide the _btnAddFilterFieldCriteria.
+            bool hasSupportedComparableAttributes = GetSupportedComparableAttributes().Any();
+            _nbNoFieldsAvailable.Visible = !hasSupportedComparableAttributes;
+            _btnAddFilterFieldCriteria.Visible = hasSupportedComparableAttributes;
 
             ScriptManager.RegisterClientScriptInclude( this, this.GetType(), "reporting-include", this.RockBlock().RockPage.ResolveRockUrl( "~/Scripts/Rock/reportingInclude.js", true ) );
             base.RenderControl( writer );
@@ -377,29 +382,31 @@ namespace Rock.Web.UI.Controls
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void AddFilterRuleControl( FieldVisibilityRule fieldVisibilityRule, bool setValues )
         {
-            _phFilterFieldRuleControls.Controls.Add( new Literal { Text = "<hr>" } );
-
             RockControlWrapper rockControlWrapper = new RockControlWrapper
             {
                 ID = $"_rockControlWrapper_{fieldVisibilityRule.Guid.ToString( "N" )}",
-                Help = "Pick a field to use a filter condition. Note that some fields might not be listed if they don't support filtering or if they don't support change notifications."
+                // Help = "Pick a field to use a filter condition. Note that some fields might not be listed if they don't support filtering or if they don't support change notifications.",
+                CssClass = "controls-row form-control-group"
             };
 
             _phFilterFieldRuleControls.Controls.Add( rockControlWrapper );
 
-            Panel pnlFilterRuleRow = new Panel { CssClass = "filter-rule row" };
+            Panel pnlFilterRuleRow = new Panel { CssClass = "filter-rule row form-row" };
             rockControlWrapper.Controls.Add( pnlFilterRuleRow );
 
-            Panel pnlFilterRuleCol1 = new Panel { CssClass = "col-md-10" };
-            Panel pnlFilterRuleCol2 = new Panel { CssClass = "col-md-2" };
+            Panel pnlFilterRuleCol1 = new Panel { CssClass = "col-xs-10 col-sm-11" };
+            Panel pnlFilterRuleCol2 = new Panel { CssClass = "col-xs-2 col-sm-1" };
             pnlFilterRuleRow.Controls.Add( pnlFilterRuleCol1 );
             pnlFilterRuleRow.Controls.Add( pnlFilterRuleCol2 );
 
-            Panel pnlFilterRuleCompareField = new Panel { CssClass = "pull-left margin-r-md filter-rule-comparefield" };
-            Panel pnlFilterRuleFieldFilter = new Panel { CssClass = "filter-rule-fieldfilter" };
+            Panel pnlFilterRuleCol1Row = new Panel { CssClass = "row form-row" };
+            pnlFilterRuleCol1.Controls.Add( pnlFilterRuleCol1Row );
 
-            pnlFilterRuleCol1.Controls.Add( pnlFilterRuleCompareField );
-            pnlFilterRuleCol1.Controls.Add( pnlFilterRuleFieldFilter );
+            Panel pnlFilterRuleCompareField = new Panel { CssClass = "filter-rule-comparefield col-md-4" };
+            Panel pnlFilterRuleFieldFilter = new Panel { CssClass = "filter-rule-fieldfilter col-md-8" };
+
+            pnlFilterRuleCol1Row.Controls.Add( pnlFilterRuleCompareField );
+            pnlFilterRuleCol1Row.Controls.Add( pnlFilterRuleFieldFilter );
 
             HiddenFieldWithClass hiddenFieldRuleGuid = new HiddenFieldWithClass
             {
@@ -409,12 +416,12 @@ namespace Rock.Web.UI.Controls
 
             hiddenFieldRuleGuid.Value = fieldVisibilityRule.Guid.ToString();
 
-            rockControlWrapper.Controls.Add( hiddenFieldRuleGuid );
+            pnlFilterRuleRow.Controls.Add( hiddenFieldRuleGuid );
 
             LinkButton btnDeleteRule = new LinkButton
             {
                 ID = $"_btnDeleteRule_{fieldVisibilityRule.Guid.ToString( "N" )}",
-                CssClass = "btn btn-danger btn-sm pull-right",
+                CssClass = "btn btn-danger btn-square",
                 Text = "<i class='fa fa-times'></i>"
             };
 
@@ -424,7 +431,7 @@ namespace Rock.Web.UI.Controls
             RockDropDownList ddlCompareField = new RockDropDownList()
             {
                 ID = $"_ddlCompareField_{fieldVisibilityRule.Guid.ToString( "N" )}",
-                CssClass = "input-width-xl",
+                // CssClass = "input-width-xl",
                 Required = false,
                 ValidationGroup = this.ValidationGroup
             };
@@ -540,7 +547,7 @@ namespace Rock.Web.UI.Controls
             {
                 var fieldType = FieldTypeCache.Get( selectedAttribute.FieldTypeId );
                 var qualifiers = selectedAttribute.AttributeQualifiers.ToDictionary( k => k.Key, v => new ConfigurationValue( v.Value ) );
-                rockControlWrapper.Label = selectedAttribute.Name;
+                // rockControlWrapper.Label = selectedAttribute.Name;
                 var filterControl = fieldType.Field.FilterControl( qualifiers, $"_filterControl_{fieldVisibilityRule.Guid.ToString( "N" )}", true, Rock.Reporting.FilterMode.AdvancedFilter );
                 if ( filterControl != null )
                 {
@@ -555,10 +562,10 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
-            else
-            {
-                rockControlWrapper.Label = "New Rule";
-            }
+            // else
+            // {
+            //     rockControlWrapper.Label = "New Rule";
+            // }
         }
 
         #endregion Methods

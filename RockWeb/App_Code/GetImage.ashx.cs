@@ -63,7 +63,7 @@ namespace RockWeb
                 }
                 else
                 {
-                    ExceptionLogService.LogException( ex, context );
+                    throw ex;
                 }
             }
         }
@@ -72,56 +72,114 @@ namespace RockWeb
         /// Processes the content file request.
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <exception cref="System.Exception">fileName must be specified</exception>
         private void ProcessContentFileRequest( HttpContext context )
         {
-            string relativeFilePath = context.Request.QueryString["fileName"];
-            string rootFolderParam = context.Request.QueryString["rootFolder"];
 
-            if ( string.IsNullOrWhiteSpace( relativeFilePath ) )
+            // Don't trust query strings
+            string untrustedFilePath = context.Request.QueryString["fileName"];
+            string encryptedRootFolder = context.Request.QueryString["rootFolder"];
+
+            // Make sure a filename was provided
+            if ( string.IsNullOrWhiteSpace( untrustedFilePath ) )
             {
-                throw new Exception( "fileName must be specified" );
+                SendBadRequest( context, "fileName must be specified" );
+                return;
             }
 
-            string rootFolder = string.Empty;
+            // Count of query parameters used. Start at 2 since "isBinaryFile" and "fileName" are required to get here.
+            var queryCount = 2;
 
-            if ( !string.IsNullOrWhiteSpace( rootFolderParam ) )
+            string trustedRootFolder = string.Empty;
+
+            // If a rootFolder was specified in the URL
+            if ( !string.IsNullOrWhiteSpace( encryptedRootFolder ) )
             {
-                // if a rootFolder was specified in the URL, decrypt it (it is encrypted to help prevent direct access to filesystem)
-                rootFolder = Rock.Security.Encryption.DecryptString( rootFolderParam );
+                // Bump query count
+                queryCount++;
+
+                // Decrypt it (It is encrypted to help prevent direct access to filesystem).
+                trustedRootFolder = Encryption.DecryptString( encryptedRootFolder );
             }
 
-            if ( string.IsNullOrWhiteSpace( rootFolder ) )
+            // If we don't have a rootFolder, default to the ~/Content folder.
+            if ( string.IsNullOrWhiteSpace( trustedRootFolder ) )
             {
-                // set to default rootFolder if not specified in the params
-                rootFolder = "~/Content";
+                trustedRootFolder = "~/Content";
             }
 
-            string physicalRootFolder = context.Request.MapPath( rootFolder );
-            string physicalContentFileName = Path.Combine( physicalRootFolder, relativeFilePath.TrimStart( new char[] { '/', '\\' } ) );
-            using ( Stream fileContents = File.OpenRead( physicalContentFileName ) )
+            // Get the absolute path for our trusted root.
+            string trustedPhysicalRootFolder = Path.GetFullPath( context.Request.MapPath( trustedRootFolder ) );
+
+            // Treat rooted file paths as relative
+            string untrustedRelativeFilePath = untrustedFilePath.TrimStart( Path.GetPathRoot( untrustedFilePath ).ToCharArray() );
+
+            // Get the absolute path for our untrusted file.
+            string untrustedPhysicalFilePath = Path.GetFullPath( Path.Combine( trustedPhysicalRootFolder, untrustedRelativeFilePath ) );
+
+            // Make sure the untrusted file is inside our trusted root folder.
+            string trustedPhysicalFilePath = string.Empty;
+            if ( untrustedPhysicalFilePath.StartsWith( trustedPhysicalRootFolder ) )
             {
-                if ( fileContents != null )
+                // If so, then we can trust it.
+                trustedPhysicalFilePath = untrustedPhysicalFilePath;
+            }
+            else
+            {
+                // Otherwise, say the file doesn't exist.
+                SendNotFound( context );
+                return;
+            }
+
+            // Try to open a file stream
+            try
+            {
+                using ( Stream fileContents = File.OpenRead( trustedPhysicalFilePath ) )
                 {
-                    string mimeType = System.Web.MimeMapping.GetMimeMapping( physicalContentFileName );
-                    context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", Path.GetFileName( physicalContentFileName ) ) );
-                    context.Response.ContentType = mimeType;
-                    
-                    // If more than 1 query string param is passed in and it isn't an SVG file, do a Resize, assume resize is needed
-                    if ( (context.Request.QueryString.Count > 1) && ( mimeType != "image/svg+xml" ))
+                    if ( fileContents != null )
                     {
-                        using ( var resizedStream = GetResized( context.Request.QueryString, fileContents ) )
+                        string mimeType = MimeMapping.GetMimeMapping( trustedPhysicalFilePath );
+                        context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", Path.GetFileName( trustedPhysicalFilePath ) ) );
+                        context.Response.ContentType = mimeType;
+
+                        // If extra query string params are passed in and it isn't an SVG file, assume resize is needed
+                        if ( ( context.Request.QueryString.Count > queryCount ) && ( mimeType != "image/svg+xml" ) )
                         {
-                            resizedStream.CopyTo( context.Response.OutputStream );
+                            using ( var resizedStream = GetResized( context.Request.QueryString, fileContents ) )
+                            {
+                                resizedStream.CopyTo( context.Response.OutputStream );
+                            }
                         }
+                        else
+                        {
+                            fileContents.CopyTo( context.Response.OutputStream );
+                        }
+
+                        context.Response.Flush();
+                        context.ApplicationInstance.CompleteRequest();
                     }
                     else
                     {
-                        fileContents.CopyTo( context.Response.OutputStream );
+                        SendNotFound( context );
                     }
-                    
-                    context.Response.Flush();
-                    context.ApplicationInstance.CompleteRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                if ( ex is ArgumentException || ex is ArgumentNullException || ex is NotSupportedException )
+                {
+                    SendBadRequest( context, "fileName is invalid.");
+                }
+                else if( ex is DirectoryNotFoundException || ex is FileNotFoundException )
+                {
+                    SendNotFound( context );
+                }
+                else if ( ex is UnauthorizedAccessException )
+                {
+                    SendNotAuthorized( context );
+                }
+                else
+                {
+                    throw ex;
                 }
             }
         }
@@ -135,9 +193,10 @@ namespace RockWeb
             int fileId = context.Request.QueryString["id"].AsInteger();
             Guid fileGuid = context.Request.QueryString["guid"].AsGuid();
 
-            if ( fileId == 0 && fileGuid.Equals( Guid.Empty ) )
+            if ( fileId == 0 && fileGuid == Guid.Empty )
             {
-                SendNotFound( context );
+                SendBadRequest( context, "File id key must be a guid or an int." );
+                return;
             }
 
             var rockContext = new RockContext();
@@ -156,6 +215,7 @@ namespace RockWeb
             //// a null ModifiedDateTime shouldn't happen, but just in case, set it to DateTime.MaxValue so we error on the side of not getting it from the cache
             var binaryFileMetaData = binaryFileQuery.Select( a => new
             {
+                a.Id,
                 BinaryFileType_AllowCaching = a.BinaryFileType.AllowCaching,
                 BinaryFileType_RequiresViewSecurity = a.BinaryFileType.RequiresViewSecurity,
                 ModifiedDateTime = a.ModifiedDateTime ?? DateTime.MaxValue,
@@ -175,7 +235,7 @@ namespace RockWeb
             {
                 var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
                 Person currentPerson = currentUser != null ? currentUser.Person : null;
-                BinaryFile binaryFileAuth = new BinaryFileService( rockContext ).Queryable( "BinaryFileType" ).First( a => a.Guid == fileGuid || a.Id == fileId );
+                BinaryFile binaryFileAuth = new BinaryFileService( rockContext ).Queryable( "BinaryFileType" ).First( a => a.Id == binaryFileMetaData.Id );
                 if ( !binaryFileAuth.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
                     SendNotAuthorized( context );
@@ -183,7 +243,7 @@ namespace RockWeb
                 }
             }
 
-            
+
             Stream fileContent = null;
             try
             {
@@ -206,7 +266,7 @@ namespace RockWeb
                 if ( fileContent == null )
                 {
                     // If we didn't get it from the cache, get it from the binaryFileService
-                    BinaryFile binaryFile = GetFromBinaryFileService( context, fileId, fileGuid );
+                    BinaryFile binaryFile = GetFromBinaryFileService( context, binaryFileMetaData.Id );
 
                     if ( binaryFile != null )
                     {
@@ -298,7 +358,7 @@ namespace RockWeb
             }
             finally
             {
-                if (fileContent != null)
+                if ( fileContent != null )
                 {
                     fileContent.Dispose();
                 }
@@ -347,7 +407,7 @@ namespace RockWeb
         /// <param name="fileId">The file identifier.</param>
         /// <param name="fileGuid">The file unique identifier.</param>
         /// <returns></returns>
-        private BinaryFile GetFromBinaryFileService( HttpContext context, int fileId, Guid fileGuid )
+        private BinaryFile GetFromBinaryFileService( HttpContext context, int fileId )
         {
             BinaryFile binaryFile = null;
             System.Threading.ManualResetEvent completedEvent = new ManualResetEvent( false );
@@ -363,16 +423,7 @@ namespace RockWeb
                 completedEvent.Set();
             };
 
-            IAsyncResult beginGetResult;
-
-            if ( fileGuid != Guid.Empty )
-            {
-                beginGetResult = new BinaryFileService( rockContext ).BeginGet( cb, context, fileGuid );
-            }
-            else
-            {
-                beginGetResult = new BinaryFileService( rockContext ).BeginGet( cb, context, fileId );
-            }
+            IAsyncResult beginGetResult = new BinaryFileService( rockContext ).BeginGet( cb, context, fileId );
 
             // wait up to 5 minutes for the response
             completedEvent.WaitOne( 300000 );
@@ -391,16 +442,17 @@ namespace RockWeb
             {
                 ResizeSettings settings = new ResizeSettings( queryString );
 
-                if ( settings["mode"] == null || settings["mode"] == "clip") 
+                if ( settings["mode"] == null || settings["mode"] == "clip" )
                 {
                     settings.Add( "mode", "max" );
-                    
-                    if ( !string.IsNullOrEmpty(settings["width"]) && !string.IsNullOrEmpty(settings["height"])) {
-                        if ( settings["width"].AsInteger() > settings["height"].AsInteger() ) 
+
+                    if ( !string.IsNullOrEmpty( settings["width"] ) && !string.IsNullOrEmpty( settings["height"] ) )
+                    {
+                        if ( settings["width"].AsInteger() > settings["height"].AsInteger() )
                         {
                             settings.Remove( "height" );
-                        } 
-                        else 
+                        }
+                        else
                         {
                             settings.Remove( "width" );
                         }
@@ -497,6 +549,17 @@ namespace RockWeb
         }
 
         /// <summary>
+        /// Sends a 400 (bad request)
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void SendBadRequest( HttpContext context, string message )
+        {
+            context.Response.StatusCode = System.Net.HttpStatusCode.BadRequest.ConvertToInt();
+            context.Response.StatusDescription = message;
+            context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
         /// Gets a value indicating whether another request can use the <see cref="T:System.Web.IHttpHandler" /> instance.
         /// </summary>
         /// <returns>true if the <see cref="T:System.Web.IHttpHandler" /> instance is reusable; otherwise, false.</returns>
@@ -504,7 +567,7 @@ namespace RockWeb
         {
             get
             {
-                return false;
+                return true;
             }
         }
     }

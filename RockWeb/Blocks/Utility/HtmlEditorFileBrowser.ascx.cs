@@ -62,6 +62,17 @@ namespace RockWeb.Blocks.Utility
             }
         }
 
+        private List<string> HiddenFolders
+        {
+            get
+            {
+                return new List<string>()
+                {
+                    "Content\\ASM_Thumbnails"
+                };
+            }
+        }
+
         private List<string> UploadRestrictedFolders
         {
             get
@@ -210,7 +221,7 @@ namespace RockWeb.Blocks.Utility
                 }
             }
 
-            if ( Directory.Exists( physicalRootFolder ) )
+            if ( Directory.Exists( physicalRootFolder ) && !HiddenFolders.Any( a => physicalRootFolder.IndexOf( a, StringComparison.OrdinalIgnoreCase )  > 0) )
             {
                 var sb = new StringBuilder();
                 sb.AppendLine( "<ul id=\"treeview\">" );
@@ -342,7 +353,10 @@ namespace RockWeb.Blocks.Utility
 
                     foreach ( var subDirectoryPath in subDirectoryList )
                     {
-                        sb.Append( DirectoryNode( subDirectoryPath, physicalRootFolder ) );
+                        if ( !HiddenFolders.Any( a => subDirectoryPath.IndexOf( a, StringComparison.OrdinalIgnoreCase ) > 0 ) )
+                        {
+                            sb.Append( DirectoryNode( subDirectoryPath, physicalRootFolder ) );
+                        }
                     }
 
                     sb.AppendLine( "</ul>" );
