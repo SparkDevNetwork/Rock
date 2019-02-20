@@ -71,6 +71,9 @@ namespace Rock.Rest.Controllers
                 {
                     value.Categories.Add( cat );
                 }
+
+                // Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime just in case Categories changed
+                value.ModifiedDateTime = RockDateTime.Now;
             }
 
             var result = base.Post( value );

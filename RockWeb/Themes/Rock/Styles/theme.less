@@ -61,10 +61,16 @@ textarea,
   background-clip: padding-box;
   -webkit-box-shadow: none;
   box-shadow: none;
+}
 
+.picker-label,
+input[type="text"],
+textarea,
+.form-control {
   &:focus {
     border: 1px solid @input-border-focus;
     box-shadow: @input-focus-box-shadow;
+    outline: none;
   }
 }
 
@@ -136,7 +142,7 @@ textarea,
         right: 24px;
         bottom: 0;
         left: 24px;
-        height:0;
+        height: 0;
         content: " ";
         opacity: 0;
         transition: height 300ms ease-in-out, opacity 300ms ease-in-out;
@@ -353,6 +359,12 @@ textarea,
   border-radius: 50%;
 }
 
+.grid-select-cell .status-list .badge {
+  width: (@line-height-computed - 4px);
+  height: (@line-height-computed - 4px);
+  border-radius: 50%;
+}
+
 /*#endregion */
 
 /*#region
@@ -511,6 +523,11 @@ td.grid-actions {
 /*#region
 // 4. Theme Styling          */
 // -------------------------
+
+body.nav-open {
+  overflow: hidden;
+}
+
 .page-wrapper {
 
   @media (min-width: @screen-md-min) {
@@ -1212,7 +1229,7 @@ body.navbar-side-open {
         font-family: @fa-font-face;
         font-size: 80%;
         font-weight: 600;
-        content: "@{breadcrumb-separator}"
+        content: "@{breadcrumb-separator}";
       }
     }
   }
@@ -1362,6 +1379,13 @@ body.navbar-side-open {
   }
 }
 
+.controls {
+  .checkbox:first-child,
+  .checkbox:last-child {
+    margin-top: 7px;
+  }
+}
+
 // Fix to Show Checkbox in Summernote Modals
 .modal-body > .checkbox label input[type="checkbox"] {
   z-index: 0;
@@ -1475,6 +1499,14 @@ body.navbar-side-open {
     &:checked ~ .label-text::after {
       background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3E%3Ccircle r='3' fill='%23ffffff'/%3E%3C/svg%3E");
     }
+  }
+}
+
+// Override fix for checkbox wrapping when in-columns from forms.less
+.in-columns {
+  .checkbox-inline:first-child,
+  .radio-inline:first-child {
+    padding-left: 30px;
   }
 }
 

@@ -174,6 +174,14 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public int Order { get; private set; }
+
+        /// <summary>
         /// Gets the current date time.
         /// </summary>
         /// <value>
@@ -222,6 +230,7 @@ namespace Rock.Web.Cache
             PhoneNumber = campus.PhoneNumber;
             LeaderPersonAliasId = campus.LeaderPersonAliasId;
             RawServiceTimes = campus.ServiceTimes;
+            Order = campus.Order;
 
             Location = new CampusLocation( campus.Location );
         }

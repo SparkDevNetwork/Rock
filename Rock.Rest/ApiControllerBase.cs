@@ -118,5 +118,25 @@ namespace Rock.Rest
 
             return null;
         }
+
+        /// <summary>
+        /// Gets the primary person alias ID of the currently logged in person
+        /// </summary>
+        /// <returns></returns>
+        protected virtual int? GetPersonAliasId()
+        {
+            return GetPersonAliasId( null );
+        }
+
+        /// <summary>
+        /// Gets the primary person alias ID of the currently logged in person
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        protected virtual int? GetPersonAliasId( RockContext rockContext )
+        {
+            var currentPersonAlias = GetPersonAlias( rockContext );
+            return currentPersonAlias == null ? ( int? ) null : currentPersonAlias.Id;
+        }
     }
 }

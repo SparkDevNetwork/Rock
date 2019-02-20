@@ -275,7 +275,7 @@ function ()
             dvpDataView.RenderControl( writer );
 
             // Comparison Row
-            writer.AddAttribute( "class", "row field-criteria" );
+            writer.AddAttribute( "class", "row form-row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Comparison Type
