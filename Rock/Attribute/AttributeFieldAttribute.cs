@@ -35,6 +35,15 @@ namespace Rock.Attribute
         private const string QUALIFIER_VALUE_KEY = "qualifierValue";
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public AttributeFieldAttribute( string name )
+            : this( "", name )
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="AttributeFieldAttribute" /> class.
         /// </summary>
         /// <param name="entityTypeGuid">The entity type GUID.</param>
@@ -134,6 +143,25 @@ namespace Rock.Attribute
             if ( string.IsNullOrWhiteSpace( Key ) )
             {
                 Key = Name.Replace( " ", string.Empty );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [allow multiple].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow multiple]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowMultiple
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( ALLOW_MULTIPLE_KEY ).AsBoolean();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
             }
         }
     }

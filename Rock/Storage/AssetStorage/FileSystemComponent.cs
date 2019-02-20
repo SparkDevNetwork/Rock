@@ -38,10 +38,21 @@ namespace Rock.Storage.AssetStorage
     [ExportMetadata( "ComponentName", "ServerFileSystem" )]
 
     [TextField( name: "Root Folder", description: "", required: true, defaultValue: "~/", category: "", order: 0, key: "RootFolder" )]
-
     public class FileSystemComponent : AssetStorageComponent
     {
         #region Properties
+
+        private List<string> HiddenFolders
+        {
+            get
+            {
+                return new List<string>()
+                {
+                    "Content\\ASM_Thumbnails"
+                };
+            }
+        }
+
         /// <summary>
         /// Fixes the root folder syntax if it was entered incorrectly.
         /// </summary>
@@ -144,11 +155,17 @@ namespace Rock.Storage.AssetStorage
 
                 if ( asset.Type == AssetType.File )
                 {
-                    File.Delete( Path.Combine( physicalPath ) );
+                    if ( File.Exists( physicalPath ) )
+                    {
+                        File.Delete( physicalPath );
+                    }
                 }
                 else
                 {
-                    Directory.Delete( physicalPath, true );
+                    if ( Directory.Exists( physicalPath ) )
+                    {
+                        Directory.Delete( physicalPath, true );
+                    }
                 }
             }
             catch ( Exception ex )
@@ -262,8 +279,12 @@ namespace Rock.Storage.AssetStorage
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
             asset.Key = FixKey( asset, rootFolder );
             string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
-
-            return GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.TopDirectoryOnly, AssetType.Folder );
+            var assets = new List<Asset>();
+            if ( !HiddenFolders.Any( a => physicalFolder.IndexOf( a, StringComparison.OrdinalIgnoreCase ) > 0 ) )
+            {
+                assets = GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.TopDirectoryOnly, AssetType.Folder );
+            }
+            return assets;
         }
 
         /// <summary>
@@ -337,6 +358,14 @@ namespace Rock.Storage.AssetStorage
         public override bool RenameAsset( AssetStorageProvider assetStorageProvider, Asset asset, string newName )
         {
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
+            
+            if ( !IsFileTypeAllowedByBlackAndWhiteLists( newName ) )
+            {
+                string ext = System.IO.Path.GetExtension( asset.Key );
+                var ex = new Rock.Web.FileUploadException( $"Filetype {ext} is not allowed.", System.Net.HttpStatusCode.NotAcceptable );
+                ExceptionLogService.LogException( ex );
+                throw ex;
+            }
 
             try
             {
@@ -370,6 +399,14 @@ namespace Rock.Storage.AssetStorage
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
 
             asset.Key = FixKey( asset, rootFolder );
+
+            if ( !IsFileTypeAllowedByBlackAndWhiteLists( asset.Key ) )
+            {
+                string ext = System.IO.Path.GetExtension( asset.Key );
+                var ex = new Rock.Web.FileUploadException( $"Filetype {ext} is not allowed.", System.Net.HttpStatusCode.NotAcceptable );
+                ExceptionLogService.LogException( ex );
+                throw ex;
+            }
 
             try
             {
@@ -472,8 +509,11 @@ namespace Rock.Storage.AssetStorage
 
                 foreach ( var directoryInfo in directoryInfos )
                 {
-                    var asset = CreateAssetFromDirectoryInfo( directoryInfo );
-                    assets.Add( asset );
+                    if ( !HiddenFolders.Any( a => directoryInfo.FullName.IndexOf( a, StringComparison.OrdinalIgnoreCase ) > 0 ) )
+                    {
+                        var asset = CreateAssetFromDirectoryInfo( directoryInfo );
+                        assets.Add( asset );
+                    }
                 }
             }
             else

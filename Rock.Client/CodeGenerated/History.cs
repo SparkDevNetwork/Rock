@@ -67,7 +67,13 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public string NewRawValue { get; set; }
+
+        /// <summary />
         public string NewValue { get; set; }
+
+        /// <summary />
+        public string OldRawValue { get; set; }
 
         /// <summary />
         public string OldValue { get; set; }
@@ -138,7 +144,9 @@ namespace Rock.Client
             this.IsSensitive = source.IsSensitive;
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.NewRawValue = source.NewRawValue;
             this.NewValue = source.NewValue;
+            this.OldRawValue = source.OldRawValue;
             this.OldValue = source.OldValue;
             this.RelatedData = source.RelatedData;
             this.RelatedEntityId = source.RelatedEntityId;

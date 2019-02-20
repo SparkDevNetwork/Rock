@@ -308,21 +308,30 @@ namespace Rock.Model
 
                     var financialTransactionService = new FinancialTransactionService( rockContext );
 
-                    // Find existing payments with same transaction code
                     FinancialTransaction originalTxn = null;
-                    var txns = financialTransactionService
-                        .Queryable( "TransactionDetails" )
-                        .Where( t =>
-                            t.FinancialGatewayId.HasValue &&
-                            t.FinancialGatewayId.Value == gateway.Id &&
-                            t.TransactionCode == payment.TransactionCode )
-                        .ToList();
-                    if ( txns.Any() )
+                    List<FinancialTransaction> txns = null;
+
+                    // Find existing payments with same transaction code as long as it is not blank.
+                    if ( payment.TransactionCode.IsNotNullOrWhiteSpace() )
                     {
-                        originalTxn = txns.OrderBy( t => t.Id ).First();
+                        txns = financialTransactionService
+                          .Queryable( "TransactionDetails" )
+                          .Where( t =>
+                              t.FinancialGatewayId.HasValue &&
+                              t.FinancialGatewayId.Value == gateway.Id &&
+                              t.TransactionCode == payment.TransactionCode )
+                          .ToList();
+
+                        originalTxn = txns.Any() ? txns.OrderBy( t => t.Id ).First() : null;
                     }
 
-                    var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetByScheduleId( payment.GatewayScheduleId, gateway.Id );
+                    FinancialScheduledTransaction scheduledTransaction = null;
+
+                    // We don't want to match a blank schedule ID, so if we don't have one then scheduledTransaction will stay NULL
+                    if ( payment.GatewayScheduleId.IsNotNullOrWhiteSpace() )
+                    {
+                        scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetByScheduleId( payment.GatewayScheduleId, gateway.Id );
+                    }
 
                     // Calculate whether a transaction needs to be added
                     var txnAmount = CalculateTransactionAmount( payment, txns );

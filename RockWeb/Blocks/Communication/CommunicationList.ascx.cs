@@ -417,7 +417,7 @@ namespace RockWeb.Blocks.Communication
 
             var recipients = new CommunicationRecipientService( rockContext ).Queryable();
 
-            // We want to limit to only communications that they are authorized to view, but if there are a large number of communications, that could be very slow. 
+            // We want to limit to only communications that they are authorized to view, but if there are a large number of communications, that could be very slow.
             // So, since communication security is based on CommunicationTemplate, take a shortcut and just limit based on authorized communication templates
             var authorizedCommunicationTemplateIds = new CommunicationTemplateService( rockContext ).Queryable()
                 .Where( a => communications.Where( x => x.CommunicationTemplateId.HasValue ).Select( x => x.CommunicationTemplateId.Value ).Distinct().Contains( a.Id ) )
@@ -428,7 +428,8 @@ namespace RockWeb.Blocks.Communication
                 {
                     Id = c.Id,
                     CommunicationType = c.CommunicationType,
-                    Subject = string.IsNullOrEmpty( c.Subject ) ? c.Name : c.Subject,
+                    // Subject = string.IsNullOrEmpty( c.Subject ) ? c.Name : c.Subject,
+                    Subject = string.IsNullOrEmpty( c.Name ) ? ( string.IsNullOrEmpty( c.Subject ) ? c.PushTitle : c.Subject ) : c.Name,
                     CreatedDateTime = c.CreatedDateTime,
                     SendDateTime = c.SendDateTime ?? c.FutureSendDateTime,
                     SendDateTimePrefix = c.SendDateTime == null && c.FutureSendDateTime != null ? "<span class='label label-info'>Future</span>&nbsp;" : "",

@@ -536,6 +536,12 @@ namespace RockWeb.Blocks.Cms
         /// </returns>
         private bool IsValid()
         {
+            // Don't need to check for an edited tag as only the description is being changed.
+            if(hfTagId.Value.IsNotNullOrWhiteSpace() )
+            {
+                return true;
+            }
+
             string tagName = tbTagName.Text.Trim();
 
             if ( tagName.IsNullOrWhiteSpace() )
@@ -564,6 +570,19 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void SaveTag()
         {
+            if (hfTagId.Value == string.Empty)
+            {
+                SaveNewTag();
+            }
+            else
+            {
+                UpdateExistingTag( hfTagId.ValueAsInt() );
+                DefinedValueCache.Clear();
+            }
+        }
+
+        private void SaveNewTag()
+        {
             int cachedTagDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
             var rockContext = new RockContext();
             var definedValueService = new DefinedValueService( rockContext );
@@ -586,16 +605,42 @@ namespace RockWeb.Blocks.Cms
             rockContext.SaveChanges();
         }
 
+        private void UpdateExistingTag(int cacheTagId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var definedValueService = new DefinedValueService( rockContext );
+                var cacheTagDefinedValue = definedValueService.Get( cacheTagId );
+                cacheTagDefinedValue.Description = tbTagDescription.Text.Trim();
+                rockContext.SaveChanges();
+            }
+        }
+
         /// <summary>
         /// Clears the and hides modal.
         /// </summary>
         protected void ClearModal()
         {
             tbTagName.Text = string.Empty;
+            tbTagName.Enabled = true;
             tbTagDescription.Text = string.Empty;
+            hfTagId.Value = string.Empty;
             dlgAddTag.Hide();
         }
 
         #endregion
+
+        protected void gCacheTagList_RowSelected( object sender, RowEventArgs e )
+        {
+            var definedValueId = e.RowKeyId;
+            hfTagId.Value = definedValueId.ToString();
+
+            var definedValue = DefinedValueCache.Get( definedValueId );
+
+            tbTagDescription.Text = definedValue.Description;
+            tbTagName.Text = definedValue.Value;
+            tbTagName.Enabled = false;
+            dlgAddTag.Show();
+        }
     }
 }

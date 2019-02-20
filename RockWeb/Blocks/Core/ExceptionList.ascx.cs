@@ -388,7 +388,7 @@ function(item) {
                                     .Select( eg => new
                                     {
                                         Id = eg.Max( e => e.Id ),
-                                        Description = "<a href='" + url + eg.Max( e => e.Id ) + "'>" + eg.FirstOrDefault().Description + "</a>",
+                                        Description = "<a href='" + url + eg.Max( e => e.Id ) + "'>" + eg.FirstOrDefault(e => e.Id == eg.Max( e2 => e2.Id ) ).Description + "</a>",
                                         LastExceptionDate = eg.Max( e => e.CreatedDateTime ),
                                         TotalCount = eg.Count(),
                                         SubsetCount = eg.Count( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= minSummaryCountDate )
