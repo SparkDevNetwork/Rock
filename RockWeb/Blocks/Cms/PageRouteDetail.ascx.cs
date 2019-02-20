@@ -196,9 +196,7 @@ namespace RockWeb.Blocks.Cms
                 }
                 else
                 {
-                    var pageAndRouteIds = new List<Rock.Web.PageAndRouteId>();
-                    pageAndRouteIds.Add( pageAndRouteId );
-                    RouteTable.Routes.AddPageRoute( pageRoute.Route, pageAndRouteIds );
+                    RouteTable.Routes.AddPageRoute( pageRoute.Route, pageAndRouteId );
                 }
 
                 RouteTable.Routes.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
