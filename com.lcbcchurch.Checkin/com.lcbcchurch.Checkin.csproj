@@ -68,6 +68,7 @@
     <Compile Include="Migrations\001_PagerWorkflowAndPages.cs" />
     <Compile Include="Migrations\003_OverrideButtonAdd.cs" />
     <Compile Include="Migrations\007_AddCheckinFilterGroupsByDataView.cs" />
+    <Compile Include="Migrations\009_KVILabelAndMergeFields.cs" />
     <Compile Include="Migrations\008_CreateCheckinUser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Workflow\Action\Checkin\SaveAttendanceAndPagerNumber.cs" />
