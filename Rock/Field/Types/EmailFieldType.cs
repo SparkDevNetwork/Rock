@@ -25,7 +25,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and display a numeric value
+    /// Field used to save and display an email address
     /// </summary>
     [Serializable]
     public class EmailFieldType : FieldType

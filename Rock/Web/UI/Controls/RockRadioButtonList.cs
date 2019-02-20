@@ -301,12 +301,11 @@ namespace Rock.Web.UI.Controls
             {
                 cssClassBuilder.Append( " rockradiobuttonlist-horizontal" );
 
-                if ( this.RepeatColumns <= 0 )
+                if ( this.RepeatColumns > 0 )
                 {
-                    this.RepeatColumns = 4;
+                    cssClassBuilder.Append( string.Format( " in-columns in-columns-{0}", RepeatColumns ) );
                 }
 
-                cssClassBuilder.Append( string.Format( " in-columns in-columns-{0}", RepeatColumns ) );
             }
             else
             {

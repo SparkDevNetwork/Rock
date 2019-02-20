@@ -78,7 +78,7 @@ namespace Rock.Web.UI.Controls
 
             set
             {
-                this.Text = value?.ToString("{1:N}");
+                this.Text = value?.ToString("F2");
             }
         }
     }

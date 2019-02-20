@@ -84,7 +84,7 @@
                         <asp:LinkButton ID="lbRefresh" runat="server" CssClass="btn btn-xs btn-default js-assetselect" OnClick="lbRefresh_Click" CausesValidation="false" ToolTip="Refresh"><i class="fa fa-sync"></i></asp:LinkButton>
                     </div>
 
-                    <div class="actions well well-sm js-renamefile-div" id="divRenameFile" style="display: none;">
+                    <div class="actions well well-sm js-renamefile-div" id="divRenameFile" style="display: none;" runat="server">
                         <div class="pull-left">
                             <Rock:RockTextBox ID="tbRenameFile" runat="server" CssClass="js-renamefile-input input-sm"  />
                         </div>
@@ -96,7 +96,7 @@
                         <a id="lbRenameFileCancel" href="#" class="btn btn-xs btn-default js-renamefile-cancel">
                             <i class="fa fa-times"></i> Cancel
                         </a>
-                        <label class="js-renamefile-notification alert alert-warning clearfix" style="display:none"></label>
+                        <label class="js-renamefile-notification alert alert-warning clearfix" style="display:none" runat="server" id="lblRenameFileNotification"></label>
                     </div>
 
                     <table class="table table-striped table-responsive table-no-border assetmanager-files">

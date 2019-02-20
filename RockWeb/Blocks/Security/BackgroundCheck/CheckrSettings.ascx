@@ -1,9 +1,4 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CheckrSettings.ascx.cs" Inherits="RockWeb.Blocks.Security.BackgroundCheck.CheckrSettings" %>
-<style>
-    .minerlist .form-control {
-        width: 400px;
-    }
-</style>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>

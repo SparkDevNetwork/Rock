@@ -134,11 +134,13 @@ namespace Rock.Workflow.Action
             {
                 var groupMemberService = new GroupMemberService( rockContext );
                 var groupMember = groupMemberService.GetByGroupIdAndPersonIdAndPreferredGroupRoleId( group.Id, person.Id, groupRoleId.Value );
+                bool isNew = false;
                 if ( groupMember == null )
                 {
                     groupMember = new GroupMember();
                     groupMember.PersonId = person.Id;
                     groupMember.GroupId = group.Id;
+                    isNew = true;
                 }
                 else
                 {
@@ -150,7 +152,10 @@ namespace Rock.Workflow.Action
 
                 if ( groupMember.IsValidGroupMember( rockContext ) )
                 {
-                    groupMemberService.Add( groupMember );
+                    if (isNew)
+                    {
+                        groupMemberService.Add( groupMember );
+                    }
                     rockContext.SaveChanges();
                 }
                 else

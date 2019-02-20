@@ -116,8 +116,9 @@ namespace Rock.Jobs
                                 .Get( parameterExpression, whereExpression )
                                 .Select( q => q.Id )
                                 .ToList();
-                            
-                            // If any error occurred, just skip this sync for now.
+
+                            // If any error occurred trying get the 'where expression' from the sync-data-view,
+                            // just skip trying to sync that particular group's Sync Data View for now.
                             if ( syncErrors.Count > 0 )
                             {
                                 errors.AddRange( syncErrors );
