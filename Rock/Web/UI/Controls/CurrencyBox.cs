@@ -60,6 +60,9 @@ namespace Rock.Web.UI.Controls
         public override void RenderBaseControl( HtmlTextWriter writer )
         {
             this.Attributes["step"] = "0.01";
+            this.Attributes["min"] = "0";
+            this.Attributes["oninput"] = "validity.valid||(value='')";
+
             base.RenderBaseControl( writer );
         }
     }
