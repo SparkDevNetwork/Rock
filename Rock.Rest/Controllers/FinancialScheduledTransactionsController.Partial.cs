@@ -163,13 +163,13 @@ namespace Rock.Rest.Controllers
         /// Each object contains a Schedule and a MostRecentTransaction.
         /// The schedule has the FinancialPaymentDetail and ScheduledTransactionDetails objects expanded.
         /// </summary>
-        /// <param name="pageSize">The number of records to return for each page</param>
-        /// <param name="pageNumber">Zero-based page to return</param>
+        /// <param name="skip">The number of records to skip before the subset's first schedule</param>
+        /// <param name="top">The maximum number of records to include in the subset</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/FinancialScheduledTransactions/WithPreviousTransaction" )]
-        public System.Net.Http.HttpResponseMessage GetWithPreviousTransaction( [FromUri]int pageSize, [FromUri]int pageNumber )
+        public System.Net.Http.HttpResponseMessage GetWithPreviousTransaction( [FromUri]int skip, [FromUri]int top )
         {
             var now = RockDateTime.Now;
 
@@ -184,8 +184,8 @@ namespace Rock.Rest.Controllers
                     ( !s.EndDate.HasValue || s.EndDate >= now ) &&
                     s.StartDate <= now )
                 .OrderBy( s => s.Id )
-                .Skip( pageSize * pageNumber )
-                .Take( pageSize )
+                .Skip( skip )
+                .Take( top )
                 .ToList();
 
             // Extract the schedule IDs for the most recent transaction query
