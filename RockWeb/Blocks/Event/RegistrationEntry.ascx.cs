@@ -4560,7 +4560,7 @@ namespace RockWeb.Blocks.Event
                     fieldVisibilityWrapper.Controls.Add( new LiteralControl( field.PostText ) );
                 }
 
-                bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.Any( r => r.ComparedToAttributeGuid == attribute.Guid ) );
+                bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToAttributeGuid == attribute.Guid ) );
 
                 if ( hasDependantVisibilityRule && attribute.FieldType.Field.HasChangeHandler( editControl ) )
                 {
