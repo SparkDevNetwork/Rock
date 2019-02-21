@@ -2603,40 +2603,40 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="showInvalid">if set to <c>true</c> [show invalid].</param>
         private void BuildFormControl( Control parentControl, bool setValues, RegistrationTemplateForm form, Guid? activeFormGuid, Guid defaultFormGuid, bool showInvalid )
         {
-            var control = new RegistrationTemplateFormEditor();
-            control.ID = form.Guid.ToString( "N" );
-            parentControl.Controls.Add( control );
-            control.ValidationGroup = btnSave.ValidationGroup;
+            var registrationTemplateFormEditor = new RegistrationTemplateFormEditor();
+            registrationTemplateFormEditor.ID = form.Guid.ToString( "N" );
+            parentControl.Controls.Add( registrationTemplateFormEditor );
 
-            control.DeleteFieldClick += tfeForm_DeleteFieldClick;
-            control.ReorderFieldClick += tfeForm_ReorderFieldClick;
-            control.FilterFieldClick += tfeForm_FilterFieldClick;
-            control.EditFieldClick += tfeForm_EditFieldClick;
-            control.RebindFieldClick += tfeForm_RebindFieldClick;
-            control.DeleteFormClick += tfeForm_DeleteFormClick;
-            control.AddFieldClick += tfeForm_AddFieldClick;
+            // if this is the default form, don't let it get deleted. Also, there is some special logic to disable deleting FirstName,LastName fields on default form.
+            bool isDefaultForm = form.Guid == defaultFormGuid;
+            registrationTemplateFormEditor.IsDeleteEnabled = !isDefaultForm;
+            registrationTemplateFormEditor.IsDefaultForm = isDefaultForm;
 
-            control.SetForm( form );
-            control.BindFieldsGrid( FormFieldsState[form.Guid] );
+            registrationTemplateFormEditor.ValidationGroup = btnSave.ValidationGroup;
+            registrationTemplateFormEditor.DeleteFieldClick += tfeForm_DeleteFieldClick;
+            registrationTemplateFormEditor.ReorderFieldClick += tfeForm_ReorderFieldClick;
+            registrationTemplateFormEditor.FilterFieldClick += tfeForm_FilterFieldClick;
+            registrationTemplateFormEditor.EditFieldClick += tfeForm_EditFieldClick;
+            registrationTemplateFormEditor.RebindFieldClick += tfeForm_RebindFieldClick;
+            registrationTemplateFormEditor.DeleteFormClick += tfeForm_DeleteFormClick;
+            registrationTemplateFormEditor.AddFieldClick += tfeForm_AddFieldClick;
+
+            registrationTemplateFormEditor.SetForm( form );
+
+            registrationTemplateFormEditor.BindFieldsGrid( FormFieldsState[form.Guid] );
 
             if ( setValues )
             {
-                control.Expanded = ExpandedForms.Contains( form.Guid );
+                registrationTemplateFormEditor.Expanded = ExpandedForms.Contains( form.Guid );
 
-                if ( form.Guid == defaultFormGuid )
+                if ( !registrationTemplateFormEditor.Expanded && showInvalid && !form.IsValid )
                 {
-                    control.IsDeleteEnabled = false;
-                    control.IsDefaultForm = true;
+                    registrationTemplateFormEditor.Expanded = true;
                 }
 
-                if ( !control.Expanded && showInvalid && !form.IsValid )
+                if ( !registrationTemplateFormEditor.Expanded )
                 {
-                    control.Expanded = true;
-                }
-
-                if ( !control.Expanded )
-                {
-                    control.Expanded = activeFormGuid.HasValue && activeFormGuid.Equals( form.Guid );
+                    registrationTemplateFormEditor.Expanded = activeFormGuid.HasValue && activeFormGuid.Equals( form.Guid );
                 }
             }
         }
