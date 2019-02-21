@@ -1249,7 +1249,8 @@ The logged-in person's information will be used to complete the registrar inform
 
             // Delete any of those attributes that were removed in the UI
             var selectedAttributeGuids = viewStateAttributes.Select( a => a.Guid );
-            foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
+            var attributesToDelete = attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ).ToList();
+            foreach ( var attr in attributesToDelete )
             {
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
