@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upAddGroup" runat="server">
     <ContentTemplate>
         
-        <asp:Panel runat="server" ID="Panel1">
+        <asp:Panel runat="server" ID="pShapePerson">
             <section class="shape-person-details">
                 <Rock:DataTextBox runat="server" id="dtbFirstName" SourceTypeName="Rock.Model.Person" PropertyName="FirstName" Required="true" />
                 <Rock:DataTextBox runat="server" id="dtbLastName" SourceTypeName="Rock.Model.Person" PropertyName="LastName" Required="true" />
@@ -86,6 +86,17 @@
                 <Rock:RockTextBox runat="server" ID="rtbExperiences_People" TextMode="MultiLine" Label="3 People who had an impact on your life (positive or negative)" Required="true"></Rock:RockTextBox>
                 <Rock:RockTextBox runat="server" ID="rtbExperiences_Places" TextMode="MultiLine" Label="3 Places that had an impact on your life (positive or negative)" Required="true"></Rock:RockTextBox>
                 <Rock:RockTextBox runat="server" ID="rtbExperiences_Events" TextMode="MultiLine" Label="3 Events that had an impact on your life (positive or negative)" Required="true"></Rock:RockTextBox>
+                
+            </section>
+        </asp:Panel>
+
+        <asp:Panel runat="server" ID="pShapeOther">
+            <section class="shape-other">
+            
+                <Rock:RockRadioButtonList runat="server" ID="rrblContactMe" Label="Would you like to be contacted by NewPointe about your SHAPE results?" RepeatDirection="Horizontal" CssClass="margin-t-sm" Required="true">
+                    <asp:ListItem Value="true">Yes</asp:ListItem>
+                    <asp:ListItem Value="false">No</asp:ListItem>
+                </Rock:RockRadioButtonList>
                 
             </section>
         </asp:Panel>

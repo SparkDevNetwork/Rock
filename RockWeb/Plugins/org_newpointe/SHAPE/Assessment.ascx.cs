@@ -32,6 +32,8 @@ namespace RockWeb.Plugins.org_newpointe.SHAPE
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Default Record Status", "The record status to use when creating a new person", false, false, Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING, "", 7, ATTRIBUTE_KEY__DEFAULT_RECORD_STATUS )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status", "The connection status to use when creating a new person", false, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT, "", 8, ATTRIBUTE_KEY__DEFAULT_CONNECTION_STATUS )]
+
+    [WorkflowTypeField( "Workflow", "The workflow to launch after someone completes the assessment.", false, false, "", "", 9, ATTRIBUTE_KEY__WORKFLOW )]
     public partial class Assessment : Rock.Web.UI.RockBlock
     {
 
@@ -48,6 +50,8 @@ namespace RockWeb.Plugins.org_newpointe.SHAPE
 
         private const string ATTRIBUTE_KEY__DEFAULT_RECORD_STATUS = "DefaultRecordStatus";
         private const string ATTRIBUTE_KEY__DEFAULT_CONNECTION_STATUS = "DefaultConnectionStatus";
+
+        private const string ATTRIBUTE_KEY__WORKFLOW = "Workflow";
 
         // Defined Type Attribute Keys
 
@@ -117,7 +121,7 @@ namespace RockWeb.Plugins.org_newpointe.SHAPE
         protected void bbSubmit_Click( object sender, EventArgs e )
         {
 
-            if (Page.IsValid)
+            if ( Page.IsValid )
             {
 
                 RockContext rockContext = new RockContext();
@@ -127,7 +131,7 @@ namespace RockWeb.Plugins.org_newpointe.SHAPE
                 PersonService.PersonMatchQuery personQuery = new PersonService.PersonMatchQuery( dtbFirstName.Text, dtbLastName.Text, ebEmailAddress.Text, null );
                 person = personService.FindPerson( personQuery, true );
 
-                if (person == null)
+                if ( person == null )
                 {
                     person = new Person();
                     person.FirstName = dtbFirstName.Text;
@@ -138,13 +142,13 @@ namespace RockWeb.Plugins.org_newpointe.SHAPE
                     person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
 
                     var defaultConnectionStatus = DefinedValueCache.Get( GetAttributeValue( ATTRIBUTE_KEY__DEFAULT_CONNECTION_STATUS ).AsGuid() );
-                    if (defaultConnectionStatus != null)
+                    if ( defaultConnectionStatus != null )
                     {
                         person.ConnectionStatusValueId = defaultConnectionStatus.Id;
                     }
 
                     var defaultRecordStatus = DefinedValueCache.Get( GetAttributeValue( ATTRIBUTE_KEY__DEFAULT_RECORD_STATUS ).AsGuid() );
-                    if (defaultRecordStatus != null)
+                    if ( defaultRecordStatus != null )
                     {
                         person.RecordStatusValueId = defaultRecordStatus.Id;
                     }
@@ -157,28 +161,28 @@ namespace RockWeb.Plugins.org_newpointe.SHAPE
                 var spiritualGiftsTally = new Dictionary<string, int>();
 
                 var spiritualGiftsQuestions = DefinedTypeCache.Get( GetAttributeValue( ATTRIBUTE_KEY__SHAPE_SPIRITUAL_GIFTS_QUESTIONS ).AsGuid() );
-                if (spiritualGiftsQuestions != null)
+                if ( spiritualGiftsQuestions != null )
                 {
-                    foreach (var item in rSpiritualGiftsQuestions.Items)
+                    foreach ( var item in rSpiritualGiftsQuestions.Items )
                     {
                         var repeaterItem = item as RepeaterItem;
-                        if (repeaterItem != null)
+                        if ( repeaterItem != null )
                         {
                             var questionIdField = repeaterItem.FindControl( "hfSpiritualGiftsQuestionId" ) as HiddenField;
-                            if (questionIdField != null)
+                            if ( questionIdField != null )
                             {
                                 var questionId = questionIdField.Value.AsInteger();
 
                                 var optionList = repeaterItem.FindControl( "rrblSpiritualGiftsQuestion" ) as RockRadioButtonList;
-                                if (optionList != null)
+                                if ( optionList != null )
                                 {
                                     var answer = optionList.SelectedValue.AsInteger();
 
                                     var question = DefinedValueCache.Get( questionId );
-                                    if (question.DefinedType.Guid == spiritualGiftsQuestions.Guid)
+                                    if ( question.DefinedType.Guid == spiritualGiftsQuestions.Guid )
                                     {
                                         var spiritualGiftGuid = question.GetAttributeValue( ATTRIBUTE_KEY__SPIRITUAL_GIFT );
-                                        if (!string.IsNullOrWhiteSpace( spiritualGiftGuid ))
+                                        if ( !string.IsNullOrWhiteSpace( spiritualGiftGuid ) )
                                         {
                                             var currentScore = spiritualGiftsTally.GetValueOrNull( spiritualGiftGuid ) ?? 0;
                                             currentScore = currentScore + answer;
@@ -197,28 +201,28 @@ namespace RockWeb.Plugins.org_newpointe.SHAPE
                 var abilitiesTally = new Dictionary<string, int>();
 
                 var abilitiesQuestions = DefinedTypeCache.Get( GetAttributeValue( ATTRIBUTE_KEY__SHAPE_ABILITIES_QUESTIONS ).AsGuid() );
-                if (abilitiesQuestions != null)
+                if ( abilitiesQuestions != null )
                 {
-                    foreach (var item in rAbilitiesQuestions.Items)
+                    foreach ( var item in rAbilitiesQuestions.Items )
                     {
                         var repeaterItem = item as RepeaterItem;
-                        if (repeaterItem != null)
+                        if ( repeaterItem != null )
                         {
                             var questionIdField = repeaterItem.FindControl( "hfAbilitiesQuestionId" ) as HiddenField;
-                            if (questionIdField != null)
+                            if ( questionIdField != null )
                             {
                                 var questionId = questionIdField.Value.AsInteger();
 
                                 var optionList = repeaterItem.FindControl( "rrblAbilitiesQuestion" ) as RockRadioButtonList;
-                                if (optionList != null)
+                                if ( optionList != null )
                                 {
                                     var answer = optionList.SelectedValue.AsInteger();
 
                                     var question = DefinedValueCache.Get( questionId );
-                                    if (question.DefinedType.Guid == abilitiesQuestions.Guid)
+                                    if ( question.DefinedType.Guid == abilitiesQuestions.Guid )
                                     {
                                         var spiritualGiftGuid = question.GetAttributeValue( ATTRIBUTE_KEY__ABILITY );
-                                        if (!string.IsNullOrWhiteSpace( spiritualGiftGuid ))
+                                        if ( !string.IsNullOrWhiteSpace( spiritualGiftGuid ) )
                                         {
                                             var currentScore = abilitiesTally.GetValueOrNull( spiritualGiftGuid ) ?? 0;
                                             currentScore = currentScore + answer;
@@ -241,10 +245,10 @@ namespace RockWeb.Plugins.org_newpointe.SHAPE
                     .Where( v =>
                     {
                         var guid = v.AsGuidOrNull();
-                        if (guid.HasValue)
+                        if ( guid.HasValue )
                         {
                             var definedValue = DefinedValueCache.Get( guid.Value );
-                            if (definedValue != null)
+                            if ( definedValue != null )
                             {
                                 return definedValue.DefinedType.Guid == heartCategories.Guid;
                             }
@@ -255,13 +259,13 @@ namespace RockWeb.Plugins.org_newpointe.SHAPE
 
                 person.LoadAttributes();
 
-                if (sortedGifts.Length > 0) person.SetAttributeValue( "SpiritualGift1", sortedGifts[0] );
-                if (sortedGifts.Length > 1) person.SetAttributeValue( "SpiritualGift2", sortedGifts[1] );
-                if (sortedGifts.Length > 2) person.SetAttributeValue( "SpiritualGift3", sortedGifts[2] );
-                if (sortedGifts.Length > 3) person.SetAttributeValue( "SpiritualGift4", sortedGifts[3] );
+                if ( sortedGifts.Length > 0 ) person.SetAttributeValue( "SpiritualGift1", sortedGifts[0] );
+                if ( sortedGifts.Length > 1 ) person.SetAttributeValue( "SpiritualGift2", sortedGifts[1] );
+                if ( sortedGifts.Length > 2 ) person.SetAttributeValue( "SpiritualGift3", sortedGifts[2] );
+                if ( sortedGifts.Length > 3 ) person.SetAttributeValue( "SpiritualGift4", sortedGifts[3] );
 
-                if (sortedAbilities.Length > 0) person.SetAttributeValue( "Ability1", sortedAbilities[0] );
-                if (sortedAbilities.Length > 1) person.SetAttributeValue( "Ability2", sortedAbilities[1] );
+                if ( sortedAbilities.Length > 0 ) person.SetAttributeValue( "Ability1", sortedAbilities[0] );
+                if ( sortedAbilities.Length > 1 ) person.SetAttributeValue( "Ability2", sortedAbilities[1] );
 
                 person.SetAttributeValue( "HeartCategories", string.Join( ",", hearts ) );
                 person.SetAttributeValue( "HeartCauses", rtbHeartPast.Text );
@@ -271,8 +275,37 @@ namespace RockWeb.Plugins.org_newpointe.SHAPE
                 person.SetAttributeValue( "SHAPEPlaces", rtbExperiences_Places.Text );
                 person.SetAttributeValue( "SHAPEEvents", rtbExperiences_Events.Text );
 
+                person.SetAttributeValue( "SHAPEContactMe", rrblContactMe.Text );
+
                 person.SaveAttributeValues( rockContext );
 
+
+                Guid? workflowGuid = GetAttributeValue( ATTRIBUTE_KEY__WORKFLOW ).AsGuidOrNull();
+                if ( workflowGuid.HasValue ) {
+
+                    var workflowAttributes = new Dictionary<string, string>();
+
+                    if ( sortedGifts.Length > 0 ) workflowAttributes.Add( "SpiritualGift1", sortedGifts[0] );
+                    if ( sortedGifts.Length > 1 ) workflowAttributes.Add( "SpiritualGift2", sortedGifts[1] );
+                    if ( sortedGifts.Length > 2 ) workflowAttributes.Add( "SpiritualGift3", sortedGifts[2] );
+                    if ( sortedGifts.Length > 3 ) workflowAttributes.Add( "SpiritualGift4", sortedGifts[3] );
+
+                    if ( sortedAbilities.Length > 0 ) workflowAttributes.Add( "Ability1", sortedAbilities[0] );
+                    if ( sortedAbilities.Length > 1 ) workflowAttributes.Add( "Ability2", sortedAbilities[1] );
+
+                    workflowAttributes.Add( "HeartCategories", string.Join( ",", hearts ) );
+                    workflowAttributes.Add( "HeartCauses", rtbHeartPast.Text );
+                    workflowAttributes.Add( "HeartPassion", rtbHeartFuture.Text );
+
+                    workflowAttributes.Add( "SHAPEPeople", rtbExperiences_People.Text );
+                    workflowAttributes.Add( "SHAPEPlaces", rtbExperiences_Places.Text );
+                    workflowAttributes.Add( "SHAPEEvents", rtbExperiences_Events.Text );
+
+                    workflowAttributes.Add( "SHAPEContactMe", rrblContactMe.Text );
+                    
+                    person.LaunchWorkflow( workflowGuid, "", workflowAttributes );
+
+                }
 
                 var _DISCLastSaveDate = person.GetAttributeValue( "LastSaveDate" );
 
