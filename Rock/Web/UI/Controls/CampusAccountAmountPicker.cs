@@ -690,7 +690,7 @@ namespace Rock.Web.UI.Controls
 
             /* Single Account Mode */
 
-            _pnlAccountAmountEntrySingle = new Panel() { CssClass = "account-amount-single-entry" };
+            _pnlAccountAmountEntrySingle = new Panel() { CssClass = "campus-account-amount-picker account-amount-single-entry form-group" };
             _pnlAccountAmountEntrySingle.ID = "_pnlAccountAmountEntrySingle";
 
             Controls.Add( _pnlAccountAmountEntrySingle );
@@ -700,7 +700,7 @@ namespace Rock.Web.UI.Controls
             _nbAmountAccountSingle.ID = "_nbAmountAccountSingle";
             _nbAmountAccountSingle.Attributes["placeholder"] = "Enter Amount";
             _nbAmountAccountSingle.Attributes["type"] = "number";
-            _nbAmountAccountSingle.CssClass = "amount-input";
+            _nbAmountAccountSingle.CssClass = "amount-input form-control";
             _nbAmountAccountSingle.Attributes["min"] = "0";
             _pnlAccountAmountEntrySingle.Controls.Add( _nbAmountAccountSingle );
 
@@ -722,7 +722,7 @@ namespace Rock.Web.UI.Controls
 
             /* Multi Account Mode*/
 
-            _pnlAccountAmountEntryMulti = new Panel() { CssClass = "account-amount-multi-entry" };
+            _pnlAccountAmountEntryMulti = new Panel() { CssClass = "campus-account-amount-picker account-amount-multi-entry form-group" };
             _pnlAccountAmountEntryMulti.ID = "_pnlAccountAmountEntryMulti";
             Controls.Add( _pnlAccountAmountEntryMulti );
 
