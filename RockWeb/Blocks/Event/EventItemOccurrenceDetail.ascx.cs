@@ -806,10 +806,9 @@ namespace RockWeb.Blocks.Event
             Helper.AddDisplayControls( eventItemOccurrence, phAttributes, null, false, false );
         }
 
-        private void ShowEditDetailsForNewOccurrence( EventItemOccurrence eventItemOccurrence )
+        private EventItemOccurrence ShowEditDetailsForNewOccurrence( EventItemOccurrence eventItemOccurrence )
         {
             lActionTitle.Text = ActionTitle.Add( "Event Occurrence" ).FormatAsHtmlTitle();
-
             var copyFromOccurrenceId = PageParameter( "CopyFromId" ).AsInteger();
             if ( copyFromOccurrenceId > 0 )
             {
@@ -856,6 +855,7 @@ namespace RockWeb.Blocks.Event
                     }
                 }
             }
+            return eventItemOccurrence;
         }
 
         private void ShowEditDetails( EventItemOccurrence eventItemOccurrence )
@@ -869,7 +869,7 @@ namespace RockWeb.Blocks.Event
 
             if ( eventItemOccurrence.Id == 0 )
             {
-                ShowEditDetailsForNewOccurrence( eventItemOccurrence );
+                eventItemOccurrence = ShowEditDetailsForNewOccurrence( eventItemOccurrence );
             }
             else
             {

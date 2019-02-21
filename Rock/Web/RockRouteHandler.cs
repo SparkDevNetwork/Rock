@@ -24,6 +24,8 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Transactions;
 using Rock.Data;
+using Rock.Utility;
+using System.Web;
 
 namespace Rock.Web
 {
@@ -104,7 +106,7 @@ namespace Rock.Web
 
         private SiteCache GetSiteByDomainName( RequestContext requestContext )
         {
-            return SiteCache.GetSiteByDomain( requestContext.HttpContext.Request.Url.Host );
+            return SiteCache.GetSiteByDomain( WebRequestHelper.GetHostNameFromRequest( HttpContext.Current ) );
         }
 
         private SiteCache GetSiteFromLastSite( RequestContext requestContext )

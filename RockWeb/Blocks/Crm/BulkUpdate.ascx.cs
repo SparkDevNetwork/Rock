@@ -69,6 +69,7 @@ namespace RockWeb.Blocks.Crm
         private bool ShowAllIndividuals { get; set; }
         private int? GroupId { get; set; }
         private List<string> SelectedFields { get; set; }
+        private List<Guid> AttributeCategories { get; set; }
 
         #endregion
 
@@ -238,6 +239,9 @@ namespace RockWeb.Blocks.Crm
 
             ddlGroupAction.SelectedValue = "Add";
             ddlGroupMemberStatus.BindToEnum<GroupMemberStatus>();
+
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upPanel );
         }
 
         /// <summary>
@@ -266,6 +270,12 @@ namespace RockWeb.Blocks.Crm
             {
                 SelectedFields = new List<string>();
             }
+
+            AttributeCategories = ViewState["AttributeCategories"] as List<Guid>;
+            if ( AttributeCategories == null )
+            {
+                AttributeCategories = new List<Guid>();
+            }
         }
 
         /// <summary>
@@ -280,6 +290,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
+                AttributeCategories = GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues().AsGuidList();
                 cpCampus.Campuses = CampusCache.All();
                 Individuals = new List<Individual>();
                 SelectedFields = new List<string>();
@@ -331,7 +342,7 @@ namespace RockWeb.Blocks.Crm
             ViewState["Individuals"] = Individuals;
             ViewState["ShowAllIndividuals"] = ShowAllIndividuals;
             ViewState["GroupId"] = GroupId;
-
+            ViewState["AttributeCategories"] = AttributeCategories;
             return base.SaveViewState();
         }
 
@@ -587,9 +598,9 @@ namespace RockWeb.Blocks.Crm
                 var rockContext = new RockContext();
 
                 var selectedCategories = new List<CategoryCache>();
-                foreach ( string categoryGuid in GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues() )
+                foreach ( Guid categoryGuid in AttributeCategories )
                 {
-                    var category = CategoryCache.Get( categoryGuid.AsGuid(), rockContext );
+                    var category = CategoryCache.Get( categoryGuid, rockContext );
                     if ( category != null )
                     {
                         selectedCategories.Add( category );
@@ -806,6 +817,19 @@ namespace RockWeb.Blocks.Crm
 
                 pnlResult.Visible = true;
             }
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            AttributeCategories = GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues().AsGuidList();
+            phAttributesCol1.Controls.Clear();
+            phAttributesCol2.Controls.Clear();
+            BuildAttributes( new RockContext(), true );
         }
 
         /// <summary>
@@ -1053,9 +1077,9 @@ namespace RockWeb.Blocks.Crm
             #region Attributes
 
             var selectedCategories = new List<CategoryCache>();
-            foreach ( string categoryGuid in GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues() )
+            foreach ( Guid categoryGuid in AttributeCategories )
             {
-                var category = CategoryCache.Get( categoryGuid.AsGuid(), rockContext );
+                var category = CategoryCache.Get( categoryGuid, rockContext );
                 if ( category != null )
                 {
                     selectedCategories.Add( category );
@@ -1570,9 +1594,9 @@ namespace RockWeb.Blocks.Crm
         private void BuildAttributes( RockContext rockContext, bool setValues = false )
         {
             var selectedCategories = new List<CategoryCache>();
-            foreach ( string categoryGuid in GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues() )
+            foreach ( Guid categoryGuid in AttributeCategories )
             {
-                var category = CategoryCache.Get( categoryGuid.AsGuid(), rockContext );
+                var category = CategoryCache.Get( categoryGuid, rockContext );
                 if ( category != null )
                 {
                     selectedCategories.Add( category );

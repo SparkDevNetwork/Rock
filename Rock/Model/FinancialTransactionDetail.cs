@@ -58,7 +58,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
-        [IncludeAsEntityProperty]
         public int AccountId { get; set; }
 
         /// <summary>
@@ -79,7 +78,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [BoundFieldTypeAttribute(typeof(Rock.Web.UI.Controls.CurrencyField))]
-        [IncludeAsEntityProperty]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -90,7 +88,6 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 500 )]
         [DataMember]
-        [IncludeAsEntityProperty]
         public string Summary { get; set; }
 
         /// <summary>

@@ -65,7 +65,15 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( !IsPostBack )
             {
-                ShowDetails();
+                var parentGroupId = GetAttributeValue( "ParentGroup" ).AsGuid();
+                if ( parentGroupId != default( Guid ) )
+                {
+                    ShowDetails();
+                }
+                else
+                {
+                    nbWarning.Text = "Please configure the block's settings with a default group.";
+                }
             }
         }
 

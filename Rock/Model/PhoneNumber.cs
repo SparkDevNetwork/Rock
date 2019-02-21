@@ -299,14 +299,20 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
+            var rockContext = dbContext as RockContext;
             if ( PersonHistoryChanges != null )
             {
                 foreach ( var keyVal in PersonHistoryChanges )
                 {
                     int personId = keyVal.Key > 0 ? keyVal.Key : PersonId;
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), personId, keyVal.Value, true, this.ModifiedByPersonAliasId );
+                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), personId, keyVal.Value, true, this.ModifiedByPersonAliasId );
                 }
             }
+
+            // update the ModifiedDateTime on the Person that this phone number is associated with
+            var currentDateTime = RockDateTime.Now;
+            var qryPersonsToUpdate = new PersonService( rockContext ).Queryable(true, true).Where( a => a.Id == this.PersonId );
+            rockContext.BulkUpdate( qryPersonsToUpdate, p => new Person { ModifiedDateTime = currentDateTime, ModifiedByPersonAliasId = this.ModifiedByPersonAliasId } );
 
             base.PostSaveChanges( dbContext );
         }

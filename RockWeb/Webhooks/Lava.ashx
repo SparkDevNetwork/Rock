@@ -28,6 +28,7 @@ using System.Xml;
 using Rock;
 using Rock.Web.Cache;
 using Newtonsoft.Json;
+using Rock.Utility;
 
 /// <summary>
 /// A webhook for processing the request with Lava. Does basic decoding of FORM, JSON
@@ -180,7 +181,7 @@ public class Lava : IHttpHandler
     protected Dictionary<string, object> RequestToDictionary( HttpRequest request )
     {
         var dictionary = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-
+        var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
         // Set the standard values to be used.
         dictionary.Add( "Url", "/" + string.Join( "", request.Url.Segments.SkipWhile( s => !s.EndsWith( ".ashx", StringComparison.InvariantCultureIgnoreCase ) && !s.EndsWith( ".ashx/", StringComparison.InvariantCultureIgnoreCase ) ).Skip( 1 ).ToArray() ) );
         dictionary.Add( "RawUrl", request.Url.AbsoluteUri );
@@ -188,7 +189,7 @@ public class Lava : IHttpHandler
         dictionary.Add( "QueryString", request.QueryString.Cast<string>().ToDictionary( q => q, q => request.QueryString[q] ) );
         dictionary.Add( "RemoteAddress", request.UserHostAddress );
         dictionary.Add( "RemoteName", request.UserHostName );
-        dictionary.Add( "ServerName", request.Url.Host );
+        dictionary.Add( "ServerName", host );
 
         // Add in the raw body content.
         using ( StreamReader reader = new StreamReader( request.InputStream, Encoding.UTF8 ) )

@@ -40,7 +40,7 @@ namespace Rock.Lava.Shortcodes
             shortcode you can easily convert those references to links to popular Bible
             websites. Let's take a look at how simple this shortcode is to use.
          </p>
-         <pre>{[ scripturize defaulttranslation='NLT' landingsite='YouVersion' cssclass='scripture' ]}
+         <pre>{[ scripturize defaulttranslation:'NLT' landingsite:'YouVersion' cssclass:'scripture' ]}
 {{ item.Title }}
 
 {{ item | Attribute:'Summary' }}
