@@ -169,8 +169,31 @@ namespace Rock.Model
         [DataMember]
         public string FieldVisibilityRulesJSON
         {
-            get => FieldVisibilityRules?.ToJson();
-            set => FieldVisibilityRules = value.FromJsonOrNull<Rock.Field.FieldVisibilityRules>() ?? new Field.FieldVisibilityRules();
+            get
+            {
+                return FieldVisibilityRules?.ToJson();
+            }
+
+            set
+            {
+                Field.FieldVisibilityRules rules = null;
+                if ( value.IsNotNullOrWhiteSpace() )
+                {
+                    rules = value.FromJsonOrNull<Rock.Field.FieldVisibilityRules>();
+                    if ( rules == null )
+                    {
+                        // if can't be deserialized as FieldVisibilityRules, it might have been serialized as an array from an earlier version
+                        var rulesList = value.FromJsonOrNull<List<Field.FieldVisibilityRule>>();
+                        if ( rulesList != null )
+                        {
+                            rules = new Field.FieldVisibilityRules();
+                            rules.RuleList.AddRange( rulesList );
+                        }
+                    }
+                }
+
+                this.FieldVisibilityRules = rules ?? new Field.FieldVisibilityRules();
+            }
         }
 
         #endregion
