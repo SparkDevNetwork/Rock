@@ -62,8 +62,12 @@ function Copy-DirectoryContentsRecursivelyWithSaneLinkHandling([string] $Directo
     New-Item -ItemType Directory $Destination -Force | Out-Null;
     foreach($Child in Get-ChildItem $DirectoryToCopy) {
         if($Child.LinkType) {
+            $Dest = Join-Path $Destination $Child.Name;
+            if(Test-Path $Dest) {
+                Remove-Item $Dest -Recurse -Force
+            }
             $LinkTarget, $OtherTargets = $Child.Target;
-            New-Item -ItemType $Child.LinkType -Path $Destination -Name $Child.Name -Target $LinkTarget -Force | Out-Null;
+            New-Item -ItemType $Child.LinkType $Dest -Target $LinkTarget -Force | Out-Null;
         }
         elseif($Child.PSIsContainer) {
             Copy-DirectoryContentsRecursivelyWithSaneLinkHandling (Join-Path $DirectoryToCopy $Child.Name) (Join-Path $Destination $Child.Name);
