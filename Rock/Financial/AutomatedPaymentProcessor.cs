@@ -106,6 +106,7 @@ namespace Rock.Financial
 
             LoadEntities();
 
+            // Get all the person aliases in the giving group
             var personAliasIds = _personAliasService.Queryable()
                 .AsNoTracking()
                 .Where( a => a.Person.GivingId == _authorizedPerson.GivingId )
@@ -114,11 +115,21 @@ namespace Rock.Financial
 
             // Check to see if a transaction exists for the person aliases within the last 5 minutes. This should help eliminate accidental repeat charges.
             var minDateTime = RockDateTime.Now.AddMinutes( -5 );
-            var repeatTransaction = _financialTransactionService.Queryable()
+            var recentTransactions = _financialTransactionService.Queryable()
                 .AsNoTracking()
-                .Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) )
-                .Where( t => t.TransactionDateTime >= minDateTime )
-                .FirstOrDefault();
+                .Include( t => t.TransactionDetails )
+                .Where( t =>
+                    // Check for transactions in the giving group
+                    t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) &&
+                    // Check for recent transactions
+                    t.TransactionDateTime >= minDateTime )
+                .ToList();
+
+            // Look for a recent transaction that has the same account/amount combinations
+            var repeatTransaction = recentTransactions.FirstOrDefault( t => t.TransactionDetails.All( d =>
+                _automatedPaymentArgs.AutomatedPaymentDetails.Any( ad =>
+                    ad.AccountId == d.AccountId &&
+                    ad.Amount == d.Amount ) ) );
 
             if ( repeatTransaction != null )
             {
