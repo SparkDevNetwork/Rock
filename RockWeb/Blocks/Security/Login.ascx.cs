@@ -450,7 +450,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
 
             if ( !string.IsNullOrWhiteSpace( returnUrl ) )
             {
-                string redirectUrl = Server.UrlDecode( returnUrl );
+                string redirectUrl = ScrubForXSSObjects( returnUrl );
                 Response.Redirect( redirectUrl );
                 Context.ApplicationInstance.CompleteRequest();
             }
@@ -491,6 +491,26 @@ Thank you for logging in, however, we need to confirm the email associated with 
             message.ThemeRoot = ResolveRockUrl( "~~/" );
             message.CreateCommunicationRecord = false;
             message.Send();
+        }
+
+        /// <summary>
+        ///JM:Reads the parameter to check for DOM objects and possible URL
+        /// returns a bad page for redirect when true and activates 'Page Not Found'
+        /// </summary>
+        /// <param name="returnUrl"></param>
+        private string ScrubForXSSObjects(string returnUrl )
+        {
+            ///Characters used by DOM Objects; javascript, document, window and URLs
+            char[] badCharacters = new char[] { '<', '>', ':','*','.' };
+
+            if ( returnUrl.IndexOfAny( badCharacters ) >=0 )
+            {
+                return "%252fAdmin";
+            }
+            else
+            {
+                return Server.UrlDecode( returnUrl );
+            }
         }
 
         #endregion
