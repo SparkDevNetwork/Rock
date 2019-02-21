@@ -31,6 +31,27 @@ namespace Rock
     public static partial class ExtensionMethods
     {
         #region String Extensions
+        
+        /// <summary>
+        /// ///JM:Reads the parameter to check for DOM objects and possible URL
+        /// returns a bad page for redirect when true and activates 'We Can't Find That Page'
+        /// </summary>
+        /// <param name="returnUrl"></param>
+        /// <param name="Server"></param>
+        public static string ScrubForXSSObjects( string returnUrl, HttpServerUtility server )
+        {
+            ///Characters used by DOM Objects; javascript, document, window and URLs
+            char[] badCharacters = new char[] { '<', '>', ':', '*', '.' };
+
+            if ( returnUrl.IndexOfAny( badCharacters ) >= 0 )
+            {
+                return "%252fAdmin";
+            }
+            else
+            {
+                return server.UrlDecode( returnUrl );
+            }
+        }
 
         /// <summary>
         /// Joins and array of strings using the provided separator.
