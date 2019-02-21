@@ -65,6 +65,15 @@ namespace Rock.CheckIn
         public Device Device { get; set; }
 
         /// <summary>
+        /// Gets the campus identifier based on the Device's Location(s)
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
+        [DataMember]
+        public int? CampusId { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether Registration Mode is enabled for the device
         /// </summary>
         /// <value>
@@ -309,6 +318,8 @@ namespace Rock.CheckIn
             {
                 currentDateTime = CampusCache.Get( campusId.Value )?.CurrentDateTime ?? RockDateTime.Now;
             }
+
+            kioskDevice.CampusId = campusId;
 
             var activeSchedules = new Dictionary<int, KioskSchedule>();
 
