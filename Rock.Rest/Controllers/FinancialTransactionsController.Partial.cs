@@ -65,18 +65,18 @@ namespace Rock.Rest.Controllers
         /// Process and charge a payment.
         /// </summary>
         /// <param name="automatedPaymentArgs"></param>
-        /// <param name="ignoreRepeatChargeProtection">If true, the payment will be charged even if there is a similar transaction for the same person within a short time period.</param>
-        /// <param name="ignoreScheduleAdherenceProtection">If true and a schedule ID is indicated in the args, the payment will be charged even if the schedule has already been processed accoring to it's frequency.</param>
+        /// <param name="enableDuplicateChecking">If false, the payment will be charged even if there is a similar transaction for the same person within a short time period.</param>
+        /// <param name="enableScheduleAdherenceProtection">If false and a schedule is indicated in the args, the payment will be charged even if the schedule has already been processed accoring to it's frequency.</param>
         /// <returns>The ID of the new transaction</returns>
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/Process" )]
-        public HttpResponseMessage ProcessPayment( [FromBody]AutomatedPaymentArgs automatedPaymentArgs, [FromUri]bool ignoreRepeatChargeProtection = false, [FromUri]bool ignoreScheduleAdherenceProtection = false )
+        public HttpResponseMessage ProcessPayment( [FromBody]AutomatedPaymentArgs automatedPaymentArgs, [FromUri]bool enableDuplicateChecking = true, [FromUri]bool enableScheduleAdherenceProtection = true )
         {
             var errorMessage = string.Empty;
             
             var rockContext = Service.Context as RockContext;
-            var automatedPaymentProcessor = new AutomatedPaymentProcessor( GetPersonAliasId( rockContext ), automatedPaymentArgs, rockContext, ignoreRepeatChargeProtection, ignoreScheduleAdherenceProtection );
+            var automatedPaymentProcessor = new AutomatedPaymentProcessor( GetPersonAliasId( rockContext ), automatedPaymentArgs, rockContext, enableDuplicateChecking, enableScheduleAdherenceProtection );
 
             if ( !automatedPaymentProcessor.AreArgsValid( out errorMessage ) ||
                 automatedPaymentProcessor.IsRepeatCharge( out errorMessage ) ||
