@@ -406,7 +406,7 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Checks the file extension against the Content File Type White list.
         /// </summary>
-        /// <param name="asset">The asset.</param>
+        /// <param name="fileName">Name of the file.</param>
         /// <returns>
         ///   <c>true</c> if [is file type allowed by white list] [the specified asset]; otherwise, <c>false</c>.
         /// </returns>

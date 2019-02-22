@@ -99,7 +99,7 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
-        /// Gets or sets the amount entry mode (Defaults to <seealso cref="AccountAmountEntryMode.Single"/> )
+        /// Gets or sets the amount entry mode (Defaults to <seealso cref="AccountAmountEntryMode.SingleAccount"/> )
         /// </summary>
         /// <value>
         /// The amount entry mode.
@@ -348,7 +348,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Sets the campus and displayed account from selected account.
         /// </summary>
-        /// <param name="selectedAccount">The selected account.</param>
+        /// <param name="selectedAccountId">The selected account identifier.</param>
         private void SetCampusAndDisplayedAccountFromSelectedAccount( int? selectedAccountId )
         {
             FinancialAccountInfo selectedAccount;
