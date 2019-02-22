@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\011_ItemTags.cs" />
     <Compile Include="Migrations\010_ReprintLabels.cs" />
     <Compile Include="Migrations\006_AddRosterPrintToCheckIn.cs" />
     <Compile Include="Migrations\005_ConnectionCardEntry.cs" />
@@ -72,6 +73,7 @@
     <Compile Include="Migrations\009_KVILabelAndMergeFields.cs" />
     <Compile Include="Migrations\008_CreateCheckinUser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Workflow\Action\Checkin\LCBCCreateLabels.cs" />
     <Compile Include="Workflow\Action\Checkin\SaveAttendanceAndPagerNumber.cs" />
   </ItemGroup>
   <ItemGroup />
