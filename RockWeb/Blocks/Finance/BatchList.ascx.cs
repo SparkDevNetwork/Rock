@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
@@ -62,6 +63,7 @@ namespace RockWeb.Blocks.Finance
             </div>
         </div>
 " )]
+    [WorkflowTypeField( "Workflows", "Workflows that will be made available as buttons", true )]
 
     public partial class BatchList : RockBlock, IPostBackEventHandler, ICustomGridColumns
     {
@@ -136,6 +138,28 @@ namespace RockWeb.Blocks.Finance
             ScriptManager.RegisterStartupScript( gBatchList, gBatchList.GetType(), "deleteBatchScript", deleteScript, true );
 
             gBatchList.Actions.AddCustomActionControl( ddlAction );
+
+            List<Guid> workflowTypes = GetAttributeValue( "Workflows" ).SplitDelimitedValues().AsGuidList();
+            if ( workflowTypes.Any() )
+            {
+                Regex regex = new Regex( "[^a-zA-Z0-9]" );
+                foreach ( var workflowType in workflowTypes )
+                {
+                    var workflow = WorkflowTypeCache.Get( workflowType );
+
+                    var button = new LinkButton();
+                    button.ID = string.Format( "lb{0}", regex.Replace( workflow.Name, "" ) );
+
+                    button.CssClass = "btn btn-default btn-sm pull-right";
+                    button.Text = string.Format( "<i class='{0}'></i>", workflow.IconCssClass );
+                    button.ToolTip = string.Format( "Launch Workflow: {0}", workflow.Name );
+                    button.CommandArgument = workflow.Guid.ToString();
+                    button.Click += WorkflowButton_Click;
+
+                    gBatchList.Actions.AddCustomActionControl( button );
+                }
+
+            }
         }
 
         /// <summary>
@@ -581,6 +605,44 @@ namespace RockWeb.Blocks.Finance
                 ddlAction.SelectedIndex = 0;
                 hfAction.Value = string.Empty;
                 BindGrid();
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the Dynamic Workflow controls.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void WorkflowButton_Click( object sender, EventArgs e )
+        {
+            var workflowGuid = ( ( LinkButton ) sender ).CommandArgument;
+            var batchesSelected = new List<int>();
+            gBatchList.SelectedKeys.ToList().ForEach( b => batchesSelected.Add( b.ToString().AsInteger() ) );
+
+            if ( workflowGuid.AsGuidOrNull() != null && batchesSelected.Any() )
+            {
+                RockContext rockContext = new RockContext();
+                WorkflowService workflowService = new WorkflowService( rockContext );
+
+                var workflowType = WorkflowTypeCache.Get( Guid.Parse( workflowGuid ) );
+
+                var workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name, rockContext );
+                if ( workflow != null )
+                {
+                    workflow.LoadAttributes();
+                    workflow.SetAttributeValue( "Batches", batchesSelected.AsDelimited( "," ) );
+                    workflow.SaveAttributeValue( "Batches", rockContext );
+
+                    List<string> workflowErrors;
+                    if ( !workflowService.Process( workflow, out workflowErrors ) )
+                    {
+                        mdGridWarning.Show( "Workflow Processing Error(s):<ul><li>" + workflowErrors.AsDelimited( "</li><li>" ) + "</li></ul>", ModalAlertType.Information );
+                    }
+                    else
+                    {
+                        mdGridWarning.Show( workflow.Name + ": Started", ModalAlertType.Information );
+                    }
+                }
             }
         }
 
