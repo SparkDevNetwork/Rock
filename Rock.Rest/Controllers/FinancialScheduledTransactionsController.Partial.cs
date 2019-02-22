@@ -86,6 +86,7 @@ namespace Rock.Rest.Controllers
         /// <param name="scheduledTransactionId">The scheduled transaction identifier.</param>
         /// <param name="enableDuplicateChecking">If false, the payment will be charged even if there is a similar transaction for the same person within a short time period.</param>
         /// <param name="enableScheduleAdherenceProtection">If false and a schedule is indicated in the args, the payment will be charged even if the schedule has already been processed accoring to it's frequency.</param>/// <returns>The ID of the new transaction</returns>
+        /// <returns>The ID of the new transaction</returns>
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpPost]
