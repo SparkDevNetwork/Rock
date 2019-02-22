@@ -32,6 +32,10 @@ namespace Rock
         /// The _call counts
         /// </summary>
         public static int _callCounts = 0;
+
+        /// <summary>
+        /// The call ms total
+        /// </summary>
         public static double _callMSTotal = 0.00;
 
         private class DebugHelperUserState

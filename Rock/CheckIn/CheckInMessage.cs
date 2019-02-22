@@ -7,11 +7,27 @@ using System.Threading.Tasks;
 
 namespace Rock.CheckIn
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.Lava.ILiquidizable" />
     [DataContract]
     public class CheckInMessage : Lava.ILiquidizable
     {
+        /// <summary>
+        /// Gets or sets the message text.
+        /// </summary>
+        /// <value>
+        /// The message text.
+        /// </value>
         public string MessageText { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the message.
+        /// </summary>
+        /// <value>
+        /// The type of the message.
+        /// </value>
         public MessageType MessageType { get; set; }
 
         /// <summary>
@@ -78,6 +94,9 @@ namespace Rock.CheckIn
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public enum MessageType
     {
         /// <summary>
