@@ -9,14 +9,39 @@
 
 <script>
 
-    function pageLoad() {
-        $("[id$='btnReprint']").hide();
-        
+    function displayReprintButton() {
+
         if ($(".controls.kioskmanager-actions.checkin-actions").length) {
-            
             $("[id$='btnReprint']").prependTo($(".controls.kioskmanager-actions.checkin-actions"));
-            $("[id$='btnReprint']").show();
         }
-    };
+    }
+
+    if (window.addEventListener) {
+        window.addEventListener('load', displayReprintButton, false); //W3C
+    } else {
+        window.attachEvent('onload', displayReprintButton); //IE
+    }
+
+    function startReprintListener() {
+        var mutationObserver = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                for (var i = 0; i < mutation.addedNodes.length; i++) {
+                    if ($(".controls.kioskmanager-actions.checkin-actions").length && $("[id$='btnReprint']").is(':hidden')) {
+                        $("[id$='btnReprint']").show();
+                    }
+
+                    if (!$(".controls.kioskmanager-actions.checkin-actions").length && $("[id$='btnReprint']").is(':visible')) {
+                        $("[id$='btnReprint']").hide();
+                    }
+                }
+            });
+        }); mutationObserver.observe(document.documentElement, {
+            childList: true, subtree: true
+        });
+    }
+
+    $(document).ready(function () {
+        startReprintListener();
+    });
 
 </script>
