@@ -34,17 +34,34 @@ namespace Rock.Web
     public sealed class RockRouteHandler : IRouteHandler
     {
         private RequestContext RouteRequestContext { get; set; }
+
         private string PageId { get; set; }
+
         private int RouteId { get; set; }
+
         private bool IsSiteMatch { get; set; }
+
         private Dictionary<string, string> Parms { get; set; }
+
         private string Host { get; set; }
+
         private HttpRequestBase RouteHttpRequest { get; set; }
+
         private HttpCookie SiteCookie { get; set; }
 
         /// <summary>
         /// Determine the logical page being requested by evaluating the routedata, or querystring and
         /// then loading the appropriate layout (ASPX) page
+        /// 
+        /// Pick url on the following priority order:
+        /// 1. PageId
+        /// 2. Route match and site match
+        /// 3. ShortLink match and site match
+        /// 4. Route and no site match
+        /// 5. ShortLink with no site match
+        /// 6. If there is no routing info in the request then set to default page
+        /// 7. 404 if route does not exist
+        /// 
         /// </summary>
         /// <param name="requestContext"></param>
         /// <returns></returns>
@@ -83,9 +100,9 @@ namespace Rock.Web
                 else if ( ( ( System.Web.Routing.Route ) RouteRequestContext.RouteData.Route ).Url.IsNullOrWhiteSpace() )
                 {
                     // if we don't have routing info then set the page ID to the default page for the site.
-                    SiteCache site = GetSite();
 
-                    // if not found use the default site
+                    // Get the site, if not found use the default site
+                    SiteCache site = GetSite();
                     if ( site == null )
                     {
                         site = SiteCache.Get( SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid() );
@@ -134,11 +151,6 @@ namespace Rock.Web
                             {
                                 var pageShortLink = new PageShortLinkService( rockContext ).GetByToken( shortlink, site.Id );
 
-                                // Pick url on the following priority order:
-                                // Route match and site match
-                                // ShortLink match and site match
-                                // Route and no site match
-                                // ShortLink with no site match
                                 if ( pageShortLink != null && ( pageShortLink.SiteId == site.Id || RouteRequestContext.RouteData.DataTokens["RouteName"] == null ) )
                                 {
                                     PageId = string.Empty;
@@ -154,9 +166,10 @@ namespace Rock.Web
                                     {
                                         transaction.UserName = RouteRequestContext.HttpContext.User.Identity.Name;
                                     }
+
                                     transaction.DateViewed = RockDateTime.Now;
                                     transaction.IPAddress = WebRequestHelper.GetClientIpAddress( RouteHttpRequest );
-                                    transaction.UserAgent = RouteHttpRequest.UserAgent ?? "";
+                                    transaction.UserAgent = RouteHttpRequest.UserAgent ?? string.Empty;
                                     RockQueue.TransactionQueue.Enqueue( transaction );
 
                                     RouteRequestContext.HttpContext.Response.Redirect( trimmedUrl );
@@ -208,7 +221,7 @@ namespace Rock.Web
                 if ( !string.IsNullOrEmpty( PageId ) )
                 {
                     int pageIdNumber = 0;
-                    if ( Int32.TryParse( PageId, out pageIdNumber ) )
+                    if ( int.TryParse( PageId, out pageIdNumber ) )
                     {
                         page = PageCache.Get( pageIdNumber );
                     }
@@ -314,7 +327,6 @@ namespace Rock.Web
                         break;
                     }
                 }
-                
             }
         }
 
@@ -449,5 +461,4 @@ namespace Rock.Web
             return;
         }
     }
-
 }
