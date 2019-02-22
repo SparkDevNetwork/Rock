@@ -280,6 +280,15 @@ namespace Rock.Financial
         public abstract bool UpdateScheduledPayment( FinancialScheduledTransaction transaction, PaymentInfo paymentInfo, out string errorMessage );
 
         /// <summary>
+        /// Flag indicating if the gateway supports modifying an existing schedule's payment method.
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool IsUpdatingSchedulePaymentMethodSupported
+        {
+            get { return true; }
+        }
+
+        /// <summary>
         /// Cancels the scheduled payment.
         /// </summary>
         /// <param name="transaction">The transaction.</param>
