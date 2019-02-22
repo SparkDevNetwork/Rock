@@ -31,27 +31,6 @@ namespace Rock
     public static partial class ExtensionMethods
     {
         #region String Extensions
-        
-        /// <summary>
-        /// ///JM:Reads the parameter to check for DOM objects and possible URL
-        /// returns a bad page for redirect when true and activates 'We Can't Find That Page'
-        /// </summary>
-        /// <param name="returnUrl"></param>
-        /// <param name="Server"></param>
-        public static string ScrubForXSSObjects( string returnUrl, HttpServerUtility server )
-        {
-            ///Characters used by DOM Objects; javascript, document, window and URLs
-            char[] badCharacters = new char[] { '<', '>', ':', '*', '.' };
-
-            if ( returnUrl.IndexOfAny( badCharacters ) >= 0 )
-            {
-                return "%252fAdmin";
-            }
-            else
-            {
-                return server.UrlDecode( returnUrl );
-            }
-        }
 
         /// <summary>
         /// Joins and array of strings using the provided separator.
@@ -226,7 +205,7 @@ namespace Rock
                 .Replace( "/", string.Empty )
                 .Replace( "?", string.Empty )
                 .Replace( ":", string.Empty )
-                .Replace( "@", string.Empty)
+                .Replace( "@", string.Empty )
                 .Replace( "=", string.Empty )
                 .Replace( "&", string.Empty )
                 .Replace( "<", string.Empty )
@@ -238,7 +217,7 @@ namespace Rock
                 .Replace( "}", string.Empty )
                 .Replace( "|", string.Empty )
                 .Replace( "\\", string.Empty )
-                .Replace( "^", string.Empty)
+                .Replace( "^", string.Empty )
                 .Replace( "[", string.Empty )
                 .Replace( "]", string.Empty )
                 .Replace( "`", string.Empty )
@@ -564,8 +543,8 @@ namespace Rock
             string[] nameValues = str.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
 
             // url decode array items just in case they were UrlEncoded (See KeyValueListFieldType and the KeyValueList controls)
-            nameValues = nameValues.Select( s => HttpUtility.UrlDecode( s ) ).ToArray(); 
-            
+            nameValues = nameValues.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
+
             // If we haven't found any pipes, check for commas
             if ( nameValues.Count() == 1 && nameValues[0] == str )
             {
@@ -793,10 +772,10 @@ namespace Rock
                         DateTime value;
                         var monthDayYearString = $"{monthDayString}/{RockDateTime.Today.Year}";
                         if ( DateTime.TryParseExact(
-                                monthDayYearString, 
-                                new[] { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy", "MM/d/yyyy" }, 
+                                monthDayYearString,
+                                new[] { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy", "MM/d/yyyy" },
                                 CultureInfo.InvariantCulture,
-                                DateTimeStyles.AllowWhiteSpaces, 
+                                DateTimeStyles.AllowWhiteSpaces,
                                 out value ) )
                         {
                             return value;
