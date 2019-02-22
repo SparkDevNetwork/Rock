@@ -76,6 +76,9 @@ namespace Rock.Model
                 type = Type.GetType( thetype );
             }
 
+            int? jobEntityTypeId = Rock.Web.Cache.EntityTypeCache.Get( "Rock.Model.ServiceJob" ).Id;
+            Rock.Attribute.Helper.UpdateAttributes( type, jobEntityTypeId, "Class", type.FullName );
+
             // load up job attributes (parameters) 
             job.LoadAttributes();
 

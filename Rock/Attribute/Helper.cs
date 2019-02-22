@@ -787,6 +787,7 @@ namespace Rock.Attribute
 
                 var attributeIds = model.Attributes.Select( y => y.Value.Id ).ToList();
                 var valueQuery = attributeValueService.Queryable().Where( x => attributeIds.Contains( x.AttributeId ) && x.EntityId == model.Id );
+                bool changesMade = false;
 
                 var attributeValues = valueQuery.ToDictionary( x => x.AttributeKey );
                 foreach ( var attribute in model.Attributes.Values )
@@ -798,19 +799,30 @@ namespace Rock.Attribute
                             if ( attributeValues[attribute.Key].Value != model.AttributeValues[attribute.Key].Value )
                             {
                                 attributeValues[attribute.Key].Value = model.AttributeValues[attribute.Key].Value;
+                                changesMade = true;
                             }
                         }
                         else
                         {
-                            var attributeValue = new AttributeValue();
-                            attributeValue.AttributeId = attribute.Id;
-                            attributeValue.EntityId = model.Id;
-                            attributeValue.Value = model.AttributeValues[attribute.Key].Value ?? string.Empty;
-                            attributeValueService.Add( attributeValue );
+                            // only save a new AttributeValue if the value has a nonempty value
+                            var value = model.AttributeValues[attribute.Key].Value;
+                            if ( value.IsNotNullOrWhiteSpace() )
+                            {
+                                var attributeValue = new AttributeValue();
+                                attributeValue.AttributeId = attribute.Id;
+                                attributeValue.EntityId = model.Id;
+                                attributeValue.Value = value;
+                                attributeValueService.Add( attributeValue );
+                                changesMade = true;
+                            }
                         }
                     }
                 }
-                rockContext.SaveChanges();
+
+                if ( changesMade )
+                {
+                    rockContext.SaveChanges();
+                }
             }
         }
 
