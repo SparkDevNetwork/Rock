@@ -45,7 +45,6 @@ namespace RockWeb.Plugins.com_bemadev.Checkin
                     }
                     string url = string.Concat( "/Page/", reportPage.Id, "?CampusId=", location.CampusId, "&LocationIds=", locationIdList );
                     btnPrintRoster.Attributes.Add( "href", url );
-                    btnPrintRoster.Attributes.Add( "target", "_blank" );
                     btnPrintRoster.Visible = true;
 
 
