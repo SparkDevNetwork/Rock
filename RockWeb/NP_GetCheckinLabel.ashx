@@ -1,0 +1,1 @@
+<%@ WebHandler Language="C#" CodeBehind="~/App_Code/NP_GetCheckinLabel.ashx.cs" Class="RockWeb.NP_GetCheckinLabel" %>
