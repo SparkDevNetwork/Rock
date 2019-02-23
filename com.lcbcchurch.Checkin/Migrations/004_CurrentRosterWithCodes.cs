@@ -115,17 +115,14 @@ table tr td, table tr th { page-break-inside: avoid; border-bottom: .5px solid b
     {% for item in results %} 
     	{% if newLocation != item.LocationName %}
 			{% if newLocation != '' %} 
-				</tbody></table> <div style='page -break-after:always;
-            '></div>
+				</tbody></table> <div style='page -break-after:always;'></div>
             {% endif %}
 
-            < table class='table table-striped'> 
+            <table class='table table-striped'> 
 				<thead> 
 					<tr class='tr-header'>
-						<th colspan = '8' style='padding-left:15px'> 
-							<h3 style = 'color:white;' >{{item.LocationName
-    }
-}</h3> 
+						<th colspan='8' style='padding-left:15px'> 
+							<h3 style='color:white;'>{{item.LocationName}}</h3> 
 						</th> 
 					</tr>
 					<tr class='tr-header'> 
