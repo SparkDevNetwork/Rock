@@ -791,6 +791,13 @@ The logged-in person's information will be used to complete the registrar inform
                     newFee.Id = 0;
                     newFee.Guid = Guid.NewGuid();
                     newFeeState.Add( newFee );
+                    foreach ( var item in fee.FeeItems )
+                    {
+                        var feeItem = item.Clone( false );
+                        feeItem.Id = 0;
+                        feeItem.Guid = Guid.NewGuid();
+                        newFee.FeeItems.Add( feeItem );
+                    }
                 }
 
                 FormState = newFormState;
