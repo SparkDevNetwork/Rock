@@ -1,0 +1,18 @@
+<div class="panel panel-default list-as-blocks clearfix">
+    <div class="panel-body hard-bottom">
+        <div class="row soft-half-right">
+            {% for childPage in Page.Pages %}
+                <div class="col-lg-2 col-md-3 col-sm-4 hard-right text-center">
+                    <a href="{{ childPage.Url }}" class="block floating" {% if childPage.DisplayDescription != 'true' %} title="{{ childPage.Description }}"{% endif %}>
+                        <div class="floating-item">
+                            {% if childPage.IconCssClass != '' %}
+                                <i class="{{ childPage.IconCssClass }} fa-fw fa-2x push-half-bottom"></i>
+                            {% endif %}
+                            <h5 class="flush-bottom">{{ childPage.Title }}</h5>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
