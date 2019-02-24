@@ -87,8 +87,8 @@ If (Test-Path "$rootfolder\temp\Plugins"){
 
 # move non com_lcbcchurch plugins to temp\Plugins folder
 If (Test-Path "$webroot\Plugins\"){
-	Write-Host "Moving non com_lcbcchurch/com_bemadev Plugins to temp Plugins directory"
-	$files = GCI -path "$webroot\Plugins\" | Where-Object {$_.name -ne "com_lcbcchurch" -and $_.name -ne "com_bemadev" -and $_.name -ne ".gitignore" -and $_.name -ne "readme.txt"}
+	Write-Host "Moving non com_lcbcchurch/com_bemadev/org_newpointe Plugins to temp Plugins directory"
+	$files = GCI -path "$webroot\Plugins\" | Where-Object {$_.name -ne "com_lcbcchurch" -and $_.name -ne "com_bemadev" -and $_.name -ne "org_newpointe" -and $_.name -ne ".gitignore" -and $_.name -ne "readme.txt"}
 	foreach ($file in $files) { Move-Item  "$webroot\Plugins\$file" -Destination "$rootfolder\temp\Plugins" -Force }
 }
 # move a robots file if it exists
