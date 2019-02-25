@@ -28,6 +28,7 @@ using System.Xml;
 using Rock;
 using Rock.Web.Cache;
 using Newtonsoft.Json;
+using Rock.Utility;
 
 /// <summary>
 /// A webhook for processing the request with Lava. Does basic decoding of FORM, JSON
@@ -180,7 +181,7 @@ public class Lava : IHttpHandler
     protected Dictionary<string, object> RequestToDictionary( HttpRequest request )
     {
         var dictionary = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-
+        var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
         // Set the standard values to be used.
         dictionary.Add( "Url", "/" + string.Join( "", request.Url.Segments.SkipWhile( s => !s.EndsWith( ".ashx", StringComparison.InvariantCultureIgnoreCase ) && !s.EndsWith( ".ashx/", StringComparison.InvariantCultureIgnoreCase ) ).Skip( 1 ).ToArray() ) );
         dictionary.Add( "RawUrl", request.Url.AbsoluteUri );
@@ -188,7 +189,7 @@ public class Lava : IHttpHandler
         dictionary.Add( "QueryString", request.QueryString.Cast<string>().ToDictionary( q => q, q => request.QueryString[q] ) );
         dictionary.Add( "RemoteAddress", request.UserHostAddress );
         dictionary.Add( "RemoteName", request.UserHostName );
-        dictionary.Add( "ServerName", request.Url.Host );
+        dictionary.Add( "ServerName", host );
 
         // Add in the raw body content.
         using ( StreamReader reader = new StreamReader( request.InputStream, Encoding.UTF8 ) )
@@ -203,9 +204,7 @@ public class Lava : IHttpHandler
             {
                 dictionary.Add( "Body", JsonConvert.DeserializeObject( (string)dictionary["RawBody"] ) );
             }
-            catch
-            {
-            }
+            catch { }
         }
         else if ( request.ContentType == "application/x-www-form-urlencoded" )
         {
@@ -213,9 +212,7 @@ public class Lava : IHttpHandler
             {
                 dictionary.Add( "Body", request.Form.Cast<string>().ToDictionary( q => q, q => request.Form[q] ) );
             }
-            catch
-            {
-            }
+            catch { }
         }
         else if ( request.ContentType == "application/xml" )
         {
@@ -226,9 +223,7 @@ public class Lava : IHttpHandler
                 string jsonText = JsonConvert.SerializeXmlNode( doc );
                 dictionary.Add( "Body", JsonConvert.DeserializeObject( ( jsonText ) ) );
             }
-            catch
-            {
-            }
+            catch { }
         }
 
         // Add the headers
@@ -239,7 +234,11 @@ public class Lava : IHttpHandler
         dictionary.Add( "Headers", headers );
 
         // Add the cookies
-        dictionary.Add( "Cookies", request.Cookies.Cast<string>().ToDictionary( q => q, q => request.Cookies[q].Value ) );
+        try
+        {
+			dictionary.Add( "Cookies", request.Cookies.Cast<string>().ToDictionary( q => q, q => request.Cookies[q].Value ) );
+        }
+        catch { }
 
         return dictionary;
     }

@@ -94,18 +94,19 @@ namespace RockWeb.Blocks.Administration
                 pnlExceptionGroups.Visible = true;
             }
 
-            lcExceptions.Options.SetChartStyle( this.ChartStyle );
             lcExceptions.Options.legend = lcExceptions.Options.legend ?? new Legend();
             lcExceptions.Options.legend.show = this.GetAttributeValue( "ShowLegend" ).AsBooleanOrNull();
             lcExceptions.Options.legend.position = this.GetAttributeValue( "LegendPosition" );
+            lcExceptions.Options.SetChartStyle( this.ChartStyle );
 
-            bcExceptions.Options.SetChartStyle( this.ChartStyle );
             bcExceptions.Options.legend = bcExceptions.Options.legend ?? new Legend();
             bcExceptions.Options.legend.show = this.GetAttributeValue( "ShowLegend" ).AsBooleanOrNull();
             bcExceptions.Options.legend.position = this.GetAttributeValue( "LegendPosition" );
             bcExceptions.Options.xaxis = new AxisOptions { mode = AxisMode.categories, tickLength = 0 };
             bcExceptions.Options.series.bars.barWidth = 0.6;
             bcExceptions.Options.series.bars.align = "center";
+            // Set chart style after setting options so they are not overwritten.
+            bcExceptions.Options.SetChartStyle( this.ChartStyle );
 
             bcExceptions.TooltipFormatter = @"
 function(item) {
@@ -387,7 +388,7 @@ function(item) {
                                     .Select( eg => new
                                     {
                                         Id = eg.Max( e => e.Id ),
-                                        Description = "<a href='" + url + eg.Max( e => e.Id ) + "'>" + eg.FirstOrDefault().Description + "</a>",
+                                        Description = "<a href='" + url + eg.Max( e => e.Id ) + "'>" + eg.FirstOrDefault(e => e.Id == eg.Max( e2 => e2.Id ) ).Description + "</a>",
                                         LastExceptionDate = eg.Max( e => e.CreatedDateTime ),
                                         TotalCount = eg.Count(),
                                         SubsetCount = eg.Count( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= minSummaryCountDate )

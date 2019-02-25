@@ -12,6 +12,7 @@
 
 <asp:UpdatePanel ID="upnlGroupDetail" runat="server">
     <ContentTemplate>
+        <Rock:NotificationBox ID="nbNotFoundOrArchived" runat="server" NotificationBoxType="Warning"  Visible="false" Text="That group does not exist or it has been archived."  />
 
         <asp:Panel ID="pnlDetails" CssClass="js-group-panel" runat="server">
             <asp:HiddenField ID="hfGroupId" runat="server" />
@@ -83,6 +84,7 @@
                                     <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
                                     <Rock:DefinedValuePicker ID="dvpGroupStatus" runat="server" Label="Status" />
                                     <Rock:NumberBox ID="nbGroupCapacity" runat="server" Label="Group Capacity" NumberType="Integer" MinimumValue="0"  />
+                                    <Rock:PersonPicker ID="ppAdministrator" runat="server" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />

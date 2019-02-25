@@ -39,9 +39,10 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block to display a specific content channel item." )]
 
-    [LavaCommandsField( "Enabled Lava Commands", description: "The Lava commands that should be enabled for this content channel item block.", required: false, category: "CustomSetting" )]
+    [LavaCommandsField( "Enabled Lava Commands", description: "The Lava commands that should be enabled for this content channel item block.", required: false )]
 
     [ContentChannelField( "Content Channel", description: "Limits content channel items to a specific channel, or leave blank to leave unrestricted.", required: false, defaultValue: "", category: "CustomSetting" )]
+    [EnumsField( "Status", description: "Include items with the following status.", enumSourceType: typeof( ContentChannelItemStatus ), required: false, defaultValue: "2", category: "CustomSetting" )]
     [TextField( "Content Channel Query Parameter", description: CONTENT_CHANNEL_QUERY_PARAMETER_DESCRIPTION, required: false, category: "CustomSetting" )]
 
     [CodeEditorField( "Lava Template", description: "The template to use when formatting the content channel item.", mode: CodeEditorMode.Lava, theme: CodeEditorTheme.Rock, height: 200, required: false, category: "CustomSetting", defaultValue: @"
@@ -216,6 +217,16 @@ Guid - ContentChannelItem Guid
             ddlContentChannel.SetValue( channelGuid );
             UpdateSocialMediaDropdowns( channelGuid );
 
+            cblStatus.BindToEnum<ContentChannelItemStatus>();
+            foreach ( string status in GetAttributeValue( "Status" ).SplitDelimitedValues() )
+            {
+                var li = cblStatus.Items.FindByValue( status );
+                if ( li != null )
+                {
+                    li.Selected = true;
+                }
+            }
+
             nbDetailPage.Text = this.GetAttributeValue( "DetailPage" );
             tbContentChannelQueryParameter.Text = this.GetAttributeValue( "ContentChannelQueryParameter" );
             ceLavaTemplate.Text = this.GetAttributeValue( "LavaTemplate" );
@@ -226,7 +237,7 @@ Guid - ContentChannelItem Guid
             cblCacheTags.DataSource = definedValueService.GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.CACHE_TAGS.AsGuid() ).Select( v => v.Value ).ToList();
             cblCacheTags.DataBind();
             string[] selectedCacheTags = this.GetAttributeValue( "CacheTags" ).SplitDelimitedValues();
-            foreach( ListItem cacheTag in cblCacheTags.Items )
+            foreach ( ListItem cacheTag in cblCacheTags.Items )
             {
                 cacheTag.Selected = selectedCacheTags.Contains( cacheTag.Value );
             }
@@ -287,6 +298,7 @@ Guid - ContentChannelItem Guid
         protected void mdSettings_SaveClick( object sender, EventArgs e )
         {
             this.SetAttributeValue( "ContentChannel", ddlContentChannel.SelectedValue );
+            this.SetAttributeValue( "Status", cblStatus.SelectedValuesAsInt.AsDelimited( "," ) );
             this.SetAttributeValue( "DetailPage", nbDetailPage.Text );
             this.SetAttributeValue( "ContentChannelQueryParameter", tbContentChannelQueryParameter.Text );
             this.SetAttributeValue( "LavaTemplate", ceLavaTemplate.Text );
@@ -419,6 +431,25 @@ Guid - ContentChannelItem Guid
                     return;
                 }
 
+                if ( contentChannelItem.ContentChannel.RequiresApproval )
+                {
+                    var statuses = new List<ContentChannelItemStatus>();
+                    foreach ( var status in ( GetAttributeValue( "Status" ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                    {
+                        var statusEnum = status.ConvertToEnumOrNull<ContentChannelItemStatus>();
+                        if ( statusEnum != null )
+                        {
+                            statuses.Add( statusEnum.Value );
+                        }
+                    }
+
+                    if ( !statuses.Contains( contentChannelItem.Status ) )
+                    {
+                        ShowNoDataFound();
+                        return;
+                    }
+                }
+
                 // if a Channel was specified, verify that the ChannelItem is part of the channel
                 var channelGuid = this.GetAttributeValue( "ContentChannel" ).AsGuidOrNull();
                 if ( channelGuid.HasValue )
@@ -454,8 +485,11 @@ Guid - ContentChannelItem Guid
                 AddHtmlMeta( "twitter:title", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterTitleAttribute" ), contentChannelItem ) );
                 AddHtmlMeta( "twitter:description", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterDescriptionAttribute" ), contentChannelItem ) );
                 AddHtmlMeta( "twitter:image", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterImageAttribute" ), contentChannelItem ) );
-                AddHtmlMeta( "twitter:card", this.GetAttributeValue( "TwitterCard" ) );
-
+                var twitterCard = this.GetAttributeValue( "TwitterCard" );
+                if ( twitterCard.IsNotNullOrWhiteSpace() && twitterCard != "none" )
+                {
+                    AddHtmlMeta( "twitter:card", twitterCard );
+                }
                 string lavaTemplate = this.GetAttributeValue( "LavaTemplate" );
                 string enabledLavaCommands = this.GetAttributeValue( "EnabledLavaCommands" );
                 outputContents = lavaTemplate.ResolveMergeFields( mergeFields, enabledLavaCommands );
@@ -488,6 +522,12 @@ Guid - ContentChannelItem Guid
                 RockPage.PageTitle = pageTitle;
                 RockPage.BrowserTitle = string.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
                 RockPage.Header.Title = string.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
+
+                var pageBreadCrumb = RockPage.PageReference.BreadCrumbs.FirstOrDefault();
+                if ( pageBreadCrumb != null )
+                {
+                    pageBreadCrumb.Name = RockPage.PageTitle;
+                }
             }
 
             LaunchWorkflow();
@@ -502,7 +542,7 @@ Guid - ContentChannelItem Guid
         private ContentChannelItem GetContentChannelItem( string contentChannelItemKey )
         {
             int? itemCacheDuration = GetAttributeValue( "ItemCacheDuration" ).AsIntegerOrNull();
-            
+
             ContentChannelItem contentChannelItem = null;
 
             if ( string.IsNullOrEmpty( contentChannelItemKey ) )
@@ -791,7 +831,7 @@ Guid - ContentChannelItem Guid
                                             ) )
                                         .OrderByDescending( a => a.EntityTypeQualifierColumn )
                                         .ThenBy( a => a.Order )
-                                        .ToCacheAttributeList();
+                                        .ToAttributeCacheList();
             }
 
             RockDropDownList[] attributeDropDowns = new RockDropDownList[]
@@ -861,7 +901,7 @@ Guid - ContentChannelItem Guid
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cbLogInteractions_CheckedChanged( object sender, EventArgs e )
         {
-            if (cbLogInteractions.Checked)
+            if ( cbLogInteractions.Checked )
             {
                 cbWriteInteractionOnlyIfIndividualLoggedIn.Visible = true;
                 cbWriteInteractionOnlyIfIndividualLoggedIn.Checked = true;

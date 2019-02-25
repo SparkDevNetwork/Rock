@@ -237,8 +237,8 @@
 @input-border-radius:         @border-radius-base;            // The border radius of input fields.
 @input-border-focus:          @brand-primary;                 // The border color of active inputs.
 
-@input-focus-rgba:            rgba(red(@input-border-focus), green(@input-border-focus), blue(@input-border-focus), .6);
-@input-focus-box-shadow:      ~"0 0 0 3px @{input-focus-rgba}";
+@input-focus-rgba:            fade(@input-border-focus, 40%);
+@input-focus-box-shadow:      ~"0 0 0 2px @{input-focus-rgba}";
 @input-focus-transition:      ~"border-color .15s ease-in-out, box-shadow .15s ease-in-out";
 
 @input-color-placeholder:        lighten(@text-color, 40%);   // The text color of input placeholder text.
@@ -270,7 +270,7 @@
 @panel-text:                  @text-color;                    // The text color of the panel.
 @panel-border:                @ui-4;                          // The panel's border color.
 @panel-top-border-color:      @ui-4;                          // Color of the panel's top border often used as an accent color.
-@panel-border-radius:         @border-radius-base;
+@panel-border-radius:         @border-radius-base + 1;        // Panel Border Radius subtracts 1, so set to 1 so there's not invalid CSS
 @panel-subheading:            @ui-2;
 @drawer-bg:                   @panel-subheading;
 //--

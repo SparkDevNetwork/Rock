@@ -22,6 +22,7 @@ using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -102,7 +103,7 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as SchedulePicker;
-            string result = null;
+            string result = string.Empty;
 
             if ( picker != null )
             {
@@ -116,9 +117,11 @@ namespace Rock.Field.Types
                         result = schedules.Select( s => s.Guid.ToString() ).ToList().AsDelimited( "," );
                     }
                 }
+
+                return result;
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>
@@ -165,8 +168,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
         {
-            // This field type does not support filtering
-            return null;
+            return base.FilterControl( configurationValues, id, required, filterMode );
         }
 
         /// <summary>
@@ -175,7 +177,21 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override bool HasFilterControl()
         {
-            return false;
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.ContainsFilterComparisonTypes;
+            }
         }
 
         #endregion

@@ -200,7 +200,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Returnes a boolean value indicating if 'Saved Account' functionality is supported for the given currency type. 
+        /// Returns a boolean value indicating if 'Saved Account' functionality is supported for the given currency type. 
         /// </summary>
         /// <param name="currencyType">Type of the currency.</param>
         /// <returns></returns>
@@ -210,7 +210,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Returnes a boolean value indicating if 'Saved Account' functionality is supported for frequency (i.e. one-time vs repeating )
+        /// Returns a boolean value indicating if 'Saved Account' functionality is supported for frequency (i.e. one-time vs repeating )
         /// </summary>
         /// <param name="isRepeating">if set to <c>true</c> [is repeating].</param>
         /// <returns></returns>
@@ -278,6 +278,15 @@ namespace Rock.Financial
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         public abstract bool UpdateScheduledPayment( FinancialScheduledTransaction transaction, PaymentInfo paymentInfo, out string errorMessage );
+
+        /// <summary>
+        /// Flag indicating if the gateway supports modifying an existing schedule's payment method.
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool IsUpdatingSchedulePaymentMethodSupported
+        {
+            get { return true; }
+        }
 
         /// <summary>
         /// Cancels the scheduled payment.

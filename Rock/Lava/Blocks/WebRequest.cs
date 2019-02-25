@@ -135,36 +135,45 @@ namespace Rock.Lava.Blocks
                     }
 
                     IRestResponse response = client.Execute( request );
-                    var content = response.Content;
 
-                    var contentType = parms["responsecontenttype"].ToLower();
-
-                    if ( contentType == "xml" )
+                    if ( response.StatusCode == System.Net.HttpStatusCode.OK )
                     {
-                        responseData = new ExpandoObject();
-                        var doc = XDocument.Parse( response.Content );
-                        ExpandoObjectHelper.Parse( responseData, doc.Root );
-                    }
-                    else if (contentType == "json" )
-                    {
-                        var converter = new ExpandoObjectConverter();
 
-                        // determine if the return type is an array or not
-                        if ( content.Trim().Substring( 0, 1 ) == "[" )
+                        var content = response.Content;
+
+                        var contentType = parms["responsecontenttype"].ToLower();
+
+                        if ( contentType == "xml" )
                         {
-                            responseData = JsonConvert.DeserializeObject<List<ExpandoObject>>( content, converter ); // array
+                            responseData = new ExpandoObject();
+                            var doc = XDocument.Parse( response.Content );
+                            ExpandoObjectHelper.Parse( responseData, doc.Root );
                         }
-                        else
+                        else if ( contentType == "json" )
                         {
-                            responseData = JsonConvert.DeserializeObject<ExpandoObject>( content, converter ); // not an array
-                        }
-                    }
-                    else // otherwise assume html and just throw the contents out to the screen
-                    {
-                        responseData = content;
-                    }
+                            var converter = new ExpandoObjectConverter();
 
-                    context.Scopes.Last()[parms["return"]] = responseData;
+                            // determine if the return type is an array or not
+                            if ( content.Trim().Substring( 0, 1 ) == "[" )
+                            {
+                                responseData = JsonConvert.DeserializeObject<List<ExpandoObject>>( content, converter ); // array
+                            }
+                            else
+                            {
+                                responseData = JsonConvert.DeserializeObject<ExpandoObject>( content, converter ); // not an array
+                            }
+                        }
+                        else // otherwise assume html and just throw the contents out to the screen
+                        {
+                            responseData = content;
+                        }
+
+                        context.Scopes.Last()[parms["return"]] = responseData;
+                    }
+                    else
+                    {
+                        responseData = $"{response.StatusCode}: {response.Content}";
+                    }
                 } catch
                 {
                     throw;

@@ -42,6 +42,8 @@ namespace RockWeb.Blocks.CheckIn
     [TextField( "No Option After Select Message", "Message to display when there are not any options available after location is selected. Use {0} for person's name", false,
         "Sorry, based on your selection, there are currently not any available times that {0} can check into.", "Text", 12 )]
 
+    [CustomDropdownListField( "Sort By", "", "0^Location Name,1^Check-In Group Location Order", false, "0", order: 13 )]
+
     public partial class LocationSelect : CheckInBlockMultiPerson
     {
         /// <summary>
@@ -206,9 +208,21 @@ namespace RockWeb.Blocks.CheckIn
                         }
                         else
                         {
-                            rSelection.DataSource = availLocations
-                                .OrderBy( l => l.Location.Name )
-                                .ToList();
+                            var locations = new List<CheckInLocation>();
+                            int sortBy = GetAttributeValue( "SortBy" ).AsInteger();
+                            switch ( sortBy )
+                            {
+                                case 0: locations = availLocations.OrderBy( l => l.Location.Name ).ToList();
+                                    break;
+
+                                case 1: locations = availLocations.OrderBy( l => l.Order ).ToList();
+                                    break;
+
+                                default: locations = availLocations.OrderBy( l => l.Location.Name ).ToList();
+                                    break;
+                            }
+
+                            rSelection.DataSource = locations;
 
                             rSelection.DataBind();
                         }

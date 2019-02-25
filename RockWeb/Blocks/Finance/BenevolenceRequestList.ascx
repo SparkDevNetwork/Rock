@@ -18,8 +18,8 @@
                             <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
                             <Rock:RockTextBox ID="tbGovernmentId" runat="server" Label="Government ID" />
                             <Rock:RockDropDownList ID="ddlCaseWorker" runat="server" Label="Case Worker" EnhanceForLongLists="true" />
-                            <Rock:RockDropDownList ID="ddlResult" runat="server" Label="Result" DataTextField="Value" DataValueField="Id" />
-                            <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Request Status" DataTextField="Value" DataValueField="Id" />
+                            <Rock:DefinedValuePicker ID="dvpResult" runat="server" Label="Result" DataTextField="Value" DataValueField="Id" />
+                            <Rock:DefinedValuePicker ID="dvpStatus" runat="server" Label="Request Status" DataTextField="Value" DataValueField="Id" />
                             <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                             <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                         </Rock:GridFilter>

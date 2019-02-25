@@ -30,6 +30,7 @@ namespace Rock.Migrations
         public override void Up()
         {
             AddContentChannelItemAttributeCategoriesblockUp();
+            UpdatespCheckin_BadgeAttendance();
         }
 
         /// <summary>

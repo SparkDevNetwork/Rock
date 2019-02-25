@@ -167,7 +167,7 @@ namespace RockWeb.Blocks.Event
         {
             rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Campus" ), "Campus", cblCampus.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "DateRange" ), "Date Range", drpDate.DelimitedValues );
-            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Audience" ), "Audience", cblAudience.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Audience" ), "Audience", dvpAudience.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Status" ), "Status", ddlStatus.SelectedValue );
             rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "ApprovalStatus" ), "Approval Status", ddlApprovalStatus.SelectedValue );
 
@@ -231,9 +231,9 @@ namespace RockWeb.Blocks.Event
                 }
                 e.Value = DateRangePicker.FormatDelimitedValues( drp.DelimitedValues );
             }
-            else if ( e.Key == MakeKeyUniqueToEventCalendar( "Audiences" ) )
+            else if ( e.Key == MakeKeyUniqueToEventCalendar( "Audience" ) )
             {
-                e.Value = ResolveValues( e.Value, cblAudience );
+                e.Value = ResolveValues( e.Value, dvpAudience );
             }
             else if ( e.Key == MakeKeyUniqueToEventCalendar( "Status" ) ||
                 e.Key == MakeKeyUniqueToEventCalendar( "ApprovalStatus" ) )
@@ -349,11 +349,11 @@ namespace RockWeb.Blocks.Event
                 cblCampus.SetValues( campusValue.Split( ';' ).ToList() );
             }
 
-            cblAudience.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() ) );
-            string audienceValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Audiences" ) );
+            dvpAudience.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() ).Id;
+            string audienceValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Audience" ) );
             if ( !string.IsNullOrWhiteSpace( audienceValue ) )
             {
-                cblAudience.SetValues( audienceValue.Split( ';' ).ToList() );
+                dvpAudience.SetValues( audienceValue.Split( ';' ).ToList() );
             }
 
             ddlStatus.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Status" ) ) );
@@ -577,7 +577,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // Filter by Audience
-                List<int> audiences = cblAudience.SelectedValuesAsInt;
+                List<int> audiences = dvpAudience.SelectedValuesAsInt;
                 if ( audiences.Any() )
                 {
                     qry = qry.Where( i => i.EventItem.EventItemAudiences

@@ -538,7 +538,7 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
-                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/summernote/summernote.min.js" ), true );
+                RockPage.AddScriptLink( Page, "~/Scripts/summernote/summernote.min.js" );
                 RockPage.AddScriptLink( Page, "~/Scripts/Bundles/RockHtmlEditorPlugins", false );
             }
 
@@ -672,6 +672,7 @@ namespace Rock.Web.UI.Controls
 
             string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
             string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );
+            string fileTypeWhiteList = globalAttributesCache.GetValue( "ContentFiletypeWhitelist" );
 
             string documentFolderRoot = this.DocumentFolderRoot;
             string imageFolderRoot = this.ImageFolderRoot;
@@ -756,7 +757,8 @@ $(document).ready( function() {{
             documentFolderRoot: '{Rock.Security.Encryption.EncryptString( documentFolderRoot )}', 
             imageFolderRoot: '{Rock.Security.Encryption.EncryptString( imageFolderRoot )}',
             imageFileTypeWhiteList: '{imageFileTypeWhiteList}',
-            fileTypeBlackList: '{fileTypeBlackList}'
+            fileTypeBlackList: '{fileTypeBlackList}',
+            fileTypeWhiteList: '{fileTypeWhiteList}'
         }},
 
         rockMergeFieldOptions: {{ 

@@ -213,6 +213,24 @@ namespace Rock.Web.Cache
         public bool EnableHistory { get; private set; }
 
         /// <summary>
+        /// Gets or sets any HTML to be rendered before the attribute's edit control 
+        /// </summary>
+        /// <value>
+        /// The pre HTML.
+        /// </value>
+        [DataMember]
+        public string PreHtml { get; private set; }
+
+        /// <summary>
+        /// Gets or sets any HTML to be rendered after the attribute's edit control 
+        /// </summary>
+        /// <value>
+        /// The post HTML.
+        /// </value>
+        [DataMember]
+        public string PostHtml { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical
         /// </summary>
         /// <value>
@@ -271,12 +289,20 @@ namespace Rock.Web.Cache
         public Dictionary<string, ConfigurationValue> QualifierValues { get; private set; }
 
         /// <summary>
-        /// Gets the default type of the value as.
+        /// The default value using the most appropriate datatype
         /// </summary>
         /// <value>
         /// The default type of the value as.
         /// </value>
         public object DefaultValueAsType => FieldType.Field.ValueAsFieldType( null, DefaultValue, QualifierValues );
+
+        /// <summary>
+        /// The default value formatted based on the field type and qualifiers
+        /// </summary>
+        /// <value>
+        /// The default value as formatted.
+        /// </value>
+        public string DefaultValueAsFormatted => FieldType.Field.FormatValue( null, DefaultValue, QualifierValues, false );
 
         /// <summary>
         /// Gets the default sort value.
@@ -365,6 +391,8 @@ namespace Rock.Web.Cache
             IsAnalyticHistory = attribute.IsAnalyticHistory;
             IsActive = attribute.IsActive;
             EnableHistory = attribute.EnableHistory;
+            PreHtml = attribute.PreHtml;
+            PostHtml = attribute.PostHtml;
 
             QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
@@ -433,15 +461,14 @@ namespace Rock.Web.Cache
                 SetValue = setValue,
                 SetId = setId,
                 Required = required,
-                LabelText = labelText ?? Name,
-                HelpText = helpText ?? Description,
+                LabelText = labelText,
+                HelpText = helpText,
                 WarningText = warningText,
-                AttributeControlId = attributeControlId ?? $"attribute_field_{Id}"
+                AttributeControlId = attributeControlId
             };
 
             return AddControl( controls, attributeControlOptions );
         }
-
 
         /// <summary>
         /// Adds the control.
@@ -451,6 +478,14 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Control AddControl( ControlCollection controls, AttributeControlOptions options )
         {
+            options.LabelText = options.LabelText ?? Name;
+            options.HelpText = options.HelpText ?? Description;
+            options.AttributeControlId = options.AttributeControlId ?? $"attribute_field_{Id}";
+
+            EntityTypeCache entityType = EntityTypeId.HasValue ? EntityTypeCache.Get( this.EntityTypeId.Value ) : null;
+
+            bool showPrePostHtml = ( entityType?.AttributesSupportPrePostHtml ?? false ) && ( options?.ShowPrePostHtml ?? true );
+
             var attributeControl = FieldType.Field.EditControl( QualifierValues, options.SetId ? options.AttributeControlId : string.Empty );
             if ( attributeControl == null ) return null;
 
@@ -462,6 +497,14 @@ namespace Rock.Web.Cache
             // If the control is a RockControl
             var rockControl = attributeControl as IRockControl;
             var controlHasRequired = attributeControl as IHasRequired;
+
+            if ( showPrePostHtml )
+            {
+                if ( this.PreHtml.IsNotNullOrWhiteSpace() )
+                {
+                    controls.Add( new Literal { Text = this.PreHtml } );
+                }
+            }
             
             if ( rockControl != null )
             {
@@ -542,6 +585,14 @@ namespace Rock.Web.Cache
                 else
                 {
                     controls.Add( attributeControl );
+                }
+            }
+
+            if ( options.ShowPrePostHtml )
+            {
+                if ( this.PostHtml.IsNotNullOrWhiteSpace() )
+                {
+                    controls.Add( new Literal { Text = this.PostHtml } );
                 }
             }
 
@@ -808,6 +859,13 @@ namespace Rock.Web.Cache
         /// </value>
         public string AttributeControlId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [show pre post HTML] (if EntityType supports it)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show pre post HTML]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowPrePostHtml { get; set; }
     }
 }
 

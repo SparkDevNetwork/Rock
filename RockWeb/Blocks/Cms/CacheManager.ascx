@@ -30,7 +30,7 @@
                 
                     <div class="col-md-6">
                         <h4>Cache Tags</h4>
-                        <Rock:Grid ID="gCacheTagList" runat="server" AllowSorting="true" EmptyDataText="No Tags Found" DisplayType="Light">
+                        <Rock:Grid ID="gCacheTagList" runat="server" AllowSorting="true" EmptyDataText="No Tags Found" DisplayType="Light" OnRowSelected="gCacheTagList_RowSelected">
                             <Columns>
                                 <Rock:RockBoundField DataField="TagName" HeaderText="Tag Name" SortExpression="TagName" />
                                 <Rock:RockBoundField DataField="TagDescription" HeaderText="Description" SortExpression="TagDescription" TruncateLength="255" HtmlEncode="false" />
@@ -109,6 +109,7 @@
         <Rock:ModalDialog ID="dlgAddTag" runat="server" Title="Add Tag" OnSaveClick="dlgAddTag_SaveClick" OnCancelScript="clearActiveDialog();" >
             <Content>
                 <Rock:NotificationBox ID="nbModalMessage" runat="server" Visible="false" />
+                <asp:HiddenField ID="hfTagId" runat="server" />
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbTagName" runat="server" Label="Tag Name" onkeypress="this.value = this.value.toLowerCase().replace(' ', '-');" Style="text-transform: lowercase;" Width="100%"/>

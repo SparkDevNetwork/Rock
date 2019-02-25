@@ -35,7 +35,7 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public string AdditionalMergeValuesJson { get; set; }
+        public string AdditionalMergeValuesJson { get; set; } = @"{}";
 
         /// <summary />
         public int EntityId { get; set; }

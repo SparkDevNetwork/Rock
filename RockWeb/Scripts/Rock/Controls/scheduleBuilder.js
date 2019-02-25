@@ -71,13 +71,18 @@
                 // set colors back to default just in case previously marked invalid
                 var $datepicker = $modal.find('.specific-date input');
                 $datepicker.css('color', '');
-                var checkDate = Date.parse($datepicker.val());
-                if (!checkDate) {
+
+                // var checkDate = Date.parse($datepicker.val());
+                if ($datepicker.val() == null || $datepicker.val() == "") {
                     // blank, don't color, just return
                     return;
                 }
 
-                if (checkDate < 0) {
+                var locale = window.navigator.userLanguage || window.navigator.language;
+                moment.locale(locale);
+                var checkDate = moment($datepicker.val(), 'l');
+
+                if (!checkDate.isValid) {
                     // invalid date entered, color red and return
                     $datepicker.css('color', 'red');
                     return;
@@ -102,7 +107,7 @@
                 dateList.children().remove();
                 $.each(dateListValues, function (i, value) {
                     // add to ul
-                    var newLi = "<li><span>" + value + "</span> <a href='#' style='display: none'><i class='fa fa-times'></i></a></li>";
+                    var newLi = "<li><span>" + value + "</span> <a href='#' style='display: none'> <i class='fa fa-times'></i></a></li>";
                     dateList.append(newLi);
                 });
 
@@ -237,11 +242,15 @@
 
             // validate on Save.  Make sure they have at least a StartDate and Time set
             $modal.find('.js-modaldialog-save-link').off('click').on('click', function (event) {
+
+                var locale = window.navigator.userLanguage || window.navigator.language;
+                moment.locale(locale);
+
                 var $datetimepicker = $modal.find('[id*="dpStartDateTime"]').find('input'),
-                    startDateValue = Date.parse($datetimepicker.first().val()) || -1,
+                    startDateValue = moment($datetimepicker.first().val(), 'l'),
                     startTimeValue = $datetimepicker.last().val();
 
-                if (startDateValue < 0 || !startTimeValue) {
+                if (!startDateValue.isValid) {
                     $datetimepicker.parents(".form-group").first().toggleClass("has-error", 1);
                     event.preventDefault();
                     return;

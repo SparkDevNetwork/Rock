@@ -312,6 +312,11 @@ namespace Rock.SystemGuid
         public const string SMALL_GROUP_TOPIC = "D4111631-6B42-1CBD-4019-427D6BC6F475";
 
         /// <summary>
+		/// The Spiritual Gifts
+		/// </summary>
+		public const string SPIRITUAL_GIFTS = "9D9628F0-7FC5-411E-B9DF-740AA17689A0";
+
+        /// <summary>
         /// Used to manage the workflows that can be launched via webhook.
         /// </summary>
         public const string WEBHOOK_TO_WORKFLOW = "7B39BA6A-E7EF-48A6-9EC7-4A0F498D8FDB";
@@ -325,5 +330,11 @@ namespace Rock.SystemGuid
         /// Used to manage the lava code that can be launched via webhook.
         /// </summary>
         public const string WEBHOOK_TO_LAVA = "7BCF6434-8B15-49C3-8EF3-BAB9A63B545D";
+
+        /// <summary>
+        /// Used to store various liquid templates for features in Rock.
+        /// </summary>
+        public const string LAVA_TEMPLATES = "C3D44004-6951-44D9-8560-8567D705A48B";
+
     }
 }

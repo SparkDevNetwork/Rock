@@ -55,7 +55,7 @@
                         <div class="col-md-6">
                         <% } %>
 
-                            <div class="panel panel-default contribution-payment">
+                            <div runat="server" ID="divPaymentMethodModification" class="panel panel-default contribution-payment">
 
                                 <asp:HiddenField ID="hfPaymentTab" runat="server" />
 

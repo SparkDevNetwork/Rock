@@ -27,6 +27,7 @@ using System.Web.UI.HtmlControls;
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Model;
 using Rock.Utility;
 using Rock.Web.UI;
 
@@ -43,7 +44,6 @@ namespace RockWeb.Blocks.CheckIn
     [TextField( "Title", "", false, "Checked-in", "Text", 6 )]
     [TextField( "Detail Message", "The message to display indicating person has been checked in. Use {0} for person, {1} for group, {2} for schedule, and {3} for the security code", false,
         "{0} was checked into {1} in {2} at {3}", "Text", 7 )]
-
     public partial class Success : CheckInBlock
     {
         /// <summary>
@@ -54,7 +54,6 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnInit( e );
 
-            RockPage.AddScriptLink( "~/Scripts/CheckinClient/cordova-2.4.0.js", false );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/ZebraPrint.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
@@ -63,6 +62,53 @@ namespace RockWeb.Blocks.CheckIn
             {
                 bodyTag.AddCssClass( "checkin-success-bg" );
             }
+        }
+
+        /// <summary>
+        /// CheckinResult for rendering the Success Lava Template
+        /// </summary>
+        /// <seealso cref="DotLiquid.Drop" />
+        public class CheckinResult : DotLiquid.Drop
+        {
+            /// <summary>
+            /// Gets the person.
+            /// </summary>
+            /// <value>
+            /// The person.
+            /// </value>
+            public CheckInPerson Person { get; internal set; }
+
+            /// <summary>
+            /// Gets the group.
+            /// </summary>
+            /// <value>
+            /// The group.
+            /// </value>
+            public CheckInGroup Group { get; internal set; }
+
+            /// <summary>
+            /// Gets the location.
+            /// </summary>
+            /// <value>
+            /// The location.
+            /// </value>
+            public Location Location { get; internal set; }
+
+            /// <summary>
+            /// Gets the schedule.
+            /// </summary>
+            /// <value>
+            /// The schedule.
+            /// </value>
+            public CheckInSchedule Schedule { get; internal set; }
+
+            /// <summary>
+            /// Gets the detail message.
+            /// </summary>
+            /// <value>
+            /// The detail message.
+            /// </value>
+            public string DetailMessage { get; internal set; }
         }
 
         /// <summary>
@@ -89,6 +135,8 @@ namespace RockWeb.Blocks.CheckIn
                         var printFromClient = new List<CheckInLabel>();
                         var printFromServer = new List<CheckInLabel>();
 
+                        List<CheckinResult> checkinResultList = new List<CheckinResult>();
+
                         // Print the labels
                         foreach ( var family in CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ) )
                         {
@@ -106,10 +154,14 @@ namespace RockWeb.Blocks.CheckIn
                                         {
                                             foreach ( var schedule in location.GetSchedules( true ) )
                                             {
-                                                var li = new HtmlGenericControl( "li" );
-                                                li.InnerText = string.Format( detailMsg, person.ToString(), group.ToString(), location.Location.Name, schedule.ToString(), person.SecurityCode );
-
-                                                phResults.Controls.Add( li );
+                                                string detailMessage = string.Format( detailMsg, person.ToString(), group.ToString(), location.Location.Name, schedule.ToString(), person.SecurityCode );
+                                                CheckinResult checkinResult = new CheckinResult();
+                                                checkinResult.Person = person;
+                                                checkinResult.Group = group;
+                                                checkinResult.Location = location.Location;
+                                                checkinResult.Schedule = schedule;
+                                                checkinResult.DetailMessage = detailMessage;
+                                                checkinResultList.Add( checkinResult );
                                             }
                                         }
                                     }
@@ -121,6 +173,17 @@ namespace RockWeb.Blocks.CheckIn
                                     }
                                 }
                             }
+                        }
+
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                        mergeFields.Add( "CheckinResultList", checkinResultList );
+                        mergeFields.Add( "Kiosk", CurrentCheckInState.Kiosk );
+                        mergeFields.Add( "RegistrationModeEnabled", CurrentCheckInState.Kiosk.RegistrationModeEnabled );
+                        mergeFields.Add( "Messages", CurrentCheckInState.Messages );
+                        if ( CurrentGroupTypeIds != null )
+                        {
+                            var checkInAreas = CurrentGroupTypeIds.Select( a => Rock.Web.Cache.GroupTypeCache.Get( a ) );
+                            mergeFields.Add( "CheckinAreas", checkInAreas );
                         }
 
                         if ( printFromClient.Any() )
@@ -137,12 +200,11 @@ namespace RockWeb.Blocks.CheckIn
                         if ( printFromServer.Any() )
                         {
                             var messages = ZebraPrint.PrintLabels( printFromServer );
-
-                            foreach ( var message in messages )
-                            {
-                                phResults.Controls.Add( new LiteralControl( string.Format( "<br/>{0}", message ) ) );
-                            }
+                            mergeFields.Add( "ZebraPrintMessageList", messages );
                         }
+
+                        var successLavaTemplate = CurrentCheckInState.CheckInType.SuccessLavaTemplate;
+                        lCheckinResultsHtml.Text = successLavaTemplate.ResolveMergeFields( mergeFields );
 
                     }
                     catch ( Exception ex )

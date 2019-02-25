@@ -1,0 +1,211 @@
+; MagTek Standard USB Driver
+; Copyright (C) 2009 by MagTek Inc
+; All rights reserved
+; Part Number:30037812-101
+
+[Version]
+Signature="$Windows NT$"
+ClassGUID={36fc9e60-c465-11cf-8056-444553540000}
+Class=USB
+Provider=%MFGNAME%
+DriverVer = 08/24/2018,1.2.0.4
+CatalogFile=MTSTDUSB.cat
+
+;------------------------------------------------------------------------------
+;  + General 
+;------------------------------------------------------------------------------
+
+[Manufacturer]
+%MFGNAME%=DeviceList,NTx86,NTamd64,NTia64
+ 
+
+[SourceDisksFiles]
+MTSTDUSB.SYS=1
+MTSUSBPP.dll=1
+
+[SourceDisksNames]
+1=%INSTDISK%,""
+
+[DeviceList]
+%DESCSTX%=MTSTX.NT.5.1,USB\VID_0801&PID_2231
+%DESCEXCELLA%=MTEXCELLA.NT.5.1,USB\VID_0801&PID_2232
+%DESCMDX%=MTMDX.NT.5.1,USB\VID_0801&PID_2233
+%DESCMDXG2%=MTMDXG2.NT.5.1,USB\VID_0801&PID_2234
+
+[DeviceList.NTamd64]
+%DESCSTX%=MTSTX.NT.5.1,USB\VID_0801&PID_2231
+%DESCEXCELLA%=MTEXCELLA.NT.5.1,USB\VID_0801&PID_2232
+%DESCMDX%=MTMDX.NT.5.1,USB\VID_0801&PID_2233
+%DESCMDXG2%=MTMDXG2.NT.5.1,USB\VID_0801&PID_2234
+
+[DeviceList.NTx86]
+%DESCSTX%=MTSTX.NT.5.1,USB\VID_0801&PID_2231
+%DESCEXCELLA%=MTEXCELLA.NT.5.1,USB\VID_0801&PID_2232
+%DESCMDX%=MTMDX.NT.5.1,USB\VID_0801&PID_2233
+%DESCMDXG2%=MTMDXG2.NT.5.1,USB\VID_0801&PID_2234
+
+[DeviceList.NTia64]
+%DESCSTX%=MTSTX.NT.5.1,USB\VID_0801&PID_2231
+%DESCEXCELLA%=MTEXCELLA.NT.5.1,USB\VID_0801&PID_2232
+%DESCMDX%=MTMDX.NT.5.1,USB\VID_0801&PID_2233
+%DESCMDXG2%=MTMDXG2.NT.5.1,USB\VID_0801&PID_2234
+
+[ControlFlags]
+ExcludeFromSelect=*
+
+
+[DestinationDirs]
+DefaultDestDir	    	= 10,system32\drivers
+MTSTDUSB_CopyFiles      = 10,system32\drivers
+MTSTDUSBPP_CopyFiles   	= 10,system32
+
+
+[MTSTDUSB_CopyFiles]
+MTSTDUSB.sys,,,2
+
+[MTSTDUSBPP_CopyFiles]
+MTSUSBPP.dll,,,0x00000004
+
+
+;------------------------------------------------------------------------------
+;  - General 
+;  + Excella
+;------------------------------------------------------------------------------
+
+[MTEXCELLA.NT.5.1]
+CopyFiles=MTSTDUSB_CopyFiles,MTSTDUSBPP_CopyFiles
+AddReg=MTEXCELLA.AddReg.NT.5.1
+
+[MTEXCELLA.NT.5.1.Services]
+AddService=MTSTDUSB,2,MTSTDUSB_SVC.NT.5.1
+
+[MTEXCELLA.AddReg.NT.5.1]
+HKR,,EnumPropPages32,,"MTSUSBPP.dll,EnumPropPages"
+
+[MTEXCELLA.NT.5.1.HW]
+AddReg=HWAddRegEXCELLA.NT.5.1
+
+
+[HWAddRegEXCELLA.NT.5.1]
+HKR,,FriendlyName,,%FNAMEEXCELLA%
+HKR,,Port.RXQueueSize,0x00010001,0x00500000
+HKR,,Port.RXBufferSize,0x00010001,0x0000F800
+HKR,,Port.RXTransferSize,0x00010001,0x00002000
+HKLM,%SERVICEROOT%
+HKLM,%DEVICEROOT%
+
+;------------------------------------------------------------------------------
+;  - Excella
+;  + STX
+;------------------------------------------------------------------------------
+[MTSTX.NT.5.1]
+CopyFiles=MTSTDUSB_CopyFiles,MTSTDUSBPP_CopyFiles
+AddReg=MTSTX.AddReg.NT.5.1
+
+[MTSTX.NT.5.1.Services]
+AddService=MTSTDUSB,2,MTSTDUSB_SVC.NT.5.1
+
+[MTSTX.AddReg.NT.5.1]
+HKR,,EnumPropPages32,,"MTSUSBPP.dll,EnumPropPages"
+
+[MTSTX.NT.5.1.HW]
+AddReg=HWAddRegSTX.NT.5.1
+
+
+[HWAddRegSTX.NT.5.1]
+HKR,,FriendlyName,,%FNAMESTX%
+HKR,,Port.RXQueueSize,0x00010001,0x00500000
+HKR,,Port.RXBufferSize,0x00010001,0x0000F800
+HKR,,Port.RXTransferSize,0x00010001,0x00002000
+HKLM,%SERVICEROOT%
+HKLM,%DEVICEROOT%
+
+
+;------------------------------------------------------------------------------
+;  - STX
+;  + MDX
+;------------------------------------------------------------------------------
+[MTMDX.NT.5.1]
+CopyFiles=MTSTDUSB_CopyFiles,MTSTDUSBPP_CopyFiles
+AddReg=MTMDX.AddReg.NT.5.1
+
+[MTMDX.NT.5.1.Services]
+AddService=MTSTDUSB,2,MTSTDUSB_SVC.NT.5.1
+
+[MTMDX.AddReg.NT.5.1]
+HKR,,EnumPropPages32,,"MTSUSBPP.dll,EnumPropPages"
+
+[MTMDX.NT.5.1.HW]
+AddReg=HWAddRegMDX.NT.5.1
+
+
+[HWAddRegMDX.NT.5.1]
+HKR,,FriendlyName,,%FNAMEMDX%
+HKR,,Port.RXQueueSize,0x00010001,0x00500000
+HKR,,Port.RXBufferSize,0x00010001,0x00500000
+HKR,,Port.RXTransferSize,0x00010001,0x00100000
+HKLM,%SERVICEROOT%
+HKLM,%DEVICEROOT%
+
+;------------------------------------------------------------------------------
+;  - MDX
+;  + MDXG2
+;------------------------------------------------------------------------------
+[MTMDXG2.NT.5.1]
+CopyFiles=MTSTDUSB_CopyFiles,MTSTDUSBPP_CopyFiles
+AddReg=MTMDXG2.AddReg.NT.5.1
+
+[MTMDXG2.NT.5.1.Services]
+AddService=MTSTDUSB,2,MTSTDUSB_SVC.NT.5.1
+
+[MTMDXG2.AddReg.NT.5.1]
+HKR,,EnumPropPages32,,"MTSUSBPP.dll,EnumPropPages"
+
+[MTMDXG2.NT.5.1.HW]
+AddReg=HWAddRegMDXG2.NT.5.1
+
+
+[HWAddRegMDXG2.NT.5.1]
+HKR,,FriendlyName,,%FNAMEMDXG2%
+HKR,,Port.RXQueueSize,0x00010001,0x00500000
+HKR,,Port.RXBufferSize,0x00010001,0x0000F800
+HKR,,Port.RXTransferSize,0x00010001,0x00002000
+HKLM,%SERVICEROOT%
+HKLM,%DEVICEROOT%
+
+;------------------------------------------------------------------------------
+;  - MDXG2
+;  + Windows 2000/XP Common Sections
+;------------------------------------------------------------------------------
+
+[MTSTDUSB_SVC.NT.5.1]
+DisplayName    = %MTSTDUSB_DESC%
+ServiceType=1
+StartType=3
+ErrorControl=1
+ServiceBinary=%10%\system32\drivers\MTSTDUSB.sys
+LoadOrderGroup = Extended Base
+
+;------------------------------------------------------------------------------
+;  - Windows 2000/XP Common Sections
+;------------------------------------------------------------------------------
+;  String Definitions
+;------------------------------------------------------------------------------
+
+[Strings]
+MFGNAME="MagTek"
+INSTDISK="MagTek Installation Disc"
+MTSTDUSB_DESC="MagTek Standard Driver - USB"
+DESCEXCELLA="Excella USB"
+DESCSTX="Excella STX USB"
+DESCMDX="Excella MDX USB"
+DESCMDXG2="Excella ImageSafe USB"
+FNAMEEXCELLA="Excella USB"
+FNAMESTX="Excella STX USB"
+FNAMEMDX="Excella MDX USB"
+FNAMEMDXG2="Excella ImageSafe USB"
+SERVICEROOT="System\CurrentControlSet\Services\MTSTDUSB"
+DEVICEROOT="System\CurrentControlSet\Services\MTSTDUSB\Devices"
+
+
+

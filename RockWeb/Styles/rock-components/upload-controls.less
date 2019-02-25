@@ -3,7 +3,8 @@
 // file / image uploader
 // --------------------------------------------------
 
-.imageupload-group {
+.imageupload-group,
+.fileupload-group {
   position: relative;
   display: table-cell;
   padding: 2px;
@@ -11,6 +12,9 @@
   cursor: pointer;
   border: 1px solid @input-border;
   border-radius: @border-radius-base;
+}
+
+.imageupload-group {
 
   .imageupload-thumbnail {
     position: relative;
@@ -51,6 +55,11 @@
     border: 1px solid @input-border;
     border-radius: 0 0 @border-radius-base @border-radius-base;
 
+    &:focus-within {
+      box-shadow: @input-focus-box-shadow;
+      border-color: @input-border-focus;
+    }
+
     ::-webkit-file-upload-button {
       cursor: pointer;
     }
@@ -89,13 +98,6 @@
 }
 
 .fileupload-group {
-  position: relative;
-  display: table-cell;
-  padding: 2px;
-  margin-bottom: @spacing-md-px;
-  cursor: pointer;
-  border: 1px solid @input-border;
-  border-radius: @border-radius-base;
 
   .fileupload-thumbnail {
     position: relative;
@@ -177,13 +179,12 @@
     }
 
     span {
-      width: 100%;
-      padding: 0 .5em;
-      font-size: 13px;
+      padding: 0 7px;
+      font-size: 14px;
       color: @input-color;
 
       &::before {
-        padding-right: .25em;
+        padding-right: 4px;
         font-family: @fa-font-face;
         font-weight: @fa-theme-weight;
         content: @fa-var-upload;
@@ -197,13 +198,13 @@
   }
 
   .fileupload-button {
-    padding: 6px 12px;
-    background-color: @brand-primary;
+    padding: @padding-small-vertical @padding-small-horizontal;
+    background-color: @btn-primary-bg;
     border: 1px solid @btn-primary-border;
     border-radius: @border-radius-base;
 
     span {
-      color: #fff;
+      color: @btn-primary-color;
     }
   }
 

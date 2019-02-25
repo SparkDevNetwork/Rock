@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Core
         protected void fDevice_ApplyFilterClick( object sender, EventArgs e )
         {
             fDevice.SaveUserPreference( "Name", tbName.Text );
-            fDevice.SaveUserPreference( "Device Type", ddlDeviceType.SelectedValue );
+            fDevice.SaveUserPreference( "Device Type", dvpDeviceType.SelectedValue );
             fDevice.SaveUserPreference( "IP Address", tbIPAddress.Text );
             fDevice.SaveUserPreference( "Print To", ddlPrintTo.SelectedValue );
             fDevice.SaveUserPreference( "Printer", ddlPrinter.SelectedValue );
@@ -276,8 +276,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindFilter()
         {
-            ddlDeviceType.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ) );
-            ddlDeviceType.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+            dvpDeviceType.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ).Id;
 
             ddlPrintTo.BindToEnum<PrintTo>();
             ddlPrintTo.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
@@ -295,7 +294,7 @@ namespace RockWeb.Blocks.Core
             if ( !Page.IsPostBack )
             {
                 tbName.Text = fDevice.GetUserPreference( "Name" );
-                ddlDeviceType.SetValue( fDevice.GetUserPreference( "Device Type" ) );
+                dvpDeviceType.SetValue( fDevice.GetUserPreference( "Device Type" ) );
                 tbIPAddress.Text = fDevice.GetUserPreference( "IP Address" );
                 ddlPrintTo.SetValue( fDevice.GetUserPreference( "Print To" ) );
                 ddlPrinter.SetValue( fDevice.GetUserPreference( "Printer" ) );

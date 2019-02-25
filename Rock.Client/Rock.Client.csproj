@@ -66,6 +66,7 @@
     <Compile Include="CodeGenerated\AttributeMatrixItem.cs" />
     <Compile Include="CodeGenerated\AttributeMatrixTemplate.cs" />
     <Compile Include="CodeGenerated\AttributeQualifier.cs" />
+    <Compile Include="CodeGenerated\AttributesExport.cs" />
     <Compile Include="CodeGenerated\AttributeValue.cs" />
     <Compile Include="CodeGenerated\AttributeValueHistorical.cs" />
     <Compile Include="CodeGenerated\Audit.cs" />
@@ -135,9 +136,12 @@
     <Compile Include="CodeGenerated\FinancialScheduledTransactionDetail.cs" />
     <Compile Include="CodeGenerated\FinancialTransaction.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionDetail.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionDetailExport.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionExport.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionImage.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionRefund.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionScannedCheck.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionsExport.cs" />
     <Compile Include="CodeGenerated\Following.cs" />
     <Compile Include="CodeGenerated\FollowingEventNotification.cs" />
     <Compile Include="CodeGenerated\FollowingEventSubscription.cs" />
@@ -170,6 +174,7 @@
     <Compile Include="CodeGenerated\LavaShortcode.cs" />
     <Compile Include="CodeGenerated\Layout.cs" />
     <Compile Include="CodeGenerated\Location.cs" />
+    <Compile Include="CodeGenerated\LocationExport.cs" />
     <Compile Include="CodeGenerated\LoginParameters.cs" />
     <Compile Include="CodeGenerated\MergeTemplate.cs" />
     <Compile Include="CodeGenerated\MetaFirstNameGenderLookup.cs" />
@@ -194,11 +199,13 @@
     <Compile Include="CodeGenerated\PageContext.cs" />
     <Compile Include="CodeGenerated\PageRoute.cs" />
     <Compile Include="CodeGenerated\PageShortLink.cs" />
+    <Compile Include="CodeGenerated\PeopleExport.cs" />
     <Compile Include="CodeGenerated\Person.cs" />
     <Compile Include="CodeGenerated\PersonalDevice.cs" />
     <Compile Include="CodeGenerated\PersonAlias.cs" />
     <Compile Include="CodeGenerated\PersonBadge.cs" />
     <Compile Include="CodeGenerated\PersonDuplicate.cs" />
+    <Compile Include="CodeGenerated\PersonExport.cs" />
     <Compile Include="CodeGenerated\PersonPreviousName.cs" />
     <Compile Include="CodeGenerated\PersonSearchKey.cs" />
     <Compile Include="CodeGenerated\PersonSignal.cs" />
@@ -214,6 +221,7 @@
     <Compile Include="CodeGenerated\RegistrationTemplate.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateDiscount.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateFee.cs" />
+    <Compile Include="CodeGenerated\RegistrationTemplateFeeItem.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateForm.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateFormField.cs" />
     <Compile Include="CodeGenerated\Report.cs" />

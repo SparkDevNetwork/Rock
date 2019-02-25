@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -81,6 +82,7 @@
     <Compile Include="Migrations\05_CheckrWarnOfRecent.cs" />
     <Compile Include="Migrations\04_CheckrActionActive.cs" />
     <Compile Include="Migrations\07_CheckrUpdateWorkflowActionForm.cs" />
+    <Compile Include="Migrations\09_UpdateExistingPmmPackages.cs" />
     <Compile Include="Migrations\08_CheckrSetDefaultBackgroundCheckProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
