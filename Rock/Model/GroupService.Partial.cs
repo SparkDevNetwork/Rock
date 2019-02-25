@@ -1121,9 +1121,21 @@ namespace Rock.Model
         /// </summary>
         /// <param name="group">The group.</param>
         /// <returns></returns>
+        [Obsolete( "Please use the static method with no parameters. The group parameter is inconsequential.", false )]
+        [RockObsolete( "1.9" )]
         public bool AllowsDuplicateMembers( Group group )
         {
-            bool allowDuplicateGroupMembers = System.Configuration.ConfigurationManager.AppSettings["AllowDuplicateGroupMembers"].AsBoolean();
+            return AllowsDuplicateMembers();
+        }
+
+        /// <summary>
+        /// Returns true if duplicate group members are allowed in groups
+        /// Normally this is false, but there is a web.config option to allow it
+        /// </summary>
+        /// <returns></returns>
+        public static bool AllowsDuplicateMembers()
+        {
+            var allowDuplicateGroupMembers = System.Configuration.ConfigurationManager.AppSettings["AllowDuplicateGroupMembers"].AsBoolean();
             return allowDuplicateGroupMembers;
         }
 

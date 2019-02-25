@@ -209,6 +209,17 @@ namespace Rock.Jobs
                 rockCleanupExceptions.Add( new Exception( "Exception in CleanupJobHistory", ex ) );
             }
 
+            try
+            {
+                // Search for and delete group memberships duplicates (same person, group, and role)
+                var rowsDeleted = GroupMembershipCleanup();
+                databaseRowsCleanedUp.Add( "Group Membership", rowsDeleted );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in GroupMembershipCleanup", ex ) );
+            }
+
             if ( databaseRowsCleanedUp.Any( a => a.Value > 0 ) )
             {
                 context.Result = string.Format( "Rock Cleanup cleaned up {0}", databaseRowsCleanedUp.Where( a => a.Value > 0 ).Select( a => $"{a.Value} {a.Key.PluralizeIf( a.Value != 1 )}" ).ToList().AsDelimited( ", ", " and " ) );
@@ -216,11 +227,6 @@ namespace Rock.Jobs
             else
             {
                 context.Result = "Rock Cleanup completed";
-            }
-
-            if ( rockCleanupExceptions.Count > 0 )
-            {
-                throw new AggregateException( "One or more exceptions occurred in RockCleanup.", rockCleanupExceptions );
             }
 
             try
@@ -231,6 +237,11 @@ namespace Rock.Jobs
             catch ( Exception ex )
             {
                 rockCleanupExceptions.Add( new Exception( "Exception in LocationCleanup", ex ) );
+            }
+
+            if ( rockCleanupExceptions.Count > 0 )
+            {
+                throw new AggregateException( "One or more exceptions occurred in RockCleanup.", rockCleanupExceptions );
             }
         }
 
@@ -407,7 +418,7 @@ namespace Rock.Jobs
             if ( relationshipGroupType != null )
             {
                 var ownerRoleId = relationshipGroupType.Roles
-                    .Where( r => r.Guid.Equals( ownerRoleGuid ) ).Select( a => (int?)a.Id ).FirstOrDefault();
+                    .Where( r => r.Guid.Equals( ownerRoleGuid ) ).Select( a => ( int? ) a.Id ).FirstOrDefault();
                 if ( ownerRoleId.HasValue )
                 {
                     var rockContext = new RockContext();
@@ -689,7 +700,7 @@ namespace Rock.Jobs
             if ( exceptionExpireDays.HasValue )
             {
                 var exceptionLogRockContext = new Rock.Data.RockContext();
-                exceptionLogRockContext.Database.CommandTimeout = (int)TimeSpan.FromMinutes( 10 ).TotalSeconds;
+                exceptionLogRockContext.Database.CommandTimeout = ( int ) TimeSpan.FromMinutes( 10 ).TotalSeconds;
                 DateTime exceptionExpireDate = RockDateTime.Now.Add( new TimeSpan( exceptionExpireDays.Value * -1, 0, 0, 0 ) );
                 var exceptionLogsToDelete = new ExceptionLogService( exceptionLogRockContext ).Queryable().Where( a => a.CreatedDateTime < exceptionExpireDate );
 
@@ -857,7 +868,7 @@ WHERE ic.ChannelId = @channelId
                             var result = genericMethod.Invoke( this, null ) as int?;
                             if ( result.HasValue )
                             {
-                                recordsDeleted += (int)result;
+                                recordsDeleted += ( int ) result;
                             }
                         }
                     }
@@ -898,7 +909,7 @@ WHERE ic.ChannelId = @channelId
             int totalRowsDeleted = 0;
             int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
             var rockContext = new Rock.Data.RockContext();
-            rockContext.Database.CommandTimeout = (int)TimeSpan.FromMinutes( 10 ).TotalSeconds;
+            rockContext.Database.CommandTimeout = ( int ) TimeSpan.FromMinutes( 10 ).TotalSeconds;
             DateTime transientCommunicationExpireDate = RockDateTime.Now.Add( new TimeSpan( 7 * -1, 0, 0, 0 ) );
             var communicationsToDelete = new CommunicationService( rockContext ).Queryable().Where( a => a.CreatedDateTime < transientCommunicationExpireDate && a.Status == CommunicationStatus.Transient );
 
@@ -1109,7 +1120,7 @@ WHERE ExpireDateTime IS NOT NULL
                 LocationService locationService = new LocationService( rockContext );
                 var locations = locationService
                     .Queryable()
-                    .Where( l => l.State != null && l.State != string.Empty && l.State.Length > 3)
+                    .Where( l => l.State != null && l.State != string.Empty && l.State.Length > 3 )
                     .ToList();
 
                 foreach ( var location in locations )
@@ -1154,6 +1165,48 @@ WHERE ExpireDateTime IS NOT NULL
 
                 rockContext.SaveChanges();
             }
+        }
+
+        /// <summary>
+        /// Delete group membership duplicates if they are not allowed by web.config and return the
+        /// number of records deleted.
+        /// </summary>
+        /// <returns>The number of records deleted</returns>
+        private int GroupMembershipCleanup()
+        {
+            // There is a web.config setting to allow duplicate memberships
+            // If that is set to allow, then don't cleanup duplicates
+            var allowDuplicates = GroupService.AllowsDuplicateMembers();
+
+            if ( allowDuplicates )
+            {
+                return 0;
+            }
+
+            var rockContext = new RockContext();
+            var groupMemberService = new GroupMemberService( rockContext );
+            var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
+
+            var duplicateQuery = groupMemberService.Queryable()
+                // Duplicates are the same person, group, and role occuring more than once
+                .GroupBy( m => new { m.PersonId, m.GroupId, m.GroupRoleId } )
+                // Filter out sets with only one occurence because those are not duplicates
+                .Where( g => g.Count() > 1 )
+                // Leave the oldest membership and delete the others
+                .SelectMany( g => g.OrderBy( gm => gm.CreatedDateTime ).Skip( 1 ) );
+
+            // Get the IDs to delete the history
+            var groupMemberIds = duplicateQuery.Select( d => d.Id );
+            var historyQuery = groupMemberHistoricalService.Queryable()
+                .Where( gmh => groupMemberIds.Contains( gmh.GroupMemberId ) );
+
+            // Delete the history and duplicate memberships
+            groupMemberHistoricalService.DeleteRange( historyQuery );
+            groupMemberService.DeleteRange( duplicateQuery );
+            rockContext.SaveChanges();
+
+            // Return the count of memberships deleted
+            return groupMemberIds.Count();
         }
     }
 }
