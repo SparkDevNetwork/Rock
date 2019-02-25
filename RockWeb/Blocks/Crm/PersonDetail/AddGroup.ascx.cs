@@ -687,6 +687,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var location = new Location();
             acAddress.GetValues( location );
+            if ( acAddress.Country.IsNullOrWhiteSpace() )
+            {
+                // Fetch the default country from the organization address
+                var orgCountry = GlobalAttributesCache.Get().OrganizationCountry;
+                acAddress.Country = orgCountry.IsNullOrWhiteSpace() ? "US" : orgCountry;
+            }
 
             var showTitle = this.GetAttributeValue( "ShowTitle" ).AsBoolean();
             var showMiddleName = this.GetAttributeValue( "ShowMiddleName" ).AsBoolean();
