@@ -578,8 +578,6 @@ namespace Rock.Model
         private bool ValidateGroupMembership( RockContext rockContext, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            var groupService = new GroupService( rockContext );
             var group = this.Group ?? new GroupService( rockContext ).Queryable().AsNoTracking().Where( g => g.Id == this.GroupId ).FirstOrDefault();
 
             var groupType = GroupTypeCache.Get( group.GroupTypeId );
@@ -599,7 +597,7 @@ namespace Rock.Model
             }
 
             // Verify duplicate role/person
-            if ( !groupService.AllowsDuplicateMembers( group ) )
+            if ( !GroupService.AllowsDuplicateMembers() )
             {
                 if ( !ValidateGroupMemberDuplicateMember( rockContext, groupType, out errorMessage ) )
                 {
