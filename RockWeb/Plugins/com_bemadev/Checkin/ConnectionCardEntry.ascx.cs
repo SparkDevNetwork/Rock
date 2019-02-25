@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
@@ -590,7 +591,15 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                 cblFamilyMembers.Items.Clear();
                 foreach ( var attendee in AttendeeState )
                 {
-                    cblFamilyMembers.Items.Add( new ListItem( attendee.Name, attendee.Guid.ToString() ) );
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append( attendee.Name );
+                    int? attendeeAge = Person.GetAge( attendee.BirthDate );
+                    if ( attendeeAge.HasValue )
+                    {
+                        sb.AppendFormat( " ({0})", attendeeAge );
+                    }
+
+                    cblFamilyMembers.Items.Add( new ListItem( sb.ToString(), attendee.Guid.ToString() ) );
                 }
                 cblFamilyMembers.SelectedValue = person.Guid.ToString();
 
@@ -742,7 +751,14 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
 
             if ( newChild && ppAttendee.PersonId.HasValue )
             {
-                cblFamilyMembers.Items.Add( new ListItem( child.Name, child.Guid.ToString() ) );
+                StringBuilder sb = new StringBuilder();
+                sb.Append( child.Name );
+                int? childAge = Person.GetAge( child.BirthDate );
+                if ( childAge.HasValue )
+                {
+                    sb.AppendFormat( " ({0})", childAge );
+                }
+                cblFamilyMembers.Items.Add( new ListItem( sb.ToString(), child.Guid.ToString() ) );
             }
 
             BindChildrenGrid();
