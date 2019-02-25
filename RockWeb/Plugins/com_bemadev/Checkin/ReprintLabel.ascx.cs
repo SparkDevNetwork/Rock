@@ -163,7 +163,7 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
                             Device kioskDevice = null;
                             if ( CurrentKioskId.HasValue )
                             {
-                                var device = new DeviceService( rockContext ).Get( CurrentKioskId.Value );
+                                kioskDevice = new DeviceService( rockContext ).Get( CurrentKioskId.Value );
                             }
                             else
                             {
