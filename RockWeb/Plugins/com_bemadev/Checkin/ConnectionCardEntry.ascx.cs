@@ -1167,7 +1167,11 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                             var workflow = Workflow.Activate( workflowType, person.FullName );
                             workflow.LoadAttributes();
                             workflow.SetAttributeValue( "Person", person.PrimaryAlias.Guid.ToString() );
-                            workflow.SetAttributeValue( "Campus", group.Campus.Guid.ToString() );
+
+                            if ( group.Campus != null )
+                            {
+                                workflow.SetAttributeValue( "Campus", group.Campus.Guid.ToString() );
+                            }
 
                             foreach ( var row in attributeDictionary )
                             {
