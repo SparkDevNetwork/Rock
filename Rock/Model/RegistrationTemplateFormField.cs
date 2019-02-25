@@ -80,7 +80,7 @@ namespace Rock.Model
         public int? AttributeId { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this is a 'shared value'. If so, the value entered will be auto set for each person on the registration.
+        /// Gets or sets a value indicating whether this is a 'shared value'. If so, the value entered will default to the value entered for first person registered.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [common value]; otherwise, <c>false</c>.
