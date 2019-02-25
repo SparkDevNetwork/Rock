@@ -119,9 +119,11 @@ namespace com.lcbcchurch.Checkin.Workflow.Action.CheckIn
                                             var pagerNumber = person.StateParameters["PagerNumber"];
                                             if ( pagerNumber.IsNotNullOrWhiteSpace() )
                                             {
+                                                rockContext.SaveChanges();
+
                                                 attendance.LoadAttributes();
                                                 attendance.SetAttributeValue( "PagerNumber", pagerNumber );
-                                                attendance.SaveAttributeValues();
+                                                attendance.SaveAttributeValue( "PagerNumber", rockContext );
                                             }
                                         }
 
