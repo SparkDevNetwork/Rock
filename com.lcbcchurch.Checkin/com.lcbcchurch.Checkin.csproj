@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\012_AddAutoSelectSupport.cs" />
     <Compile Include="Migrations\011_ItemTags.cs" />
     <Compile Include="Migrations\010_ReprintLabels.cs" />
     <Compile Include="Migrations\006_AddRosterPrintToCheckIn.cs" />

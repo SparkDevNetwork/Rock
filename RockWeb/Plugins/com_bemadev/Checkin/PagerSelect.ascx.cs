@@ -42,7 +42,10 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
     [TextField( "No Option After Select Message", "Message to display when there are not any options available after location is selected. Use {0} for person's name", false,
         "Sorry, based on your selection, there are currently not any available times that {0} can check into.", "Text", 12 )]
 
-    public partial class PagerSelect : CheckInBlockMultiPerson
+    [LinkedPage( "Auto Select First Page", "The first page for each person during family check-in.", false, "", "", 13, "FamilyAutoSelectFirstPage" )]
+    [LinkedPage( "Auto Select Done Page", "The page to navigate to once all people have checked in during family check-in.", false, "", "", 14, "FamilyAutoSelectDonePage" )]
+
+    public partial class PagerSelect : CheckInBlock
     {
         /// <summary>
         /// Determines if the block requires that a selection be made. This is used to determine if user should
@@ -59,8 +62,6 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             }
             else
             {
-                ClearSelection();
-
                 var person = CurrentCheckInState.CheckIn.CurrentPerson;
                 if ( person == null )
                 {
@@ -138,8 +139,6 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             {
                 if ( !Page.IsPostBack )
                 {
-                    ClearSelection();
-
                     var person = CurrentCheckInState.CheckIn.CurrentPerson;
                     if ( person == null )
                     {
@@ -189,31 +188,6 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
         }
 
         /// <summary>
-        /// Clears any previously selected locations.
-        /// </summary>
-        private void ClearSelection()
-        {
-            var person = CurrentCheckInState.CheckIn.CurrentPerson;
-            if ( person != null )
-            {
-                var schedule = person.CurrentSchedule;
-                foreach ( var groupType in person.SelectedGroupTypes( schedule ) )
-                {
-                    foreach ( var group in groupType.SelectedGroups( schedule ) )
-                    {
-                        foreach ( var location in group.SelectedLocations( schedule ) )
-                        {
-                            location.Selected = false;
-                            location.SelectedForSchedule = schedule != null ?
-                                location.SelectedForSchedule.Where( s => s != schedule.Schedule.Id ).ToList() :
-                                new List<int>();
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Handles the ItemCommand event of the rSelection control.
         /// </summary>
         /// <param name="source">The source of the event.</param>
@@ -252,16 +226,6 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
         }
 
         /// <summary>
-        /// Handles the Click event of the btnNoOptionOk control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnNoOptionOk_Click( object sender, EventArgs e )
-        {
-            ProcessNoOption();
-        }
-
-        /// <summary>
         /// Handles the Click event of the lbBack control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -282,21 +246,6 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
         }
 
         /// <summary>
-        /// Formats the count.
-        /// </summary>
-        /// <param name="locationId">The location id.</param>
-        /// <returns></returns>
-        protected string FormatCount( int locationId )
-        {
-            if ( CurrentCheckInType != null && CurrentCheckInType.DisplayLocationCount )
-            {
-                return string.Format( " <span class='checkin-sub-title'> Count: {0}</span>", KioskLocationAttendance.Get( locationId ).CurrentCount );
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
         /// Processes the selection.
         /// </summary>
         /// <param name="person">The person.</param>
@@ -313,7 +262,6 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     string.Format( "<p>{0}</p>", msg ),
                     CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family ) )
                 {
-                    ClearSelection();
                 }
                 else
                 {
@@ -322,6 +270,65 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             }
 
             return false;
+        }
+
+
+
+        /// <summary>
+        /// Navigates to next page.
+        /// </summary>
+        /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on next page has a selection required before redirecting.</param>
+        protected override void NavigateToNextPage( bool validateSelectionRequired )
+        {
+            CheckInPerson nextPerson = null;
+
+            if ( CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family && CurrentCheckInState.CheckInType.AutoSelectOptions.HasValue && CurrentCheckInState.CheckInType.AutoSelectOptions == 1 )
+            {
+                var person = CurrentCheckInState.CheckIn.CurrentPerson;
+                if ( person != null )
+                {
+                    var schedule = person.CurrentSchedule;
+                    if ( schedule != null )
+                    {
+                        schedule.Processed = true;
+                    }
+
+                    if ( !person.SelectedSchedules.Any( s => !s.Processed ) )
+                    {
+                        person.Processed = true;
+                    }
+
+                    nextPerson = CurrentCheckInState.CheckIn.CurrentPerson;
+
+                    SaveState();
+                }
+
+                var queryParams = CheckForOverride();
+
+                if ( nextPerson != null && !string.IsNullOrWhiteSpace( GetAttributeValue( "FamilyAutoSelectFirstPage" ) ) )
+                {
+                    if ( validateSelectionRequired )
+                    {
+                        var nextBlock = GetCheckInBlock( "FamilyAutoSelectFirstPage" );
+                        if ( nextBlock != null && nextBlock.RequiresSelection( false ) )
+                        {
+                            NavigateToLinkedPage( "FamilyAutoSelectFirstPage", queryParams );
+                        }
+                    }
+                    else
+                    {
+                        NavigateToLinkedPage( "FamilyAutoSelectFirstPage", queryParams );
+                    }
+                }
+                else
+                {
+                    NavigateToLinkedPage( "FamilyAutoSelectDonePage", queryParams );
+                }
+            }
+            else
+            {
+                base.NavigateToNextPage( validateSelectionRequired );
+            }
         }
     }
 }

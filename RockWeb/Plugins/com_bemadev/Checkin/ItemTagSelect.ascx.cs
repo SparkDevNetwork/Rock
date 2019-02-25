@@ -42,7 +42,10 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
     [TextField( "No Option After Select Message", "Message to display when there are not any options available after location is selected. Use {0} for person's name", false,
         "Sorry, based on your selection, there are currently not any available times that {0} can check into.", "Text", 12 )]
 
-    public partial class ItemTagSelect : CheckInBlockMultiPerson
+    [LinkedPage( "Auto Select Previous Page", "The page to navigate back to if none of the people and schedules have been processed.", false, "", "", 13, "FamilyAutoSelectPreviousPage" )]
+    [LinkedPage( "Auto Select Last Page", "The last page for each person during family check-in.", false, "", "", 14, "FamilyAutoSelectLastPage" )]
+
+    public partial class ItemTagSelect : CheckInBlock
     {
         /// <summary>
         /// Determines if the block requires that a selection be made. This is used to determine if user should
@@ -59,8 +62,6 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             }
             else
             {
-                ClearSelection();
-
                 var person = CurrentCheckInState.CheckIn.CurrentPerson;
                 if ( person == null )
                 {
@@ -138,8 +139,6 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             {
                 if ( !Page.IsPostBack )
                 {
-                    ClearSelection();
-
                     var person = CurrentCheckInState.CheckIn.CurrentPerson;
                     if ( person == null )
                     {
@@ -189,31 +188,6 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
         }
 
         /// <summary>
-        /// Clears any previously selected locations.
-        /// </summary>
-        private void ClearSelection()
-        {
-            var person = CurrentCheckInState.CheckIn.CurrentPerson;
-            if ( person != null )
-            {
-                var schedule = person.CurrentSchedule;
-                foreach ( var groupType in person.SelectedGroupTypes( schedule ) )
-                {
-                    foreach ( var group in groupType.SelectedGroups( schedule ) )
-                    {
-                        foreach ( var location in group.SelectedLocations( schedule ) )
-                        {
-                            location.Selected = false;
-                            location.SelectedForSchedule = schedule != null ?
-                                location.SelectedForSchedule.Where( s => s != schedule.Schedule.Id ).ToList() :
-                                new List<int>();
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Handles the ItemCommand event of the rSelection control.
         /// </summary>
         /// <param name="source">The source of the event.</param>
@@ -224,42 +198,32 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             {
                 var person = CurrentCheckInState.CheckIn.CurrentPerson;
                 if ( person != null )
-                if ( person != null )
-                {
-                    var schedule = person.CurrentSchedule;
-
-                    var groupTypes = schedule == null ?
-                        person.GroupTypes.Where( t => t.Selected ).ToList() :
-                        person.GroupTypes.Where( t => t.SelectedForSchedule.Contains( schedule.Schedule.Id ) ).ToList();
-
-                    if ( groupTypes != null && groupTypes.Any() )
+                    if ( person != null )
                     {
-                        var group = schedule == null ?
-                            groupTypes.SelectMany( t => t.Groups.Where( g => g.Selected ) ).FirstOrDefault() :
-                            groupTypes.SelectMany( t => t.Groups.Where( g => g.SelectedForSchedule.Contains( schedule.Schedule.Id ) ) ).FirstOrDefault();
+                        var schedule = person.CurrentSchedule;
 
-                        if ( group != null )
+                        var groupTypes = schedule == null ?
+                            person.GroupTypes.Where( t => t.Selected ).ToList() :
+                            person.GroupTypes.Where( t => t.SelectedForSchedule.Contains( schedule.Schedule.Id ) ).ToList();
+
+                        if ( groupTypes != null && groupTypes.Any() )
                         {
-                            if ( nbItemTags.Value > 0 )
-                            {
-                                person.StateParameters.AddOrReplace( "ItemTags", nbItemTags.Value.ToString() );
-                            }
+                            var group = schedule == null ?
+                                groupTypes.SelectMany( t => t.Groups.Where( g => g.Selected ) ).FirstOrDefault() :
+                                groupTypes.SelectMany( t => t.Groups.Where( g => g.SelectedForSchedule.Contains( schedule.Schedule.Id ) ) ).FirstOrDefault();
 
-                            ProcessSelection( person, schedule );
+                            if ( group != null )
+                            {
+                                if ( nbItemTags.Value > 0 )
+                                {
+                                    person.StateParameters.AddOrReplace( "ItemTags", nbItemTags.Value.ToString() );
+                                }
+
+                                ProcessSelection( person, schedule );
+                            }
                         }
                     }
-                }
             }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnNoOptionOk control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnNoOptionOk_Click( object sender, EventArgs e )
-        {
-            ProcessNoOption();
         }
 
         /// <summary>
@@ -313,9 +277,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     () => false,
                     string.Format( "<p>{0}</p>", msg ),
                     CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family ) )
-                {
-                    ClearSelection();
-                }
+                { }
                 else
                 {
                     return true;
@@ -323,6 +285,85 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Navigates to previous page.
+        /// </summary>
+        /// <param name="queryParams">The query parameters.</param>
+        /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on previous page has a selection required before redirecting.</param>
+        protected override void NavigateToPreviousPage( Dictionary<string, string> queryParams, bool validateSelectionRequired )
+        {
+            if ( CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family && CurrentCheckInState.CheckInType.AutoSelectOptions.HasValue && CurrentCheckInState.CheckInType.AutoSelectOptions == 1 )
+            {
+                bool anythingProcessed = false;
+
+                queryParams = CheckForOverride( queryParams );
+
+                // First check for first unprocessed person
+                var currentPerson = CurrentCheckInState.CheckIn.CurrentPerson;
+                if ( currentPerson != null )
+                {
+                    currentPerson.StateParameters.Remove( "ItemTags" );
+
+                    var lastSchedule = currentPerson.PossibleSchedules.Where( p => p.Processed ).LastOrDefault();
+                    if ( lastSchedule != null )
+                    {
+                        // Current person has a processed schedule, unmark that one and continue.
+                        lastSchedule.Processed = false;
+                        anythingProcessed = true;
+                    }
+                    else
+                    {
+                        // current person did not have any processed schedules, so find last processed person, and 
+                        // mark them and their last schedule as not processed.
+                        var family = CurrentCheckInState.CheckIn.CurrentFamily;
+                        if ( family != null )
+                        {
+                            var lastPerson = family.People.Where( p => p.Processed ).LastOrDefault();
+                            if ( lastPerson != null )
+                            {
+                                lastPerson.Processed = false;
+                                lastSchedule = lastPerson.PossibleSchedules.Where( p => p.Processed ).LastOrDefault();
+                                if ( lastSchedule != null )
+                                {
+                                    lastSchedule.Processed = false;
+                                }
+
+                                anythingProcessed = true;
+                            }
+                        }
+                    }
+
+                    SaveState();
+                }
+
+                if ( anythingProcessed )
+                {
+                    if ( validateSelectionRequired )
+                    {
+                        var nextBlock = GetCheckInBlock( "FamilyAutoSelectLastPage" );
+                        if ( nextBlock != null && nextBlock.RequiresSelection( true ) )
+                        {
+                            NavigateToLinkedPage( "FamilyAutoSelectLastPage", queryParams );
+                        }
+                    }
+                    else
+                    {
+                        NavigateToLinkedPage( "FamilyAutoSelectLastPage", queryParams );
+                    }
+                }
+                else
+                {
+                    // If the current person did not have any processed schedules, then this would be the first person
+                    // and we should navigate to previous page (person selection)
+                    NavigateToLinkedPage( "FamilyAutoSelectPreviousPage", queryParams );
+                }
+            }
+            else
+            {
+                base.NavigateToPreviousPage( queryParams, validateSelectionRequired );
+            }
         }
     }
 }
