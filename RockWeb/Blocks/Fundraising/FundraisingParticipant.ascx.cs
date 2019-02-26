@@ -214,6 +214,7 @@ namespace RockWeb.Blocks.Fundraising
         private void CreateDynamicControls( GroupMember groupMember )
         {
             groupMember.LoadAttributes();
+            groupMember.Group.LoadAttributes();
             // GroupMember Attributes (all of them)
             phGroupMemberAttributes.Controls.Clear();
 
