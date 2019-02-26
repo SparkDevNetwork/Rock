@@ -727,6 +727,7 @@ The logged-in person's information will be used to complete the registrar inform
                 var newFormFieldsState = new Dictionary<Guid, List<RegistrationTemplateFormField>>();
                 var newDiscountState = new List<RegistrationTemplateDiscount>();
                 var newFeeState = new List<RegistrationTemplateFee>();
+                var newAttributeState = new List<Attribute>();
 
                 foreach ( var form in FormState )
                 {
@@ -800,10 +801,20 @@ The logged-in person's information will be used to complete the registrar inform
                     }
                 }
 
+                foreach (var attribute in RegistrationAttributesState)
+                {
+                    var newAttribute = attribute.Clone( false );
+                    newAttribute.EntityTypeQualifierValue = null;
+                    newAttribute.Id = 0;
+                    newAttribute.Guid = Guid.NewGuid();
+                    newAttributeState.Add( newAttribute );
+                }
+
                 FormState = newFormState;
                 FormFieldsState = newFormFieldsState;
                 DiscountState = newDiscountState;
                 FeeState = newFeeState;
+                RegistrationAttributesState = newAttributeState;
 
                 hfRegistrationTemplateId.Value = newRegistrationTemplate.Id.ToString();
                 ShowEditDetails( newRegistrationTemplate, rockContext );
@@ -2214,6 +2225,15 @@ The logged-in person's information will be used to complete the registrar inform
 
                 DiscountState = registrationTemplate.Discounts.OrderBy( a => a.Order ).ToList();
                 FeeState = registrationTemplate.Fees.OrderBy( a => a.Order ).ToList();
+                var attributeService = new AttributeService( rockContext );
+                RegistrationAttributesState = attributeService.GetByEntityTypeId( new Registration().TypeId, true ).AsQueryable()
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( registrationTemplate.Id.ToString() ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
+                    .ToList();
+
             }
             else
             {
@@ -2221,6 +2241,7 @@ The logged-in person's information will be used to complete the registrar inform
                 FormFieldsState = new Dictionary<Guid, List<RegistrationTemplateFormField>>();
                 DiscountState = new List<RegistrationTemplateDiscount>();
                 FeeState = new List<RegistrationTemplateFee>();
+                RegistrationAttributesState = new List<Attribute>();
             }
         }
 
@@ -2333,17 +2354,6 @@ The logged-in person's information will be used to complete the registrar inform
             heInstructions.Text = registrationTemplate.RegistrationInstructions;
             var defaultForm = FormState.FirstOrDefault();
             BuildControls( true, defaultForm.Guid );
-
-            var attributeService = new AttributeService( rockContext );
-
-            RegistrationAttributesState = attributeService.GetByEntityTypeId( new Registration().TypeId, true ).AsQueryable()
-                .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase ) &&
-                    a.EntityTypeQualifierValue.Equals( registrationTemplate.Id.ToString() ) )
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.Name )
-                .ToList();
-
             BindRegistrationAttributesGrid();
         }
 
