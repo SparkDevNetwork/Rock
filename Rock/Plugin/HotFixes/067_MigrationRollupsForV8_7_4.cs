@@ -1,5 +1,9 @@
 ﻿namespace Rock.Plugin.HotFixes
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
     [MigrationNumber( 67, "1.8.6" )]
     public class MigrationRollupsForV8_7_4 : Migration
     {
