@@ -39,13 +39,16 @@ BEGIN
 END
 
 ALTER TABLE Person
-DROP COLUMN GivingLeaderId
+DROP COLUMN GivingLeaderId" );
 
+
+            Sql( @"
 ALTER TABLE Person ADD GivingLeaderId INT NULL
 
 CREATE INDEX IX_GivingLeaderId ON [Person] ([GivingLeaderId])
+" );
 
-UPDATE x
+            Sql( @"UPDATE x
 SET x.GivingLeaderId = x.CalculatedGivingLeaderId
 FROM (
 	SELECT p.Id
