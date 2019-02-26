@@ -1,7 +1,7 @@
 ﻿namespace Rock.Plugin.HotFixes
 {
     [MigrationNumber( 67, "1.8.6" )]
-    class MigrationRollupsForV8_7_4 : Migration
+    public class MigrationRollupsForV8_7_4 : Migration
     {
         /// <summary>
         /// The commands to run to migrate plugin to the specific version
