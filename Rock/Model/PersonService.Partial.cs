@@ -534,7 +534,8 @@ namespace Rock.Model
             /// <returns></returns>
             public int ConfidenceScore
             {
-                get {
+                get
+                {
                     int total = 0;
 
                     if ( FirstNameMatched )
@@ -3378,6 +3379,83 @@ FROM (
             p.PrimaryFamilyId IS NULL
             OR (p.PrimaryFamilyId != pf.CalculatedPrimaryFamilyId)
             )" );
+
+            if ( personId.HasValue )
+            {
+                sqlUpdateBuilder.Append( $" AND ( p.Id = @personId) " );
+            }
+
+            sqlUpdateBuilder.Append( @"    ) x " );
+
+            if ( personId.HasValue )
+            {
+                return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@personId", personId.Value ) );
+            }
+            else
+            {
+                return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString() );
+            }
+        }
+
+        /// <summary>
+        /// Ensures the GivingLeaderId is correct for the specified person
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static bool UpdateGivingLeaderId( int personId, RockContext rockContext )
+        {
+            int recordsUpdated = UpdatePersonGivingLeaderId( personId, rockContext );
+            return recordsUpdated != 0;
+        }
+
+        /// <summary>
+        /// Ensures the GivingLeaderId is correct for all person records in the database
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdateGivingLeaderIdAll( RockContext rockContext )
+        {
+            return UpdatePersonGivingLeaderId( null, rockContext );
+        }
+
+        /// <summary>
+        /// Updates the person giving leader identifier for the specified person, or for all persons in the database if personId is null.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private static int UpdatePersonGivingLeaderId( int? personId, RockContext rockContext )
+        {
+            var sqlUpdateBuilder = new StringBuilder();
+            sqlUpdateBuilder.Append( @"
+UPDATE x
+SET x.GivingLeaderId = x.CalculatedGivingLeaderId
+FROM (
+	SELECT p.Id
+		,p.NickName
+		,p.LastName
+		,p.GivingLeaderId
+		,isnull(pf.CalculatedGivingLeaderId, p.Id) CalculatedGivingLeaderId
+	FROM Person p
+	OUTER APPLY (
+		SELECT TOP 1 p2.[Id] CalculatedGivingLeaderId
+		FROM [GroupMember] gm
+		INNER JOIN [GroupTypeRole] r ON r.[Id] = gm.[GroupRoleId]
+		INNER JOIN [Person] p2 ON p2.[Id] = gm.[PersonId]
+		WHERE gm.[GroupId] = p.GivingGroupId
+			AND p2.[IsDeceased] = 0
+			AND p2.[GivingGroupId] = p.GivingGroupId
+		ORDER BY r.[Order]
+			,p2.[Gender]
+			,p2.[BirthYear]
+			,p2.[BirthMonth]
+			,p2.[BirthDay]
+		) pf
+	WHERE (
+			p.GivingLeaderId IS NULL
+			OR (p.GivingLeaderId != pf.CalculatedGivingLeaderId)
+			)" );
 
             if ( personId.HasValue )
             {
