@@ -399,7 +399,7 @@ namespace Rock.Model
         /// </value>
         public virtual DDay.iCal.Event GetCalendarEvent()  
         {
-            return ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
+            return ScheduleICalHelper.GetCalenderEvent( iCalendarContent );
         }
 
         /// <summary>
@@ -1167,7 +1167,18 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the calender event.
+        /// Gets the calendar event.
+        /// </summary>
+        /// <param name="iCalendarContent">Content of the i calendar.</param>
+        /// <returns></returns>
+        [Obsolete( "Use GetCalendarEvent( iCalendarContent ) instead " )]
+        public static DDay.iCal.Event GetCalenderEvent( string iCalendarContent )
+        {
+            return GetCalendarEvent( iCalendarContent );
+        }
+
+        /// <summary>
+        /// Gets the calendar event.
         /// </summary>
         /// <param name="iCalendarContent">Content of the i calendar.</param>
         /// <returns></returns>
