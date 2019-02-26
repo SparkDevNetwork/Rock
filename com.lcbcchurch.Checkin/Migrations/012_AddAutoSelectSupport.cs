@@ -24,7 +24,7 @@ using Rock.Plugin;
 namespace com.lcbcchurch.Checkin.Migrations
 {
     [MigrationNumber( 12, "1.0.14" )]
-    public class AddAuytoSelectSupport : Migration
+    public class AddAutoSelectSupport : Migration
     {
         public override void Up()
         {
