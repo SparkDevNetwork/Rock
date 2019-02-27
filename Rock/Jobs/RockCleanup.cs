@@ -296,13 +296,6 @@ namespace Rock.Jobs
                 int primaryFamilyUpdates = PersonService.UpdatePrimaryFamilyAll( personRockContext );
             }
 
-            // Ensures the GivingLeaderId is correct for all person records in the database
-            using ( var personRockContext = new Rock.Data.RockContext() )
-            {
-                personRockContext.Database.CommandTimeout = commandTimeout;
-                int primaryFamilyUpdates = PersonService.UpdateGivingLeaderIdAll( personRockContext );
-            }
-
             // update any updated or incorrect age classifications on persons
             using ( var personRockContext = new Rock.Data.RockContext() )
             {
