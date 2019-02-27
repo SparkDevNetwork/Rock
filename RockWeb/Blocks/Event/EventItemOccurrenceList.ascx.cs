@@ -101,6 +101,18 @@ namespace RockWeb.Blocks.Event
                     }
 
                     AddAttributeColumns();
+
+                    var copyField = new LinkButtonField();
+                    copyField.HeaderText = "Copy";
+                    copyField.CssClass = "btn btn-default btn-sm fa fa-clone";
+                    copyField.HeaderStyle.HorizontalAlign = HorizontalAlign.Center;
+                    copyField.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+                    gCalendarItemOccurrenceList.Columns.Add( copyField );
+                    copyField.Click += gCalendarItemOccurrenceList_Copy;
+
+                    var deleteField = new DeleteField();
+                    gCalendarItemOccurrenceList.Columns.Add( deleteField );
+                    deleteField.Click += gCalendarItemOccurrenceList_Delete;
                 }
             }
         }
@@ -423,9 +435,9 @@ namespace RockWeb.Blocks.Event
                         Campus = c.EventItemOccurrence.Campus != null ? c.EventItemOccurrence.Campus.Name : "All Campuses",
                         Date = c.NextStartDateTime.HasValue ? c.NextStartDateTime.Value.ToShortDateString() : "N/A",
                         Location = c.EventItemOccurrence.Location,
-                        RegistrationInstanceId = c.EventItemOccurrence.Linkages.Any() ? c.EventItemOccurrence.Linkages.FirstOrDefault().RegistrationInstanceId : (int?)null,
+                        RegistrationInstanceId = c.EventItemOccurrence.Linkages.Any() ? c.EventItemOccurrence.Linkages.FirstOrDefault().RegistrationInstanceId : ( int? ) null,
                         RegistrationInstance = c.EventItemOccurrence.Linkages.Any() ? c.EventItemOccurrence.Linkages.FirstOrDefault().RegistrationInstance : null,
-                        GroupId = c.EventItemOccurrence.Linkages.Any() ? c.EventItemOccurrence.Linkages.FirstOrDefault().GroupId : (int?)null,
+                        GroupId = c.EventItemOccurrence.Linkages.Any() ? c.EventItemOccurrence.Linkages.FirstOrDefault().GroupId : ( int? ) null,
                         Group = c.EventItemOccurrence.Linkages.Any() ? c.EventItemOccurrence.Linkages.FirstOrDefault().Group : null,
                         ContentItems = FormatContentItems( c.EventItemOccurrence.ContentChannelItems.Select( i => i.ContentChannelItem ).ToList() ),
                         Contact = c.EventItemOccurrence.ContactPersonAlias != null ? c.EventItemOccurrence.ContactPersonAlias.Person.FullName : "",
