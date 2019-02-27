@@ -105,8 +105,12 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember"/></returns>
         public IQueryable<GroupMember> Queryable( bool includeDeceased, bool includeArchived )
         {
-            // only include ArchivedMembers if they are specifically requested
-            var qry = base.Queryable().Where( a => a.IsArchived == includeArchived );
+            var qry = base.Queryable();
+
+            if ( !includeArchived )
+            {
+                qry = qry.Where( a => a.IsArchived == false );
+            }
 
             if ( !includeDeceased )
             {
@@ -148,10 +152,14 @@ namespace Rock.Model
         /// <param name="includeArchived">A <see cref="System.Boolean"/> value indicating if archived members should be included in the results. If <c>true</c> archived members will
         /// be included, otherwise they will not.</param>
         /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> with specified properties eagerly loaded.</returns>
-        public IQueryable<GroupMember> Queryable( string includes, bool includeDeceased, bool includedArchived )
+        public IQueryable<GroupMember> Queryable( string includes, bool includeDeceased, bool includeArchived )
         {
-            // only include ArchivedMembers if specifically requesting them
-            var qry = base.Queryable( includes ).Where( a => a.IsArchived == includedArchived );
+            var qry = base.Queryable( includes );
+
+            if ( !includeArchived )
+            {
+                qry = qry.Where( a => a.IsArchived == false );
+            }
 
             if ( !includeDeceased )
             {
