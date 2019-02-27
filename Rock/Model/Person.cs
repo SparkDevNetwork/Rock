@@ -2031,7 +2031,6 @@ namespace Rock.Model
             // NOTE: This is also done on GroupMember.PostSaveChanges in case Role or family membership changes
             PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
             PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
-            PersonService.UpdateGivingLeaderId( this.Id, dbContext as RockContext );
         }
 
         /// <summary>

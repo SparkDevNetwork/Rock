@@ -486,7 +486,6 @@ namespace Rock.Model
                 {
                     PersonService.UpdatePersonAgeClassification( this.PersonId, dbContext as RockContext );
                     PersonService.UpdatePrimaryFamily( this.PersonId, dbContext as RockContext );
-                    PersonService.UpdateGivingLeaderId( this.PersonId, dbContext as RockContext );
                 }
             }
         }
