@@ -1038,7 +1038,7 @@ namespace RockWeb.Blocks.Cms
                 qryParams.Add( "EventItemId", PageParameter( "EventItemId" ) );
                 qryParams.Add( "EventItemOccurrenceId", eventItemOccurrenceId.Value.ToString() );
                 qryParams.Add( "ContentChannelId", hfChannelId.Value );
-                NavigateToParentPage();
+                NavigateToParentPage( qryParams );
             }
             else
             {
