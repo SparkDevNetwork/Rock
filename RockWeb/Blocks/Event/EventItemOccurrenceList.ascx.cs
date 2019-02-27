@@ -99,8 +99,6 @@ namespace RockWeb.Blocks.Event
                     {
                         groupField.DataNavigateUrlFormatString = LinkedPageUrl( "GroupDetailPage" ) + "?GroupId={0}";
                     }
-
-                    AddAttributeColumns();
                 }
             }
         }
@@ -412,9 +410,6 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                gCalendarItemOccurrenceList.EntityTypeId = EntityTypeCache.Get<Rock.Model.EventItemOccurrence>().Id;
-                gCalendarItemOccurrenceList.ObjectList = new Dictionary<string, object>();
-                eventItemOccurrencesWithDates.ForEach( i => gCalendarItemOccurrenceList.ObjectList.Add( i.EventItemOccurrence.Id.ToString(), i.EventItemOccurrence ) );
                 gCalendarItemOccurrenceList.DataSource = eventItemOccurrencesWithDates
                     .Select( c => new
                     {
@@ -452,46 +447,6 @@ namespace RockWeb.Blocks.Event
                 itemLinks.Add( string.Format( "<a href='{0}'>{1}</a> ({2})", LinkedPageUrl( "ContentItemDetailPage", qryParams ), item.Title, item.ContentChannelType.Name ) );
             }
             return itemLinks.AsDelimited( "<br/>" );
-        }
-
-        /// <summary>s
-        /// Adds columns for any Account attributes marked as Show In Grid
-        /// </summary>
-        protected void AddAttributeColumns()
-        {
-            // Remove attribute columns
-            foreach ( var column in gCalendarItemOccurrenceList.Columns.OfType<AttributeField>().ToList() )
-            {
-                gCalendarItemOccurrenceList.Columns.Remove( column );
-            }
-
-            int entityTypeId = new EventItemOccurrence().TypeId;
-            foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
-                .Where( a =>
-                    a.EntityTypeId == entityTypeId &&
-                    a.IsGridColumn
-                   )
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.Name ) )
-            {
-                string dataFieldExpression = attribute.Key;
-                bool columnExists = gCalendarItemOccurrenceList.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
-                if ( !columnExists )
-                {
-                    AttributeField boundField = new AttributeField();
-                    boundField.DataField = dataFieldExpression;
-                    boundField.AttributeId = attribute.Id;
-                    boundField.HeaderText = attribute.Name;
-
-                    var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
-                    if ( attributeCache != null )
-                    {
-                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
-                    }
-
-                    gCalendarItemOccurrenceList.Columns.Add( boundField );
-                }
-            }
         }
 
         #endregion
