@@ -69,6 +69,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<GroupMember> GetArchived()
         {
+            // by default, all GroupMember Queries treat 'IsArchived' as a soft-deleted, and therefore don't include those records unless AsNoFilter is used
             return this.AsNoFilter().Where( a => a.IsArchived == true );
         }
 
@@ -105,11 +106,17 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember"/></returns>
         public IQueryable<GroupMember> Queryable( bool includeDeceased, bool includeArchived )
         {
-            var qry = base.Queryable();
+            IQueryable<GroupMember> qry;
 
-            if ( !includeArchived )
+            if ( includeArchived )
             {
-                qry = qry.Where( a => a.IsArchived == false );
+                // by default, all GroupMember Queries treat 'IsArchived' as a soft-deleted, and therefore don't include those records unless AsNoFilter is used
+                qry = base.AsNoFilter();
+            }
+            else
+            {
+                // never include ArchivedMembers unless explicitly calling GetArchived()
+                qry = base.Queryable().Where( a => a.IsArchived == false );
             }
 
             if ( !includeDeceased )
@@ -154,11 +161,17 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> with specified properties eagerly loaded.</returns>
         public IQueryable<GroupMember> Queryable( string includes, bool includeDeceased, bool includeArchived )
         {
-            var qry = base.Queryable( includes );
+            IQueryable<GroupMember> qry;
 
-            if ( !includeArchived )
+            if ( includeArchived )
             {
-                qry = qry.Where( a => a.IsArchived == false );
+                // by default, all GroupMember Queries treat 'IsArchived' as a soft-deleted, and therefore don't include those records unless AsNoFilter is used
+                qry = base.AsNoFilter( includes );
+            }
+            else
+            {
+                // never include ArchivedMembers unless explicitly calling GetArchived()
+                qry = base.Queryable( includes ).Where( a => a.IsArchived == false );
             }
 
             if ( !includeDeceased )
