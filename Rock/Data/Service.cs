@@ -114,21 +114,41 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets an <see cref="IQueryable{T}"/> list of all models ensuring that any EntityFramework.Plus Filter or service specific filter is not applied
+        /// with eager loading of the comma-delimited properties specified in includes
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<T> AsNoFilter( string includes )
+        {
+            return QueryableIncludes( _objectSet.AsNoFilter(), includes );
+        }
+
+        /// <summary>
         /// Gets an <see cref="IQueryable{T}"/> list of all models
-        /// with eager loading of properties specified in includes
+        /// with eager loading of the comma-delimited properties specified in includes
         /// </summary>
         /// <returns></returns>
         public virtual IQueryable<T> Queryable( string includes )
         {
-            DbQuery<T> value = _objectSet;
+            return QueryableIncludes( _objectSet as IQueryable<T>, includes );
+        }
+
+        /// <summary>
+        /// Applies a comma-delimited list of includes to the Queryable
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="includes">The includes.</param>
+        /// <returns></returns>
+        private static IQueryable<T> QueryableIncludes( IQueryable<T> query, string includes )
+        {
             if ( !String.IsNullOrEmpty( includes ) )
             {
                 foreach ( var include in includes.SplitDelimitedValues() )
                 {
-                    value = value.Include( include );
+                    query = query.Include( include );
                 }
             }
-            return value;
+            return query;
         }
 
         #endregion
