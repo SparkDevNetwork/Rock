@@ -57,10 +57,7 @@ namespace Rock
         /// <param name="entities">The entities.</param>
         public static void LoadAttributes( this IEnumerable<IHasAttributes> entities )
         {
-            foreach ( var entity in entities )
-            {
-                Attribute.Helper.LoadAttributes( entity );
-            }
+            Attribute.Helper.LoadAttributes( entities );
         }
 
         /// <summary>
@@ -70,10 +67,7 @@ namespace Rock
         /// <param name="rockContext">The rock context.</param>
         public static void LoadAttributes( this IEnumerable<IHasAttributes> entities, RockContext rockContext )
         {
-            foreach ( var entity in entities )
-            {
-                Attribute.Helper.LoadAttributes( entity, rockContext );
-            }
+            Attribute.Helper.LoadAttributes( entities, rockContext );
         }
 
         /// <summary>

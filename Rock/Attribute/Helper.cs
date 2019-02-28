@@ -321,6 +321,263 @@ namespace Rock.Attribute
             }
         }
 
+        private static Expression BuildOrExpression<T>( IEnumerable<T> items, Func<T, Expression> expressionBuilder )
+        {
+            Expression expression = null;
+
+            foreach ( var item in items )
+            {
+                Expression next = expressionBuilder( item );
+
+                if ( expression == null )
+                {
+                    expression = next;
+                }
+                else
+                {
+                    expression = Expression.Or( expression, next );
+                }
+            }
+
+            return expression;
+        }
+
+        private class EntityAttributeData
+        {
+            public IHasAttributes Entity { get; set; }
+            public EntityTypeCache EntityType { get; set; }
+            public List<int> EntityIds { get; set; }
+            public List<AttributeCache> Attributes { get; set; }
+            public Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
+        }
+
+        /// <summary>
+        /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of each <see cref="IHasAttributes" /> object
+        /// </summary>
+        /// <param name="entity">The item.</param>
+        public static void LoadAttributes( IEnumerable<Rock.Attribute.IHasAttributes> entities )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                LoadAttributes( entities, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of each <see cref="IHasAttributes" /> object
+        /// </summary>
+        /// <param name="entities">The items.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void LoadAttributes( IEnumerable<Rock.Attribute.IHasAttributes> entities, RockContext rockContext )
+        {
+
+            // Filter out cached entities (Their attributes get loaded diferently)
+            entities = entities.Where( e => !( e is Rock.Web.Cache.IEntityCache ) );
+
+            // Filter out entities who's attributes are already loaded
+            entities = entities.Where( e => e.Attributes == null );
+
+            // If there are no entities, do nothing
+            if ( entities.Count() <= 0 )
+            {
+                return;
+            }
+
+
+            var entityAttributeData = entities.Select( entity =>
+            {
+
+                // Get the entity type
+                Type entityType = entity.GetType();
+                if ( entityType.IsDynamicProxyType() )
+                {
+                    entityType = entityType.BaseType;
+                }
+
+
+
+                var entityTypeCache = EntityTypeCache.Get( entityType );
+
+                List<Rock.Web.Cache.AttributeCache> allAttributes = new List<AttributeCache>();
+                List<int> entityIds = new List<int>();
+
+                if ( entity.Id != 0 ) entityIds.Add( entity.Id );
+
+                //
+                // If this entity can provide inherited attribute information then
+                // load that data now. If they don't provide any then generate empty lists.
+                //
+                if ( entity is Rock.Attribute.IHasInheritedAttributes )
+                {
+                    var inheritedAttributes = ( (Rock.Attribute.IHasInheritedAttributes)entity ).GetInheritedAttributes( rockContext );
+                    if ( inheritedAttributes != null ) allAttributes.AddRange( inheritedAttributes );
+
+                    var inheritedEntityIds = ( (Rock.Attribute.IHasInheritedAttributes)entity ).GetAlternateEntityIds( rockContext );
+                    if ( inheritedEntityIds != null ) entityIds.AddRange( inheritedEntityIds );
+                }
+
+                //
+                // Get all the attributes that apply to this entity type and this entity's
+                // properties match any attribute qualifiers.
+                //
+                var attributes = new List<Rock.Web.Cache.AttributeCache>();
+                if ( entityTypeCache != null )
+                {
+                    int entityTypeId = entityTypeCache.Id;
+                    var entityAttributesList = AttributeCache.GetByEntity( entityTypeCache.Id );
+                    if ( entityAttributesList.Any() )
+                    {
+                        var entityTypeQualifierColumnPropertyNames = entityAttributesList.Select( a => a.EntityTypeQualifierColumn ).Distinct().Where( a => !string.IsNullOrWhiteSpace( a ) ).ToList();
+                        Dictionary<string, object> propertyValues = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
+                        foreach ( var propertyName in entityTypeQualifierColumnPropertyNames )
+                        {
+                            PropertyInfo propertyInfo = entityType.GetProperty( propertyName ) ?? entityType.GetProperties().Where( a => a.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+                            if ( propertyInfo != null )
+                            {
+                                propertyValues.AddOrIgnore( propertyName, propertyInfo.GetValue( entity, null ) );
+                            }
+                        }
+
+                        foreach ( var entityAttributes in entityAttributesList )
+                        {
+                            if ( string.IsNullOrEmpty( entityAttributes.EntityTypeQualifierColumn ) ||
+                                ( propertyValues.ContainsKey( entityAttributes.EntityTypeQualifierColumn ) &&
+                                ( string.IsNullOrEmpty( entityAttributes.EntityTypeQualifierValue ) ||
+                                ( propertyValues[entityAttributes.EntityTypeQualifierColumn] ?? "" ).ToString() == entityAttributes.EntityTypeQualifierValue ) ) )
+                            {
+                                foreach ( int attributeId in entityAttributes.AttributeIds )
+                                {
+                                    attributes.Add( Rock.Web.Cache.AttributeCache.Get( attributeId ) );
+                                }
+                            }
+                        }
+                    }
+                }
+
+                allAttributes.AddRange( attributes.OrderBy( a => a.Order ) );
+
+                return new EntityAttributeData
+                {
+                    Entity = entity,
+                    EntityType = entityTypeCache,
+                    EntityIds = entityIds,
+                    Attributes = allAttributes,
+                    AttributeValues = allAttributes.Distinct().ToDictionary( a => a.Key, a => (AttributeValueCache)null )
+                };
+
+
+            } ).ToList();
+
+            var entityAttributeDataToLookup = entityAttributeData.Where( d => d.Attributes.Any() && ( !d.EntityType.IsEntity || d.Entity.Id != 0 ) ).ToList();
+
+            if ( entityAttributeDataToLookup.Any() )
+            {
+
+                AttributeValueService attributeValueService = new Rock.Model.AttributeValueService( rockContext );
+
+                // Build the where expression
+                ParameterExpression attributeValueParameterExpression = attributeValueService.ParameterExpression;
+                MemberExpression attributeIdPropertyExpression = Expression.Property( attributeValueParameterExpression, "AttributeId" );
+                MemberExpression entityIdPropertyExpression = Expression.Property( attributeValueParameterExpression, "EntityId" );
+
+                Expression whereExpression =
+
+                    // Entities
+                    BuildOrExpression(
+                        entityAttributeDataToLookup,
+                        attributeData => Expression.And(
+
+                            // Entity Id(s)
+                            BuildOrExpression( attributeData.EntityIds, altId => Expression.Equal( entityIdPropertyExpression, Expression.Convert( Expression.Constant( altId ), typeof( int? ) ) ) ),
+
+                            // Attribute Id(s)
+                            BuildOrExpression( attributeData.Attributes, att => Expression.Equal( attributeIdPropertyExpression, Expression.Constant( att.Id ) ) )
+
+                        )
+                    );
+
+                // Build the Query
+                var attributeValueQuery = attributeValueService.Queryable().AsNoTracking().Where( attributeValueParameterExpression, whereExpression );
+
+                // Build the entity lookup map (so we only have to iterate the list once to lookup an entity)
+                var entityIdMap = new Dictionary<int, List<EntityAttributeData>>();
+                foreach ( var attributeData in entityAttributeDataToLookup )
+                {
+                    foreach ( var entId in attributeData.EntityIds )
+                    {
+                        List<EntityAttributeData> entityDataList = null;
+                        if ( entityIdMap.TryGetValue( entId, out entityDataList ) )
+                        {
+                            entityDataList.Add( attributeData );
+                        }
+                        else
+                        {
+                            entityIdMap.Add( entId, new List<EntityAttributeData> { attributeData } );
+                        }
+                    }
+                }
+
+
+                // Execute and hydrate results
+                foreach ( var attributeValue in attributeValueQuery )
+                {
+                    var attributeKey = AttributeCache.Get( attributeValue.AttributeId ).Key;
+                    List<EntityAttributeData> entityDataList = null;
+                    if ( entityIdMap.TryGetValue( attributeValue.EntityId.Value, out entityDataList ) )
+                    {
+                        foreach ( var entityData in entityDataList )
+                        {
+                            entityData.AttributeValues[attributeKey] = new AttributeValueCache( attributeValue );
+                        }
+                    }
+                }
+
+                // Look for any attributes that don't have a value and create a default value entry
+                foreach ( var attributeData in entityAttributeDataToLookup )
+                {
+                    foreach ( var attribute in attributeData.Attributes )
+                    {
+                        if ( attributeData.AttributeValues[attribute.Key] == null )
+                        {
+                            var attributeValue = new AttributeValueCache
+                            {
+                                AttributeId = attribute.Id,
+                                EntityId = attributeData.Entity?.Id
+                            };
+
+                            var attributeValueDefaults = attributeData.Entity.AttributeValueDefaults;
+                            if ( attributeValueDefaults != null && attributeValueDefaults.ContainsKey( attribute.Key ) )
+                            {
+                                attributeValue.Value = attributeValueDefaults[attribute.Key];
+                            }
+                            else
+                            {
+                                attributeValue.Value = attribute.DefaultValue;
+                            }
+                            attributeData.AttributeValues[attribute.Key] = attributeValue;
+                        }
+                        else
+                        {
+                            if ( !string.IsNullOrWhiteSpace( attribute.DefaultValue ) &&
+                                string.IsNullOrWhiteSpace( attributeData.AttributeValues[attribute.Key].Value ) )
+                            {
+                                attributeData.AttributeValues[attribute.Key].Value = attribute.DefaultValue;
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            foreach ( var attributeData in entityAttributeData )
+            {
+                attributeData.Entity.Attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
+                attributeData.Attributes.ForEach( a => attributeData.Entity.Attributes.AddOrIgnore( a.Key, a ) );
+                attributeData.Entity.AttributeValues = attributeData.AttributeValues;
+            }
+
+        }
+
         /// <summary>
         /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object
         /// </summary>

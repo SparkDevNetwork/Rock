@@ -804,14 +804,9 @@ $(document).ready(function() {
                         }
 
                         // All filtering has been added, now run query, check security and load attributes
-                        foreach ( var item in qry.ToList() )
-                        {
-                            if ( item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                            {
-                                item.LoadAttributes( rockContext );
-                                items.Add( item );
-                            }
-                        }
+                        var authorizedItems = qry.ToList().Where( item => item.IsAuthorized( Authorization.VIEW, CurrentPerson ) ).ToList();
+                        authorizedItems.LoadAttributes();
+                        items.AddRange( authorizedItems );
 
                         // Order the items
                         SortProperty sortProperty = null;
