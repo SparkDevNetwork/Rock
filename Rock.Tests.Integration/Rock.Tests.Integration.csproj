@@ -65,20 +65,15 @@
       <HintPath>..\RockWeb\Bin\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExternalSupportClasses\HttpSimulator.cs" />
     <Compile Include="ExternalSupportClasses\ReflectionHelper.cs" />
     <Compile Include="ExternalSupportClasses\SimulatedHttpRequest.cs" />
-    <Compile Include="Rock\DatabaseTests.cs" />
     <Compile Include="Rock\Model\AttendanceCodeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rock\Model\GroupMemberServiceTests.cs" />
     <Compile Include="Rock\Model\PersonTests.cs" />
     <Compile Include="Rock\TestInitializer.cs" />
     <Compile Include="StorageTests\AmazonS3ComponentTests.cs" />
@@ -91,9 +86,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="app.ConnectionStrings.config" />
     <None Include="packages.config" />
-    <None Include="README.md" />
     <None Include="test.runsettings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>test.Designer.cs</LastGenOutput>

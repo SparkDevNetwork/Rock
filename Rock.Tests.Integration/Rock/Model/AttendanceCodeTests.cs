@@ -28,34 +28,39 @@ namespace Rock.Tests.Integration.Model
     /// <summary>
     /// Used for testing anything regarding AttendanceCode.
     /// </summary>
+    /// <seealso cref="System.IDisposable" />
     [TestClass]
-    public class AttendanceCodeTests
+    [Ignore()]
+    public class AttendanceCodeTests : IDisposable
     {
-        #region Setup
-
         /// <summary>
         /// Runs before any tests in this class are executed.
         /// </summary>
         [ClassInitialize]
         public static void ClassInitialize( TestContext testContext )
         {
-            DatabaseTests.ResetDatabase();
         }
 
+        [TestInitialize]
         /// <summary>
-        /// Runs after all tests in this class is executed.
+        /// Runs before each test in this class is executed.
         /// </summary>
-        [ClassCleanup]
-        public static void ClassCleanup()
+        public void TestInitialize()
         {
-            DatabaseTests.DeleteDatabase();
+            Cleanup();
         }
 
         /// <summary>
-        /// Runs after each test in this class is executed.
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Cleanup();
+        }
+
+        /// <summary>
         /// Deletes the test data added to the database for each tests.
         /// </summary>
-        [TestCleanup]
         public void Cleanup()
         {
             using ( var rockContext = new RockContext() )
@@ -85,8 +90,6 @@ namespace Rock.Tests.Integration.Model
             }
             AttendanceCodeService.FlushTodaysCodes();
         }
-
-        #endregion
 
         #region Alpha-numeric codes
 
