@@ -760,7 +760,6 @@ $(document).ready(function() {
                     var contentChannel = new ContentChannelService( rockContext ).Get( channelGuid.Value );
                     if ( contentChannel != null )
                     {
-                        var entityFields = HackEntityFields( contentChannel, rockContext );
 
                         items = new List<ContentChannelItem>();
 
@@ -913,6 +912,7 @@ $(document).ready(function() {
                             if ( pageParameters.Count > 0 )
                             {
                                 var propertyFilter = new Rock.Reporting.DataFilter.PropertyFilter();
+                                var entityFields = HackEntityFields( contentChannel, rockContext );
 
                                 var itemQry = items.AsQueryable();
                                 foreach ( string key in PageParameters().Select( p => p.Key ).ToList() )
