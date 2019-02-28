@@ -124,6 +124,7 @@
     <Compile Include="Controllers\CodeGenerated\NcoaHistoriesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageShortLinksController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonTokensController.cs" />
+    <Compile Include="Controllers\ContentChannelItemsController.Partial.cs" />
     <Compile Include="Controllers\ContentChannelItemSlugsController.Partial.cs" />
     <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
     <Compile Include="Controllers\GroupMemberHistoricalsController.Partial.cs" />
