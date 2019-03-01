@@ -171,6 +171,15 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                         {
                             GoBack();
                         }
+                        else
+                        {
+                            var pagerNumberKey = String.Format( "PagerNumber_ScheduleId_{0}", schedule.Schedule.Id );
+                            var pagerNumberExists = person.StateParameters.Any( sp => sp.Key.Contains( "PagerNumber" ) && sp.Value != null && sp.Key != pagerNumberKey );
+                            if ( pagerNumberExists )
+                            {
+                                NavigateToNextPage( false );
+                            }
+                        }
                     }
                     else
                     {
@@ -213,10 +222,8 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
 
                         if ( group != null )
                         {
-                            if ( tbPagerNumber.Text.IsNotNullOrWhiteSpace() )
-                            {
-                                person.StateParameters.AddOrReplace( "PagerNumber", tbPagerNumber.Text );
-                            }
+                            var pagerNumberKey = String.Format( "PagerNumber_ScheduleId_{0}", schedule.Schedule.Id );
+                            person.StateParameters.AddOrReplace( pagerNumberKey, tbPagerNumber.Text );
 
                             ProcessSelection( person, schedule );
                         }

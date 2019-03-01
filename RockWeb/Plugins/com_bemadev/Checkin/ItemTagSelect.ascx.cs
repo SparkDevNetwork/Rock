@@ -171,6 +171,15 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                         {
                             GoBack();
                         }
+                        else
+                        {
+                            var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", schedule.Schedule.Id );
+                            var itemTagExists = person.StateParameters.Any( sp => sp.Key.Contains( "ItemTag" ) && sp.Value.IsNotNullOrWhiteSpace() && sp.Key != itemTagKey );
+                            if ( itemTagExists )
+                            {
+                                NavigateToNextPage( false );
+                            }
+                        }
                     }
                     else
                     {
@@ -214,10 +223,8 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
 
                             if ( group != null )
                             {
-                                if ( nbItemTags.Value > 0 )
-                                {
-                                    person.StateParameters.AddOrReplace( "ItemTags", nbItemTags.Value.ToString() );
-                                }
+                                var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", schedule.Schedule.Id );
+                                person.StateParameters.AddOrReplace( itemTagKey, nbItemTags.Value.ToString() );
 
                                 ProcessSelection( person, schedule );
                             }
@@ -304,7 +311,8 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                 var currentPerson = CurrentCheckInState.CheckIn.CurrentPerson;
                 if ( currentPerson != null )
                 {
-                    currentPerson.StateParameters.Remove( "ItemTags" );
+                    var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", currentPerson.CurrentSchedule.Schedule.Id );
+                    currentPerson.StateParameters.Remove( itemTagKey );
 
                     var lastSchedule = currentPerson.PossibleSchedules.Where( p => p.Processed ).LastOrDefault();
                     if ( lastSchedule != null )

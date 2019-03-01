@@ -69,6 +69,7 @@ namespace com.lcbcchurch.Checkin.Workflow.Action.CheckIn
                     {
                         var personGroupTypes = person.GetGroupTypes( true );
                         var groupTypes = new List<CheckInGroupType>();
+                        var itemTagsPrinted = false;
 
                         // Get Primary area group types first
                         personGroupTypes.Where( t => checkInState.ConfiguredGroupTypes.Contains( t.GroupType.Id ) ).ToList().ForEach( t => groupTypes.Add( t ) );
@@ -128,32 +129,31 @@ namespace com.lcbcchurch.Checkin.Workflow.Action.CheckIn
 
                                     }
 
-                                    if ( person.StateParameters.ContainsKey( "ItemTags" ) )
+                                    var itemTagParameters = person.StateParameters.Where( sp => sp.Key.Contains( "ItemTag" ) && sp.Value.IsNotNullOrWhiteSpace() ).Select( sp => sp.Value ).ToList().AsIntegerList();
+                                    if ( itemTagParameters.Any() && !itemTagsPrinted )
                                     {
-                                        var itemTagAmount = person.StateParameters["ItemTags"];
-                                        if ( itemTagAmount.IsNotNullOrWhiteSpace() )
+                                        itemTagsPrinted = true;
+                                        var numberOfTags = itemTagParameters.Max();
+                                        if ( numberOfTags > 0 )
                                         {
-                                            var numberOfTags = itemTagAmount.AsInteger();
-                                            if ( numberOfTags > 0 )
+                                            var binaryFileGuid = GetAttributeValue( action, "ItemTagLabel" ).AsGuidOrNull();
+                                            if ( binaryFileGuid != null )
                                             {
-                                                var binaryFileGuid = GetAttributeValue( action, "ItemTagLabel" ).AsGuidOrNull();
-                                                if ( binaryFileGuid != null )
-                                                {
 
-                                                    var labelCache = KioskLabel.Get( binaryFileGuid.Value );
-                                                    if ( labelCache != null && (
-                                                        labelCache.LabelType == KioskLabelType.Family ||
-                                                        labelCache.LabelType == KioskLabelType.Person ||
-                                                        labelCache.LabelType == KioskLabelType.Location ) )
+                                                var labelCache = KioskLabel.Get( binaryFileGuid.Value );
+                                                if ( labelCache != null && (
+                                                    labelCache.LabelType == KioskLabelType.Family ||
+                                                    labelCache.LabelType == KioskLabelType.Person ||
+                                                    labelCache.LabelType == KioskLabelType.Location ) )
+                                                {
+                                                    for ( int i = 0; i < numberOfTags; i++ )
                                                     {
-                                                        for ( int i = 0; i < numberOfTags; i++ )
-                                                        {
-                                                            AddLabel( rockContext, checkInState, commonMergeFields, groupMemberService, people, person, groupType, PrinterIPs, group, location, labelCache );
-                                                        }
+                                                        AddLabel( rockContext, checkInState, commonMergeFields, groupMemberService, people, person, groupType, PrinterIPs, group, location, labelCache );
                                                     }
                                                 }
                                             }
                                         }
+
                                     }
                                 }
                             }
