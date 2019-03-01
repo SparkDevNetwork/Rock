@@ -56,10 +56,32 @@ namespace RockWeb.Plugins.com_bemadev.Checkin
                     {
                         var groupTypesLocations = this.GetGroupTypesLocations( rockContext );
                         locationIdList = groupTypesLocations
-                           .Select( a => a.Id)
+                           .Select( a => a.Id )
                            .ToList().AsDelimited( "%2C" );
                     }
-                    string url = string.Concat( "/Page/", reportPage.Id, "?CampusId=", location.CampusId, "&LocationIds=", locationIdList );
+
+                    List<int> scheduleIdList = new List<int>();
+                    if ( CurrentCheckInState != null && CurrentCheckInState.Kiosk != null )
+                    {
+                        foreach ( var groupType in CurrentCheckInState.Kiosk.KioskGroupTypes )
+                        {
+                            foreach ( var group in groupType.KioskGroups )
+                            {
+                                foreach ( var kioskLocation in group.KioskLocations )
+                                {
+                                    foreach ( var schedule in kioskLocation.KioskSchedules )
+                                    {
+                                        if ( schedule.Schedule.WasScheduleActive( DateTime.Now ) )
+                                        {
+                                            scheduleIdList.Add( schedule.Schedule.Id );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    string url = string.Concat( "/Page/", reportPage.Id, "?CampusId=", location.CampusId, "&LocationIds=", locationIdList, "&ScheduleIds=", scheduleIdList.Distinct().ToList().AsDelimited( "%2C" ) );
                     btnPrintRoster.Attributes.Add( "href", url );
                     btnPrintRoster.Visible = true;
 

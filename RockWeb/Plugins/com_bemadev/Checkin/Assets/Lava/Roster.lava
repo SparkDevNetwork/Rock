@@ -1,4 +1,6 @@
-﻿{% assign navPath = CurrentPerson | GetUserPreference:'CurrentNavPath' %}
+﻿<a id="printbtn" href="/checkin/welcome" class="btn btn-primary"> Return to Checkin </a> <br/><br/>
+
+{% assign navPath = CurrentPerson | GetUserPreference:'CurrentNavPath' %}
 {% assign navPaths = navPath | Split:'|' %}
 {% for path in navPaths %}
 	{% assign pathSize = path | Size %}
@@ -15,7 +17,9 @@
 
 {% assign campusId = 'Global' | PageParameter:'CampusId' %}
 {% assign locationIds = 'Global' | PageParameter:'LocationIds' %}
+{% assign scheduleIds = 'Global' | PageParameter:'ScheduleIds' %}
 {% assign areaGuid = 'Global' | PageParameter:'Area' %}
+
 {% sql %} 
 {% if areaGuid != '' %} Declare @ParentGroupTypeId int = (Select Top 1 Id From GroupType Where Guid = '{{areaGuid}}');{% endif %}
 
@@ -41,14 +45,33 @@ Insert into @LocationIdTable (LocationId) Values (@CampusLocationId);
 
 SELECT 	AC.Code AS Code ,
 		P.NickName + ' ' + P.LastName AS Name,
+		P.Id as PersonId,
 		AV.Value AS Pager,
         L.Name AS LocationName,
-		G.Name AS GroupName
+		G.Name AS GroupName,
+		GT.Name AS GroupTypeName,
+		S.Name AS ScheduleName,
+		(
+			Select Min(gt1.[Order])
+			From GroupType gt1
+			Join [Group] g1 on g1.GroupTypeId = gt1.Id
+			Join AttendanceOccurrence ao1 on ao1.GroupId = g1.Id
+			{% if areaGuid != '' %} INNER JOIN GroupTypeAssociation GTA1 ON GT1.ID = GTA1.ChildGroupTypeId AND GTA1.GroupTypeId = @ParentGroupTypeId {% endif %}
+			Where ao1.LocationId = l.Id
+			AND DATEDIFF(day, AO1.OccurrenceDate, GetDate()) = 0
+			{% if campusId != '' %} AND AO1.LocationId in (Select * From @LocationIdTable) {% endif %}
+			{% if groupTypeId %} AND G1.GroupTypeId = {{groupTypeId}} {% endif %}
+			{% if groupId %} AND G1.Id = {{groupId}} {% endif %}
+			{% if locationId %} AND AO1.LocationId = {{locationId}} {% endif %}
+			{% if locationIds != '' %} AND AO1.LocationId in ({{locationIds}}){% endif %}
+			{% if scheduleIds != '' %} AND AO1.ScheduleId in ({{scheduleIds}}){% endif %}
+		 )as GroupTypeOrder
 FROM [Attendance] A 
 INNER JOIN [AttendanceOccurrence] AO ON A.OccurrenceId = AO.Id 
 INNER JOIN [Location] L ON AO.LocationId = L.Id
 INNER JOIN [Group] G ON AO.GroupId = G.Id
 INNER JOIN [GroupType] GT ON GT.Id = G.GroupTypeId
+INNER Join [Schedule] S ON S.Id = AO.ScheduleId
 INNER JOIN [PersonAlias] PA ON A.PersonAliasId = PA.Id 
 INNER JOIN [Person] P ON PA.PersonId = P.Id
 {% if areaGuid != '' %} INNER JOIN GroupTypeAssociation GTA ON GT.ID = GTA.ChildGroupTypeId AND GTA.GroupTypeId = @ParentGroupTypeId {% endif %}
@@ -62,7 +85,8 @@ AND GetDate() < ISNULL(A.EndDateTime,GetDate()+1)
 {% if groupId %} AND G.Id = {{groupId}} {% endif %}
 {% if locationId %} AND AO.LocationId = {{locationId}} {% endif %}
 {% if locationIds != '' %} AND AO.LocationId in ({{locationIds}}){% endif %}
-ORDER BY L.Name, G.GroupTypeId, G.Name, P.NickName, P.LastName 
+{% if scheduleIds != '' %} AND AO.ScheduleId in ({{scheduleIds}}){% endif %}
+ORDER BY GroupTypeOrder, L.Name, S.Name,  G.Name, P.NickName, P.LastName 
 {% endsql %}
 
 <style>
@@ -70,25 +94,38 @@ body { font-family: Arial, Helvetica, sans-serif; font-size: 14px; padding: .2in
 table tr td, table tr th { page-break-inside: avoid; border-bottom: .5px solid black; }
 .tr-header { border: none; background: #2E2E2E; }
 .tr-header th { border: none !important; color: #fff !important; background: #2E2E2E !important; }
+@media print { #printbtn { display :  none; } }
 </style>
 
-{% assign newLocation = '' %} 
+{% assign newHeaderText = '' %} 
     {% for item in results %} 
-    	{% if newLocation != item.LocationName %}
-			{% if newLocation != '' %} 
-				</tbody></table> <div style='page -break-after:always;'></div>
+		{% capture headerText %}{{item.LocationName}} - {{item.ScheduleName}} Total:{{ results | Where:'LocationName',item.LocationName | Where:'ScheduleName',item.ScheduleName | Size}}{% endcapture %}
+		{% capture phoneNumbers%}
+				{% assign person = item.PersonId | PersonById %}
+				{% assign parents = person | Parents %}
+				{% for parent in parents %}
+					{% assign phoneNumber = parent | PhoneNumber:'Mobile' %}
+					{% if phoneNumber != '' %}						
+						{{ phoneNumber }}<br/>
+					{% endif %}
+				{% endfor %}
+		{% endcapture %}
+    	{% if newHeaderText != headerText %}
+			{% if newHeaderText != '' %} 
+				</tbody></table> <div style='page-break-after:always;'></div>
             {% endif %}
 
             <table class='table table-striped'> 
 				<thead> 
 					<tr class='tr-header'>
 						<th colspan='8' style='padding-left:15px'> 
-							<h3 style='color:white;'>{{item.LocationName}}</h3> 
+							<h3 style='color:white;'>{{headerText}}</h3> 
 						</th> 
 					</tr>
 					<tr class='tr-header'> 
 						<th>Attendee Name</th>
 						<th>Group Name</th>
+						<th>Phone Number</th>
 						<th>Security Code</th> 
 						<th>Pager</th>
 					</tr> 
@@ -96,10 +133,11 @@ table tr td, table tr th { page-break-inside: avoid; border-bottom: .5px solid b
 			<tbody> 
 
         {% endif %}
-		{% assign newLocation = item.LocationName %} 
+		{% assign newHeaderText = headerText %} 
 		<tr> 
 			<td>{{item.Name}}</td>
 			<td>{{item.GroupName}}</td> 
+			<td>{{phoneNumbers | ReplaceLast:'<br/>',''}}</td> 
 			<td>{{item.Code}}</td> 
 			<td>{{item.Pager}}</td>
 		</tr> 
