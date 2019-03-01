@@ -2605,8 +2605,8 @@ namespace Rock.Model
         #region Static Methods 
 
         /// <summary>
-        /// Adds a person alias, known relationship group, implied relationship group, and optionally a family group for
-        /// a new person.
+        /// Adds a person alias, known relationship group, implied relationship group, and family for a new person.
+        /// Returns the new Family(Group) that was created for the person.
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
@@ -2695,6 +2695,7 @@ namespace Rock.Model
                 }
             }
 
+            // shouldn't happen unless somehow the core FamilyGroupType and Roles are missing
             return null;
         }
 
