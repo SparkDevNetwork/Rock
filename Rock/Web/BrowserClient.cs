@@ -60,6 +60,7 @@ namespace Rock.Web
     /// <seealso cref="DotLiquid.Drop" />
     public class BrowserInfo : Drop
     {
+        static UAParser.Parser uaParser = UAParser.Parser.GetDefault();
         private ClientInfo _client = null;
 
         /// <summary>
@@ -77,7 +78,6 @@ namespace Rock.Web
         /// <param name="userAgent">The user agent.</param>
         public BrowserInfo( string userAgent )
         {
-            UAParser.Parser uaParser = UAParser.Parser.GetDefault();
             _client = uaParser.Parse( userAgent );
         }
 
