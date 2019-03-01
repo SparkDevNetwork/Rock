@@ -379,10 +379,10 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             UpdateAddress( person.GetFamily() );
 
             RecordAttendance();
-            FireInterestWorkflow( person ); 
-            SavePrayerRequest( person ); 
-            SaveGeneralComment( person ); 
-            SaveCommitment( person ); 
+            FireInterestWorkflow( person );
+            SavePrayerRequest( person );
+            SaveGeneralComment( person );
+            SaveCommitment( person );
 
             //
             // Clear all person information
@@ -786,7 +786,6 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
         private Person AddOrUpdatePerson()
         {
             var rockContext = new RockContext();
-
             Person person = null;
             Group familyGroup = null;
             PersonAlias personAlias = null;
@@ -795,8 +794,15 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             int adultRoleId = GroupTypeCache.GetFamilyGroupType().Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
             int childRoleId = GroupTypeCache.GetFamilyGroupType().Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
 
-            var personQuery = new PersonService.PersonMatchQuery( tbFirstName.Text, tbLastName.Text, tbEmail.Text, pnPhone.Number, null, bpBirthDay.SelectedDate.HasValue ? ( int? ) bpBirthDay.SelectedDate.Value.Month : null, bpBirthDay.SelectedDate.HasValue ? ( int? ) bpBirthDay.SelectedDate.Value.Day : null, bpBirthDay.SelectedDate.HasValue ? ( int? ) bpBirthDay.SelectedDate.Value.Year : null );
-            person = personService.FindPerson( personQuery, true );
+            if ( ppAttendee.PersonId != null )
+            {
+                person = personService.Get( ppAttendee.PersonId.Value );
+            }
+            else
+            {
+                var personQuery = new PersonService.PersonMatchQuery( tbFirstName.Text, tbLastName.Text, tbEmail.Text, pnPhone.Number, null, bpBirthDay.SelectedDate.HasValue ? ( int? ) bpBirthDay.SelectedDate.Value.Month : null, bpBirthDay.SelectedDate.HasValue ? ( int? ) bpBirthDay.SelectedDate.Value.Day : null, bpBirthDay.SelectedDate.HasValue ? ( int? ) bpBirthDay.SelectedDate.Value.Year : null );
+                person = personService.FindPerson( personQuery, true );
+            }
 
             if ( person.IsNotNull() )
             {
