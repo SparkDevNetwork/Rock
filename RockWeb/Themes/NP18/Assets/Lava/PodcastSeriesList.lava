@@ -1,5 +1,4 @@
 ﻿{% for item in Items %}
-	{% assign seriesImageGuid = item | Attribute:'SermonGraphic','RawValue' %}
   {% assign loopIndex = forloop.index0 | Modulo:4 %}
   {% if loopIndex == 0 %}
 	<div class="sermons-container">
@@ -9,8 +8,9 @@
 			<div class="col-md-3 col-sm-12 sermon">
 				<div class="sermon-holder">
 					<a class="series-link showdetail" data-openid="series{{ item.Id }}" href="#series{{ item.Id }}">
-						{% if detailImageGuid != '' %}
-							<div class="series-image" style="background-image: url('/GetImage.ashx?Guid={{ seriesImageGuid }}');" ></div>
+                    	{% assign seriesImageUrl = item | Attribute:'SermonGraphic','Url' %}
+						{% if seriesImageUrl != '' %}
+							<div class="series-image" style="background-image: url('{{ seriesImageUrl }}');" ></div>
 						{% endif %}
 					</a>
 				</div>
