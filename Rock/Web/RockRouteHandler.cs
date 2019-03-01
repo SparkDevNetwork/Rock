@@ -175,7 +175,8 @@ namespace Rock.Web
             var parms = new Dictionary<string, string>();
             foreach ( var routeParm in requestContext.RouteData.Values )
             {
-                parms.Add( routeParm.Key, (string)routeParm.Value );
+                if(routeParm.Key != "PageId")
+                    parms.Add( routeParm.Key, (string)routeParm.Value );
             }
 
             try
