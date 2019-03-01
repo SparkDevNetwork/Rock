@@ -435,7 +435,13 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Set CampusId to set the default Campus that should be used. If this is set, <seealso cref="AskForCampusIfKnown"/> can optionally be set to false to hide the campus selector and to prevent changing the campus.
+        /// The campusId that was set as the known Campus
+        /// </summary>
+        private int? knownCampusId = null;
+
+        /// <summary>
+        /// When set, sets the CampusId to set the known/default Campus that should be used. If this is set, <seealso cref="AskForCampusIfKnown"/> can optionally be set to false to hide the campus selector and to prevent changing the campus.
+        /// When get, gets the selected CampusId
         /// </summary>
         /// <value>
         /// The campus identifier.
@@ -461,7 +467,22 @@ namespace Rock.Web.UI.Controls
 
                 _ddlMultiAccountCampus.SetValue( value );
                 _ddlSingleAccountCampus.SetValue( value );
+
+                knownCampusId = value;
+
+                SetCampusVisibility();
             }
+        }
+
+        /// <summary>
+        /// Sets the campus visibility.
+        /// </summary>
+        private void SetCampusVisibility()
+        {
+            bool showCampusPicker = ( knownCampusId == null ) || this.AskForCampusIfKnown;
+
+            _ddlMultiAccountCampus.Visible = showCampusPicker;
+            _ddlSingleAccountCampus.Visible = showCampusPicker;
         }
 
         /// <summary>
@@ -473,11 +494,18 @@ namespace Rock.Web.UI.Controls
         public bool AskForCampusIfKnown
         {
             get => ViewState["AskForCampusIfKnown"] as bool? ?? true;
-            set => ViewState["AskForCampusIfKnown"] = value;
+
+            set
+            {
+                ViewState["AskForCampusIfKnown"] = value;
+                EnsureChildControls();
+
+                SetCampusVisibility();
+            }
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the Campus and Account dropdowns will fire a postback
+        /// Gets or sets a value indicating whether the Campus and Account DropDowns will fire a PostBack
         /// </summary>
         /// <value>
         ///   <c>true</c> if [automatic post back]; otherwise, <c>false</c>.
