@@ -34,7 +34,6 @@ namespace Rock.Reporting
     /// </summary>
     public static class EntityHelper
     {
-        private static Dictionary<int, string> _workflowTypeNameLookup = null;
 
         /// <summary>
         /// Gets the cache key for the EntityFields 
@@ -58,7 +57,6 @@ namespace Rock.Reporting
         public static List<EntityField> GetEntityFields( Type entityType, bool includeOnlyReportingFields = true, bool limitToFilterableFields = true )
         {
             List<EntityField> entityFields = null;
-            _workflowTypeNameLookup = null;
 
             if ( HttpContext.Current != null )
             {
@@ -392,7 +390,7 @@ namespace Rock.Reporting
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        var contentChannel = new ContentChannelService( rockContext ).Get( attribute.EntityTypeQualifierValue.AsInteger() );
+                        var contentChannel = ContentChannelCache.Get( attribute.EntityTypeQualifierValue.AsInteger(), rockContext );
                         if ( contentChannel != null )
                         {
                             // Append the Qualifier to the title
@@ -407,18 +405,12 @@ namespace Rock.Reporting
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        int workflowTypeId = attribute.EntityTypeQualifierValue.AsInteger();
-                        if (_workflowTypeNameLookup == null)
-                        {
-                            _workflowTypeNameLookup = new WorkflowTypeService( rockContext ).Queryable().ToDictionary( k => k.Id, v => v.Name );
-                        }
-
-                        var workflowTypeName = _workflowTypeNameLookup.ContainsKey( workflowTypeId ) ? _workflowTypeNameLookup[workflowTypeId] : null;
-                        if ( workflowTypeName != null )
+                        var workflowType = WorkflowTypeCache.Get( attribute.EntityTypeQualifierValue.AsInteger() );
+                        if ( workflowType != null )
                         {
                             // Append the Qualifier to the title for Workflow Attributes
-                            entityField.AttributeEntityTypeQualifierName = workflowTypeName;
-                            entityField.Title = string.Format( "({1}) {0} ", attribute.Name, workflowTypeName );
+                            entityField.AttributeEntityTypeQualifierName = workflowType.Name;
+                            entityField.Title = string.Format( "({1}) {0} ", attribute.Name, workflowType.Name );
                         }
                     }
                 }
