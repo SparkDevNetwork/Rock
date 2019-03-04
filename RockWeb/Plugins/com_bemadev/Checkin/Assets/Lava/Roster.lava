@@ -1,4 +1,20 @@
-﻿<a id="printbtn" href="/checkin/welcome" class="btn btn-primary"> Return to Checkin </a> <br/><br/>
+﻿<script>
+  $(document).ready(function(){
+    $('#printbtn').click(function(){
+       window.print();
+    });
+  });
+</script>
+
+<div class="row">
+	<div class="col-sm-2">
+		<a href="/checkin/welcome" class="btn btn-primary hiddenButton"> Return to Checkin </a>
+	</div>
+	<div class="col-sm-2">
+		<a id="printbtn" class="btn btn-primary hiddenButton" > Print Page </a>
+	</div>
+</div>
+<br/><br/>
 
 {% assign navPath = CurrentPerson | GetUserPreference:'CurrentNavPath' %}
 {% assign navPaths = navPath | Split:'|' %}
@@ -94,7 +110,7 @@ body { font-family: Arial, Helvetica, sans-serif; font-size: 14px; padding: .2in
 table tr td, table tr th { page-break-inside: avoid; border-bottom: .5px solid black; }
 .tr-header { border: none; background: #2E2E2E; }
 .tr-header th { border: none !important; color: #fff !important; background: #2E2E2E !important; }
-@media print { #printbtn { display :  none; } }
+@media print { .hiddenButton { display :  none; } }
 </style>
 
 {% assign newHeaderText = '' %} 
