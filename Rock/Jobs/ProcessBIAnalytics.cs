@@ -354,6 +354,13 @@ namespace Rock.Jobs
                 var modelAttributeColumnNames = modelAnalyticAttributes.Select( a => a.Key.RemoveSpecialCharacters() ).ToList();
                 foreach ( var databaseAttributeField in currentDatabaseAttributeFields )
                 {
+                    if ( IsEntityColumn( analyticsTableName, databaseAttributeField.ColumnName ) )
+                    {
+                        // We don't want to accidently delete an entity column just because it's not reportable or some such thing, that would be bad.
+                        ExceptionLogService.LogException( new Exception( $"The ProcessBIAnalytics job tried to delete column {analyticsTableName}.{databaseAttributeField.ColumnName} but was prevented by a check in the job." ) );
+                        continue;
+                    }
+
                     if ( !modelAttributeColumnNames.Contains( databaseAttributeField.ColumnName ) )
                     {
                         var dropColumnSql = $"ALTER TABLE [{analyticsTableName}] DROP COLUMN [{databaseAttributeField.ColumnName}]";
@@ -363,6 +370,28 @@ namespace Rock.Jobs
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether provided property name is a property of the provided entityName.
+        /// </summary>
+        /// <param name="entityName">Name of the entity.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <returns>
+        ///   <c>true</c> if [is entity column] [the specified entity name]; otherwise, <c>false</c>.
+        ///   Also returns false if the entity does not exist in the Rock.Model namespace.
+        /// </returns>
+        private bool IsEntityColumn( string entityName, string propertyName )
+        {
+            var entityType = Type.GetType( $"Rock.Model.{entityName}, Rock" );
+
+            if (entityType == null )
+            {
+                return false;
+            }
+
+            var prop = entityType.GetProperty( propertyName );
+            return prop != null ? true : false;
         }
 
         /// <summary>
