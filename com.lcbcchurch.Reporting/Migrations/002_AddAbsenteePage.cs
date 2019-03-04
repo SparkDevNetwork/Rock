@@ -212,7 +212,7 @@ Where ( @CampusIds = 'null' or c.Id in (Select * From ufnUtility_CsvToTable(@Cam
             // Attrib Value for Block:Dynamic Data, Attribute:Show Merge Person Page: Absentee Report, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "4A4A37D9-991A-485A-A961-BB9F31B9EAD9", "8762ABE3-726E-4629-BD4D-3E42E1FBCC9E", @"False" );
             // Attrib Value for Block:Dynamic Data, Attribute:Show Bulk Update Page: Absentee Report, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "4A4A37D9-991A-485A-A961-BB9F31B9EAD9", "D01510AA-1B8D-467C-AFC6-F7554CB7CF78", @"False" );
+            RockMigrationHelper.AddBlockAttributeValue( "4A4A37D9-991A-485A-A961-BB9F31B9EAD9", "D01510AA-1B8D-467C-AFC6-F7554CB7CF78", @"True" );
             // Attrib Value for Block:Dynamic Data, Attribute:Stored Procedure Page: Absentee Report, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "4A4A37D9-991A-485A-A961-BB9F31B9EAD9", "A4439703-5432-489A-9C14-155903D6A43E", @"False" );
             // Attrib Value for Block:Dynamic Data, Attribute:Show Merge Template Page: Absentee Report, Site: Rock RMS

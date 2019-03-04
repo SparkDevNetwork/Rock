@@ -254,7 +254,7 @@ namespace com.lcbcchurch.Reporting.Migrations
             // Attrib Value for Block:First Time Guests, Attribute:Show Merge Person Page: Assimilation Report, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "37A9B4BC-FED2-4E09-BECA-2CAB9DE1D248", "E416578C-E0D8-4C32-9E08-9998B7773052", @"False" );
             // Attrib Value for Block:First Time Guests, Attribute:Show Bulk Update Page: Assimilation Report, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "37A9B4BC-FED2-4E09-BECA-2CAB9DE1D248", "3D47F2DA-B48B-4F98-85BA-9504AC59A1F4", @"False" );
+            RockMigrationHelper.AddBlockAttributeValue( "37A9B4BC-FED2-4E09-BECA-2CAB9DE1D248", "3D47F2DA-B48B-4F98-85BA-9504AC59A1F4", @"True" );
             // Attrib Value for Block:First Time Guests, Attribute:Show Excel Export Page: Assimilation Report, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "37A9B4BC-FED2-4E09-BECA-2CAB9DE1D248", "3F8B96ED-8D77-4263-A20A-69BBA936BA60", @"True" );
             // Attrib Value for Block:First Time Guests, Attribute:Show Merge Template Page: Assimilation Report, Site: Rock RMS
