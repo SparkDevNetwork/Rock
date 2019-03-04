@@ -232,7 +232,7 @@ namespace Rock.Reporting
 
                     foreach ( var attributeCache in cacheAttributeList )
                     {
-                        AddEntityFieldForAttribute( entityFields, attributeCache, limitToFilterableFields );
+                        AddEntityFieldForAttribute( entityFields, attributeCache, limitToFilterableFields, rockContext );
                     }
                 }
             }
@@ -297,10 +297,22 @@ namespace Rock.Reporting
         /// <param name="limitToFilterableAttributes">if set to <c>true</c> [limit to filterable attributes].</param>
         public static void AddEntityFieldForAttribute( List<EntityField> entityFields, AttributeCache attribute, bool limitToFilterableAttributes = true )
         {
-            var entityField = GetEntityFieldForAttribute( attribute, limitToFilterableAttributes );
+            AddEntityFieldForAttribute( entityFields, attribute, limitToFilterableAttributes, null );
+        }
+
+        /// <summary>
+        /// Adds the entity field for attribute.
+        /// </summary>
+        /// <param name="entityFields">The entity fields.</param>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="limitToFilterableAttributes">if set to <c>true</c> [limit to filterable attributes].</param>
+        /// <param name="rockContext">The RockContext to use.</param>
+        public static void AddEntityFieldForAttribute( List<EntityField> entityFields, AttributeCache attribute, bool limitToFilterableAttributes = true, RockContext rockContext = null )
+        {
+            var entityField = GetEntityFieldForAttribute( attribute, limitToFilterableAttributes, rockContext );
 
             // If the field could not be created, we are done.
-            if (entityField == null)
+            if ( entityField == null )
                 return;
 
 
@@ -337,6 +349,18 @@ namespace Rock.Reporting
         /// <param name="limitToFilterableAttributes"></param>
         public static EntityField GetEntityFieldForAttribute( AttributeCache attribute, bool limitToFilterableAttributes = true )
         {
+            return GetEntityFieldForAttribute( attribute, limitToFilterableAttributes, null );
+        }
+
+        /// <summary>
+        /// Create an EntityField for an Attribute.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="limitToFilterableAttributes"></param>
+        /// <param name="rockContext">The RockContext to use.</param>
+        public static EntityField GetEntityFieldForAttribute( AttributeCache attribute, bool limitToFilterableAttributes = true, RockContext externalRockContext = null )
+        {
+
             // Ensure field name only has Alpha, Numeric and underscore chars
             string fieldName = attribute.Key.RemoveSpecialCharacters().Replace( ".", "" );
 
@@ -358,9 +382,9 @@ namespace Rock.Reporting
                 // Special processing for Entity Type "Group" or "GroupMember" to handle sub-types that are distinguished by GroupTypeId.
                 if ( ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Group ) ) || attribute.EntityTypeId == EntityTypeCache.GetId( typeof( GroupMember ) ) && attribute.EntityTypeQualifierColumn == "GroupTypeId" ) )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = externalRockContext == null ? new RockContext() : null )
                     {
-                        var groupType = GroupTypeCache.Get( attribute.EntityTypeQualifierValue.AsInteger(), rockContext );
+                        var groupType = GroupTypeCache.Get( attribute.EntityTypeQualifierValue.AsInteger(), externalRockContext ?? rockContext );
                         if ( groupType != null )
                         {
                             // Append the Qualifier to the title
@@ -373,9 +397,9 @@ namespace Rock.Reporting
                 // Special processing for Entity Type "ContentChannelItem" to handle sub-types that are distinguished by ContentChannelTypeId.
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( ContentChannelItem ) ) && attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = externalRockContext == null ? new RockContext() : null )
                     {
-                        var contentChannelType = new ContentChannelTypeService( rockContext ).Get( attribute.EntityTypeQualifierValue.AsInteger() );
+                        var contentChannelType = new ContentChannelTypeService( externalRockContext ?? rockContext ).Get( attribute.EntityTypeQualifierValue.AsInteger() );
                         if ( contentChannelType != null )
                         {
                             // Append the Qualifier to the title
@@ -388,9 +412,9 @@ namespace Rock.Reporting
                 // Special processing for Entity Type "ContentChannelItem" to handle sub-types that are distinguished by ContentChannelId.
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( ContentChannelItem ) ) && attribute.EntityTypeQualifierColumn == "ContentChannelId" )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = externalRockContext == null ? new RockContext() : null )
                     {
-                        var contentChannel = ContentChannelCache.Get( attribute.EntityTypeQualifierValue.AsInteger(), rockContext );
+                        var contentChannel = ContentChannelCache.Get( attribute.EntityTypeQualifierValue.AsInteger(), externalRockContext ?? rockContext );
                         if ( contentChannel != null )
                         {
                             // Append the Qualifier to the title
@@ -403,9 +427,9 @@ namespace Rock.Reporting
                 // Special processing for Entity Type "Workflow" to handle sub-types that are distinguished by WorkflowTypeId.
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Rock.Model.Workflow ) ) && attribute.EntityTypeQualifierColumn == "WorkflowTypeId" )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = externalRockContext == null ? new RockContext() : null )
                     {
-                        var workflowType = WorkflowTypeCache.Get( attribute.EntityTypeQualifierValue.AsInteger() );
+                        var workflowType = WorkflowTypeCache.Get( attribute.EntityTypeQualifierValue.AsInteger(), externalRockContext ?? rockContext );
                         if ( workflowType != null )
                         {
                             // Append the Qualifier to the title for Workflow Attributes
@@ -415,7 +439,7 @@ namespace Rock.Reporting
                     }
                 }
             }
-            
+
             return entityField;
         }
     }
