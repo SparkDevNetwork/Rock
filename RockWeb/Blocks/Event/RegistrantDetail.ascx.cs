@@ -133,6 +133,8 @@ namespace RockWeb.Blocks.Event
             {
                 ParseControls();
             }
+
+            RegisterClientScript();
         }
 
         /// <summary>
@@ -458,6 +460,13 @@ namespace RockWeb.Blocks.Event
                                     registrantChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, string.Format( "Registrant to existing person in {0} group", reloadedRegistrant.Registration.Group.Name ) );
                                 }
 
+                                if ( reloadedRegistrant.GroupMemberId.HasValue && reloadedRegistrant.GroupMemberId.Value != groupMember.Id )
+                                {
+                                    groupMemberService.Delete( reloadedRegistrant.GroupMember );
+                                    newRockContext.SaveChanges();
+                                    registrantChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, string.Format( "Registrant to previous person in {0} group", reloadedRegistrant.Registration.Group.Name ) );
+                                }
+
                                 // Record this to the Person's and Registrants Notes and History...
 
                                 reloadedRegistrant.GroupMemberId = groupMember.Id;
@@ -557,6 +566,34 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #region Methods
+
+
+        /// <summary>
+        /// Registers the client script.
+        /// </summary>
+        private void RegisterClientScript()
+        {
+            if ( RegistrantState.Id > 0 && RegistrantState.GroupMemberId.HasValue )
+            {
+                string editScript = string.Format( @"
+    $('a.js-edit-registrant').click(function( e ){{
+        e.preventDefault();
+        if( $('#{2} .js-person-id').val() !=='{1}'){{
+        var  newPerson = $('#{2} .js-person-name' ).val();
+        var message = 'This Registration is linked to a group. {0} will be deleted from the group and '+ newPerson +' will be added to the group.';
+        Rock.dialogs.confirm(message, function (result) {{
+            if (result) {{
+                    window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                }}
+        }});
+        }} else {{
+            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+        }}
+    }});
+", RegistrantState.PersonName, RegistrantState.PersonId.Value, ppPerson.ClientID );
+                ScriptManager.RegisterStartupScript( btnSave, btnSave.GetType(), "editRegistrantScript", editScript, true );
+            }
+        }
 
         /// <summary>
         /// Creates the RegistrantState and TemplateState obj and loads the UI with values.
