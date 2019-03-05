@@ -2,8 +2,27 @@
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
-        $('a.btn-checkin-select').click(function () {
-            $(this).siblings().attr('onclick', 'return false;');
+        $('div.js-family-select').click(function () {
+
+            var $familySelectDiv = $(this);
+
+            // get the postback url
+            var postbackUrl = $familySelectDiv.attr('data-target');
+
+            // remove the postbackUrls from the other div to prevent multiple clicks
+            $('div.js-family-select').attr('data-target', '');
+
+            // if the postbackUrl has been cleared, another button has already been pressed, so ignore
+            if (!postbackUrl || postbackUrl == '') {
+                return;
+            }
+
+            // make the btn in the template a bootstrap button to show the loading... message
+            var $familySelectBtn = $familySelectDiv.find('a');
+            $familySelectBtn.attr('data-loading-text', 'Loading...');
+            Rock.controls.bootstrapButton.showLoading($familySelectBtn);
+            
+            window.location = 'javascript: ' + postbackUrl;
         });
 
         if ($('#<%=hfShowEditFamilyPrompt.ClientID%>').val() == "1") {
@@ -43,7 +62,7 @@
                         <asp:Repeater ID="rSelection" runat="server" OnItemDataBound="rSelection_ItemDataBound">
                             <ItemTemplate>
                                 <%-- pnlSelectFamilyPostback will take care of firing the postback, and lSelectFamilyButtonHtml will be the button HTML from Lava  --%>
-                                <asp:Panel ID="pnlSelectFamilyPostback" runat="server">
+                                <asp:Panel ID="pnlSelectFamilyPostback" runat="server"  CssClass="js-family-select">
                                     <asp:Literal ID="lSelectFamilyButtonHtml" runat="server" />
                                 </asp:Panel>
                             </ItemTemplate>
