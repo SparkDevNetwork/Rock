@@ -184,7 +184,8 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             Panel pnlSelectFamilyPostback = e.Item.FindControl( "pnlSelectFamilyPostback" ) as Panel;
-            pnlSelectFamilyPostback.Attributes["onclick"] = this.Page.ClientScript.GetPostBackClientHyperlink( rSelection, checkInFamily.Group.Id.ToString() );
+            pnlSelectFamilyPostback.Attributes["data-target"] = Page.ClientScript.GetPostBackEventReference( rSelection, checkInFamily.Group.Id.ToString() );
+            pnlSelectFamilyPostback.Attributes["data-loading-text"] = "Loading...";
             Literal lSelectFamilyButtonHtml = e.Item.FindControl( "lSelectFamilyButtonHtml" ) as Literal;
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
             mergeFields.Add( "Family", checkInFamily );

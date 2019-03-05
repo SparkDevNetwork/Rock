@@ -903,6 +903,7 @@ namespace Rock.Web.UI.Controls
             else
             {
                 imageDivHtml = string.Format( backgroundImageFormat, this.ClientID + "_divPhoto", this.NoPictureUrl );
+                _aRemove.Style[HtmlTextWriterStyle.Display] = "none";
             }
 
             writer.Write( imageDivHtml );

@@ -326,15 +326,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the giving leader identifier. This is a computed column and can be used
-        /// in LinqToSql queries, but there is no in-memory calculation. Avoid using property outside
-        /// a linq query
+        /// Gets or sets the giving leader identifier.
+        /// Note: This is computed on save, so any manual changes to this will be ignored.
         /// </summary>
         /// <value>
         /// The giving leader identifier.
         /// </value>
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         public int GivingLeaderId { get; set; }
 
         /// <summary>
@@ -466,6 +464,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the age classification of the Person.
+        /// Note: This is computed on save, so any manual changes to this will be ignored.
         /// </summary>
         /// <value>
         /// A <see cref="Rock.Model.AgeClassification"/> enum value representing the Person's age classification.  Valid values are <c>AgeClassification.Unknown</c> if the Person's age is unknown,
@@ -476,7 +475,8 @@ namespace Rock.Model
         public AgeClassification AgeClassification { get; set; }
 
         /// <summary>
-        /// Gets or sets the group id for the primary family
+        /// Gets or sets the group id for the primary family.
+        /// Note: This is computed on save, so any manual changes to this will be ignored.
         /// </summary>
         /// <value>
         /// The primary family id.
@@ -2070,6 +2070,7 @@ namespace Rock.Model
             // NOTE: This is also done on GroupMember.PostSaveChanges in case Role or family membership changes
             PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
             PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
+            PersonService.UpdateGivingLeaderId( this.Id, dbContext as RockContext );
         }
 
         /// <summary>

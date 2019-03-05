@@ -445,6 +445,8 @@
     <Compile Include="Plugin\HotFixes\063_WhitelistBlacklist.cs" />
     <Compile Include="Plugin\HotFixes\065_ThresholdValue.cs" />
     <Compile Include="Plugin\HotFixes\064_MigrationRollupsForV8_7_2.cs" />
+    <Compile Include="Plugin\HotFixes\068_MigrationRollupsForV8_7_5.cs" />
+    <Compile Include="Plugin\HotFixes\067_MigrationRollupsForV8_7_4.cs" />
     <Compile Include="Plugin\HotFixes\066_MigrationRollupsForV8_7_3.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -479,6 +481,7 @@
     <Compile Include="Utility\EntityCoding\QueuedEntity.cs" />
     <Compile Include="Utility\EntityCoding\Reference.cs" />
     <Compile Include="Utility\EntityCoding\WorkflowTypeExporter.cs" />
+    <Compile Include="Utility\EnumOrderAttribute.cs" />
     <Compile Include="Utility\ExtensionMethods\DictionaryExtensions.cs" />
     <Compile Include="Utility\RockObsolete.cs" />
     <Compile Include="SystemGuid\SystemSetting.cs" />
