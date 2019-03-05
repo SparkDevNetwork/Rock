@@ -65,7 +65,7 @@ namespace Rockweb.Blocks.Crm
             </p>
 " )]
     [BooleanField( "Always Allow Retakes", "Determines if the retake button should be shown.", false, order: 5 )]
-    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 1, order: 6 )]
+    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 5, order: 6 )]
     public partial class Disc : Rock.Web.UI.RockBlock
     {
         #region Fields
