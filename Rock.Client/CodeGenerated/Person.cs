@@ -82,6 +82,9 @@ namespace Rock.Client
         /// <summary />
         public int? GivingGroupId { get; set; }
 
+        /// <summary />
+        public int GivingLeaderId { get; set; }
+
         /// <summary>
         /// The Grade Offset of the person, which is the number of years until their graduation date. See GradeFormatted to see their current Grade. [Readonly]
         /// </summary>
@@ -216,6 +219,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.Gender = source.Gender;
             this.GivingGroupId = source.GivingGroupId;
+            this.GivingLeaderId = source.GivingLeaderId;
             this.GradeOffset = source.GradeOffset;
             this.GraduationYear = source.GraduationYear;
             this.InactiveReasonNote = source.InactiveReasonNote;
@@ -272,9 +276,6 @@ namespace Rock.Client
 
         /// <summary />
         public string GivingId { get; set; }
-
-        /// <summary />
-        public int GivingLeaderId { get; set; }
 
         /// <summary />
         public DefinedValue MaritalStatusValue { get; set; }
