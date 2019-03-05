@@ -67,11 +67,11 @@
             </ul>
         </Rock:RockControlWrapper>
         <Rock:HtmlGenericContainer ID="pnlAdultFields" runat="server">
-            <h4> Adult Attributes</h4>
-            <Rock:AttributeValuesContainer ID="avcAdultAttributes" runat="server" ShowCategoryLabel="true" />
+            <h5> Adult Attributes</h5>
+            <Rock:AttributeValuesContainer ID="avcAdultAttributes" runat="server" ShowCategoryLabel="false" />
         </Rock:HtmlGenericContainer>
         <Rock:HtmlGenericContainer ID="pnlChildFields" runat="server">
-            <h4> Child Attributes</h4>
+            <h5> Child Attributes</h5>
             <Rock:AttributeValuesContainer ID="avcChildAttributes" runat="server" ShowCategoryLabel="false" />
         </Rock:HtmlGenericContainer>
         <Rock:RockControlWrapper ID="rcwRelationships" runat="server" Label="Related People" CssClass="list-unstyled">

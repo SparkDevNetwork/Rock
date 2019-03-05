@@ -186,8 +186,7 @@ namespace Rock.Communication.Medium
         /// <summary>
         /// Creates a new communication.
         /// </summary>
-        /// <param name="fromPersonAliasId">From person alias identifier.</param>
-        /// <param name="fromPersonName">Name of from person.</param>
+        /// <param name="fromPerson">From person.</param>
         /// <param name="messageKey">The message key.</param>
         /// <param name="toPersonAliasId">To person alias identifier.</param>
         /// <param name="message">The message to send.</param>
@@ -266,8 +265,7 @@ namespace Rock.Communication.Medium
         /// <summary>
         /// Creates the CommunicationResponse for Rock SMS Conversations
         /// </summary>
-        /// <param name="fromPersonAliasId">From person alias identifier.</param>
-        /// <param name="fromPersonName">Name of from person.</param>
+        /// <param name="fromPerson">From person.</param>
         /// <param name="messageKey">The message key.</param>
         /// <param name="toPersonAliasId">To person alias identifier.</param>
         /// <param name="message">The message.</param>
@@ -349,8 +347,7 @@ namespace Rock.Communication.Medium
         /// <summary>
         /// Creates the communication to the recipent's mobile device.
         /// </summary>
-        /// <param name="fromPersonAliasId">From person alias identifier.</param>
-        /// <param name="fromPersonName">Name of from person.</param>
+        /// <param name="fromPerson">From person.</param>
         /// <param name="toPersonAliasId">To person alias identifier.</param>
         /// <param name="message">The message.</param>
         /// <param name="fromPhone">From phone.</param>

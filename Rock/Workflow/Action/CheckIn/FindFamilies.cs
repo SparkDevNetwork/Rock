@@ -53,7 +53,6 @@ namespace Rock.Workflow.Action.CheckIn
             if ( checkInState != null && checkInState.CheckIn.SearchType != null )
             {
                 checkInState.CheckIn.Families = new List<CheckInFamily>();
-                // rockContext.SqlLogging( true ); // use this when making changes during development
 
                 if ( !string.IsNullOrWhiteSpace( checkInState.CheckIn.SearchValue ) )
                 {
@@ -182,6 +181,11 @@ namespace Rock.Workflow.Action.CheckIn
                         familyIdQry = familyIdQry.Take( maxResults );
                     }
 
+                    // You might think we should do a ToList() on the familyIdQry and use it below,
+                    // but through some extensive testing, we discovered that the next SQL query is better
+                    // optimized if it has the familyIdQry without being to-listed.  It was over 270% slower
+                    // when querying names and 120% slower when querying phone numbers.
+
                     // Load the family members
                     var familyMembers = memberService
                         .Queryable().AsNoTracking()
@@ -241,7 +245,6 @@ namespace Rock.Workflow.Action.CheckIn
                         }
                     }
                 }
-                //rockContext.SqlLogging( false ); // use this when making changes during development
 
                 return true;
             }

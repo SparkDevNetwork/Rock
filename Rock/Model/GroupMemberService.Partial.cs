@@ -64,17 +64,19 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a queryable for Archived GroupMembers
+        /// Returns a queryable for Archived GroupMembers. NOTE: This includes deceased people.
         /// </summary>
         /// <returns></returns>
         public IQueryable<GroupMember> GetArchived()
         {
+            // by default, all GroupMember Queries treat 'IsArchived' as a soft-deleted, and therefore don't include those records unless AsNoFilter is used
             return this.AsNoFilter().Where( a => a.IsArchived == true );
         }
 
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see>, excluding 
-        /// deceased and archived group members
+        /// deceased and archived group members. NOTE: Call GetArchived() or Queryable( false, true ) if you
+        /// want archived members.
         /// </summary>
         /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers.</see></returns>
         public override IQueryable<GroupMember> Queryable()
@@ -90,9 +92,34 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember"/></returns>
         public IQueryable<GroupMember> Queryable( bool includeDeceased )
         {
-            // never include ArchivedMembers unless explicitly calling GetArchived()
-            var qry = base.Queryable().Where( a => a.IsArchived == false );
-            if (!includeDeceased)
+            // never include ArchivedMembers unless explicitly requested
+            return Queryable( includeDeceased, false );
+        }
+
+        /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Model.GroupMember">GroupMember's</see>.
+        /// </summary>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> value indicating if deceased members should be included in the results. If <c>true</c> deceased members will
+        /// be included, otherwise <c>false</c>.</param>
+        /// <param name="includeArchived">A <see cref="System.Boolean"/> value indicating if archived members should be included in the results. If <c>true</c> archived members will
+        /// be included, otherwise they will not.</param>
+        /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember"/></returns>
+        public IQueryable<GroupMember> Queryable( bool includeDeceased, bool includeArchived )
+        {
+            IQueryable<GroupMember> qry;
+
+            if ( includeArchived )
+            {
+                // by default, all GroupMember Queries treat 'IsArchived' as a soft-deleted, and therefore don't include those records unless AsNoFilter is used
+                qry = base.AsNoFilter();
+            }
+            else
+            {
+                // never include ArchivedMembers unless explicitly calling GetArchived()
+                qry = base.Queryable().Where( a => a.IsArchived == false );
+            }
+
+            if ( !includeDeceased )
             {
                 qry = qry.Where( g => g.Person.IsDeceased == false );
             }
@@ -119,8 +146,34 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> with specified properties eagerly loaded.</returns>
         public IQueryable<GroupMember> Queryable( string includes, bool includeDeceased )
         {
-            // never include ArchivedMembers unless explicitly calling GetArchived()
-            var qry = base.Queryable( includes ).Where( a => a.IsArchived == false );
+            // never include ArchivedMembers unless explicitly requested
+            return Queryable( includes, includeDeceased, false );
+        }
+
+        /// <summary>
+        /// Returns a queryable collection of all <see cref="Rock.Model.GroupMember">GroupMembers</see> with eager loading of properties specified in includes
+        /// </summary>
+        /// <param name="includes">A <see cref="System.String"/> containing a list of properties to be eagerly loaded.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> value indicating if deceased <see cref="Rock.Model.GroupMember">GroupMembers</see> should be included. If <c>true</c> 
+        /// deceased group members will be included, if <c>false</c> deceased group members will not be included. This parameter defaults to false.</param>
+        /// <param name="includeArchived">A <see cref="System.Boolean"/> value indicating if archived members should be included in the results. If <c>true</c> archived members will
+        /// be included, otherwise they will not.</param>
+        /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> with specified properties eagerly loaded.</returns>
+        public IQueryable<GroupMember> Queryable( string includes, bool includeDeceased, bool includeArchived )
+        {
+            IQueryable<GroupMember> qry;
+
+            if ( includeArchived )
+            {
+                // by default, all GroupMember Queries treat 'IsArchived' as a soft-deleted, and therefore don't include those records unless AsNoFilter is used
+                qry = base.AsNoFilter( includes );
+            }
+            else
+            {
+                // never include ArchivedMembers unless explicitly calling GetArchived()
+                qry = base.Queryable( includes ).Where( a => a.IsArchived == false );
+            }
+
             if ( !includeDeceased )
             {
                 qry = qry.Where( g => g.Person.IsDeceased == false );
@@ -175,7 +228,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns the first <see cref="Rock.Model.GroupMember"/> that mathces the Id of the <see cref="Rock.Model.Group"/>,
+        /// Returns the first <see cref="Rock.Model.GroupMember"/> that matches the Id of the <see cref="Rock.Model.Group"/>,
         /// the Id of the <see cref="Rock.Model.Person"/>, and the Id of the <see cref="Rock.Model.GroupTypeRole"/>
         /// </summary>
         /// <param name="groupId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> to search by.</param>
@@ -193,7 +246,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns the first <see cref="Rock.Model.GroupMember"/> that mathces the Id of the <see cref="Rock.Model.Group"/>,
+        /// Returns the first <see cref="Rock.Model.GroupMember"/> that matches the Id of the <see cref="Rock.Model.Group"/>,
         /// the Id of the <see cref="Rock.Model.Person"/>, and the Id of the <see cref="Rock.Model.GroupTypeRole"/>. If a 
         /// GroupMember cannot be found with a matching GroupTypeRole, the first GroupMember that matches the Group Id and 
         /// Person Id will be returned (with a different role id).
@@ -458,7 +511,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Restores the archived GroupMember record
-        /// HINT: Use <see cref="GroupService.ExistsAsArchived"></see> to get the matching archived groupmember
+        /// HINT: Use <see cref="GroupService.ExistsAsArchived"></see> to get the matching archived group member
         /// </summary>
         /// <param name="archivedGroupMember">The archived group member.</param>
         public void Restore( GroupMember archivedGroupMember )

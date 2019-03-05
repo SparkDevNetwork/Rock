@@ -402,7 +402,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
                 }
                 else
                 {
-                    if ( field.FieldVisibilityRules.Any() )
+                    if ( field.FieldVisibilityRules.RuleList.Any() )
                     {
                         linkButton.AddCssClass( "criteria-exists" );
                     }

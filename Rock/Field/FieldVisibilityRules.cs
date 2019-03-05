@@ -31,8 +31,17 @@ namespace Rock.Field
     /// </summary>
     [Serializable]
     [System.Diagnostics.DebuggerDisplay( "{DebuggerFormattedRules}" )]
-    public class FieldVisibilityRules : List<FieldVisibilityRule>
+    public class FieldVisibilityRules
     {
+        /// <summary>
+        /// Gets or sets the rule list.
+        /// </summary>
+        /// <value>
+        /// The rule list.
+        /// </value>
+        [DataMember]
+        public List<FieldVisibilityRule> RuleList { get; set; } = new List<FieldVisibilityRule>();
+
         /// <summary>
         /// Clones this instance.
         /// </summary>
@@ -40,7 +49,7 @@ namespace Rock.Field
         public FieldVisibilityRules Clone()
         {
             var clone = new FieldVisibilityRules();
-            clone.AddRange( this );
+            clone.RuleList.AddRange( this.RuleList );
             clone.FilterExpressionType = this.FilterExpressionType;
             return clone;
         }
@@ -64,13 +73,13 @@ namespace Rock.Field
             bool visible = true;
             var fieldVisibilityRules = this;
 
-            if ( !fieldVisibilityRules.Any() || !attributeValues.Any() )
+            if ( !fieldVisibilityRules.RuleList.Any() || !attributeValues.Any() )
             {
                 // if no rules or attribute values, just exit
                 return visible;
             }
 
-            foreach ( var fieldVisibilityRule in fieldVisibilityRules.Where( a => a.ComparedToAttributeGuid.HasValue ) )
+            foreach ( var fieldVisibilityRule in fieldVisibilityRules.RuleList.Where( a => a.ComparedToAttributeGuid.HasValue ) )
             {
                 var filterValues = new List<string>();
 
@@ -158,7 +167,7 @@ namespace Rock.Field
         /// <value>
         /// The debugger formatted rules.
         /// </value>
-        internal string DebuggerFormattedRules => $"{FilterExpressionType} {this.AsDelimited( " and " )}";
+        internal string DebuggerFormattedRules => $"{FilterExpressionType} {this.RuleList.AsDelimited( " and " )}";
     }
 
     /// <summary>

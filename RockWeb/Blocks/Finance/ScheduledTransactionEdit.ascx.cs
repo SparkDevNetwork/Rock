@@ -316,6 +316,11 @@ achieve our mission.  We are so grateful for your commitment.
                     divCCPaymentInfo.RemoveCssClass( "active" );
                     divACHPaymentInfo.RemoveCssClass( "active" );
 
+                    if ( !Gateway.IsUpdatingSchedulePaymentMethodSupported )
+                    {
+                        divPaymentMethodModification.Visible = false;
+                    }
+
                     switch ( hfPaymentTab.Value )
                     {
                         case "ACH":

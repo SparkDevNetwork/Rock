@@ -13,7 +13,7 @@ namespace Rock.Plugin.HotFixes
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
     [MigrationNumber(65,"1.8.5")]
-    class ThresholdValue :Migration
+    public class ThresholdValue :Migration
     {
         /// <summary>
         /// The commands to run to migrate plugin to the specific version
