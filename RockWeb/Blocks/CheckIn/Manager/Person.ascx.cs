@@ -75,6 +75,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -314,10 +318,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 {
                     lName.Text = person.FullName;
 
-                    string photoTag = Rock.Model.Person.GetPersonPhotoImageTag( person, 120, 120 );
+                    string photoTag = Rock.Model.Person.GetPersonPhotoImageTag( person, 200, 200 );
                     if ( person.PhotoId.HasValue )
                     {
-                        lPhoto.Text = string.Format( "<div class='photoframe'><a href='{0}'>{1}</a></div>", person.PhotoUrl, photoTag );
+                        lPhoto.Text = string.Format( "<div class='photo'><a href='{0}'>{1}</a></div>", person.PhotoUrl, photoTag );
                     }
                     else
                     {
@@ -466,8 +470,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         }
                     }
 
-                    rptrPhones.DataSource = person.PhoneNumbers.Where( p => !p.IsUnlisted ).ToList();
+                    var phoneNumbers = person.PhoneNumbers.Where( p => !p.IsUnlisted ).ToList();
+                    rptrPhones.DataSource = phoneNumbers;
                     rptrPhones.DataBind();
+                    rcwPhone.Visible = phoneNumbers.Any();
 
                     var schedules = new ScheduleService( rockContext )
                         .Queryable().AsNoTracking()
