@@ -1137,6 +1137,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
         /// <value>
         /// The datasource SQL.
         /// </value>
+        [Obsolete( "For performance reasons this property is no longer used and will always return null." )]
         public string DatasourceSQL { get; private set; }
 
         /// <summary>
@@ -1171,7 +1172,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 this.DataSource = qry.ToList();
             }
 
-            DatasourceSQL = qry.ToString();
+            // DatasourceSQL = qry.ToString();
         }
 
         /// <summary>
