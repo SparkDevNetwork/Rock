@@ -163,6 +163,9 @@ namespace Rock.Web.Cache
         /// <value>
         /// The interaction components.
         /// </value>
+        [Obsolete( "This is not performant. Instead get the ID for the InteractionComponent from the DB using " +
+            "the InteractionComponentService and then use the ID to get the InteractionComponentCache obj from the cache." )]
+        [RockObsolete( "9.15" )]
         public List<InteractionComponentCache> InteractionComponents
         {
             get

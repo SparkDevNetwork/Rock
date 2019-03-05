@@ -219,7 +219,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
             {
                 lPromptMessage.Text = GetAttributeValue( "PromptMessage" );
 
-                if ( ( bool? ) Session["InvalidPersonToken"] == true )
+                if ( (bool?)Session["InvalidPersonToken"] == true )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                     lInvalidPersonTokenText.Text = GetAttributeValue( "InvalidPersonTokenText" ).ResolveMergeFields( mergeFields );
@@ -340,7 +340,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
         {
             if ( sender is LinkButton )
             {
-                LinkButton lb = ( LinkButton ) sender;
+                LinkButton lb = (LinkButton)sender;
 
                 foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
                 {

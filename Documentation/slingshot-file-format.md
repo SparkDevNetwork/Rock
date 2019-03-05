@@ -142,3 +142,63 @@ Example(s):
 Example(s):
 `14,10000,Mr Bobby Brown,,Adult,Robert,Bob,Brown,Wayne,Mr,,,Male,Single,,,Active,,Member,EmailAllowed,5/10/1997 12:00:00 AM,8/20/2016 12:00:00 AM,,0,,,,True,False`
 `15,10001,Mr Joey Rogers & Ms Rolyn Washington,C:\Temp\Photos\acsThumb999.jpg,Adult,Rolyn,,Washington,Sue,Ms,,rolyn_washington@fakeinbox.com,Female,Single,9/26/1990 12:00:00 AM,,Active,,Member,EmailAllowed,6/9/1997 12:00:00 AM,10/24/2017 12:00:00 AM,C:\Temp\Photos\acsThumb998.jpg,0,,,,True,False`
+
+
+# Proposed 2/26/2019
+
+The following are new, proposed file format definitions that are being considered for addition to the Slingshot importer.
+
+## connection.csv
+
+`ConnectionType,ConnectionOpportunity,PersonId,Comments,FollowupDate`
+
+## group-locationschedule.csv
+
+`GroupId,Location,ScheduleName,iCalendarContent,CheckInStartOffsetMinutes,CheckInEndOffsetMinutes,EffectiveStartDate,Category`
+
+## person-follow.csv
+
+`PersonId,EntityId,EntityType`
+
+## person-relationship.csv
+
+`FromPersonId,ToPersonId,GroupRole`
+
+## person-userlogin.csv
+
+`PersonId,UserName,SecurityType`
+
+## registrationTemplate.csv
+
+`Id,Name,Category,GroupTypeId,AllowMultipleRegistrants,AllowGroupPlacement,MaxRegistrants,RegistrantsSameFamily,Notify,SetCostOnInstance,Cost,MinimumInitialPayment,AllowExternalRegistrationUpdates,AddPersonNote,LoginRequired,FinancialGateway,BatchNamePrefix,PaymentReminderTimeSpan,RegistrationTerm,RegistrantTerm,DiscountTerm,FeeTerm`
+
+## registrationTemplate-fee.csv
+
+`Id,RegistrationTemplateId,Name,Type,DiscountApplies`
+
+## registrationTemplate-feeitem.csv
+
+`RegistrationTemplateFeeId,Name,Cost`
+
+## registrationTemplate-discount.csv
+
+`Id,RegistrationTemplateId,Code,AutoApplyDiscount,DiscountPercentage,DiscountAmount`
+
+## registrationTemplate-form.csv
+
+`Id,RegistrationTemplateId,Name`
+
+## registrationTemplate-formfield.csv
+
+`RegistrationTemplateFormId,FieldSource,PersonFieldType,PreText,PostText,IsGridField,IsRequired`
+
+## registrationInstance.csv
+
+`Id,Name,RegistrationTemplateId,StartDateTime,EndDateTime,SendReminderDateTime,MaxAttendees,AccountId,ContactPhone,ContactEmail,PersonId,AdditionalReminderDetails,AdditionalConfirmationDetails`
+
+
+
+
+
+
+

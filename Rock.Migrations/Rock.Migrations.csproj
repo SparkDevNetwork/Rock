@@ -220,6 +220,18 @@
     <Compile Include="Migrations\201902192016143_Rollup_0219.Designer.cs">
       <DependentUpon>201902192016143_Rollup_0219.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201902201848155_UpdateComponent.cs" />
+    <Compile Include="Migrations\201902201848155_UpdateComponent.Designer.cs">
+      <DependentUpon>201902201848155_UpdateComponent.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201902272058547_PersonGivingLeaderIdUpdate.cs" />
+    <Compile Include="Migrations\201902272058547_PersonGivingLeaderIdUpdate.Designer.cs">
+      <DependentUpon>201902272058547_PersonGivingLeaderIdUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903051854099_Rollup_0305.cs" />
+    <Compile Include="Migrations\201903051854099_Rollup_0305.Designer.cs">
+      <DependentUpon>201903051854099_Rollup_0305.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -625,6 +637,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201902192016143_Rollup_0219.resx">
       <DependentUpon>201902192016143_Rollup_0219.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201902201848155_UpdateComponent.resx">
+      <DependentUpon>201902201848155_UpdateComponent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201902272058547_PersonGivingLeaderIdUpdate.resx">
+      <DependentUpon>201902272058547_PersonGivingLeaderIdUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903051854099_Rollup_0305.resx">
+      <DependentUpon>201903051854099_Rollup_0305.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

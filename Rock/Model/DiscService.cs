@@ -239,17 +239,17 @@ namespace Rock.Model
         /// <summary>
         /// Scores the test.
         /// </summary>
-        /// <param name="moreN">The more n.</param>
         /// <param name="moreD">The more d.</param>
         /// <param name="moreI">The more i.</param>
         /// <param name="moreS">The more s.</param>
         /// <param name="moreC">The more c.</param>
-        /// <param name="lessN">The less n.</param>
         /// <param name="lessD">The less d.</param>
         /// <param name="lessI">The less i.</param>
         /// <param name="lessS">The less s.</param>
         /// <param name="lessC">The less c.</param>
-        /// <returns>returns a AssessmentResults object</returns>
+        /// <returns>
+        /// returns a AssessmentResults object
+        /// </returns>
         static public AssessmentResults Score( int moreD, int moreI, int moreS, int moreC, int lessD, int lessI, int lessS, int lessC )
         {
             AssessmentResults testResults = new AssessmentResults();

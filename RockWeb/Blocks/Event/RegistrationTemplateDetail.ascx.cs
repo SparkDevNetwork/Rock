@@ -727,6 +727,7 @@ The logged-in person's information will be used to complete the registrar inform
                 var newFormFieldsState = new Dictionary<Guid, List<RegistrationTemplateFormField>>();
                 var newDiscountState = new List<RegistrationTemplateDiscount>();
                 var newFeeState = new List<RegistrationTemplateFee>();
+                var newAttributeState = new List<Attribute>();
 
                 foreach ( var form in FormState )
                 {
@@ -791,12 +792,29 @@ The logged-in person's information will be used to complete the registrar inform
                     newFee.Id = 0;
                     newFee.Guid = Guid.NewGuid();
                     newFeeState.Add( newFee );
+                    foreach ( var item in fee.FeeItems )
+                    {
+                        var feeItem = item.Clone( false );
+                        feeItem.Id = 0;
+                        feeItem.Guid = Guid.NewGuid();
+                        newFee.FeeItems.Add( feeItem );
+                    }
+                }
+
+                foreach (var attribute in RegistrationAttributesState)
+                {
+                    var newAttribute = attribute.Clone( false );
+                    newAttribute.EntityTypeQualifierValue = null;
+                    newAttribute.Id = 0;
+                    newAttribute.Guid = Guid.NewGuid();
+                    newAttributeState.Add( newAttribute );
                 }
 
                 FormState = newFormState;
                 FormFieldsState = newFormFieldsState;
                 DiscountState = newDiscountState;
                 FeeState = newFeeState;
+                RegistrationAttributesState = newAttributeState;
 
                 hfRegistrationTemplateId.Value = newRegistrationTemplate.Id.ToString();
                 ShowEditDetails( newRegistrationTemplate, rockContext );
@@ -1249,7 +1267,8 @@ The logged-in person's information will be used to complete the registrar inform
 
             // Delete any of those attributes that were removed in the UI
             var selectedAttributeGuids = viewStateAttributes.Select( a => a.Guid );
-            foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
+            var attributesToDelete = attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ).ToList();
+            foreach ( var attr in attributesToDelete )
             {
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
@@ -2206,6 +2225,15 @@ The logged-in person's information will be used to complete the registrar inform
 
                 DiscountState = registrationTemplate.Discounts.OrderBy( a => a.Order ).ToList();
                 FeeState = registrationTemplate.Fees.OrderBy( a => a.Order ).ToList();
+                var attributeService = new AttributeService( rockContext );
+                RegistrationAttributesState = attributeService.GetByEntityTypeId( new Registration().TypeId, true ).AsQueryable()
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( registrationTemplate.Id.ToString() ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
+                    .ToList();
+
             }
             else
             {
@@ -2213,6 +2241,7 @@ The logged-in person's information will be used to complete the registrar inform
                 FormFieldsState = new Dictionary<Guid, List<RegistrationTemplateFormField>>();
                 DiscountState = new List<RegistrationTemplateDiscount>();
                 FeeState = new List<RegistrationTemplateFee>();
+                RegistrationAttributesState = new List<Attribute>();
             }
         }
 
@@ -2325,17 +2354,6 @@ The logged-in person's information will be used to complete the registrar inform
             heInstructions.Text = registrationTemplate.RegistrationInstructions;
             var defaultForm = FormState.FirstOrDefault();
             BuildControls( true, defaultForm.Guid );
-
-            var attributeService = new AttributeService( rockContext );
-
-            RegistrationAttributesState = attributeService.GetByEntityTypeId( new Registration().TypeId, true ).AsQueryable()
-                .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase ) &&
-                    a.EntityTypeQualifierValue.Equals( registrationTemplate.Id.ToString() ) )
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.Name )
-                .ToList();
-
             BindRegistrationAttributesGrid();
         }
 
@@ -2603,40 +2621,40 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="showInvalid">if set to <c>true</c> [show invalid].</param>
         private void BuildFormControl( Control parentControl, bool setValues, RegistrationTemplateForm form, Guid? activeFormGuid, Guid defaultFormGuid, bool showInvalid )
         {
-            var control = new RegistrationTemplateFormEditor();
-            control.ID = form.Guid.ToString( "N" );
-            parentControl.Controls.Add( control );
-            control.ValidationGroup = btnSave.ValidationGroup;
+            var registrationTemplateFormEditor = new RegistrationTemplateFormEditor();
+            registrationTemplateFormEditor.ID = form.Guid.ToString( "N" );
+            parentControl.Controls.Add( registrationTemplateFormEditor );
 
-            control.DeleteFieldClick += tfeForm_DeleteFieldClick;
-            control.ReorderFieldClick += tfeForm_ReorderFieldClick;
-            control.FilterFieldClick += tfeForm_FilterFieldClick;
-            control.EditFieldClick += tfeForm_EditFieldClick;
-            control.RebindFieldClick += tfeForm_RebindFieldClick;
-            control.DeleteFormClick += tfeForm_DeleteFormClick;
-            control.AddFieldClick += tfeForm_AddFieldClick;
+            // if this is the default form, don't let it get deleted. Also, there is some special logic to disable deleting FirstName,LastName fields on default form.
+            bool isDefaultForm = form.Guid == defaultFormGuid;
+            registrationTemplateFormEditor.IsDeleteEnabled = !isDefaultForm;
+            registrationTemplateFormEditor.IsDefaultForm = isDefaultForm;
 
-            control.SetForm( form );
-            control.BindFieldsGrid( FormFieldsState[form.Guid] );
+            registrationTemplateFormEditor.ValidationGroup = btnSave.ValidationGroup;
+            registrationTemplateFormEditor.DeleteFieldClick += tfeForm_DeleteFieldClick;
+            registrationTemplateFormEditor.ReorderFieldClick += tfeForm_ReorderFieldClick;
+            registrationTemplateFormEditor.FilterFieldClick += tfeForm_FilterFieldClick;
+            registrationTemplateFormEditor.EditFieldClick += tfeForm_EditFieldClick;
+            registrationTemplateFormEditor.RebindFieldClick += tfeForm_RebindFieldClick;
+            registrationTemplateFormEditor.DeleteFormClick += tfeForm_DeleteFormClick;
+            registrationTemplateFormEditor.AddFieldClick += tfeForm_AddFieldClick;
+
+            registrationTemplateFormEditor.SetForm( form );
+
+            registrationTemplateFormEditor.BindFieldsGrid( FormFieldsState[form.Guid] );
 
             if ( setValues )
             {
-                control.Expanded = ExpandedForms.Contains( form.Guid );
+                registrationTemplateFormEditor.Expanded = ExpandedForms.Contains( form.Guid );
 
-                if ( form.Guid == defaultFormGuid )
+                if ( !registrationTemplateFormEditor.Expanded && showInvalid && !form.IsValid )
                 {
-                    control.IsDeleteEnabled = false;
-                    control.IsDefaultForm = true;
+                    registrationTemplateFormEditor.Expanded = true;
                 }
 
-                if ( !control.Expanded && showInvalid && !form.IsValid )
+                if ( !registrationTemplateFormEditor.Expanded )
                 {
-                    control.Expanded = true;
-                }
-
-                if ( !control.Expanded )
-                {
-                    control.Expanded = activeFormGuid.HasValue && activeFormGuid.Equals( form.Guid );
+                    registrationTemplateFormEditor.Expanded = activeFormGuid.HasValue && activeFormGuid.Equals( form.Guid );
                 }
             }
         }
