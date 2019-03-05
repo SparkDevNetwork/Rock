@@ -453,16 +453,16 @@ namespace Rock.Attribute
                 entity.AttributeValues = attributes.ToDictionary( a => a.Key, a => (AttributeValueCache)null );
 
                 // If it's a saved entity, add it to the list of entities to look up
-                if ( !entityTypeCache.IsEntity || entity.Id != 0 )
+                if ( entity.Attributes.Any() && ( !entityTypeCache.IsEntity || entity.Id != 0 ) )
                 {
                     // Add to the lookup
                     entitiesToLookUp.Add( entity, entityIds );
 
                     // Add to the reverse lookup (this will save time matching the returned values to the right entity later)
-                    foreach(int id in entityIds)
+                    foreach ( int id in entityIds )
                     {
                         List<IHasAttributes> matchingEntities;
-                        if (entitiesToLookUpRev.TryGetValue(id, out matchingEntities))
+                        if ( entitiesToLookUpRev.TryGetValue( id, out matchingEntities ) )
                         {
                             matchingEntities.Add( entity );
                         }

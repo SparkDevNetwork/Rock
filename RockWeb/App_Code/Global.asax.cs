@@ -903,7 +903,9 @@ namespace RockWeb
                 attributeQuery = attributeQuery.Where(a => !a.EntityTypeId.HasValue || a.EntityTypeId.Value != personUserValueEntityTypeId);
             }
 
-            foreach ( var attribute in attributeQuery.AsNoTracking().ToList() )
+            var attributeList = attributeQuery.AsNoTracking().ToList();
+            attributeList.LoadAttributes();
+            foreach ( var attribute in attributeList )
             {
                 if ( qualifiers.ContainsKey( attribute.Id ) )
                     Rock.Web.Cache.AttributeCache.Get( attribute, qualifiers[attribute.Id] );
@@ -912,7 +914,9 @@ namespace RockWeb
             }
 
             // cache all the Country Defined Values since those can be loaded in just a few millisecond here, but take around 1-2 seconds if first loaded when formatting an address
-            foreach ( var definedValue in new Rock.Model.DefinedValueService( rockContext ).GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() ).AsNoTracking() )
+            var definedValues = new Rock.Model.DefinedValueService( rockContext ).GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() ).AsNoTracking().ToList();
+            definedValues.LoadAttributes();
+            foreach ( var definedValue in definedValues )
             {
                 DefinedValueCache.Get( definedValue );
             }

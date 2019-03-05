@@ -62,7 +62,7 @@ namespace Rock.Web
 
             if ( matchedRoutes != null )
             {
-                return matchedRoutes.Select( r => new PageCacheAndRouteId { Page = PageCache.Get( r.PageId ), RouteId = r.RouteId } ).Where( p => p.Page != null );
+                return matchedRoutes.Select( r => new PageCacheAndRouteId { Page = PageCache.Get( r.PageId ), RouteId = r.RouteId } ).Where( p => p.Page != null ).ToList();
             }
             else
             {

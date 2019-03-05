@@ -307,7 +307,7 @@ namespace Rock.Reporting
         /// <param name="attribute">The attribute.</param>
         /// <param name="limitToFilterableAttributes">if set to <c>true</c> [limit to filterable attributes].</param>
         /// <param name="rockContext">The RockContext to use.</param>
-        public static void AddEntityFieldForAttribute( List<EntityField> entityFields, AttributeCache attribute, bool limitToFilterableAttributes = true, RockContext rockContext = null )
+        public static void AddEntityFieldForAttribute( List<EntityField> entityFields, AttributeCache attribute, bool limitToFilterableAttributes, RockContext rockContext = null )
         {
             var entityField = GetEntityFieldForAttribute( attribute, limitToFilterableAttributes, rockContext );
 
@@ -358,7 +358,7 @@ namespace Rock.Reporting
         /// <param name="attribute">The attribute.</param>
         /// <param name="limitToFilterableAttributes"></param>
         /// <param name="rockContext">The RockContext to use.</param>
-        public static EntityField GetEntityFieldForAttribute( AttributeCache attribute, bool limitToFilterableAttributes = true, RockContext externalRockContext = null )
+        public static EntityField GetEntityFieldForAttribute( AttributeCache attribute, bool limitToFilterableAttributes, RockContext externalRockContext = null )
         {
 
             // Ensure field name only has Alpha, Numeric and underscore chars
