@@ -8,7 +8,7 @@
         /// </summary>
         public override void Up()
         {
-            UpdatedGoogleMapsShortCode();
+            //UpdatedGoogleMapsShortCode();
         }
 
         /// <summary>
