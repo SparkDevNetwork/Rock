@@ -1943,80 +1943,8 @@ TransactionAccountDetails: [
                     // Create Person/Family
                     familyGroup = PersonService.SaveNewPerson( business, rockContext, null, false );
 
-                    // Get the relationship roles to use
-                    var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
-                    int businessContactRoleId = knownRelationshipGroupType.Roles
-                        .Where( r =>
-                            r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT.AsGuid() ) )
-                        .Select( r => r.Id )
-                        .FirstOrDefault();
-                    int businessRoleId = knownRelationshipGroupType.Roles
-                        .Where( r =>
-                            r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS.AsGuid() ) )
-                        .Select( r => r.Id )
-                        .FirstOrDefault();
-                    int ownerRoleId = knownRelationshipGroupType.Roles
-                        .Where( r =>
-                            r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) )
-                        .Select( r => r.Id )
-                        .FirstOrDefault();
-
-                    if ( ownerRoleId > 0 && businessContactRoleId > 0 && businessRoleId > 0 )
-                    {
-                        // get the known relationship group of the business contact
-                        // add the business as a group member of that group using the group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS
-                        var contactKnownRelationshipGroup = groupMemberService.Queryable()
-                            .Where( g =>
-                                g.GroupRoleId == ownerRoleId &&
-                                g.PersonId == person.Id )
-                            .Select( g => g.Group )
-                            .FirstOrDefault();
-                        if ( contactKnownRelationshipGroup == null )
-                        {
-                            // In some cases person may not yet have a know relationship group type
-                            contactKnownRelationshipGroup = new Group();
-                            groupService.Add( contactKnownRelationshipGroup );
-                            contactKnownRelationshipGroup.Name = "Known Relationship";
-                            contactKnownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
-
-                            var ownerMember = new GroupMember();
-                            ownerMember.PersonId = person.Id;
-                            ownerMember.GroupRoleId = ownerRoleId;
-                            contactKnownRelationshipGroup.Members.Add( ownerMember );
-                        }
-                        var groupMember = new GroupMember();
-                        groupMember.PersonId = business.Id;
-                        groupMember.GroupRoleId = businessRoleId;
-                        contactKnownRelationshipGroup.Members.Add( groupMember );
-
-                        // get the known relationship group of the business
-                        // add the business contact as a group member of that group using the group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT
-                        var businessKnownRelationshipGroup = groupMemberService.Queryable()
-                            .Where( g =>
-                                g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) &&
-                                g.PersonId == business.Id )
-                            .Select( g => g.Group )
-                            .FirstOrDefault();
-                        if ( businessKnownRelationshipGroup == null )
-                        {
-                            // In some cases business may not yet have a know relationship group type
-                            businessKnownRelationshipGroup = new Group();
-                            groupService.Add( businessKnownRelationshipGroup );
-                            businessKnownRelationshipGroup.Name = "Known Relationship";
-                            businessKnownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
-
-                            var ownerMember = new GroupMember();
-                            ownerMember.PersonId = business.Id;
-                            ownerMember.GroupRoleId = ownerRoleId;
-                            businessKnownRelationshipGroup.Members.Add( ownerMember );
-                        }
-                        var businessGroupMember = new GroupMember();
-                        businessGroupMember.PersonId = person.Id;
-                        businessGroupMember.GroupRoleId = businessContactRoleId;
-                        businessKnownRelationshipGroup.Members.Add( businessGroupMember );
-
-                        rockContext.SaveChanges();
-                    }
+                    personService.AddContactToBusiness( business.Id, person.Id );
+                    rockContext.SaveChanges();
                 }
 
                 business.LastName = txtBusinessName.Text;
