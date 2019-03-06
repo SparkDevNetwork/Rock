@@ -1,0 +1,58 @@
+.table-responsive {
+	table {
+		width: 100%;
+	}
+}
+
+.table-striped > tbody > tr:nth-child(odd) > td, 
+.table-striped > tbody > tr:nth-child(odd) > th {
+	background-color: @theme-6;
+}
+
+.grid-paging .pagination li.active > a {
+	background-color: @theme-3;
+	color: @theme-3-text;
+
+	&:hover {
+		border-color: @theme-3;
+	}
+}
+
+.grid-paging .pagination li > a {
+	border-color: @theme-3;
+	color: @theme-3;
+	font-weight: 500;
+}
+
+.grid-paging .grid-itemcount {
+	font-size: 14px;
+	font-weight: 500;
+	color: @theme-3;
+	text-transform: capitalize;
+}
+
+.directory-grid>div.row:nth-child(odd) {
+	background-color: @theme-6;
+}
+
+.table > thead > tr > th,
+.table > tbody > tr > th,
+.table > tfoot > tr > th,
+.table > thead > tr > td,
+.table > tbody > tr > td,
+.table > tfoot > tr > td {
+	vertical-align: middle;
+}
+
+// Fixes Duplicate Finder Table
+.table > thead > tr > th,
+.table > thead > tr > th > a:not(.btn),
+.table > tbody > tr.grid-row-bold td {
+	color: @theme-5-text;
+	border-color: @theme-4;
+}
+
+.table > tbody > tr.grid-row-bold:hover td {
+	background-color: @theme-4;
+	border-color: darken(@theme-4, 10%);
+}
