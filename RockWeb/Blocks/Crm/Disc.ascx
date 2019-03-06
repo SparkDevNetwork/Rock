@@ -126,6 +126,7 @@
                         <%=this.PercentComplete.ToString("F0") %>%
                     </div>
                 </div>
+                <Rock:NotificationBox ID="nbInfo" runat="server" NotificationBoxType="Info">Select the statement that you identify with Most and Least for each group.</Rock:NotificationBox>
                 <asp:Repeater ID="rQuestions" runat="server" OnItemDataBound="rQuestions_ItemDataBound">
                     <ItemTemplate>
                         <asp:HiddenField ID="hfQuestionCode" runat="server" Value='<%# Eval( "QuestionNumber") %>' />
