@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.CheckIn
             public const string ShowAllGroups = "ShowAllGroups";
             public const string ShowGroupAncestry = "ShowGroupAncestry";
             public const string DetailPage = "DetailPage";
-            public const string CheckinDetailPage = "CheckinDetailPage";
+            public const string CheckinDetailPage = "Check-inDetailPage";
             public const string DataViewCategories = "DataViewCategories";
             public const string GroupSpecific = "GroupSpecific";
             public const string ShowScheduleFilter = "ShowScheduleFilter";
