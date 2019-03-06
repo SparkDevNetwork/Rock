@@ -90,6 +90,27 @@ namespace Rock.Financial
         }
 
         /// <summary>
+        /// Allow access to the automated gateway's most recent exception property.
+        /// </summary>
+        /// <returns></returns>
+        public Exception GetMostRecentException()
+        {
+            if ( _automatedGatewayComponent == null )
+            {
+                return null;
+            }
+
+            var castedComponent = _automatedGatewayComponent as IAutomatedGatewayComponent;
+
+            if ( castedComponent == null )
+            {
+                return null;
+            }
+
+            return castedComponent.MostRecentException;
+        }
+
+        /// <summary>
         /// Validates that the args do not seem to be a repeat charge on the same person in a short timeframe.
         /// Entities are loaded from supplied IDs where applicable to ensure existance and a valid state.
         /// </summary>
