@@ -26,7 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using RockFramework = Rock;
 
-namespace RockWeb.Themes.Rock.Layouts
+namespace RockWeb.Themes.RockOriginal.Layouts
 {
     public partial class Error : System.Web.UI.Page
     {

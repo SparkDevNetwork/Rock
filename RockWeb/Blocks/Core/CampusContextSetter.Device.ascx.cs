@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Core
 {% endif %}" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.DEVICE_TYPE, "Device Type", "Optional filter to limit to specific device types.", false )]
     [CustomRadioListField("Context Scope", "The scope of context to set", "Site,Page", true, "Site")]
-    public partial class CampusContextSetter : RockBlock
+    public partial class CampusContextSetterDevice : RockBlock
     {
         #region Base Control Methods
 

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 
-namespace RockWeb.Themes.Stark.Layouts
+namespace RockWeb.Themes.NewpointeMain.Layouts
 {
     public partial class Error : System.Web.UI.Page
     {
