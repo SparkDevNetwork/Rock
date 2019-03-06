@@ -11,7 +11,6 @@ Rock RMS (NewPointe Edition)
 
 ![Campuses][campuses-badge]
 ![attendance][attendance-badge]
-![Trend][trend-badge]
 ![ERAs][era-badge]
 
 </div>
@@ -128,7 +127,6 @@ A community of developers led by the [Spark Development Network](http://www.spar
 [campuses-badge]: https://img.shields.io/badge/dynamic/json.svg?label=campuses&url=https://newpointe.org/Webhooks/Lava.ashx/gh/stats&query=$.campusCount&colorB=lightgrey
 [era-badge]: https://img.shields.io/badge/dynamic/json.svg?label=rock%20ERAs&url=https://newpointe.org/Webhooks/Lava.ashx/gh/stats&query=$.eraCount&colorB=lightgrey
 [attendance-badge]: https://img.shields.io/badge/dynamic/json.svg?label=average%20attendance&url=https://newpointe.org/Webhooks/Lava.ashx/gh/stats&query=$.averageAttendance&colorB=lightgrey
-[trend-badge]: https://img.shields.io/badge/dynamic/json.svg?label=attendance%20trend&url=https://newpointe.org/Webhooks/Lava.ashx/gh/stats&query=$.attendanceTrend&colorB=lightgrey
 
 [download-visual-studio]: https://visualstudio.microsoft.com/downloads/
 [download-sql-server]: https://www.microsoft.com/en-us/sql-server/sql-server-downloads
