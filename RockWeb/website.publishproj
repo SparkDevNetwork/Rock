@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+***********************************************************************************************
+website.publishproj
+
+WARNING: DO NOT MODIFY this file, it is used for the web publish process.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+***********************************************************************************************
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.30319</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{c387cb12-9204-4972-a795-dee72913b7ee}</ProjectGuid>
+    <SourceWebPhysicalPath>$(MSBuildThisFileDirectory)</SourceWebPhysicalPath>
+    <SourceWebVirtualPath>/RockWeb</SourceWebVirtualPath>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <SourceWebProject>
+    </SourceWebProject>
+    <SourceWebMetabasePath>
+    </SourceWebMetabasePath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <!-- for VS2010 we need to use 10.5 but for VS2012+ we should use VisualStudioVersion -->
+    <WebPublishTargetsVersion Condition=" '$(WebPublishTargetsVersion)' =='' and '$(VisualStudioVersion)' == 10.0 ">10.5</WebPublishTargetsVersion>
+    <WebPublishTargetsVersion Condition=" '$(WebPublishTargetsVersion)'=='' ">$(VisualStudioVersion)</WebPublishTargetsVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(WebPublishTargetsVersion)</VSToolsPath>
+    <_WebPublishTargetsPath Condition=" '$(_WebPublishTargetsPath)'=='' ">$(VSToolsPath)</_WebPublishTargetsPath>
+    <AssemblyFileVersion Condition="'$(AssemblyFileVersion)' == ''">1.0.0.0</AssemblyFileVersion>
+    <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">1.0.0.0</AssemblyVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttributes Include="AssemblyFileVersion">
+      <Value>$(AssemblyFileVersion)</Value>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="AssemblyVersion">
+      <Value>$(AssemblyVersion)</Value>
+    </AssemblyAttributes>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
+      <Project>{00EDCB8D-EF33-459C-AD62-02876BD24DFF}</Project>
+      <Name>DotLiquid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\org.newpointe.ExtraActions\org.newpointe.ExtraActions.csproj">
+      <Project>{89D22C1D-7A5D-4255-A2B5-3165FE85F168}</Project>
+      <Name>org.newpointe.ExtraActions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\org.newpointe.ExtraJobs\org.newpointe.ExtraJobs.csproj">
+      <Project>{C4F91120-FD92-49BE-81A5-6B10E870AAD9}</Project>
+      <Name>org.newpointe.ExtraJobs</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\org.newpointe.ExtraSearch\org.newpointe.ExtraSearch.csproj">
+      <Project>{526C47B7-7B7E-453F-AE5B-EF14FF180B4D}</Project>
+      <Name>org.newpointe.ExtraSearch</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\org.newpointe.NPEvents\org.newpointe.NPEvents.csproj">
+      <Project>{7D25797A-7103-4C74-BC09-4102DC17BBD7}</Project>
+      <Name>org.newpointe.NPEvents</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\org.newpointe.ReEncrypt\org.newpointe.ReEncrypt.csproj">
+      <Project>{C21394F1-98FC-45B4-9A89-26B229C44823}</Project>
+      <Name>org.newpointe.ReEncrypt</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Checkr\Rock.Checkr.csproj">
+      <Project>{94A5F880-31AE-4889-B9BE-BA1FDC258E83}</Project>
+      <Name>Rock.Checkr</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Mailgun\Rock.Mailgun.csproj">
+      <Project>{D6B19C0D-DA5E-4F75-8001-04DED86B741F}</Project>
+      <Name>Rock.Mailgun</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Mandrill\Rock.Mandrill.csproj">
+      <Project>{CF8C694A-55A0-434F-BC96-3450B96EC12A}</Project>
+      <Name>Rock.Mandrill</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Migrations\Rock.Migrations.csproj">
+      <Project>{704740D8-B539-4560-9F8C-681670C9D6AD}</Project>
+      <Name>Rock.Migrations</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.NMI\Rock.NMI.csproj">
+      <Project>{F3692909-952D-4C4A-B2D2-D90D0083CF53}</Project>
+      <Name>Rock.NMI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.PayFlowPro\Rock.PayFlowPro.csproj">
+      <Project>{A005D091-140E-4EC4-BCDF-CF7D42BB702C}</Project>
+      <Name>Rock.PayFlowPro</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj">
+      <Project>{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}</Project>
+      <Name>Rock.Rest</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Security.Authentication.Auth0\Rock.Security.Authentication.Auth0.csproj">
+      <Project>{5055F482-72C7-4CC9-8ED0-A77090C777DB}</Project>
+      <Name>Rock.Security.Authentication.Auth0</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.SignNow\Rock.SignNow.csproj">
+      <Project>{1F5956F2-2B0F-49B8-AAF1-2CC28F01426A}</Project>
+      <Name>Rock.SignNow</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Slingshot.Model\Rock.Slingshot.Model.csproj">
+      <Project>{962944DE-8BF4-4175-B55A-E75CF7918272}</Project>
+      <Name>Rock.Slingshot.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Slingshot\Rock.Slingshot.csproj">
+      <Project>{C1DD2402-5FB2-411E-BF8D-5D9CB3A58E8B}</Project>
+      <Name>Rock.Slingshot</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.StatementGenerator\Rock.StatementGenerator.csproj">
+      <Project>{42EDF2DD-5284-4B64-93C3-5186619D2B14}</Project>
+      <Name>Rock.StatementGenerator</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Version\Rock.Version.csproj">
+      <Project>{6FE0930C-6832-4C2F-8A76-D4E4A2D80DDF}</Project>
+      <Name>Rock.Version</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.WebStartup\Rock.WebStartup.csproj">
+      <Project>{515E22E4-4B9B-4886-8477-E5B312B75EB4}</Project>
+      <Name>Rock.WebStartup</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock\Rock.csproj">
+      <Project>{185A31D7-3037-4DAE-8797-0459849A84BD}</Project>
+      <Name>Rock</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SignNowSDK\SignNowSDK.csproj">
+      <Project>{69AC175C-3997-4514-8C9E-5D24811928C2}</Project>
+      <Name>SignNowSDK</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(_WebPublishTargetsPath)\Web\Microsoft.WebSite.Publishing.targets" />
+</Project>
