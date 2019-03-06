@@ -348,6 +348,11 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            string repeatDirection = GetAttributeValue( AttributeKeys.FilterColumnDirection );
+            int repeatColumns = GetAttributeValue( AttributeKeys.FilterColumnCount ).AsIntegerOrNull() ?? 0;
+            clbCampuses.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
+            clbCampuses.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
+
             BuildGroupTypesUI( true );
 
             if ( pnlResults.Visible )

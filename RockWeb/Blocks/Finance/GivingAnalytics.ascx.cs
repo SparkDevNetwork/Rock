@@ -161,18 +161,6 @@ namespace RockWeb.Blocks.Finance
             dvpDataView.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
 
             pnlViewBy.Visible = !GetAttributeValue( AttributeKeys.HideViewByOptions ).AsBoolean();
-
-            string repeatDirection = GetAttributeValue( AttributeKeys.FilterColumnDirection );
-            int repeatColumns = GetAttributeValue( AttributeKeys.FilterColumnCount ).AsIntegerOrNull() ?? 0;
-
-            cblTransactionType.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
-            cblTransactionType.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
-
-            cblCurrencyTypes.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
-            cblCurrencyTypes.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
-
-            cblTransactionSource.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
-            cblTransactionSource.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
         }
 
         /// <summary>
@@ -414,6 +402,18 @@ namespace RockWeb.Blocks.Finance
 
         private void BuildDynamicControls( bool setValues )
         {
+            string repeatDirection = GetAttributeValue( AttributeKeys.FilterColumnDirection );
+            int repeatColumns = GetAttributeValue( AttributeKeys.FilterColumnCount ).AsIntegerOrNull() ?? 0;
+
+            cblTransactionType.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
+            cblTransactionType.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
+
+            cblCurrencyTypes.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
+            cblCurrencyTypes.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
+
+            cblTransactionSource.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
+            cblTransactionSource.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
+
             var accountIds = new List<int>();
             if ( setValues )
             {
@@ -454,9 +454,6 @@ namespace RockWeb.Blocks.Finance
             }
 
             phAccounts.Controls.Clear();
-            string repeatDirection = GetAttributeValue( AttributeKeys.FilterColumnDirection );
-            int repeatColumns = GetAttributeValue( AttributeKeys.FilterColumnCount ).AsIntegerOrNull() ?? 0;
-
 
             foreach ( var campusId in _campusAccounts )
             {
@@ -494,6 +491,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         public void LoadDropDowns()
         {
+            
+
             cblTransactionType.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid() ) );
             cblCurrencyTypes.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() ) );
             cblTransactionSource.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() ) );
