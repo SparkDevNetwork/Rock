@@ -390,9 +390,9 @@ function() {
                 }
 
                 var groupRoleGuids = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( n => n.AsGuid() ).ToList();
-                if ( groupRoleGuids.Count() > 0 )
+                if ( groupRoleGuids.Count() > 0 && groupType != null )
                 {
-                    var groupRoleIds = new GroupTypeRoleService( (RockContext)serviceInstance.Context ).Queryable().Where( a => groupRoleGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList();
+                    var groupRoleIds = groupType.Roles.Where( role => groupRoleGuids.Contains( role.Guid ) ).Select( a => a.Id ).ToList();
                     groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupRoleIds.Contains( xx.GroupRoleId ) );
                 }
 
