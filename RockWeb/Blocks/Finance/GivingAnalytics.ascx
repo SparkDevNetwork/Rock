@@ -70,7 +70,7 @@
                                 </div>
                             </div>
                             </Rock:RockControlWrapper>
-                            <Rock:RockCheckBoxList ID="cblTransactionType" runat="server" Label="Transaction Types" RepeatDirection="Vertical" />
+                            <Rock:RockCheckBoxList ID="cblTransactionType" runat="server" Label="Transaction Types" />
                         </div>
                         <Rock:RockCheckBoxList ID="cblCurrencyTypes" runat="server" FormGroupCssClass="currency-list js-currency-list" Label="Currency Types" RepeatDirection="Vertical" />
                         <Rock:RockCheckBoxList ID="cblTransactionSource" runat="server" FormGroupCssClass="source-list js-source-list" Label="Transaction Source" RepeatDirection="Vertical" />

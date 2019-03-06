@@ -164,8 +164,7 @@ namespace RockWeb.Blocks.CheckIn
         required: true,
         defaultValue: "vertical",
         order: 13,
-        key: AttributeKeys.FilterColumnDirection
-        )]
+        key: AttributeKeys.FilterColumnDirection )]
 
     [IntegerField(
         name: "Filter Column Count",

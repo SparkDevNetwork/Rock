@@ -45,11 +45,55 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Shows a graph of giving statistics which can be configured for specific date range, amounts, currency types, campus, etc." )]
 
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK, Order = 0 )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, Order = 1 )]
-    [BooleanField( "Hide View By Options", "Should the View By options be hidden (Giver, Adults, Children, Family)?", Order = 2 )]
+    [DefinedValueField(
+        definedTypeGuid: Rock.SystemGuid.DefinedType.CHART_STYLES,
+        name: "Chart Style",
+        defaultValue: Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK,
+        order: 0,
+        key: AttributeKeys.ChartStyle )]
+
+    [LinkedPage(
+        name: "Detail Page",
+        description: "Select the page to navigate to when the chart is clicked",
+        required: false,
+        order: 1,
+        key: AttributeKeys.DetailPage )]
+
+    [BooleanField(
+        name: "Hide View By Options",
+        description: "Should the View By options be hidden (Giver, Adults, Children, Family)?",
+        order: 2,
+        key: AttributeKeys.HideViewByOptions )]
+
+    [CustomDropdownListField(
+        name: "Filter Column Direction",
+        description: "Choose the direction for the checkboxes for filter selections.",
+        listSource: "vertical^Vertical,horizontal^Horizontal",
+        required: true,
+        defaultValue: "vertical",
+        order: 3,
+        key: AttributeKeys.FilterColumnDirection
+        )]
+
+    [IntegerField(
+        name: "Filter Column Count",
+        description: "The number of check boxes for each row.",
+        required: false,
+        defaultValue: 1,
+        order: 4,
+        key: AttributeKeys.FilterColumnCount)]
+
     public partial class GivingAnalytics : RockBlock
     {
+        protected static class AttributeKeys
+        {
+            public const string ChartStyle = "ChartStyle";
+            public const string DetailPage = "DetailPage";
+            public const string HideViewByOptions = "HideViewByOptions";
+            public const string FilterColumnCount = "FilterColumnCount";
+            public const string FilterColumnDirection = "FilterColumnDirection";
+        }
+
         #region Fields
 
         private bool FilterIncludedInURL = false;
@@ -116,7 +160,19 @@ namespace RockWeb.Blocks.Finance
 
             dvpDataView.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
 
-            pnlViewBy.Visible = !GetAttributeValue( "HideViewByOptions" ).AsBoolean();
+            pnlViewBy.Visible = !GetAttributeValue( AttributeKeys.HideViewByOptions ).AsBoolean();
+
+            string repeatDirection = GetAttributeValue( AttributeKeys.FilterColumnDirection );
+            int repeatColumns = GetAttributeValue( AttributeKeys.FilterColumnCount ).AsIntegerOrNull() ?? 0;
+
+            cblTransactionType.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
+            cblTransactionType.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
+
+            cblCurrencyTypes.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
+            cblCurrencyTypes.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
+
+            cblTransactionSource.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
+            cblTransactionSource.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
         }
 
         /// <summary>
@@ -127,7 +183,7 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
-            var chartStyleDefinedValueGuid = this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull();
+            var chartStyleDefinedValueGuid = this.GetAttributeValue( AttributeKeys.ChartStyle ).AsGuidOrNull();
 
             lcAmount.Options.SetChartStyle( chartStyleDefinedValueGuid );
             bcAmount.Options.xaxis = new AxisOptions { mode = AxisMode.categories, tickLength = 0 };
@@ -238,7 +294,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The e.</param>
         protected void lcAmount_ChartClick( object sender, ChartClickArgs e )
         {
-            if ( GetAttributeValue( "DetailPage" ).AsGuidOrNull().HasValue )
+            if ( GetAttributeValue( AttributeKeys.DetailPage ).AsGuidOrNull().HasValue )
             {
                 Dictionary<string, string> qryString = new Dictionary<string, string>();
                 qryString.Add( "YValue", e.YValue.ToString() );
@@ -398,6 +454,9 @@ namespace RockWeb.Blocks.Finance
             }
 
             phAccounts.Controls.Clear();
+            string repeatDirection = GetAttributeValue( AttributeKeys.FilterColumnDirection );
+            int repeatColumns = GetAttributeValue( AttributeKeys.FilterColumnCount ).AsIntegerOrNull() ?? 0;
+
 
             foreach ( var campusId in _campusAccounts )
             {
@@ -414,7 +473,8 @@ namespace RockWeb.Blocks.Finance
                     cbList.Label = "Accounts";
                 }
 
-                cbList.RepeatDirection = RepeatDirection.Vertical;
+                cbList.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
+                cbList.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
                 cbList.DataValueField = "Key";
                 cbList.DataTextField = "Value";
                 cbList.DataSource = campusId.Value;
@@ -449,7 +509,7 @@ namespace RockWeb.Blocks.Finance
 
             lcAmount.ShowTooltip = true;
             bcAmount.ShowTooltip = true;
-            if ( GetAttributeValue( "DetailPage" ).AsGuidOrNull().HasValue )
+            if ( GetAttributeValue( AttributeKeys.DetailPage ).AsGuidOrNull().HasValue )
             {
                 lcAmount.ChartClick += lcAmount_ChartClick;
                 bcAmount.ChartClick += lcAmount_ChartClick;
