@@ -127,10 +127,6 @@ function() {
             {
                 var groupType = GroupTypeCache.Get( selectionValues[0].AsGuid() );
 
-                var groupTypeRoleGuidList = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsGuid() ).ToList();
-
-                var groupTypeRoles = new GroupTypeRoleService( new RockContext() ).Queryable().Where( a => groupTypeRoleGuidList.Contains( a.Guid ) ).ToList();
-
                 bool? groupStatus = null;
                 if ( selectionValues.Length >= 4 )
                 {
@@ -145,6 +141,11 @@ function() {
 
                 if ( groupType != null )
                 {
+
+                    var groupTypeRoleGuidList = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsGuid() ).ToList();
+
+                    var groupTypeRoles = groupType.Roles.Where( role => groupTypeRoleGuidList.Contains( role.Guid ) ).ToList();
+
                     result = string.Format( "In group of group type: {0}", groupType.Name );
                     if ( groupTypeRoles.Count() > 0 )
                     {
