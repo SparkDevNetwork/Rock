@@ -155,6 +155,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gCacheTagList_Add( object sender, EventArgs e )
         {
+            ClearModal( false );
             dlgAddTag.Show();
         }
 
@@ -617,15 +618,19 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Clears the and hides modal.
+        /// Clears and hides the modal used for adding/editing tags.
         /// </summary>
-        protected void ClearModal()
+        /// <param name="hideAfterClearing">Controls whether the modal is hidden after being cleared.</param>
+        protected void ClearModal( bool hideAfterClearing = true )
         {
             tbTagName.Text = string.Empty;
             tbTagName.Enabled = true;
             tbTagDescription.Text = string.Empty;
             hfTagId.Value = string.Empty;
-            dlgAddTag.Hide();
+            if ( hideAfterClearing )
+            {
+                dlgAddTag.Hide();
+            }
         }
 
         #endregion

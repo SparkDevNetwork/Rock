@@ -99,7 +99,7 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
-        /// Gets or sets the amount entry mode (Defaults to <seealso cref="AccountAmountEntryMode.Single"/> )
+        /// Gets or sets the amount entry mode (Defaults to <seealso cref="AccountAmountEntryMode.SingleAccount"/> )
         /// </summary>
         /// <value>
         /// The amount entry mode.
@@ -348,7 +348,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Sets the campus and displayed account from selected account.
         /// </summary>
-        /// <param name="selectedAccount">The selected account.</param>
+        /// <param name="selectedAccountId">The selected account identifier.</param>
         private void SetCampusAndDisplayedAccountFromSelectedAccount( int? selectedAccountId )
         {
             FinancialAccountInfo selectedAccount;
@@ -435,7 +435,13 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Set CampusId to set the default Campus that should be used. If this is set, <seealso cref="AskForCampusIfKnown"/> can optionally be set to false to hide the campus selector and to prevent changing the campus.
+        /// The campusId that was set as the known Campus
+        /// </summary>
+        private int? knownCampusId = null;
+
+        /// <summary>
+        /// When set, sets the CampusId to set the known/default Campus that should be used. If this is set, <seealso cref="AskForCampusIfKnown"/> can optionally be set to false to hide the campus selector and to prevent changing the campus.
+        /// When get, gets the selected CampusId
         /// </summary>
         /// <value>
         /// The campus identifier.
@@ -461,7 +467,22 @@ namespace Rock.Web.UI.Controls
 
                 _ddlMultiAccountCampus.SetValue( value );
                 _ddlSingleAccountCampus.SetValue( value );
+
+                knownCampusId = value;
+
+                SetCampusVisibility();
             }
+        }
+
+        /// <summary>
+        /// Sets the campus visibility.
+        /// </summary>
+        private void SetCampusVisibility()
+        {
+            bool showCampusPicker = ( knownCampusId == null ) || this.AskForCampusIfKnown;
+
+            _ddlMultiAccountCampus.Visible = showCampusPicker;
+            _ddlSingleAccountCampus.Visible = showCampusPicker;
         }
 
         /// <summary>
@@ -473,11 +494,18 @@ namespace Rock.Web.UI.Controls
         public bool AskForCampusIfKnown
         {
             get => ViewState["AskForCampusIfKnown"] as bool? ?? true;
-            set => ViewState["AskForCampusIfKnown"] = value;
+
+            set
+            {
+                ViewState["AskForCampusIfKnown"] = value;
+                EnsureChildControls();
+
+                SetCampusVisibility();
+            }
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the Campus and Account dropdowns will fire a postback
+        /// Gets or sets a value indicating whether the Campus and Account DropDowns will fire a PostBack
         /// </summary>
         /// <value>
         ///   <c>true</c> if [automatic post back]; otherwise, <c>false</c>.
@@ -690,7 +718,7 @@ namespace Rock.Web.UI.Controls
 
             /* Single Account Mode */
 
-            _pnlAccountAmountEntrySingle = new Panel() { CssClass = "account-amount-single-entry" };
+            _pnlAccountAmountEntrySingle = new Panel() { CssClass = "campus-account-amount-picker account-amount-single-entry form-group" };
             _pnlAccountAmountEntrySingle.ID = "_pnlAccountAmountEntrySingle";
 
             Controls.Add( _pnlAccountAmountEntrySingle );
@@ -700,7 +728,7 @@ namespace Rock.Web.UI.Controls
             _nbAmountAccountSingle.ID = "_nbAmountAccountSingle";
             _nbAmountAccountSingle.Attributes["placeholder"] = "Enter Amount";
             _nbAmountAccountSingle.Attributes["type"] = "number";
-            _nbAmountAccountSingle.CssClass = "amount-input";
+            _nbAmountAccountSingle.CssClass = "amount-input form-control";
             _nbAmountAccountSingle.Attributes["min"] = "0";
             _pnlAccountAmountEntrySingle.Controls.Add( _nbAmountAccountSingle );
 
@@ -722,7 +750,7 @@ namespace Rock.Web.UI.Controls
 
             /* Multi Account Mode*/
 
-            _pnlAccountAmountEntryMulti = new Panel() { CssClass = "account-amount-multi-entry" };
+            _pnlAccountAmountEntryMulti = new Panel() { CssClass = "campus-account-amount-picker account-amount-multi-entry form-group" };
             _pnlAccountAmountEntryMulti.ID = "_pnlAccountAmountEntryMulti";
             Controls.Add( _pnlAccountAmountEntryMulti );
 

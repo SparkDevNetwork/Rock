@@ -84,14 +84,14 @@ namespace Rock.Rest.Controllers
         /// Process and charge an instance of the scheduled transaction.
         /// </summary>
         /// <param name="scheduledTransactionId">The scheduled transaction identifier.</param>
-        /// <param name="ignoreRepeatChargeProtection">If true, the payment will be charged even if there is a similar transaction for the same person within a short time period.</param>
-        /// <param name="ignoreScheduleAdherenceProtection">If true, the payment will be charged even if the schedule has already been processed accoring to it's frequency.</param>
+        /// <param name="enableDuplicateChecking">If false, the payment will be charged even if there is a similar transaction for the same person within a short time period.</param>
+        /// <param name="enableScheduleAdherenceProtection">If false and a schedule is indicated in the args, the payment will be charged even if the schedule has already been processed accoring to it's frequency.</param>/// <returns>The ID of the new transaction</returns>
         /// <returns>The ID of the new transaction</returns>
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialScheduledTransactions/Process/{scheduledTransactionId}" )]
-        public System.Net.Http.HttpResponseMessage ProcessPayment( int scheduledTransactionId, [FromUri]bool ignoreRepeatChargeProtection = false, [FromUri]bool ignoreScheduleAdherenceProtection = false )
+        public virtual System.Net.Http.HttpResponseMessage ProcessPayment( int scheduledTransactionId, [FromUri]bool enableDuplicateChecking = true, [FromUri]bool enableScheduleAdherenceProtection = true )
         {
             var financialScheduledTransactionService = Service as FinancialScheduledTransactionService;
             var financialScheduledTransaction = financialScheduledTransactionService.Queryable()
@@ -130,7 +130,7 @@ namespace Rock.Rest.Controllers
             var errorMessage = string.Empty;
             var rockContext = Service.Context as RockContext;
 
-            var automatedPaymentProcessor = new AutomatedPaymentProcessor( GetPersonAliasId( rockContext ), automatedPaymentArgs, rockContext, ignoreRepeatChargeProtection, ignoreScheduleAdherenceProtection );
+            var automatedPaymentProcessor = new AutomatedPaymentProcessor( GetPersonAliasId( rockContext ), automatedPaymentArgs, rockContext, enableDuplicateChecking, enableScheduleAdherenceProtection );
 
             if ( !automatedPaymentProcessor.AreArgsValid( out errorMessage ) ||
                 automatedPaymentProcessor.IsRepeatCharge( out errorMessage ) ||
@@ -163,13 +163,13 @@ namespace Rock.Rest.Controllers
         /// Each object contains a Schedule and a MostRecentTransaction.
         /// The schedule has the FinancialPaymentDetail and ScheduledTransactionDetails objects expanded.
         /// </summary>
-        /// <param name="pageSize">The number of records to return for each page</param>
-        /// <param name="pageNumber">Zero-based page to return</param>
+        /// <param name="skip">The number of records to skip before the subset's first schedule</param>
+        /// <param name="top">The maximum number of records to include in the subset</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/FinancialScheduledTransactions/WithPreviousTransaction" )]
-        public System.Net.Http.HttpResponseMessage GetWithPreviousTransaction( [FromUri]int pageSize, [FromUri]int pageNumber )
+        public virtual System.Net.Http.HttpResponseMessage GetWithPreviousTransaction( [FromUri]int skip, [FromUri]int top )
         {
             var now = RockDateTime.Now;
 
@@ -184,8 +184,8 @@ namespace Rock.Rest.Controllers
                     ( !s.EndDate.HasValue || s.EndDate >= now ) &&
                     s.StartDate <= now )
                 .OrderBy( s => s.Id )
-                .Skip( pageSize * pageNumber )
-                .Take( pageSize )
+                .Skip( skip )
+                .Take( top )
                 .ToList();
 
             // Extract the schedule IDs for the most recent transaction query
