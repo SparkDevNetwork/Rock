@@ -7,10 +7,10 @@
     <title></title>
 
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>"></script>
-    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js", true) %>"></script>
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest") %>"></script>
 
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>" />
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.min.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.min.css", true) %>" />
     <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>" />
 
     <style>
@@ -18,7 +18,6 @@
             height: auto;
             width: 100%;
             min-width: 100%;
-            background-color: #ffffff;
             margin: 0 0 0 0;
             padding: 0 0 0 0;
             vertical-align: top;
@@ -48,10 +47,8 @@
         </asp:UpdateProgress>
 
         <main class="container-fluid">
-        
             <!-- Start Content Area -->
             <Rock:Zone Name="Main" runat="server" />
-
         </main>
     </form>
 </body>
