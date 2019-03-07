@@ -132,14 +132,5 @@ namespace Rock.Client
     /// </summary>
     public partial class CommunicationResponse : CommunicationResponseEntity
     {
-        /// <summary>
-        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
-        /// <summary>
-        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }
