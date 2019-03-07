@@ -53,7 +53,7 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public bool IncludeTime { get; set; }
+        public bool IncludeTime { get; set; } = true;
 
         /// <summary />
         public bool IsSystem { get; set; }
@@ -65,6 +65,9 @@ namespace Rock.Client
 
         /// <summary />
         public string Name { get; set; }
+
+        /// <summary />
+        public bool ShowInChannelList { get; set; } = true;
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -109,6 +112,7 @@ namespace Rock.Client
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.ShowInChannelList = source.ShowInChannelList;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

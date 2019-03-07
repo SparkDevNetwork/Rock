@@ -35,7 +35,7 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public string AdditionalMergeValuesJson { get; set; }
+        public string AdditionalMergeValuesJson { get; set; } = @"{}";
 
         /// <summary />
         public int CommunicationId { get; set; }
@@ -68,6 +68,9 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? SendDateTime { get; set; }
+
+        /// <summary />
+        public string SentMessage { get; set; }
 
         /// <summary />
         public Rock.Client.Enums.CommunicationRecipientStatus Status { get; set; }
@@ -125,6 +128,7 @@ namespace Rock.Client
             this.PersonAliasId = source.PersonAliasId;
             this.ResponseCode = source.ResponseCode;
             this.SendDateTime = source.SendDateTime;
+            this.SentMessage = source.SentMessage;
             this.Status = source.Status;
             this.StatusNote = source.StatusNote;
             this.TransportEntityTypeName = source.TransportEntityTypeName;

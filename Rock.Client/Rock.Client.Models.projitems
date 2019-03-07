@@ -57,6 +57,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Communication.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationAttachment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationRecipient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationTemplateAttachment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionActivityType.cs" />
