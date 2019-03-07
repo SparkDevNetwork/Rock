@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
@@ -21,6 +22,7 @@ using System.Web.Http;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -31,7 +33,7 @@ namespace Rock.Rest.Controllers
     {
         #region ContentByDataViewGuids
         /// <summary>
-        /// Returns a list of content based on list of dataview guids
+        /// Returns a list of content based on a dataview guid
         /// </summary>
         /// <param name="guids"></param>
         /// <returns></returns>
@@ -40,25 +42,38 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/ContentChannelItems/GetFromPersonDataView" )]
         public List<ContentChannelItem> GetFromPersonDataView( string guids )
         {
-            var rockContext = new RockContext();
+            RockContext rockContext = new RockContext();
 
-            // Turn the comma separated list of guids into an array of strings
-            string[] parsedGuids = guids.Split( ',' );
+            // Turn the comma separated list of guids into a list of strings.
+            List<string> guidList = ( guids ?? "" ).Split( ',' ).ToList();
 
-            // Get any attribute values with a value that matches a passed in guid
-            var attributeValuesPerGuid = new AttributeValueService( rockContext ).Queryable().Where( a => parsedGuids.Contains( a.Value ) );
+            // Get the Id of the Rock.Model.ContentChannelItem Entity.
+            int contentChannelItemEntityTypeId = EntityTypeCache.Get( "Rock.Model.ContentChannelItem" ).Id;
 
-            // Only get the EntityIds - these are the content channel items
-            List<int?> mainEntityIds = attributeValuesPerGuid.Select( a => a.EntityId ).ToList();
+            // Get the Field Type (Attribute Type) Id of the Data View Field Type.
+            int fieldTypeId = new FieldTypeService( rockContext ).GetByName( "Data Views" ).Select( ft => ft.Id ).FirstOrDefault();
 
-            // Get any content channel items with an id that matches an entity id from the mainEntityIds list
-            var contentChannelItems = rockContext.ContentChannelItems.Where( a => mainEntityIds.Contains( a.Id ) );
+            // Get the list of attributes that are of the Rock.Model.ContentChannelItem entity type.
+            IQueryable<Model.Attribute> attributeQueryable = new AttributeService( rockContext ).GetByEntityTypeId( contentChannelItemEntityTypeId );
 
-            // Turn that Queryable into a list
-            IQueryable<ContentChannelItem> finalList = contentChannelItems.Select( a => a );
+            // Further refine the list of attributes by only returning attributes that are of the Data View field type.
+            List<int> attributeIdList = attributeQueryable.Where( item => item.FieldTypeId == fieldTypeId ).Select( a => a.Id ).ToList();
 
-            // Return list
-            return finalList.ToList();
+            // Get the list of attribute values that contain an attribute id from the attributeList.
+            IQueryable<AttributeValue> attributeValueList = new AttributeValueService( rockContext ).Queryable()
+                .Where( av => attributeIdList.Contains( av.AttributeId ) );
+
+            // Get a list of attribute values that contain a value that matches one of the data view guids that were passed in.
+            IQueryable<int?> attributeValueEntityIdList = attributeValueList.AsQueryable()
+                .Where( av => guidList.Contains( av.Value ) )
+                .Select( av => av.EntityId );
+
+            // Get a list of content channel items whose ids match one of the entity ids in the attributeValueEntityIdList.
+            List<ContentChannelItem> contentChannelItemList = new ContentChannelItemService( rockContext ).Queryable()
+                .Where( cci => attributeValueEntityIdList.Contains( cci.Id ) ).ToList();
+
+            // Return this list
+            return contentChannelItemList;
         }
         #endregion
     }
