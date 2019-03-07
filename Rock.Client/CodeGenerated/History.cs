@@ -67,13 +67,7 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string NewRawValue { get; set; }
-
-        /// <summary />
         public string NewValue { get; set; }
-
-        /// <summary />
-        public string OldRawValue { get; set; }
 
         /// <summary />
         public string OldValue { get; set; }
@@ -91,26 +85,29 @@ namespace Rock.Client
         public string SourceOfChange { get; set; }
 
         /// <summary />
-        // Made Obsolete in Rock "1.8"
-        [Obsolete( "Use SummaryHtml instead to get the Summary, or use HistoryChangeList related functions to log history ", false )]
-        public string Summary { get; set; }
-
-        /// <summary />
         public string ValueName { get; set; }
 
         /// <summary />
         public string Verb { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
+        /// </summary>
         public DateTime? ModifiedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public int? CreatedByPersonAliasId { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
+        /// </summary>
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
@@ -136,17 +133,12 @@ namespace Rock.Client
             this.IsSensitive = source.IsSensitive;
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.NewRawValue = source.NewRawValue;
             this.NewValue = source.NewValue;
-            this.OldRawValue = source.OldRawValue;
             this.OldValue = source.OldValue;
             this.RelatedData = source.RelatedData;
             this.RelatedEntityId = source.RelatedEntityId;
             this.RelatedEntityTypeId = source.RelatedEntityTypeId;
             this.SourceOfChange = source.SourceOfChange;
-            #pragma warning disable 612, 618
-            this.Summary = source.Summary;
-            #pragma warning restore 612, 618
             this.ValueName = source.ValueName;
             this.Verb = source.Verb;
             this.CreatedDateTime = source.CreatedDateTime;
@@ -173,5 +165,14 @@ namespace Rock.Client
         /// <summary />
         public EntityType RelatedEntityType { get; set; }
 
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
+
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }
