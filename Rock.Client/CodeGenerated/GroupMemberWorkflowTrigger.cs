@@ -47,7 +47,7 @@ namespace Rock.Client
         public int? GroupTypeId { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; }
 
         /// <summary />
         public string Name { get; set; }
