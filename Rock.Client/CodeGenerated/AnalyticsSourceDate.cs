@@ -65,7 +65,7 @@ namespace Rock.Client
         public bool ChristmasWeekIndicator { get; set; }
 
         /// <summary />
-        public int Count { get; set; } = 1;
+        public int Count { get; set; }
 
         /// <summary />
         public DateTime Date { get; set; }

@@ -50,10 +50,6 @@ namespace Rock.Client
         public bool? DidAttend { get; set; }
 
         /// <summary />
-        [Obsolete( "Use Occurrence.DidNotOccur instead", false )]
-        public bool? DidNotOccur { get; set; }
-
-        /// <summary />
         public DateTime? EndDateTime { get; set; }
 
         /// <summary />
@@ -62,13 +58,10 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
-        /// <summary />
-        [Obsolete( "Use Occurrence.GroupId instead", false )]
-        public int? GroupId { get; set; }
-
-        /// <summary />
-        [Obsolete( "Use Occurrence.LocationId instead", false )]
-        public int? LocationId { get; set; }
+        /// <summary>
+        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
         public string Note { get; set; }
@@ -89,10 +82,6 @@ namespace Rock.Client
         public Rock.Client.Enums.RSVP RSVP { get; set; }
 
         /// <summary />
-        [Obsolete( "Use Occurrence.ScheduleId instead", false )]
-        public int? ScheduleId { get; set; }
-
-        /// <summary />
         public int? SearchResultGroupId { get; set; }
 
         /// <summary />
@@ -104,20 +93,24 @@ namespace Rock.Client
         /// <summary />
         public DateTime StartDateTime { get; set; }
 
-        /// <summary />
-        [Obsolete( "Use Occurrence.SundayDate instead", false )]
-        public DateTime SundayDate { get; set; }
-
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
+        /// </summary>
         public DateTime? ModifiedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public int? CreatedByPersonAliasId { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
+        /// </summary>
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
@@ -138,34 +131,20 @@ namespace Rock.Client
             this.CheckedInByPersonAliasId = source.CheckedInByPersonAliasId;
             this.DeviceId = source.DeviceId;
             this.DidAttend = source.DidAttend;
-            #pragma warning disable 612, 618
-            this.DidNotOccur = source.DidNotOccur;
-            #pragma warning restore 612, 618
             this.EndDateTime = source.EndDateTime;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            #pragma warning disable 612, 618
-            this.GroupId = source.GroupId;
-            #pragma warning restore 612, 618
-            #pragma warning disable 612, 618
-            this.LocationId = source.LocationId;
-            #pragma warning restore 612, 618
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Note = source.Note;
             this.OccurrenceId = source.OccurrenceId;
             this.PersonAliasId = source.PersonAliasId;
             this.Processed = source.Processed;
             this.QualifierValueId = source.QualifierValueId;
             this.RSVP = source.RSVP;
-            #pragma warning disable 612, 618
-            this.ScheduleId = source.ScheduleId;
-            #pragma warning restore 612, 618
             this.SearchResultGroupId = source.SearchResultGroupId;
             this.SearchTypeValueId = source.SearchTypeValueId;
             this.SearchValue = source.SearchValue;
             this.StartDateTime = source.StartDateTime;
-            #pragma warning disable 612, 618
-            this.SundayDate = source.SundayDate;
-            #pragma warning restore 612, 618
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -193,5 +172,14 @@ namespace Rock.Client
         /// <summary />
         public DefinedValue SearchTypeValue { get; set; }
 
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
+
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

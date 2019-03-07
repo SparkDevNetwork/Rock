@@ -47,10 +47,15 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; }
 
         /// <summary />
         public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
         public int Order { get; set; }
@@ -58,16 +63,24 @@ namespace Rock.Client
         /// <summary />
         public string Value { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
+        /// </summary>
         public DateTime? ModifiedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public int? CreatedByPersonAliasId { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
+        /// </summary>
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
@@ -89,6 +102,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
             this.IsSystem = source.IsSystem;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Order = source.Order;
             this.Value = source.Value;
             this.CreatedDateTime = source.CreatedDateTime;
@@ -106,5 +120,14 @@ namespace Rock.Client
     /// </summary>
     public partial class DefinedValue : DefinedValueEntity
     {
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
+
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }
