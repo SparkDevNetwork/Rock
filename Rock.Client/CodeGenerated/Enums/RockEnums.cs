@@ -151,8 +151,6 @@ namespace Rock.Client.Enums
         Email = 0x1,
         SMS = 0x2,
         PushNotification = 0x3,
-
-        [Obsolete( "Not Supported", false )]
         Other = 0x4,
     }
 
@@ -453,14 +451,6 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum PersonAliasType
-    {
-        FromPersonAlias = 0x0,
-        ToPersonAlias = 0x1,
-    }
-
-    /// <summary>
-    /// </summary>
     public enum PrintFrom
     {
         Client = 0x0,
@@ -503,7 +493,6 @@ namespace Rock.Client.Enums
         PromptForRegistrar = 0x0,
         PrefillFirstRegistrant = 0x1,
         UseFirstRegistrant = 0x2,
-        UseLoggedInPerson = 0x3,
     }
 
     /// <summary>
@@ -531,9 +520,6 @@ namespace Rock.Client.Enums
         PersonField = 0x0,
         PersonAttribute = 0x1,
         GroupMemberAttribute = 0x2,
-        RegistrantAttribute = 0x4,
-
-        [Obsolete( "Use RegistrantAttribute instead", false )]
         RegistrationAttribute = 0x4,
     }
 

@@ -47,7 +47,7 @@ namespace Rock.Client
         public string ConnectionStatus { get; set; }
 
         /// <summary />
-        public int Count { get; set; } = 1;
+        public int Count { get; set; }
 
         /// <summary />
         public bool CurrentRowIndicator { get; set; }

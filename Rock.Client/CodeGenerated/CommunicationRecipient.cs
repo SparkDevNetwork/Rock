@@ -35,7 +35,7 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public string AdditionalMergeValuesJson { get; set; } = @"{}";
+        public string AdditionalMergeValuesJson { get; set; }
 
         /// <summary />
         public int CommunicationId { get; set; }
@@ -48,6 +48,11 @@ namespace Rock.Client
 
         /// <summary />
         public int? MediumEntityTypeId { get; set; }
+
+        /// <summary>
+        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
         public string OpenedClient { get; set; }
@@ -65,9 +70,6 @@ namespace Rock.Client
         public DateTime? SendDateTime { get; set; }
 
         /// <summary />
-        public string SentMessage { get; set; }
-
-        /// <summary />
         public Rock.Client.Enums.CommunicationRecipientStatus Status { get; set; }
 
         /// <summary />
@@ -79,16 +81,24 @@ namespace Rock.Client
         /// <summary />
         public string UniqueMessageId { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
+        /// </summary>
         public DateTime? ModifiedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public int? CreatedByPersonAliasId { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
+        /// </summary>
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
@@ -109,12 +119,12 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.MediumEntityTypeId = source.MediumEntityTypeId;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.OpenedClient = source.OpenedClient;
             this.OpenedDateTime = source.OpenedDateTime;
             this.PersonAliasId = source.PersonAliasId;
             this.ResponseCode = source.ResponseCode;
             this.SendDateTime = source.SendDateTime;
-            this.SentMessage = source.SentMessage;
             this.Status = source.Status;
             this.StatusNote = source.StatusNote;
             this.TransportEntityTypeName = source.TransportEntityTypeName;
@@ -143,5 +153,14 @@ namespace Rock.Client
         /// <summary />
         public PersonAlias PersonAlias { get; set; }
 
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
+
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

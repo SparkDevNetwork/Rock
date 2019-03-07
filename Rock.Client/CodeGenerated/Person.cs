@@ -50,7 +50,7 @@ namespace Rock.Client
         public int? BirthYear { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.CommunicationType CommunicationPreference { get; set; } = Rock.Client.Enums.CommunicationType.Email;
+        public Rock.Client.Enums.CommunicationType CommunicationPreference { get; set; }
 
         /// <summary />
         public int? ConnectionStatusValueId { get; set; }
@@ -82,6 +82,11 @@ namespace Rock.Client
         /// <summary />
         public int? GivingGroupId { get; set; }
 
+        /// <summary>
+        /// The Grade Offset of the person, which is the number of years until their graduation date. See GradeFormatted to see their current Grade. [Readonly]
+        /// </summary>
+        public int? GradeOffset { get; set; }
+
         /// <summary />
         public int? GraduationYear { get; set; }
 
@@ -92,7 +97,12 @@ namespace Rock.Client
         public bool IsDeceased { get; set; }
 
         /// <summary />
-        public bool IsEmailActive { get; set; } = true;
+        public bool IsEmailActive
+        {
+            get { return _IsEmailActive; }
+            set { _IsEmailActive = value; }
+        }
+        private bool _IsEmailActive = true;
 
         /// <summary />
         public bool IsLockedAsChild { get; set; }
@@ -107,7 +117,18 @@ namespace Rock.Client
         public int? MaritalStatusValueId { get; set; }
 
         /// <summary />
+        public int? MetaPersonicxLifestageClusterId { get; set; }
+
+        /// <summary />
+        public int? MetaPersonicxLifestageGroupId { get; set; }
+
+        /// <summary />
         public string MiddleName { get; set; }
+
+        /// <summary>
+        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
         public string NickName { get; set; }
@@ -157,16 +178,24 @@ namespace Rock.Client
         /// <summary />
         public int? ViewedCount { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
+        /// </summary>
         public DateTime? ModifiedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public int? CreatedByPersonAliasId { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
+        /// </summary>
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
@@ -198,6 +227,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.Gender = source.Gender;
             this.GivingGroupId = source.GivingGroupId;
+            this.GradeOffset = source.GradeOffset;
             this.GraduationYear = source.GraduationYear;
             this.InactiveReasonNote = source.InactiveReasonNote;
             this.IsDeceased = source.IsDeceased;
@@ -206,7 +236,10 @@ namespace Rock.Client
             this.IsSystem = source.IsSystem;
             this.LastName = source.LastName;
             this.MaritalStatusValueId = source.MaritalStatusValueId;
+            this.MetaPersonicxLifestageClusterId = source.MetaPersonicxLifestageClusterId;
+            this.MetaPersonicxLifestageGroupId = source.MetaPersonicxLifestageGroupId;
             this.MiddleName = source.MiddleName;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NickName = source.NickName;
             this.PhotoId = source.PhotoId;
             this.PrimaryFamilyId = source.PrimaryFamilyId;
@@ -260,10 +293,21 @@ namespace Rock.Client
         public DefinedValue MaritalStatusValue { get; set; }
 
         /// <summary />
+        public MetaPersonicxLifestageCluster MetaPersonicxLifestageCluster { get; set; }
+
+        /// <summary />
+        public MetaPersonicxLifestageGroup MetaPersonicxLifestageGroup { get; set; }
+
+        /// <summary />
         public ICollection<PhoneNumber> PhoneNumbers { get; set; }
 
         /// <summary />
         public BinaryFile Photo { get; set; }
+
+        /// <summary>
+        /// The Primary PersonAliasId of the Person
+        /// </summary>
+        public int? PrimaryAliasId { get; set; }
 
         /// <summary />
         public DefinedValue RecordStatusReasonValue { get; set; }
@@ -286,5 +330,14 @@ namespace Rock.Client
         /// <summary />
         public ICollection<UserLogin> Users { get; set; }
 
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
+
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }
