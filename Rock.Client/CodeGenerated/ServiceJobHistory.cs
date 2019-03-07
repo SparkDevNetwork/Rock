@@ -27,9 +27,9 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for PluginMigration that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for ServiceJobHistory that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class PluginMigrationEntity
+    public partial class ServiceJobHistoryEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -41,13 +41,22 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public string MigrationName { get; set; }
+        public int ServiceJobId { get; set; }
 
         /// <summary />
-        public int MigrationNumber { get; set; }
+        public string ServiceWorker { get; set; }
 
         /// <summary />
-        public string PluginAssemblyName { get; set; }
+        public DateTime? StartDateTime { get; set; }
+
+        /// <summary />
+        public string Status { get; set; }
+
+        /// <summary />
+        public string StatusMessage { get; set; }
+
+        /// <summary />
+        public DateTime? StopDateTime { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -68,17 +77,20 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source PluginMigration object
+        /// Copies the base properties from a source ServiceJobHistory object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( PluginMigration source )
+        public void CopyPropertiesFrom( ServiceJobHistory source )
         {
             this.Id = source.Id;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.MigrationName = source.MigrationName;
-            this.MigrationNumber = source.MigrationNumber;
-            this.PluginAssemblyName = source.PluginAssemblyName;
+            this.ServiceJobId = source.ServiceJobId;
+            this.ServiceWorker = source.ServiceWorker;
+            this.StartDateTime = source.StartDateTime;
+            this.Status = source.Status;
+            this.StatusMessage = source.StatusMessage;
+            this.StopDateTime = source.StopDateTime;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -90,9 +102,12 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for PluginMigration that includes all the fields that are available for GETs. Use this for GETs (use PluginMigrationEntity for POST/PUTs)
+    /// Client model for ServiceJobHistory that includes all the fields that are available for GETs. Use this for GETs (use ServiceJobHistoryEntity for POST/PUTs)
     /// </summary>
-    public partial class PluginMigration : PluginMigrationEntity
+    public partial class ServiceJobHistory : ServiceJobHistoryEntity
     {
+        /// <summary />
+        public ServiceJob ServiceJob { get; set; }
+
     }
 }

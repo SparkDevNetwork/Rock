@@ -531,6 +531,7 @@
     <Compile Include="Plugin\HotFixes\068_MigrationRollupsForV8_7_5.cs" />
     <Compile Include="Plugin\HotFixes\067_MigrationRollupsForV8_7_4.cs" />
     <Compile Include="Plugin\HotFixes\066_MigrationRollupsForV8_7_3.cs" />
+    <Compile Include="Plugin\HotFixes\070_MigrationRollupsForV8_7_7.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -35,10 +35,10 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public bool AddPersonNote { get; set; }
+        public bool AddPersonNote { get; set; } = true;
 
         /// <summary />
-        public bool AllowExternalRegistrationUpdates { get; set; }
+        public bool AllowExternalRegistrationUpdates { get; set; } = true;
 
         /// <summary />
         public bool AllowGroupPlacement { get; set; }
@@ -68,6 +68,9 @@ namespace Rock.Client
         public decimal Cost { get; set; }
 
         /// <summary />
+        public decimal? DefaultPayment { get; set; }
+
+        /// <summary />
         public string DiscountCodeTerm { get; set; }
 
         /// <summary />
@@ -92,7 +95,7 @@ namespace Rock.Client
         public int? GroupTypeId { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
         public bool LoginRequired { get; set; }
@@ -102,11 +105,6 @@ namespace Rock.Client
 
         /// <summary />
         public decimal? MinimumInitialPayment { get; set; }
-
-        /// <summary>
-        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
-        /// </summary>
-        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
         public string Name { get; set; }
@@ -137,6 +135,12 @@ namespace Rock.Client
 
         /// <summary />
         public Rock.Client.Enums.RegistrarOption RegistrarOption { get; set; }
+
+        /// <summary />
+        public string RegistrationAttributeTitleEnd { get; set; }
+
+        /// <summary />
+        public string RegistrationAttributeTitleStart { get; set; }
 
         /// <summary />
         public string RegistrationInstructions { get; set; }
@@ -195,24 +199,16 @@ namespace Rock.Client
         /// <summary />
         public string WaitListTransitionSubject { get; set; }
 
-        /// <summary>
-        /// Leave this as NULL to let Rock set this
-        /// </summary>
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary>
-        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
-        /// </summary>
+        /// <summary />
         public DateTime? ModifiedDateTime { get; set; }
 
-        /// <summary>
-        /// Leave this as NULL to let Rock set this
-        /// </summary>
+        /// <summary />
         public int? CreatedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
-        /// </summary>
+        /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
@@ -239,6 +235,7 @@ namespace Rock.Client
             this.ConfirmationFromName = source.ConfirmationFromName;
             this.ConfirmationSubject = source.ConfirmationSubject;
             this.Cost = source.Cost;
+            this.DefaultPayment = source.DefaultPayment;
             this.DiscountCodeTerm = source.DiscountCodeTerm;
             this.FeeTerm = source.FeeTerm;
             this.FinancialGatewayId = source.FinancialGatewayId;
@@ -251,7 +248,6 @@ namespace Rock.Client
             this.LoginRequired = source.LoginRequired;
             this.MaxRegistrants = source.MaxRegistrants;
             this.MinimumInitialPayment = source.MinimumInitialPayment;
-            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Notify = source.Notify;
             this.PaymentReminderEmailTemplate = source.PaymentReminderEmailTemplate;
@@ -262,6 +258,8 @@ namespace Rock.Client
             this.RegistrantsSameFamily = source.RegistrantsSameFamily;
             this.RegistrantTerm = source.RegistrantTerm;
             this.RegistrarOption = source.RegistrarOption;
+            this.RegistrationAttributeTitleEnd = source.RegistrationAttributeTitleEnd;
+            this.RegistrationAttributeTitleStart = source.RegistrationAttributeTitleStart;
             this.RegistrationInstructions = source.RegistrationInstructions;
             this.RegistrationTerm = source.RegistrationTerm;
             this.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;
@@ -314,14 +312,5 @@ namespace Rock.Client
         /// <summary />
         public SignatureDocumentTemplate RequiredSignatureDocumentTemplate { get; set; }
 
-        /// <summary>
-        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
-        /// <summary>
-        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

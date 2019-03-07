@@ -27,12 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for PluginMigration that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for NoteAttachment that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class PluginMigrationEntity
+    public partial class NoteAttachmentEntity
     {
         /// <summary />
         public int Id { get; set; }
+
+        /// <summary />
+        public int BinaryFileId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -41,13 +44,7 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public string MigrationName { get; set; }
-
-        /// <summary />
-        public int MigrationNumber { get; set; }
-
-        /// <summary />
-        public string PluginAssemblyName { get; set; }
+        public int NoteId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -68,17 +65,16 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source PluginMigration object
+        /// Copies the base properties from a source NoteAttachment object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( PluginMigration source )
+        public void CopyPropertiesFrom( NoteAttachment source )
         {
             this.Id = source.Id;
+            this.BinaryFileId = source.BinaryFileId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.MigrationName = source.MigrationName;
-            this.MigrationNumber = source.MigrationNumber;
-            this.PluginAssemblyName = source.PluginAssemblyName;
+            this.NoteId = source.NoteId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -90,9 +86,9 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for PluginMigration that includes all the fields that are available for GETs. Use this for GETs (use PluginMigrationEntity for POST/PUTs)
+    /// Client model for NoteAttachment that includes all the fields that are available for GETs. Use this for GETs (use NoteAttachmentEntity for POST/PUTs)
     /// </summary>
-    public partial class PluginMigration : PluginMigrationEntity
+    public partial class NoteAttachment : NoteAttachmentEntity
     {
     }
 }

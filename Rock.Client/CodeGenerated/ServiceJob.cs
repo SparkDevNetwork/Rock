@@ -47,10 +47,16 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool EnableHistory { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public int HistoryCount { get; set; } = 100;
 
         /// <summary />
         public bool? IsActive { get; set; }
@@ -76,11 +82,6 @@ namespace Rock.Client
         /// <summary />
         public DateTime? LastSuccessfulRunDateTime { get; set; }
 
-        /// <summary>
-        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
-        /// </summary>
-        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
-
         /// <summary />
         public string Name { get; set; }
 
@@ -90,24 +91,16 @@ namespace Rock.Client
         /// <summary />
         public Rock.Client.Enums.JobNotificationStatus NotificationStatus { get; set; }
 
-        /// <summary>
-        /// Leave this as NULL to let Rock set this
-        /// </summary>
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary>
-        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
-        /// </summary>
+        /// <summary />
         public DateTime? ModifiedDateTime { get; set; }
 
-        /// <summary>
-        /// Leave this as NULL to let Rock set this
-        /// </summary>
+        /// <summary />
         public int? CreatedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
-        /// </summary>
+        /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
@@ -127,8 +120,10 @@ namespace Rock.Client
             this.Class = source.Class;
             this.CronExpression = source.CronExpression;
             this.Description = source.Description;
+            this.EnableHistory = source.EnableHistory;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.HistoryCount = source.HistoryCount;
             this.IsActive = source.IsActive;
             this.IsSystem = source.IsSystem;
             this.LastRunDateTime = source.LastRunDateTime;
@@ -137,7 +132,6 @@ namespace Rock.Client
             this.LastStatus = source.LastStatus;
             this.LastStatusMessage = source.LastStatusMessage;
             this.LastSuccessfulRunDateTime = source.LastSuccessfulRunDateTime;
-            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.NotificationEmails = source.NotificationEmails;
             this.NotificationStatus = source.NotificationStatus;
@@ -156,14 +150,8 @@ namespace Rock.Client
     /// </summary>
     public partial class ServiceJob : ServiceJobEntity
     {
-        /// <summary>
-        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
+        /// <summary />
+        public ICollection<ServiceJobHistory> ServiceJobHistory { get; set; }
 
-        /// <summary>
-        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }
