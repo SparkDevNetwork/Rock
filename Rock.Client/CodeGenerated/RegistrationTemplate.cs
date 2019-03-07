@@ -35,10 +35,10 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public bool AddPersonNote { get; set; }
+        public bool AddPersonNote { get; set; } = true;
 
         /// <summary />
-        public bool AllowExternalRegistrationUpdates { get; set; }
+        public bool AllowExternalRegistrationUpdates { get; set; } = true;
 
         /// <summary />
         public bool AllowGroupPlacement { get; set; }
@@ -68,6 +68,9 @@ namespace Rock.Client
         public decimal Cost { get; set; }
 
         /// <summary />
+        public decimal? DefaultPayment { get; set; }
+
+        /// <summary />
         public string DiscountCodeTerm { get; set; }
 
         /// <summary />
@@ -92,7 +95,7 @@ namespace Rock.Client
         public int? GroupTypeId { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
         public bool LoginRequired { get; set; }
@@ -137,6 +140,12 @@ namespace Rock.Client
 
         /// <summary />
         public Rock.Client.Enums.RegistrarOption RegistrarOption { get; set; }
+
+        /// <summary />
+        public string RegistrationAttributeTitleEnd { get; set; }
+
+        /// <summary />
+        public string RegistrationAttributeTitleStart { get; set; }
 
         /// <summary />
         public string RegistrationInstructions { get; set; }
@@ -239,6 +248,7 @@ namespace Rock.Client
             this.ConfirmationFromName = source.ConfirmationFromName;
             this.ConfirmationSubject = source.ConfirmationSubject;
             this.Cost = source.Cost;
+            this.DefaultPayment = source.DefaultPayment;
             this.DiscountCodeTerm = source.DiscountCodeTerm;
             this.FeeTerm = source.FeeTerm;
             this.FinancialGatewayId = source.FinancialGatewayId;
@@ -262,6 +272,8 @@ namespace Rock.Client
             this.RegistrantsSameFamily = source.RegistrantsSameFamily;
             this.RegistrantTerm = source.RegistrantTerm;
             this.RegistrarOption = source.RegistrarOption;
+            this.RegistrationAttributeTitleEnd = source.RegistrationAttributeTitleEnd;
+            this.RegistrationAttributeTitleStart = source.RegistrationAttributeTitleStart;
             this.RegistrationInstructions = source.RegistrationInstructions;
             this.RegistrationTerm = source.RegistrationTerm;
             this.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;

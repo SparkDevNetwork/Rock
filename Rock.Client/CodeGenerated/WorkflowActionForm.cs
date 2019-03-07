@@ -56,12 +56,7 @@ namespace Rock.Client
         public string Header { get; set; }
 
         /// <summary />
-        public bool IncludeActionsInNotification { get; set; }
-
-        /// <summary>
-        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
-        /// </summary>
-        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+        public bool IncludeActionsInNotification { get; set; } = true;
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true

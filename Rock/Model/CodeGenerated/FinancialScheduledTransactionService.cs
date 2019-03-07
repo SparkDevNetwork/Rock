@@ -109,6 +109,7 @@ namespace Rock.Model
             target.NumberOfPayments = source.NumberOfPayments;
             target.SourceTypeValueId = source.SourceTypeValueId;
             target.StartDate = source.StartDate;
+            target.Summary = source.Summary;
             target.TransactionCode = source.TransactionCode;
             target.TransactionFrequencyValueId = source.TransactionFrequencyValueId;
             target.TransactionTypeValueId = source.TransactionTypeValueId;
