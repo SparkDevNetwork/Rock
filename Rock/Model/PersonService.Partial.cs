@@ -725,6 +725,90 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Adds a contact to a business.
+        /// </summary>
+        /// <param name="businessId">The business identifier.</param>
+        /// <param name="contactPersonId">The contact person identifier.</param>
+        public void AddContactToBusiness( int businessId, int contactPersonId )
+        {
+            var rockContext = this.Context as RockContext;
+            var groupMemberService = new GroupMemberService( rockContext );
+            var groupService = new GroupService( rockContext );
+
+            // Get the relationship roles to use
+            var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+            int businessContactRoleId = knownRelationshipGroupType.Roles
+                .Where( r =>
+                    r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT.AsGuid() ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
+            int businessRoleId = knownRelationshipGroupType.Roles
+                .Where( r =>
+                    r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS.AsGuid() ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
+            int ownerRoleId = knownRelationshipGroupType.Roles
+                .Where( r =>
+                    r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
+
+            // get the known relationship group of the business contact
+            // add the business as a group member of that group using the group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS
+            var contactKnownRelationshipGroup = groupMemberService.Queryable()
+                .Where( g =>
+                    g.GroupRoleId == ownerRoleId &&
+                    g.PersonId == contactPersonId )
+                .Select( g => g.Group )
+                .FirstOrDefault();
+            if ( contactKnownRelationshipGroup == null )
+            {
+                // In some cases person may not yet have a know relationship group type
+                contactKnownRelationshipGroup = new Group();
+                groupService.Add( contactKnownRelationshipGroup );
+                contactKnownRelationshipGroup.Name = "Known Relationship";
+                contactKnownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
+
+                var ownerMember = new GroupMember();
+                ownerMember.PersonId = contactPersonId;
+                ownerMember.GroupRoleId = ownerRoleId;
+                contactKnownRelationshipGroup.Members.Add( ownerMember );
+            }
+
+            var groupMember = new GroupMember();
+            groupMember.PersonId = businessId;
+            groupMember.GroupRoleId = businessRoleId;
+            contactKnownRelationshipGroup.Members.Add( groupMember );
+
+            // get the known relationship group of the business
+            // add the business contact as a group member of that group using the group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT
+            var businessKnownRelationshipGroup = groupMemberService.Queryable()
+                .Where( g =>
+                    g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) &&
+                    g.PersonId == businessId )
+                .Select( g => g.Group )
+                .FirstOrDefault();
+            if ( businessKnownRelationshipGroup == null )
+            {
+                // In some cases business may not yet have a known relationship group type
+                businessKnownRelationshipGroup = new Group();
+                groupService.Add( businessKnownRelationshipGroup );
+                businessKnownRelationshipGroup.Name = "Known Relationship";
+                businessKnownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
+
+                var ownerMember = new GroupMember();
+                ownerMember.PersonId = businessId;
+                ownerMember.GroupRoleId = ownerRoleId;
+                businessKnownRelationshipGroup.Members.Add( ownerMember );
+            }
+
+            var businessGroupMember = new GroupMember();
+            businessGroupMember.PersonId = contactPersonId;
+            businessGroupMember.GroupRoleId = businessContactRoleId;
+            businessKnownRelationshipGroup.Members.Add( businessGroupMember );
+        }
+
+        /// <summary>
         /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities by martial status <see cref="Rock.Model.DefinedValue"/>
         /// </summary>
         /// <param name="maritalStatusId">An <see cref="System.Int32"/> representing the Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> to search by.</param>
@@ -1995,7 +2079,7 @@ namespace Rock.Model
             }
             return null;
         }
-
+        
         /// <summary>
         /// Get the person associated with the phone number. Filter to any matching phone number, regardless
         /// of type. Then order by those with a matching number and SMS enabled; then further order
@@ -2084,20 +2168,22 @@ namespace Rock.Model
             string key = encryptedKey.Replace( '!', '%' );
             key = System.Web.HttpUtility.UrlDecode( key );
             string concatinatedKeys = Rock.Security.Encryption.DecryptString( key );
-            string[] keyParts = concatinatedKeys.Split( '>' );
-            if ( keyParts.Length == 2 )
+            if ( concatinatedKeys.IsNotNullOrWhiteSpace() )
             {
-                Guid guid = new Guid( keyParts[0] );
-                string actionPart = keyParts[1];
-
-                Person person = Get( guid );
-
-                if ( person != null && actionPart.Equals( action, StringComparison.OrdinalIgnoreCase ) )
+                string[] keyParts = concatinatedKeys.Split( '>' );
+                if ( keyParts.Length == 2 )
                 {
-                    return person;
+                    Guid guid = new Guid( keyParts[0] );
+                    string actionPart = keyParts[1];
+
+                    Person person = Get( guid );
+
+                    if ( person != null && actionPart.Equals( action, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        return person;
+                    }
                 }
             }
-
             return null;
         }
 
@@ -2605,8 +2691,8 @@ namespace Rock.Model
         #region Static Methods 
 
         /// <summary>
-        /// Adds a person alias, known relationship group, implied relationship group, and optionally a family group for
-        /// a new person.
+        /// Adds a person alias, known relationship group, implied relationship group, and family for a new person.
+        /// Returns the new Family(Group) that was created for the person.
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
@@ -2695,6 +2781,7 @@ namespace Rock.Model
                 }
             }
 
+            // shouldn't happen unless somehow the core FamilyGroupType and Roles are missing
             return null;
         }
 

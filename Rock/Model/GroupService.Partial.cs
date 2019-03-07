@@ -805,7 +805,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -823,7 +823,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -843,7 +843,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -874,7 +874,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -886,7 +886,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -901,7 +901,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -922,7 +922,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -934,7 +934,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -948,7 +948,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>

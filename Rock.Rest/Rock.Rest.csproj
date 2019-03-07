@@ -132,6 +132,7 @@
     <Compile Include="Controllers\PbxController.cs" />
     <Compile Include="Controllers\PresenceController.cs" />
     <Compile Include="Controllers\PersonalDevicesController.Partial.cs" />
+    <Compile Include="IHasCustomHttpRoutes.cs" />
     <Compile Include="Swagger\RockSwaggerHelper.cs" />
     <Compile Include="Swagger\RockDocumentFilter.cs" />
     <Compile Include="Swagger\RockOperationFilter.cs" />

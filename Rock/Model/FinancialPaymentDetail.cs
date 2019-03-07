@@ -360,6 +360,17 @@ namespace Rock.Model
                     ExpirationYearEncrypted = Encryption.EncryptString( swipePaymentInfo.ExpirationDate.Year.ToString() );
                 }
             }
+            else
+            {
+                var newLocation = new LocationService( rockContext ).Get(
+                    paymentInfo.Street1, paymentInfo.Street2, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode, paymentInfo.Country );
+
+                if ( !BillingLocationId.HasValue && newLocation != null )
+                {
+                    BillingLocationId = newLocation.Id;
+                }
+
+            }
         }
 
         /// <summary>

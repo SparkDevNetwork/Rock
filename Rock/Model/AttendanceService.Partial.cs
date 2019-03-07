@@ -196,7 +196,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Attendance"/> entities for a specific date and location.</returns>
         public IQueryable<Attendance> GetByDateAndLocation( DateTime date, int locationId )
         {
-            return Queryable( "Occurrence.Group,Occurrence.Schedule,PersonAlias.Person" )
+            return Queryable( "Occurrence.Group,Occurrence.Schedule,PersonAlias" )
                 .Where( a =>
                     a.Occurrence.OccurrenceDate == date.Date &&
                     a.Occurrence.LocationId == locationId &&

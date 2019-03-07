@@ -75,7 +75,8 @@ namespace Rock.Financial
         public string Phone { get; set; }
 
         /// <summary>
-        /// The billing street
+        /// The billing street.
+        /// NOTE: If this is a <see cref="CreditCardPaymentInfo>" /> and the Gateway is configured to prompt for a separate Billing Address (like NMI), <see cref="CreditCardPaymentInfo.BillingStreet1" />, etc, might be different then <see cref="PaymentInfo.Street1"/>, etc
         /// </summary>
         public string Street1 { get; set; }
 

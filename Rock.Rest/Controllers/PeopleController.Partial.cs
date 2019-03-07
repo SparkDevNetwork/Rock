@@ -306,9 +306,6 @@ namespace Rock.Rest.Controllers
         /// <param name="person">The person.</param>
         /// <returns></returns>
         ///
-        [Authenticate, Secured]
-        [HttpPost]
-        [System.Web.Http.Route( "api/People" )]
         public override System.Net.Http.HttpResponseMessage Post( Person person )
         {
             SetProxyCreation( true );

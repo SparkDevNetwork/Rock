@@ -82,6 +82,9 @@ namespace Rock.Client
         /// <summary />
         public int? GivingGroupId { get; set; }
 
+        /// <summary />
+        public int GivingLeaderId { get; set; }
+
         /// <summary>
         /// The Grade Offset of the person, which is the number of years until their graduation date. See GradeFormatted to see their current Grade. [Readonly]
         /// </summary>
@@ -113,11 +116,6 @@ namespace Rock.Client
 
         /// <summary />
         public string MiddleName { get; set; }
-
-        /// <summary>
-        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
-        /// </summary>
-        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
         public string NickName { get; set; }
@@ -167,24 +165,16 @@ namespace Rock.Client
         /// <summary />
         public int? ViewedCount { get; set; }
 
-        /// <summary>
-        /// Leave this as NULL to let Rock set this
-        /// </summary>
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary>
-        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
-        /// </summary>
+        /// <summary />
         public DateTime? ModifiedDateTime { get; set; }
 
-        /// <summary>
-        /// Leave this as NULL to let Rock set this
-        /// </summary>
+        /// <summary />
         public int? CreatedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
-        /// </summary>
+        /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
@@ -216,6 +206,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.Gender = source.Gender;
             this.GivingGroupId = source.GivingGroupId;
+            this.GivingLeaderId = source.GivingLeaderId;
             this.GradeOffset = source.GradeOffset;
             this.GraduationYear = source.GraduationYear;
             this.InactiveReasonNote = source.InactiveReasonNote;
@@ -226,7 +217,6 @@ namespace Rock.Client
             this.LastName = source.LastName;
             this.MaritalStatusValueId = source.MaritalStatusValueId;
             this.MiddleName = source.MiddleName;
-            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NickName = source.NickName;
             this.PhotoId = source.PhotoId;
             this.PrimaryFamilyId = source.PrimaryFamilyId;
@@ -274,9 +264,6 @@ namespace Rock.Client
         public string GivingId { get; set; }
 
         /// <summary />
-        public int GivingLeaderId { get; set; }
-
-        /// <summary />
         public DefinedValue MaritalStatusValue { get; set; }
 
         /// <summary />
@@ -284,11 +271,6 @@ namespace Rock.Client
 
         /// <summary />
         public BinaryFile Photo { get; set; }
-
-        /// <summary>
-        /// The Primary PersonAliasId of the Person
-        /// </summary>
-        public int? PrimaryAliasId { get; set; }
 
         /// <summary />
         public DefinedValue RecordStatusReasonValue { get; set; }
@@ -311,14 +293,5 @@ namespace Rock.Client
         /// <summary />
         public ICollection<UserLogin> Users { get; set; }
 
-        /// <summary>
-        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
-        /// <summary>
-        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }
