@@ -236,6 +236,10 @@
     <Compile Include="Migrations\201903061837351_PersonGivingLeaderIdUpdate2.Designer.cs">
       <DependentUpon>201903061837351_PersonGivingLeaderIdUpdate2.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201903070016372_FinancialScheduledTransactionSummary.cs" />
+    <Compile Include="Migrations\201903070016372_FinancialScheduledTransactionSummary.Designer.cs">
+      <DependentUpon>201903070016372_FinancialScheduledTransactionSummary.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -653,6 +657,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201903061837351_PersonGivingLeaderIdUpdate2.resx">
       <DependentUpon>201903061837351_PersonGivingLeaderIdUpdate2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903070016372_FinancialScheduledTransactionSummary.resx">
+      <DependentUpon>201903070016372_FinancialScheduledTransactionSummary.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
