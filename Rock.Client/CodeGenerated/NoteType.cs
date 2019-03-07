@@ -35,9 +35,6 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public bool AllowsAttachments { get; set; }
-
-        /// <summary />
         public bool AllowsReplies { get; set; }
 
         /// <summary />
@@ -53,15 +50,7 @@ namespace Rock.Client
         public string BackgroundColor { get; set; }
 
         /// <summary />
-        public int? BinaryFileTypeId { get; set; }
-
-        /// <summary />
         public string BorderColor { get; set; }
-
-        /// <summary />
-        // Made Obsolete in Rock "1.8"
-        [Obsolete( "No Longer Supported", false )]
-        public string CssClass { get; set; }
 
         /// <summary />
         public int EntityTypeId { get; set; }
@@ -90,6 +79,11 @@ namespace Rock.Client
         /// <summary />
         public int? MaxReplyDepth { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public string Name { get; set; }
 
@@ -105,16 +99,24 @@ namespace Rock.Client
         /// <summary />
         public bool UserSelectable { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
+        /// </summary>
         public DateTime? ModifiedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public int? CreatedByPersonAliasId { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
+        /// </summary>
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
@@ -130,17 +132,12 @@ namespace Rock.Client
         public void CopyPropertiesFrom( NoteType source )
         {
             this.Id = source.Id;
-            this.AllowsAttachments = source.AllowsAttachments;
             this.AllowsReplies = source.AllowsReplies;
             this.AllowsWatching = source.AllowsWatching;
             this.ApprovalUrlTemplate = source.ApprovalUrlTemplate;
             this.AutoWatchAuthors = source.AutoWatchAuthors;
             this.BackgroundColor = source.BackgroundColor;
-            this.BinaryFileTypeId = source.BinaryFileTypeId;
             this.BorderColor = source.BorderColor;
-            #pragma warning disable 612, 618
-            this.CssClass = source.CssClass;
-            #pragma warning restore 612, 618
             this.EntityTypeId = source.EntityTypeId;
             this.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             this.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
@@ -150,6 +147,7 @@ namespace Rock.Client
             this.IconCssClass = source.IconCssClass;
             this.IsSystem = source.IsSystem;
             this.MaxReplyDepth = source.MaxReplyDepth;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Order = source.Order;
             this.RequiresApprovals = source.RequiresApprovals;
@@ -171,10 +169,16 @@ namespace Rock.Client
     public partial class NoteType : NoteTypeEntity
     {
         /// <summary />
-        public BinaryFileType BinaryFileType { get; set; }
-
-        /// <summary />
         public EntityType EntityType { get; set; }
 
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
+
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
+        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }
