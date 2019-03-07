@@ -53,7 +53,7 @@ namespace Rock.Client
         public int GroupId { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.GroupMemberStatus GroupMemberStatus { get; set; }
+        public Rock.Client.Enums.GroupMemberStatus GroupMemberStatus { get; set; } = Rock.Client.Enums.GroupMemberStatus.Active;
 
         /// <summary />
         public int? GroupOrder { get; set; }
@@ -76,35 +76,22 @@ namespace Rock.Client
         /// <summary />
         public bool IsSystem { get; set; }
 
-        /// <summary>
-        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
-        /// </summary>
-        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
-
         /// <summary />
         public string Note { get; set; }
 
         /// <summary />
         public int PersonId { get; set; }
 
-        /// <summary>
-        /// Leave this as NULL to let Rock set this
-        /// </summary>
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary>
-        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
-        /// </summary>
+        /// <summary />
         public DateTime? ModifiedDateTime { get; set; }
 
-        /// <summary>
-        /// Leave this as NULL to let Rock set this
-        /// </summary>
+        /// <summary />
         public int? CreatedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
-        /// </summary>
+        /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
@@ -134,7 +121,6 @@ namespace Rock.Client
             this.IsArchived = source.IsArchived;
             this.IsNotified = source.IsNotified;
             this.IsSystem = source.IsSystem;
-            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Note = source.Note;
             this.PersonId = source.PersonId;
             this.CreatedDateTime = source.CreatedDateTime;
@@ -164,14 +150,5 @@ namespace Rock.Client
         /// <summary />
         public Person Person { get; set; }
 
-        /// <summary>
-        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
-        /// <summary>
-        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

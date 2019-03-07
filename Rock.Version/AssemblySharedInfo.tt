@@ -4,7 +4,7 @@
 <#
      int major = 1; 
      int minor = 8; 
-     int build = 6; 
+     int build = 7; 
      int revision = 0; 
   
      try

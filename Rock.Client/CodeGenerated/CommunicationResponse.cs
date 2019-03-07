@@ -27,9 +27,9 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for PluginMigration that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for CommunicationResponse that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class PluginMigrationEntity
+    public partial class CommunicationResponseEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -41,13 +41,31 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public string MigrationName { get; set; }
+        public int? FromPersonAliasId { get; set; }
 
         /// <summary />
-        public int MigrationNumber { get; set; }
+        public bool IsRead { get; set; }
 
         /// <summary />
-        public string PluginAssemblyName { get; set; }
+        public string MessageKey { get; set; }
+
+        /// <summary />
+        public int? RelatedCommunicationId { get; set; }
+
+        /// <summary />
+        public int RelatedMediumEntityTypeId { get; set; }
+
+        /// <summary />
+        public int? RelatedSmsFromDefinedValueId { get; set; }
+
+        /// <summary />
+        public int RelatedTransportEntityTypeId { get; set; }
+
+        /// <summary />
+        public string Response { get; set; }
+
+        /// <summary />
+        public int? ToPersonAliasId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -68,17 +86,23 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source PluginMigration object
+        /// Copies the base properties from a source CommunicationResponse object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( PluginMigration source )
+        public void CopyPropertiesFrom( CommunicationResponse source )
         {
             this.Id = source.Id;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.MigrationName = source.MigrationName;
-            this.MigrationNumber = source.MigrationNumber;
-            this.PluginAssemblyName = source.PluginAssemblyName;
+            this.FromPersonAliasId = source.FromPersonAliasId;
+            this.IsRead = source.IsRead;
+            this.MessageKey = source.MessageKey;
+            this.RelatedCommunicationId = source.RelatedCommunicationId;
+            this.RelatedMediumEntityTypeId = source.RelatedMediumEntityTypeId;
+            this.RelatedSmsFromDefinedValueId = source.RelatedSmsFromDefinedValueId;
+            this.RelatedTransportEntityTypeId = source.RelatedTransportEntityTypeId;
+            this.Response = source.Response;
+            this.ToPersonAliasId = source.ToPersonAliasId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -90,9 +114,9 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for PluginMigration that includes all the fields that are available for GETs. Use this for GETs (use PluginMigrationEntity for POST/PUTs)
+    /// Client model for CommunicationResponse that includes all the fields that are available for GETs. Use this for GETs (use CommunicationResponseEntity for POST/PUTs)
     /// </summary>
-    public partial class PluginMigration : PluginMigrationEntity
+    public partial class CommunicationResponse : CommunicationResponseEntity
     {
     }
 }

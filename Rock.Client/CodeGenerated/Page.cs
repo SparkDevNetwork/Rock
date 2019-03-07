@@ -35,7 +35,7 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public bool AllowIndexing { get; set; }
+        public bool AllowIndexing { get; set; } = true;
 
         /// <summary />
         public string BodyCssClass { get; set; }
@@ -44,7 +44,7 @@ namespace Rock.Client
         public bool BreadCrumbDisplayIcon { get; set; }
 
         /// <summary />
-        public bool BreadCrumbDisplayName { get; set; }
+        public bool BreadCrumbDisplayName { get; set; } = true;
 
         /// <summary />
         public string BrowserTitle { get; set; }
@@ -56,7 +56,7 @@ namespace Rock.Client
         public Rock.Client.Enums.DisplayInNavWhen DisplayInNavWhen { get; set; }
 
         /// <summary />
-        public bool EnableViewState { get; set; }
+        public bool EnableViewState { get; set; } = true;
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -71,7 +71,7 @@ namespace Rock.Client
         public string IconCssClass { get; set; }
 
         /// <summary />
-        public bool IncludeAdminFooter { get; set; }
+        public bool IncludeAdminFooter { get; set; } = true;
 
         /// <summary />
         public string InternalName { get; set; }
@@ -86,18 +86,13 @@ namespace Rock.Client
         public int LayoutId { get; set; }
 
         /// <summary />
-        public bool MenuDisplayChildPages { get; set; }
+        public bool MenuDisplayChildPages { get; set; } = true;
 
         /// <summary />
         public bool MenuDisplayDescription { get; set; }
 
         /// <summary />
         public bool MenuDisplayIcon { get; set; }
-
-        /// <summary>
-        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
-        /// </summary>
-        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
         public int Order { get; set; }
@@ -106,16 +101,16 @@ namespace Rock.Client
         public int OutputCacheDuration { get; set; }
 
         /// <summary />
-        public bool PageDisplayBreadCrumb { get; set; }
+        public bool PageDisplayBreadCrumb { get; set; } = true;
 
         /// <summary />
-        public bool PageDisplayDescription { get; set; }
+        public bool PageDisplayDescription { get; set; } = true;
 
         /// <summary />
-        public bool PageDisplayIcon { get; set; }
+        public bool PageDisplayIcon { get; set; } = true;
 
         /// <summary />
-        public bool PageDisplayTitle { get; set; }
+        public bool PageDisplayTitle { get; set; } = true;
 
         /// <summary />
         public string PageTitle { get; set; }
@@ -126,24 +121,16 @@ namespace Rock.Client
         /// <summary />
         public bool RequiresEncryption { get; set; }
 
-        /// <summary>
-        /// Leave this as NULL to let Rock set this
-        /// </summary>
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary>
-        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
-        /// </summary>
+        /// <summary />
         public DateTime? ModifiedDateTime { get; set; }
 
-        /// <summary>
-        /// Leave this as NULL to let Rock set this
-        /// </summary>
+        /// <summary />
         public int? CreatedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
-        /// </summary>
+        /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
@@ -179,7 +166,6 @@ namespace Rock.Client
             this.MenuDisplayChildPages = source.MenuDisplayChildPages;
             this.MenuDisplayDescription = source.MenuDisplayDescription;
             this.MenuDisplayIcon = source.MenuDisplayIcon;
-            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Order = source.Order;
             this.OutputCacheDuration = source.OutputCacheDuration;
             this.PageDisplayBreadCrumb = source.PageDisplayBreadCrumb;
@@ -216,14 +202,5 @@ namespace Rock.Client
         /// <summary />
         public ICollection<Page> Pages { get; set; }
 
-        /// <summary>
-        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
-        /// <summary>
-        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

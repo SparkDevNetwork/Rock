@@ -38,7 +38,7 @@ namespace Rock.Client
         public string AllowedFrameDomains { get; set; }
 
         /// <summary />
-        public bool AllowIndexing { get; set; }
+        public bool AllowIndexing { get; set; } = true;
 
         /// <summary />
         public int? ChangePasswordPageId { get; set; }
@@ -62,18 +62,13 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
-        public bool EnabledForShortening { get; set; }
+        public bool EnabledForShortening { get; set; } = true;
 
         /// <summary />
         public bool EnableMobileRedirect { get; set; }
 
         /// <summary />
-        public bool EnablePageViews
-        {
-            get { return _EnablePageViews; }
-            set { _EnablePageViews = value; }
-        }
-        private bool _EnablePageViews = true;
+        public bool EnablePageViews { get; set; } = true;
 
         /// <summary />
         public string ErrorPage { get; set; }
@@ -94,6 +89,10 @@ namespace Rock.Client
         public string GoogleAnalyticsCode { get; set; }
 
         /// <summary />
+        [Obsolete( "Moved to Theme", false )]
+        public Rock.Client.Enums.IconCssWeight IconCssWeight { get; set; }
+
+        /// <summary />
         public string IndexStartingLocation { get; set; }
 
         /// <summary />
@@ -110,11 +109,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? MobilePageId { get; set; }
-
-        /// <summary>
-        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
-        /// </summary>
-        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
         public string Name { get; set; }
@@ -146,24 +140,16 @@ namespace Rock.Client
         /// <summary />
         public string Theme { get; set; }
 
-        /// <summary>
-        /// Leave this as NULL to let Rock set this
-        /// </summary>
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary>
-        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
-        /// </summary>
+        /// <summary />
         public DateTime? ModifiedDateTime { get; set; }
 
-        /// <summary>
-        /// Leave this as NULL to let Rock set this
-        /// </summary>
+        /// <summary />
         public int? CreatedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
-        /// </summary>
+        /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
@@ -197,13 +183,15 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
+            #pragma warning disable 612, 618
+            this.IconCssWeight = source.IconCssWeight;
+            #pragma warning restore 612, 618
             this.IndexStartingLocation = source.IndexStartingLocation;
             this.IsIndexEnabled = source.IsIndexEnabled;
             this.IsSystem = source.IsSystem;
             this.LoginPageId = source.LoginPageId;
             this.LoginPageRouteId = source.LoginPageRouteId;
             this.MobilePageId = source.MobilePageId;
-            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.PageHeaderContent = source.PageHeaderContent;
             this.PageNotFoundPageId = source.PageNotFoundPageId;
@@ -274,14 +262,5 @@ namespace Rock.Client
         /// <summary />
         public ICollection<SiteDomain> SiteDomains { get; set; }
 
-        /// <summary>
-        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
-        /// <summary>
-        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }
