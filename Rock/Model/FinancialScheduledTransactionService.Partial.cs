@@ -215,7 +215,7 @@ namespace Rock.Model
                             var note = new Note();
                             note.NoteTypeId = noteType.Id;
                             note.EntityId = scheduledTransaction.Id;
-                            note.Caption = "Cancelled Transaction";
+                            note.Caption = "Canceled Transaction";
                             noteService.Add( note );
                         }
 
