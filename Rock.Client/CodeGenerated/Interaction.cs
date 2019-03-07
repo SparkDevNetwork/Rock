@@ -70,11 +70,6 @@ namespace Rock.Client
         /// <summary />
         public string Medium { get; set; }
 
-        /// <summary>
-        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
-        /// </summary>
-        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
-
         /// <summary />
         public string Operation { get; set; }
 
@@ -96,24 +91,16 @@ namespace Rock.Client
         /// <summary />
         public string Term { get; set; }
 
-        /// <summary>
-        /// Leave this as NULL to let Rock set this
-        /// </summary>
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary>
-        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
-        /// </summary>
+        /// <summary />
         public DateTime? ModifiedDateTime { get; set; }
 
-        /// <summary>
-        /// Leave this as NULL to let Rock set this
-        /// </summary>
+        /// <summary />
         public int? CreatedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
-        /// </summary>
+        /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
@@ -141,7 +128,6 @@ namespace Rock.Client
             this.InteractionSessionId = source.InteractionSessionId;
             this.InteractionSummary = source.InteractionSummary;
             this.Medium = source.Medium;
-            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Operation = source.Operation;
             this.PersonalDeviceId = source.PersonalDeviceId;
             this.PersonAliasId = source.PersonAliasId;
@@ -176,14 +162,5 @@ namespace Rock.Client
         /// <summary />
         public EntityType RelatedEntityType { get; set; }
 
-        /// <summary>
-        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
-        /// <summary>
-        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }

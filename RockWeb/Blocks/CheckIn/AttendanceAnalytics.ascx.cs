@@ -44,22 +44,158 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName( "Attendance Analytics" )]
     [Category( "Check-in" )]
     [Description( "Shows a graph of attendance statistics which can be configured for specific groups, date range, etc." )]
-    [GroupTypesField( "Group Types", "Optional List of specific group types that should be included. If none are selected, an option to select an attendance type will be displayed and all of that attendance type's areas will be available.", false, "", "", 0 )]
-    [BooleanField( "Include Inactive Campuses", "Should campus filter include inactive campuses?", false, "", 1 )]
-    [BooleanField( "Show All Groups", "Should all of the available groups be listed individually with checkboxes? If not, a group dropdown will be used instead for selecting the desired groups", true, "", 2)]
-    [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true, "", 3 )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, "", "", 4 )]
-    [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false, "", "", 5 )]
-    [CategoryField("Data View Category(s)", "The optional data view categories that should be included as an option to filter attendance for. If a category is not selected, all data views will be included.", true, "Rock.Model.DataView", "", "", false, "", "", 6, "DataViewCategories" )]
-    [BooleanField( "Group Specific", "Should this block display attendance only for the selected group?", false, "", 7 )]
-    [BooleanField( "Show Schedule Filter", "Should the Schedules filter be displayed", true, "", 8)]
-    [BooleanField( "Show Campus Filter", "Should the Campus filter be displayed?", true, "", 9)]
-    [BooleanField( "Show View By Option", "Should the option to view 'Attendees' vs 'Parents of Attendees' vs 'Children of Attendees' be displayed when viewing the grid? If not displayed, the grid will always show attendees.", true, "", 10 )]
-    [BooleanField( "Show Bulk Update Option", "Should the Bulk Update option be allowed from the attendance grid?", true, "", 11 )]
 
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", "", true, false, Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK, "", 5 )]
+    [GroupTypesField(
+        name: "Group Types",
+        description: "Optional List of specific group types that should be included. If none are selected, an option to select an attendance type will be displayed and all of that attendance type's areas will be available.",
+        required: false,
+        defaultGroupTypeGuids: "",
+        category: "",
+        order: 0,
+        key: AttributeKeys.GroupTypes )]
+
+    [BooleanField(
+        name: "Include Inactive Campuses",
+        description: "Should campus filter include inactive campuses?",
+        defaultValue: false,
+        category: "",
+        order: 1,
+        key: AttributeKeys.IncludeInactiveCampuses )]
+
+    [BooleanField(
+        name: "Show All Groups",
+        description: "Should all of the available groups be listed individually with checkboxes? If not, a group dropdown will be used instead for selecting the desired groups",
+        defaultValue: true,
+        category: "",
+        order: 2,
+        key: AttributeKeys.ShowAllGroups )]
+
+    [BooleanField(
+        name: "Show Group Ancestry",
+        description: "By default the group ancestry path is shown.  Unselect this to show only the group name.",
+        defaultValue: true,
+        category: "",
+        order: 3,
+        key: AttributeKeys.ShowGroupAncestry )]
+
+    [LinkedPage(
+        name: "Detail Page",
+        description: "Select the page to navigate to when the chart is clicked",
+        required: false,
+        defaultValue: "",
+        category: "",
+        order:4,
+        key: AttributeKeys.DetailPage )]
+
+    [LinkedPage(
+        name: "Check-in Detail Page",
+        description:"Page that shows the user details for the check-in data.",
+        required: false,
+        defaultValue: "",
+        category: "",
+        order: 5,
+        key: AttributeKeys.CheckinDetailPage )]
+    
+    [DefinedValueField(
+        definedTypeGuid: Rock.SystemGuid.DefinedType.CHART_STYLES,
+        name: "Chart Style",
+        description:"",
+        required: true,
+        allowMultiple: false,
+        defaultValue: Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK,
+        category: "",
+        order: 6,
+        key: AttributeKeys.ChartStyle )]
+
+    [CategoryField(
+        name: "Data View Category(s)",
+        description: "The optional data view categories that should be included as an option to filter attendance for. If a category is not selected, all data views will be included.",
+        allowMultiple: true,
+        entityTypeName: "Rock.Model.DataView",
+        entityTypeQualifierColumn: "",
+        entityTypeQualifierValue: "",
+        required: false,
+        defaultValue: "",
+        category: "",
+        order: 7,
+        key: AttributeKeys.DataViewCategories )]
+
+    [BooleanField(
+        name: "Group Specific",
+        description: "Should this block display attendance only for the selected group?",
+        defaultValue: false,
+        category: "",
+        order: 8,
+        key: AttributeKeys.GroupSpecific )]
+
+    [BooleanField(
+        name:"Show Schedule Filter",
+        description:"Should the Schedules filter be displayed",
+        defaultValue:true,
+        category:"",
+        order: 9,
+        key: AttributeKeys.ShowScheduleFilter )]
+
+    [BooleanField( name: "Show Campus Filter",
+        description:"Should the Campus filter be displayed?",
+        defaultValue: true,
+        category: "",
+        order: 10,
+        key: AttributeKeys.ShowCampusFilter )]
+
+    [BooleanField( name:"Show View By Option",
+        description:"Should the option to view 'Attendees' vs 'Parents of Attendees' vs 'Children of Attendees' be displayed when viewing the grid? If not displayed, the grid will always show attendees.",
+        defaultValue:true,
+        category:"",
+        order: 11,
+        key: AttributeKeys.ShowViewByOption )]
+
+    [BooleanField(
+        name: "Show Bulk Update Option",
+        description: "Should the Bulk Update option be allowed from the attendance grid?",
+        defaultValue: true,
+        category: "",
+        order: 12,
+        key: AttributeKeys.ShowBulkUpdateOption )]
+
+    [CustomDropdownListField(
+        name: "Filter Column Direction",
+        description: "Choose the direction for the checkboxes for filter selections.",
+        listSource: "vertical^Vertical,horizontal^Horizontal",
+        required: true,
+        defaultValue: "vertical",
+        order: 13,
+        key: AttributeKeys.FilterColumnDirection )]
+
+    [IntegerField(
+        name: "Filter Column Count",
+        description: "The number of check boxes for each row.",
+        required: false,
+        defaultValue: 1,
+        order: 14,
+        key: AttributeKeys.FilterColumnCount)]
+
     public partial class AttendanceAnalytics : RockBlock
     {
+        protected static class AttributeKeys
+        {
+            public const string GroupTypes = "GroupTypes";
+            public const string IncludeInactiveCampuses = "IncludeInactiveCampuses";
+            public const string ShowAllGroups = "ShowAllGroups";
+            public const string ShowGroupAncestry = "ShowGroupAncestry";
+            public const string DetailPage = "DetailPage";
+            public const string CheckinDetailPage = "Check-inDetailPage";
+            public const string DataViewCategories = "DataViewCategories";
+            public const string GroupSpecific = "GroupSpecific";
+            public const string ShowScheduleFilter = "ShowScheduleFilter";
+            public const string ShowCampusFilter = "ShowCampusFilter";
+            public const string ShowViewByOption = "ShowViewByOption";
+            public const string ShowBulkUpdateOption = "ShowBulkUpdateOption";
+            public const string FilterColumnCount = "FilterColumnCount";
+            public const string FilterColumnDirection = "FilterColumnDirection";
+            public const string ChartStyle = "ChartStyle";
+        }
+
         #region Fields
 
         private RockContext _rockContext = null;
@@ -91,7 +227,7 @@ namespace RockWeb.Blocks.CheckIn
             cbShowInactive.Checked = GetUserPreference( BlockCache.Guid.ToString() + "_showInactive" ).AsBoolean();
 
             // Determine if the block should be for a specific group
-            _isGroupSpecific = GetAttributeValue( "GroupSpecific" ).AsBoolean();
+            _isGroupSpecific = GetAttributeValue( AttributeKeys.GroupSpecific ).AsBoolean();
             if ( _isGroupSpecific )
             {
                 int? groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
@@ -131,15 +267,15 @@ namespace RockWeb.Blocks.CheckIn
             gAttendeesAttendance.GridRebind += gAttendeesAttendance_GridRebind;
 
             gAttendeesAttendance.EntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
-            gAttendeesAttendance.Actions.ShowBulkUpdate = GetAttributeValue( "ShowBulkUpdateOption" ).AsBoolean( true );
+            gAttendeesAttendance.Actions.ShowBulkUpdate = GetAttributeValue( AttributeKeys.ShowBulkUpdateOption ).AsBoolean( true );
             gAttendeesAttendance.Actions.ShowMergePerson = !_isGroupSpecific;
             gAttendeesAttendance.Actions.ShowMergeTemplate = !_isGroupSpecific;
 
             dvpDataView.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
-            dvpDataView.CategoryGuids = GetAttributeValue( "DataViewCategories" ).SplitDelimitedValues().AsGuidList();
+            dvpDataView.CategoryGuids = GetAttributeValue( AttributeKeys.DataViewCategories ).SplitDelimitedValues().AsGuidList();
 
             // show / hide the checkin details page
-            btnCheckinDetails.Visible = !string.IsNullOrWhiteSpace( GetAttributeValue( "Check-inDetailPage" ) );
+            btnCheckinDetails.Visible = !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKeys.CheckinDetailPage ) );
         }
 
         /// <summary>
@@ -153,7 +289,7 @@ namespace RockWeb.Blocks.CheckIn
             // GroupTypesUI dynamically creates controls, so we need to rebuild it on every OnLoad()
             BuildGroupTypesUI( false );
 
-            var chartStyleDefinedValueGuid = this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull();
+            var chartStyleDefinedValueGuid = this.GetAttributeValue( AttributeKeys.ChartStyle ).AsGuidOrNull();
 
             lcAttendance.Options.SetChartStyle( chartStyleDefinedValueGuid );
             bcAttendance.Options.xaxis = new AxisOptions { mode = AxisMode.categories, tickLength = 0 };
@@ -196,7 +332,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             get
             {
-                return ( GetAttributeValue( "DetailPage" ) ?? string.Empty ).AsGuidOrNull();
+                return ( GetAttributeValue( AttributeKeys.DetailPage ) ?? string.Empty ).AsGuidOrNull();
             }
         }
 
@@ -213,6 +349,11 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            string repeatDirection = GetAttributeValue( AttributeKeys.FilterColumnDirection );
+            int repeatColumns = GetAttributeValue( AttributeKeys.FilterColumnCount ).AsIntegerOrNull() ?? 0;
+            clbCampuses.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
+            clbCampuses.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
+
             BuildGroupTypesUI( true );
 
             if ( pnlResults.Visible )
@@ -250,8 +391,13 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         public void LoadDropDowns()
         {
-            bool includeInactiveCampuses = GetAttributeValue( "IncludeInactiveCampuses" ).AsBoolean();
+            string repeatDirection = GetAttributeValue( AttributeKeys.FilterColumnDirection );
+            int repeatColumns = GetAttributeValue( AttributeKeys.FilterColumnCount ).AsIntegerOrNull() ?? 0;
 
+            bool includeInactiveCampuses = GetAttributeValue( AttributeKeys.IncludeInactiveCampuses ).AsBoolean();
+
+            clbCampuses.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
+            clbCampuses.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
             clbCampuses.Items.Clear();
             var noCampusListItem = new ListItem();
             noCampusListItem.Text = "<span title='Include records that are not associated with a campus'>No Campus</span>";
@@ -267,7 +413,7 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( !_isGroupSpecific )
             {
-                var groupTypeGuids = this.GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
+                var groupTypeGuids = this.GetAttributeValue( AttributeKeys.GroupTypes ).SplitDelimitedValues().AsGuidList();
                 if ( !groupTypeGuids.Any() )
                 {
                     // show the CheckinType control if there isn't a block setting for specific group types
@@ -306,7 +452,7 @@ namespace RockWeb.Blocks.CheckIn
                     _addedGroupTypeIds = new List<int>();
                     _addedGroupIds = new List<int>();
 
-                    var showAllGroups = GetAttributeValue( "ShowAllGroups" ).AsBoolean();
+                    var showAllGroups = GetAttributeValue( AttributeKeys.ShowAllGroups ).AsBoolean();
                     if ( showAllGroups )
                     {
                         rptGroupTypes.DataSource = groupTypes.ToList();
@@ -355,7 +501,7 @@ namespace RockWeb.Blocks.CheckIn
         private void BindSelectedGroups()
         {
             var selectedGroupIds = GetSelectedGroupIds();
-            bool showGroupAncestry = GetAttributeValue( "ShowGroupAncestry" ).AsBoolean( true );
+            bool showGroupAncestry = GetAttributeValue( AttributeKeys.ShowGroupAncestry ).AsBoolean( true );
 
             using ( var rockContext = new RockContext() )
             {
@@ -391,7 +537,7 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( !_isGroupSpecific )
             {
-                var groupTypeGuids = this.GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
+                var groupTypeGuids = this.GetAttributeValue( AttributeKeys.GroupTypes ).SplitDelimitedValues().AsGuidList();
                 if ( groupTypeGuids.Any() )
                 {
                     var groupTypeService = new GroupTypeService( _rockContext );
@@ -661,7 +807,7 @@ function(item) {
             }
             else
             {
-                var showAllGroups = GetAttributeValue( "ShowAllGroups" ).AsBoolean();
+                var showAllGroups = GetAttributeValue( AttributeKeys.ShowAllGroups ).AsBoolean();
                 if ( showAllGroups )
                 {
                     var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
@@ -712,7 +858,7 @@ function(item) {
             hfGroupBy.Value = GetSetting( keyPrefix, "GroupBy" );
             hfGraphBy.Value = GetSetting( keyPrefix, "GraphBy" );
 
-            if ( GetAttributeValue( "ShowCampusFilter" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKeys.ShowCampusFilter ).AsBoolean() )
             {
                 clbCampuses.Visible = true;
 
@@ -749,7 +895,7 @@ function(item) {
                 clbCampuses.Visible = false;
             }
 
-            if ( GetAttributeValue( "ShowScheduleFilter" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKeys.ShowScheduleFilter ).AsBoolean() )
             {
                 spSchedules.Visible = true;
 
@@ -772,7 +918,7 @@ function(item) {
 
             // if no groups are selected, and option to show all groups is configured, default to showing all of them
 
-            var showAllGroups = GetAttributeValue( "ShowAllGroups" ).AsBoolean();
+            var showAllGroups = GetAttributeValue( AttributeKeys.ShowAllGroups ).AsBoolean();
             if ( showAllGroups )
             {
                 var selectAll = groupIdList.Count == 0;
@@ -794,7 +940,7 @@ function(item) {
             ShowBy showBy = GetSetting( keyPrefix, "ShowBy" ).ConvertToEnumOrNull<ShowBy>() ?? ShowBy.Chart;
             DisplayShowBy( showBy );
 
-            if ( GetAttributeValue( "ShowViewByOption" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKeys.ShowViewByOption ).AsBoolean() )
             {
                 pnlViewBy.Visible = true;
                 ViewBy viewBy = GetSetting( keyPrefix, "ViewBy" ).ConvertToEnumOrNull<ViewBy>() ?? ViewBy.Attendees;
@@ -973,9 +1119,9 @@ function(item) {
             }
 
             string groupIds = GetSelectedGroupIds().AsDelimited( "," );
-            string campusIds = GetAttributeValue( "ShowCampusFilter" ).AsBoolean() ? clbCampuses.SelectedValues.AsDelimited( "," ) : string.Empty;
+            string campusIds = GetAttributeValue( AttributeKeys.ShowCampusFilter ).AsBoolean() ? clbCampuses.SelectedValues.AsDelimited( "," ) : string.Empty;
             var dataView = dvpDataView.SelectedValueAsInt();
-            var scheduleIds = GetAttributeValue( "ShowScheduleFilter" ).AsBoolean() ? spSchedules.SelectedValues.ToList().AsDelimited( "," ) : string.Empty;
+            var scheduleIds = GetAttributeValue( AttributeKeys.ShowScheduleFilter ).AsBoolean() ? spSchedules.SelectedValues.ToList().AsDelimited( "," ) : string.Empty;
             
             var chartData = new AttendanceService( _rockContext ).GetChartData( groupBy, graphBy, start, end, groupIds, campusIds, dataView, scheduleIds );
 
@@ -1031,7 +1177,7 @@ function(item) {
             // if 'null' is one of the campuses, treat that as a 'CampusId is Null'
             var includeNullCampus = true;
             List<int> campusIdList = null;
-            if ( GetAttributeValue( "ShowCampusFilter" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKeys.ShowCampusFilter ).AsBoolean() )
             {
                 includeNullCampus = clbCampuses.SelectedValues.Any( a => a.Equals( "null", StringComparison.OrdinalIgnoreCase ) );
                 campusIdList = clbCampuses.SelectedValues.AsIntegerList();
@@ -1042,7 +1188,7 @@ function(item) {
                 }
             }
 
-            var scheduleIdList = GetAttributeValue( "ShowScheduleFilter" ).AsBoolean() ? spSchedules.SelectedValues.AsIntegerList() : new List<int>();
+            var scheduleIdList = GetAttributeValue( AttributeKeys.ShowScheduleFilter ).AsBoolean() ? spSchedules.SelectedValues.AsIntegerList() : new List<int>();
             scheduleIdList.Remove( 0 );
             if ( !scheduleIdList.Any() )
             {
@@ -2104,12 +2250,17 @@ function(item) {
 
                 if ( ( groupType.Groups.Any() && showInactive ) || groupType.Groups.Where( g => g.IsActive ).Any() )
                 {
-                    bool showGroupAncestry = GetAttributeValue( "ShowGroupAncestry" ).AsBoolean( true );
+                    bool showGroupAncestry = GetAttributeValue( AttributeKeys.ShowGroupAncestry ).AsBoolean( true );
 
                     var groupService = new GroupService( _rockContext );
 
                     var cblGroupTypeGroups = new RockCheckBoxList { ID = "cblGroupTypeGroups" + groupType.Id, FormGroupCssClass = "js-groups-container" };
 
+                    string repeatDirection = GetAttributeValue( AttributeKeys.FilterColumnDirection );
+                    int repeatColumns = GetAttributeValue( AttributeKeys.FilterColumnCount ).AsIntegerOrNull() ?? 0;
+                    
+                    cblGroupTypeGroups.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
+                    cblGroupTypeGroups.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
                     cblGroupTypeGroups.Label = groupType.Name;
                     cblGroupTypeGroups.Items.Clear();
 

@@ -70,7 +70,8 @@ SET
         }
 
         /// <summary>Updates the PersonTokenCreate.
-        ///SK: update the existing usage of PersonTokenCreate to use PersonActionIdentifier in several places.(Spilt the SQL into two(JM)
+        /// SK: update the existing usage of PersonTokenCreate to use PersonActionIdentifier in several places.(Spilt the SQL into two(JM)
+        /// This is specifically updating the Photo Upload workflow's Send Email Action body value
         /// </summary>
         private void UpdatePersonTokenCreate()
         {
@@ -104,6 +105,7 @@ SET
 
         /// <summary>Updates the PersonTokenCreate Attribute.
         ///SK: update the existing usage of PersonTokenCreate to use PersonActionIdentifier in several places.(Spilt the SQL into two(JM))
+        ///This is specifically updating the 'Unsubscribe HTML' and 'Non-HTML Content' attribute values for the Rock.Communication.Medium.Email
         /// </summary>
         private void UpdatePersonTokenCreateAttribute()
         {
