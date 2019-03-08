@@ -41,6 +41,12 @@
             </asp:Panel>
 
             <div class="row">
+                <div class="col-md-6">
+                    <Rock:NumberBox ID="nbGroupCapacity" runat="server" Label="Group Capacity" NumberType="Integer" Visible="false" />
+                </div>
+            </div>
+
+            <div class="row">
                 <div class="col-md-12">
                     <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                 </div>
