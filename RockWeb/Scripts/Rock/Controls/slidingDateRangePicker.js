@@ -23,14 +23,14 @@
                     updateDateRangeInfo($picker);
                 });
 
-                $('.js-number, .js-time-units-singular, .js-time-units-plural, .js-slidingdaterange-select', $picker).on('change', function () {
+                $('.js-number, .js-time-units-singular, .js-time-units-plural, .js-slidingdaterange-select, .js-lower, .js-upper', $picker).on('change', function () {
                     updateDateRangeInfo($picker);
                 });
 
                 $('.js-number', $picker).on('keyup', function () {
                     updateDateRangeInfo($picker);
                 });
-            },
+            }
         },
         showHideControls = function ($picker, $select) {
             var selectedValue = $select.val();
@@ -45,31 +45,48 @@
             $picker.find('.js-time-units-plural').toggle(isLast || isPrevious || isNext || isUpcoming);
             $picker.find('.js-time-units-date-range').toggle(isDateRange);
             var $pickerContainer = $picker.closest('.js-slidingdaterange-container');
-            $pickerContainer.find('.js-slidingdaterange-info').toggle(isLast || isPrevious || isNext || isUpcoming || isCurrent);
+            if (isLast || isPrevious || isNext || isUpcoming || isCurrent) {
+                $pickerContainer.find('.js-slidingdaterange-info').css( "display", "inline" );
+            } else {
+                $pickerContainer.find('.js-slidingdaterange-info').hide();
+            }
         },
         updateDateRangeInfo = function ($picker) {
-            var $select = $picker.find('.js-slidingdaterange-select');
-            var timeUnitType = 0;
-            if ($picker.find('.js-time-units-singular').is(':visible')) {
-                timeUnitType = $picker.find('.js-time-units-singular').val();
-            } else {
-                timeUnitType = $picker.find('.js-time-units-plural').val();
-            }
+          
+          var timeUnitType = 0;
+          if ($picker.find('.js-time-units-singular').is(':visible')) {
+              timeUnitType = $picker.find('.js-time-units-singular').val();
+          } else {
+              timeUnitType = $picker.find('.js-time-units-plural').val();
+          }
 
-            var numberOf = $picker.find('.js-number').val();
+          var numberOf = $picker.find('.js-number').val();
 
-            var $pickerContainer = $picker.closest('.js-slidingdaterange-container');
+          var $pickerContainer = $picker.closest('.js-slidingdaterange-container');
 
-            var getDateRangeUrl = Rock.settings.get('baseUrl') + 'api/Utility/CalculateSlidingDateRange?slidingDateRangeType=' + $select.val() + '&timeUnitType=' + timeUnitType + '&number=' + numberOf;
+          var dateRangeString = '';
+          var $select = $picker.find('.js-slidingdaterange-select');
+          var selectedValue = $select.val();
+          if (selectedValue == '2' ) {
+            var startPicker = $pickerContainer.find('.js-lower');
+            var startDate = startPicker.find('.form-control').val();
+
+            var endPicker = $pickerContainer.find('.js-upper');
+            var endDate = endPicker.find('.form-control').val();
+
+            dateRangeString = '&startDate=' + startDate + '&endDate=' + endDate;
+          }
+
+            var getDateRangeUrl = Rock.settings.get('baseUrl') + 'api/Utility/CalculateSlidingDateRange?slidingDateRangeType=' + $select.val() + '&timeUnitType=' + timeUnitType + '&number=' + numberOf + dateRangeString;
             $.get(getDateRangeUrl, function (r) {
                 $pickerContainer.find('.js-slidingdaterange-info').text(r);
             });
 
-            var getTextValueUrl = Rock.settings.get('baseUrl') + 'api/Utility/GetSlidingDateRangeTextValue?slidingDateRangeType=' + $select.val() + '&timeUnitType=' + timeUnitType + '&number=' + numberOf;
+            var getTextValueUrl = Rock.settings.get('baseUrl') + 'api/Utility/GetSlidingDateRangeTextValue?slidingDateRangeType=' + $select.val() + '&timeUnitType=' + timeUnitType + '&number=' + numberOf + dateRangeString;
             $.get(getTextValueUrl, function (r) {
                 $pickerContainer.find('.js-slidingdaterange-text-value').val(r);
             });
-        }
+        };
 
         return exports;
     }());

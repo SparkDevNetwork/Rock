@@ -51,10 +51,11 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var eventCalendar = EventCalendarCache.Get( value.AsGuid() );
-                if ( eventCalendar != null )
+                var guids = value.SplitDelimitedValues();
+                var eventCalendars = guids.Select( g => EventCalendarCache.Get( g ) );
+                if ( eventCalendars.Any() )
                 {
-                    formattedValue = eventCalendar.Name;
+                    formattedValue = string.Join( ", ", ( from eventCalendar in eventCalendars select eventCalendar.Name ).ToArray() );
                 }
             }
 
@@ -278,8 +279,8 @@ namespace Rock.Field.Types
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
                 if ( valueCount == 0 )
                 {
-                    // No Value specified, so return Expression.Constant(true) ( which means don't filter )
-                    return Expression.Constant( true );
+                    // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
+                    return new NoAttributeFilterExpression();
                 }
                 else if ( valueCount == 1 )
                 {
@@ -295,6 +296,29 @@ namespace Rock.Field.Types
             }
 
             return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
+        }
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                var guids = value.SplitDelimitedValues();
+                var eventCalendars = guids.Select( g => EventCalendarCache.Get( g ) );
+                if ( eventCalendars.Any() )
+                {
+                    formattedValue = string.Join( "' OR '", ( from eventCalendar in eventCalendars select eventCalendar.Name ).ToArray() );
+                }
+            }
+
+            return AddQuotes( formattedValue );
         }
 
         #endregion

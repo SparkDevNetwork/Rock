@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web;
 using Quartz;
 using Rock.Data;
@@ -33,7 +34,7 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     public class GetNcoa : IJob
     {
-        /// <summary> 
+        /// <summary>
         /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -46,7 +47,7 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Job to get a National Change of Address (NCOA) report for all active people's addresses.
-        /// 
+        ///
         /// Called by the <see cref="IScheduler" /> when a
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
@@ -65,18 +66,24 @@ namespace Rock.Jobs
 
             try
             {
-                Guid? SparkDataApiKeyGuid = sparkDataConfig.SparkDataApiKey.AsGuidOrNull();
-                if ( SparkDataApiKeyGuid == null )
+                Guid? sparkDataApiKeyGuid = sparkDataConfig.SparkDataApiKey.AsGuidOrNull();
+                if ( sparkDataApiKeyGuid == null )
                 {
-                    exception = new Exception( $"Spark Data Api Key '{sparkDataConfig.SparkDataApiKey.ToStringSafe()}' is empty or invalid. The Spark Data Api Key can be configured in System Settings > Spark Data Settings." );
+                    exception = new NoRetryException( $"Spark Data API Key '{sparkDataConfig.SparkDataApiKey.ToStringSafe()}' is empty or invalid. The Spark Data API Key can be configured in System Settings > Spark Data Settings." );
                     return;
                 }
 
                 switch ( sparkDataConfig.NcoaSettings.CurrentReportStatus )
                 {
-                    case "Start":
                     case "":
                     case null:
+                        if ( sparkDataConfig.NcoaSettings.RecurringEnabled )
+                        {
+                            StatusStart( sparkDataConfig );
+                        }
+
+                        break;
+                    case "Start":
                         StatusStart( sparkDataConfig );
                         break;
                     case "Failed":
@@ -103,18 +110,33 @@ namespace Rock.Jobs
                 {
                     context.Result = $"NCOA Job failed: {exception.Message}";
 
-                    sparkDataConfig.NcoaSettings.CurrentReportStatus = "Failed";
-                    sparkDataConfig.Messages.Add( $"NOCA job failed: {RockDateTime.Now.ToString()} - {exception.Message}" );
+                    if ( exception is NoRetryException || exception is NoRetryAggregateException )
+                    {
+                        sparkDataConfig.NcoaSettings.CurrentReportStatus = "Complete";
+                        sparkDataConfig.NcoaSettings.LastRunDate = RockDateTime.Now;
+                    }
+                    else
+                    {
+                        sparkDataConfig.NcoaSettings.CurrentReportStatus = "Failed";
+                    }
+
+                    StringBuilder sb = new StringBuilder( $"NOCA job failed: {RockDateTime.Now.ToString()} - {exception.Message}" );
+                    Exception innerException = exception;
+                    while ( innerException.InnerException != null )
+                    {
+                        innerException = innerException.InnerException;
+                        sb.AppendLine( innerException.Message );
+                    }
+
+                    sparkDataConfig.Messages.Add( sb.ToString() );
                     Ncoa.SaveSettings( sparkDataConfig );
 
                     try
                     {
                         var ncoa = new Ncoa();
-                        ncoa.SentNotification( sparkDataConfig, "failed" );
+                        ncoa.SendNotification( sparkDataConfig, "failed" );
                     }
-                    catch
-                    {
-                    }
+                    catch { }
 
 
                     if ( sparkDataConfig.SparkDataApiKey.IsNotNullOrWhiteSpace() && sparkDataConfig.NcoaSettings.FileName.IsNotNullOrWhiteSpace() )
@@ -156,8 +178,7 @@ namespace Rock.Jobs
         /// <param name="sparkDataConfig">The spark data configuration.</param>
         private void StatusFailed( SparkDataConfig sparkDataConfig )
         {
-            var ncoa = new Ncoa();
-            ncoa.Start( sparkDataConfig );
+            StatusStart( sparkDataConfig );
         }
 
         /// <summary>
@@ -175,15 +196,15 @@ namespace Rock.Jobs
             {
                 if ( !sparkDataConfig.NcoaSettings.IsAckPrice && !sparkDataConfig.NcoaSettings.IsAcceptedTerms )
                 {
-                    throw new Exception( "The NCOA terms of service have not been accepted." );
+                    throw new NoRetryException( "The NCOA terms of service have not been accepted." );
                 }
                 else if ( !sparkDataConfig.NcoaSettings.IsAcceptedTerms )
                 {
-                    throw new Exception( "The NCOA terms of service have not been accepted." );
+                    throw new NoRetryException( "The NCOA terms of service have not been accepted." );
                 }
                 else
                 {
-                    throw new Exception( "The price of the NCOA service has not been acknowledged." );
+                    throw new NoRetryException( "The price of the NCOA service has not been acknowledged." );
                 }
             }
         }
@@ -196,9 +217,10 @@ namespace Rock.Jobs
         private void StatusComplete( SparkDataConfig sparkDataConfig )
         {
             if ( sparkDataConfig.NcoaSettings.IsEnabled &&
-                !sparkDataConfig.NcoaSettings.LastRunDate.HasValue ||
-                ( sparkDataConfig.NcoaSettings.RecurringEnabled &&
-                sparkDataConfig.NcoaSettings.LastRunDate.Value.AddDays( sparkDataConfig.NcoaSettings.RecurrenceInterval ) < RockDateTime.Now ) )
+                (
+                    !sparkDataConfig.NcoaSettings.LastRunDate.HasValue ||
+                    ( sparkDataConfig.NcoaSettings.RecurringEnabled && sparkDataConfig.NcoaSettings.LastRunDate.Value.AddDays( sparkDataConfig.NcoaSettings.RecurrenceInterval ) < RockDateTime.Now )
+                ) )
             {
                 sparkDataConfig.NcoaSettings.CurrentReportStatus = "Start";
                 sparkDataConfig.NcoaSettings.PersonFullName = null;

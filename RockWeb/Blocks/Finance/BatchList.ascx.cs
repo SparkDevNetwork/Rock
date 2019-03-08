@@ -39,8 +39,38 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Detail Page", order: 0 )]
     [BooleanField( "Show Accounting Code", "Should the accounting code column be displayed.", false, "", 1 )]
     [BooleanField( "Show Accounts Column", "Should the accounts column be displayed.", true, "", 2 )]
+    [CodeEditorField( "Summary Lava Template", "The lava template for display the content for summary", CodeEditorMode.Lava, CodeEditorTheme.Rock, order: 3, defaultValue: @"
+         <div class='panel panel-block'>
+            <div class='panel-heading'>
+                <h1 class='panel-title'>Total Results</h1>
+            </div>
+            <div class='panel-body'>
+                {% assign totalAmount = 0 %}
+                {% for batchSummary in BatchSummary %}
+                <div class='row'>
+                    <div class='col-xs-8'>{{ batchSummary.FinancialAccount.Name }}</div>
+                    <div class='col-xs-4 text-right'>{{ batchSummary.TotalAmount | FormatAsCurrency }}</div>
+                </div>
+                {% assign totalAmount = totalAmount | Plus: batchSummary.TotalAmount %}
+                {% endfor %}
+                <div class='row'>
+                    <div class='col-xs-8'><b>Total: </div>
+                    <div class='col-xs-4 text-right'>
+                        {{ totalAmount | FormatAsCurrency }}
+                    </div>
+                </div>
+            </div>
+        </div>
+" )]
+
     public partial class BatchList : RockBlock, IPostBackEventHandler, ICustomGridColumns
     {
+        #region Constants
+
+        private const string SUMMARY_LAVA_TEMPLATE = "SummaryLavaTemplate";
+
+        #endregion
+
         #region Fields
 
         private RockDropDownList ddlAction;
@@ -300,6 +330,20 @@ namespace RockWeb.Blocks.Finance
 
                         break;
                     }
+                case "Contains Source Type":
+                    {
+                        var sourceTypeValueId = e.Value.AsIntegerOrNull();
+                        if ( sourceTypeValueId.HasValue )
+                        {
+                            e.Value = DefinedValueCache.GetValue( sourceTypeValueId.Value );
+                        }
+                        else
+                        {
+                            e.Value = string.Empty;
+                        }
+
+                        break;
+                    }
             }
         }
 
@@ -319,7 +363,8 @@ namespace RockWeb.Blocks.Finance
 
             gfBatchFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             gfBatchFilter.SaveUserPreference( "Campus", campCampus.SelectedValue );
-            gfBatchFilter.SaveUserPreference( "Contains Transaction Type", ddlTransactionType.SelectedValue );
+            gfBatchFilter.SaveUserPreference( "Contains Transaction Type", dvpTransactionType.SelectedValue );
+            gfBatchFilter.SaveUserPreference( "Contains Source Type", dvpSourceType.SelectedValue );
 
             if ( AvailableAttributes != null )
             {
@@ -592,8 +637,8 @@ namespace RockWeb.Blocks.Finance
             ddlStatus.SetValue( statusFilter );
 
             var definedTypeTransactionTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid() );
-            ddlTransactionType.BindToDefinedType( definedTypeTransactionTypes, true );
-            ddlTransactionType.SetValue( gfBatchFilter.GetUserPreference( "Contains Transaction Type" ) );
+            dvpTransactionType.DefinedTypeId = definedTypeTransactionTypes.Id;
+            dvpTransactionType.SetValue( gfBatchFilter.GetUserPreference( "Contains Transaction Type" ) );
 
             var campusi = CampusCache.All();
             campCampus.Campuses = campusi;
@@ -601,6 +646,10 @@ namespace RockWeb.Blocks.Finance
             campCampus.SetValue( gfBatchFilter.GetUserPreference( "Campus" ) );
 
             drpBatchDate.DelimitedValues = gfBatchFilter.GetUserPreference( "Date Range" );
+
+            var definedTypeSourceTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() );
+            dvpSourceType.DefinedTypeId = definedTypeSourceTypes.Id;
+            dvpSourceType.SetValue( gfBatchFilter.GetUserPreference( "Contains Source Type" ) );
 
             BindAttributes();
             AddDynamicControls();
@@ -681,19 +730,18 @@ namespace RockWeb.Blocks.Finance
                 RegisterJavaScriptForGridActions();
 
                 var qryTransactionDetails = financialBatchQry.SelectMany( a => a.Transactions ).SelectMany( a => a.TransactionDetails );
-                var accountSummaryQry = qryTransactionDetails.GroupBy( a => a.Account ).Select( a => new
+                var accountSummaries = qryTransactionDetails.GroupBy( a => a.Account ).Select( a => new
                 {
-                    a.Key.Name,
-                    a.Key.Order,
+                    FinancialAccount = a.Key,
                     TotalAmount = (decimal?)a.Sum( d => d.Amount )
-                } ).OrderBy( a => a.Order );
+                } ).OrderBy( a => a.FinancialAccount.Order )
+                .ToList();
 
-                var summaryList = accountSummaryQry.ToList();
-                var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ?? 0 ) : 0;
-                string currencyFormat = GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0:n}";
-                lGrandTotal.Text = string.Format( currencyFormat, grandTotalAmount );
-                rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = string.Format( currencyFormat, a.TotalAmount ) } ).ToList();
-                rptAccountSummary.DataBind();
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson );
+                mergeFields.Add( "BatchSummary", accountSummaries );
+
+                string lavaTemplate = this.GetAttributeValue( SUMMARY_LAVA_TEMPLATE );
+                lSummary.Text = lavaTemplate.ResolveMergeFields( mergeFields );
             }
             catch ( Exception ex )
             {
@@ -771,39 +819,20 @@ namespace RockWeb.Blocks.Finance
                 qry = qry.Where( b => b.CampusId == campus.Id );
             }
 
+            // filter by batches that contain transactions of the specified source type
+            var sourceTypeValueId = gfBatchFilter.GetUserPreference( "Contains Source Type" ).AsIntegerOrNull();
+            if ( sourceTypeValueId.HasValue )
+            {
+                qry = qry.Where( a => a.Transactions.Any( t => t.SourceTypeValueId == sourceTypeValueId.Value ) );
+            }
+
             // Filter query by any configured attribute filters
             if ( AvailableAttributes != null && AvailableAttributes.Any() )
             {
-                var attributeValueService = new AttributeValueService( rockContext );
-                var parameterExpression = attributeValueService.ParameterExpression;
-
                 foreach ( var attribute in AvailableAttributes )
                 {
                     var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                    if (filterControl == null) continue;
-
-                    var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                    var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                    var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                    if (expression == null) continue;
-
-                    var attributeValues = attributeValueService
-                        .Queryable()
-                        .Where(v => v.Attribute.Id == attribute.Id);
-
-                    var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                    if (filterIsDefault)
-                    {
-                        qry = qry.Where(w =>
-                            !attributeValues.Any(v => v.EntityId == w.Id) ||
-                            filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ));
-                    }
-                    else
-                    {
-                        qry = qry.Where( w =>
-                            filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                    }
+                    qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, batchService, Rock.Reporting.FilterMode.SimpleFilter );
                 }
             }
 

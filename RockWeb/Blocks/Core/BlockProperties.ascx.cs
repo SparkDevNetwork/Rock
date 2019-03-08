@@ -109,54 +109,24 @@ namespace RockWeb.Blocks.Core
             
             try
             {
-                int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-                Block _block = new BlockService( new RockContext() ).Get( blockId );
+                int blockId = PageParameter( "BlockId" ).AsInteger();
+                var _block = BlockCache.Get( blockId );
                 dialogPage.Title = _block.BlockType.Name;
                 dialogPage.SubTitle = string.Format("{0} / Id: {1}", _block.BlockType.Category, blockId);
 
                 if ( _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
-                    var blockType = BlockTypeCache.Get( _block.BlockTypeId );
+                    var blockTypeId = _block.BlockTypeId;
+                    var blockType = BlockTypeCache.Get( blockTypeId );
                     if ( blockType != null && !blockType.IsInstancePropertiesVerified )
                     {
-                        System.Web.UI.Control control = Page.LoadControl( blockType.Path );
-                        if ( control is RockBlock )
+                        using ( var rockContext = new RockContext() )
                         {
-                            using ( var rockContext = new RockContext() )
-                            {
-                                var rockBlock = control as RockBlock;
-                                int? blockEntityTypeId = EntityTypeCache.Get( typeof( Block ) ).Id;
-                                Rock.Attribute.Helper.UpdateAttributes( rockBlock.GetType(), blockEntityTypeId, "BlockTypeId", blockType.Id.ToString(), rockContext );
-                            }
-
-                            blockType.MarkInstancePropertiesVerified( true );
-                        }
-                    }
-
-                    phAttributes.Controls.Clear();
-                    phAdvancedAttributes.Controls.Clear();
-
-                    _block.LoadAttributes();
-                    if ( _block.Attributes != null )
-                    {
-                        foreach ( var attributeCategory in Rock.Attribute.Helper.GetAttributeCategories( _block ) )
-                        {
-                            if ( attributeCategory.Category != null && attributeCategory.Category.Name.Equals( "customsetting", StringComparison.OrdinalIgnoreCase ) )
-                            {
-                            }
-                            else if (attributeCategory.Category != null && attributeCategory.Category.Name.Equals("advanced", StringComparison.OrdinalIgnoreCase))
-                            {
-                                Rock.Attribute.Helper.AddEditControls(
-                                    string.Empty, attributeCategory.Attributes.Select( a => a.Key ).ToList(),
-                                    _block, phAdvancedAttributes, string.Empty, !Page.IsPostBack, new List<string>());
-                            }
-                            else
-                            {
-                                Rock.Attribute.Helper.AddEditControls(
-                                    attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
-                                    attributeCategory.Attributes.Select( a => a.Key ).ToList(),
-                                    _block, phAttributes, string.Empty, !Page.IsPostBack, new List<string>() );
-                            }
+                            string blockTypePath = BlockTypeCache.Get( blockTypeId ).Path;
+                            var blockCompiledType = System.Web.Compilation.BuildManager.GetCompiledType( blockTypePath );
+                            int? blockEntityTypeId = EntityTypeCache.Get( typeof( Block ) ).Id;
+                            bool attributesUpdated = Rock.Attribute.Helper.UpdateAttributes( blockCompiledType, blockEntityTypeId, "BlockTypeId", blockTypeId.ToString(), rockContext );
+                            BlockTypeCache.Get( blockTypeId ).MarkInstancePropertiesVerified( true );
                         }
                     }
                 }
@@ -205,6 +175,15 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack && _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
+                if ( _block.Attributes != null )
+                {
+                    avcAdvancedAttributes.IncludedCategoryNames = new string[] { "advanced" };
+                    avcAdvancedAttributes.AddEditControls( _block );
+
+                    avcAttributes.ExcludedCategoryNames = new string[] { "advanced", "customsetting" };
+                    avcAttributes.AddEditControls( _block );
+                }
+
                 rptProperties.DataSource = GetTabs(_block.BlockType );
                 rptProperties.DataBind();
 
@@ -284,11 +263,8 @@ namespace RockWeb.Blocks.Core
                 block.OutputCacheDuration = 0; //Int32.Parse( tbCacheDuration.Text );
                 rockContext.SaveChanges();
 
-                Rock.Attribute.Helper.GetEditValues( phAttributes, block );
-                if ( phAdvancedAttributes.Controls.Count > 0 )
-                {
-                    Rock.Attribute.Helper.GetEditValues( phAdvancedAttributes, block );
-                }
+                avcAttributes.GetEditValues( block );
+                avcAdvancedAttributes.GetEditValues( block );
 
                 SaveCustomColumnsConfigToViewState();
                 if ( this.CustomGridColumnsConfigState != null && this.CustomGridColumnsConfigState.ColumnsConfig.Any() )
@@ -338,6 +314,13 @@ namespace RockWeb.Blocks.Core
                 }
 
                 block.SaveAttributeValues( rockContext );
+
+                // If this is a page menu block then we need to also flush the LavaTemplateCache for the block ID
+                if ( block.BlockType.Guid == Rock.SystemGuid.BlockType.PAGE_MENU.AsGuid() )
+                {
+                    var cacheKey = string.Format( "Rock:PageMenu:{0}", block.Id );
+                    LavaTemplateCache.Remove( cacheKey );
+                }
 
                 StringBuilder scriptBuilder = new StringBuilder();
 

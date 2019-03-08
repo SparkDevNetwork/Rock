@@ -32,7 +32,7 @@ namespace Rock.Migrations
             Sql( @"UPDATE [dbo].[MetricValue]
 SET [YValue] = (SELECT COUNT(*) 
 FROM [Person]
-WHERE [RecordTypeValueId] = 1),
+WHERE ([RecordTypeValueId] = 1) AND ([RecordStatusValueId] = 3)),
 [MetricValueDateTime] = '" + RockDateTime.Now.ToString( "s" ) +  @"'
 WHERE [Guid] = '34325795-9016-47e9-a9d9-6283d1a84275'" ); // Active Records
 
@@ -41,7 +41,7 @@ SET [YValue] = (SELECT COUNT( DISTINCT(g.[Id]))
 FROM [Person] p
     INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id]
     INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] AND g.[GroupTypeId] = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '790e3215-3b10-442b-af69-616c0dcb998e')
-WHERE [RecordTypeValueId] = 1),
+WHERE ([RecordTypeValueId] = 1) AND ([RecordStatusValueId] = 3)),
 [MetricValueDateTime] = '" + RockDateTime.Now.ToString( "s" ) + @"'
 WHERE [Guid] = '932479dd-9612-4d07-b9cd-9227976cf5dd'" ); //Active Families
 

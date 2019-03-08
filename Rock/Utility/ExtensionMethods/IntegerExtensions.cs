@@ -23,7 +23,6 @@ namespace Rock
     /// </summary>
     public static partial class ExtensionMethods
     {
-
         /// <summary>
         /// Returns a formated string of the memory size.
         /// </summary>
@@ -41,63 +40,62 @@ namespace Rock
         }
 
         /// <summary>
-        /// Units of measure for memory
+        /// Units of measure for memory from bytes to YottaBytes
         /// </summary>
         public enum MemorySizeUnit
         {
             /// <summary>
-            /// The bytes
+            /// Bytes
             /// </summary>
             Bytes,
 
             /// <summary>
-            /// The kb
+            /// KiloBytes
             /// </summary>
             KB,
 
             /// <summary>
-            /// The mb
+            /// MegaBytes
             /// </summary>
             MB,
 
             /// <summary>
-            /// The gb
+            /// GigaBytes
             /// </summary>
             GB,
 
             /// <summary>
-            /// The tb
+            /// TeraBytes
             /// </summary>
             TB,
 
             /// <summary>
-            /// The pb
+            /// PetaBytes
             /// </summary>
             PB,
 
             /// <summary>
-            /// The eb
+            /// ExaBytes
             /// </summary>
             EB,
 
             /// <summary>
-            /// The zb
+            /// ZettaBytes
             /// </summary>
             ZB,
 
             /// <summary>
-            /// The yb
+            /// YottaBytes
             /// </summary>
             YB
         }
 
         /// <summary>
-        /// Returns a formated string of the memory size.
+        /// Returns a formatted string of the memory size.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="decimalPlaces">The decimal places.</param>
         /// <returns></returns>
-        /// <exception cref="System.ArgumentOutOfRangeException">decimalPlaces</exception>
         public static string FormatAsMemorySize( this int value, int decimalPlaces = 0)
         {
             if ( decimalPlaces < 0 )
@@ -135,6 +133,53 @@ namespace Rock
                 SizeSuffixes[mag] );
         }
 
+        /// <summary>
+        /// Returns a formatted string of the memory size.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="decimalPlaces">The decimal places.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException">decimalPlaces</exception>
+        public static string FormatAsMemorySize( this long value, int decimalPlaces = 0 )
+        {
+            if ( decimalPlaces < 0 )
+            {
+                throw new ArgumentOutOfRangeException( "decimalPlaces" );
+            }
+
+            if ( value < 0 )
+            {
+                return "-" + FormatAsMemorySize( -value );
+            }
+
+            if ( value == 0 )
+            {
+                return string.Format( "{0:n" + decimalPlaces + "} bytes", 0 );
+            }
+
+            // mag is 0 for bytes, 1 for KB, 2, for MB, etc.
+            int mag = ( int ) Math.Log( value, 1024 );
+
+            // 1L << (mag * 10) == 2 ^ (10 * mag) 
+            // [i.e. the number of bytes in the unit corresponding to mag]
+            decimal adjustedSize = ( decimal ) value / ( 1L << ( mag * 10 ) );
+
+            // make adjustment when the value is large enough that
+            // it would round up to 1000 or more
+            if ( Math.Round( adjustedSize, decimalPlaces ) >= 1000 )
+            {
+                mag += 1;
+                adjustedSize /= 1024;
+            }
+
+            return string.Format( "{0:n" + decimalPlaces + "} {1}",
+                adjustedSize,
+                SizeSuffixes[mag] );
+        }
+
+        /// <summary>
+        /// Memory size suffixes
+        /// </summary>
         static readonly string[] SizeSuffixes = { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
     }
 }

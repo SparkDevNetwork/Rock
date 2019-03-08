@@ -75,6 +75,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         </div>
     </div>
 {% endif %}", "", 3 )]
+    [LinkedPage( "Export Workflows Page", "Page used to export workflows.", false, "", "", 4 )]
     public partial class WorkflowTypeDetail : RockBlock
     {
         #region Properties
@@ -167,6 +168,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
             LoadDropDowns();
 
+            btnExport.Visible = GetAttributeValue( "ExportWorkflowsPage" ).IsNotNullOrWhiteSpace();
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the workflows of this type!');", WorkflowType.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.WorkflowType ) ).Id;
         }
@@ -519,6 +521,18 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             var qryParams = new Dictionary<string, string>();
             qryParams.Add( "WorkflowTypeId", hfWorkflowTypeId.Value );
             NavigateToLinkedPage( "ManageWorkflowsPage", qryParams );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnExport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnExport_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "WorkflowTypeId", hfWorkflowTypeId.Value );
+            NavigateToLinkedPage( "ExportWorkflowsPage", qryParams );
         }
 
         /// <summary>
@@ -1487,7 +1501,14 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
                     foreach ( var actionType in activityType.ActionTypes.OrderBy( a => a.Order ) )
                     {
-                        actionTypeText += string.Format( "<li>{0} <small class='text-muted'>({1})</small></li>" + Environment.NewLine, actionType.Name, Rock.Workflow.ActionContainer.GetComponentName( actionType.WorkflowAction.ToString() ) );
+                        if ( actionType.WorkflowAction != null )
+                        {
+                            actionTypeText += string.Format( "<li>{0} <small class='text-muted'>({1})</small></li>" + Environment.NewLine, actionType.Name, Rock.Workflow.ActionContainer.GetComponentName( actionType.WorkflowAction.ToString() ) );
+                        }
+                        else
+                        {
+                            actionTypeText += string.Format( "<li>{0} <small class='text-muted'>({1})</small></li>" + Environment.NewLine, actionType.Name, "Missing Component" );
+                        }
                     }
 
                     string actionsTitle = activityType.ActionTypes.Count > 0 ? "Actions:" : "No Actions";
@@ -1659,7 +1680,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 // Remove any fields that were removed
                 foreach ( var formAttribute in formAttributes.ToList() )
                 {
-                    if ( !attributes.ContainsKey( formAttribute.Attribute.Guid ) )
+                    if ( formAttribute.Attribute != null && !attributes.ContainsKey( formAttribute.Attribute.Guid ) )
                     {
                         formAttributes.Remove( formAttribute );
                     }

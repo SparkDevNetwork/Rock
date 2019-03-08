@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Jobs
 {
     /// <summary>
     /// Job to update people/families based on the Data Automation settings.
+    /// Data Automation tasks are tasks that update the status of data.
     /// </summary>
     [DisallowConcurrentExecution]
     public class DataAutomation : IJob
@@ -1569,7 +1570,7 @@ Update Family Status: {updateFamilyStatus}
         {
             var entitySet = new EntitySet();
             entitySet.EntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
-            entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
+            entitySet.ExpireDateTime = RockDateTime.Now.AddDays( 1 );
 
             var service = new EntitySetService( rockContext );
             service.Add( entitySet );

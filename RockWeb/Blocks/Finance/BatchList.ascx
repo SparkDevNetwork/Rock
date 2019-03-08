@@ -18,9 +18,10 @@
                             <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
                             <Rock:DateRangePicker ID="drpBatchDate" runat="server" Label="Date Range" />
                             <Rock:CampusPicker ID="campCampus" runat="server" />
-                            <Rock:RockDropDownList ID="ddlTransactionType" runat="server"  Label="Contains Transaction Type" />
+                            <Rock:DefinedValuePicker ID="dvpTransactionType" runat="server"  Label="Contains Transaction Type" />
                             <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title"></Rock:RockTextBox>
                             <Rock:RockTextBox ID="tbAccountingCode" runat="server" Label="Accounting Code"></Rock:RockTextBox>
+                            <Rock:DefinedValuePicker ID="dvpSourceType" runat="server" Label="Contains Source Type" />
                             <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                         </Rock:GridFilter>
 
@@ -55,27 +56,7 @@
 
             <div class="row">
                 <div class="col-md-4 col-md-offset-8 margin-t-md">
-                    <asp:Panel ID="pnlSummary" runat="server" CssClass="panel panel-block">
-                        <div class="panel-heading">
-                            <h1 class="panel-title">Total Results</h1>
-                        </div>
-                        <div class="panel-body">
-                            <asp:Repeater ID="rptAccountSummary" runat="server">
-                                <ItemTemplate>
-                                    <div class='row'>
-                                        <div class='col-xs-8'><%#Eval("Name")%></div>
-                                        <div class='col-xs-4 text-right'><%#Eval("TotalAmount")%></div>
-                                    </div>
-                                </ItemTemplate>
-                            </asp:Repeater>
-                            <div class='row'>
-                                <div class='col-xs-8'><b>Total: </div>
-                                <div class='col-xs-4 text-right'>
-                                    <asp:Literal ID="lGrandTotal" runat="server" /></b>
-                                </div>
-                            </div>
-                        </div>
-                    </asp:Panel>
+                    <asp:Literal ID="lSummary" runat="server" />
                 </div>
             </div>
             <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" Dismissable="true"></Rock:NotificationBox>

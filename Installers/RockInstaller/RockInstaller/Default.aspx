@@ -7,19 +7,20 @@
 
     void Page_Load( object sender, EventArgs e )
     {
-        
+
     }
  </script>
 
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en">
 <head runat="server">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Rock Installer</title>
-    <link rel='stylesheet' href='//fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css' />
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
-    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 
     <link href="/Styles/rock-installer.css" rel="stylesheet" />
 
@@ -32,14 +33,14 @@
 	        <h1>Rock RMS</h1>
 
             <div id="content-box">
-                
+
                 <h1>Rock Install Test Harness</h1>
 
                 <div class="form-group">
 					<label class="control-label" for="inputEmail">Version To Run</label>
 					<asp:TextBox ID="txtVersion" runat="server" CssClass="required-field form-control" Text="2_7_0"></asp:TextBox>
 				</div>
-							
+
 				<div class="form-group">
 					<label class="control-label" for="cbRunDebug">Run in Debug (highly recommended)</label>
 					<asp:CheckBox ID="cbRunDebug" runat="server" Checked="true" />

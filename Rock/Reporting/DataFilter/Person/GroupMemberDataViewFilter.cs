@@ -170,7 +170,7 @@ namespace Rock.Reporting.DataFilter.Person
         {
             return @"
 function ()
-{    
+{
     var dataViewName = $('.data-view-picker', $content).find(':selected').text();
     var comparisonName = $('.js-filter-compare', $content).find(':selected').text();
     var comparisonCount = $('.js-member-count', $content).val();
@@ -179,7 +179,7 @@ function ()
     result += ' ""' + dataViewName + '""';
     result += ' is ' + comparisonName;
     result += ' ' + comparisonCount;
-    return result; 
+    return result;
 }
 ";
         }
@@ -279,7 +279,7 @@ function ()
             dvpDataView.RenderControl( writer );
 
             // Comparison Row
-            writer.AddAttribute( "class", "row field-criteria" );
+            writer.AddAttribute( "class", "row form-row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Comparison Type
@@ -289,7 +289,7 @@ function ()
             writer.RenderEndTag();
 
             // Comparison Value
-            writer.AddAttribute( "class", "col-md-8" );
+            writer.AddAttribute( "class", "col-md-8 vertical-align-bottom" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             nbValue.RenderControl( writer );
             writer.RenderEndTag();
@@ -379,10 +379,10 @@ function ()
             {
                 memberQuery = DataComponentSettingsHelper.FilterByDataView( memberQuery, dataView, memberService );
             }
-            
+
             //
             // Construct the Query to return the list of People matching the filter conditions.
-            //            
+            //
 
             var personQuery = new PersonService( context ).Queryable();
 

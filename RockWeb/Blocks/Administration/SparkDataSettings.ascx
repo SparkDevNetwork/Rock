@@ -1,10 +1,17 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SparkDataSettings.ascx.cs" Inherits="RockWeb.Blocks.Administration.SparkDataSettings" %>
 
+<script type="text/javascript">
+    function clearActiveDialog() {
+        $('#<%=mdRunNcoa.ClientID %>').val('');
+    }
+</script>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
         <Rock:ModalDialog ID="mdRunNcoa" runat="server" Title="Run NCOA Manually" SaveButtonText="Run" OnSaveClick="mdRunNcoa_SaveClick" OnCancelScript="clearActiveDialog();">
             <Content>
+                <p><asp:Label ID="lbNcoaCount" runat="server"></asp:Label></p>
                 <p>Are you sure you want to run the NCOA service?</p>
                 <small>
                     Note:
@@ -36,20 +43,20 @@
                                         <img src='<%= ResolveRockUrl( "~/Blocks/Administration/Assets/spark.png") %>' class="img-responsive" alt="Spark Data" />
                                     </div>
                                     <div class="col-md-10">
-                                        <h1>Enhance Your Data</h1>
-                                            
+                                        <h2 class="margin-t-none">Enhance Your Data</h2>
+
                                         <p> Spark Data is a set of services that allows you to easily clean and enhance your data with
-                                        little effort. Before you can begin you'll need to get an API key from the Rock RMS website
+                                        little effort. Before you can begin you’ll need to get an API key from the Rock RMS website
                                         and ensure that a credit card is on file for use with paid services.</p>
-                                        <p><a href="https://www.rockrms.com/sparkdatalink">Sign-up Now</a></p>
+                                        <p><a href="https://www.rockrms.com/sparkdatalink" target="_blank">Sign Up Now</a></p>
 
                                         <asp:ValidationSummary ID="vsSignIn" runat="server" HeaderText="Please Correct the Following" ValidationGroup="SignInValidationGroup" CssClass="alert alert-validation" />
                                         <div class="row">
                                             <div class="col-md-6">
-                                                <Rock:RockTextBox ID="txtSparkDataApiKeyLogin" runat="server" Label="Spark Data Api Key" Required="true" ValidationGroup="SignInValidationGroup"/>
+                                                <Rock:RockTextBox ID="txtSparkDataApiKeyLogin" runat="server" Label="Spark Data API Key" Required="true" ValidationGroup="SignInValidationGroup"/>
                                             </div>
                                             <div class="col-md-6">
-                                                <Rock:GroupPicker ID="grpNotificationGroupLogin" runat="server" Label="Notification Group" Help="Members of this group will recieve notifications when specific jobs and tasks complete." />
+                                                <Rock:GroupPicker ID="grpNotificationGroupLogin" runat="server" Label="Notification Group" Help="Members of this group will receive notifications when specific jobs and tasks complete." />
                                             </div>
                                         </div>
                                         <asp:LinkButton ID="btnSaveLogin" runat="server" CssClass="btn btn-primary" OnClick="btnSaveLogin_Click" ValidationGroup="SignInValidationGroup" >Save</asp:LinkButton>
@@ -60,16 +67,16 @@
                     </asp:Panel>
 
                     <asp:Panel ID="pnlSparkDataEdit" runat="server" Visible="false">
-                        <p> For more information about your account, or to update your payment information please visit your organization's profile on the
+                        <p> For more information about your account, or to update your payment information please visit your organization’s profile on the
                         Rock RMS website.</p>
-                        <p><a href="https://www.rockrms.com/sparkdatalink">Organization Profile</a></p>
+                        <p><a href="https://www.rockrms.com/sparkdatalink" target="_blank" >Organization Profile</a></p>
                         <asp:ValidationSummary ID="vsSparkDataEdit" runat="server" HeaderText="Please Correct the Following" ValidationGroup="SparkDataEditValidationGroup" CssClass="alert alert-validation" />
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="txtSparkDataApiKeyEdit" runat="server" Label="Spark Data Api Key" Required="true" ValidationGroup="SparkDataEditValidationGroup" />
+                                <Rock:RockTextBox ID="txtSparkDataApiKeyEdit" runat="server" Label="Spark Data API Key" Required="true" ValidationGroup="SparkDataEditValidationGroup" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:GroupPicker ID="grpNotificationGroupEdit" runat="server" Label="Notification Group" Help="Members of this group will recieve notifications when specific jobs and tasks complete." />
+                                <Rock:GroupPicker ID="grpNotificationGroupEdit" runat="server" Label="Notification Group" Help="Members of this group will receive notifications when specific jobs and tasks complete." />
                             </div>
                         </div>
                         <asp:LinkButton ID="btnSaveEdit" runat="server" CssClass="btn btn-primary" OnClick="btnSaveEdit_Click" ValidationGroup="SparkDataEditValidationGroup" >Save</asp:LinkButton>
@@ -123,7 +130,7 @@
 
                             <div class="row">
                                 <div class="col-md-4">
-                                    <Rock:NumberBox ID="nbNcoaMinMoveDistance" runat="server" AppendText="miles" CssClass="input-width-md" Label="Minimum Move Distance to Inactivate" NumberType="Double" Text="250" Help="Minimum move distance that a person moved before marking the person's account to inactivate" OnTextChanged="nbNcoaMinMoveDistance_TextChanged" AutoPostBack="true" />
+                                    <Rock:NumberBox ID="nbNcoaMinMoveDistance" runat="server" AppendText="miles" CssClass="input-width-md" Label="Minimum Move Distance to Inactivate" NumberType="Double" Text="250" Help="Minimum move distance that a person moved before marking the person's account to inactivate. Leaving the value blank disables this feature." OnTextChanged="nbNcoaMinMoveDistance_TextChanged" AutoPostBack="true" />
                                 </div>
                                 <div class="col-md-4">
                                     <Rock:RockCheckBox ID="cbNcoa48MonAsPrevious" runat="server" Label="Mark 48 Month Move as Previous Addresses" Help="Mark moves in the 19-48 month catagory as a previous address." OnCheckedChanged="cbNcoa48MonAsPrevious_CheckedChanged" AutoPostBack="true" />

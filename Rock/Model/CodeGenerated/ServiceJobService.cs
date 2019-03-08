@@ -92,8 +92,10 @@ namespace Rock.Model
             target.Class = source.Class;
             target.CronExpression = source.CronExpression;
             target.Description = source.Description;
+            target.EnableHistory = source.EnableHistory;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.HistoryCount = source.HistoryCount;
             target.IsActive = source.IsActive;
             target.IsSystem = source.IsSystem;
             target.LastRunDateTime = source.LastRunDateTime;

@@ -175,7 +175,8 @@ namespace Rock.StatementGenerator
         /// <value>
         ///   <c>true</c> if [order by postal code]; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete("Use OrderBy Instead")]
+        [RockObsolete( "1.7.3" )]
+        [Obsolete("Use OrderBy Instead", true)]
         public bool OrderByPostalCode { get; set; } = true;
 
         /// <summary>

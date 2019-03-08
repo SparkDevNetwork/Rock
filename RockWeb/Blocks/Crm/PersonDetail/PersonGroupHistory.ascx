@@ -112,7 +112,7 @@
 
 </style>
 
-<script src="/scripts/rock-swimlanes.js"></script>
+<script src="/scripts/rock-swimlanes.min.js"></script>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>

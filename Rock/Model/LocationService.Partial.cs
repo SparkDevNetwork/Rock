@@ -29,8 +29,8 @@ namespace Rock.Model
     public partial class LocationService
     {
         /// <summary>
-        /// Returns the first
-        /// <see cref="Rock.Model.Location" /> where the address matches the provided address, otherwise the address will be saved as a new location.
+        /// Returns the first <see cref="Rock.Model.Location" /> where the address matches the provided address, otherwise the address will be saved as a new location.
+        /// Note: if <paramref name="street1"/> is blank, null will be returned.
         /// </summary>
         /// <param name="street1">A <see cref="string" /> representing the Address Line 1 to search by.</param>
         /// <param name="street2">A <see cref="string" /> representing the Address Line 2 to search by.</param>
@@ -48,8 +48,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns the first
-        /// <see cref="Rock.Model.Location" /> where the address matches the provided address, otherwise the address will be saved as a new location.
+        /// Returns the first <see cref="Rock.Model.Location" /> where the address matches the provided address, otherwise the address will be saved as a new location.
+        /// Note: if <paramref name="street1"/> is blank, null will be returned.
         /// </summary>
         /// <param name="street1">A <see cref="string" /> representing the Address Line 1 to search by.</param>
         /// <param name="street2">A <see cref="string" /> representing the Address Line 2 to search by.</param>
@@ -63,7 +63,7 @@ namespace Rock.Model
         /// <returns>
         /// The first <see cref="Rock.Model.Location" /> where an address match is found, if no match is found a new <see cref="Rock.Model.Location" /> is created and returned.
         /// </returns>
-        public Location Get( string street1, string street2, string city, string state, string postalCode, string country, Group group, bool verifyLocation = true, bool createNewLocation = true)
+        public Location Get( string street1, string street2, string city, string state, string postalCode, string country, Group group, bool verifyLocation = true, bool createNewLocation = true )
         {
             // Make sure it's not an empty address
             if ( string.IsNullOrWhiteSpace( street1 ) )
@@ -73,13 +73,13 @@ namespace Rock.Model
 
             // Try to find a location that matches the values, this is not a case sensitive match
             var foundLocation = Search( new Location { Street1 = street1, Street2 = street2, City = city, State = state, PostalCode = postalCode, Country = country }, group );
-            if (foundLocation != null)
+            if ( foundLocation != null )
             {
                 // Check for casing 
-                if (!String.Equals(street1, foundLocation.Street1) || !String.Equals( street2, foundLocation.Street2) || !String.Equals(city, foundLocation.City) || !String.Equals( state, foundLocation.State ) || !String.Equals( postalCode , foundLocation.PostalCode) || !String.Equals( country, foundLocation.Country) )
+                if ( !String.Equals( street1, foundLocation.Street1 ) || !String.Equals( street2, foundLocation.Street2 ) || !String.Equals( city, foundLocation.City ) || !String.Equals( state, foundLocation.State ) || !String.Equals( postalCode, foundLocation.PostalCode ) || !String.Equals( country, foundLocation.Country ) )
                 {
                     var context = new RockContext();
-                    var location = new LocationService( context ).Get( foundLocation.Id);
+                    var location = new LocationService( context ).Get( foundLocation.Id );
                     location.Street1 = street1;
                     location.Street2 = street2;
                     location.City = city;
@@ -87,7 +87,7 @@ namespace Rock.Model
                     location.PostalCode = postalCode;
                     location.Country = country;
                     context.SaveChanges();
-                    return Get(location.Guid);
+                    return Get( location.Guid );
                 }
                 return foundLocation;
             }
@@ -417,6 +417,34 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the mapCoordinate from postalcode.
+        /// </summary>
+        /// <param name="postalCode">The postalcode.</param>
+        /// <returns></returns>
+        public MapCoordinate GetMapCoordinateFromPostalCode( string postalCode )
+        {
+            Address.SmartyStreets smartyStreets = new Address.SmartyStreets();
+            string resultMsg = string.Empty;
+            var coordinate =  smartyStreets.GetLocationFromPostalCode( postalCode, out resultMsg );
+            // Log the results of the service
+            if ( !string.IsNullOrWhiteSpace( resultMsg ) )
+            {
+                var rockContext = new RockContext();
+                Model.ServiceLogService logService = new Model.ServiceLogService( rockContext );
+                Model.ServiceLog log = new Model.ServiceLog();
+                log.LogDateTime = RockDateTime.Now;
+                log.Type = "Mapcoordinate from postalcode";
+                log.Name = smartyStreets.TypeName;
+                log.Input = postalCode;
+                log.Result = resultMsg.Left( 200 );
+                log.Success = coordinate != null;
+                logService.Add( log );
+                rockContext.SaveChanges();
+            }
+            return coordinate;
+        }
+
+        /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Location">Locations</see> that are descendants of a <see cref="Rock.Model.Location"/>
         /// </summary>
         /// <param name="parentLocationId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/></param>
@@ -510,32 +538,35 @@ namespace Rock.Model
                 return null;
             }
 
-            // If location is not a campus, check the location's parent locations to see if any of them are a campus
             var location = this.Get( locationId.Value );
             int? campusId = location.CampusId;
-            if ( !campusId.HasValue )
+            if ( campusId.HasValue )
             {
-                var campusLocations = new Dictionary<int, int>();
-                CampusCache.All()
-                    .Where( c => c.LocationId.HasValue )
-                    .Select( c => new
-                    {
-                        CampusId = c.Id,
-                        LocationId = c.LocationId.Value
-                    } )
-                    .ToList()
-                    .ForEach( c => campusLocations.Add( c.CampusId, c.LocationId ) );
+                return campusId;
+            }
 
-                foreach ( var parentLocationId in this.GetAllAncestorIds( locationId.Value ) )
+            // If location is not a campus, check the location's parent locations to see if any of them are a campus
+            var campusLocations = new Dictionary<int, int>();
+            CampusCache.All()
+                .Where( c => c.LocationId.HasValue )
+                .Select( c => new
                 {
-                    campusId = campusLocations
-                        .Where( c => c.Value == parentLocationId )
-                        .Select( c => c.Key )
-                        .FirstOrDefault();
-                    if ( campusId != 0 )
-                    {
-                        return campusId;
-                    }
+                    CampusId = c.Id,
+                    LocationId = c.LocationId.Value
+                } )
+                .ToList()
+                .ForEach( c => campusLocations.Add( c.CampusId, c.LocationId ) );
+
+            foreach ( var parentLocationId in this.GetAllAncestorIds( locationId.Value ) )
+            {
+                campusId = campusLocations
+                    .Where( c => c.Value == parentLocationId )
+                    .Select( c => c.Key )
+                    .FirstOrDefault();
+
+                if ( campusId != 0 )
+                {
+                    return campusId;
                 }
             }
 

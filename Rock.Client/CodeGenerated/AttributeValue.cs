@@ -55,7 +55,7 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string Value { get; set; }
+        public string Value { get; set; } = @"";
 
         /// <summary>
         /// Leave this as NULL to let Rock set this

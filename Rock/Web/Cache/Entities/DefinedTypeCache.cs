@@ -92,6 +92,15 @@ namespace Rock.Web.Cache
         public string Description { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this Defined Type is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsActive { get; private set; }
+
+        /// <summary>
         /// Gets the category.
         /// </summary>
         /// <value>
@@ -228,6 +237,7 @@ namespace Rock.Web.Cache
             CategoryId = definedType.CategoryId;
             Name = definedType.Name;
             Description = definedType.Description;
+            IsActive = definedType.IsActive;
 
             // set definedValueIds to null so it load them all at once on demand
             _definedValueIds = null;

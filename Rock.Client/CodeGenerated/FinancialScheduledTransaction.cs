@@ -59,7 +59,7 @@ namespace Rock.Client
         public string GatewayScheduleId { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
         public DateTime? LastRemindedDate { get; set; }
@@ -83,6 +83,9 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime StartDate { get; set; }
+
+        /// <summary />
+        public string Summary { get; set; }
 
         /// <summary />
         public string TransactionCode { get; set; }
@@ -142,6 +145,7 @@ namespace Rock.Client
             this.NumberOfPayments = source.NumberOfPayments;
             this.SourceTypeValueId = source.SourceTypeValueId;
             this.StartDate = source.StartDate;
+            this.Summary = source.Summary;
             this.TransactionCode = source.TransactionCode;
             this.TransactionFrequencyValueId = source.TransactionFrequencyValueId;
             this.TransactionTypeValueId = source.TransactionTypeValueId;

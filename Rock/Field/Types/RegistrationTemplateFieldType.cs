@@ -23,6 +23,7 @@ using Rock.Model;
 using Rock.Web.UI.Controls;
 using System.Linq;
 using Rock.Web.Cache;
+using System.Data.Entity;
 
 namespace Rock.Field.Types
 {
@@ -49,10 +50,13 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var registrationTemplate = new RegistrationTemplateService( new RockContext() ).GetSelect( guid.Value, a => a.Name );
-                if ( registrationTemplate != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = registrationTemplate;
+                    var registrationTemplate = new RegistrationTemplateService( rockContext ).GetSelect( guid.Value, a => a.Name );
+                    if ( registrationTemplate != null )
+                    {
+                        formattedValue = registrationTemplate;
+                    }
                 }
             }
 
@@ -95,11 +99,11 @@ namespace Rock.Field.Types
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        itemGuid = new RegistrationTemplateService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        itemGuid = new RegistrationTemplateService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
 
-                return itemGuid?.ToString();
+                return itemGuid?.ToString() ?? string.Empty;
             }
 
             return null;

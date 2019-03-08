@@ -32,6 +32,78 @@ namespace Rock.Field.Types
     /// </summary>
     public abstract class SelectFromListFieldType : FieldType
     {
+        #region Configuration
+
+        private const string REPEAT_COLUMNS = "repeatColumns";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = base.ConfigurationKeys();
+            configKeys.Add( REPEAT_COLUMNS );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            List<Control> controls = base.ConfigurationControls();
+
+            var tbRepeatColumns = new NumberBox();
+            tbRepeatColumns.Label = "Columns";
+            tbRepeatColumns.Help = "Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space.";
+            tbRepeatColumns.MinimumValue = "0";
+            tbRepeatColumns.AutoPostBack = true;
+            tbRepeatColumns.TextChanged += OnQualifierUpdated;
+            controls.Add( tbRepeatColumns );
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
+
+            string description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
+            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue("Repeat Columns", description, string.Empty ) );
+
+            if ( controls != null && controls.Count > 0 )
+            {
+                var tbRepeatColumns = controls[0] as NumberBox;
+                configurationValues[REPEAT_COLUMNS].Value = tbRepeatColumns.Visible ? tbRepeatColumns.Text : string.Empty;
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            base.SetConfigurationValues( controls, configurationValues );
+
+            if ( controls != null && controls.Count > 0 && configurationValues != null )
+            {
+                var tbRepeatColumns = controls[0] as NumberBox;
+                tbRepeatColumns.Text = configurationValues.ContainsKey( REPEAT_COLUMNS ) ? configurationValues[REPEAT_COLUMNS].Value : string.Empty;
+            }
+        }
+
+        #endregion Configuration
 
         #region Formatting
 
@@ -50,7 +122,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
             var valueGuidList = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
-            return this.ListSource.Where( a => valueGuidList.Contains( a.Key.AsGuid() ) ).Select( s => s.Value ).ToList().AsDelimited( "," );
+            return this.ListSource.Where( a => valueGuidList.Contains( a.Key.AsGuid() ) ).Select( s => s.Value ).ToList().AsDelimited( ", " );
         }
 
         #endregion
@@ -77,6 +149,11 @@ namespace Rock.Field.Types
         {
             RockCheckBoxList editControl = new RockCheckBoxList { ID = id };
             editControl.RepeatDirection = RepeatDirection.Horizontal;
+
+            if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+            {
+                editControl.RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
+            }
 
             if ( ListSource.Any() )
             {
@@ -236,7 +313,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return values.Select( v => "'" + v + "'" ).ToList().AsDelimited( " or " );
+            return AddQuotes( values.ToList().AsDelimited( "' OR '" ) );
         }
 
         #endregion

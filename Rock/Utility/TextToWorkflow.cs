@@ -34,12 +34,13 @@ namespace Rock.Utility
     public static class TextToWorkflow
     {
         /// <summary>
-        /// Handles a received message
+        /// Handles a received message and sets the response using the Workflow's "SMSResponse" attribute value (if any).
+        /// If a keyword match cannot be found, it returns an 'unrecognized keyword' response message.
         /// </summary>
         /// <param name="toPhone">To phone.</param>
         /// <param name="fromPhone">From phone.</param>
         /// <param name="message">The message.</param>
-        /// <param name="response">The response.</param>
+        /// <param name="response">The response from the Workflow's "SMSResponse" attribute value.</param>
         public static void MessageRecieved( string toPhone, string fromPhone, string message, out string response )
         {
             response = "The keyword you provided was not recognized as a valid keyword.";
@@ -166,8 +167,7 @@ namespace Rock.Utility
 
                     // Check to see if there is a response to return
                     var responseAttribute = workflow.GetAttributeValue( "SMSResponse" );
-                    response = !string.IsNullOrWhiteSpace( responseAttribute ) ? responseAttribute : "We received your message. Thank-you.";
-
+                    response = !string.IsNullOrWhiteSpace( responseAttribute ) ? responseAttribute : string.Empty;
                 }
 
                 // once we find one match stop processing

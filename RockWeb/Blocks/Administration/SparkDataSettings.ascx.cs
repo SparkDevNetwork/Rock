@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Administration
             dvpNcoaPersonDataView.EntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
 
             var inactiveRecordReasonDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
-            dvpNcoaInactiveRecordReason.BindToDefinedType( inactiveRecordReasonDt, true );
+            dvpNcoaInactiveRecordReason.DefinedTypeId = inactiveRecordReasonDt.Id;
         }
 
         /// <summary>
@@ -250,9 +250,23 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnStartNcoa_Click( object sender, EventArgs e )
         {
-            mdRunNcoa.Show();
+            var addresses = new Ncoa().GetAddresses( dvpNcoaPersonDataView.SelectedValue.AsIntegerOrNull() );
+            if ( addresses == null || addresses.Count < SparkDataConfig.NCOA_MIN_ADDRESSES )
+            {
+                mdGridWarning.Show( string.Format( "Only {0} addresses were selected to be processed. NCOA will not run because it is below the minimum of {1} addresses.", addresses.Count, SparkDataConfig.NCOA_MIN_ADDRESSES ), ModalAlertType.Information );
+            }
+            else
+            {
+                lbNcoaCount.Text = addresses.Count.ToString() + " Addresses will be processed by NCOA.";
+                mdRunNcoa.Show();
+            }
         }
 
+        /// <summary>
+        /// Handles the SaveClick event of the mdRunNcoa control. This is the Start NCOA dialog. Save = Start
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdRunNcoa_SaveClick( object sender, EventArgs e)
         {
             Ncoa ncoa = new Ncoa();
@@ -373,11 +387,11 @@ namespace RockWeb.Blocks.Administration
             var enabledLabel = string.Empty;
             if ( enabled )
             {
-                enabledLabel = "<span class='label label-success'>Enabled</span>";
+                enabledLabel = "<span class='label label-success'>Enabled</span> <span class='label label-warning'>$</span>";
             }
             else
             {
-                enabledLabel = "<span class='label label-warning'>Disabled</span>";
+                enabledLabel = "<span class='label label-warning'>Disabled</span> <span class='label label-warning'>$</span>";
             }
 
             panelWidget.Title = string.Format( "<h3 class='panel-title pull-left margin-r-sm'>{0}</h3> {1} ", title, enabledLabel );
@@ -429,7 +443,11 @@ namespace RockWeb.Blocks.Administration
                 nbNcoaRecurrenceInterval.Text = _sparkDataConfig.NcoaSettings.RecurrenceInterval.ToStringSafe();
                 cbNcoaAcceptTerms.Checked = _sparkDataConfig.NcoaSettings.IsAcceptedTerms;
                 cbNcoaAckPrice.Checked = _sparkDataConfig.NcoaSettings.IsAckPrice;
-                dvpNcoaInactiveRecordReason.SetValue( _sparkDataConfig.NcoaSettings.InactiveRecordReasonId );
+                if ( _sparkDataConfig.NcoaSettings.InactiveRecordReasonId.HasValue )
+                {
+                    dvpNcoaInactiveRecordReason.SetValue( _sparkDataConfig.NcoaSettings.InactiveRecordReasonId.Value );
+                }
+
                 nbNcoaCreditCard.Visible = false;
 
                 if ( _sparkDataConfig.NcoaSettings.CurrentReportStatus == null )

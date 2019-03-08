@@ -109,29 +109,12 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;SMITH&apos;,1,2376206,880.85
-        ///&apos;JOHNSON&apos;,2,1857160,688.44
-        ///&apos;WILLIAMS&apos;,3,1534042,568.66
-        ///&apos;BROWN&apos;,4,1380145,511.62
-        ///&apos;JONES&apos;,5,1362755,505.17
-        ///&apos;MILLER&apos;,6,1127803,418.07
-        ///&apos;DAVIS&apos;,7,1072335,397.51
-        ///&apos;GARCIA&apos;,8,858289,318.17
-        ///&apos;RODRIGUEZ&apos;,9,804240,298.13
-        ///&apos;WILSON&apos;,10,783051,290.27
-        ///&apos;MARTINEZ&apos;,11,775072,287.32
-        ///&apos;ANDERSON&apos;,12,762394,282.62
-        ///&apos;TAYLOR&apos;,13,720370,267.04
-        ///&apos;THOMAS&apos;,14,710696,263.45
-        ///&apos;HERNANDEZ&apos;,15,706372,261.85
-        ///&apos;MOORE&apos;,16,698671,259
-        ///&apos;MARTIN&apos;,17,672711,249.37
-        ///&apos;JACKSON&apos;,18,666125,246.93
-        ///&apos;THOMPSON&apos;,19,644368,2 [rest of string was truncated]&quot;;.
+        ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static string _201707311527250_LastName {
+        public static byte[] _201707311527250_LastName {
             get {
-                return ResourceManager.GetString("_201707311527250_LastName", resourceCulture);
+                object obj = ResourceManager.GetObject("_201707311527250_LastName", resourceCulture);
+                return ((byte[])(obj));
             }
         }
         
@@ -1149,6 +1132,293 @@ namespace Rock.Migrations.Migrations {
         public static string _201808062254493_Rollup_0806_ufnCrm_GetFamilyTitleIncludeInactive {
             get {
                 return ResourceManager.GetString("_201808062254493_Rollup_0806_ufnCrm_GetFamilyTitleIncludeInactive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {% assign channelTitleSize  =  ContentChannel | Attribute:&apos;TitleSize&apos; | Default:&apos;h1&apos; %}
+        ///{% assign channelContentAlignment  =  ContentChannel | Attribute:&apos;ContentAlignment &apos; %}
+        ///{% assign channelForegroundColor  =  ContentChannel | Attribute:&apos;ForegroundColor&apos; %}
+        ///{% assign channelBackgroundColor =  ContentChannel | Attribute:&apos;BackgroundColor&apos; %}
+        ///{% assign contentItemStyle = &apos;&apos; %}
+        ///
+        ///{% for item in Items %}
+        ///    {% if channelBackgroundColor != &apos;&apos; %}
+        ///        {% capture contentItemStyle %}{{ contentItemStyle [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201809142151587_ContentComponents_AdUnit {
+            get {
+                return ResourceManager.GetString("_201809142151587_ContentComponents_AdUnit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {% assign channelTitleSize  =  ContentChannel | Attribute:&apos;TitleSize&apos; | Default:&apos;h1&apos; %}
+        ///{% assign channelContentAlignment  =  ContentChannel | Attribute:&apos;ContentAlignment &apos; %}
+        ///{% assign channelForegroundColor  =  ContentChannel | Attribute:&apos;ForegroundColor&apos; %}
+        ///{% assign channelBackgroundColor =  ContentChannel | Attribute:&apos;BackgroundColor&apos; %}
+        ///{% assign contentItemStyle = &apos;&apos; %}
+        ///
+        ///{% for item in Items %}
+        ///    {% if channelBackgroundColor != &apos;&apos; %}
+        ///        {% capture contentItemStyle %}{{ contentItemStyle [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201809142151587_ContentComponents_Card {
+            get {
+                return ResourceManager.GetString("_201809142151587_ContentComponents_Card", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF NOT EXISTS (
+        ///		SELECT *
+        ///		FROM [ContentChannelType]
+        ///		WHERE [Guid] = &apos;BCFE276D-96A3-46E5-BF9F-7B68CC44DA33&apos;
+        ///		)
+        ///	INSERT INTO [ContentChannelType] (
+        ///		[IsSystem]
+        ///		,[Name]
+        ///		,[DateRangeType]
+        ///		,[DisablePriority]
+        ///        ,[ShowInChannelList]
+        ///		,[Guid]
+        ///		)
+        ///	VALUES (
+        ///		1
+        ///		,&apos;Content Component&apos;
+        ///		,3
+        ///		,0
+        ///        ,0
+        ///		,&apos;BCFE276D-96A3-46E5-BF9F-7B68CC44DA33&apos;
+        ///		)
+        ///
+        ///DECLARE @ContentComponentContentChannelTypeId INT = (
+        ///		SELECT TOP 1 [Id]
+        ///		FROM [ContentChannelType]
+        ///		WHERE Guid = &apos;BCFE276 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201809142151587_ContentComponents_CreateContentComponentChannelType {
+            get {
+                return ResourceManager.GetString("_201809142151587_ContentComponents_CreateContentComponentChannelType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {% assign channelTitleSize  =  ContentChannel | Attribute:&apos;TitleSize&apos; | Default:&apos;h1&apos; %}
+        ///{% assign channelContentAlignment  =  ContentChannel | Attribute:&apos;ContentAlignment &apos; %}
+        ///{% assign channelForegroundColor  =  ContentChannel | Attribute:&apos;ForegroundColor&apos; %}
+        ///{% assign channelBackgroundColor =  ContentChannel | Attribute:&apos;BackgroundColor&apos; %}
+        ///{% assign contentItemStyle = &apos;&apos; %}
+        ///
+        ///{% for item in Items %}
+        ///    {% if channelBackgroundColor != &apos;&apos; %}
+        ///        {% capture contentItemStyle %}{{ contentItemStyle [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201809142151587_ContentComponents_Hero {
+            get {
+                return ResourceManager.GetString("_201809142151587_ContentComponents_Hero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {% assign channelTitleSize  =  ContentChannel | Attribute:&apos;TitleSize&apos; | Default:&apos;h1&apos; %}
+        ///{% assign channelContentAlignment  =  ContentChannel | Attribute:&apos;ContentAlignment &apos; %}
+        ///{% assign channelForegroundColor  =  ContentChannel | Attribute:&apos;ForegroundColor&apos; %}
+        ///{% assign channelBackgroundColor =  ContentChannel | Attribute:&apos;BackgroundColor&apos; %}
+        ///{% assign contentItemStyle = &apos;&apos; %}
+        ///
+        ///{% for item in Items %}
+        ///    {% if channelBackgroundColor != &apos;&apos; %}
+        ///        {% capture contentItemStyle %}{{ contentItemStyle [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201809142151587_ContentComponents_SideBySide {
+            get {
+                return ResourceManager.GetString("_201809142151587_ContentComponents_SideBySide", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure returns a data set used by the Rock eRA job to add/remove
+        ///		people from being an eRA. It should not be modified as it will be updated in the
+        ///		future to meet additional requirements.
+        ///
+        ///		The goal of the query is to return both those that meet the eRA requirements as well
+        ///		as those that are marked as already being an eRA and the criteria to ensure that
+        ///		they still should be an era.
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		For eRA we only consider adults for the c [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201809252117562_Rollup_0925_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_201809252117562_Rollup_0925_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the attendance data needed for the Attendance Badge. If no family role (adult/child)
+        ///		is given it is looked up.  If the individual is an adult it will return family attendance if it&apos;s a child
+        ///		it will return the individual&apos;s attendance. If a person is in two families once as a child once as an
+        ///		adult it will pick the first role it finds.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* AttendanceCount
+        ///		* SundaysInMonth
+        ///		* Month
+        ///		* Year
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;P [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201810021839212_Rollup_1002_spCheckin_BadgeAttendance {
+            get {
+                return ResourceManager.GetString("_201810021839212_Rollup_1002_spCheckin_BadgeAttendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 
+        ///IF ( SELECT COUNT([Id]) FROM BinaryFile WHERE [Guid] = &apos;106A393A-6D98-4348-8658-E0F4573477B8&apos; ) = 0
+        ///BEGIN
+        ///    INSERT INTO BinaryFile(
+        ///	      [IsTemporary]
+        ///	    , [IsSystem]
+        ///	    , [BinaryFileTypeId]
+        ///	    , [FileName]
+        ///	    , [MimeType]
+        ///	    , [Description]
+        ///	    , [StorageEntityTypeId]
+        ///	    , [Guid]
+        ///	    , [StorageEntitySettings]
+        ///	    , [Path]
+        ///	    , [FileSize]
+        ///    )
+        ///    VALUES (
+        ///	      0 --[IsTemporary]
+        ///	    , 0 --[IsSystem]
+        ///	    , (SELECT [Id] FROM [BinaryFileType] WHERE [Guid] = &apos;DE0E5C [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201810161814574_Rollup_1016_AddCheck_inLabelToInstallIconFont {
+            get {
+                return ResourceManager.GetString("_201810161814574_Rollup_1016_AddCheck_inLabelToInstallIconFont", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure attempts to update an indivdiual&apos;s first and second visit
+        ///		attributes. Below are a few points of interest on the logic.
+        ///
+        ///		+ A child&apos;s date will only be calculated looking at their check-in data.
+        ///		+ An adult&apos;s date will be calculated looking at the check-in data of all the children.
+        ///
+        ///		+ When calculating a first-visit date it will only write the date if the first checkin date
+        ///		  is within 14 days of the record being created. This helps eliminate bad  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201810161814574_Rollup_1016_spCrm_FamilyAnalyticsFirstVisitsAttributeUpdate {
+            get {
+                return ResourceManager.GetString("_201810161814574_Rollup_1016_spCrm_FamilyAnalyticsFirstVisitsAttributeUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns any person ids for people that have attended previously but who have not attended since the beginning date
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId 
+        ///		* SundayDate - Last time attended
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeIds&apos; datatype=&apos;varchar(max)&apos;&gt;The Group Type Ids (only attendance for these group types will be included&lt;/param&gt;
+        ///	&lt;param name=&apos;StartDateTime&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///	&lt;param name=&apos;GroupIds&apos; datatype=&apos;varchar( [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201810301818354_Rollup_1030_spCheckin_AttendanceAnalyticsQuery_NonAttendees {
+            get {
+                return ResourceManager.GetString("_201810301818354_Rollup_1030_spCheckin_AttendanceAnalyticsQuery_NonAttendees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///ALTER PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///	  @AccountId int
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmountPledged decimal(18,2) = NULL
+        ///	, @MaxAmountPledged decimal(18,2) = NULL
+        ///	, @MinComplete decimal(18,2) = NULL
+        ///	, @MaxComplete decimal(18,2) = NULL
+        ///	, @MinAmountGiven decimal(18,2) = NULL
+        ///	, @MaxAmountGiven decimal(18,2) = NULL
+        ///	, @IncludeP [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Down {
+            get {
+                return ResourceManager.GetString("_201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Down", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///ALTER PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///	  @AccountId int
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmountPledged decimal(18,2) = NULL
+        ///	, @MaxAmountPledged decimal(18,2) = NULL
+        ///	, @MinComplete decimal(18,2) = NULL
+        ///	, @MaxComplete decimal(18,2) = NULL
+        ///	, @MinAmountGiven decimal(18,2) = NULL
+        ///	, @MaxAmountGiven decimal(18,2) = NULL
+        ///	, @IncludeP [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Up {
+            get {
+                return ResourceManager.GetString("_201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Up", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortCode] 
+        ///SET [Markup] = &apos;{% javascript url:&apos;&apos;~/Scripts/moment.min.js&apos;&apos; id:&apos;&apos;moment&apos;&apos;%}{% endjavascript %}
+        ///{% javascript url:&apos;&apos;~/Scripts/Chartjs/Chart.min.js&apos;&apos; id:&apos;&apos;chartjs&apos;&apos;%}{% endjavascript %}
+        ///
+        ///{% assign id = uniqueid %}
+        ///{% assign curvedlines = curvedlines | AsBoolean %}
+        ///
+        ///{% assign dataitemCount = dataitems | Size -%}
+        ///{% if dataitemCount &gt; 0 -%}
+        ///    {% assign fillColors = dataitems | Map:&apos;&apos;fillcolor&apos;&apos; | Join:&apos;&apos;&quot;, &quot;&apos;&apos; | Prepend:&apos;&apos;[&quot;&apos;&apos; | Append:&apos;&apos;&quot;]&apos;&apos; %}
+        ///    {% assign borderColors = [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201812111901295_Rollup_1211_FixChartShortcode {
+            get {
+                return ResourceManager.GetString("_201812111901295_Rollup_1211_FixChartShortcode", resourceCulture);
             }
         }
     }

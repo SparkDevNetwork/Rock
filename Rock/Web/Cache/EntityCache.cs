@@ -129,6 +129,16 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the Id for the cache object, or NULL if it doesn't exist
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns></returns>
+        public static int? GetId( Guid guid )
+        {
+            return Get( guid, null )?.Id;
+        }
+
+        /// <summary>
         /// Gets the cached object by guid using the included RockContext if needed.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
@@ -183,6 +193,7 @@ namespace Rock.Web.Cache
         /// <param name="id">The identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete("Use Get instead")]
         public static T Read( int id, RockContext rockContext = null )
         {
@@ -195,6 +206,7 @@ namespace Rock.Web.Cache
         /// <param name="guid">The unique identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Get instead" )]
         public static T Read( Guid guid, RockContext rockContext = null )
         {
@@ -206,6 +218,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="model">The model.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Get instead" )]
         public static T Read( TT model )
         {
@@ -216,6 +229,7 @@ namespace Rock.Web.Cache
         /// Flushes the specified identifier.
         /// </summary>
         /// <param name="id">The identifier.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use FlushItem or Remove instead" )]
         public static void Flush( int id )
         {
@@ -272,7 +286,7 @@ namespace Rock.Web.Cache
             var allValues = new List<T>();
             foreach ( var key in cachedKeys.ToList() )
             {
-                var value = Get( key.AsInteger() );
+                var value = Get( key.AsInteger(), rockContext );
                 if ( value != null )
                 {
                     allValues.Add( value );

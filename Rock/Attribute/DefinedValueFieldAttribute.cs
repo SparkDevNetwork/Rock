@@ -31,6 +31,15 @@ namespace Rock.Attribute
         private const string ENHANCED_SELECTION_KEY = "enhancedselection";
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="DefinedValueFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public DefinedValueFieldAttribute( string name )
+            : this(  "", name )
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="DefinedValueFieldAttribute" /> class.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type GUID.</param>
@@ -63,27 +72,90 @@ namespace Rock.Attribute
         public DefinedValueFieldAttribute( string definedTypeGuid, string name, string description, bool required, bool allowMultiple, bool enhanced, string defaultValue, string category, int order, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.DefinedValueFieldType ).FullName )
         {
-            var definedType = DefinedTypeCache.Get( new Guid( definedTypeGuid ) );
-            if ( definedType != null )
+            this.DefinedTypeGuid = definedTypeGuid;
+            this.AllowMultiple = allowMultiple;
+            this.Enhanced = enhanced;
+            if ( string.IsNullOrWhiteSpace( Name ) )
             {
-                var definedTypeConfigValue = new Field.ConfigurationValue( definedType.Id.ToString() );
-                FieldConfigurationValues.Add( DEFINED_TYPE_KEY, definedTypeConfigValue );
+                this.Name = DefinedValueCache.Get( definedTypeGuid.AsGuid() )?.Value;
+            }
 
-                var allowMultipleConfigValue = new Field.ConfigurationValue( allowMultiple.ToString() );
-                FieldConfigurationValues.Add( ALLOW_MULTIPLE_KEY, allowMultipleConfigValue );
+            if ( string.IsNullOrWhiteSpace( Key ) )
+            {
+                Key = Name?.Replace( " ", string.Empty );
+            }
 
-                var enhancedConfigValue = new Field.ConfigurationValue( enhanced.ToString() );
-                FieldConfigurationValues.Add( ENHANCED_SELECTION_KEY, enhancedConfigValue );
+        }
 
-                if ( string.IsNullOrWhiteSpace( Name ) )
+        /// <summary>
+        /// Gets or sets the defined type unique identifier.
+        /// </summary>
+        /// <value>
+        /// The defined type unique identifier.
+        /// </value>
+        public string DefinedTypeGuid
+        {
+            get
+            {
+                int? definedTypeId = FieldConfigurationValues.GetValueOrNull( DEFINED_TYPE_KEY ).AsIntegerOrNull();
+                if ( definedTypeId.HasValue )
                 {
-                    Name = definedType.Name;
+                    return DefinedTypeCache.Get( definedTypeId.Value )?.Guid.ToString();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            set
+            {
+                var definedTypeGuid = value.AsGuidOrNull();
+                int? definedTypeId = null;
+                if ( definedTypeGuid.HasValue )
+                {
+                    definedTypeId = DefinedTypeCache.GetId( definedTypeGuid.Value );
                 }
 
-                if ( string.IsNullOrWhiteSpace( Key ) )
-                {
-                    Key = Name.Replace( " ", string.Empty );
-                }
+                FieldConfigurationValues.AddOrReplace( DEFINED_TYPE_KEY, new Field.ConfigurationValue( definedTypeId?.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [allow multiple].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow multiple]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowMultiple
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( ALLOW_MULTIPLE_KEY ).AsBoolean();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="DefinedValueFieldAttribute"/> is will use the enhanced defined value picker.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if enhanced; otherwise, <c>false</c>.
+        /// </value>
+        public bool Enhanced
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( ENHANCED_SELECTION_KEY ).AsBoolean();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ENHANCED_SELECTION_KEY, new Field.ConfigurationValue( value.ToString() ) );
             }
         }
     }

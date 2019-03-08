@@ -102,6 +102,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     updateMessages.Add( "Font Awesome Pro Package updated" );
                     btnInstallUpdate.Text = "Update";
+                    RockTheme.CompileAll();
                 }
             }
 

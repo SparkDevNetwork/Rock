@@ -53,6 +53,14 @@ namespace Rock.Web.UI.Controls
         public IOrderedDictionary RowKeyValues { get; private set; }
 
         /// <summary>
+        /// Gets the row.
+        /// </summary>
+        /// <value>
+        /// The row.
+        /// </value>
+        public GridViewRow Row { get; private set; }
+
+        /// <summary>
         /// Gets the row key id
         /// Usually the Id value of the data in the row
         /// </summary>
@@ -72,6 +80,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="row">The row.</param>
         public RowEventArgs( GridViewRow row )
         {
+            this.Row = row;
             if ( row != null )
             {
                 RowIndex = row.RowIndex;

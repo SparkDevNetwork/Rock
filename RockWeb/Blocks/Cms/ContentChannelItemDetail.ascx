@@ -73,7 +73,7 @@
                                                 <input id="slugId" class="js-slug-id" type="hidden" value="<%# Eval("Id") %>" />
                                                 <span class="js-slug-literal"><%# Eval("Slug") %></span>
                                                 <div class="rollover-item actions pull-right">
-                                                    <a class="js-slug-edit" href="#"><i class="fa fa-pencil"></i></a>
+                                                    <a class="js-slug-edit margin-r-md" href="#"><i class="fa fa-pencil"></i></a>
                                                     <a class="js-slug-remove" href="#"><i class="fa fa-close"></i></a>
                                                 </div>
                                             </div>
@@ -182,7 +182,7 @@
                         </Rock:Grid>
                     </div>
                     <div id="divParentItems" runat="server" class="tab-pane">
-                        <Rock:Grid ID="gParentItems" runat="server" DisplayType="Light" EmptyDataText="No Child Items" RowItemText="Parent Item" OnRowSelected="gParentItems_RowSelected">
+                        <Rock:Grid ID="gParentItems" runat="server" DisplayType="Light" EmptyDataText="No Parent Items" RowItemText="Parent Item" OnRowSelected="gParentItems_RowSelected">
                             <Columns>
                                 <Rock:RockBoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
                                 <Rock:DateField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" ColumnPriority="Desktop" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left" />

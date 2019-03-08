@@ -89,9 +89,30 @@ namespace Rock.SystemGuid
         public const string PERSON_GIVING_ENVELOPE_NUMBER = "76C33FBC-8799-4DF1-B2FE-A6C41AC3DD49";
 
         /// <summary>
+        /// The person attribute for the dominant gifts
+        /// </summary>
+        public const string PERSON_DOMINANT_GIFTS = "F76FC75E-B33F-42B8-B360-15BA9A1F0F9A";
+
+        /// <summary>
+        /// The person attribute for the supportive gifts
+        /// </summary>
+        public const string PERSON_SUPPORTIVE_GIFTS = "0499E359-3A7B-4138-A3EE-44CBF9750E33";
+
+        /// <summary>
+        /// The person attribute for the other gifts
+        /// </summary>
+        public const string PERSON_OTHER_GIFTS = "F33EC30E-7E5C-488E-AB48-81977CCFB185";
+
+        /// <summary>
+        /// The person attribute for the spiritual gifts
+        /// </summary>
+        public const string PERSON_SPIRITUAL_GIFTS_LAST_SAVE_DATE = "3668547C-3DC4-450B-B92D-4B98A693A371";
+
+        /// <summary>
         /// The family attribute for storing a family's checkin identifiers
         /// </summary>
         ///
+        [RockObsolete( "1.8" )]
         [Obsolete( "Check-in identifiers are no longer stored as a family attribute. They are stored as a PersonSearchValue.")]
         public const string FAMILY_CHECKIN_IDENTIFIERS = "8F528431-A438-4488-8DC3-CA42E66C1B37";
 
@@ -101,7 +122,7 @@ namespace Rock.SystemGuid
         /// The eRA Currently an eRA attribute
         /// </summary>
         public const string PERSON_ERA_CURRENTLY_AN_ERA = "CE5739C5-2156-E2AB-48E5-1337C38B935E";
-        
+
         /// <summary>
         /// The eRA start date attribute
         /// </summary>
@@ -193,7 +214,7 @@ namespace Rock.SystemGuid
         public const string DEFINED_VALUE_FUNDRAISING_DONATE_BUTTON_TEXT = "7ACD6580-0E5B-4407-BC8B-1BBBAF443B1E";
 
         #endregion
-        
+
         #region BIO Block
 
         /// <summary>
@@ -202,5 +223,24 @@ namespace Rock.SystemGuid
         public const string BIO_WORKFLOWACTION = "7197A0FB-B330-43C4-8E62-F3C14F649813";
 
         #endregion
+
+        #region File Type Lists
+
+        /// <summary>
+        /// Global attribute of image file type extensions that should be allowed.
+        /// </summary>
+        public const string CONTENT_IMAGE_FILETYPE_WHITELIST = "0F842054-7629-419F-BC72-90BDDE9F3676";
+
+        /// <summary>
+        /// Global attribute of file type extensions that should never be allowed. Has precedence over other lists.
+        /// </summary>
+        public const string CONTENT_FILETYPE_BLACKLIST = "9FFB15C1-AA53-4FBA-A480-64C9B348C5E5";
+
+        /// <summary>
+        /// The content filetype whitelist. Has a lower precedence than CONTENT_FILETYPE_BLACKLIST
+        /// </summary>
+        public const string CONTENT_FILETYPE_WHITELIST = "B895B6D7-BA21-45C0-8913-EF47FAAD69B1";
+
+        #endregion File Type Lists
     }
 }

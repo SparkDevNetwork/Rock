@@ -165,7 +165,7 @@ namespace Rock.Reporting.DataFilter.Group
         {
             return @"
 function ()
-{    
+{
     var dataViewName = $('.rock-drop-down-list,select:first', $content).find(':selected').text();
     var comparisonName = $('.js-filter-compare', $content).find(':selected').text();
     var comparisonCount = $('.js-member-count', $content).val();
@@ -174,7 +174,7 @@ function ()
     result += ' ""' + dataViewName + '""';
     result += ' ' + comparisonName;
     result += ' ' + comparisonCount;
-    return result; 
+    return result;
 }
 ";
         }
@@ -214,7 +214,7 @@ function ()
         private const string _CtlDataView = "dvpDataView";
         private const string _CtlComparison = "ddlComparison";
         private const string _CtlMemberCount = "nbMemberCount";
-        
+
         private const ComparisonType CountComparisonTypesSpecifier =
             ComparisonType.EqualTo |
             ComparisonType.NotEqualTo |
@@ -275,7 +275,7 @@ function ()
             dvpDataView.RenderControl( writer );
 
             // Comparison Row
-            writer.AddAttribute( "class", "row field-criteria" );
+            writer.AddAttribute( "class", "row form-row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Comparison Type
@@ -285,7 +285,7 @@ function ()
             writer.RenderEndTag();
 
             // Comparison Value
-            writer.AddAttribute( "class", "col-md-8" );
+            writer.AddAttribute( "class", "col-md-8 vertical-align-bottom" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             nbValue.RenderControl( writer );
             writer.RenderEndTag();
@@ -378,7 +378,7 @@ function ()
 
             //
             // Construct the Query to return the list of Groups matching the filter conditions.
-            //            
+            //
             var comparisonType = settings.PersonCountComparison;
             int memberCountValue = settings.PersonCount;
 

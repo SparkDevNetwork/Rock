@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Fundraising
                 // Setup for being able to copy text to clipboard
                 RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
                 string script = string.Format( @"
-    new Clipboard('#{0}');
+    new ClipboardJS('#{0}');
     $('#{0}').tooltip();
 ", btnCopyToClipboard.ClientID );
                 ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
@@ -215,6 +215,7 @@ namespace RockWeb.Blocks.Fundraising
         private void CreateDynamicControls( GroupMember groupMember )
         {
             groupMember.LoadAttributes();
+            groupMember.Group.LoadAttributes();
             // GroupMember Attributes (all of them)
             phGroupMemberAttributes.Controls.Clear();
 
@@ -459,7 +460,7 @@ namespace RockWeb.Blocks.Fundraising
 
             mergeFields.Add( "AmountLeft", amountLeft );
             mergeFields.Add( "PercentMet", percentMet );
-         
+
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "GroupId", hfGroupId.Value );
             queryParams.Add( "GroupMemberId", hfGroupMemberId.Value );
@@ -593,9 +594,12 @@ namespace RockWeb.Blocks.Fundraising
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gContributions_RowDataBound( object sender, GridViewRowEventArgs e )
         {
+			var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
+            int groupMemberId = hfGroupMemberId.Value.AsInteger();
+			
             FinancialTransaction financialTransaction = e.Row.DataItem as FinancialTransaction;
-            if ( financialTransaction != null && 
-                financialTransaction.AuthorizedPersonAlias != null && 
+            if ( financialTransaction != null &&
+                financialTransaction.AuthorizedPersonAlias != null &&
                 financialTransaction.AuthorizedPersonAlias.Person != null )
             {
 	            Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;
@@ -611,6 +615,16 @@ namespace RockWeb.Blocks.Fundraising
 	            {
 	                lPersonName.Text = financialTransaction.ShowAsAnonymous ? "Anonymous" : financialTransaction.AuthorizedPersonAlias.Person.FullName;
 	            }
+				
+				Literal lTransactionDetailAmount = e.Row.FindControl( "lTransactionDetailAmount" ) as Literal;
+                if ( lTransactionDetailAmount != null )
+                {
+					var amount = financialTransaction.TransactionDetails
+                        .Where( d => d.EntityTypeId.HasValue && d.EntityTypeId == entityTypeIdGroupMember && d.EntityId == groupMemberId )
+                        .Sum( d => ( decimal? ) d.Amount )
+                        .ToString();
+                    lTransactionDetailAmount.Text = string.Format( "${0}", amount );
+                }
 	        }
         }
 

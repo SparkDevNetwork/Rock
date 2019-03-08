@@ -375,6 +375,24 @@ namespace Rock.Web.Cache
         public bool ShowMaritalStatus { get; private set; }
 
         /// <summary>
+        /// Gets or sets the administrator term for the group of this GroupType.
+        /// </summary>
+        /// <value>
+        /// The administrator term for the group of this GroupType.
+        /// </value>
+        [DataMember]
+        public string AdministratorTerm { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether administrator for the group of this GroupType will be shown.
+        /// </summary>
+        /// <value>
+        ///   A <see cref="System.Boolean"/> value that is <c>true</c> if administrator for the group of this GroupType will be shown; otherwise <c>false</c>.
+        /// </value>
+        [DataMember( IsRequired = true )]
+        public bool ShowAdministrator { get; private set; }
+
+        /// <summary>
         /// Gets or sets the roles.
         /// </summary>
         /// <value>
@@ -635,6 +653,8 @@ namespace Rock.Web.Cache
             EnableGroupHistory = groupType.EnableGroupHistory;
             GroupTypeColor = groupType.GroupTypeColor;
             ShowMaritalStatus = groupType.ShowMaritalStatus;
+            AdministratorTerm = groupType.AdministratorTerm;
+            ShowAdministrator = groupType.ShowAdministrator;
             GroupStatusDefinedTypeId = groupType.GroupStatusDefinedTypeId;
         }
 
@@ -654,6 +674,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete("Use Get Instead")]
         public static GroupTypeCache Read( string guid )
         {

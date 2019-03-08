@@ -76,6 +76,7 @@
                                 <Rock:PersonPicker ID="ppPerson" runat="server" Label="Registered By" OnSelectPerson="ppPerson_SelectPerson" EnableSelfSelection="true" />
                                 <Rock:EmailBox ID="ebConfirmationEmail" runat="server" Label="Confirmation Email" />
                                 <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Target Group" />
+                                <Rock:AttributeValuesContainer ID="avcEditAttributes" runat="server" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbFirstName" runat="server" Label="Registered by First Name" Required="true" />
@@ -109,6 +110,7 @@
                                 <asp:LinkButton ID="lbResendConfirmation" runat="server" CssClass="btn btn-default btn-xs margin-b-sm" Text="Resend Confirmation" OnClick="lbResendConfirmation_Click" CausesValidation="false"></asp:LinkButton>
                                 <Rock:NotificationBox ID="nbConfirmationQueued" runat="server" NotificationBoxType="Success" Text="A new confirmation email has been sent." Visible="false" Dismissable="true"  />
                                 <Rock:RockLiteral ID="lGroup" runat="server" Label="Target Group" />
+                                <Rock:AttributeValuesContainer ID="avcDisplayAttributes" runat="server" />
                             </div>
                             <div class="col-md-6">
 
@@ -168,7 +170,7 @@
 
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <asp:LinkButton ID="lbViewPaymentDetails" runat="server" CssClass="btn btn-link pull-right" Text="View/Edit Payments" OnClick="lbViewPaymentDetails_Click" CausesValidation="false"></asp:LinkButton>
+                                            <asp:LinkButton ID="lbViewPaymentDetails" runat="server" CssClass="btn btn-link pull-right" Text="Payment Details" OnClick="lbViewPaymentDetails_Click" CausesValidation="false"></asp:LinkButton>
                                         </div>
                                     </div>
 
@@ -187,8 +189,8 @@
                                     </asp:PlaceHolder>
 
                                     <asp:PlaceHolder ID="phManualDetails" runat="server">
-                                        <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
-                                        <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
+                                        <Rock:DefinedValuePicker ID="dvpCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="dvpCurrencyType_SelectedIndexChanged" />
+                                        <Rock:DefinedValuePicker ID="dvpCreditCardType" runat="server" Label="Credit Card Type" />
                                         <Rock:RockTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code" />
                                     </asp:PlaceHolder>
 
@@ -240,6 +242,7 @@
 
                                     <div class="row">
                                         <div class="col-md-12">
+                                            <Rock:NotificationBox ID="nbNoAssociatedPerson" runat="server" CssClass="margin-t-md" NotificationBoxType="Info" Text="In order to process a payment you will need to link this registration to an individual." Visible="false" />
                                             <asp:LinkButton ID="lbProcessPayment" runat="server" CssClass="btn btn-primary btn-xs margin-t-sm" Text="Process New Payment" OnClick="lbProcessPayment_Click" CausesValidation="false"></asp:LinkButton>
                                             <asp:LinkButton ID="lbAddPayment" runat="server" CssClass="btn btn-default btn-xs margin-t-sm margin-l-sm" Text="Add Manual Payment" OnClick="lbAddPayment_Click" CausesValidation="false"></asp:LinkButton>
                                             <asp:LinkButton ID="lbCancelPaymentDetails" runat="server" Text="Cancel" CssClass="btn btn-link pull-right" OnClick="lbCancelPaymentDetails_Click" CausesValidation="false" />

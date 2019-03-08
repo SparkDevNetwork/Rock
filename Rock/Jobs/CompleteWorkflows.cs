@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -63,11 +64,13 @@ namespace Rock.Jobs
             int? expirationAge = dataMap.GetString( "ExpirationAge" ).AsIntegerOrNull();
             string closeStatus = dataMap.GetString( "CloseStatus" );
 
-            RockContext rockContext = new RockContext();
+            var rockContext = new RockContext();
             var workflowService = new WorkflowService( rockContext );
 
-            var qry = workflowService.Queryable()
-                        .Where( w => workflowTypeGuids.Contains( w.WorkflowType.Guid ) );
+            var qry = workflowService.Queryable().AsNoTracking()
+                        .Where( w => workflowTypeGuids.Contains( w.WorkflowType.Guid )
+                                     && w.ActivatedDateTime.HasValue
+                                     && !w.CompletedDateTime.HasValue );
 
             if ( expirationAge.HasValue )
             {
@@ -75,17 +78,28 @@ namespace Rock.Jobs
                 qry = qry.Where(w => w.CreatedDateTime <= expirationDate );
             }
 
-            var workflows = qry.ToList();
+            // Get a list of workflows to expire so we can open a new context in the loop
+            var workflowIds = qry.Select( w => w.Id ).ToList();
 
-            foreach(var workflow in workflows )
+            foreach(var workflowId in workflowIds )
             {
+                rockContext = new RockContext();
+                workflowService = new WorkflowService( rockContext );
+
+                var workflow = workflowService.Get( workflowId );
+
+                if ( workflow.IsNull() )
+                {
+                    continue;
+                }
+
                 workflow.MarkComplete();
                 workflow.Status = closeStatus;
 
                 rockContext.SaveChanges();
             }
 
-            context.Result = string.Format("{0} workflows were closed", workflows.Count);
+            context.Result = string.Format("{0} workflows were closed", workflowIds.Count);
         }
 
     }

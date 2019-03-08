@@ -477,36 +477,10 @@ namespace RockWeb.Blocks.Connection
                 // Filter query by any configured attribute filters
                 if ( AvailableAttributes != null && AvailableAttributes.Any() )
                 {
-                    var attributeValueService = new AttributeValueService( rockContext );
-                    var parameterExpression = attributeValueService.ParameterExpression;
-
                     foreach ( var attribute in AvailableAttributes )
                     {
                         var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                        if ( filterControl == null ) continue;
-
-                        var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                        var filterIsDefault = attribute.FieldType.Field.IsEqualToValue( filterValues, attribute.DefaultValue );
-                        var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                        if ( expression == null ) continue;
-
-                        var attributeValues = attributeValueService
-                                            .Queryable()
-                                            .Where( v => v.Attribute.Id == attribute.Id );
-
-                        var filteredAttributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                        if ( filterIsDefault )
-                        {
-                            qry = qry.Where( w =>
-                                 !attributeValues.Any( v => v.EntityId == w.Id ) ||
-                                 filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                        }
-                        else
-                        {
-                            qry = qry.Where( w =>
-                                filteredAttributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                        }
+                        qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, connectionOpportunityService, Rock.Reporting.FilterMode.SimpleFilter );
                     }
                 }
                 SortProperty sortProperty = gConnectionOpportunities.SortProperty;

@@ -237,7 +237,7 @@ namespace RockWeb.Blocks.Finance
                                 m.Group.GroupType.Guid == groupTypeGuid.Value &&
                                 m.PersonId == CurrentPerson.Id &&
                                 m.GroupMemberStatus == GroupMemberStatus.Active &&
-                                m.Group.IsActive )
+                                m.Group.IsActive && !m.Group.IsArchived )
                             .Select( m => new
                             {
                                 m.GroupId,
@@ -350,8 +350,9 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                // Same logic as AddTransaction.ascx.cs
-                person = personService.FindPerson( firstName, tbLastName.Text, tbEmail.Text, true );
+                // Same logic as TransactionEntry.ascx.cs
+                var personQuery = new PersonService.PersonMatchQuery( firstName, tbLastName.Text, tbEmail.Text, string.Empty);
+                person = personService.FindPerson( personQuery, true );
             }
 
             if ( person == null )

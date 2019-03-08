@@ -23,7 +23,8 @@ namespace Rock.Data
     /// <summary>
     /// Represents a model that has an Analytic Table
     /// </summary>
-    [Obsolete("Decorate with [Analytics] instead")]
+    [RockObsolete( "1.7" )]
+    [Obsolete("Decorate with [Analytics] instead", true )]
     public interface IAnalytic : IEntity
     {
 

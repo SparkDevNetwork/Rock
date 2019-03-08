@@ -32,7 +32,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Job to run quick SQL queries on a schedule
+    /// Re-indexes the selected entity types in Universal Search
     /// </summary>
     [BooleanField("Index All Entities", "Indexes all entities, the entity filter will be ignored.", true, order: 0)]
     [CustomCheckboxListField("Entity Filter", "Entities to re-index. Not selecting a value will re-index all index enabled entities.", "SELECT CAST([Id] AS VARCHAR) [Value], [FriendlyName] [Text] FROM [EntityType] WHERE [IsIndexingEnabled] = 1 AND [FriendlyName] != 'Site'", false, order: 1 )]
@@ -51,7 +51,7 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Job that will run quick SQL queries on a schedule.
+        /// Re-indexes the selected entity types in Universal Search
         /// 
         /// Called by the <see cref="IScheduler" /> when a
         /// <see cref="ITrigger" /> fires that is associated with

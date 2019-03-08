@@ -15,9 +15,12 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
+using Rock.BulkExport;
+using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Model
 {
@@ -31,6 +34,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="transactionCode">The transaction code.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use GetByTransactionCode(financialGatewayId, transaction). This one could return incorrect results if transactions from different financial gateways happen to use the same transaction code" )]
         public FinancialTransaction GetByTransactionCode( string transactionCode )
         {
@@ -71,7 +75,7 @@ namespace Rock.Model
         {
             if ( item.FinancialPaymentDetailId.HasValue )
             {
-                var paymentDetailsService = new FinancialPaymentDetailService( (Rock.Data.RockContext)this.Context );
+                var paymentDetailsService = new FinancialPaymentDetailService( ( Rock.Data.RockContext ) this.Context );
                 var paymentDetail = paymentDetailsService.Get( item.FinancialPaymentDetailId.Value );
                 if ( paymentDetail != null )
                 {
@@ -125,7 +129,7 @@ namespace Rock.Model
             }
 
             if ( !amount.HasValue || amount.Value <= 0.0m )
-            { 
+            {
                 errorMessage = string.Format( "Amount must be greater than {0}", 0.0m.FormatAsCurrency() );
                 return null;
             }
@@ -164,6 +168,7 @@ namespace Rock.Model
             refundTransaction.TransactionDateTime = RockDateTime.Now;
             refundTransaction.FinancialGatewayId = transaction.FinancialGatewayId;
             refundTransaction.TransactionTypeValueId = transaction.TransactionTypeValueId;
+            refundTransaction.SourceTypeValueId = transaction.SourceTypeValueId;
             if ( transaction.FinancialPaymentDetail != null )
             {
                 refundTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
@@ -257,6 +262,72 @@ namespace Rock.Model
 
             errorMessage = string.Empty;
             return refundTransaction;
+        }
+
+        /// <summary>
+        /// Gets an export of FinancialTransaction Records
+        /// </summary>
+        /// <param name="page">The page being requested (where first page is 1).</param>
+        /// <param name="pageSize">The number of records to provide per page. NOTE: This is limited to the 'API Max Items Per Page' global attribute.</param>
+        /// <param name="exportOptions">The export options.</param>
+        /// <returns></returns>
+        public FinancialTransactionsExport GetFinancialTransactionExport( int page, int pageSize, FinancialTransactionExportOptions exportOptions )
+        {
+            IQueryable<FinancialTransaction> financialTransactionQry;
+            SortProperty sortProperty = exportOptions.SortProperty;
+
+            RockContext rockContext = this.Context as RockContext;
+
+            if ( exportOptions.DataViewId.HasValue )
+            {
+                financialTransactionQry = ModelExport.QueryFromDataView<FinancialTransaction>( rockContext, exportOptions.DataViewId.Value );
+            }
+            else
+            {
+                financialTransactionQry = this.Queryable();
+            }
+
+            if ( sortProperty != null )
+            {
+                financialTransactionQry = financialTransactionQry.Sort( sortProperty );
+            }
+
+            if ( exportOptions.ModifiedSince.HasValue )
+            {
+                financialTransactionQry = financialTransactionQry.Where( a => a.ModifiedDateTime.HasValue && a.ModifiedDateTime >= exportOptions.ModifiedSince.Value );
+            }
+
+            if ( exportOptions.StartDateTime.HasValue )
+            {
+                financialTransactionQry = financialTransactionQry.Where( a => a.TransactionDateTime.HasValue && a.TransactionDateTime >= exportOptions.StartDateTime.Value );
+            }
+
+            if ( exportOptions.EndDateTime.HasValue )
+            {
+                financialTransactionQry = financialTransactionQry.Where( a => a.TransactionDateTime.HasValue && a.TransactionDateTime < exportOptions.EndDateTime.Value );
+            }
+
+            var skip = ( page - 1 ) * pageSize;
+
+            FinancialTransactionsExport financialTransactionsExport = new FinancialTransactionsExport();
+            financialTransactionsExport.Page = page;
+            financialTransactionsExport.PageSize = pageSize;
+            financialTransactionsExport.TotalCount = financialTransactionQry.Count();
+
+            var pagedFinancialTransactionQry = financialTransactionQry
+                .Include( a => a.AuthorizedPersonAlias )
+                .Include( a => a.TransactionDetails )
+                .Include( a => a.FinancialPaymentDetail )
+                .Include( a => a.TransactionDetails.Select( d => d.Account ) )
+                .AsNoTracking()
+                .Skip( skip )
+                .Take( pageSize );
+
+            var financialTransactionList = pagedFinancialTransactionQry.ToList();
+            financialTransactionsExport.FinancialTransactions = financialTransactionList.Select( f => new FinancialTransactionExport( f ) ).ToList();
+
+            AttributesExport.LoadAttributeValues( exportOptions, rockContext, financialTransactionsExport.FinancialTransactions, pagedFinancialTransactionQry );
+            return financialTransactionsExport;
         }
     }
 }

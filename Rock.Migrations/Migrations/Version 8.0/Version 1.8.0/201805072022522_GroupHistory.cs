@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -417,7 +417,7 @@ CREATE UNIQUE NONCLUSTERED  INDEX [IX_LocationIdCurrentRow] ON [dbo].[GroupLocat
             END" );
 
 
-            // add ServiceJob: Migrate History Summary Data
+            // add ServiceJob: Migrate History Summary Data (schedule for 9pm to avoid conflict with AppPoolRecycle)
             // Code Generated using Rock\Dev Tools\Sql\CodeGen_ServiceJobWithAttributes_ForAJob.sql
             Sql( @"IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Class] = 'Rock.Jobs.MigrateHistorySummaryData' AND [Guid] = 'CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14' )
             BEGIN
@@ -436,7 +436,7 @@ CREATE UNIQUE NONCLUSTERED  INDEX [IX_LocationIdCurrentRow] ON [dbo].[GroupLocat
                   ,'Migrate History Summary Data'
                   ,'Migrates History Summary Text into separate columns: Verb, ChangeType, OldValue, NewValue, etc. This will enable the new v8 History UIs to do cool things. When this job is done migrating all the data, it will delete itself.'
                   ,'Rock.Jobs.MigrateHistorySummaryData'
-                  ,'0 0 3 1/1 * ? *'
+                  ,'0 0 21 1/1 * ? *'
                   ,1
                   ,'CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14'
                   );

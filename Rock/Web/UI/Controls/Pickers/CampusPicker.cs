@@ -71,7 +71,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [include inactive].
+        /// Gets or sets a value indicating whether [include inactive] (defaults to True).
         /// </summary>
         /// <value>
         ///   <c>true</c> if [include inactive]; otherwise, <c>false</c>.

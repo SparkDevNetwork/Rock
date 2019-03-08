@@ -58,28 +58,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
-        [IncludeAsEntityProperty]
         public int AccountId { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this is a non-cash detail.
+        /// Gets or sets the total amount of the transaction detail. This total amount includes any associated fees.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if non-cash; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        [Obsolete("Field is not used. Non Cash transactions can be designated by the currency (tender) type.")]
-        public bool IsNonCash { get; set; }
-
-        /// <summary>
-        /// Gets or sets the amount of the transaction detail.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Decimal"/> representing the amount of the transaction detail.
+        /// A <see cref="System.Decimal"/> representing the total amount of the transaction detail.
         /// </value>
         [DataMember]
         [BoundFieldTypeAttribute(typeof(Rock.Web.UI.Controls.CurrencyField))]
-        [IncludeAsEntityProperty]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -90,7 +78,6 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 500 )]
         [DataMember]
-        [IncludeAsEntityProperty]
         public string Summary { get; set; }
 
         /// <summary>
@@ -110,6 +97,17 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? EntityId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the fee amount of the transaction detail, which is a subset of the Amount.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Decimal"/> representing the fee amount of the transaction detail.
+        /// </value>
+        [DataMember]
+        [BoundFieldType(typeof(Rock.Web.UI.Controls.CurrencyField))]
+        [IncludeAsEntityProperty]
+        public decimal? FeeAmount { get; set; }
 
         #endregion
 
@@ -149,6 +147,7 @@ namespace Rock.Model
         /// <value>
         /// The history changes.
         /// </value>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use HistoryChangeList instead" )]
         public virtual List<string> HistoryChanges { get; set; }
 

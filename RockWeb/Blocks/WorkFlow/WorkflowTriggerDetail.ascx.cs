@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.WorkFlow
                     var propertyNames = new List<string>();
                     foreach ( var property in type.GetProperties() )
                     {
-                        if ( !property.GetGetMethod().IsVirtual ||
+                        if ( ( property.GetGetMethod() != null && !property.GetGetMethod().IsVirtual) ||
                             property.GetCustomAttributes( typeof( IncludeAsEntityProperty ) ).Any() ||
                             property.Name == "Id" ||
                             property.Name == "Guid" ||
@@ -335,7 +335,9 @@ namespace RockWeb.Blocks.WorkFlow
                 }
 
                 if ( usePreviousValue
-                    && ( !string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValue ) || !string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValuePrevious ) ) )
+                    && ( !string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValue ) || !string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValuePrevious ) )
+                     && workflowTrigger.WorkflowTriggerValueChangeType == WorkflowTriggerValueChangeType.ChangeFromTo
+                    )
                 {
                     tbQualifierValueAlt.Text = workflowTrigger.EntityTypeQualifierValue;
                     tbPreviousQualifierValue.Text = workflowTrigger.EntityTypeQualifierValuePrevious;

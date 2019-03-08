@@ -31,7 +31,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type used to display a dropdown list of attributes
     /// </summary>
-    public class AttributeFieldType : FieldType
+    public class AttributeFieldType : FieldType, ICachedEntitiesFieldType
     {
 
         #region Configuration
@@ -230,6 +230,32 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region ICachedEntitiesFieldType Members
+        /// <summary>
+        /// Gets the cached attributes.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public List<IEntityCache> GetCachedEntities( string value )
+        {
+            var attributes = new List<IEntityCache>();
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
+                {
+                    var attribute = AttributeCache.Get( guid );
+                    if ( attribute != null )
+                    {
+                        attributes.Add( attribute );
+                    }
+                }
+            }
+
+            return attributes;
+        }
+        #endregion
+
         #region Edit Control
 
         /// <summary>
@@ -276,7 +302,7 @@ namespace Rock.Field.Types
                             attributeQuery = attributeService.GetByEntityTypeId( entityType.Id, true );
                         }
 
-                        List<AttributeCache> attributeList = attributeQuery.ToCacheAttributeList();
+                        List<AttributeCache> attributeList = attributeQuery.ToAttributeCacheList();
 
                         if ( attributeList.Any() )
                         {
@@ -317,20 +343,27 @@ namespace Rock.Field.Types
                         .Where( i => i.Selected )
                         .Select( i => i.Value ) );
                 }
-            }
 
-            var guids = new List<string>();
-
-            foreach ( int attributeId in ids.AsIntegerList() )
-            {
-                var attribute = Rock.Web.Cache.AttributeCache.Get( attributeId );
-                if ( attribute != null )
+                if ( ids.Count == 0 )
                 {
-                    guids.Add( attribute.Guid.ToString() );
+                    return string.Empty;
                 }
+
+                var guids = new List<string>();
+
+                foreach ( int attributeId in ids.AsIntegerList() )
+                {
+                    var attribute = Rock.Web.Cache.AttributeCache.Get( attributeId );
+                    if ( attribute != null )
+                    {
+                        guids.Add( attribute.Guid.ToString() );
+                    }
+                }
+
+                return guids.AsDelimited( "," );
             }
 
-            return guids.AsDelimited( "," );
+            return null;
         }
 
         /// <summary>

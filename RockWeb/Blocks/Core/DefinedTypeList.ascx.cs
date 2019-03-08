@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Core
     [Description( "Lists all the defined types and allows for managing them and their values." )]
 
     [LinkedPage( "Detail Page", order: 0 )]
-    [CategoryField( "Categories", "If block should only display Defined Types from specific categories, select the categories here.", true, "Rock.Model.DefinedType", order: 1 )]
+    [CategoryField( "Categories", "If block should only display Defined Types from specific categories, select the categories here.", true, "Rock.Model.DefinedType", order: 1, required: false )]
     public partial class DefinedTypeList : RockBlock, ICustomGridColumns
     {
         #region Control Methods

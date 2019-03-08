@@ -78,6 +78,10 @@ namespace RockWeb.Blocks.Core
             {
                 rFilter.Visible = false;
             }
+            else
+            {
+                cpCategoriesFilter.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
+            }
 
             edtAttribute.IsShowInGridVisible = GetAttributeValue( "EnableShowInGrid" ).AsBooleanOrNull() ?? false;
 
@@ -101,7 +105,6 @@ namespace RockWeb.Blocks.Core
                 ddlEntityType.EntityTypes = entityTypeList;
                 ddlAttrEntityType.EntityTypes = entityTypeList;
                 ddlEntityType.SetValue( _entityTypeId );
-
             }
 
             _entityQualifierColumn = GetAttributeValue( "EntityQualifierColumn" );
@@ -161,8 +164,6 @@ namespace RockWeb.Blocks.Core
                 mdAttribute.SaveClick += mdAttribute_SaveClick;
                 mdAttributeValue.SaveClick += mdAttributeValue_SaveClick;
 
-
-
                 BindFilter();
             }
             else
@@ -219,10 +220,11 @@ namespace RockWeb.Blocks.Core
             _entityTypeId = ddlEntityType.SelectedValue.AsIntegerOrNull();
             if ( IsEntityTypeValid() )
             {
+                // Clear out any old saved Categories since they are not compatible with a new Entity Type
+                rFilter.SaveUserPreference( "Categories", string.Empty );
                 BindFilterForSelectedEntityType();
                 BindGrid();
             }
-
         }
 
         /// <summary>
@@ -499,6 +501,17 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Handles the TextChanged event of the tbAttrQualifier control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tbAttrQualifier_TextChanged( object sender, EventArgs e )
+        {
+            edtAttribute.AttributeEntityTypeQualifierColumn = tbAttrQualifierField.Text;
+            edtAttribute.AttributeEntityTypeQualifierValue = tbAttrQualifierValue.Text;
+        }
+
+        /// <summary>
         /// Handles the SaveClick event of the mdAttribute control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -609,11 +622,14 @@ namespace RockWeb.Blocks.Core
         {
             cpCategoriesFilter.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
             cpCategoriesFilter.EntityTypeQualifierColumn = "EntityTypeId";
-            cpCategoriesFilter.EntityTypeQualifierValue = _entityTypeId.ToString();
+
+            // Global attributes have an EntityTypeQualifierValue of NULL, so don't set it to "0", it won't work.
+            cpCategoriesFilter.EntityTypeQualifierValue = ( _entityTypeId != 0 ) ? _entityTypeId.ToString() : null;
 
             var selectedIDs = new List<int>();
-
-            if ( ( _entityTypeId ?? 0 ).ToString() == rFilter.GetUserPreference( "Entity Type" ) )
+            var entityTypePreference = rFilter.GetUserPreference( "Entity Type" );
+            // if the entityTypePreference is empty, it may be the default (usable for Global Attributes)
+            if ( ( _entityTypeId ?? 0 ).ToString() == entityTypePreference || entityTypePreference.IsNullOrWhiteSpace() )
             {
                 foreach ( var idVal in rFilter.GetUserPreference( "Categories" ).SplitDelimitedValues() )
                 {
@@ -644,6 +660,7 @@ namespace RockWeb.Blocks.Core
                 {
                     // entity type not configured in block or in filter, so get Global Attributes
                     query = attributeService.GetByEntityTypeId( null, true );
+                    query = query.Where( t => t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == "" );
                 }
                 else if ( _isEntityTypeConfigured )
                 {

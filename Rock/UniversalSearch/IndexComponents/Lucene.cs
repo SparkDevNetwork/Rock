@@ -15,28 +15,31 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Web;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Core;
 using Lucene.Net.Analysis.Miscellaneous;
 using Lucene.Net.Analysis.Snowball;
 using Lucene.Net.Analysis.Standard;
+using Lucene.Net.Analysis.Util;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
 using Lucene.Net.Util;
 using Newtonsoft.Json.Linq;
-using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels;
 using Rock.UniversalSearch.IndexModels.Attributes;
+using Rock.Web.Cache;
 
 namespace Rock.UniversalSearch.IndexComponents
 {
@@ -52,7 +55,7 @@ namespace Rock.UniversalSearch.IndexComponents
     {
         #region Private Fields
         private static readonly LuceneVersion _matchVersion = LuceneVersion.LUCENE_48;
-        private static Dictionary<string, Index> _indexes = new Dictionary<string, Index>();
+        private static ConcurrentDictionary<string, Index> _indexes = new ConcurrentDictionary<string, Index>();
         private static IndexWriterConfig _indexWriterConfig = null;
         private static IndexWriter _writer = null;
         private static DirectoryReader _reader = null;
@@ -389,7 +392,13 @@ namespace Rock.UniversalSearch.IndexComponents
             {
                 if ( _writer != null )
                 {
-                    _writer.DeleteDocuments( new Term[] { new Term( "type", documentType.Name.ToLower() ), new Term( propertyName, propertyValue.ToStringSafe() ) } );
+                    BooleanQuery query = new BooleanQuery
+                    {
+                        { new TermQuery( new Term( "type", documentType.Name.ToLower() ) ), Occur.MUST },
+                        { new TermQuery( new Term( propertyName, propertyValue.ToStringSafe() ) ), Occur.MUST }
+                    };
+
+                    _writer.DeleteDocuments( query );
                 }
             }
         }
@@ -500,7 +509,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 foreach ( var entityId in entities )
                 {
                     // get entities search model name
-                    var entityType = entityTypeService.Get( entityId );
+                    var entityType = entityTypeService.GetNoTracking( entityId );
                     indexModelTypes.Add( entityType.IndexModelType );
 
                     // check if this is a person model, if so we need to add two model types one for person and the other for businesses
@@ -526,8 +535,6 @@ namespace Rock.UniversalSearch.IndexComponents
             // Use the analyzer in fieldAnalyzers if that field is in that dictionary, otherwise use StandardAnalyzer.
             PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( _matchVersion ), fieldAnalyzers: combinedFieldAnalyzers );
 
-            BooleanQuery fieldCriteriaQuery = new BooleanQuery();
-
             if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
             {
                 Occur occur = fieldCriteria.SearchType == CriteriaSearchType.And ? Occur.MUST : Occur.SHOULD;
@@ -535,10 +542,8 @@ namespace Rock.UniversalSearch.IndexComponents
                 {
                     BooleanClause booleanClause = new BooleanClause( new TermQuery( new Term( match.Field, match.Value ) ), occur );
                     booleanClause.Query.Boost = match.Boost;
-                    fieldCriteriaQuery.Add( booleanClause );
+                    queryContainer.Add( booleanClause );
                 }
-
-                queryContainer.Add( fieldCriteriaQuery, Occur.MUST );
             }
 
             switch ( searchType )
@@ -712,98 +717,107 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="deleteIfExists">if set to <c>true</c> [delete if exists].</param>
         public override void CreateIndex( Type documentType, bool deleteIfExists = true )
         {
-            var indexName = documentType.Name.ToLower();
-
-            object instance = Activator.CreateInstance( documentType );
-
-            // Check if index already exists. If it exists, no need to create it again
-            if ( _indexes.ContainsKey( indexName ) )
+            try
             {
-                return;
-            }
+                var indexName = documentType.Name.ToLower();
 
-            Index index = new Index();
+                object instance = Activator.CreateInstance( documentType );
 
-            // make sure this is an index document
-            if ( instance is IndexModelBase )
-            {
-                Dictionary<string, TypeMappingProperties> typeMapping = new Dictionary<string, TypeMappingProperties>();
-                Dictionary<string, Analyzer> fieldAnalyzers = new Dictionary<string, Analyzer>();
-
-                // get properties from the model and add them to the index (hint: attributes will be added dynamically as the documents are loaded)
-                var modelProperties = documentType.GetProperties();
-
-                foreach ( var property in modelProperties )
+                // Check if index already exists. If it exists, no need to create it again
+                if ( _indexes.ContainsKey( indexName ) )
                 {
-                    var indexAttribute = property.GetCustomAttributes( typeof( RockIndexField ), false );
-                    if ( indexAttribute.Length > 0 )
-                    {
-                        var attribute = (RockIndexField)indexAttribute[0];
-
-                        var propertyName = property.Name;
-
-                        // rewrite non-string index option (would be nice if they made the enums match up...)
-                        if ( attribute.Type != IndexFieldType.String )
-                        {
-                            if ( attribute.Index == IndexType.NotIndexed )
-                            {
-                                continue;
-                            }
-                        }
-
-                        var typeMappingProperty = new TypeMappingProperties();
-                        typeMappingProperty.Name = propertyName;
-                        typeMappingProperty.Boost = (float)attribute.Boost;
-
-                        switch ( attribute.Type )
-                        {
-                            case IndexFieldType.Boolean:
-                            case IndexFieldType.Date:
-                            case IndexFieldType.Number:
-                                {
-                                    typeMappingProperty.IndexType = IndexType.NotAnalyzed;
-                                    typeMappingProperty.Analyzer = string.Empty;
-                                    break;
-                                }
-                            default:
-                                {
-                                    typeMappingProperty.IndexType = attribute.Index;
-                                    if ( !string.IsNullOrWhiteSpace( attribute.Analyzer ) )
-                                    {
-                                        typeMappingProperty.Analyzer = attribute.Analyzer;
-                                    }
-
-                                    break;
-                                }
-                        }
-
-                        typeMapping.Add( propertyName, typeMappingProperty );
-
-                        if ( typeMappingProperty.Analyzer?.ToLowerInvariant() == "snowball" )
-                        {
-                            fieldAnalyzers[typeMappingProperty.Name] = Analyzer.NewAnonymous( createComponents: ( fieldName, reader ) =>
-                            {
-                                var tokenizer = new StandardTokenizer( _matchVersion, reader );
-                                var sbpff = new SnowballPorterFilterFactory( new Dictionary<string, string>() { { "language", "English" } } );
-                                TokenStream result = sbpff.Create( new StandardTokenizer( _matchVersion, reader ) );
-                                return new TokenStreamComponents( tokenizer, result ); // https://github.com/apache/lucenenet/blob/master/src/Lucene.Net.Analysis.Common/Analysis/Snowball/SnowballAnalyzer.cs
-                            } );
-                        }
-                        else if ( typeMappingProperty.Analyzer?.ToLowerInvariant() == "whitespace" )
-                        {
-                            fieldAnalyzers[propertyName] = Analyzer.NewAnonymous( createComponents: ( fieldName, reader ) =>
-                            {
-                                var tokenizer = new WhitespaceTokenizer( _matchVersion, reader );
-                                TokenStream result = new StandardFilter( _matchVersion, tokenizer );
-                                return new TokenStreamComponents( tokenizer, result );
-                            } );
-                        }
-                    }
+                    return;
                 }
 
-                index.MappingProperties = typeMapping;
-                index.FieldAnalyzers = fieldAnalyzers;
-                _indexes[indexName] = index;
+                Index index = new Index();
+
+                // make sure this is an index document
+                if ( instance is IndexModelBase )
+                {
+                    Dictionary<string, TypeMappingProperties> typeMapping = new Dictionary<string, TypeMappingProperties>();
+                    Dictionary<string, Analyzer> fieldAnalyzers = new Dictionary<string, Analyzer>();
+
+                    // get properties from the model and add them to the index (hint: attributes will be added dynamically as the documents are loaded)
+                    var modelProperties = documentType.GetProperties();
+
+                    foreach ( var property in modelProperties )
+                    {
+                        var indexAttribute = property.GetCustomAttributes( typeof( RockIndexField ), false );
+                        if ( indexAttribute.Length > 0 )
+                        {
+                            var attribute = ( RockIndexField ) indexAttribute[0];
+
+                            var propertyName = property.Name;
+
+                            // rewrite non-string index option (would be nice if they made the enums match up...)
+                            if ( attribute.Type != IndexFieldType.String )
+                            {
+                                if ( attribute.Index == IndexType.NotIndexed )
+                                {
+                                    continue;
+                                }
+                            }
+
+                            var typeMappingProperty = new TypeMappingProperties();
+                            typeMappingProperty.Name = propertyName;
+                            typeMappingProperty.Boost = ( float ) attribute.Boost;
+
+                            switch ( attribute.Type )
+                            {
+                                case IndexFieldType.Boolean:
+                                case IndexFieldType.Date:
+                                case IndexFieldType.Number:
+                                    {
+                                        typeMappingProperty.IndexType = IndexType.NotAnalyzed;
+                                        typeMappingProperty.Analyzer = string.Empty;
+                                        break;
+                                    }
+                                default:
+                                    {
+                                        typeMappingProperty.IndexType = attribute.Index;
+                                        if ( !string.IsNullOrWhiteSpace( attribute.Analyzer ) )
+                                        {
+                                            typeMappingProperty.Analyzer = attribute.Analyzer;
+                                        }
+
+                                        break;
+                                    }
+                            }
+
+                            typeMapping.Add( propertyName, typeMappingProperty );
+
+                            if ( typeMappingProperty.Analyzer?.ToLowerInvariant() == "snowball" )
+                            {
+                                fieldAnalyzers[typeMappingProperty.Name] = Analyzer.NewAnonymous( createComponents: ( fieldName, reader ) =>
+                                {
+                                    var tokenizer = new StandardTokenizer( _matchVersion, reader );
+                                    var sbpff = new SnowballPorterFilterFactory( new Dictionary<string, string>() { { "language", "English" } } );
+                                    sbpff.Inform(new ClasspathResourceLoader( documentType ) );
+                                    TokenStream result = sbpff.Create( new StandardTokenizer( _matchVersion, reader ) );
+                                    return new TokenStreamComponents( tokenizer, result ); // https://github.com/apache/lucenenet/blob/master/src/Lucene.Net.Analysis.Common/Analysis/Snowball/SnowballAnalyzer.cs
+                                } );
+                            }
+                            else if ( typeMappingProperty.Analyzer?.ToLowerInvariant() == "whitespace" )
+                            {
+                                fieldAnalyzers[propertyName] = Analyzer.NewAnonymous( createComponents: ( fieldName, reader ) =>
+                                {
+                                    var tokenizer = new WhitespaceTokenizer( _matchVersion, reader );
+                                    TokenStream result = new StandardFilter( _matchVersion, tokenizer );
+                                    return new TokenStreamComponents( tokenizer, result );
+                                } );
+                            }
+                        }
+                    }
+
+                    index.MappingProperties = typeMapping;
+                    index.FieldAnalyzers = fieldAnalyzers;
+                    _indexes[indexName] = index;
+                }
+            }
+            catch ( Exception ex )
+            {
+                HttpContext context2 = HttpContext.Current;
+                ExceptionLogService.LogException( ex, context2 );
             }
         }
 
@@ -816,59 +830,67 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="mappingType">Type of the mapping.</param>
         public override void IndexDocument<T>( T document, string indexName = null, string mappingType = null )
         {
-            Type documentType = document.GetType();
-            if ( indexName == null )
+            try
             {
-                indexName = documentType.Name.ToLower();
-            }
-
-            if ( mappingType == null )
-            {
-                mappingType = documentType.Name.ToLower();
-            }
-
-            if ( !_indexes.ContainsKey( mappingType ) )
-            {
-                CreateIndex( documentType );
-            }
-
-            var index = _indexes[mappingType];
-
-            Document doc = new Document();
-            foreach ( var typeMappingProperty in index.MappingProperties.Values )
-            {
-                TextField textField = new TextField( typeMappingProperty.Name, documentType.GetProperty( typeMappingProperty.Name ).GetValue( document, null ).ToStringSafe().ToLower(), global::Lucene.Net.Documents.Field.Store.YES );
-                textField.Boost = typeMappingProperty.Boost;
-                doc.Add( textField );
-            }
-
-            IndexModelBase docIndexModelBase = document as IndexModelBase;
-            string indexValue = LuceneID( mappingType, docIndexModelBase.Id );
-            doc.AddStringField( "type", mappingType, global::Lucene.Net.Documents.Field.Store.YES );
-            doc.AddStringField( "id", docIndexModelBase.Id.ToString(), global::Lucene.Net.Documents.Field.Store.YES );
-            doc.AddStringField( "index", indexValue, global::Lucene.Net.Documents.Field.Store.YES );
-            doc.AddStoredField( "JSON", document.ToJson() ); // Stores all the properties as JSON to retreive object on lookup
-
-            // Use the analyzer in fieldAnalyzers if that field is in that dictionary, otherwise use StandardAnalyzer.
-            PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( _matchVersion ), fieldAnalyzers: index.FieldAnalyzers );
-
-            OpenWriter();
-            lock ( _lockWriter )
-            {
-                if ( _writer != null )
+                Type documentType = document.GetType();
+                if ( indexName == null )
                 {
-                    _writer.UpdateDocument( new Term( "index", indexValue ), doc, analyzer ); // Must specify analyzer because the default analyzer that is specified in indexWriterConfig is null.
+                    indexName = documentType.Name.ToLower();
+                }
+
+                if ( mappingType == null )
+                {
+                    mappingType = documentType.Name.ToLower();
+                }
+
+                if ( !_indexes.ContainsKey( mappingType ) )
+                {
+                    CreateIndex( documentType );
+                }
+
+                var index = _indexes[mappingType];
+
+                Document doc = new Document();
+                foreach ( var typeMappingProperty in index.MappingProperties.Values )
+                {
+                    TextField textField = new TextField( typeMappingProperty.Name, documentType.GetProperty( typeMappingProperty.Name ).GetValue( document, null ).ToStringSafe().ToLower(), global::Lucene.Net.Documents.Field.Store.YES );
+                    textField.Boost = typeMappingProperty.Boost;
+                    doc.Add( textField );
+                }
+
+                IndexModelBase docIndexModelBase = document as IndexModelBase;
+                string indexValue = LuceneID( mappingType, docIndexModelBase.Id );
+                doc.AddStringField( "type", mappingType, global::Lucene.Net.Documents.Field.Store.YES );
+                doc.AddStringField( "id", docIndexModelBase.Id.ToString(), global::Lucene.Net.Documents.Field.Store.YES );
+                doc.AddStringField( "index", indexValue, global::Lucene.Net.Documents.Field.Store.YES );
+                doc.AddStoredField( "JSON", document.ToJson() ); // Stores all the properties as JSON to retreive object on lookup
+
+                // Use the analyzer in fieldAnalyzers if that field is in that dictionary, otherwise use StandardAnalyzer.
+                PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( _matchVersion ), fieldAnalyzers: index.FieldAnalyzers );
+
+                OpenWriter();
+                lock ( _lockWriter )
+                {
+                    if ( _writer != null )
+                    {
+                        _writer.UpdateDocument( new Term( "index", indexValue ), doc, analyzer ); // Must specify analyzer because the default analyzer that is specified in indexWriterConfig is null.
+                    }
                 }
             }
+            catch ( Exception ex )
+            {
+                HttpContext context2 = HttpContext.Current;
+                ExceptionLogService.LogException( ex, context2 );
+            }
         }
-        #endregion
+#endregion
 
-        /// <summary>
-        /// Dispose of the index from memory and close all files.
-        /// </summary>
+/// <summary>
+/// Dispose of the index from memory and close all files.
+/// </summary>
 
-        #region Constructors and Destructors
-        public static void Dispose()
+#region Constructors and Destructors
+public static void Dispose()
         {
             lock ( _lockWriter )
             {

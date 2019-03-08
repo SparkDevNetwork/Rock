@@ -793,11 +793,11 @@ $(document).ready(function() {
             {
                 foreach ( var groupSync in groupSyncs )
                 {
-                    string groupAndRole = string.Format( "{0} - {1}", groupSync.Group.Name, groupSync.GroupTypeRole.Name );
+                    string groupAndRole = string.Format( "{0} - {1}", (groupSync.Group != null ? groupSync.Group.Name : "(Id: " + groupSync.GroupId.ToStringSafe() + ")" ), groupSync.GroupTypeRole.Name );
 
                     if ( !string.IsNullOrWhiteSpace( groupDetailPage ) )
                     {
-                        sbGroups.Append( "<a href=\"" + LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string>() { { "GroupId", groupSync.Group.Id.ToString() } } ) + "\">" + groupAndRole + "</a><br/>" );
+                        sbGroups.Append( "<a href=\"" + LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string>() { { "GroupId", groupSync.GroupId.ToString() } } ) + "\">" + groupAndRole + "</a><br/>" );
                     }
                     else
                     {
@@ -1016,6 +1016,7 @@ $(document).ready(function() {
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
+            filterField.ValidationGroup = this.BlockValidationGroup;
             filterField.DataViewFilterGuid = Guid.NewGuid();
             filterField.DeleteClick += filterControl_DeleteClick;
             groupControl.Controls.Add( filterField );
@@ -1117,6 +1118,7 @@ $(document).ready(function() {
                 if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
                     var filterControl = new FilterField();
+                    filterControl.ValidationGroup = this.BlockValidationGroup;
                     parentControl.Controls.Add( filterControl );
                     filterControl.DataViewFilterGuid = filter.Guid;
                     filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );

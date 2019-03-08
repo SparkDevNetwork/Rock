@@ -28,6 +28,7 @@ using Rock.Web.Cache;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Security;
+using Rock.Transactions;
 
 namespace Rock.Model
 {
@@ -50,6 +51,7 @@ namespace Rock.Model
             ShowInNavigation = true;
             GroupTerm = "Group";
             GroupMemberTerm = "Member";
+            AdministratorTerm = "Administrator";
         }
 
         #region Entity Properties
@@ -419,13 +421,17 @@ namespace Rock.Model
             {% if Group.Schedule != null %}
 
             <dt> Schedule </dt>
-            <dd>{{ Group.Schedule.ToString() }}</ dd >
+            <dd>{{ Group.Schedule.FriendlyScheduleText }}</ dd >
             {% endif %}
             {% if Group.GroupCapacity != null and Group.GroupCapacity != '' %}
 
             <dt> Capacity </dt>
 
             <dd>{{ Group.GroupCapacity }}</dd>
+            {% endif %}
+        {% if Group.GroupType.ShowAdministrator and Group.GroupAdministratorPersonAlias != null and Group.GroupAdministratorPersonAlias != '' %}
+            <dt> {{ Group.GroupType.AdministratorTerm }}</dt>
+            <dd>{{ Group.GroupAdministratorPersonAlias.Person.FullName }}</dd>
             {% endif %}
         </dl>
         <dl>
@@ -609,6 +615,26 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? GroupStatusDefinedTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the administrator term for the group of this GroupType.
+        /// </summary>
+        /// <value>
+        /// The administrator term for the group of this GroupType.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string AdministratorTerm { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether administrator for the group of this GroupType will be shown.
+        /// </summary>
+        /// <value>
+        ///   A <see cref="System.Boolean"/> value that is <c>true</c> if administrator for the group of this GroupType will be shown; otherwise <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public bool ShowAdministrator { get; set; }
 
         #endregion
 
@@ -1019,44 +1045,43 @@ namespace Rock.Model
         #endregion
 
         #region Index Methods
+
         /// <summary>
-        /// Deletes the indexed documents by group type.
+        /// Queues groups of this type to have their indexes deleted
         /// </summary>
         /// <param name="groupTypeId">The group type identifier.</param>
         public void DeleteIndexedDocumentsByGroupType( int groupTypeId )
         {
-            var groups = new GroupService( new RockContext() ).Queryable()
-                                    .Where( i => i.GroupTypeId == groupTypeId );
+            var groupIds = new GroupService( new RockContext() ).Queryable()
+                .Where( i => i.GroupTypeId == groupTypeId )
+                .Select( a => a.Id ).ToList();
 
-            foreach ( var group in groups )
+            int groupEntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>().Value;
+
+            foreach ( var groupId in groupIds )
             {
-                var indexableGroup = GroupIndex.LoadByModel( group );
-                IndexContainer.DeleteDocument<GroupIndex>( indexableGroup );
+                var transaction = new DeleteIndexEntityTransaction { EntityId = groupId, EntityTypeId = groupEntityTypeId };
+                transaction.Enqueue();
             }
         }
 
         /// <summary>
-        /// Bulks the index documents by content channel.
+        /// Queues groups of this type to have their indexes updated
         /// </summary>
-        /// <param name="groupTypeId">The content channel identifier.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
         public void BulkIndexDocumentsByGroupType( int groupTypeId )
         {
-            List<GroupIndex> indexableGroups = new List<GroupIndex>();
+            var groupIds = new GroupService( new RockContext() ).Queryable()
+                .Where( i => i.GroupTypeId == groupTypeId )
+                .Select( a => a.Id ).ToList();
 
-            // return all approved content channel items that are in content channels that should be indexed
-            RockContext rockContext = new RockContext();
-            var groups = new GroupService( rockContext ).Queryable()
-                                            .Where( g =>
-                                                g.GroupTypeId == groupTypeId
-                                                && g.IsActive);
+            int groupEntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>().Value;
 
-            foreach ( var group in groups )
+            foreach ( var groupId in groupIds )
             {
-                var indexableChannelItem = GroupIndex.LoadByModel( group );
-                indexableGroups.Add( indexableChannelItem );
+                var transaction = new IndexEntityTransaction { EntityId = groupId, EntityTypeId = groupEntityTypeId };
+                transaction.Enqueue();
             }
-
-            IndexContainer.IndexDocuments( indexableGroups );
         }
         #endregion
 

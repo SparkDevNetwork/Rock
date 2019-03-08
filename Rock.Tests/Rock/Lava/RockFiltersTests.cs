@@ -1,15 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Dynamic;
 using System.Linq;
 using DDay.iCal;
 using DDay.iCal.Serialization.iCalendar;
+using DotLiquid;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Rock.Lava;
+using Rock.Model;
+using Subtext.TestLibrary;
 using Xunit;
 
 namespace Rock.Tests.Rock.Lava
 {
     public class RockFiltersTest
     {
+        // A fake web-root Content folder for any tests that use the HTTP Context simulator
+        private static string webContentFolder = string.Empty;
+
         private static readonly Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
         private static iCalendarSerializer serializer = new iCalendarSerializer();
         private static RecurrencePattern weeklyRecurrence = new RecurrencePattern( "RRULE:FREQ=WEEKLY;BYDAY=SA" );
@@ -51,6 +61,61 @@ namespace Rock.Tests.Rock.Lava
 
         private static readonly string iCalStringSaturday430 = serializer.SerializeToString( weeklySaturday430 );
         private static readonly string iCalStringFirstSaturdayOfMonth = serializer.SerializeToString( monthlyFirstSaturday );
+
+        #region Text Filters
+
+        /// <summary>
+        /// For use in Lava -- should match the pattern in the string.
+        /// </summary>
+        [Fact]
+        public void Text_RegExMatch_ShouldMatchSimpleString()
+        {
+            var output = RockFilters.RegExMatch( "Group 12345 has 5 members", @"\d\d\d\d\d" );
+            Assert.True( output );
+
+            output = RockFilters.RegExMatch( "Group Decker has 5 members", @"\d\d\d\d\d" );
+            Assert.False( output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should match a valid email address pattern in the string.
+        /// </summary>
+        [Fact]
+        public void Text_RegExMatch_ShouldMatchValidEmailString()
+        {
+            var regexEmail = @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*";
+            var output = RockFilters.RegExMatch( "ted@rocksolidchurchdemo.com", regexEmail );
+            Assert.True( output );
+
+            output = RockFilters.RegExMatch( "ted@rocksolidchurchdemo. com", regexEmail );
+            Assert.False( output );
+
+            output = RockFilters.RegExMatch( "ted(AT)rocksolidchurchdemo.com", regexEmail );
+            Assert.False( output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should return the first matching pattern in the string.
+        /// </summary>
+        [Fact]
+        public void Text_RegExMatchValue_ShouldReturnMatchValue()
+        {
+            var output = RockFilters.RegExMatchValue( "Group 12345 has 54321 members", @"\d+" );
+            Assert.Equal( "12345", output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should not match and should return nothing.
+        /// </summary>
+        [Fact]
+        public void Text_RegExMatchValue_ShouldNotMatchValue()
+        {
+            var output = RockFilters.RegExMatchValue( "Group Decker has no members", @"\d+" );
+            Assert.Null( output );
+        }
+
+
+        #endregion
 
         #region Numeric Filters
 
@@ -166,13 +231,13 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- should concat two strings.
+        /// For use in Lava -- should concatenate two strings.
         /// </summary>
         [Fact]
         public void PlusStrings()
         {
-            var output = RockFilters.Plus( "Foo", "Bar" );
-            Assert.Equal( "FooBar", output );
+            var output = RockFilters.Plus( "Food", "Bar" );
+            Assert.Equal( "FoodBar", output );
         }
 
         #endregion
@@ -235,8 +300,8 @@ namespace Rock.Tests.Rock.Lava
         [Fact]
         public void TimesStringAndInt()
         {
-            var expectedOutput = Enumerable.Repeat( "Foo", 2 );
-            var output = RockFilters.Times( "Foo", 2 );
+            var expectedOutput = Enumerable.Repeat( "Food", 2 );
+            var output = RockFilters.Times( "Food", 2 );
             Assert.Equal( expectedOutput, output );
         }
 
@@ -275,7 +340,7 @@ namespace Rock.Tests.Rock.Lava
         public void AsInteger_ValidInteger()
         {
             var output = RockFilters.AsInteger( 3 );
-            Assert.Equal( output, 3 );
+            Assert.Equal( 3, output );
         }
 
         /// <summary>
@@ -285,7 +350,7 @@ namespace Rock.Tests.Rock.Lava
         public void AsInteger_ValidDecimal()
         {
             var output = RockFilters.AsInteger( ( decimal ) 3.0d );
-            Assert.Equal( output, 3 );
+            Assert.Equal( 3, output );
         }
 
         /// <summary>
@@ -295,7 +360,7 @@ namespace Rock.Tests.Rock.Lava
         public void AsInteger_ValidDouble()
         {
             var output = RockFilters.AsInteger( 3.0d );
-            Assert.Equal( output, 3 );
+            Assert.Equal( 3, output );
         }
 
         /// <summary>
@@ -305,7 +370,7 @@ namespace Rock.Tests.Rock.Lava
         public void AsInteger_ValidString()
         {
             var output = RockFilters.AsInteger( "3" );
-            Assert.Equal( output, 3 );
+            Assert.Equal( 3, output );
         }
 
         /// <summary>
@@ -325,7 +390,7 @@ namespace Rock.Tests.Rock.Lava
         public void AsInteger_ValidDecimalString()
         {
             var output = RockFilters.AsInteger( "3.2" );
-            Assert.Equal( output, 3 );
+            Assert.Equal( 3, output );
         }
 
         #endregion
@@ -443,7 +508,7 @@ namespace Rock.Tests.Rock.Lava
         public void AsDouble_ValidInteger()
         {
             var output = RockFilters.AsDouble( 3 );
-            Assert.Equal( output, 3.0d );
+            Assert.Equal( 3.0d, output );
         }
 
         /// <summary>
@@ -453,7 +518,7 @@ namespace Rock.Tests.Rock.Lava
         public void AsDouble_ValidDecimal()
         {
             var output = RockFilters.AsDouble( ( decimal ) 3.2d );
-            Assert.Equal( output, ( double ) 3.2d );
+            Assert.Equal( ( double ) 3.2d, output );
         }
 
         /// <summary>
@@ -463,7 +528,7 @@ namespace Rock.Tests.Rock.Lava
         public void AsDouble_ValidDouble()
         {
             var output = RockFilters.AsDouble( 3.141592d );
-            Assert.Equal( output, ( double ) 3.141592d );
+            Assert.Equal( ( double ) 3.141592d, output );
         }
 
         /// <summary>
@@ -473,7 +538,7 @@ namespace Rock.Tests.Rock.Lava
         public void AsDouble_ValidString()
         {
             var output = RockFilters.AsDouble( "3.14" );
-            Assert.Equal( output, ( double ) 3.14d );
+            Assert.Equal( ( double ) 3.14d, output );
         }
 
         /// <summary>
@@ -517,7 +582,7 @@ namespace Rock.Tests.Rock.Lava
         public void AsString_ValidFalseBoolean()
         {
             var output = RockFilters.AsString( false );
-            Assert.Equal( output, "False" );
+            Assert.Equal( "False", output );
         }
 
         /// <summary>
@@ -527,7 +592,7 @@ namespace Rock.Tests.Rock.Lava
         public void AsString_ValidTrueBoolean()
         {
             var output = RockFilters.AsString( true );
-            Assert.Equal( output, "True" );
+            Assert.Equal(  "True", output );
         }
 
         /// <summary>
@@ -537,7 +602,7 @@ namespace Rock.Tests.Rock.Lava
         public void AsString_ValidInteger()
         {
             var output = RockFilters.AsString( 3 );
-            Assert.Equal( output, "3" );
+            Assert.Equal( "3", output );
         }
 
         /// <summary>
@@ -547,7 +612,7 @@ namespace Rock.Tests.Rock.Lava
         public void AsString_ValidDecimal()
         {
             var output = RockFilters.AsString( ( decimal ) 3.2d );
-            Assert.Equal( output, "3.2" );
+            Assert.Equal( "3.2", output );
         }
 
         /// <summary>
@@ -557,7 +622,7 @@ namespace Rock.Tests.Rock.Lava
         public void AsString_ValidDouble()
         {
             var output = RockFilters.AsString( 3.141592d );
-            Assert.Equal( output, "3.141592" );
+            Assert.Equal( "3.141592", output );
         }
 
         /// <summary>
@@ -567,7 +632,7 @@ namespace Rock.Tests.Rock.Lava
         public void AsString_ValidDoubleString()
         {
             var output = RockFilters.AsString( "3.14" );
-            Assert.Equal( output, "3.14" );
+            Assert.Equal( "3.14", output );
         }
 
         /// <summary>
@@ -577,7 +642,7 @@ namespace Rock.Tests.Rock.Lava
         public void AsString_ValidString()
         {
             var output = RockFilters.AsString( "abc" );
-            Assert.Equal( output, "abc" );
+            Assert.Equal( "abc", output );
         }
 
         /// <summary>
@@ -623,14 +688,62 @@ namespace Rock.Tests.Rock.Lava
         {
             DateTime dt = new DateTime( 2017, 3, 7, 15, 4, 33 );
             var output = RockFilters.AsDateTime( dt.ToString() );
-            Assert.Equal( output, dt );
+            Assert.Equal( dt, output );
         }
 
         #endregion
 
-        #endregion
+        /// <summary>
+        /// For use in Lava -- should return the IP address of the Client
+        /// </summary>
+        [Fact]
+        public void Client_IP()
+        {
+            InitWebContentFolder();
 
-        #region Array filters
+            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
+            {
+                var output = RockFilters.Client( "Global", "ip" );
+                Assert.Equal( "127.0.0.1", output );
+            }
+        }
+
+        /// <summary>
+        /// For use in Lava -- should return the IP address of the Client using the HTTP_X_FORWARDED_FOR header value
+        /// </summary>
+        [Fact( Skip = "Need to figure out how to properly set a Server Variable with this HttpSimulator" )]
+        public void Client_IP_ForwardedFor()
+        {
+            InitWebContentFolder();
+
+            NameValueCollection headers = new NameValueCollection();
+            headers.Add( "HTTP_X_FORWARDED_FOR", "77.7.7.77" );
+
+            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest( new Uri( "http://localhost/" ), new NameValueCollection(), headers ) )
+            {
+                var output = RockFilters.Client( "Global", "ip" );
+                Assert.Equal( "77.7.7.77", output );
+            }
+        }
+
+        /// <summary>
+        /// For use in Lava -- should return the user agent of the client (which is setup in the fake/mock HttpSimulator)
+        /// </summary>
+        [Fact]
+        public void Client_Browser()
+        {
+            InitWebContentFolder();
+
+            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
+            {
+                dynamic output = RockFilters.Client( "Global", "browser" );
+                Assert.Equal( "Chrome", output.UserAgent.Family );
+                Assert.Equal( "68", output.UserAgent.Major );
+                Assert.Equal( "Windows 10", output.OS.Family );
+            }
+        }
+
+        #endregion
 
         #region Index
 
@@ -661,7 +774,7 @@ namespace Rock.Tests.Rock.Lava
         public void Index_ArrayAndInvalidString()
         {
             var output = RockFilters.Index( new string[] { "value1", "value2", "value3" }, "a" );
-            Assert.Equal( null, output );
+            Assert.Null( output );
         }
 
         /// <summary>
@@ -671,7 +784,7 @@ namespace Rock.Tests.Rock.Lava
         public void Index_ArrayAndNegativeInt()
         {
             var output = RockFilters.Index( new string[] { "value1", "value2", "value3" }, -1 );
-            Assert.Equal( null, output );
+            Assert.Null( output );
         }
 
         /// <summary>
@@ -681,7 +794,402 @@ namespace Rock.Tests.Rock.Lava
         public void Index_ArrayAndHugeInt()
         {
             var output = RockFilters.Index( new string[] { "value1", "value2", "value3" }, int.MaxValue );
-            Assert.Equal( null, output );
+            Assert.Null( output );
+        }
+
+        #endregion
+
+        #region Sort
+
+        /// <summary>
+        /// For use in Lava -- sort objects (from JSON) by an int property
+        /// </summary>
+        [Fact]
+        public void Sort_FromJson_Int()
+        {
+            var expected = new List<string>() { "A", "B", "C", "D" };
+
+            var json = @"[{
+		""Title"": ""D"",
+        ""Order"": 4
+    }, {
+		""Title"": ""A"",
+		""Order"": 1
+    }, {
+		""Title"": ""C"",
+		""Order"": 3
+    }, {
+		""Title"": ""B"",
+		""Order"": 2
+    }]";
+
+            var converter = new ExpandoObjectConverter();
+            var input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) StandardFilters.Sort( input, "Order" );
+            var sortedTitles = output.Cast<dynamic>().Select( x => x.Title );
+            Assert.Equal( expected, sortedTitles );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort from JSON. NOTE: Dates really should be in ISO 8601 for guaranteed sort-ability.
+        /// </summary>
+        [Fact]
+        public void Sort_FromJson()
+        {
+            var json = @"[{
+		""Title"": ""Hallelujah!( 6 / 12 / 16 )"",
+        ""StartDateTime"": ""2016-06-12T12:00:00""
+    }, {
+		""Title"": ""Are You Dealing With Insecurity? (6/19/16)"",
+		""StartDateTime"": ""2016-06-19T12:00:00""
+    }, {
+		""Title"": ""Woman's Infirmity Healed (6/5/16)"",
+		""StartDateTime"": ""2016-06-05T12:00:00""
+    }, {
+		""Title"": ""Test new sermon (5/29/16)"",
+		""StartDateTime"": ""2016-05-29T12:00:00""
+    }, {
+		""Title"": ""Test new sermon (7/3/16)"",
+		""StartDateTime"": ""2016-07-03T12:00:00""
+    }]";
+            var converter = new ExpandoObjectConverter();
+            object input = null;
+            input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) StandardFilters.Sort( input, "StartDateTime" );
+            Assert.Equal( "Test new sermon (5/29/16)", ( ( IDictionary<string, object> ) output.First() )["Title"] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort from JSON. NOTE: Dates must be in ISO 8601 for guaranteed sort-ability.
+        /// </summary>
+        [Fact]
+        public void Sort_FromJsonDesc()
+        {
+            var json = @"[{
+		""Title"": ""Hallelujah!(6/12/16 )"",
+        ""StartDateTime"": ""2016-06-12T12:00:00""
+    }, {
+		""Title"": ""Are You Dealing With Insecurity? (6/19/16)"",
+		""StartDateTime"": ""2016-06-19T12:00:00""
+    }, {
+		""Title"": ""Woman's Infirmity Healed (6/5/16)"",
+		""StartDateTime"": ""2016-06-05T12:00:00""
+    }, {
+		""Title"": ""Test new sermon (5/29/16)"",
+		""StartDateTime"": ""2016-05-29T12:00:00""
+    }, {
+		""Title"": ""Test new sermon (7/3/16)"",
+		""StartDateTime"": ""2016-07-03T12:00:00""
+    }]";
+            var converter = new ExpandoObjectConverter();
+            object input = null;
+            input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) StandardFilters.Sort( input, "StartDateTime", "desc" );
+            Assert.Equal( "Test new sermon (7/3/16)", ( ( IDictionary<string, object> ) output.First() )["Title"] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort by DateTime
+        /// </summary>
+        [Fact]
+        public void Sort_DateTime()
+        {
+            var input = new List<DateTime>
+            {
+                new DateTime().AddDays(1),
+                new DateTime()
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, null );
+            Assert.Equal( new DateTime(), output[0] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort by DateTime desc
+        /// </summary>
+        [Fact]
+        public void Sort_DateTimeDesc()
+        {
+            var input = new List<DateTime>
+            {
+                new DateTime(),
+                new DateTime().AddDays(1),
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, null, "desc" );
+            Assert.Equal( new DateTime().AddDays( 1 ), output[0] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort by int
+        /// </summary>
+        [Fact]
+        public void Sort_Int()
+        {
+            var input = new List<int> { 2, 1 };
+            var output = ( List<object> ) StandardFilters.Sort( input, null );
+            Assert.Equal( 1, output[0] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort by int
+        /// </summary>
+        [Fact]
+        public void Sort_IntDesc()
+        {
+            var input = new List<int> { 1, 2 };
+            var output = ( List<object> ) StandardFilters.Sort( input, null, "desc" );
+            Assert.Equal( 2, output[0] );
+        }
+
+
+        /// <summary>
+        /// For use in Lava -- sort by string
+        /// </summary>
+        [Fact]
+        public void Sort_StringDesc()
+        {
+            var input = new List<string> { "A", "B" };
+            var output = ( List<object> ) StandardFilters.Sort( input, null, "desc" );
+            Assert.Equal( "B", output[0] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort by string
+        /// </summary>
+        [Fact]
+        public void Sort_String()
+        {
+            var input = new List<string> { "B", "A" };
+            var output = ( List<object> ) StandardFilters.Sort( input, null );
+            Assert.Equal( "A", output[0] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort arbitrary by date
+        /// </summary>
+        [Fact]
+        public void Sort_ArbitraryDateTime()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", new DateTime().AddDays(1) }, { "Value", "2" } },
+               new Dictionary<string, object> { { "Id", new DateTime() }, { "Value", "1" } }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "Id" );
+            Assert.Equal( "1", ( ( Dictionary<string, object> ) output[0] )["Value"] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort arbitrary by date desc
+        /// </summary>
+        [Fact]
+        public void Sort_ArbitraryDateTimeDesc()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", new DateTime() }, { "Value", "1" } },
+               new Dictionary<string, object> { { "Id", new DateTime().AddDays(1) }, { "Value", "2" } }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "Id", "desc" );
+            Assert.Equal( "2", ( ( Dictionary<string, object> ) output[0] )["Value"] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort arbitrary by int
+        /// </summary>
+        [Fact]
+        public void Sort_ArbitraryInt()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", 2 }, { "Value", "2" } },
+               new Dictionary<string, object> { { "Id", 1 }, { "Value", "1" } }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "Id" );
+            Assert.Equal( "1", ( ( Dictionary<string, object> ) output[0] )["Value"] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort arbitrary by int desc
+        /// </summary>
+        [Fact]
+        public void Sort_ArbitraryIntDesc()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", 1 }, { "Value", "1" } },
+               new Dictionary<string, object> { { "Id", 2 }, { "Value", "2" } }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "Id", "desc" );
+            Assert.Equal( "2", ( ( Dictionary<string, object> ) output[0] )["Value"] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort arbitrary by string
+        /// </summary>
+        [Fact]
+        public void Sort_ArbitraryString()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", "B"}, { "Value", "2" } },
+               new Dictionary<string, object> { { "Id", "A" }, { "Value", "1" } }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "Id" );
+            Assert.Equal( "1", ( ( Dictionary<string, object> ) output[0] )["Value"] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort arbitrary by string desc
+        /// </summary>
+        [Fact]
+        public void Sort_ArbitraryStringDesc()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", "A" }, { "Value", "1" } },
+               new Dictionary<string, object> { { "Id", "B"}, { "Value", "2" } },
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "Id", "desc" );
+            Assert.Equal( "2", ( ( Dictionary<string, object> ) output[0] )["Value"] );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort ILiquidizable by date
+        /// </summary>
+        [Fact]
+        public void Sort_ILiquidizableDateTime()
+        {
+            var input = new List<object>
+            {
+               new Person(){ AnniversaryDate = new DateTime().AddDays(1), NickName="2" },
+                new Person(){ AnniversaryDate = new DateTime(), NickName="1" }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "AnniversaryDate" );
+            Assert.Equal( "1", ( ( Person ) output[0] ).NickName );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort ILiquidizable by date desc
+        /// </summary>
+        [Fact]
+        public void Sort_ILiquidizableDateTimeDesc()
+        {
+            var input = new List<object>
+            {
+                new Person(){ AnniversaryDate = new DateTime(), NickName="1" },
+               new Person(){ AnniversaryDate = new DateTime().AddDays(1), NickName="2" }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "AnniversaryDate", "desc" );
+            Assert.Equal( "2", ( ( Person ) output[0] ).NickName );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort ILiquidizable by int
+        /// </summary>
+        [Fact]
+        public void Sort_ILiquidizableInt()
+        {
+            var input = new List<object>
+            {
+               new Person(){ Id = 2, NickName="2" },
+                new Person(){ Id = 1, NickName="1" }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "Id" );
+            Assert.Equal( "1", ( ( Person ) output[0] ).NickName );
+        }
+
+
+        /// <summary>
+        /// For use in Lava -- sort ILiquidizable by int desc
+        /// </summary>
+        [Fact]
+        public void Sort_ILiquidizableIntDesc()
+        {
+            var input = new List<object>
+            {
+                new Person(){ Id = 1, NickName="1" },
+               new Person(){ Id = 2, NickName="2" }
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "Id", "desc" );
+            Assert.Equal( "2", ( ( Person ) output[0] ).NickName );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort ILiquidizable by string
+        /// </summary>
+        [Fact]
+        public void Sort_ILiquidizableString()
+        {
+            var input = new List<object>
+            {
+               new Person(){ NickName="2" },
+                new Person(){ NickName="1" },
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "NickName" );
+            Assert.Equal( "1", ( ( Person ) output[0] ).NickName );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort ILiquidizable by string desc
+        /// </summary>
+        [Fact]
+        public void Sort_ILiquidizableStringDesc()
+        {
+            var input = new List<object>
+            {
+               new Person(){ NickName="1" },
+                new Person(){ NickName="2" },
+            };
+            var output = ( List<object> ) StandardFilters.Sort( input, "NickName", "desc" );
+            Assert.Equal( "2", ( ( Person ) output[0] ).NickName );
+        }
+
+        #region Where
+
+        /// <summary>
+        /// For use in Lava -- should extract a single element form array
+        /// </summary>
+        [Fact]
+        public void Where_ByInt()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", (int)1 } },
+               new Dictionary<string, object> { { "Id", (int)2 } }
+            };
+            var output = RockFilters.Where( input, "Id", 1 );
+            Assert.Single( ( List<object> ) output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should extract a single element form array. Simulates a | FromJSON input.
+        /// </summary>
+        [Fact]
+        public void Where_ByLong()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", (long)1 } },
+               new Dictionary<string, object> { { "Id", (long)2 } }
+            };
+            var output = RockFilters.Where( input, "Id", (int)1 );
+            Assert.Single( ( List<object> ) output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should extract a single element form array
+        /// </summary>
+        [Fact]
+        public void Where_ByString()
+        {
+            var input = new List<Dictionary<string, object>>
+            {
+               new Dictionary<string, object> { { "Id", "1" } },
+               new Dictionary<string, object> { { "Id", "2" } }
+            };
+
+            var output = RockFilters.Where( input, "Id", "1" );
+            Assert.Single( ( List<object> ) output );
         }
 
         #endregion
@@ -711,7 +1219,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding days (d param) to a given date should be equal.
+        /// For use in Lava -- adding days (d parameter) to a given date should be equal.
         /// </summary>
         [Fact]
         public void DateAdd_AddDaysIntervalToGivenDate()
@@ -721,7 +1229,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding hours (h param) to a given date should be equal.
+        /// For use in Lava -- adding hours (h parameter) to a given date should be equal.
         /// </summary>
         [Fact]
         public void DateAdd_AddHoursIntervalToGivenDate()
@@ -731,7 +1239,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding minutes (m param) to a given date should be equal.
+        /// For use in Lava -- adding minutes (m parameter) to a given date should be equal.
         /// </summary>
         [Fact]
         public void DateAdd_AddMinutesIntervalToGivenDate()
@@ -741,7 +1249,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding seconds (s param) to a given date should be equal.
+        /// For use in Lava -- adding seconds (s parameter) to a given date should be equal.
         /// </summary>
         [Fact]
         public void DateAdd_AddSecondsIntervalToGivenDate()
@@ -751,7 +1259,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding years (y param) to a given date should be equal.
+        /// For use in Lava -- adding years (y parameter) to a given date should be equal.
         /// </summary>
         [Fact]
         public void DateAdd_AddYearsIntervalToGivenDate()
@@ -761,7 +1269,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding years (y param) to a given leap-year date should be equal.
+        /// For use in Lava -- adding years (y parameter) to a given leap-year date should be equal.
         /// </summary>
         [Fact]
         public void DateAdd_AddYearsIntervalToGivenLeapDate()
@@ -771,7 +1279,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding months (M param) to a given date should be equal.
+        /// For use in Lava -- adding months (M parameter) to a given date should be equal.
         /// </summary>
         [Fact]
         public void DateAdd_AddMonthsIntervalToGivenDate()
@@ -781,7 +1289,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding months (M param) to a given date with more days in the month
+        /// For use in Lava -- adding months (M parameter) to a given date with more days in the month
         /// should be equal to the month's last day.
         /// </summary>
         [Fact]
@@ -792,7 +1300,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
-        /// For use in Lava -- adding weeks (w param) to a given date should be equal.
+        /// For use in Lava -- adding weeks (w parameter) to a given date should be equal.
         /// </summary>
         [Fact]
         public void DateAdd_AddWeeksIntervalToGivenDate()
@@ -959,7 +1467,7 @@ namespace Rock.Tests.Rock.Lava
         public void Url_Host()
         {
             var output = RockFilters.Url( _urlValidHttps, "host" );
-            Assert.Equal( output, "www.rockrms.com" );
+            Assert.Equal( "www.rockrms.com", output );
         }
 
         /// <summary>
@@ -969,7 +1477,7 @@ namespace Rock.Tests.Rock.Lava
         public void Url_Port()
         {
             var output = RockFilters.Url( _urlValidHttps, "port" );
-            Assert.Equal( output, 443 );
+            Assert.Equal( 443, output );
         }
 
         /// <summary>
@@ -980,10 +1488,10 @@ namespace Rock.Tests.Rock.Lava
         {
             var output = RockFilters.Url( _urlValidHttps, "segments" ) as string[];
             Assert.NotNull( output );
-            Assert.Equal( output.Length, 3 );
-            Assert.Equal( output[0], "/" );
-            Assert.Equal( output[1], "WorkflowEntry/" );
-            Assert.Equal( output[2], "35" );
+            Assert.Equal( 3, output.Length );
+            Assert.Equal( "/", output[0] );
+            Assert.Equal( "WorkflowEntry/", output[1] );
+            Assert.Equal( "35", output[2] );
         }
 
         /// <summary>
@@ -993,7 +1501,7 @@ namespace Rock.Tests.Rock.Lava
         public void Url_Scheme()
         {
             var output = RockFilters.Url( _urlValidHttps, "scheme" );
-            Assert.Equal( output, "https" );
+            Assert.Equal( "https", output );
         }
 
         /// <summary>
@@ -1003,7 +1511,7 @@ namespace Rock.Tests.Rock.Lava
         public void Url_Protocol()
         {
             var output = RockFilters.Url( _urlValidHttps, "protocol" );
-            Assert.Equal( output, "https" );
+            Assert.Equal( "https", output );
         }
 
         /// <summary>
@@ -1013,7 +1521,7 @@ namespace Rock.Tests.Rock.Lava
         public void Url_LocalPath()
         {
             var output = RockFilters.Url( _urlValidHttps, "localpath" );
-            Assert.Equal( output, "/WorkflowEntry/35" );
+            Assert.Equal( "/WorkflowEntry/35", output );
         }
 
         /// <summary>
@@ -1023,7 +1531,7 @@ namespace Rock.Tests.Rock.Lava
         public void Url_PathAndQuery()
         {
             var output = RockFilters.Url( _urlValidHttps, "pathandquery" );
-            Assert.Equal( output, "/WorkflowEntry/35?PersonId=2" );
+            Assert.Equal( "/WorkflowEntry/35?PersonId=2", output );
         }
 
         /// <summary>
@@ -1033,7 +1541,7 @@ namespace Rock.Tests.Rock.Lava
         public void Url_QueryParameter()
         {
             var output = RockFilters.Url( _urlValidHttps, "queryparameter", "PersonId" );
-            Assert.Equal( output, "2" );
+            Assert.Equal( "2", output );
         }
 
         /// <summary>
@@ -1077,8 +1585,22 @@ namespace Rock.Tests.Rock.Lava
         }
 
         #endregion
-    }
 
+        #region Helper methods to build web content folder for HttpSimulator
+
+        /// <summary>
+        /// Initializes the web content folder.
+        /// </summary>
+        private void InitWebContentFolder()
+        {
+            var codeBaseUrl = new Uri( System.Reflection.Assembly.GetExecutingAssembly().CodeBase );
+            var codeBasePath = Uri.UnescapeDataString( codeBaseUrl.AbsolutePath );
+            var dirPath = System.IO.Path.GetDirectoryName( codeBasePath );
+            webContentFolder = System.IO.Path.Combine( dirPath, "Content" );
+        }
+
+        #endregion
+    }
     #region Helper class to deal with comparing inexact dates (that are otherwise equal).
 
     public static class DateTimeAssert

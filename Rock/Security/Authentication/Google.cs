@@ -37,13 +37,14 @@ namespace Rock.Security.ExternalAuthentication
     /// <summary>
     /// Authenticates a user using Google
     /// </summary>
-    [Description("Google Authentication Provider")]
-    [Export(typeof(AuthenticationComponent))]
-    [ExportMetadata("ComponentName", "Google")]
+    /// <seealso cref="Rock.Security.AuthenticationComponent" />
+    [Description( "Google Authentication Provider" )]
+    [Export( typeof( AuthenticationComponent ) )]
+    [ExportMetadata( "ComponentName", "Google" )]
 
-    [TextField("Client ID", "The Google Client ID")]
-    [TextField("Client Secret", "The Google Client Secret")]
-    
+    [TextField( "Client ID", "The Google Client ID" )]
+    [TextField( "Client Secret", "The Google Client Secret" )]
+
     public class Google : AuthenticationComponent
     {
         /// <summary>
@@ -77,8 +78,8 @@ namespace Rock.Security.ExternalAuthentication
         /// <returns></returns>
         public override Boolean IsReturningFromAuthentication( HttpRequest request )
         {
-            return ( !String.IsNullOrWhiteSpace(request.QueryString["code"]) &&
-                !String.IsNullOrWhiteSpace(request.QueryString["state"]) );
+            return ( !String.IsNullOrWhiteSpace( request.QueryString["code"] ) &&
+                !String.IsNullOrWhiteSpace( request.QueryString["state"] ) );
         }
 
         /// <summary>
@@ -89,18 +90,18 @@ namespace Rock.Security.ExternalAuthentication
         public override Uri GenerateLoginUrl( HttpRequest request )
         {
             string returnUrl = request.QueryString["returnurl"];
-            string redirectUri = GetRedirectUrl(request);
+            string redirectUri = GetRedirectUrl( request );
 
-            return new Uri(string.Format("https://accounts.google.com/o/oauth2/auth?response_type=code&client_id={0}&redirect_uri={1}&state={2}&scope=email profile",
-                GetAttributeValue("ClientID"),
-                HttpUtility.UrlEncode(redirectUri),
-                HttpUtility.UrlEncode(returnUrl ?? FormsAuthentication.DefaultUrl)));
+            return new Uri( string.Format( "https://accounts.google.com/o/oauth2/auth?response_type=code&client_id={0}&redirect_uri={1}&state={2}&scope=https://www.googleapis.com/auth/userinfo.email+https://www.googleapis.com/auth/userinfo.profile",
+                GetAttributeValue( "ClientID" ),
+                HttpUtility.UrlEncode( redirectUri ),
+                HttpUtility.UrlEncode( returnUrl ?? FormsAuthentication.DefaultUrl ) ) );
         }
 
         ///<summary>
         ///JSON Class for Access Token Response
         ///</summary>
-        public class accesstokenresponse
+        public class AccessTokenResponse
         {
             /// <summary>
             /// Gets or sets the access_token.
@@ -138,49 +139,46 @@ namespace Rock.Security.ExternalAuthentication
         {
             username = string.Empty;
             returnUrl = request.QueryString["State"];
-            string redirectUri = GetRedirectUrl(request);
+            string redirectUri = GetRedirectUrl( request );
 
             try
             {
                 // Get a new OAuth Access Token for the 'code' that was returned from the Google user consent redirect
-                var restClient = new RestClient(
-                    string.Format("https://www.googleapis.com/oauth2/v3/token?client_id={0}&redirect_uri={1}&client_secret={2}&code={3}&grant_type=authorization_code",
-                        GetAttributeValue("ClientID"),
-                        HttpUtility.UrlEncode(redirectUri),
-                        GetAttributeValue("ClientSecret"),
-                        request.QueryString["code"]));
-                var restRequest = new RestRequest(Method.POST);
-                var restResponse = restClient.Execute(restRequest);
+                var restClient = new RestClient( "https://www.googleapis.com/oauth2/v4/token" );
+                var restRequest = new RestRequest( Method.POST );
+                restRequest.AddParameter( "code", request.QueryString["code"] );
+                restRequest.AddParameter( "client_id", GetAttributeValue( "ClientID" ) );
+                restRequest.AddParameter( "client_secret", GetAttributeValue( "ClientSecret" ) );
+                restRequest.AddParameter( "redirect_uri", redirectUri );
+                restRequest.AddParameter( "grant_type", "authorization_code" );
+                var restResponse = restClient.Execute( restRequest );
 
                 if ( restResponse.StatusCode == HttpStatusCode.OK )
                 {
-                    var accesstokenresponse = JsonConvert.DeserializeObject<accesstokenresponse>(restResponse.Content);
+                    var accesstokenresponse = JsonConvert.DeserializeObject<AccessTokenResponse>( restResponse.Content );
                     string accessToken = accesstokenresponse.access_token;
 
                     // Get information about the person who logged in using Google
-                    restRequest = new RestRequest(Method.GET);
-                    restRequest.AddParameter("access_token", accessToken);
-                    restRequest.AddParameter("fields", "id,hd,email,family_name,gender,given_name");
-                    restRequest.AddParameter("key", GetAttributeValue("ClientID"));
-                    restRequest.RequestFormat = DataFormat.Json;
-                    restRequest.AddHeader("Accept", "application/json");
-                    restClient = new RestClient("https://www.googleapis.com/oauth2/v2/userinfo");
-                    restResponse = restClient.Execute(restRequest);
+                    restRequest = new RestRequest( Method.GET );
+                    restRequest.AddParameter( "access_token", accessToken );
+                    restRequest.AddParameter( "fields", "id,hd,email,family_name,gender,given_name" );
+                    restClient = new RestClient( "https://www.googleapis.com/oauth2/v2/userinfo" );
+                    restResponse = restClient.Execute( restRequest );
 
                     if ( restResponse.StatusCode == HttpStatusCode.OK )
                     {
-                        GoogleUser googleUser = JsonConvert.DeserializeObject<GoogleUser>(restResponse.Content);
-                        username = GetGoogleUser(googleUser, accessToken);
+                        GoogleUser googleUser = JsonConvert.DeserializeObject<GoogleUser>( restResponse.Content );
+                        username = GetGoogleUser( googleUser, accessToken );
                     }
                 }
             }
 
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException(ex, HttpContext.Current);
+                ExceptionLogService.LogException( ex, HttpContext.Current );
             }
 
-            return !string.IsNullOrWhiteSpace(username);
+            return !string.IsNullOrWhiteSpace( username );
         }
 
         /// <summary>
@@ -188,15 +186,15 @@ namespace Rock.Security.ExternalAuthentication
         /// </summary>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override String ImageUrl( )
+        public override String ImageUrl()
         {
-            return ""; /*~/Assets/Images/facebook-login.png*/
+            return string.Empty;
         }
 
         private string GetRedirectUrl( HttpRequest request )
         {
-            Uri uri = new Uri(request.Url.ToString());
-            return uri.Scheme + "://" + uri.GetComponents(UriComponents.HostAndPort, UriFormat.UriEscaped) + uri.LocalPath;
+            Uri uri = new Uri( request.Url.ToString() );
+            return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + uri.LocalPath;
         }
 
         /// <summary>
@@ -365,6 +363,12 @@ namespace Rock.Security.ExternalAuthentication
         /// <returns></returns>
         public static string GetGoogleUser( GoogleUser googleUser, string accessToken = "" )
         {
+            // accessToken is required
+            if ( accessToken.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
             string username = string.Empty;
             string googleId = googleUser.id;
             string googleLink = googleUser.link;
@@ -372,90 +376,84 @@ namespace Rock.Security.ExternalAuthentication
             string userName = "Google_" + googleId;
             UserLogin user = null;
 
-            using (var rockContext = new RockContext() )
+            using ( var rockContext = new RockContext() )
             {
 
                 // Query for an existing user 
-                var userLoginService = new UserLoginService(rockContext);
-                user = userLoginService.GetByUserName(userName);
+                var userLoginService = new UserLoginService( rockContext );
+                user = userLoginService.GetByUserName( userName );
 
                 // If no user was found, see if we can find a match in the person table
                 if ( user == null )
-                    {
+                {
                     // Get name/email from Google login
                     string lastName = googleUser.family_name.ToString();
                     string firstName = googleUser.given_name.ToString();
-                    string email = string.Empty;
-                    try { email = googleUser.email.ToString(); }
-                    catch { }
+                    string email = googleUser.email ?? string.Empty;
 
                     Person person = null;
 
                     // If person had an email, get the first person with the same name and email address.
-                    if ( !string.IsNullOrWhiteSpace(email) )
+                    if ( email.IsNotNullOrWhiteSpace() )
                     {
-                        var personService = new PersonService(rockContext);
+                        var personService = new PersonService( rockContext );
                         person = personService.FindPerson( firstName, lastName, email, true );
                     }
 
-                    var personRecordTypeId = DefinedValueCache.Get(SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid()).Id;
-                    var personStatusPending = DefinedValueCache.Get(SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid()).Id;
+                    var personRecordTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                    var personStatusPending = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
 
-                    rockContext.WrapTransaction(( ) =>
-                    {
-                        if ( person == null )
-                        {
-                            person = new Person();
-                            person.IsSystem = false;
-                            person.RecordTypeValueId = personRecordTypeId;
-                            person.RecordStatusValueId = personStatusPending;
-                            person.FirstName = firstName;
-                            person.LastName = lastName;
-                            person.Email = email;
-                            person.IsEmailActive = true;
-                            person.EmailPreference = EmailPreference.EmailAllowed;
-                            try
-                            {
-                                if ( googleUser.gender.ToString() == "male" )
-                                {
-                                    person.Gender = Gender.Male;
-                                }
-                                else if ( googleUser.gender.ToString() == "female" )
-                                {
-                                    person.Gender = Gender.Female;
-                                }
-                                else
-                                {
-                                    person.Gender = Gender.Unknown;
-                                }
+                    rockContext.WrapTransaction( () =>
+                     {
+                         if ( person == null )
+                         {
+                             person = new Person();
+                             person.IsSystem = false;
+                             person.RecordTypeValueId = personRecordTypeId;
+                             person.RecordStatusValueId = personStatusPending;
+                             person.FirstName = firstName;
+                             person.LastName = lastName;
+                             person.Email = email;
+                             person.IsEmailActive = true;
+                             person.EmailPreference = EmailPreference.EmailAllowed;
+                             try
+                             {
+                                 if ( googleUser.gender.ToString().ToLower() == "male" )
+                                 {
+                                     person.Gender = Gender.Male;
+                                 }
+                                 else if ( googleUser.gender.ToString().ToLower() == "female" )
+                                 {
+                                     person.Gender = Gender.Female;
+                                 }
+                                 else
+                                 {
+                                     person.Gender = Gender.Unknown;
+                                 }
+                             }
+                             catch
+                             {
+                                // Empty catch
                             }
-                            catch { }
 
-                            if ( person != null )
-                            {
-                                PersonService.SaveNewPerson(person, rockContext, null, false);
-                            }
-                        }
+                             if ( person != null )
+                             {
+                                 PersonService.SaveNewPerson( person, rockContext, null, false );
+                             }
+                         }
 
-                        if ( person != null )
-                        {
-                            int typeId = EntityTypeCache.Get(typeof(Google)).Id;
-                            user = UserLoginService.Create(rockContext, person, AuthenticationServiceType.External, typeId, userName, "goog", true);
-                        }
+                         if ( person != null )
+                         {
+                             int typeId = EntityTypeCache.Get( typeof( Google ) ).Id;
+                             user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, typeId, userName, "goog", true );
+                         }
 
-                    });
+                     } );
                 }
+
                 if ( user != null )
                 {
-                    username = user.UserName;
-
-                    if ( user.PersonId.HasValue )
-                    {
-                        var converter = new ExpandoObjectConverter();
-
-                        var personService = new PersonService(rockContext);
-                        var person = personService.Get(user.PersonId.Value);
-                    }
+                    return user.UserName;
                 }
 
                 return username;

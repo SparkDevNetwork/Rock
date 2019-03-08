@@ -48,10 +48,13 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var mergeTemplate = new MergeTemplateService( new RockContext() ).Get( value.AsGuid() );
-                if ( mergeTemplate != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = mergeTemplate.Name;
+                    var mergeTemplate = new MergeTemplateService( rockContext ).GetNoTracking( value.AsGuid() );
+                    if ( mergeTemplate != null )
+                    {
+                        formattedValue = mergeTemplate.Name;
+                    }
                 }
             }
 
@@ -98,7 +101,7 @@ namespace Rock.Field.Types
                     }
                 }
 
-                return itemGuid?.ToString();
+                return itemGuid?.ToString() ?? string.Empty;
             }
 
             return null;

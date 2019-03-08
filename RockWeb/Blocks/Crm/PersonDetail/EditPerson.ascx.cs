@@ -80,21 +80,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            ddlTitle.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
-            ddlSuffix.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
-            ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ), true );
-            ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
-            ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
-            ddlReason.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
+            dvpTitle.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ).Id;
+            dvpSuffix.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ).Id;
+            dvpMaritalStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ).Id;
+            dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ).Id;
+            dvpRecordStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ).Id;
+            dvpReason.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ).Id;
 
             pnlGivingGroup.Visible = UserCanAdministrate || IsUserAuthorized( "EditFinancials" );
 
             bool canEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( "EditConnectionStatus" );
-            ddlConnectionStatus.Visible = canEditConnectionStatus;
+            dvpConnectionStatus.Visible = canEditConnectionStatus;
             lConnectionStatusReadOnly.Visible = !canEditConnectionStatus;
 
             bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
-            ddlRecordStatus.Visible = canEditRecordStatus;
+            dvpRecordStatus.Visible = canEditRecordStatus;
             lRecordStatusReadOnly.Visible = !canEditRecordStatus;
             
             ddlGivingGroup.Items.Clear();
@@ -252,10 +252,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            bool showInactiveReason = ( ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
+            bool showInactiveReason = ( dvpRecordStatus.SelectedValueAsInt() == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
 
             bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
-            ddlReason.Visible = showInactiveReason && canEditRecordStatus;
+            dvpReason.Visible = showInactiveReason && canEditRecordStatus;
             lReasonReadOnly.Visible = showInactiveReason && !canEditRecordStatus;
             tbInactiveReasonNote.Visible = showInactiveReason && canEditRecordStatus;
             lReasonNoteReadOnly.Visible = showInactiveReason && !canEditRecordStatus;
@@ -287,12 +287,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             person.PhotoId = imgPhoto.BinaryFileId;
                         }
 
-                        person.TitleValueId = ddlTitle.SelectedValueAsInt();
+                        person.TitleValueId = dvpTitle.SelectedValueAsInt();
                         person.FirstName = tbFirstName.Text;
                         person.NickName = tbNickName.Text;
                         person.MiddleName = tbMiddleName.Text;
                         person.LastName = tbLastName.Text;
-                        person.SuffixValueId = ddlSuffix.SelectedValueAsInt();
+                        person.SuffixValueId = dvpSuffix.SelectedValueAsInt();
 
                         var birthMonth = person.BirthMonth;
                         var birthDay = person.BirthDay;
@@ -324,10 +324,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
                         person.GraduationYear = graduationYear;
 
-                        person.MaritalStatusValueId = ddlMaritalStatus.SelectedValueAsInt();
+                        person.MaritalStatusValueId = dvpMaritalStatus.SelectedValueAsInt();
                         person.AnniversaryDate = person.MaritalStatusValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id ? dpAnniversaryDate.SelectedDate : null;
                         person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
-                        person.ConnectionStatusValueId = ddlConnectionStatus.SelectedValueAsInt();
+                        person.ConnectionStatusValueId = dvpConnectionStatus.SelectedValueAsInt();
 
                         var phoneNumberTypeIds = new List<int>();
 
@@ -462,7 +462,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         bool recordStatusChangedToOrFromInactive = false;
                         var recordStatusInactiveId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
 
-                        int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
+                        int? newRecordStatusId = dvpRecordStatus.SelectedValueAsInt();
                     // Is the person's record status changing?
                     if ( person.RecordStatusValueId.HasValue && person.RecordStatusValueId != newRecordStatusId )
                         {
@@ -473,12 +473,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
                         }
 
-                        person.RecordStatusValueId = ddlRecordStatus.SelectedValueAsInt();
+                        person.RecordStatusValueId = dvpRecordStatus.SelectedValueAsInt();
 
                         int? newRecordStatusReasonId = null;
                         if ( person.RecordStatusValueId.HasValue && person.RecordStatusValueId.Value == recordStatusInactiveId )
                         {
-                            newRecordStatusReasonId = ddlReason.SelectedValueAsInt();
+                            newRecordStatusReasonId = dvpReason.SelectedValueAsInt();
                         }
                         person.RecordStatusReasonValueId = newRecordStatusReasonId;
 
@@ -643,12 +643,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             imgPhoto.BinaryFileId = Person.PhotoId;
             imgPhoto.NoPictureUrl = Person.GetPersonNoPictureUrl( this.Person, 400, 400 );
 
-            ddlTitle.SelectedValue = Person.TitleValueId.HasValue ? Person.TitleValueId.Value.ToString() : string.Empty;
+            dvpTitle.SelectedValue = Person.TitleValueId.HasValue ? Person.TitleValueId.Value.ToString() : string.Empty;
             tbFirstName.Text = Person.FirstName;
             tbNickName.Text = string.IsNullOrWhiteSpace( Person.NickName ) ? string.Empty : ( Person.NickName.Equals( Person.FirstName, StringComparison.OrdinalIgnoreCase ) ? string.Empty : Person.NickName );
             tbMiddleName.Text = Person.MiddleName;
             tbLastName.Text = Person.LastName;
-            ddlSuffix.SelectedValue = Person.SuffixValueId.HasValue ? Person.SuffixValueId.Value.ToString() : string.Empty;
+            dvpSuffix.SelectedValue = Person.SuffixValueId.HasValue ? Person.SuffixValueId.Value.ToString() : string.Empty;
             bpBirthDay.SelectedDate = Person.BirthDate;
 
             if ( Person.GraduationYear.HasValue )
@@ -680,9 +680,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             dpAnniversaryDate.SelectedDate = Person.AnniversaryDate;
             rblGender.SelectedValue = Person.Gender.ConvertToString( false );
-            ddlMaritalStatus.SetValue( Person.MaritalStatusValueId );
+            dvpMaritalStatus.SetValue( Person.MaritalStatusValueId );
             ShowAnniversaryDate();
-            ddlConnectionStatus.SetValue( Person.ConnectionStatusValueId );
+            dvpConnectionStatus.SetValue( Person.ConnectionStatusValueId );
             lConnectionStatusReadOnly.Text = Person.ConnectionStatusValueId.HasValue ? Person.ConnectionStatusValue.Value : string.Empty;
             
             tbEmail.Text = Person.Email;
@@ -690,9 +690,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             rblEmailPreference.SelectedValue = Person.EmailPreference.ConvertToString( false );
             rblCommunicationPreference.SetValue( Person.CommunicationPreference == CommunicationType.SMS ? "2" : "1" );
 
-            ddlRecordStatus.SetValue( Person.RecordStatusValueId );
+            dvpRecordStatus.SetValue( Person.RecordStatusValueId );
             lRecordStatusReadOnly.Text = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValue.Value : string.Empty;
-            ddlReason.SetValue( Person.RecordStatusReasonValueId );
+            dvpReason.SetValue( Person.RecordStatusReasonValueId );
             lReasonReadOnly.Text = Person.RecordStatusReasonValueId.HasValue ? Person.RecordStatusReasonValue.Value : string.Empty;
 
             tbInactiveReasonNote.Text = Person.InactiveReasonNote;
@@ -943,11 +943,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         protected void ShowAnniversaryDate()
         {
-            if ( GetAttributeValue( "HideAnniversaryDate" ).AsBoolean() == false)
+            if ( GetAttributeValue( "HideAnniversaryDate" ).AsBoolean() == true)
             {
                 dpAnniversaryDate.Visible = false;
             }
-            else if ( ddlMaritalStatus.SelectedValueAsInt() == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id )
+            else if ( dvpMaritalStatus.SelectedValueAsInt() == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id )
             {
                 dpAnniversaryDate.Visible = true;
             }

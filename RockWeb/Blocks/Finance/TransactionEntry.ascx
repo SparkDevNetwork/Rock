@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <asp:HiddenField ID="hfCurrentPage" runat="server" Value="1" />
-        
+
         <%-- hidden field to store the Transaction.Guid to use for the transaction. This is to help prevent duplicate transactions.   --%>
         <asp:HiddenField ID="hfTransactionGuid" runat="server" Value="" />
 
@@ -30,7 +30,7 @@
                                 <div class="panel-heading"><h3 class="panel-title"><asp:Literal ID="lContributionInfoTitle" runat="server" /></h3></div>
                                 <div class="panel-body">
                                     <fieldset>
-                                        
+
                                         <asp:Repeater ID="rptAccountList" runat="server" OnItemDataBound="rptAccountList_ItemDataBound">
                                             <ItemTemplate>
                                                 <Rock:RockLiteral ID="txtAccountAmountLiteral" runat="server" Visible="false" />
@@ -130,7 +130,7 @@
                     <asp:Panel ID="pnlPayment" runat="server" CssClass="panel panel-default contribution-payment">
 
                         <div class="panel-heading"><h3 class="panel-title"><asp:Literal ID="lPaymentInfoTitle" runat="server" /></h3></div>
-                        <div class="panel-body">   
+                        <div class="panel-body">
 
                             <Rock:RockRadioButtonList ID="rblSavedAccount" runat="server" CssClass="radio-list margin-b-lg" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
 
@@ -168,7 +168,7 @@
                                         <Rock:RockCheckBox ID="cbBillingAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input" />
                                         <div id="divBillingAddress" runat="server" class="toggle-content">
                                             <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
-                                        </div>                                    
+                                        </div>
                                     </div>
 
                                     <div id="divACHPaymentInfo" runat="server" visible="false" class="tab-pane">
@@ -179,19 +179,19 @@
                                             <asp:ListItem Text="Checking" Value="checking" Selected="true" />
                                             <asp:ListItem Text="Savings" Value="savings" />
                                         </Rock:RockRadioButtonList>
-                                        <asp:Image ID="imgCheck" CssClass="img-responsive" runat="server" ImageUrl="<%$ Fingerprint:~/Assets/Images/check-image.png %>" />                                    
+                                        <asp:Image ID="imgCheck" CssClass="img-responsive" runat="server" ImageUrl="<%$ Fingerprint:~/Assets/Images/check-image.png %>" />
                                     </div>
 
                                 </div>
 
                             </div>
-                        </div> 
+                        </div>
                     </asp:Panel>
 
                     <% if ( FluidLayout )
                     { %>
                         </div>
-                    </div>            
+                    </div>
                     <% } %>
 
                 </asp:Panel>
@@ -210,7 +210,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <iframe id="iframeStep2" src="<%=this.Step2IFrameUrl%>" style="display:none"></iframe>
 
             <asp:HiddenField ID="hfStep2AutoSubmit" runat="server" Value="false" />
@@ -222,7 +222,7 @@
 
         </asp:Panel>
 
-        <asp:Panel ID="pnlConfirmation" CssClass="panel panel-block" runat="server" Visible="false">
+        <asp:Panel ID="pnlConfirmation" CssClass="panel panel-block contribution-confirmation" runat="server" Visible="false">
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-credit-card"></i> <asp:Literal ID="lPanelTitle2" runat="server" /></h1>
@@ -253,7 +253,7 @@
                             <Rock:TermDescription ID="tdAccountNumberConfirm" runat="server" Term="Account Number" />
                             <Rock:TermDescription ID="tdWhenConfirm" runat="server" Term="When" />
                         </dl>
-                
+
                         <asp:Literal ID="lConfirmationFooter" runat="server" />
                         <asp:Panel ID="pnlDupWarning" runat="server" CssClass="alert alert-block">
                             <h4>Warning!</h4>
@@ -274,7 +274,7 @@
                 </div>
             </div>
 
-            
+
 
         </asp:Panel>
 
@@ -306,7 +306,7 @@
 
 
                 <dl class="dl-horizontal gift-confirmation margin-b-md">
-                            
+
                 </dl>
             </div>
 
@@ -324,7 +324,7 @@
                                     <div class="controls">
                                         <div class="alert alert-info">
                                             <b>Note:</b> For security purposes you will need to login to use your saved account information.  To create
-	    			                    a login account please provide a user name and password below. You will be sent an email with the account 
+	    			                    a login account please provide a user name and password below. You will be sent an email with the account
 	    			                    information above as a reminder.
                                         </div>
                                     </div>
@@ -342,7 +342,7 @@
                                 <asp:LinkButton ID="lbSaveAccount" runat="server" Text="Save Account" CssClass="btn btn-primary" OnClick="lbSaveAccount_Click" />
                             </div>
                         </div>
-                    </fieldset>                    
+                    </fieldset>
                 </div>
             </asp:Panel>
 
@@ -351,10 +351,6 @@
             <Rock:NotificationBox ID="nbSuccessMessage" runat="server" Visible="false"></Rock:NotificationBox>
 
         </asp:Panel>
-        <script type="text/javascript">
-            Sys.Application.add_load(function () {
-                window.scrollTo = function (x, y) { return true; }
-            });
-        </script>
+
     </ContentTemplate>
 </asp:UpdatePanel>

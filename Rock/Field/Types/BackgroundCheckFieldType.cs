@@ -22,6 +22,7 @@ using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
+using System.Data.Entity;
 
 namespace Rock.Field.Types
 {
@@ -84,7 +85,7 @@ namespace Rock.Field.Types
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        Guid? binaryFileGuid = new BinaryFileService( rockContext ).Queryable().Where( a => a.Id == binaryFileId.Value ).Select( a => (Guid?)a.Guid ).FirstOrDefault();
+                        Guid? binaryFileGuid = new BinaryFileService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == binaryFileId.Value ).Select( a => (Guid?)a.Guid ).FirstOrDefault();
                         if ( binaryFileGuid.HasValue )
                         {
                             return binaryFileGuid?.ToString();
@@ -95,6 +96,8 @@ namespace Rock.Field.Types
                 {
                     return backgroundCheckDocument.Text;
                 }
+
+                return string.Empty;
             }
 
             return null;
@@ -147,8 +150,12 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue && !guid.Value.IsEmpty() )
             {
-                var binaryFileInfo = new BinaryFileService( new RockContext() )
+                using ( var rockContext = new RockContext() )
+                {
+
+                    var binaryFileInfo = new BinaryFileService( rockContext )
                     .Queryable()
+                    .AsNoTracking()
                     .Where( f => f.Guid == guid.Value )
                     .Select( f =>
                         new
@@ -159,16 +166,17 @@ namespace Rock.Field.Types
                         } )
                     .FirstOrDefault();
 
-                if ( binaryFileInfo != null )
-                {
-                    if ( condensed )
+                    if ( binaryFileInfo != null )
                     {
-                        return binaryFileInfo.FileName;
-                    }
-                    else
-                    {
-                        var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetBackgroundCheck.ashx" );
-                        return string.Format( "<a href='{0}?EntityTypeId={1}&RecordKey={2}' title='{3}' class='btn btn-xs btn-default'>View</a>", filePath, EntityTypeCache.Get( typeof( Security.BackgroundCheck.ProtectMyMinistry ) ).Id, binaryFileInfo.Guid, System.Web.HttpUtility.HtmlEncode( binaryFileInfo.FileName ) );
+                        if ( condensed )
+                        {
+                            return binaryFileInfo.FileName;
+                        }
+                        else
+                        {
+                            var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetBackgroundCheck.ashx" );
+                            return string.Format( "<a href='{0}?EntityTypeId={1}&RecordKey={2}' title='{3}' class='btn btn-xs btn-default'>View</a>", filePath, EntityTypeCache.Get( typeof( Security.BackgroundCheck.ProtectMyMinistry ) ).Id, binaryFileInfo.Guid, System.Web.HttpUtility.HtmlEncode( binaryFileInfo.FileName ) );
+                        }
                     }
                 }
             }

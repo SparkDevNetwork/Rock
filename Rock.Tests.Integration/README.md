@@ -2,9 +2,16 @@
 # Integration Tests
 The goal of this project is to be a permanent place to store tests that require things such as a database context to fetch data, configuration settings, save data, etc.  At the moment, you (the developer) will run these tests when needed, but ultimately our automated build system (AppVeyor) will automatically run all these tests after every commit (or push to a particular branch). 
 
-So, in the meantime, you will need to create an `app.ConnectionStrings.config` file in this project (just like you do with your `web.ConnectionStrings.config`) in order to point these tests to a properly seeded database.  Then include it into the project and set its "Copy to Output Directory" property to "Copy always".
-
 > *NOTE: Use a fresh database with the PowerTools &gt; SampleData loaded so we all are testing against the same expected sample data.  If your test needs different data, you are responsible for adding it and cleaning it up as to not interfere with other tests.*
+
+## Setup Instructions
+
+1. Create an `app.ConnectionStrings.config` file in this project.
+2. Set the "Copy to Output Directory" property to "Copy always".
+3. Under menu Test > Test Settings, choose "Select Test Settings File" and select the `run.testsettings` file in the project.
+![test settings](https://rockrms.blob.core.windows.net/public-images/githubdocs/vs-test-testsettings.png "In Visual Studio under Test Settings")
+![test settings file selection](https://rockrms.blob.core.windows.net/public-images/githubdocs/vs-test-testsettings-fileselection.png "found in the Rock.Tests.Integration project")
+
 
 ## MS Unit Test vs XUnit
 

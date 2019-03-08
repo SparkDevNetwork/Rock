@@ -17,7 +17,7 @@
     14. Bulk Update
     15. Photo Upload
     16. Duplicate Pages
-    17. DISC
+    17. DISC & Assessments
     19. Edit Person
 */
 
@@ -164,8 +164,8 @@
 
     img {
       width: 100%;
-      height: auto;
       max-width: 200px;
+      height: auto;
       max-height: 200px;
     }
 
@@ -998,6 +998,7 @@ span.field-value {
 
   .table-groupcontactinfo {
     margin-bottom: 12px;
+
     /* Hide table headers (but not display: none;, for accessibility) */
     thead tr {
       position: absolute;
@@ -1040,7 +1041,7 @@ span.field-value {
         border-bottom: 2px solid @grid-column-header-border-color;
 
         &:before {
-          content: "Contact Info: "
+          content: "Contact Info: ";
         }
       }
 
@@ -1052,7 +1053,7 @@ span.field-value {
         border: 0;
         border-bottom: 1px solid @gray-lighter;
 
-        &:before {
+        &::before {
           /* Now like a table header */
           position: absolute;
 
@@ -1258,9 +1259,11 @@ tr.inactive {
   }
 }
 
-// 17. DISC
+// 17. DISC & Assessments
 // -------------------------
 .disc-assessment {
+  table-layout: fixed;
+
   th {
     padding: 6px;
 
@@ -1280,7 +1283,7 @@ tr.inactive {
   }
 
   .disc-answer {
-    width: 100px;
+    width: 80px;
   }
 }
 
@@ -1355,6 +1358,39 @@ tr.inactive {
   }
 }
 
+.question-row {
+  margin-bottom: @padding-base-vertical * 8;
+
+  .answered {
+    color: @text-muted;
+  }
+
+  .likert > .control-label {
+    margin-bottom: @padding-base-vertical * 1.5;
+  }
+
+  .likert {
+    .radio-inline {
+      padding: 5px @padding-base-horizontal 7px (@custom-control-indicator-size + @padding-base-horizontal + 4px);
+      margin-right: @padding-base-horizontal;
+      margin-left: -@padding-base-horizontal;
+      cursor: pointer;
+      background-clip: padding-box;
+      border-radius: 4px;
+
+      &:hover {
+        background-color: @gray-lighter;
+      }
+
+      .label-text::before,
+      .label-text::after {
+        top: 50%;
+        left: 8px;
+        transform: translateY(-50%);
+      }
+    }
+  }
+}
 
 // 18. Edit Person
 // -------------------------
@@ -1364,4 +1400,24 @@ tr.inactive {
   @media @sm {
     padding-top: 4px;
   }
+}
+
+// 19. Event Calendar Item Personalized Registration
+// -------------------------
+.eventitem {
+  cursor: pointer;
+}
+
+.eventitem-select {
+  font-family: @fa-font-face;
+  font-size: 38px;
+  font-weight: @fa-theme-weight;
+}
+
+.eventitem-select::after {
+  content: @fa-var-square;
+}
+
+.eventitem.selected .eventitem-select::after {
+  content: @fa-var-check-square;
 }

@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
@@ -47,10 +48,13 @@ namespace Rock.Field.Types
 
             if ( scheduleGuid.HasValue )
             {
-                var schedule = new ScheduleService( new RockContext() ).Get( scheduleGuid.Value );
-                if ( schedule != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    return schedule.Name;
+                    var schedule = new ScheduleService( rockContext ).GetNoTracking( scheduleGuid.Value );
+                    if ( schedule != null )
+                    {
+                        return schedule.Name;
+                    }
                 }
             }
 
@@ -91,11 +95,11 @@ namespace Rock.Field.Types
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        itemGuid = new ScheduleService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        itemGuid = new ScheduleService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
 
-                return itemGuid?.ToString();
+                return itemGuid?.ToString() ?? string.Empty;
             }
 
             return null;

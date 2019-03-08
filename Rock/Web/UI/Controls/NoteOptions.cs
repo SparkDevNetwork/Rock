@@ -17,9 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Web.Cache;
-using Rock.Model;
 using System.Web.UI;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -34,6 +34,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="NoteOptions"/> class.
         /// </summary>
+        [RockObsolete( "1.8" )]
         [Obsolete( " Use NoteOptions( NoteContainer noteContainer ) instead" )]
         public NoteOptions() : this( null )
         {
@@ -128,13 +129,13 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the editable note types.
+        /// Gets the editable note types sorted by order,name
         /// </summary>
         /// <param name="currentPerson">The current person.</param>
         /// <returns></returns>
         public List<NoteTypeCache> GetEditableNoteTypes( Person currentPerson )
         {
-            return this.NoteTypes?.Where( a => a.UserSelectable && a.IsAuthorized( Security.Authorization.EDIT, currentPerson ) ).ToList();
+            return this.NoteTypes?.Where( a => a.UserSelectable && a.IsAuthorized( Security.Authorization.EDIT, currentPerson ) ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
         }
 
         /// <summary>

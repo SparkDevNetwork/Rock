@@ -25,46 +25,46 @@ namespace Rock.Checkr.Constants
         /// <summary>
         /// The URL where the token for the account is retrieved
         /// </summary>
-        public static readonly string CHECKR_TOKEN_URL = "oauth/tokens";
+        public const string CHECKR_TOKEN_URL = "oauth/tokens";
 
         /// <summary>
         /// The typename prefix
         /// </summary>
-        public static readonly string CHECKR_TYPENAME_PREFIX = "Checkr - ";
+        public const string CHECKR_TYPENAME_PREFIX = "Checkr - ";
 
         /// <summary>
         /// The login URL
         /// </summary>
-        public static readonly string CHECKR_APISERVER = "https://api.checkr.com";
+        public const string CHECKR_APISERVER = "https://api.checkr.com";
 
         /// <summary>
         /// The candidates URL
         /// </summary>
-        public static readonly string CHECKR_CANDIDATES_URL = "v1/candidates";
+        public const string CHECKR_CANDIDATES_URL = "v1/candidates";
 
         /// <summary>
         /// The invitations URL
         /// </summary>
-        public static readonly string CHECKR_INVITATIONS_URL = "v1/invitations";
+        public const string CHECKR_INVITATIONS_URL = "v1/invitations";
 
         /// <summary>
         /// The report URL
         /// </summary>
-        public static readonly string CHECKR_REPORT_URL = "v1/reports";
+        public const string CHECKR_REPORT_URL = "v1/reports";
 
         /// <summary>
         /// The packages URL
         /// </summary>
-        public static readonly string CHECKR_PACKAGES_URL = "v1/packages";
+        public const string CHECKR_PACKAGES_URL = "v1/packages";
 
         /// <summary>
         /// The document URL
         /// </summary>
-        public static readonly string CHECKR_DOCUMENT_URL = "v1/documents";
+        public const string CHECKR_DOCUMENT_URL = "v1/documents";
 
         /// <summary>
         /// The default checkr workflow type name
         /// </summary>
-        public static readonly string CHECKR_WORKFLOW_TYPE_NAME = "Background Check (Checkr)";
+        public const string CHECKR_WORKFLOW_TYPE_NAME = "Background Check (Checkr)";
     }
 }

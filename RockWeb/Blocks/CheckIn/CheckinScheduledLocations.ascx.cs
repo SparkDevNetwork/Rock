@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.CheckIn
             ScheduleService scheduleService = new ScheduleService( new RockContext() );
 
             // limit Schedules to ones that have a CheckInStartOffsetMinutes
-            var scheduleQry = scheduleService.Queryable().Where( a => a.CheckInStartOffsetMinutes != null );
+            var scheduleQry = scheduleService.Queryable().Where( a => a.CheckInStartOffsetMinutes != null && a.IsActive );
 
             // limit Schedules to the Category from the Filter
             int scheduleCategoryId = CategoryCache.Get( Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid() ).Id;
@@ -106,8 +106,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 string dataFieldName = string.Format( "scheduleField_{0}", item.Id );
 
-                CheckBoxEditableField field = new CheckBoxEditableField { HeaderText = item.FriendlyScheduleText.Replace( " at ", "<br/>" ), DataField = dataFieldName };
-
+                CheckBoxEditableField field = new CheckBoxEditableField { HeaderText = item.Name.Replace( " ", "<br/>" ), DataField = dataFieldName };
                 gGroupLocationSchedule.Columns.Add( field );
             }
         }
@@ -319,6 +318,7 @@ namespace RockWeb.Blocks.CheckIn
 
                 if ( schedulesChanged )
                 {
+                    rockContext.SaveChanges();
                     KioskDevice.Clear();
                 }
             }

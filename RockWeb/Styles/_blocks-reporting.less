@@ -1,23 +1,13 @@
 /*
     Used to manage styles for specific blocks.
 
-    1. SQL Command - block to query database directly
-    2. Data Views - block for creating data views
-    3. Dynamic Report - block for making reports dynamically updated
-    4. Interactions
+    1. Data Views - block for creating data views
+    2. Dynamic Report - block for making reports dynamically updated
+    3. Interactions
 */
 
 
-// 1. SQL Command
-// -------------------------
-
-.sql-comand {
-  .panel {
-    margin-bottom: 24px;
-  }
-}
-
-// 2. Data Views
+// 1. Data Views
 // -------------------------
 
 /* data views */
@@ -52,10 +42,14 @@
   }
 
   @media @md {
-    // Vertically align criteria fields to the bottom
+    // Vertically align criteria fields to the top
     > div {
       display: table-cell;
       float: none;
+      vertical-align: top;
+    }
+
+    .vertical-align-bottom {
       vertical-align: bottom;
     }
   }
@@ -68,11 +62,17 @@
   }
 }
 
-// 3. Dynamic Report
+// 2. Dynamic Report
 // -------------------------
 
 .filterfield {
   margin-bottom: 12px;
+
+  // Override table-cell alignment for dynamic reports and data views
+  .field-criteria > div {
+    display: block;
+    float: left;
+  }
 }
 
 .filterfield-label {
@@ -81,7 +81,7 @@
   font-weight: @font-weight-semibold;
 }
 
-// 4. Interactions
+// 3. Interactions
 // -------------------------
 
 .list-panel {
@@ -96,10 +96,24 @@
     .grid-filter-entry {
       padding-top: inherit;
     }
+
+    .btn-link {
+      position: relative;
+      margin: 0;
+    }
   }
 }
 
-.list-panel .grid-filter .btn-link {
-  position: relative;
-  margin: 0;
+// 4. Form Field Filter
+// -------------------------
+
+.filter-rule {
+  margin-bottom: @padding-base-vertical;
+}
+
+.filter-rule-fieldfilter {
+  .field-criteria > div {
+    display: block;
+    float: left;
+  }
 }

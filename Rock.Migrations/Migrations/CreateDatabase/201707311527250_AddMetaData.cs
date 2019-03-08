@@ -19,7 +19,9 @@ namespace Rock.Migrations
     using System;
     using System.Collections.Generic;
     using System.Data.Entity.Migrations;
+    using System.IO;
     using System.Linq;
+    using System.Text;
 
     /// <summary>
     ///
@@ -38,7 +40,13 @@ namespace Rock.Migrations
 
             // use BulkInsert for LastName since there are 150,000+ rowsa
             List<Rock.Model.MetaLastNameLookup> metaLastNameLookupsToInsert = new List<Model.MetaLastNameLookup>();
-            var lastNameLines = MigrationSQL._201707311527250_LastName.Split( new[] { "\n" }, StringSplitOptions.None ).ToList();
+            List<string> lastNameLines;
+            using ( var lastNameZip = new System.IO.Compression.GZipStream( new MemoryStream( MigrationSQL._201707311527250_LastName ), System.IO.Compression.CompressionMode.Decompress, false ) )
+            {
+                var lastNameText = Encoding.ASCII.GetString( lastNameZip.ReadBytesToEnd() );
+                lastNameLines = lastNameText.Split( new[] { "\n" }, StringSplitOptions.None ).ToList();
+            }
+
             foreach(var lastNameLine in lastNameLines)
             {
                 var lastNameColValues = lastNameLine.Split( new[] { ',' }, StringSplitOptions.None ).ToList();

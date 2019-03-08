@@ -84,7 +84,7 @@ namespace Rock.Checkr.CheckrApi
                 var settings = GetSettings( rockContext );
                 if ( settings != null )
                 {
-                    token = GetSettingValue( settings, "AccessToken" );
+                    token = GetSettingValue( settings, "AccessToken", true );
                 }
             }
 

@@ -289,7 +289,8 @@ namespace RockWeb.Blocks.Crm
                         Ncoa ncoa = new Ncoa();
                         var previousValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
                         int? previousValueId = previousValue == null ? ( int? ) null : previousValue.Id;
-                        if ( ncoa.MarkAsPreviousLocation( ncoaHistory, groupLocationService, previousValueId, changes ) )
+                        var previousGroupLocation = ncoa.MarkAsPreviousLocation( ncoaHistory, groupLocationService, previousValueId, changes );
+                        if ( previousGroupLocation != null )
                         {
                             ncoaHistory.Processed = Processed.Complete;
 
@@ -499,6 +500,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             var filteredRecords = query.ToList();
+            lTotal.Text = string.Format( "Records: {0}", filteredRecords.Count() );
 
             #region Grouping rows
 

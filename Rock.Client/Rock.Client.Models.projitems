@@ -28,6 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourcePersonHistorical.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AssetStorageProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Attendance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttendanceCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttendanceOccurrence.cs" />
@@ -36,6 +37,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttributeMatrixItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttributeMatrixTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttributeQualifier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttributesExport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttributeValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttributeValueHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Audit.cs" />
@@ -55,6 +57,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Communication.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationAttachment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationRecipient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationTemplateAttachment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionActivityType.cs" />
@@ -105,9 +108,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialScheduledTransactionDetail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionDetail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionDetailExport.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionExport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionImage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionRefund.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionScannedCheck.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionsExport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Following.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FollowingEventNotification.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FollowingEventSubscription.cs" />
@@ -140,6 +146,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\LavaShortcode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Layout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Location.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\LocationExport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\LoginParameters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MergeTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetaFirstNameGenderLookup.cs" />
@@ -164,11 +171,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageRoute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageShortLink.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PeopleExport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Person.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonalDevice.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonAlias.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonBadge.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonDuplicate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonExport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonPreviousName.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonSearchKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonSignal.cs" />
@@ -184,6 +193,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateDiscount.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateFee.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateFeeItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateForm.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateFormField.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Report.cs" />
@@ -193,6 +203,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Schedule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ScheduleCategoryExclusion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceJob.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceJobHistory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceLog.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignalType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocument.cs" />

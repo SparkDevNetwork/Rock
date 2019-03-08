@@ -151,6 +151,15 @@ namespace Rock.Web.Cache
         public bool IsIndexingEnabled { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether attributes of this entity type support a Pre-HTML and Post-HTML option.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [attributes support pre post HTML]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AttributesSupportPrePostHtml { get; private set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is indexing supported.
         /// </summary>
         /// <value>
@@ -165,7 +174,8 @@ namespace Rock.Web.Cache
         /// <value>
         /// <c>true</c> if this instance is analytic supported; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use IsAnalyticsSupported( string entityTypeQualifierColumn, string entityTypeQualifierValue ) instead", true)]
         [DataMember]
         public bool IsAnalyticSupported { get; private set; }
 
@@ -175,7 +185,8 @@ namespace Rock.Web.Cache
         /// <value>
         /// <c>true</c> if this instance is analytic historical supported; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use IsAnalyticsHistoricalSupported( string entityTypeQualifierColumn, string entityTypeQualifierValue ) instead", true )]
         [DataMember]
         public bool IsAnalyticHistoricalSupported { get; private set; }
 
@@ -288,6 +299,7 @@ namespace Rock.Web.Cache
         private static Dictionary<int, Type> _cacheableEntityTypeIds = null;
         private System.Reflection.MethodInfo _cachedItemGetMethod = null;
         private System.Reflection.MethodInfo _cachedItemFlushItemMethod = null;
+        private System.Reflection.MethodInfo _cachedItemClearMethod = null;
 
         /// <summary>
         /// Determines whether there is an IEntityCache associated with this EntityType
@@ -321,6 +333,16 @@ namespace Rock.Web.Cache
             _cachedItemFlushItemMethod = _cachedItemFlushItemMethod ?? GetEntityCacheType()?.GetMethod( "FlushItem", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy, null, new Type[] { typeof( Int32 ) }, null );
 
             _cachedItemFlushItemMethod?.Invoke( null, new object[] { entityId } );
+        }
+
+        /// <summary>
+        /// Clears all the cached items for this EntityType
+        /// </summary>
+        internal void ClearCachedItems()
+        {
+            _cachedItemClearMethod = _cachedItemClearMethod ?? GetEntityCacheType()?.GetMethod( "Clear", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy, null, new Type[] {}, null );
+
+            _cachedItemClearMethod?.Invoke( null, new object[] {} );
         }
 
         #endregion Cache Related Methods
@@ -377,6 +399,7 @@ namespace Rock.Web.Cache
             SingleValueFieldTypeId = entityType.SingleValueFieldTypeId;
             MultiValueFieldTypeId = entityType.MultiValueFieldTypeId;
             IsIndexingEnabled = entityType.IsIndexingEnabled;
+            AttributesSupportPrePostHtml = entityType.AttributesSupportPrePostHtml;
             IsIndexingSupported = entityType.IsIndexingSupported;
             IndexResultTemplate = entityType.IndexResultTemplate;
             IndexDocumentUrl = entityType.IndexDocumentUrl;
@@ -456,6 +479,7 @@ namespace Rock.Web.Cache
         /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete("Use Get instead")]
         public static EntityTypeCache Read( Type type, bool createIfNotFound = true, RockContext rockContext = null )
         {
@@ -469,6 +493,7 @@ namespace Rock.Web.Cache
         /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Get instead" )]
         public static EntityTypeCache Read<T>( bool createIfNotFound = true, RockContext rockContext = null )
         {
@@ -481,6 +506,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Get instead" )]
         public static EntityTypeCache Read( string name )
         {
@@ -494,6 +520,7 @@ namespace Rock.Web.Cache
         /// <param name="createNew">if set to <c>true</c> [create new].</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Get instead" )]
         public static EntityTypeCache Read( string name, bool createNew, RockContext rockContext = null )
         {

@@ -4,34 +4,34 @@
 <%@ Import Namespace="Microsoft.Win32"  %>
 
 <!--
-                               INNNN                    
-                              NNNNNNN                   
-                            .NNNNNNNNNN                 
-                           NNNNNNNNNNNNN                
-                          NNNNNNNNNNNNNNN.              
-                         NNNNNNNNNNNNNNNNNN             
-                       NNNNNNNNN? .NNNNNNNNN            
-                      NNNNNNNNN     NNNNNNNNN+          
-                    ?NNNNNNNNN       .NNNNNNNNN         
-                   NNNNNNNNN          .NNNNNNNNN        
-                  NNNNNNNNN             NNNNNNNNNN      
-                NNNNNNNNNN               .NNNNNNNNN     
-                                NNNNNNNNNNNNNNNNNNNN    
-                               DNNNNNNNNNNNNNNNNNNNNN   
-                               NNNNNNNNNNNNNNNNNNNNNN7  
-                               .NNNNNNNNNNNNNNNNNNNNN   
-                                 NNNNNNNNN  .....       
-                                  DNNNNNNNNN            
-                                    NNNNNNNNN           
-                                     NNNNNNNNN.         
-                                      :NNNNNNNNN        
-                                        NNNNNNNNN.      
-                                         NNNNNNNNNZ     
+                               INNNN
+                              NNNNNNN
+                            .NNNNNNNNNN
+                           NNNNNNNNNNNNN
+                          NNNNNNNNNNNNNNN.
+                         NNNNNNNNNNNNNNNNNN
+                       NNNNNNNNN? .NNNNNNNNN
+                      NNNNNNNNN     NNNNNNNNN+
+                    ?NNNNNNNNN       .NNNNNNNNN
+                   NNNNNNNNN          .NNNNNNNNN
+                  NNNNNNNNN             NNNNNNNNNN
+                NNNNNNNNNN               .NNNNNNNNN
+                                NNNNNNNNNNNNNNNNNNNN
+                               DNNNNNNNNNNNNNNNNNNNNN
+                               NNNNNNNNNNNNNNNNNNNNNN7
+                               .NNNNNNNNNNNNNNNNNNNNN
+                                 NNNNNNNNN  .....
+                                  DNNNNNNNNN
+                                    NNNNNNNNN
+                                     NNNNNNNNN.
+                                      :NNNNNNNNN
+                                        NNNNNNNNN.
+                                         NNNNNNNNNZ
                                            NNNNNNNNN
 
-    
+
                              !### --  READ THIS -- ###!
-    
+
     If you are seeing this on in your browser it means one of a few things:
 
     + You are not running on a Windows server. Rock requires a Windows hosting
@@ -54,11 +54,14 @@
     public string serverUrl = "https://rockrms.blob.core.windows.net/install/";
 
     void Page_Load( object sender, EventArgs e )
-    {        
+    {
+        // .Net 4.5 defaults to TLS1.1, force this to 1.2 to be compatible with IIS servers that are enforcing latest encryption.
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
         // first disable the no ASP.Net message
         lNoScripting.Visible = false;
 
-        string version = "2_8_0";
+        string version = "2_9_0";
         bool isDebug = false;
 
         // prepare redirect links
@@ -82,47 +85,47 @@
         // download files
         string serverPath = Server.MapPath( "." ) + @"\";
         string binDirectoryLocation = Server.MapPath( "." ) + @"\bin";
-        serverUrl += version + "/";        
-        
+        serverUrl += version + "/";
+
         // run initial checks
         // -----------------------------
         StringBuilder errorDetails = new StringBuilder();
-        
+
         // internet connection
         EnvironmentCheckResult internetResult = ConnectedToInternetTest();
         if ( !internetResult.DidPass )
         {
             errorDetails.Append( internetResult.AsListItem );
         }
-        
+
         // write permissions
         EnvironmentCheckResult filesystemResult = WriteToFilesystemTest();
         if ( !filesystemResult.DidPass )
         {
             errorDetails.Append( filesystemResult.AsListItem );
         }
-        
+
         // dot net version
         EnvironmentCheckResult dotnetResult = DotNetVersionTest();
         if ( !dotnetResult.DidPass )
         {
             errorDetails.Append( dotnetResult.AsListItem );
         }
-        
+
         // rock not installed
         EnvironmentCheckResult rockInstalledResult = RockInstalledTest();
         if ( !rockInstalledResult.DidPass )
         {
             errorDetails.Append(  rockInstalledResult.AsListItem );
         }
-        
+
         // install directory is an asp.net application
         EnvironmentCheckResult rockDirectoryIsAppResult = DirectoryIsApplicationTest();
         if ( !rockDirectoryIsAppResult.DidPass )
         {
             errorDetails.Append( rockDirectoryIsAppResult.AsListItem );
         }
-        
+
         // if any test failed display errors
         if ( errorDetails.Length > 0 )
         {
@@ -132,7 +135,7 @@
         else
         {
             bool downloadSuccessful = true;
-            
+
             try
             {
                 if ( isDebug )
@@ -186,7 +189,7 @@
                     {
                         downloadSuccessful = DownloadFile( @"bin\Owin.dll", serverUrl, serverPath );
                     }
-                    
+
                     // other bin files
                     if ( downloadSuccessful )
                     {
@@ -219,7 +222,7 @@
                         downloadSuccessful = DownloadFile( "web.config", serverUrl, serverPath );
                     }
                 }
-                
+
             }
             catch ( Exception ex ) {
                 downloadSuccessful = false;
@@ -263,17 +266,18 @@
             return false;
         }
     }
-    
+
  </script>
 
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en">
 <head runat="server">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Rock Installer</title>
-    <link rel='stylesheet' href='//fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css' />
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet" />
 
     <link href="<%=String.Format("{0}Styles/rock-installer.css", serverUrl) %>" rel="stylesheet" />
@@ -281,15 +285,6 @@
 
     <script src="//code.jquery.com/jquery-1.9.0.min.js"></script>
     <script src="<%=String.Format("{0}Scripts/rock-install.js", serverUrl) %>"></script>
-
-    <style type="text/css">
-
-        body {
-            background-color: #dbd5cb;
-            border-top: 24px solid #282526;
-        }
-
-    </style>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -297,7 +292,7 @@
 	        <asp:Literal ID="lLogo" runat="server" Visible="false"><h1 id="logo">Rock RMS</h1></asp:Literal>
 
             <div id="content-box">
-            
+
                 <!-- message to show if asp.net is not installed -->
                 <asp:Literal runat="server" ID="lNoScripting">
                     <h1>Something Isn't Right Here...</h1>
@@ -310,13 +305,13 @@
 
                 </asp:Literal>
 
-                <asp:Panel runat="server" ID="pnlRedirect" Visible="false"> 
+                <asp:Panel runat="server" ID="pnlRedirect" Visible="false">
 
                     <div id="divNoJavascript">
                         <div class="alert alert-danger" style="margin-top: 24px;">
                             <strong>JavaScript Required</strong> To enable a robust installation experience we require JavaScript to be enabled.
-                    
-                            <p><em>If you are running this locally on a server, consider completing the install on a client machine or temporarily 
+
+                            <p><em>If you are running this locally on a server, consider completing the install on a client machine or temporarily
                             enabling JavaScript.</em></p>
                         </div>
                     </div>
@@ -330,7 +325,7 @@
                 </asp:Panel>
 
                 <asp:Label ID="lEnvironmentErrors" runat="server">
-                    
+
                     <h1>Before We Get Started...</h1>
                     <p>Before we can get started we have some work to do. Your system's environment does not meet all of the
                         specs for Rock. Read through our <a href='http://www.rockrms.com/Rock/Learn' target="_blank"> install guides</a> for details on preparing your server for install.
@@ -377,7 +372,7 @@
 
         return result;
     }
-    
+
     // writer permissions test method
     private EnvironmentCheckResult WriteToFilesystemTest()
     {
@@ -386,9 +381,9 @@
         result.Message = String.Format( "The username {0} does not have write access to the server's file system.", System.Security.Principal.WindowsIdentity.GetCurrent().Name );
         result.HelpLink = "https://www.rockrms.com/Rock/LetsFixThis#WebServerPermissions";
         result.DidPass = false;
-        
+
         string filename = Server.MapPath( "." ) + @"\write-permission.test";
-        
+
         try
         {
             File.Create( filename ).Dispose();
@@ -494,7 +489,7 @@
         isInstalledResult.HelpLink = "https://www.rockrms.com/Rock/LetsFixThis#IsRockInstalledAlready";
         isInstalledResult.Message = "Website is empty";
         isInstalledResult.DidPass = true;
-        
+
         string rockFile = Server.MapPath( "." ) + @"\bin\Rock.dll";
         if ( File.Exists( rockFile ) )
         {
@@ -516,7 +511,7 @@
 
         return isInstalledResult;
     }
-    
+
     public class EnvironmentCheckResult {
 
         private bool _didPass = false;
@@ -525,7 +520,7 @@
         private string _message = string.Empty;
         private string _helpText = string.Empty;
         private string _helpLink = string.Empty;
-        
+
         public bool DidPass
         {
             get { return this._didPass;}
@@ -539,22 +534,22 @@
                 return String.Format("<li><i class='{0}'></i> {1} {2} </li>", this.IconCss, this.Message, this.HelpText);
             }
         }
-        
+
         public string IconCss
         {
             get
             {
                 if ( this._didPass )
                 {
-                    return "fa fa-check-circle pass";
+                    return "fas fa-check-circle pass";
                 }
                 else
                 {
-                    return "fa fa-exclamation-triangle fail";
+                    return "fas fa-exclamation-triangle fail";
                 }
             }
         }
-        
+
         public string Message
         {
             get { return this._message; }
@@ -568,7 +563,7 @@
                 return String.Format( "<a href='{0}' class='btn btn-info btn-xs'>Let's Fix It Together</a>", this._helpLink );
             }
         }
-        
+
         public string HelpLink
         {
             get { return this._helpLink; }

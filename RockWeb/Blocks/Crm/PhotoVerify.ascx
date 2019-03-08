@@ -10,10 +10,12 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-        
+
             <div class="panel-heading text-right">
                 <h1 class="panel-title"><i class="fa fa-camera"></i> Verify Photo List</h1>
-                <Rock:RockCheckBox runat="server" ID="cbShowAll" Text="show verified photos" OnCheckedChanged="cbShowAll_CheckedChanged" AutoPostBack="true" />
+                <div class="pull-right">
+                    <Rock:RockCheckBox runat="server" ID="cbShowAll" Text="Show verified photos" OnCheckedChanged="cbShowAll_CheckedChanged" AutoPostBack="true" />
+                </div>
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox  runat="server" ID="nbConfigError" NotificationBoxType="Danger" Text="Block must be configured for a particular group."
