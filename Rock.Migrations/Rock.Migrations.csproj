@@ -244,6 +244,10 @@
     <Compile Include="Migrations\201903080026181_FundraisingParticipantAddShowAmountSetting.Designer.cs">
       <DependentUpon>201903080026181_FundraisingParticipantAddShowAmountSetting.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201903082244558_AddGroupCapacityToGroupDetailLava.cs" />
+    <Compile Include="Migrations\201903082244558_AddGroupCapacityToGroupDetailLava.Designer.cs">
+      <DependentUpon>201903082244558_AddGroupCapacityToGroupDetailLava.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -667,6 +671,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201903080026181_FundraisingParticipantAddShowAmountSetting.resx">
       <DependentUpon>201903080026181_FundraisingParticipantAddShowAmountSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903082244558_AddGroupCapacityToGroupDetailLava.resx">
+      <DependentUpon>201903082244558_AddGroupCapacityToGroupDetailLava.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

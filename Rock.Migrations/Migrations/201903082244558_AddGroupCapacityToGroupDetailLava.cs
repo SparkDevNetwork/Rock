@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class GroupDetailLavaCapacity : Rock.Migrations.RockMigration
+    public partial class AddGroupCapacityToGroupDetailLava : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -30,7 +30,7 @@ namespace Rock.Migrations
         public override void Up()
         {
             // Attrib for BlockType: Group Detail Lava:Enable Group Capacity Edit
-            RockMigrationHelper.UpdateBlockTypeAttribute( "218B057F-B214-4317-8E84-7A95CF88067E", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Enable Group Capacity Edit", "EnableGroupCapacityEdit", "", "Enables changing Group Capacity when editing a group.", 11, @"False", "D6F86AAC-D6E5-4167-BBCC-75DF88112027" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "218B057F-B214-4317-8E84-7A95CF88067E", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Enable Group Capacity Edit", "EnableGroupCapacityEdit", "", "Enables changing Group Capacity when editing a group. Note: The group type must have a 'Group Capacity Rule'.", 11, @"False", "D6F86AAC-D6E5-4167-BBCC-75DF88112027" );
         }
 
         /// <summary>
@@ -38,6 +38,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            // Attrib for BlockType: Group Detail Lava:Enable Group Capacity Edit
             RockMigrationHelper.DeleteAttribute( "D6F86AAC-D6E5-4167-BBCC-75DF88112027" );
         }
     }
