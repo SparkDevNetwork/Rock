@@ -26,10 +26,10 @@ input[type="number"] {
 
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  margin: 0;
 }
 
 // Prevent Text Areas from oversizing beyond 100%
@@ -41,12 +41,6 @@ legend {
   font-weight: @font-weight-light;
   color: @text-color;
   border-width: 0;
-}
-
-.checkbox-inline:first-child,
-.radio-inline:first-child {
-  // when inline checkbox lists wrap the first one on the first line sticks out more than subseqent lines. Confirmed that this is the same behavior on the BS site.
-  padding-left: 30px;
 }
 
 a.aspNetDisabled {
@@ -188,7 +182,8 @@ a.aspNetDisabled {
 
 
 .controls {
-  .checkbox:first-child {
+  .checkbox:first-child,
+  .radio:first-child {
     margin-top: 0;
   }
 }
